@@ -41,7 +41,7 @@ const RadialsChart = () => {
       },
     },
     labels: ["A", "B", "C", "D"],
-    colors: ["#4669FA", "#FA916B", "#50C793", "#0CE7FA"],
+    colors: ["#56ce84", "#FA916B", "#50C793", "#0CE7FA"],
   };
 
   return (

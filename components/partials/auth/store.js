@@ -12,7 +12,7 @@ const initialUsers = () => {
             id: uuidv4(),
             name: "medicity",
             email: "medicity@gmail.com",
-            password: "medicity",
+            password: "medicity12?",
           },
         ];
   }
@@ -21,7 +21,7 @@ const initialUsers = () => {
       id: uuidv4(),
       name: "medicity",
       email: "medicity@gmail.com",
-      password: "medicity",
+      password: "medicity12?",
     },
   ];
 };

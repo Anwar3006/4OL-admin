@@ -50,7 +50,7 @@ const RadarChart = () => {
     stroke: {
       dashArray: 4,
     },
-    colors: ["#4669FA"],
+    colors: ["#56ce84"],
   };
 
   return (

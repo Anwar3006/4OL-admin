@@ -34,7 +34,7 @@ const ForgotPass = () => {
         error={errors.email}
       />
 
-      <button className="btn btn-dark block w-full text-center">
+      <button className="btn bg-[#56ce84] text-white block w-full text-center">
         Send recovery email
       </button>
     </form>

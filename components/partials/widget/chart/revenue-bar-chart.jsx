@@ -57,7 +57,7 @@ const RevenueBarChart = ({ height = 400 }) => {
       },
     },
     title: {
-      text: "Revenue Report",
+      text: "Report",
       align: "left",
 
       offsetX: isRtl ? "0%" : 0,
@@ -123,7 +123,7 @@ const RevenueBarChart = ({ height = 400 }) => {
         },
       },
     },
-    colors: ["#4669FA", "#0CE7FA", "#FA916B"],
+    colors: ["#56ce84", "#0CE7FA", "#FA916B"],
     grid: {
       show: true,
       borderColor: isDark ? "#334155" : "#E2E8F0",

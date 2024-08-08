@@ -30,19 +30,11 @@ const Login2 = () => {
                 </div>
                 <div className="text-center 2xl:mb-10 mb-4">
                   <h4 className="font-medium">Sign in</h4>
-                  <div className="text-[#0e124c] text-base">
+                  <div className="text-[#56ce84] text-base">
                     Sign in to your account to continue.
                   </div>
                 </div>
                 <LoginForm />
-                {/* <div className=" relative border-b-[#9AA2AF] border-opacity-[16%] border-b pt-6">
-                  <div className=" absolute inline-block  bg-white dark:bg-slate-800 left-1/2 top-1/2 transform -translate-x-1/2 px-4 min-w-max text-sm  text-slate-500  dark:text-slate-400font-normal ">
-                    Or continue with
-                  </div>
-                </div>
-                <div className="max-w-[242px] mx-auto mt-8 w-full">
-                  <Social />
-                </div> */}
                 {/* <div className="md:max-w-[345px] mt-6 mx-auto font-normal text-slate-500 dark:text-slate-400mt-12 uppercase text-sm">
                   Don’t have an account?{" "}
                   <Link
@@ -54,32 +46,35 @@ const Login2 = () => {
                 </div> */}
               </div>
               <div className="auth-footer text-center">
-                Copyright 2024, Medicity All Rights Reserved.
+                Copyright 2024, 4-Our Life All Rights Reserved.
               </div>
             </div>
           </div>
+
+          {/* right side */}
           <div
             className="left-column bg-cover bg-no-repeat bg-center"
             style={{
-              backgroundImage: `url(/assets/images/all-img/login-bg2.png)`,
+              backgroundImage: `url('/assets/images/all-img/4 Our Life.png')`,
+              height: "100vh", // Ensure it has a height
             }}
           >
             <div className="flex flex-col h-full justify-center">
               <div className="flex-1 flex flex-col justify-center items-center">
                 <Link href="/">
-                <h3 className="text-white font-bold">MEDICITY</h3>
+                  {/* <h3 className="text-white font-bold">4 Our Life</h3> */}
                   {/* <img
-                    src="assets/images/logo/logo-white.svg"
-                    alt=""
-                    className="mb-10"
-                  /> */}
+          src="assets/images/logo/logo-white.svg"
+          alt=""
+          className="mb-10"
+        /> */}
                 </Link>
               </div>
               <div>
-                <div className="black-500-title max-w-[525px] mx-auto pb-20 text-center ">
-                  <p className="text-xl">HEALTH & MEDICAL</p>
-                  {/* <span className="text-white font-bold">performance</span> */}
-                </div>
+                {/* <div className="black-500-title max-w-[525px] mx-auto pb-20 text-center">
+        <p className="text-xl">Healthcare Simplified, Longevity Amplified.</p>
+        <span className="text-white font-bold">performance</span>
+      </div> */}
               </div>
             </div>
           </div>

@@ -43,48 +43,48 @@ const Profile = () => {
         router.push("/profile");
       },
     },
-    {
-      label: "Chat",
-      icon: "heroicons-outline:chat",
-      action: () => {
-        router.push("/chat");
-      },
-    },
-    {
-      label: "Email",
-      icon: "heroicons-outline:mail",
-      action: () => {
-        router.push("email");
-      },
-    },
-    {
-      label: "Todo",
-      icon: "heroicons-outline:clipboard-check",
-      action: () => {
-        router.push("/todo");
-      },
-    },
-    {
-      label: "Settings",
-      icon: "heroicons-outline:cog",
-      action: () => {
-        router.push("/settings");
-      },
-    },
-    {
-      label: "Price",
-      icon: "heroicons-outline:credit-card",
-      action: () => {
-        router.push("/pricing");
-      },
-    },
-    {
-      label: "Faq",
-      icon: "heroicons-outline:information-circle",
-      action: () => {
-        router.push("/faq");
-      },
-    },
+    // {
+    //   label: "Chat",
+    //   icon: "heroicons-outline:chat",
+    //   action: () => {
+    //     router.push("/chat");
+    //   },
+    // },
+    // {
+    //   label: "Email",
+    //   icon: "heroicons-outline:mail",
+    //   action: () => {
+    //     router.push("email");
+    //   },
+    // },
+    // {
+    //   label: "Todo",
+    //   icon: "heroicons-outline:clipboard-check",
+    //   action: () => {
+    //     router.push("/todo");
+    //   },
+    // },
+    // {
+    //   label: "Settings",
+    //   icon: "heroicons-outline:cog",
+    //   action: () => {
+    //     router.push("/settings");
+    //   },
+    // },
+    // {
+    //   label: "Price",
+    //   icon: "heroicons-outline:credit-card",
+    //   action: () => {
+    //     router.push("/pricing");
+    //   },
+    // },
+    // {
+    //   label: "Faq",
+    //   icon: "heroicons-outline:information-circle",
+    //   action: () => {
+    //     router.push("/faq");
+    //   },
+    // },
     {
       label: "Logout",
       icon: "heroicons-outline:login",

@@ -34,7 +34,7 @@ const LoginForm = () => {
     );
     console.log(user)
     if (user) {
-      // dispatch(handleLogin(true));
+      dispatch(handleLogin(true));
       setTimeout(() => {
         router.push("/analytics");
       }, 1500);
@@ -69,7 +69,7 @@ const LoginForm = () => {
         name="password"
         label="passwrod"
         type="password"
-        defaultValue="medicity"
+        defaultValue="medicity12?"
         icon={'eye'}
         placeholder="Enter Your password"
         
@@ -90,7 +90,7 @@ const LoginForm = () => {
         </Link>
       </div>
 
-      <button className="btn bg-[#0e124c] text-white block w-full text-center">Sign in</button>
+      <button className="btn bg-[#56ce84] text-white block w-full text-center">Sign in</button>
     </form>
   );
 };

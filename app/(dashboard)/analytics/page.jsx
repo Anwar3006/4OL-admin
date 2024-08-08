@@ -11,6 +11,7 @@ import CompanyTable from "@/components/partials/table/company-table";
 import RecentActivity from "@/components/partials/widget/recent-activity";
 import RadarChart from "@/components/partials/widget/chart/radar-chart";
 import HomeBredCurbs from "@/components/partials/HomeBredCurbs";
+import LineChart from "@/components/partials/chart/chartjs/LineChart";
 
 const MostSales = dynamic(
   () => import("@/components/partials/widget/most-sales"),
@@ -22,7 +23,7 @@ const Dashboard = () => {
   const [filterMap, setFilterMap] = useState("usa");
   return (
     <div>
-      <HomeBredCurbs title="Dashboard" />
+      <HomeBredCurbs title="Analytics & Monitoring" />
       <div className="grid grid-cols-12 gap-5 mb-5">
         <div className="2xl:col-span-3 lg:col-span-4 col-span-12">
           <ImageBlock1 />
@@ -44,20 +45,21 @@ const Dashboard = () => {
           </Card>
         </div>
         <div className="lg:col-span-4 col-span-12">
-          <Card title="Overview" headerslot={<SelectMonth />}>
+          <Card title="Healthcare Centers Overview" headerslot={<SelectMonth />}>
             <RadialsChart />
           </Card>
         </div>
-        <div className="lg:col-span-8 col-span-12">
-          <Card title="All Company" headerslot={<SelectMonth />} noborder>
-            <CompanyTable />
+        <div className=" col-span-12">
+          <Card title="App Performance" headerslot={<SelectMonth />} noborder>
+            {/* <CompanyTable /> */}
+            <LineChart />
           </Card>
         </div>
-        <div className="lg:col-span-4 col-span-12">
+        {/* <div className="lg:col-span-4 col-span-12">
           <Card title="Recent Activity" headerslot={<SelectMonth />}>
             <RecentActivity />
           </Card>
-        </div>
+        </div> */}
         <div className="lg:col-span-8 col-span-12">
           <Card
             title="Most Sales"
@@ -67,7 +69,7 @@ const Dashboard = () => {
                   className={` flex-1 text-sm font-normal px-3 py-1 transition-all duration-150 rounded cursor-pointer
                 ${
                   filterMap === "global"
-                    ? "bg-slate-900 text-white dark:bg-slate-700 dark:text-slate-300"
+                    ? "bg-[#56ce84] text-white dark:bg-slate-700 dark:text-slate-300"
                     : "dark:text-slate-300"
                 }  
                 `}
@@ -79,7 +81,7 @@ const Dashboard = () => {
                   className={` flex-1 text-sm font-normal px-3 py-1 rounded transition-all duration-150 cursor-pointer
                   ${
                     filterMap === "usa"
-                      ? "bg-slate-900 text-white dark:bg-slate-700 dark:text-slate-300"
+                      ? "bg-[#56ce84] text-white dark:bg-slate-700 dark:text-slate-300"
                       : "dark:text-slate-300"
                   }
               `}
