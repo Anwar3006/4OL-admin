@@ -27,9 +27,9 @@ const SidebarLogo = ({ menuHover }) => {
     >
       <Link href="/analytics">
         <div className="flex items-center space-x-4">
-          <div className="logo-icon">
+          <div className="logo-icon w-10">
             {!isDark && !isSemiDark ? (
-              <img src="/assets/images/logo/logo-c.svg" alt="" />
+              <img src="/assets/images/all-img/logo.png" alt="" className="w-10 ml-2"/>
             ) : (
               <img src="/assets/images/logo/logo-c-white.svg" alt="" />
             )}
@@ -37,7 +37,7 @@ const SidebarLogo = ({ menuHover }) => {
 
           {(!collapsed || menuHover) && (
             <div>
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl font-semibold text-[#56ce84] dark:text-slate-100">
                 4 Our Life
               </h1>
             </div>

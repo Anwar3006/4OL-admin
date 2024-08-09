@@ -59,7 +59,7 @@ const LoginForm = () => {
       <Textinput
         name="email"
         label="email"
-        defaultValue="medicity@gmail.com"
+        defaultValue="4OurLife@gmail.com"
         type="email"
         placeholder="Enter your email"
         register={register}
@@ -69,7 +69,7 @@ const LoginForm = () => {
         name="password"
         label="passwrod"
         type="password"
-        defaultValue="medicity12?"
+        defaultValue="4OurLife12?"
         icon={'eye'}
         placeholder="Enter Your password"
         

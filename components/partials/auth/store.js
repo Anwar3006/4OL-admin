@@ -10,18 +10,18 @@ const initialUsers = () => {
       : [
           {
             id: uuidv4(),
-            name: "medicity",
-            email: "medicity@gmail.com",
-            password: "medicity12?",
+            name: "4OurLife",
+            email: "4OurLife@gmail.com",
+            password: "4OurLife12?",
           },
         ];
   }
   return [
     {
       id: uuidv4(),
-      name: "medicity",
-      email: "medicity@gmail.com",
-      password: "medicity12?",
+      name: "4OurLife",
+      email: "4OurLife@gmail.com",
+      password: "4OurLife12?",
     },
   ];
 };

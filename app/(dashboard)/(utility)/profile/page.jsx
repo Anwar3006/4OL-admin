@@ -9,7 +9,7 @@ const profile = () => {
     <div>
       <div className="space-y-5 profile-page">
         <div className="profiel-wrap px-[35px] pb-10 md:pt-[84px] pt-10 rounded-lg bg-white dark:bg-slate-800 lg:flex lg:space-y-0 space-y-6 justify-between items-end relative z-[1]">
-          <div className="bg-slate-900 dark:bg-slate-700 absolute left-0 top-0 md:h-1/2 h-[150px] w-full z-[-1] rounded-t-lg"></div>
+          <div className="bg-[#56ce84] dark:bg-slate-700 absolute left-0 top-0 md:h-1/2 h-[150px] w-full z-[-1] rounded-t-lg"></div>
           <div className="profile-box flex-none md:text-start text-center">
             <div className="md:flex items-end md:space-x-6 rtl:space-x-reverse">
               <div className="flex-none">
@@ -38,7 +38,7 @@ const profile = () => {
             </div>
           </div>
 
-          <div className="profile-info-500 md:flex md:text-start text-center flex-1 max-w-[516px] md:space-y-0 space-y-4">
+          {/* <div className="profile-info-500 md:flex md:text-start text-center flex-1 max-w-[516px] md:space-y-0 space-y-4">
             <div className="flex-1">
               <div className="text-base text-slate-900 dark:text-slate-300 font-medium mb-1">
                 $32,400
@@ -65,7 +65,7 @@ const profile = () => {
                 Calender Events
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-4 col-span-12">

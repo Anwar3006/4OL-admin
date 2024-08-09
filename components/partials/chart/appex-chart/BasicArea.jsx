@@ -22,7 +22,7 @@ const BasicArea = ({ height = 350 }) => {
       curve: "smooth",
       width: 4,
     },
-    colors: ["#4669FA"],
+    colors: ["#56ce84"],
     tooltip: {
       theme: "dark",
     },
@@ -34,7 +34,7 @@ const BasicArea = ({ height = 350 }) => {
     },
     fill: {
       type: "gradient",
-      colors: "#4669FA",
+      colors: "#56ce84",
       gradient: {
         shadeIntensity: 1,
         opacityFrom: 0.4,
@@ -45,7 +45,7 @@ const BasicArea = ({ height = 350 }) => {
     yaxis: {
       labels: {
         style: {
-          colors: isDark ? "#CBD5E1" : "#475569",
+          colors: isDark ? "#CBD5E1" : "#56ce84",
           fontFamily: "Inter",
         },
       },
@@ -67,7 +67,7 @@ const BasicArea = ({ height = 350 }) => {
       ],
       labels: {
         style: {
-          colors: isDark ? "#CBD5E1" : "#475569",
+          colors: isDark ? "#CBD5E1" : "#56ce84",
           fontFamily: "Inter",
         },
       },

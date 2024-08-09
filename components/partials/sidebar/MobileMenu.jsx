@@ -36,9 +36,9 @@ const MobileMenu = ({ className = "custom-class" }) => {
       <div className="logo-segment flex justify-between items-center bg-white dark:bg-slate-800 z-[9] h-[85px]  px-4 ">
         <Link href="/">
           <div className="flex items-center space-x-4">
-            <div className="logo-icon">
+            <div className="logo-icon w-10">
               {!isDark && !isSemiDark ? (
-                <img src="/assets/images/logo/logo-c.svg" alt="" />
+                <img src="/assets/images/all-img/logo.png" alt="" className="w-10 ml-2"/>
               ) : (
                 <img src="/assets/images/logo/logo-c-white.svg" alt="" />
               )}

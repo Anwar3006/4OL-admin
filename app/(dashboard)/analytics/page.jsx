@@ -25,9 +25,9 @@ const Dashboard = () => {
     <div>
       <HomeBredCurbs title="Analytics & Monitoring" />
       <div className="grid grid-cols-12 gap-5 mb-5">
-        <div className="2xl:col-span-3 lg:col-span-4 col-span-12">
-          <ImageBlock1 />
-        </div>
+          <div className="2xl:col-span-3 lg:col-span-4 col-span-12">
+            <ImageBlock1 />
+          </div>
         <div className="2xl:col-span-9 lg:col-span-8 col-span-12">
           <Card bodyClass="p-4">
             <div className="grid md:grid-cols-3 col-span-1 gap-4">
