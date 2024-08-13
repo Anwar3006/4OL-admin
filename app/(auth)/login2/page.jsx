@@ -35,7 +35,7 @@ const Login2 = () => {
                   </div>
                 </div>
                 <LoginForm />
-                {/* <div className="md:max-w-[345px] mt-6 mx-auto font-normal text-slate-500 dark:text-slate-400mt-12 uppercase text-sm">
+                <div className="md:max-w-[345px] mt-6 mx-auto font-normal text-slate-500 dark:text-slate-400mt-12 uppercase text-sm">
                   Don’t have an account?{" "}
                   <Link
                     href="/register2"
@@ -43,7 +43,7 @@ const Login2 = () => {
                   >
                     Sign up
                   </Link>
-                </div> */}
+                </div>
               </div>
               <div className="auth-footer text-center">
                 Copyright 2024, 4-Our Life All Rights Reserved.

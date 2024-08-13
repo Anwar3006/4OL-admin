@@ -72,12 +72,12 @@ const RegForm = () => {
         register={register}
         error={errors.password}
       />
-      <Checkbox
+      {/* <Checkbox
         label="You accept our Terms and Conditions and Privacy Policy"
         value={checked}
         onChange={() => setChecked(!checked)}
-      />
-      <button className="btn btn-dark block w-full text-center">
+      /> */}
+      <button className="btn bg-[#56ce84] text-white block w-full text-center">
         Create an account
       </button>
     </form>
