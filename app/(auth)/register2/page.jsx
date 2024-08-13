@@ -41,7 +41,7 @@ const Register2 = () => {
                 <div className="max-w-[225px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-6 uppercase text-sm">
                   Already registered?
                   <Link
-                    href="/login"
+                    href="/login2"
                     className="text-slate-900 dark:text-white font-medium hover:underline"
                   >
                     Sign In
