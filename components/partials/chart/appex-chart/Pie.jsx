@@ -4,15 +4,38 @@ import useDarkMode from "@/hooks/useDarkMode";
 
 const Pie = () => {
   const [isDark] = useDarkMode();
-  const series = [44, 55, 13, 43, 22];
+  const series = [35, 65];
 
   const options = {
-    labels: ["Team A", "Team B", "Team C", "Team D", "Team E"],
+    labels: ["Males", "Females"],
     dataLabels: {
       enabled: true,
+      formatter: (val, opts) => {
+        const label = opts.w.config.labels[opts.seriesIndex];
+        const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+        const percentage = Math.round((val / total) * 100);  // Round to nearest integer
+        return `${label}: ${percentage}%`;
+      },
+      style: {
+        fontSize: '18px',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        colors: isDark ? ["#CBD5E1"] : ['#FFFFFF'],
+        // colors: ['#FFFFFF'],  
+        // padding: 12,
+      },
     },
-
-    colors: ["#4669FA", "#F1595C", "#50C793", "#0CE7FA", "#FA916B"],
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '65%',
+        },
+        dataLabels: {
+          offset: -40,  // Center the labels
+        },
+      },
+    },
+    colors: ["#3388ff", "#e95e8d", "#0CE7FA"],
     legend: {
       position: "bottom",
       fontSize: "16px",
@@ -33,7 +56,6 @@ const Pie = () => {
         vertical: 0,
       },
     },
-
     responsive: [
       {
         breakpoint: 480,
@@ -41,6 +63,11 @@ const Pie = () => {
           legend: {
             position: "bottom",
           },
+          dataLabels: {
+            style: {
+              fontSize: "12px",
+            },
+          }
         },
       },
     ],

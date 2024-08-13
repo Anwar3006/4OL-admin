@@ -35,30 +35,27 @@ const MenuItem = memo(({ item, i, activeSubmenu, locationName, toggleSubmenu }) 
     )}
     {/* Submenu parent */}
     {item.child && (
-      <div
-        className={`menu ${
-          activeSubmenu === i
-            ? "parent_active not-collapsed"
-            : "collapsed"
-        }`}
-        onClick={() => toggleSubmenu(i)}
-      >
-        <div className="flex-1 flex items-start">
-          <span className="menu-icon">
-            <Icon icon={item.icon} />
-          </span>
-          <div className="text-box">{item.title}</div>
-        </div>
-        <div className="flex-0">
-          <div
-            className={`menu-arrow transform transition-all duration-300 ${
-              activeSubmenu === i ? "rotate-90" : ""
-            }`}
-          >
-            <Icon icon="heroicons-outline:chevron-right" />
-          </div>
-        </div>
+    <div
+    className={`menu ${
+      activeSubmenu === i
+        ? "parent_active not-collapsed"
+        : "collapsed"
+    }`}
+    onClick={() => toggleSubmenu(i)}
+  >
+    <div className="flex items-center justify-between w-full py-2 cursor-pointer">
+      <div className="flex items-center">
+        <span className="menu-icon">
+          <Icon icon={item.icon} />
+        </span>
+        <div className="text-box">{item.title}</div>
       </div>
+      <div className="menu-arrow transform transition-all duration-300">
+        <Icon icon="heroicons-outline:chevron-right" />
+      </div>
+    </div>
+  </div>
+  
     )}
 
     <Submenu
@@ -79,7 +76,7 @@ const Navmenu = ({ menus }) => {
   };
 
   const location = usePathname();
-  const locationName = location.replace("/", "");
+  const locationName = location.replace("#", "");
 
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   const dispatch = useDispatch();

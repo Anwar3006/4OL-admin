@@ -57,9 +57,8 @@ const RevenueBarChart = ({ height = 400 }) => {
       },
     },
     title: {
-      text: "Report",
+      text: "Daily Revenue Report",
       align: "left",
-
       offsetX: isRtl ? "0%" : 0,
       offsetY: 13,
       floating: false,
@@ -112,7 +111,6 @@ const RevenueBarChart = ({ height = 400 }) => {
         show: false,
       },
     },
-
     fill: {
       opacity: 1,
     },
@@ -148,8 +146,9 @@ const RevenueBarChart = ({ height = 400 }) => {
       },
     ],
   };
+
   return (
-    <div>
+    <div style={{ height: `${height}px`, overflow: "hidden" }}>
       <Chart options={options} series={series} type="bar" height={height} />
     </div>
   );

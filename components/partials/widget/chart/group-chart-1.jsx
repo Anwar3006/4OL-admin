@@ -164,6 +164,73 @@ const shapeLine3 = {
       curve: "smooth",
       width: 2,
     },
+    colors: ["#56ce84"],
+    tooltip: {
+      theme: "light",
+    },
+    grid: {
+      show: false,
+      padding: {
+        left: 0,
+        right: 0,
+      },
+    },
+    yaxis: {
+      show: false,
+    },
+    fill: {
+      type: "solid",
+      opacity: [0.1],
+    },
+    legend: {
+      show: false,
+    },
+    xaxis: {
+      low: 0,
+      offsetX: 0,
+      offsetY: 0,
+      show: false,
+      labels: {
+        low: 0,
+        offsetX: 0,
+        show: false,
+      },
+      axisBorder: {
+        low: 0,
+        offsetX: 0,
+        show: false,
+      },
+    },
+  },
+};
+const shapeLine4 = {
+  series: [
+    {
+      data: [800, 600, 1000, 800, 600, 1000, 800, 900],
+    },
+  ],
+  options: {
+    chart: {
+      toolbar: {
+        autoSelected: "pan",
+        show: false,
+      },
+      offsetX: 0,
+      offsetY: 0,
+      zoom: {
+        enabled: false,
+      },
+      sparkline: {
+        enabled: true,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+    },
     colors: ["#5743BE"],
     tooltip: {
       theme: "light",
@@ -207,19 +274,25 @@ const shapeLine3 = {
 const statistics = [
   {
     name: shapeLine1,
-    title: "Totel Healthcare Centers",
+    title: "Totel Users",
     count: "3,564",
     bg: "bg-[#E5F9FF] dark:bg-slate-900	",
   },
   {
     name: shapeLine2,
-    title: "Users",
+    title: "Total Facilities",
     count: "564",
     bg: "bg-[#FFEDE5] dark:bg-slate-900	",
   },
   {
     name: shapeLine3,
-    title: "Growth",
+    title: "Total Specialists",
+    count: "+5.0%",
+    bg: "bg-[#c7f2d7] dark:bg-slate-900	",
+  },
+  {
+    name: shapeLine4,
+    title: "Total Facility Visits",
     count: "+5.0%",
     bg: "bg-[#EAE5FF] dark:bg-slate-900	",
   },

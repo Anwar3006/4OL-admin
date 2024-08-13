@@ -25,7 +25,7 @@ const MostSales = dynamic(
     ssr: false,
   }
 );
-const Dashboard = () => {
+const TotalsDashboard = () => {
   const [filterMap, setFilterMap] = useState("usa");
   return (
     <div>
@@ -192,4 +192,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default TotalsDashboard;

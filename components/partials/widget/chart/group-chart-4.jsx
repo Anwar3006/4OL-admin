@@ -3,37 +3,28 @@ import Icon from "@/components/ui/Icon";
 
 const statistics = [
   {
-    title: "Total Task",
+    title: "Total Online Users",
     count: "64",
     bg: "bg-info-500",
     text: "text-info-500",
     percent: "25.67% ",
-    icon: "heroicons-outline:menu-alt-1",
+    icon: "ri:empathize-line",
   },
   {
-    title: "Completed ",
+    title: "Meds Reminder Users ",
     count: "45",
-
     bg: "bg-warning-500",
     text: "text-warning-500",
     percent: "8.67%",
-    icon: "heroicons-outline:chart-pie",
+    icon: "hugeicons:reminder",
   },
   {
-    title: "Hours",
+    title: "Period Tracker Users",
     count: "190",
     bg: "bg-primary-500",
     text: "text-primary-500",
     percent: "1.67%  ",
-    icon: "heroicons-outline:clock",
-  },
-  {
-    title: "Spendings",
-    count: "$3,564",
-    bg: "bg-success-500",
-    text: "text-success-500",
-    percent: "11.67%  ",
-    icon: "heroicons-outline:calculator",
+    icon: "carbon:storm-tracker",
   },
 ];
 const GroupChart4 = () => {

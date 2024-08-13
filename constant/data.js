@@ -1,26 +1,176 @@
 export const menuItems = [
-  {
-    isHeadr: true,
-    title: "Dashboard",
-  },
+  // {
+  //   isHeadr: true,
+  //   title: "Dashboard",
+  // },
 
     {
-    title: "Analytics",
+    title: "Dashboard",
     isHide: true,
-    icon: "heroicons-outline:chart-pie",
-    link: "analytics",
+    icon: "mingcute:dashboard-line",
+    // link: "analytics",
+    child: [
+      {
+        childtitle: "Total Display",
+        childlink: "totals",
+      },
+      {
+        childtitle: "Display Analytics",
+        childlink: "analytics",
+      },
+    ]
   },
     {
-    title: "Support",
+    title: "Users (Patients)",
     isHide: true,
-    icon: "ri:customer-service-2-fill",
+    icon: "ri:empathize-line",
     link: "#",
   },
     {
-    title: "Profile Management",
+    title: "Facilities",
     isHide: true,
+    // isOpen: true,
     icon: "heroicons-outline:user",
-    link: "profile",
+    child: [
+      {
+        childtitle: "Hospitals/ Clinics",
+        childlink: "hospitals",
+      },
+      {
+        childtitle: "Herbal Hospitals",
+        childlink: "#",
+      },
+      {
+        childtitle: "Diagnostic Labs",
+        childlink: "#",
+      },
+      {
+        childtitle: "Pharmacies",
+        childlink: "#",
+      },
+      {
+        childtitle: "Wholeslaers",
+        childlink: "#",
+      },
+      {
+        childtitle: "Ambulance",
+        childlink: "#",
+      },
+      {
+        childtitle: "Homes",
+        childlink: "#",
+      },
+
+    ]
+  },
+  {
+    title: "Specialists",
+    isHide: true,
+    icon: "vaadin:specialist",
+    link: "specialists",
+  },
+  {
+    title: "Categories",
+    isHide: true,
+    // isOpen: true,
+    icon: "carbon:categories",
+    child: [
+      {
+        childtitle: "Conditions",
+        childlink: "#",
+      },
+      {
+        childtitle: "Pills Reminder",
+        childlink: "#",
+      },
+      {
+        childtitle: "Period Tracker",
+        childlink: "#",
+      },
+      {
+        childtitle: "Services",
+        childlink: "#",
+      },
+      {
+        childtitle: "Amenities",
+        childlink: "#",
+      },
+      {
+        childtitle: "Specialties",
+        childlink: "#",
+      },
+    ]
+  },
+  {
+    title: "Reviews/ Ratings",
+    isHide: true,
+    icon: "material-symbols:rate-review-outline",
+    link: "#",
+  },
+  // {
+  //   title: "Meds Reminder",
+  //   isHide: true,
+  //   icon: "hugeicons:reminder",
+  //   link: "#",
+  // },
+  // {
+  //   title: "Period Tracker",
+  //   isHide: true,
+  //   icon: "carbon:storm-tracker",
+  //   link: "#",
+  // },
+  {
+    title: "Map",
+    isHide: true,
+    icon: "uiw:map",
+    link: "#",
+  },
+  {
+    title: "Marketing",
+    isHide: true,
+    icon: "hugeicons:marketing",
+    child: [
+      {
+        childtitle: "Advertisement",
+        childlink: "#",
+      },
+      {
+        childtitle: "News",
+        childlink: "#",
+      },
+      {
+        childtitle: "Health Tips",
+        childlink: "#",
+      },
+      {
+        childtitle: "Events",
+        childlink: "#",
+      },
+    ],
+  },
+  {
+    title: "Authentication",
+    isHide: true,
+    icon: "heroicons-outline:lock-closed",
+    link: "#",
+  },
+  {
+    title: "Chats",
+    isHide: true,
+    icon: "lets-icons:chat",
+    link: "chat",
+  },
+  {
+    title: "FAQs",
+    isHide: true,
+    icon: "mdi:faq",
+    link: "faq",
+  },
+  {
+    title: "Logout",
+    isHide: true,
+    icon: "ant-design:logout-outlined",
+    link: "#",
   },
   // {
   //   title: "Dashboard",

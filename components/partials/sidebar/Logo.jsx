@@ -26,10 +26,10 @@ const SidebarLogo = ({ menuHover }) => {
       `}
     >
       <Link href="/analytics">
-        <div className="flex items-center space-x-4">
-          <div className="logo-icon w-10">
+        <div className="flex items-center space-x-2 w-full">
+          <div className="logo-icon w-14">
             {!isDark && !isSemiDark ? (
-              <img src="/assets/images/all-img/logo.png" alt="" className="w-10 ml-2"/>
+              <img src="/assets/images/all-img/logo.png" alt="" className="w-14 ml-2"/>
             ) : (
               <img src="/assets/images/logo/logo-c-white.svg" alt="" />
             )}

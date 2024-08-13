@@ -6,17 +6,17 @@ const ColumnChart = () => {
   const [isDark] = useDarkMode();
   const series = [
     {
-      name: "Net Profit",
+      name: "Males",
       data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
     },
     {
-      name: "Revenue",
+      name: "Females",
       data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
     },
-    {
-      name: "Free Cash Flow",
-      data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
-    },
+    // {
+    //   name: "Free Cash Flow",
+    //   data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+    // },
   ];
   const options = {
     chart: {
@@ -97,7 +97,8 @@ const ColumnChart = () => {
       borderColor: isDark ? "#334155" : "#e2e8f0",
       position: "back",
     },
-    colors: ["#4669FA", "#0CE7FA", "#FA916B"],
+    // colors: ["#609ed6", "#0CE7FA", "#c6505c"],
+    colors: ["#3388ff", "#e95e8d", "#0CE7FA"],
   };
   return (
     <div>
