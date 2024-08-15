@@ -33,12 +33,12 @@ const Register2 = () => {
                 </div>
                 <div className="text-center 2xl:mb-10 mb-5">
                   <h4 className="font-medium">Sign up</h4>
-                  <div className="text-slate-500 dark:text-slate-400 text-base">
+                  {/* <div className="text-slate-500 dark:text-slate-400 text-base">
                     Create an account
-                  </div>
+                  </div> */}
                 </div>
                 <RegForm />
-                <div className="max-w-[225px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-6 uppercase text-sm">
+                {/* <div className="max-w-[225px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-6 uppercase text-sm">
                   Already registered?
                   <Link
                     href="/login2"
@@ -46,11 +46,11 @@ const Register2 = () => {
                   >
                     Sign In
                   </Link>
-                </div>
+                </div> */}
               </div>
-              <div className="auth-footer text-center">
+              {/* <div className="auth-footer text-center">
                 Copyright 2021, Dashcode All Rights Reserved.
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -59,7 +59,7 @@ const Register2 = () => {
             className="left-column bg-cover bg-no-repeat bg-center"
             style={{
               backgroundImage: `url('/assets/images/all-img/4 Our Life.png')`,
-              height: "100vh", // Ensure it has a height
+              height: "120vh", // Ensure it has a height
             }}
           >
             <div className="flex flex-col h-full justify-center">

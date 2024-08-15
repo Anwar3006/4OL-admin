@@ -125,67 +125,82 @@ export const sendOtpToEmail = async (
     }
   };
   
-  export const verifyOtpSentToEmail = async (
-    email,
-    otp,
-    loadCallback,
-    successCallback,
-    errorCallback,
-  ) => {
-    loadCallback();
+  export const verifyOtpSentToEmail = async (email, otp) => {
     try {
-      const {data, error} = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email',
       });
       if (error) {
-        errorCallback(error);
+        console.error("OTP Verification Error:", error);
+        throw error; // or handle the error as needed
       } else {
-        successCallback(data);
+        console.log("OTP Verified Successfully:", data);
+        return data;
       }
     } catch (err) {
-      errorCallback(err);
+      console.error("Unexpected Error during OTP Verification:", err);
+      throw err; // or handle the error as needed
     }
   };
   
-  export const resetPassword = async (
-    newPassword,
-    otpToken,
-    loadCallback,
-    successCallback,
-    errorCallback
-  ) => {
-    loadCallback();
+  
+  
+  export const resetPassword = async (newPassword, otpToken, email, successCallback, errorCallback) => {
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        token: otpToken,
-        type: 'email',
-      });
-      if (error) {
-        errorCallback(error);
-        return;
-      }
-      
-      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-      if (updateError) {
-        errorCallback(updateError);
-        return;
-      }
-      
-      const { data: profileUpdateData, error: profileUpdateError } = await supabase
-        .from('user_profiles')
-        .update({ password: encryptPassword(newPassword) })
-        .eq('email', data.email);
-        
-      if (profileUpdateError) {
-        errorCallback(profileUpdateError);
-      } else {
-        successCallback(profileUpdateData);
-      }
+        // Verify OTP
+        const { data: verificationData, error: verifyError } = await supabase.auth.verifyOtp({
+            email,
+            token: otpToken,
+            type: 'email',
+        });
+
+        if (verifyError) {
+            if (typeof errorCallback === 'function') {
+                errorCallback(verifyError);
+            }
+            return;
+        }
+
+        // Update user password
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword,
+        });
+
+        if (updateError) {
+            if (typeof errorCallback === 'function') {
+                errorCallback(updateError);
+            }
+            return;
+        }
+
+        // Optionally update user profile in your custom table
+        const { error: profileUpdateError } = await supabase
+            .from('user_profiles')
+            .update({ password: encryptPassword(newPassword) })
+            .eq('email', email);
+
+        if (profileUpdateError) {
+            if (typeof errorCallback === 'function') {
+                errorCallback(profileUpdateError);
+            }
+        } else {
+            if (typeof successCallback === 'function') {
+                successCallback();
+            }
+        }
     } catch (err) {
-      errorCallback(err);
+        if (typeof errorCallback === 'function') {
+            errorCallback(err);
+        } else {
+            console.error('Error callback is not a function');
+        }
     }
-  };
+};
+
+  
+  
+  
+
+  
