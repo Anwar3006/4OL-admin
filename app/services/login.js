@@ -92,15 +92,15 @@ export const logout = async (
 
 
   
-  export const sendOtpToEmail = async (
+export const sendOtpToEmail = async (
     email,
     loadCallback,
     successCallback,
-    errorCallback,
+    errorCallback
   ) => {
     loadCallback();
     try {
-      const {data: userProfile, error: fetchError} = await supabase
+      const { data: userProfile, error: fetchError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('email', email)
@@ -108,10 +108,10 @@ export const logout = async (
       if (!userProfile) {
         return errorCallback(new Error('User not found'));
       }
-      const {data, error} = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          // set this to false if you do not want the user to be automatically signed up
+          // Set this to false if you do not want the user to be automatically signed up
           shouldCreateUser: false,
         },
       });
@@ -151,73 +151,41 @@ export const logout = async (
   
   export const resetPassword = async (
     newPassword,
-    phoneOrEmail,
+    otpToken,
     loadCallback,
     successCallback,
-    errorCallback,
-  )=> {
+    errorCallback
+  ) => {
     loadCallback();
     try {
-      let emailOrPhone = phoneOrEmail;
-      let decryptedPassword = '';
-      // Fetch user profile based on phone or email
-      if (!emailOrPhone.includes('@')) {
-        const {data: userProfileByPhone, error: phoneFetchError} = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('phone_number', `+${emailOrPhone}`)
-          .single();
-        if (!userProfileByPhone?.email) {
-          errorCallback(new Error('No user found with the given phone number.'));
-          return;
-        }
-        emailOrPhone = userProfileByPhone.email;
-        decryptedPassword = decryptedPassword(userProfileByPhone?.password);
-      }
-      if (emailOrPhone.includes('@')) {
-        const {data: userProfileByEmail, error: emailFetchError} = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('email', emailOrPhone)
-          .single();
-        if (!userProfileByEmail?.email) {
-          errorCallback(new Error('User not found'));
-          return;
-        }
-        emailOrPhone = userProfileByEmail.email;
-        decryptedPassword = decryptPassword(userProfileByEmail?.password);
-      }
-      // Sign in the user with the decrypted password
-      const {data: signinData, error: signinError} =
-        await supabase.auth.signInWithPassword({
-          email: emailOrPhone,
-          password: decryptedPassword,
-        });
-      if (signinError) {
-        errorCallback(signinError);
-        return;
-      }
-      // Update the password in the auth system
-      const {data, error} = await supabase.auth.updateUser({
-        email: emailOrPhone,
-        password: newPassword,
+      const { data, error } = await supabase.auth.verifyOtp({
+        token: otpToken,
+        type: 'email',
       });
       if (error) {
         errorCallback(error);
         return;
       }
-      // Update the password field in the user_profiles table
-      const {data: updateProfileData, error: updateProfileError} = await supabase
+      
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) {
+        errorCallback(updateError);
+        return;
+      }
+      
+      const { data: profileUpdateData, error: profileUpdateError } = await supabase
         .from('user_profiles')
-        .update({password: encryptPassword(newPassword)})
-        .eq('email', emailOrPhone);
-      if (updateProfileError) {
-        errorCallback(updateProfileError);
+        .update({ password: encryptPassword(newPassword) })
+        .eq('email', data.email);
+        
+      if (profileUpdateError) {
+        errorCallback(profileUpdateError);
       } else {
-        successCallback(data);
+        successCallback(profileUpdateData);
       }
     } catch (err) {
       errorCallback(err);
     }
   };
-  
