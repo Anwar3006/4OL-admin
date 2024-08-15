@@ -66,6 +66,7 @@ export const handleLogout = createAsyncThunk(
   }
 );
 
+
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -76,16 +77,16 @@ export const authSlice = createSlice({
     builder
       .addCase(handleLogin.fulfilled, (state, action) => {
         state.isAuth = action.payload.isAuth;
-        toast.success("User logged in successfully", {
-          position: "top-right",
-          autoClose: 1500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        // toast.success("User logged in successfully", {
+        //   position: "top-right",
+        //   autoClose: 1500,
+        //   hideProgressBar: false,
+        //   closeOnClick: true,
+        //   pauseOnHover: true,
+        //   draggable: true,
+        //   progress: undefined,
+        //   theme: "light",
+        // });
       })
       .addCase(handleLogout.fulfilled, (state, action) => {
         state.isAuth = action.payload.isAuth;

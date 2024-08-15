@@ -2875,9 +2875,9 @@ react-tailwindcss-datepicker@^1.5.1:
   integrity sha512-IbNw3Lu2dwkRYOlYr3ffOwEbLiVz+QufaYbwiy0ToeLmx7ZUt0CPh3HfwVQGNS1/o4D/+8Rl4WHNsLd+wVb5Mg==
 
 react-toastify@^9.1.1:
-  version "9.1.1"
-  resolved "https://registry.npmjs.org/react-toastify/-/react-toastify-9.1.1.tgz"
-  integrity sha512-pkFCla1z3ve045qvjEmn2xOJOy4ZciwRXm1oMPULVkELi5aJdHCN/FHnuqXq8IwGDLB7PPk2/J6uP9D8ejuiRw==
+  version "9.1.3"
+  resolved "https://registry.npmjs.org/react-toastify/-/react-toastify-9.1.3.tgz"
+  integrity sha512-fPfb8ghtn/XMxw3LkxQBk3IyagNpF/LIKjOBflbexr2AWxAH1MJgvnESwEwBn9liLFXgTKWgBSdZpw9m4OTHTg==
   dependencies:
     clsx "^1.1.1"
 

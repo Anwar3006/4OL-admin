@@ -33,7 +33,12 @@ export const login = async (user, loadCallback, successCallback, errorCallback) 
         }
 
         // Await the session to get the result
-        const { data: session } = await supabase.auth.getSession();
+        const { data: session, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            console.error('Error fetching session:', sessionError);
+            errorCallback(sessionError);
+            return;
+        }
         console.log('Session:', session);
 
         const userId = signinData.user?.id;
@@ -56,9 +61,14 @@ export const login = async (user, loadCallback, successCallback, errorCallback) 
         }
     } catch (err) {
         console.error('Unexpected error:', err);
-        errorCallback(err);
+        if (typeof errorCallback === 'function') {
+            errorCallback(err);
+        } else {
+            console.error('Error callback is not a function');
+        }
     }
 };
+
 
 
 export const logout = async (

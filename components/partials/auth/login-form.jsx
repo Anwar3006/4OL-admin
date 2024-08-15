@@ -6,10 +6,10 @@ import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import Checkbox from "@/components/ui/Checkbox";
 import Link from "next/link";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { handleLogin } from "./store";
 import { toast } from "react-toastify";
-import { login } from "@/app/services/login";
+
 const schema = yup
   .object({
     email: yup.string().email("Invalid email").required("Email is Required"),
@@ -19,51 +19,37 @@ const schema = yup
 
 const LoginForm = () => {
   const dispatch = useDispatch();
-  const { users } = useSelector((state) => state.auth);
+  const router = useRouter();
+  
   const {
     register,
     formState: { errors },
     handleSubmit,
   } = useForm({
     resolver: yupResolver(schema),
-    //
     mode: "all",
   });
-  const router = useRouter();
+
+  const [checked, setChecked] = useState(false);
 
   // on submit function
   const onSubmit = async (data) => {
-    console.log("Submitting...");
     try {
-      await login(
-        { emailOrPhone: data.email, passcode: data.password },
-        (userProfile) => {
-          // dispatch(handleLogin(true)); // Dispatch action to update state
-          toast.success("Login successful", {
-            position: "top-right",
-            autoClose: 1500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "light",
-          });
-          router.push("/analytics"); // Redirect to analytics page
-        },
-        (error) => {
-          toast.error(error.message || "Login failed", {
-            position: "top-right",
-            autoClose: 1500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "light",
-          });
-        }
-      );
+      const resultAction = await dispatch(handleLogin(data)).unwrap();
+      if (resultAction.isAuth) {
+        toast.success("Login successful", {
+          position: "top-right",
+          autoClose: 1500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        });
+        router.push("/analytics"); // Redirect to analytics page
+      }
     } catch (error) {
-      toast.error(error.message || "Unexpected error", {
+      toast.error(error || "Unexpected error", {
         position: "top-right",
         autoClose: 1500,
         hideProgressBar: false,
@@ -75,10 +61,8 @@ const LoginForm = () => {
     }
   };
 
-  const [checked, setChecked] = useState(false);
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Textinput
         name="email"
         label="Email"
@@ -92,7 +76,7 @@ const LoginForm = () => {
         label="Password"
         type="password"
         icon={"eye"}
-        placeholder="Enter Your password"
+        placeholder="Enter your password"
         register={register}
         error={errors.password}
       />
