@@ -9,12 +9,14 @@ import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { handleLogin } from "./store";
 import { toast } from "react-toastify";
+import { login } from "@/app/services/login";
 const schema = yup
   .object({
     email: yup.string().email("Invalid email").required("Email is Required"),
     password: yup.string().required("Password is Required"),
   })
   .required();
+
 const LoginForm = () => {
   const dispatch = useDispatch();
   const { users } = useSelector((state) => state.auth);
@@ -28,25 +30,46 @@ const LoginForm = () => {
     mode: "all",
   });
   const router = useRouter();
-  const onSubmit = (data) => {
-    const user = users.find(
-      (user) => user.email === data.email && user.password === data.password
-    );
-    console.log(user)
-    if (user) {
-      dispatch(handleLogin(true));
-      setTimeout(() => {
-        router.push("/analytics");
-      }, 1500);
-    } else {
-      toast.error("Invalid credentials", {
+
+  // on submit function
+  const onSubmit = async (data) => {
+    console.log("Submitting...");
+    try {
+      await login(
+        { emailOrPhone: data.email, passcode: data.password },
+        (userProfile) => {
+          // dispatch(handleLogin(true)); // Dispatch action to update state
+          toast.success("Login successful", {
+            position: "top-right",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          });
+          router.push("/analytics"); // Redirect to analytics page
+        },
+        (error) => {
+          toast.error(error.message || "Login failed", {
+            position: "top-right",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          });
+        }
+      );
+    } catch (error) {
+      toast.error(error.message || "Unexpected error", {
         position: "top-right",
         autoClose: 1500,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        progress: undefined,
         theme: "light",
       });
     }
@@ -58,8 +81,7 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
       <Textinput
         name="email"
-        label="email"
-        defaultValue="4OurLife@gmail.com"
+        label="Email"
         type="email"
         placeholder="Enter your email"
         register={register}
@@ -67,12 +89,10 @@ const LoginForm = () => {
       />
       <Textinput
         name="password"
-        label="passwrod"
+        label="Password"
         type="password"
-        defaultValue="4OurLife12?"
-        icon={'eye'}
+        icon={"eye"}
         placeholder="Enter Your password"
-        
         register={register}
         error={errors.password}
       />
@@ -90,7 +110,9 @@ const LoginForm = () => {
         </Link>
       </div>
 
-      <button className="btn bg-[#56ce84] text-white block w-full text-center">Sign in</button>
+      <button className="btn bg-[#56ce84] text-white block w-full text-center">
+        Sign in
+      </button>
     </form>
   );
 };

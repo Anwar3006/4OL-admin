@@ -1,84 +1,151 @@
-import React, { useState } from "react";
-import { toast } from "react-toastify";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { signup } from '@/app/services/signup';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 import Textinput from "@/components/ui/Textinput";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { useRouter } from "next/navigation";
-import Checkbox from "@/components/ui/Checkbox";
-import { useDispatch, useSelector } from "react-redux";
-import { handleRegister } from "./store";
+import SplitDropdown2 from '@/components/ui/Split-Dropdown2';
 
-const schema = yup
-  .object({
-    name: yup.string().required("Name is Required"),
-    email: yup.string().email("Invalid email").required("Email is Required"),
-    password: yup
-      .string()
-      .min(6, "Password must be at least 8 characters")
-      .max(20, "Password shouldn't be more than 20 characters")
-      .required("Please enter password"),
-    // confirm password
-    confirmpassword: yup
-      .string()
-      .oneOf([yup.ref("password"), null], "Passwords must match"),
-  })
-  .required();
+// Define the schema using yup
+const schema = yup.object().shape({
+  first_name: yup.string().required('First Name is required'),
+  last_name: yup.string().required('Last Name is required'),
+  sex: yup.string().oneOf(['Male', 'Female'], 'Sex is required').required('Sex is required'),
+  dob: yup.date().required('Date of Birth is required'),
+  email: yup.string().email('Email is invalid').required('Email is required'),
+  phone_number: yup.string().required('Phone Number is required'),
+  password: yup.string().min(8, 'Password must be at least 8 characters long').required('Password is required'),
+  confirm_password: yup
+    .string()
+    .oneOf([yup.ref('password'), null], 'Passwords do not match')
+    .required('Confirm Password is required'),
+});
 
 const RegForm = () => {
-  const dispatch = useDispatch();
-
-  const [checked, setChecked] = useState(false);
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm({
-    resolver: yupResolver(schema),
-    mode: "all",
-  });
-
+  const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
-  const onSubmit = (data) => {
-    dispatch(handleRegister(data));
-    setTimeout(() => {
-      router.push("/");
-    }, 1500);
+  // useForm hook with yupResolver
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch // To watch form values
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const selectedSex = watch('sex'); // Watch the value of 'sex'
+
+  const onSubmit = (user) => {
+    setLoading(true);
+
+    const updatedUser = {
+      ...user,
+      email: user.email.trim().toLowerCase(),
+      role: 'user',
+      phone_number: user.phone_number || 'default_value'
+    };
+
+    signup(
+      updatedUser,
+      () => setLoading(true),
+      (successData) => {
+        setLoading(false);
+        toast.success('User registered successfully');
+        router.replace('/login2'); // Redirect to login page or another page
+      },
+      (error) => {
+        setLoading(false);
+        toast.error(error.message);
+      }
+    );
   };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 ">
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Textinput
-        name="name"
-        label="name"
+        name="first_name"
+        label="First Name"
         type="text"
-        placeholder=" Enter your name"
+        placeholder="First Name"
         register={register}
-        error={errors.name}
-      />{" "}
+        error={errors.first_name?.message}
+        className='mb-2'
+      />
+
+      <Textinput
+        name="last_name"
+        label="Last Name"
+        type="text"
+        placeholder="Last Name"
+        register={register}
+        error={errors.last_name?.message}
+        className='mb-2'
+      />
+
+      <SplitDropdown2
+        label="Sex"
+        value={selectedSex}
+        onChange={(value) => setValue('sex', value)}
+        className="mb-4"
+      />
+
+      <Textinput
+        name="dob"
+        label="Date of Birth"
+        type="date"
+        placeholder="Date of Birth"
+        register={register}
+        error={errors.dob?.message}
+        className='mb-2'
+      />
+
       <Textinput
         name="email"
-        label="email"
+        label="Email"
         type="email"
-        placeholder=" Enter your email"
+        placeholder="Enter your email"
         register={register}
-        error={errors.email}
+        error={errors.email?.message}
+        className='mb-2'
       />
+
+      <Textinput
+        name="phone_number"
+        label="Phone Number"
+        type="tel"
+        placeholder="Enter your phone number"
+        register={register}
+        error={errors.phone_number?.message}
+        className='mb-2'
+      />
+
       <Textinput
         name="password"
-        label="passwrod"
+        label="Password"
         type="password"
-        placeholder=" Enter your password"
+        placeholder="Password"
         register={register}
-        error={errors.password}
+        error={errors.password?.message}
+        className='mb-2'
       />
-      {/* <Checkbox
-        label="You accept our Terms and Conditions and Privacy Policy"
-        value={checked}
-        onChange={() => setChecked(!checked)}
-      /> */}
-      <button className="btn bg-[#56ce84] text-white block w-full text-center">
-        Create an account
+
+      <Textinput
+        name="confirm_password"
+        label="Confirm Password"
+        type="password"
+        placeholder="Confirm Password"
+        register={register}
+        error={errors.confirm_password?.message}
+        className='mb-5'
+      />
+
+      <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block w-full text-center">
+        {loading ? 'Signing Up...' : 'Sign Up'}
       </button>
     </form>
   );
