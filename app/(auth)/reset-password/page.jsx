@@ -35,7 +35,7 @@ const ResetPassword = () => {
         newPassword,
         () => {
           console.log("Password reset successful");
-          router.push("/login2");
+          router.push("/");
         },
         (error) => {
           console.error("Error:", error.message || "Password reset failed.");
