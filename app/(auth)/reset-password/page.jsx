@@ -9,64 +9,44 @@ import Link from "next/link";
 import Textinput from "@/components/ui/Textinput";
 import useDarkmode from "@/hooks/useDarkMode";
 
-const schema = yup
-  .object({
-    newPassword: yup.string().required("New password is required"),
-    confirmPassword: yup.string().oneOf([yup.ref('newPassword')], 'Passwords must match').required('Confirm password is required'),
-  })
-  .required();
+// Validation schema
+const schema = yup.object({
+  newPassword: yup.string().required("New password is required"),
+  confirmPassword: yup.string()
+    .oneOf([yup.ref('newPassword')], 'Passwords must match')
+    .required('Confirm password is required'),
+}).required();
 
 const ResetPassword = () => {
   const [isDark] = useDarkmode();
   const router = useRouter();
-  const [token, setToken] = useState(null);
-  const [email, setEmail] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
   });
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedEmail = localStorage.getItem('email');
-    if (savedToken && savedEmail) {
-      setToken(savedToken);
-      setEmail(savedEmail);
-    } else {
-      console.error("Token or Email not found in local storage");
-    }
-  }, []);
-
   const onSubmit = async (data) => {
-    if (!email || !token) {
-      console.error("Email or Token is not available");
-      return;
-    }
-  
     const { newPassword } = data;
     setLoading(true);
-  
+
     try {
-      const response = await resetPassword(newPassword, token, email);
-      if (response.error) {
-        console.error("Error:", response.error.message || "Password reset failed.");
-      } else {
-        console.log("Password reset successful");
-        router.push("/login2");
-      }
+      await resetPassword(
+        newPassword,
+        () => {
+          console.log("Password reset successful");
+          router.push("/login2");
+        },
+        (error) => {
+          console.error("Error:", error.message || "Password reset failed.");
+        }
+      );
     } catch (err) {
       console.error("Unexpected error:", err);
     } finally {
       setLoading(false);
     }
   };
-  
-  
-
-  if (!token) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <div className="loginwrapper">
@@ -82,7 +62,7 @@ const ResetPassword = () => {
                         ? "/assets/images/logo/logo-white.svg"
                         : "/assets/images/logo/logo.svg"
                     }
-                    alt=""
+                    alt="Logo"
                     className="mx-auto"
                   />
                 </Link>
@@ -100,7 +80,7 @@ const ResetPassword = () => {
                   register={register}
                   error={errors.newPassword}
                 />
-                {errors.newPassword && <p>{errors.newPassword.message}</p>}
+                {errors.newPassword && <p className="text-red-500">{errors.newPassword.message}</p>}
                 
                 <Textinput
                   name='confirmPassword'
@@ -110,7 +90,7 @@ const ResetPassword = () => {
                   register={register}
                   error={errors.confirmPassword}
                 />
-                {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword.message}</p>}
                 
                 <button
                   type="submit"

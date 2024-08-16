@@ -92,29 +92,16 @@ export const logout = async (
 
 
   
-export const sendOtpToEmail = async (
-    email,
-    loadCallback,
-    successCallback,
-    errorCallback
-  ) => {
+export const sendOtpToEmail = async (email, loadCallback, successCallback, errorCallback) => {
     loadCallback();
     try {
-      const { data: userProfile, error: fetchError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
-      if (!userProfile) {
-        return errorCallback(new Error('User not found'));
-      }
       const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          // Set this to false if you do not want the user to be automatically signed up
           shouldCreateUser: false,
         },
       });
+  
       if (error) {
         errorCallback(error);
       } else {
@@ -125,6 +112,7 @@ export const sendOtpToEmail = async (
     }
   };
   
+  
   export const verifyOtpSentToEmail = async (email, otp) => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
@@ -133,72 +121,47 @@ export const sendOtpToEmail = async (
         type: 'email',
       });
       if (error) {
-        console.error("OTP Verification Error:", error);
-        throw error; // or handle the error as needed
-      } else {
-        console.log("OTP Verified Successfully:", data);
-        return data;
+        throw error;
       }
+      
+      // Save token and email in localStorage
+      localStorage.setItem('token', otp);
+      localStorage.setItem('email', email);
+  
+      return data;
     } catch (err) {
-      console.error("Unexpected Error during OTP Verification:", err);
-      throw err; // or handle the error as needed
+      console.error("OTP Verification Error:", err);
+      throw err;
     }
   };
   
   
   
-  export const resetPassword = async (newPassword, otpToken, email, successCallback, errorCallback) => {
+  
+  
+  export const resetPassword = async (newPassword, successCallback, errorCallback) => {
     try {
-        // Verify OTP
-        const { data: verificationData, error: verifyError } = await supabase.auth.verifyOtp({
-            email,
-            token: otpToken,
-            type: 'email',
-        });
-
-        if (verifyError) {
-            if (typeof errorCallback === 'function') {
-                errorCallback(verifyError);
-            }
-            return;
-        }
-
-        // Update user password
-        const { error: updateError } = await supabase.auth.updateUser({
+        // Directly update the password
+        const { data, error } = await supabase.auth.updateUser({
             password: newPassword,
         });
 
-        if (updateError) {
-            if (typeof errorCallback === 'function') {
-                errorCallback(updateError);
-            }
+        if (error) {
+            console.error("Password Update Failed:", error);
+            errorCallback(error);
             return;
         }
 
-        // Optionally update user profile in your custom table
-        const { error: profileUpdateError } = await supabase
-            .from('user_profiles')
-            .update({ password: encryptPassword(newPassword) })
-            .eq('email', email);
-
-        if (profileUpdateError) {
-            if (typeof errorCallback === 'function') {
-                errorCallback(profileUpdateError);
-            }
-        } else {
-            if (typeof successCallback === 'function') {
-                successCallback();
-            }
-        }
+        console.log("Password Update Successful:", data);
+        successCallback();
     } catch (err) {
-        if (typeof errorCallback === 'function') {
-            errorCallback(err);
-        } else {
-            console.error('Error callback is not a function');
-        }
+        console.error("Unexpected Error During Password Reset:", err);
+        errorCallback(err);
     }
 };
 
+
+  
   
   
   

@@ -37,23 +37,23 @@ const VerifyOtp = () => {
       const email = localStorage.getItem("email");
       if (!email) {
         setErrorMessage("Email not found in local storage.");
+        setLoading(false);
         return;
       }
   
       const response = await verifyOtpSentToEmail(email, otp);
-      if (response.error) {
-        setErrorMessage(response.error.message || "Verification failed.");
-      } else {
-        localStorage.setItem("token", response.token); // Store the token in local storage
+      console.log(response)
+      if(response) {
         router.push("/reset-password");
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      setErrorMessage("Something went wrong. Please try again.");
+      setErrorMessage(err.message || "Verification failed.");
     } finally {
       setLoading(false);
     }
   };
+  
   
   
 

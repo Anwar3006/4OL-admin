@@ -15,10 +15,10 @@ const Register2 = () => {
     <>
       <div className="loginwrapper">
         <div className="lg-inner-column">
-          <div className="right-column relative">
-            <div className="inner-content h-full flex flex-col bg-white dark:bg-slate-800">
-              <div className="auth-box h-full flex flex-col justify-center">
-                <div className="mobile-logo text-center mb-6 lg:hidden block">
+          <div className="right-column relative w-full">
+            <div className="inner-content h-full w-full flex flex-col bg-white dark:bg-slate-800">
+              <div className=" h-full lg:w-[80%] w-[90%] flex flex-col justify-center p-5">
+                {/* <div className="mobile-logo text-center mb-6 lg:hidden block">
                   <Link href="/">
                     <img
                       src={
@@ -30,9 +30,9 @@ const Register2 = () => {
                       className="mx-auto"
                     />
                   </Link>
-                </div>
+                </div> */}
                 <div className="text-center 2xl:mb-10 mb-5">
-                  <h4 className="font-medium">Sign up</h4>
+                  <h4 className="font-medium">Register Account</h4>
                   {/* <div className="text-slate-500 dark:text-slate-400 text-base">
                     Create an account
                   </div> */}
@@ -55,7 +55,7 @@ const Register2 = () => {
           </div>
 
           {/* right column */}
-          <div
+          {/* <div
             className="left-column bg-cover bg-no-repeat bg-center"
             style={{
               backgroundImage: `url('/assets/images/all-img/4 Our Life.png')`,
@@ -65,18 +65,18 @@ const Register2 = () => {
             <div className="flex flex-col h-full justify-center">
               <div className="flex-1 flex flex-col justify-center items-center">
                 <Link href="/">
-                  {/* <h3 className="text-white font-bold">4 Our Life</h3> */}
-                  {/* <img
+                  <h3 className="text-white font-bold">4 Our Life</h3>
+                  <img
           src="assets/images/logo/logo-white.svg"
           alt=""
           className="mb-10"
-        /> */}
+        />
                 </Link>
               </div>
               <div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

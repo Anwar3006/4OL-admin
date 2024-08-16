@@ -152,7 +152,7 @@ export const menuItems = [
     title: "Authentication",
     isHide: true,
     icon: "heroicons-outline:lock-closed",
-    link: "register2",
+    link: "register-account",
   },
   {
     title: "Chats",

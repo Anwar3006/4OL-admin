@@ -66,7 +66,7 @@ const RegForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form className="w-full grid grid-cols-1 lg:grid-cols-2 sm:gap-4" onSubmit={handleSubmit(onSubmit)}>
       <Textinput
         name="first_name"
         label="First Name"
@@ -91,7 +91,7 @@ const RegForm = () => {
         label="Sex"
         value={selectedSex}
         onChange={(value) => setValue('sex', value)}
-        className="mb-4"
+        className="mb-4 w-full"
       />
 
       <Textinput
@@ -144,7 +144,7 @@ const RegForm = () => {
         className='mb-5'
       />
 
-      <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block w-full text-center">
+      <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block lg:w-[50%] mx-auto w-full text-center col-span-full">
         {loading ? 'Signing Up...' : 'Sign Up'}
       </button>
     </form>
