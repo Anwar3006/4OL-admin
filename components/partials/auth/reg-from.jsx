@@ -58,7 +58,7 @@ const RegForm = () => {
       (successData) => {
         setLoading(false);
         toast.success('User registered successfully');
-        router.replace('/login2'); // Redirect to login page or another page
+        // router.replace('/login2'); // Redirect to login page or another page
       },
       (error) => {
         setLoading(false);
