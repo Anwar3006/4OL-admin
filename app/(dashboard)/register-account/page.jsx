@@ -14,7 +14,10 @@ const Register2 = () => {
       <div className="loginwrapper">
         <div className="lg-inner-column">
           <div className="right-column relative w-full">
-            <Card title={'Register User Account'} className="inner-content w-full flex flex-col bg-white dark:bg-slate-800">
+            <Card
+              title={"Register User Account"}
+              className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
+            >
               <div className=" lg:w-[80%] w-[90%] flex flex-col justify-center p-5">
                 <RegForm />
               </div>
