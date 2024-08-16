@@ -40,39 +40,43 @@ const Profile = () => {
     setLoading(true);
     const file = event.target.files[0];
     const userId = localStorage.getItem("user_id");
-
+  
     if (!file) {
       console.error("No file selected");
       setLoading(false);
       return;
     }
-
+  
     console.log("File selected:", file);
     console.log("User ID:", userId);
-
+  
     try {
+      // Upload the image to Supabase Storage
       const { data, error } = await supabase.storage
-        .from("avatars")
-        .upload(`public/${userId}/${file.name}`, file);
-
+        .from("avatar")
+        .upload(`${file.name}`, file);
+  
       if (error) {
         console.error("Error uploading image:", error);
+        return;
+      }
+      console.log("Image uploaded successfully:", data);
+  
+      // Manually construct the public URL
+      const avatar_url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatar/${file.name}`;
+      console.log("Generated avatar URL:", avatar_url);
+  
+      // Update the profile with the new avatar URL
+      const { error: updateError } = await supabase
+        .from("user_profiles")
+        .update({ avatar_url })
+        .eq("id", userId);
+  
+      if (updateError) {
+        console.error("Error updating profile image:", updateError);
       } else {
-        console.log("Image uploaded successfully:", data);
-        const avatar_url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${userId}/${file.name}`;
-        console.log("Generated avatar URL:", avatar_url);
-
-        const { error: updateError } = await supabase
-          .from("user_profiles")
-          .update({ avatar_url })
-          .eq("id", userId);
-
-        if (updateError) {
-          console.error("Error updating profile image:", updateError);
-        } else {
-          console.log("Profile image updated successfully");
-          setProfileData((prev) => ({ ...prev, avatar_url }));
-        }
+        console.log("Profile image updated successfully");
+        setProfileData((prev) => ({ ...prev, avatar_url }));
       }
     } catch (error) {
       console.error("Unexpected error during upload:", error);
@@ -80,6 +84,9 @@ const Profile = () => {
       setLoading(false);
     }
   };
+  
+  
+  
 
   if (!profileData) {
     return (
