@@ -83,9 +83,9 @@ const VerifyOtp = () => {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <Textinput
                   name="otp"
-                  label="OTP"
+                  label="OTP Send to Email"
                   type="text"
-                  placeholder="Enter your OTP"
+                  placeholder="Enter Your OTP"
                   register={register}
                   error={errors.otp}
                 />
