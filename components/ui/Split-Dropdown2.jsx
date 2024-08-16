@@ -43,7 +43,7 @@ const SplitDropdown2 = ({
           leaveTo="transform opacity-0 scale-95"
         >
           <Menu.Items
-            className={`absolute ltr:left-0 rtl:left-0 origin-top-right border border-slate-100
+            className={`absolute ltr:left-0 rtl:left-0 origin-top-right border border-slate-100 cursor-pointer
             rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
             ${classMenuItems}`}
           >

@@ -69,8 +69,6 @@ export const login = async (user, loadCallback, successCallback, errorCallback) 
     }
 };
 
-
-
 export const logout = async (
     loadCallback,
     successCallback,
@@ -90,8 +88,6 @@ export const logout = async (
     }
 };
 
-
-  
 export const sendOtpToEmail = async (email, loadCallback, successCallback, errorCallback) => {
     loadCallback();
     try {
@@ -111,7 +107,6 @@ export const sendOtpToEmail = async (email, loadCallback, successCallback, error
       errorCallback(err);
     }
   };
-  
   
   export const verifyOtpSentToEmail = async (email, otp) => {
     try {
@@ -135,11 +130,7 @@ export const sendOtpToEmail = async (email, loadCallback, successCallback, error
     }
   };
   
-  
-  
-  
-  
-  export const resetPassword = async (newPassword, successCallback, errorCallback) => {
+export const resetPassword = async (newPassword, successCallback, errorCallback) => {
     try {
         // Directly update the password
         const { data, error } = await supabase.auth.updateUser({

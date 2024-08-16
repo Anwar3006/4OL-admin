@@ -16,6 +16,7 @@ const schema = yup.object().shape({
   dob: yup.date().required('Date of Birth is required'),
   email: yup.string().email('Email is invalid').required('Email is required'),
   phone_number: yup.string().required('Phone Number is required'),
+  role: yup.string().oneOf([ 'User'], 'Role is required').required('Role is required'),
   password: yup.string().min(8, 'Password must be at least 8 characters long').required('Password is required'),
   confirm_password: yup
     .string()
@@ -39,6 +40,7 @@ const RegForm = () => {
   });
 
   const selectedSex = watch('sex'); // Watch the value of 'sex'
+  const selectedRole = watch('role'); // Watch the value of 'sex'
 
   const onSubmit = (user) => {
     setLoading(true);
@@ -46,7 +48,7 @@ const RegForm = () => {
     const updatedUser = {
       ...user,
       email: user.email.trim().toLowerCase(),
-      role: 'user',
+      role: user.role || 'user',
       phone_number: user.phone_number || 'default_value'
     };
 
@@ -124,6 +126,14 @@ const RegForm = () => {
         className='mb-2'
       />
 
+      <SplitDropdown2
+        label="Role"
+        value={selectedRole}
+        items={[{label: 'User'}]}
+        onChange={(value) => setValue('role', value)}
+        className="mb-4 w-full"
+      />
+
       <Textinput
         name="password"
         label="Password"
@@ -144,7 +154,7 @@ const RegForm = () => {
         className='mb-5'
       />
 
-      <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block lg:w-[50%] mx-auto w-full text-center col-span-full">
+      <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full">
         {loading ? 'Signing Up...' : 'Sign Up'}
       </button>
     </form>

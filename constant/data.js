@@ -1,3 +1,5 @@
+import { handleLogout } from "@/components/partials/auth/store";
+
 export const menuItems = [
   // {
   //   isHeadr: true,
@@ -171,6 +173,9 @@ export const menuItems = [
     isHide: true,
     icon: "ant-design:logout-outlined",
     link: "#",
+    // action: () => {
+    //   dispatch(handleLogout(false));
+    // },
   },
   // {
   //   title: "Dashboard",

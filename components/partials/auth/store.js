@@ -19,10 +19,13 @@ export const handleLogin = createAsyncThunk(
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
+      const userId = data?.user?.id;
+
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
+        window.localStorage.setItem("user_id", userId);
       }
-      return { isAuth: true };
+      return { isAuth: true, userId };
     } catch (error) {
       console.error('Login error:', error);
       toast.error("Login failed: " + (error.message || "Unknown error"), {
@@ -48,6 +51,7 @@ export const handleLogout = createAsyncThunk(
       await supabase.auth.signOut();
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("isAuth");
+        window.localStorage.removeItem("user_id");
       }
       return { isAuth: false };
     } catch (error) {

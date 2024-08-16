@@ -1,10 +1,94 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
-import BasicArea from "@/components/partials/chart/appex-chart/BasicArea";
+import { supabase } from "@/app/utils/supabaseClient";
+import Loading from "@/components/Loading";
+import moment from "moment";
 
-const profile = () => {
+const Profile = () => {
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userId = localStorage.getItem("user_id");
+        const { data, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user profile:", error);
+        } else {
+          setProfileData(data);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleImageUpload = async (event) => {
+    console.log("File input change detected");
+    setLoading(true);
+    const file = event.target.files[0];
+    const userId = localStorage.getItem("user_id");
+
+    if (!file) {
+      console.error("No file selected");
+      setLoading(false);
+      return;
+    }
+
+    console.log("File selected:", file);
+    console.log("User ID:", userId);
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(`public/${userId}/${file.name}`, file);
+
+      if (error) {
+        console.error("Error uploading image:", error);
+      } else {
+        console.log("Image uploaded successfully:", data);
+        const avatar_url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${userId}/${file.name}`;
+        console.log("Generated avatar URL:", avatar_url);
+
+        const { error: updateError } = await supabase
+          .from("user_profiles")
+          .update({ avatar_url })
+          .eq("id", userId);
+
+        if (updateError) {
+          console.error("Error updating profile image:", updateError);
+        } else {
+          console.log("Profile image updated successfully");
+          setProfileData((prev) => ({ ...prev, avatar_url }));
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error during upload:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!profileData) {
+    return (
+      <div>
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="space-y-5 profile-page">
@@ -15,60 +99,42 @@ const profile = () => {
               <div className="flex-none">
                 <div className="md:h-[186px] md:w-[186px] h-[140px] w-[140px] md:ml-0 md:mr-0 ml-auto mr-auto md:mb-0 mb-4 rounded-full ring-4 ring-slate-100 relative">
                   <img
-                    src="/assets/images/users/user-1.jpg"
-                    alt=""
+                    src={
+                      profileData.avatar_url ||
+                      "/assets/images/all-img/user.webp"
+                    }
+                    alt="User Avatar"
                     className="w-full h-full object-cover rounded-full"
                   />
-                  <Link
-                    href="#"
-                    className="absolute right-2 h-8 w-8 bg-slate-50 text-slate-600 rounded-full shadow-sm flex flex-col items-center justify-center md:top-[140px] top-[100px]"
+                  <label
+                    htmlFor="avatarUpload"
+                    className="absolute right-2 h-8 w-8 bg-slate-50 text-slate-600 rounded-full shadow-sm flex flex-col items-center justify-center md:top-[140px] top-[100px] cursor-pointer"
                   >
                     <Icon icon="heroicons:pencil-square" />
-                  </Link>
+                  </label>
+                  <input
+                    type="file"
+                    id="avatarUpload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={loading}
+                  />
                 </div>
               </div>
               <div className="flex-1">
                 <div className="text-2xl font-medium text-slate-900 dark:text-slate-200 mb-[3px]">
-                  Albert Flores
+                  {profileData.first_name || "N/A"} {profileData.last_name}
                 </div>
-                <div className="text-sm font-light text-slate-600 dark:text-slate-400">
-                  Front End Developer
+                <div className="text-sm font-light text-slate-600 dark:text-slate-400 capitalize">
+                  {profileData.role || "User Role"}
                 </div>
               </div>
             </div>
           </div>
-
-          {/* <div className="profile-info-500 md:flex md:text-start text-center flex-1 max-w-[516px] md:space-y-0 space-y-4">
-            <div className="flex-1">
-              <div className="text-base text-slate-900 dark:text-slate-300 font-medium mb-1">
-                $32,400
-              </div>
-              <div className="text-sm text-slate-600 font-light dark:text-slate-300">
-                Total Balance
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <div className="text-base text-slate-900 dark:text-slate-300 font-medium mb-1">
-                200
-              </div>
-              <div className="text-sm text-slate-600 font-light dark:text-slate-300">
-                Board Card
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <div className="text-base text-slate-900 dark:text-slate-300 font-medium mb-1">
-                3200
-              </div>
-              <div className="text-sm text-slate-600 font-light dark:text-slate-300">
-                Calender Events
-              </div>
-            </div>
-          </div> */}
         </div>
         <div className="grid grid-cols-12 gap-6">
-          <div className="lg:col-span-4 col-span-12">
+          <div className="lg:col-span-12 col-span-12">
             <Card title="Info">
               <ul className="list space-y-8">
                 <li className="flex space-x-3 rtl:space-x-reverse">
@@ -80,10 +146,10 @@ const profile = () => {
                       EMAIL
                     </div>
                     <a
-                      href="mailto:someone@example.com"
+                      href={`mailto:${profileData.email}`}
                       className="text-base text-slate-600 dark:text-slate-50"
                     >
-                      info-500@dashcode.com
+                      {profileData.email || "info@example.com"}
                     </a>
                   </div>
                 </li>
@@ -97,33 +163,44 @@ const profile = () => {
                       PHONE
                     </div>
                     <a
-                      href="tel:0189749676767"
+                      href={`tel:${profileData.phone_number}`}
                       className="text-base text-slate-600 dark:text-slate-50"
                     >
-                      +1-202-555-0151
+                      {profileData.phone_number || "+1-202-555-0151"}
                     </a>
                   </div>
                 </li>
 
                 <li className="flex space-x-3 rtl:space-x-reverse">
                   <div className="flex-none text-2xl text-slate-600 dark:text-slate-300">
-                    <Icon icon="heroicons:map" />
+                    <Icon icon="icons8:gender-neutral-user" />
                   </div>
                   <div className="flex-1">
                     <div className="uppercase text-xs text-slate-500 dark:text-slate-300 mb-1 leading-[12px]">
-                      LOCATION
+                      GENDER
                     </div>
                     <div className="text-base text-slate-600 dark:text-slate-50">
-                      Home# 320/N, Road# 71/B, Mohakhali, Dhaka-1207, Bangladesh
+                      {profileData.sex || "N/A"}
+                    </div>
+                  </div>
+                </li>
+
+                <li className="flex space-x-3 rtl:space-x-reverse">
+                  <div className="flex-none text-2xl text-slate-600 dark:text-slate-300">
+                    <Icon icon="mingcute:birthday-2-line" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="uppercase text-xs text-slate-500 dark:text-slate-300 mb-1 leading-[12px]">
+                      Date of Birth
+                    </div>
+                    <div className="text-base text-slate-600 dark:text-slate-50">
+                      {profileData.dob
+                        ? moment(profileData.dob).format("MM/DD/YYYY")
+                        : "N/A"}
                     </div>
                   </div>
                 </li>
               </ul>
-            </Card>
-          </div>
-          <div className="lg:col-span-8 col-span-12">
-            <Card title="User Overview">
-              <BasicArea height={190} />
             </Card>
           </div>
         </div>
@@ -132,4 +209,4 @@ const profile = () => {
   );
 };
 
-export default profile;
+export default Profile;
