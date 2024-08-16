@@ -36,7 +36,6 @@ const Profile = () => {
   }, []);
 
   const handleImageUpload = async (event) => {
-    console.log("File input change detected");
     setLoading(true);
     const file = event.target.files[0];
     const userId = localStorage.getItem("user_id");
@@ -46,9 +45,6 @@ const Profile = () => {
       setLoading(false);
       return;
     }
-  
-    console.log("File selected:", file);
-    console.log("User ID:", userId);
   
     try {
       // Upload the image to Supabase Storage
@@ -64,7 +60,6 @@ const Profile = () => {
   
       // Manually construct the public URL
       const avatar_url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatar/${file.name}`;
-      console.log("Generated avatar URL:", avatar_url);
   
       // Update the profile with the new avatar URL
       const { error: updateError } = await supabase
@@ -75,7 +70,6 @@ const Profile = () => {
       if (updateError) {
         console.error("Error updating profile image:", updateError);
       } else {
-        console.log("Profile image updated successfully");
         setProfileData((prev) => ({ ...prev, avatar_url }));
       }
     } catch (error) {
