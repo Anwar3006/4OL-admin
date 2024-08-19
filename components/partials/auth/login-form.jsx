@@ -31,9 +31,11 @@ const LoginForm = () => {
   });
 
   const [checked, setChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // on submit function
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
       const resultAction = await dispatch(handleLogin(data)).unwrap();
       if (resultAction.isAuth) {
@@ -58,7 +60,9 @@ const LoginForm = () => {
         draggable: true,
         theme: "light",
       });
-    }
+    } finally {
+    setLoading(false);
+  }
   };
 
   return (
@@ -95,7 +99,7 @@ const LoginForm = () => {
       </div>
 
       <button className="btn bg-[#56ce84] text-white block w-full text-center">
-        Sign in
+      {loading ? 'Signing...' : 'Sign In'}
       </button>
     </form>
   );

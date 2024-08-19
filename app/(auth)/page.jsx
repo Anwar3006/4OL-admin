@@ -1,7 +1,4 @@
 "use client";
-import Link from "next/link";
-import LoginForm from "@/components/partials/auth/login-form";
-import Social from "@/components/partials/auth/social";
 import useDarkMode from "@/hooks/useDarkMode";
 import Login2 from "./login2/page";
 

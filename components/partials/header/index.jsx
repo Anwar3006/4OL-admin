@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import Icon from "@/components/ui/Icon";
 import SwitchDark from "./Tools/SwitchDark";
 import HorizentalMenu from "./Tools/HorizentalMenu";
@@ -42,7 +42,13 @@ const Header = ({ className = "custom-class" }) => {
 
   const handleOpenMobileMenu = () => {
     setMobileMenu(!mobileMenu);
+    console.log("Mobile Menu Toggled:", mobileMenu);
+
   };
+
+  // useEffect(() => {
+  //   console.log("Mobile Menu Toggled:", mobileMenu);
+  // }, [mobileMenu]);
 
   const borderSwicthClass = () => {
     if (skin === "bordered" && navbarType !== "floating") {

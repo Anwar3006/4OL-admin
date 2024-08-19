@@ -10,8 +10,8 @@ const Loading = () => {
         <img
           src={
             isDark
-              ? "/assets/images/logo/logo-white.svg"
-              : "/assets/images/logo/logo.svg"
+              ? "/assets/images/all-img/logo.png"
+              : "/assets/images/all-img/logo-green.png"
           }
           alt="Logo"
         />

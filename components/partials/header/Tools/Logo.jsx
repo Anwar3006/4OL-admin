@@ -26,9 +26,10 @@ const Logo = () => {
             <img
               src={
                 isDark
-                  ? "/assets/images/logo/logo-c-white.svg"
-                  : "/assets/images/logo/logo-c.svg"
+                  ? "/assets/images/all-img/logo.png"
+                  : "/assets/images/all-img/logo.png"
               }
+              className="w-10"
               alt=""
             />
           )}

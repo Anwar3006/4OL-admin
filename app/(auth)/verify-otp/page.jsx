@@ -111,7 +111,7 @@ const VerifyOtp = () => {
               </div>
             </div>
             <div className="auth-footer text-center">
-              Copyright 2021, Dashcode All Rights Reserved.
+            Copyright 2024, 4-Our Life All Rights Reserved.
             </div>
           </div>
         </div>

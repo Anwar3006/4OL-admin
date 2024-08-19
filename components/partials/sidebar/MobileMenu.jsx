@@ -21,7 +21,11 @@ const MobileMenu = ({ className = "custom-class" }) => {
         setScroll(false);
       }
     };
-    scrollableNodeRef.current.addEventListener("scroll", handleScroll);
+    const node = scrollableNodeRef.current;
+    node.addEventListener("scroll", handleScroll);
+    return () => {
+      node.removeEventListener("scroll", handleScroll);
+    };
   }, [scrollableNodeRef]);
 
   const [isSemiDark] = useSemiDark();
@@ -38,9 +42,13 @@ const MobileMenu = ({ className = "custom-class" }) => {
           <div className="flex items-center space-x-4">
             <div className="logo-icon w-10">
               {!isDark && !isSemiDark ? (
-                <img src="/assets/images/all-img/logo.png" alt="" className="w-10 ml-2"/>
+                <img
+                  src="/assets/images/all-img/logo.png"
+                  alt=""
+                  className="w-10 ml-2"
+                />
               ) : (
-                <img src="/assets/images/logo/logo-c-white.svg" alt="" />
+                <img src="/assets/images/all-img/logo.png" alt="" />
               )}
             </div>
             <div>
