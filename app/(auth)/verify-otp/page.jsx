@@ -63,19 +63,19 @@ const VerifyOtp = () => {
         <div className="right-column relative">
           <div className="inner-content h-full flex flex-col bg-white dark:bg-slate-800">
             <div className="auth-box h-full flex flex-col justify-center">
-              <div className="mobile-logo text-center mb-6 lg:hidden block">
-                <Link href="/">
-                  <img
-                    src={
-                      isDark
-                        ? "/assets/images/logo/logo-white.svg"
-                        : "/assets/images/logo/logo.svg"
-                    }
-                    alt=""
-                    className="mx-auto"
-                  />
-                </Link>
-              </div>
+            <div className="mobile-logo text-center mb-6 lg:hidden block w-10 mx-auto">
+                  <Link href="/">
+                    <img
+                      src={
+                        isDark
+                          ? "assets/images/all-img/logo-green.png"
+                          : "/assets/images/all-img/logo-green.png"
+                      }
+                      alt=""
+                      className="mx-auto"
+                    />
+                  </Link>
+                </div>
               <div className="text-center 2xl:mb-10 mb-5">
                 <h4 className="font-medium">Verify OTP</h4>
               </div>

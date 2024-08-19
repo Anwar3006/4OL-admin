@@ -15,13 +15,13 @@ const Login2 = () => {
           <div className="right-column relative">
             <div className="inner-content h-full flex flex-col bg-white dark:bg-slate-800">
               <div className="auth-box h-full flex flex-col justify-center">
-                <div className="mobile-logo text-center mb-6 lg:hidden block">
+                <div className="mobile-logo text-center mb-6 lg:hidden block w-10 mx-auto">
                   <Link href="/">
                     <img
                       src={
                         isDark
-                          ? "assets/images/logo/logo-white.svg"
-                          : "/assets/images/logo/logo.svg"
+                          ? "assets/images/all-img/logo-green.png"
+                          : "/assets/images/all-img/logo-green.png"
                       }
                       alt=""
                       className="mx-auto"

@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-
 import Navmenu from "./Navmenu";
 import { menuItems } from "@/constant/data";
 import SimpleBar from "simplebar-react";
@@ -29,38 +28,26 @@ const MobileMenu = ({ className = "custom-class" }) => {
   }, [scrollableNodeRef]);
 
   const [isSemiDark] = useSemiDark();
-  // skin
   const [skin] = useSkin();
   const [isDark] = useDarkMode();
   const [mobileMenu, setMobileMenu] = useMobileMenu();
+
   return (
-    <div
-      className={`${className} fixed  top-0 bg-white dark:bg-slate-800 shadow-lg  h-full   w-[248px]`}
-    >
-      <div className="logo-segment flex justify-between items-center bg-white dark:bg-slate-800 z-[9] h-[85px]  px-4 ">
+    <div className={`fixed top-0 left-0 w-full h-full bg-gray-800 text-white flex flex-col p-4 transition-transform ${className}`}>
+      <div className="logo-segment flex justify-between items-center bg-white dark:bg-slate-800 z-[9] h-[85px] px-4">
         <Link href="/">
           <div className="flex items-center space-x-4">
             <div className="logo-icon w-10">
-              {!isDark && !isSemiDark ? (
-                <img
-                  src="/assets/images/all-img/logo.png"
-                  alt=""
-                  className="w-10 ml-2"
-                />
-              ) : (
-                <img src="/assets/images/all-img/logo.png" alt="" />
-              )}
+              <img src="/assets/images/all-img/logo.png" alt="" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                4 Our Life
-              </h1>
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">4 Our Life</h1>
             </div>
           </div>
         </Link>
         <button
           type="button"
-          onClick={() => setMobileMenu(!mobileMenu)}
+          onClick={() => setMobileMenu(false)}
           className="cursor-pointer text-slate-900 dark:text-white text-2xl"
         >
           <Icon icon="heroicons:x-mark" />
@@ -68,8 +55,8 @@ const MobileMenu = ({ className = "custom-class" }) => {
       </div>
 
       <div
-        className={`h-[60px]  absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${
-          scroll ? " opacity-100" : " opacity-0"
+        className={`h-[60px] absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${
+          scroll ? "opacity-100" : "opacity-0"
         }`}
       ></div>
       <SimpleBar
@@ -77,24 +64,6 @@ const MobileMenu = ({ className = "custom-class" }) => {
         scrollableNodeProps={{ ref: scrollableNodeRef }}
       >
         <Navmenu menus={menuItems} />
-        {/* <div className="bg-slate-900 mb-24 lg:mb-10 mt-24 p-4 relative text-center rounded-2xl text-white">
-          <img
-            src="/assets/images/svg/rabit.svg"
-            alt=""
-            className="mx-auto relative -mt-[73px]"
-          />
-          <div className="max-w-[160px] mx-auto mt-6">
-            <div className="widget-title">Unlimited Access</div>
-            <div className="text-xs font-light">
-              Upgrade your system to business plan
-            </div>
-          </div>
-          <div className="mt-6">
-            <button className="btn bg-white hover:bg-opacity-80 text-slate-900 btn-sm w-full block">
-              Upgrade
-            </button>
-          </div>
-        </div> */}
       </SimpleBar>
     </div>
   );

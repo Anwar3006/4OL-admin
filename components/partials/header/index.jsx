@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import Icon from "@/components/ui/Icon";
 import SwitchDark from "./Tools/SwitchDark";
 import HorizentalMenu from "./Tools/HorizentalMenu";
@@ -42,13 +42,8 @@ const Header = ({ className = "custom-class" }) => {
 
   const handleOpenMobileMenu = () => {
     setMobileMenu(!mobileMenu);
-    console.log("Mobile Menu Toggled:", mobileMenu);
-
+    console.log("Mobile Menu Toggled:", !mobileMenu);
   };
-
-  // useEffect(() => {
-  //   console.log("Mobile Menu Toggled:", mobileMenu);
-  // }, [mobileMenu]);
 
   const borderSwicthClass = () => {
     if (skin === "bordered" && navbarType !== "floating") {
@@ -89,7 +84,7 @@ const Header = ({ className = "custom-class" }) => {
                 </button>
               )}
               {width < breakpoints.xl && <Logo />}
-              {/* open mobile menu handlaer*/}
+              {/* open mobile menu handler */}
               {width < breakpoints.xl && width >= breakpoints.md && (
                 <div
                   className="cursor-pointer text-slate-900 dark:text-white text-2xl"
@@ -105,7 +100,7 @@ const Header = ({ className = "custom-class" }) => {
           {menuType === "horizontal" && (
             <div className="flex items-center space-x-4 rtl:space-x-reverse">
               <Logo />
-              {/* open mobile menu handlaer*/}
+              {/* open mobile menu handler */}
               {width <= breakpoints.xl && (
                 <div
                   className="cursor-pointer text-slate-900 dark:text-white text-2xl"
@@ -117,7 +112,7 @@ const Header = ({ className = "custom-class" }) => {
             </div>
           )}
           {/*  Horizontal  Main Menu */}
-          {menuType === "horizontal" && width >= breakpoints.xl ? (
+          {menuType === "horizontal" && width >= breakpoints.xl && mobileMenu ? (
             <HorizentalMenu />
           ) : null}
           {/* Nav Tools  */}
