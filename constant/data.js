@@ -26,7 +26,7 @@ export const menuItems = [
     title: "Users (Patients)",
     isHide: true,
     icon: "ri:empathize-line",
-    link: "#",
+    link: "facility-profile-form",
   },
     {
     title: "Facilities",
@@ -92,6 +92,10 @@ export const menuItems = [
       {
         childtitle: "Services",
         childlink: "#",
+        // child: [
+        //   {childtitle: "Symptoms", childlink: "#"},
+        //   {childtitle: "Healthy Living", childlink: "#"},
+        // ]
       },
       {
         childtitle: "Amenities",

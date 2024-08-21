@@ -1,7 +1,6 @@
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import Icon from "@/components/ui/Icon";
-import Textinput from "./Textinput";
 
 const SplitDropdown2 = ({
   label = "Select",
@@ -9,7 +8,7 @@ const SplitDropdown2 = ({
   onChange,
   wrapperClass = "inline-block",
   labelClass = "",
-  classMenuItems = "mt-2 w-[220px]",
+  classMenuItems = "mt-2 w-[220px] max-h-60 overflow-y-auto", // Added max height and scroll
   splitIcon = "heroicons-outline:chevron-down",
   items = [
     { label: "Male" },
@@ -27,11 +26,12 @@ const SplitDropdown2 = ({
             {label}
           </div>
         </div>
-          <Menu.Button className={`flex-0 mb-2 ${labelClass}`}>
+        <Menu.Button className={`flex-0 mb-2 ${labelClass}`}>
           <div className="flex form-control py-2">
-          {value || 'Select'}  <span className="ml-4 flex items-center"><Icon icon={splitIcon} /></span>
-            </div>
-          </Menu.Button>
+            {value || 'Select'}
+            <span className="ml-4 flex items-center"><Icon icon={splitIcon} /></span>
+          </div>
+        </Menu.Button>
 
         <Transition
           as={Fragment}

@@ -38,7 +38,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
         <Link href="/">
           <div className="flex items-center space-x-4">
             <div className="logo-icon w-10">
-              <img src="/assets/images/all-img/logo.png" alt="" />
+              <img src="/assets/images/all-img/logo.png" alt="" className="w-full"/>
             </div>
             <div>
               <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">4 Our Life</h1>
