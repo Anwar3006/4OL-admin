@@ -2,16 +2,14 @@ import React, { useRef, useEffect, useState } from "react";
 import Navmenu from "./Navmenu";
 import { menuItems } from "@/constant/data";
 import SimpleBar from "simplebar-react";
-import useSemiDark from "@/hooks/useSemiDark";
-import useSkin from "@/hooks/useSkin";
-import useDarkMode from "@/hooks/useDarkMode";
 import Link from "next/link";
-import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
 
 const MobileMenu = ({ className = "custom-class" }) => {
   const scrollableNodeRef = useRef();
   const [scroll, setScroll] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
       if (scrollableNodeRef.current.scrollTop > 0) {
@@ -27,18 +25,13 @@ const MobileMenu = ({ className = "custom-class" }) => {
     };
   }, [scrollableNodeRef]);
 
-  const [isSemiDark] = useSemiDark();
-  const [skin] = useSkin();
-  const [isDark] = useDarkMode();
-  const [mobileMenu, setMobileMenu] = useMobileMenu();
-
   return (
-    <div className={`fixed top-0 left-0 w-full h-full bg-gray-800 text-white flex flex-col p-4 transition-transform ${className}`}>
+    <div className={`fixed top-0 left-0 w-full h-full bg-gray-800 text-white flex flex-col p-4 transition-transform ${className} ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="logo-segment flex justify-between items-center bg-white dark:bg-slate-800 z-[9] h-[85px] px-4">
         <Link href="/">
           <div className="flex items-center space-x-4">
             <div className="logo-icon w-10">
-              <img src="/assets/images/all-img/logo.png" alt="" className="w-full"/>
+              <img src="/assets/images/all-img/logo.png" alt="" className="w-full" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">4 Our Life</h1>
@@ -47,7 +40,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
         </Link>
         <button
           type="button"
-          onClick={() => setMobileMenu(false)}
+          onClick={() => setMobileMenuOpen(false)}
           className="cursor-pointer text-slate-900 dark:text-white text-2xl"
         >
           <Icon icon="heroicons:x-mark" />
