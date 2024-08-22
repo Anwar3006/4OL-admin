@@ -63,6 +63,7 @@ const RegForm = () => {
       (error) => {
         setLoading(false);
         toast.error(error.message);
+        console.error("Error:", error);
       }
     );
   };

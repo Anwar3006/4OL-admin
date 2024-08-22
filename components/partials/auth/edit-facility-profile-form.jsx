@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -10,8 +12,9 @@ import {
   HOSPITAL_SERVICES,
   PHARMACY_SERVICES,
 } from "@/constant/healthcare-profile-list";
-import { healthcareProfile } from "@/app/services/healthcare-profile";
+import { supabase } from "@/app/utils/supabaseClient";
 
+// Schema for validation
 const schema = yup.object().shape({
   facility_type: yup.string().required("Select Facility Type"),
   hospital_services: yup.string().required("Select Any Service"),
@@ -27,8 +30,14 @@ const schema = yup.object().shape({
   region: yup.string().required("Region is required"),
 });
 
-const FacilityProfileForm = () => {
+const EditFacilityProfileForm = () => {
   const [loading, setLoading] = useState(false);
+  const [facilityData, setFacilityData] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Extract ID from query parameters
+  const id = searchParams.get("id");
 
   const {
     register,
@@ -36,7 +45,6 @@ const FacilityProfileForm = () => {
     formState: { errors },
     setValue,
     watch,
-    reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
@@ -46,35 +54,60 @@ const FacilityProfileForm = () => {
   const selectedHospitalAmenities = watch("hospital_amenities");
   const selectedPharmacyServices = watch("pharmacy_services");
 
-  const onSubmit = (user) => {
+  useEffect(() => {
+    if (id) {
+      const fetchFacilityData = async () => {
+        try {
+          // Fetch data from Supabase
+          const { data, error } = await supabase
+            .from("healthcare_profiles")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+          if (error) throw error;
+          
+          setFacilityData(data);
+          // Populate form with existing data
+          Object.keys(data).forEach((key) => {
+            setValue(key, data[key]);
+          });
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          toast.error("Failed to fetch data");
+        }
+      };
+
+      fetchFacilityData();
+    }
+  }, [id, setValue]);
+
+  const onSubmit = async (formData) => {
     setLoading(true);
 
-    const updatedUser = {
-      ...user,
-    };
+    try {
+      // Perform update action
+      const { error } = await supabase
+        .from("healthcare_profiles")
+        .update(formData)
+        .eq("id", id);
 
-    healthcareProfile(
-      updatedUser,
-      () => {
-        setLoading(true);
-      },
-      (successData) => {
-        setLoading(false);
-        toast.success("Healthcare Profile Added Successfully");
-        reset(); // Reset form fields after successful submission
-        // router.replace("/login2"); // Uncomment if you want to redirect after submission
-      },
-      (error) => {
-        setLoading(false);
-        toast.error(error.message);
-        console.error("Error:", error);
-      }
-    );
+      if (error) throw error;
+
+      toast.success("Data updated successfully");
+      router.push("/users-facility");
+    } catch (error) {
+      console.error("Error updating data:", error);
+      toast.error("Failed to update data");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!id) return <p>Loading...</p>;
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-
       <div className="mb-2">
         <p className="font-semibold mb-5">Facility Type</p>
         <SplitDropdown2
@@ -202,7 +235,7 @@ const FacilityProfileForm = () => {
 
       <button
         type="submit"
-        // disabled={loading}
+        disabled={loading}
         className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full mt-5"
       >
         {loading ? "Submitting..." : "Submit"}
@@ -211,6 +244,6 @@ const FacilityProfileForm = () => {
       <ToastContainer />
     </form>
   );
-}
+};
 
-export default FacilityProfileForm;
+export default EditFacilityProfileForm;
