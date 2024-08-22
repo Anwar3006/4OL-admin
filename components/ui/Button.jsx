@@ -14,6 +14,7 @@ function Button({
   iconClass = "text-[20px]",
   link,
   onClick,
+  textClass,
   div,
 }) {
   return (
@@ -48,7 +49,7 @@ function Button({
                   <Icon icon={icon} />
                 </span>
               )}
-              <span>{text}</span>
+              <span className={`${textClass}`}>{text}</span>
             </span>
           )}
 

@@ -83,37 +83,28 @@ export default function HealthcareCenters() {
   return (
     <Card>
       {/* Header */}
-      <div className="md:flex pb-6 items-center">
-        <h6 className="flex-1 md:mb-0 mb-3">Users Facilities</h6>
-        <div className="md:flex md:space-x-3 items-center flex-none rtl:space-x-reverse">
+      <div className="flex max-lg:flex-col pb-6 items-center w-full">
+        <h6 className=" md:mb-0 mb-3 w-full">Users Facilities</h6>
+        <div className=" lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-          <Button
-            icon="heroicons-outline:calendar"
-            text="Select date"
-            className="btn-outline-secondary dark:border-slate-700 text-slate-600 btn-sm font-normal dark:text-slate-300"
-            iconClass="text-lg"
-          />
-          <Button
-            icon="heroicons-outline:filter"
-            text="Filter"
-            className="btn-outline-secondary text-slate-600 dark:border-slate-700 dark:text-slate-300 font-normal btn-sm"
-            iconClass="text-lg"
-          />
+          <div className="flex ">
           <Button
             icon="heroicons-outline:plus-sm"
             text="Add Facility"
-            className="btn-dark font-normal btn-sm"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
             iconClass="text-lg"
             onClick={() => router.push("/facility-profile-form")}
           />
           <Button
             icon="heroicons-outline:trash"
             text="Delete Selected"
-            className="btn-danger font-normal btn-sm"
+            className="btn-danger max-sm:text-xs font-normal btn-sm max-sm:mt-2"
             iconClass="text-lg"
+            textClass="max-sm:text-xs"
             onClick={handleDelete}
             disabled={selectedIds.length === 0}
           />
+          </div>
         </div>
       </div>
 
