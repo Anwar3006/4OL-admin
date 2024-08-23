@@ -8,6 +8,7 @@ import useSemiDark from "@/hooks/useSemiDark";
 import useSkin from "@/hooks/useSkin";
 import { useDispatch } from "react-redux";
 import { handleLogout } from "../auth/store";
+import { useRouter } from "next/navigation";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -27,10 +28,12 @@ const Sidebar = () => {
 
   const [collapsed, setMenuCollapsed] = useSidebar();
   const [menuHover, setMenuHover] = useState(false);
+  const router = useRouter();
 
    // Logout action handler
    const handleLogoutAction = () => {
     dispatch(handleLogout(false));
+    router.push('/')
   };
 
   // semi dark option
