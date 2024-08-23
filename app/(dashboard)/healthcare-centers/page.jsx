@@ -260,7 +260,6 @@ const page = () => {
   return (
     <>
       <Card noborder>
-
         {/* header */}
         <div className="md:flex pb-6 items-center">
           <h6 className="flex-1 md:mb-0 mb-3">Healthcare Centers</h6>

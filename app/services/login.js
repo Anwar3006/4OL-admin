@@ -91,45 +91,45 @@ export const logout = async (
 export const sendOtpToEmail = async (email, loadCallback, successCallback, errorCallback) => {
     loadCallback();
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        },
-      });
-  
-      if (error) {
-        errorCallback(error);
-      } else {
-        successCallback(data);
-      }
+        const { data, error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                shouldCreateUser: false,
+            },
+        });
+
+        if (error) {
+            errorCallback(error);
+        } else {
+            successCallback(data);
+        }
     } catch (err) {
-      errorCallback(err);
+        errorCallback(err);
     }
-  };
-  
-  export const verifyOtpSentToEmail = async (email, otp) => {
+};
+
+export const verifyOtpSentToEmail = async (email, otp) => {
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email',
-      });
-      if (error) {
-        throw error;
-      }
-      
-      // Save token and email in localStorage
-      localStorage.setItem('token', otp);
-      localStorage.setItem('email', email);
-  
-      return data;
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token: otp,
+            type: 'email',
+        });
+        if (error) {
+            throw error;
+        }
+
+        // Save token and email in localStorage
+        localStorage.setItem('token', otp);
+        localStorage.setItem('email', email);
+
+        return data;
     } catch (err) {
-      console.error("OTP Verification Error:", err);
-      throw err;
+        console.error("OTP Verification Error:", err);
+        throw err;
     }
-  };
-  
+};
+
 export const resetPassword = async (newPassword, successCallback, errorCallback) => {
     try {
         // Directly update the password
@@ -152,9 +152,8 @@ export const resetPassword = async (newPassword, successCallback, errorCallback)
 };
 
 
-  
-  
-  
-  
 
-  
+
+
+
+
