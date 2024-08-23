@@ -36,7 +36,8 @@ export const menuItems = [
     child: [
       {
         childtitle: "Hospitals/ Clinics",
-        childlink: "hospitals",
+        // childlink: "hospitals",
+        childlink: "#",
       },
       {
         childtitle: "Herbal Hospitals",
@@ -69,7 +70,8 @@ export const menuItems = [
     title: "Specialists",
     isHide: true,
     icon: "vaadin:specialist",
-    link: "specialists",
+    // link: "specialists",
+    link: "#",
   },
   {
     title: "Categories",
@@ -164,13 +166,15 @@ export const menuItems = [
     title: "Chats",
     isHide: true,
     icon: "lets-icons:chat",
-    link: "chat",
+    link: "#",
+    // link: "chat",
   },
   {
     title: "FAQs",
     isHide: true,
     icon: "mdi:faq",
-    link: "faq",
+    // link: "faq",
+    link: "#",
   },
   {
     title: "Logout",

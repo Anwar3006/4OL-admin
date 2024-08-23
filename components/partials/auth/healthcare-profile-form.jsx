@@ -21,10 +21,14 @@ const schema = yup.object().shape({
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
   whatsapp: yup.string().required("Whatsapp is required"),
-  digital_address: yup.string().required("Digital Address is required"),
-  address: yup.string().required("Address is required"),
-  city: yup.string().required("City is required"),
+  gps_address: yup.string().required("GPS Address is required"),
+  street: yup.string().required("Street is required"),
+  post_code: yup.string().required("Post Code is required"),
+  area: yup.string().required("Area is required"),
+  district: yup.string().required("District is required"),
+  district: yup.string().required("District is required"),
   region: yup.string().required("Region is required"),
+  country: yup.string().required("Country is required"),
 });
 
 const FacilityProfileForm = () => {
@@ -134,28 +138,44 @@ const FacilityProfileForm = () => {
         <p className="font-semibold my-5">Location</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
           <Textinput
-            name="digital_address"
-            label="Digital Address"
+            name="gps_address"
+            label="GPS Address"
             type="text"
             placeholder=" "
             register={register}
-            error={errors.digital_address?.message}
+            error={errors.gps_address?.message}
           />
           <Textinput
-            name="address"
-            label="Address"
+            name="street"
+            label="Street"
             type="text"
             placeholder=" "
             register={register}
-            error={errors.address?.message}
+            error={errors.street?.message}
           />
           <Textinput
-            name="city"
-            label="City"
+            name="post_code"
+            label="Post Code"
             type="text"
             placeholder=" "
             register={register}
-            error={errors.city?.message}
+            error={errors.post_code?.message}
+          />
+          <Textinput
+            name="area"
+            label="Area"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.area?.message}
+          />
+          <Textinput
+            name="district"
+            label="District"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.district?.message}
           />
           <Textinput
             name="region"
@@ -164,6 +184,14 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.region?.message}
+          />
+          <Textinput
+            name="country"
+            label="Country"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.country?.message}
           />
         </div>
       </div>

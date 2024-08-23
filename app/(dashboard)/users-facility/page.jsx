@@ -38,10 +38,13 @@ export default function HealthcareCenters() {
       (item.facility_type || "").toLowerCase().includes(searchText) ||
       (item.contact_num || "").toLowerCase().includes(searchText) ||
       (item.whatsapp || "").toLowerCase().includes(searchText) ||
-      (item.digital_address || "").toLowerCase().includes(searchText) ||
-      (item.address || "").toLowerCase().includes(searchText) ||
-      (item.city || "").toLowerCase().includes(searchText) ||
+      (item.gps_address || "").toLowerCase().includes(searchText) ||
+      (item.street || "").toLowerCase().includes(searchText) ||
+      (item.post_code || "").toLowerCase().includes(searchText) ||
+      (item.area || "").toLowerCase().includes(searchText) ||
+      (item.district || "").toLowerCase().includes(searchText) ||
       (item.region || "").toLowerCase().includes(searchText) ||
+      (item.country || "").toLowerCase().includes(searchText) ||
       (item.hospital_services || "").toLowerCase().includes(searchText) ||
       (item.hospital_amenities || "").toLowerCase().includes(searchText) ||
       (item.pharmacy_services || "").toLowerCase().includes(searchText) ||
@@ -129,10 +132,13 @@ export default function HealthcareCenters() {
               <th className="px-6 py-3">Facility Name</th>
               <th className="px-6 py-3">Contact Number</th>
               <th className="px-6 py-3">Whatsapp</th>
-              <th className="px-6 py-3">Digital Address</th>
-              <th className="px-6 py-3">Address</th>
-              <th className="px-6 py-3">City</th>
+              <th className="px-6 py-3">GPS Address</th>
+              <th className="px-6 py-3">Street</th>
+              <th className="px-6 py-3">Post Code</th>
+              <th className="px-6 py-3">Area</th>
+              <th className="px-6 py-3">District</th>
               <th className="px-6 py-3">Region</th>
+              <th className="px-6 py-3">Country</th>
               <th className="px-6 py-3">Hospital Services</th>
               <th className="px-6 py-3">Hospital Amenities</th>
               <th className="px-6 py-3">Pharmacy Services</th>
@@ -165,11 +171,14 @@ export default function HealthcareCenters() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.whatsapp}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {item.digital_address}
+                  {item.gps_address}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.address}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.city}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.street}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.post_code}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.area}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.district}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{item.region}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.country}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {item.hospital_services}
                 </td>
@@ -182,7 +191,7 @@ export default function HealthcareCenters() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {formatDate(item.created_at)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{item.status}</td>
+                <td className={`px-6 py-4 whitespace-nowrap ${item.status === 'Active'? 'text-green-600': 'text-red-600'}`}>{item.status}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <Button
                     icon="heroicons-outline:pencil-alt"
