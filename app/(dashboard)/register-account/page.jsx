@@ -18,7 +18,7 @@ const Register2 = () => {
               title={"Register User Account"}
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
             >
-              <div className=" lg:w-[80%] w-[90%] flex flex-col justify-center p-5">
+              <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
                 <RegForm />
               </div>
             </Card>
