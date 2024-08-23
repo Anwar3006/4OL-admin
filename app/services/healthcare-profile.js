@@ -1,3 +1,4 @@
+import moment from "moment";
 import { supabase } from "../utils/supabaseClient";
 
 export const healthcareProfile = async (
@@ -24,6 +25,11 @@ export const healthcareProfile = async (
       .from("healthcare_profiles")
       .insert([
         {
+          created_at: moment(new Date()).valueOf(), // Convert date to timestamp
+          updated_at: moment(new Date()).valueOf(), // Convert date to timestamp
+          created_by: userId,
+          updated_by: userId,
+          is_created_by_admin_panel: false,
           facility_type: user.facility_type,
           unique_id: user.unique_id,
           facility_name: user.facility_name,
@@ -40,7 +46,7 @@ export const healthcareProfile = async (
           hospital_amenities: user.hospital_amenities,
           pharmacy_services: user.pharmacy_services,
           status: "Active",
-          created_at: new Date().toISOString(),
+          // created_at: new Date().toISOString(),
         },
       ]);
 
