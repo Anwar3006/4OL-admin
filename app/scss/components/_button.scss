@@ -32,7 +32,7 @@
   @apply bg-[#FA916B] dark:hover:bg-opacity-70  text-white hover:ring-2 hover:ring-opacity-80 ring-[#FA916B] hover:ring-offset-1 dark:hover:ring-0 dark:hover:ring-offset-0;
 }
 .btn-danger {
-  @apply bg-danger-500 dark:hover:bg-opacity-70  text-white hover:ring-2 hover:ring-opacity-80 ring-danger-500 hover:ring-offset-1 dark:hover:ring-0 dark:hover:ring-offset-0;
+  @apply bg-danger-500 dark:hover:bg-opacity-70 max-sm:text-xs  text-white hover:ring-2 hover:ring-opacity-80 ring-danger-500 hover:ring-offset-1 dark:hover:ring-0 dark:hover:ring-offset-0;
 }
 .btn-light {
   @apply bg-slate-100 dark:hover:bg-opacity-70  text-slate-900 hover:ring-2 hover:ring-opacity-80 ring-[#E0EAFF] hover:ring-offset-1 dark:hover:ring-0 dark:hover:ring-offset-0;
