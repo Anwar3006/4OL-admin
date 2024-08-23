@@ -7,7 +7,8 @@ import { toggleActiveChat } from "@/components/partials/app/chat/store";
 import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Submenu from "./Submenu";
-const Navmenu = ({ menus }) => {
+
+const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
 
@@ -27,7 +28,7 @@ const Navmenu = ({ menus }) => {
 
   useEffect(() => {
     let submenuIndex = null;
-    menus.map((item, i) => {
+    menus.forEach((item, i) => {
       if (!item.child) return;
       if (item.link === locationName) {
         submenuIndex = null;
@@ -54,13 +55,13 @@ const Navmenu = ({ menus }) => {
         {menus.map((item, i) => (
           <li
             key={i}
-            className={` single-sidebar-menu 
+            className={`single-sidebar-menu 
               ${item.child ? "item-has-children" : ""}
               ${activeSubmenu === i ? "open" : ""}
               ${locationName === item.link ? "menu-item-active" : ""}`}
           >
-            {/* single menu with no childred*/}
-            {!item.child && !item.isHeadr && (
+            {/* Single menu with no children */}
+            {!item.child && !item.isHeadr && item.title !== "Logout" && (
               <Link className="menu-link" href={item.link}>
                 <span className="menu-icon flex-grow-0">
                   <Icon icon={item.icon} />
@@ -69,11 +70,11 @@ const Navmenu = ({ menus }) => {
                 {item.badge && <span className="menu-badge">{item.badge}</span>}
               </Link>
             )}
-            {/* only for menulabel */}
+            {/* Menu Label */}
             {item.isHeadr && !item.child && (
               <div className="menulabel">{item.title}</div>
             )}
-            {/*    !!sub menu parent   */}
+            {/* Submenu Parent */}
             {item.child && (
               <div
                 className={`menu-link ${
@@ -92,7 +93,7 @@ const Navmenu = ({ menus }) => {
                 <div className="flex-0">
                   <div
                     className={`menu-arrow transform transition-all duration-300 ${
-                      activeSubmenu === i ? " rotate-90" : ""
+                      activeSubmenu === i ? "rotate-90" : ""
                     }`}
                   >
                     <Icon icon="heroicons-outline:chevron-right" />
@@ -109,17 +110,14 @@ const Navmenu = ({ menus }) => {
             />
           </li>
         ))}
+        {/* Logout Menu Item */}
         <li className="single-sidebar-menu">
-          {/* <a
-            href="https://dashcode-react-doc.codeshaper.tech/"
-            target="_blank"
-            className="menu-link"
-          >
-            <span className="menu-icon">
-              <Icon icon="heroicons:document" />
+          <div className="menu-link" onClick={onLogout}>
+            <span className="menu-icon flex-grow-0">
+              <Icon icon="ant-design:logout-outlined" />
             </span>
-            <div className="text-box">Documentation</div>
-          </a> */}
+            <div className="text-box flex-grow">Logout</div>
+          </div>
         </li>
       </ul>
     </>

@@ -103,9 +103,9 @@ const Header = ({ className = "custom-class" }) => {
               {width <= breakpoints.xl && (
                 <div
                   className="cursor-pointer text-slate-900 dark:text-white text-2xl"
-                  // onClick={handleOpenMobileMenu}
+                  onClick={handleOpenMobileMenu}
                 >
-                  {/* <Icon icon="heroicons-outline:menu-alt-3" /> */}
+                  <Icon icon="heroicons-outline:menu-alt-3" />
                 </div>
               )}
             </div>

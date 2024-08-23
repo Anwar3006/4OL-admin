@@ -181,9 +181,7 @@ export const menuItems = [
     isHide: true,
     icon: "ant-design:logout-outlined",
     link: "#",
-    // action: () => {
-    //   dispatch(handleLogout(false));
-    // },
+    onClick: () => handleLogout(),
   },
   // {
   //   title: "Dashboard",
