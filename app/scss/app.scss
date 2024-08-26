@@ -79,6 +79,27 @@
       border: none !important;
     }
 
+
+    .custom-scrollbar {
+      /* For Firefox */
+      scrollbar-width: thin; /* Makes the scrollbar thin (not hidden, but minimal) */
+      scrollbar-color: #56ce84 transparent ; /* Transparent scrollbar track */
+      
+      /* For WebKit browsers (Chrome, Safari) */
+      &::-webkit-scrollbar {
+        width: 1px; /* Adjust the width of the scrollbar */
+      }
+    
+      &::-webkit-scrollbar-thumb {
+        background-color: #56ce84; /* Make the scrollbar thumb transparent */
+      }
+    
+      &::-webkit-scrollbar-track {
+        background-color: transparent; /* Make the scrollbar track transparent */
+      }
+    }
+    
+
     // .recharts-cartesian-grid line,
     // .recharts-polar-grid-angle line,
     // .recharts-yAxis line,

@@ -31,7 +31,6 @@ export const healthcareProfile = async (
           updated_by: userId,
           is_created_by_admin_panel: false,
           facility_type: user.facility_type,
-          unique_id: user.unique_id,
           facility_name: user.facility_name,
           contact_num: user.contact_num,
           whatsapp: user.whatsapp,
@@ -46,7 +45,6 @@ export const healthcareProfile = async (
           hospital_amenities: user.hospital_amenities,
           pharmacy_services: user.pharmacy_services,
           status: "Active",
-          // created_at: new Date().toISOString(),
         },
       ]);
 

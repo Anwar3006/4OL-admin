@@ -16,14 +16,19 @@ import { supabase } from "@/app/utils/supabaseClient";
 
 // Schema for validation
 const schema = yup.object().shape({
-  facility_type: yup.string().required("Select Facility Type"),
-  hospital_services: yup.string().required("Select Any Service"),
-  hospital_amenities: yup.string().required("Select Any Amenity"),
-  pharmacy_services: yup.string().required("Select Any Service"),
-  unique_id: yup.string().required("Id is required"),
+  facility_type: yup
+    .string()
+    .oneOf(
+      ['Conditions', 'Pills Reminder', 'Period Tracker', 'Services', 'Amenities', 'Specialities'],
+      "Select a valid Facility Type"
+    )
+    .required("Facility Type is required"),
+  hospital_services: yup.string().notOneOf(['Select One'], "Select a valid Service").required("Service is required"),
+  hospital_amenities: yup.string().notOneOf(['Select One'], "Select a valid Amenity").required("Amenity is required"),
+  pharmacy_services: yup.string().notOneOf(['Select One'], "Select a valid Pharmacy Service").required("Pharmacy Service is required"),
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
-  whatsapp: yup.string().required("Whatsapp is required"),
+  // whatsapp: yup.string().required("Whatsapp is required"),
   gps_address: yup.string().required("GPS Address is required"),
   street: yup.string().required("Street is required"),
   post_code: yup.string().required("Post Code is required"),
@@ -32,7 +37,6 @@ const schema = yup.object().shape({
   district: yup.string().required("District is required"),
   region: yup.string().required("Region is required"),
   country: yup.string().required("Country is required"),
-  status: yup.string().oneOf(['Active', 'In Active'], 'Status is required').required('Status is required'),
 });
 
 const EditFacilityProfileForm = () => {
@@ -135,20 +139,13 @@ const EditFacilityProfileForm = () => {
         <p className="font-semibold my-5">Basic Information</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
           <Textinput
-            name="unique_id"
-            label="Unique ID"
-            type="text"
-            placeholder=" "
-            error={errors.unique_id?.message}
-            register={register}
-          />
-          <Textinput
             name="facility_name"
             label="Facility Name"
             type="text"
             placeholder=" "
             register={register}
             error={errors.facility_name?.message}
+            required
           />
           <Textinput
             name="contact_num"
@@ -157,6 +154,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.contact_num?.message}
+            required
           />
           <Textinput
             name="whatsapp"
@@ -179,6 +177,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.gps_address?.message}
+            required
           />
           <Textinput
             name="street"
@@ -187,6 +186,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.street?.message}
+            required
           />
           <Textinput
             name="post_code"
@@ -195,6 +195,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.post_code?.message}
+            required
           />
           <Textinput
             name="area"
@@ -203,6 +204,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.area?.message}
+            required
           />
           <Textinput
             name="district"
@@ -211,6 +213,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.district?.message}
+            required
           />
           <Textinput
             name="region"
@@ -219,6 +222,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.region?.message}
+            required
           />
           <Textinput
             name="country"
@@ -227,6 +231,7 @@ const EditFacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.country?.message}
+            required
           />
         </div>
       </div>

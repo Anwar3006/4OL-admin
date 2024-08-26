@@ -8,28 +8,27 @@ const SplitDropdown2 = ({
   onChange,
   wrapperClass = "inline-block",
   labelClass = "",
-  classMenuItems = "mt-2 w-[220px] max-h-60 overflow-y-auto", // Added max height and scroll
+  classMenuItems = "mt-2 w-[250px] max-h-60 overflow-y-auto",
   splitIcon = "heroicons-outline:chevron-down",
-  items = [
-    { label: "Male" },
-    { label: "Female" }
-  ],
-  classItem = "px-4 py-2"
+  items = [{ label: "Male" }, { label: "Female" }],
+  classItem = "px-4 py-2",
+  required = true// Added required prop
 }) => {
   return (
     <div className={`relative ${wrapperClass}`}>
       <Menu as="div" className="block w-full">
         <div className="split-btngroup flex">
-          <div
-            className={`flex-1 cursor-pointer ${labelClass}`}
-          >
+          <div className={`flex-1 cursor-pointer ${labelClass}`}>
             {label}
+            {required && <span className="text-red-500 text-lg">*</span>} {/* Asterisk */}
           </div>
         </div>
         <Menu.Button className={`flex-0 mb-2 ${labelClass}`}>
           <div className="flex form-control py-2">
-            {value || 'Select'}
-            <span className="ml-4 flex items-center"><Icon icon={splitIcon} /></span>
+            {value || "Select"}
+            <span className="ml-4 flex items-center">
+              <Icon icon={splitIcon} />
+            </span>
           </div>
         </Menu.Button>
 
@@ -44,8 +43,8 @@ const SplitDropdown2 = ({
         >
           <Menu.Items
             className={`absolute ltr:left-0 rtl:left-0 origin-top-right border border-slate-100 cursor-pointer
-            rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
-            ${classMenuItems}`}
+  rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
+  ${classMenuItems} custom-scrollbar`}
           >
             {items.map((item, index) => (
               <Menu.Item key={index}>

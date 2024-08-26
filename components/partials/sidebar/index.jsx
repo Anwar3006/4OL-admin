@@ -32,7 +32,8 @@ const Sidebar = () => {
 
    // Logout action handler
    const handleLogoutAction = () => {
-    dispatch(handleLogout(false));
+     console.log("Logout button clicked"); 
+     dispatch(handleLogout(false));
     router.push('/')
   };
 

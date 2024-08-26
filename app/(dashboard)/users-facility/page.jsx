@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
@@ -11,16 +11,15 @@ import PaginationNew from "@/components/ui/PaginationNew";
 export default function HealthcareCenters() {
   const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedIds, setSelectedIds] = useState([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize] = useState(10); // Adjust pageSize as needed
-  const [totalPages, setTotalPages] = useState(0); // Added state for total pages
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       const { data, error, count } = await supabase
-        .from("healthcare_profiles") // Replace with your table name
+        .from("healthcare_profiles")
         .select("*", { count: "exact" })
         .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
 
@@ -28,14 +27,13 @@ export default function HealthcareCenters() {
         console.error("Error fetching data:", error);
       } else {
         setData(data);
-        setTotalPages(Math.ceil(count / pageSize)); // Calculate the total number of pages
+        setTotalPages(Math.ceil(count / pageSize));
       }
     };
 
     fetchData();
   }, [pageIndex, pageSize]);
 
-  // Filter data based on globalFilter
   const filteredData = data.filter((item) => {
     const searchText = (globalFilter || "").toLowerCase();
     return (
@@ -74,27 +72,16 @@ export default function HealthcareCenters() {
     if (canNextPage) setPageIndex(pageIndex + 1);
   };
 
-  const handleSelect = (id) => {
-    setSelectedIds((prevSelectedIds) =>
-      prevSelectedIds.includes(id)
-        ? prevSelectedIds.filter((itemId) => itemId !== id)
-        : [...prevSelectedIds, id]
-    );
-  };
-
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
     const { error } = await supabase
       .from("healthcare_profiles")
       .delete()
-      .in("id", selectedIds);
+      .eq("id", id); // Use `.eq` to delete a specific item by its ID
 
     if (error) {
       console.error("Error deleting data:", error);
     } else {
-      setData((prevData) =>
-        prevData.filter((item) => !selectedIds.includes(item.id))
-      );
-      setSelectedIds([]);
+      setData((prevData) => prevData.filter((item) => item.id !== id));
     }
   };
 
@@ -104,10 +91,9 @@ export default function HealthcareCenters() {
 
   return (
     <Card className="min-h-[80vh] bg-white">
-      {/* Header */}
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className=" md:mb-0 mb-3 w-full">Users Facilities</h6>
-        <div className=" lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
+        <h6 className="md:mb-0 mb-3 w-full">Users Facilities</h6>
+        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
             <Button
@@ -117,36 +103,14 @@ export default function HealthcareCenters() {
               iconClass="text-lg"
               onClick={() => router.push("/facility-profile-form")}
             />
-            <Button
-              icon="heroicons-outline:trash"
-              text="Delete Selected"
-              className="btn-danger max-sm:text-xs font-normal btn-sm max-sm:mt-2"
-              iconClass="text-lg"
-              textClass="max-sm:text-xs"
-              onClick={handleDelete}
-              disabled={selectedIds.length === 0}
-            />
           </div>
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="sm:px-6 px-2 sm:py-3 py-2">
-                <input
-                  type="checkbox"
-                  onChange={(e) => {
-                    setSelectedIds(
-                      e.target.checked ? data.map((item) => item.id) : []
-                    );
-                  }}
-                  checked={selectedIds.length === data.length}
-                />
-              </th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Unique ID</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Type</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Name</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Contact Number</th>
@@ -170,16 +134,6 @@ export default function HealthcareCenters() {
             {filteredData.map((item) => (
               <tr key={item.id}>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(item.id)}
-                    onChange={() => handleSelect(item.id)}
-                  />
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.unique_id}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.facility_type}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
@@ -189,7 +143,7 @@ export default function HealthcareCenters() {
                   {item.contact_num}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.whatsapp}
+                  {item.whatsapp || 'N/A'}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.gps_address}
@@ -227,13 +181,21 @@ export default function HealthcareCenters() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.status}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-center">
-                  <Button
-                    icon="heroicons-outline:pencil-alt"
-                    iconClass="text-base text-green-500" // Adjust the color and size as needed
-                    className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
-                    onClick={() => handleEdit(item.id)}
-                  />
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  <div className="flex space-x-2">
+                    <Button
+                       icon="heroicons-outline:pencil-alt"
+                       iconClass="text-base text-green-500" // Adjust the color and size as needed
+                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      onClick={() => handleEdit(item.id)}
+                    />
+                    <Button
+                       icon="heroicons-outline:trash"
+                       iconClass="text-base text-red-500" // Adjust the color and size as needed
+                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      onClick={() => handleDelete(item.id)}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -241,18 +203,17 @@ export default function HealthcareCenters() {
         </table>
       </div>
 
-      {/* Pagination */}
-      <PaginationNew
-        pageIndex={pageIndex}
-        pageOptions={pageOptions}
-        pageSize={pageSize}
-        canPreviousPage={canPreviousPage}
-        canNextPage={canNextPage}
-        gotoPage={gotoPage}
-        previousPage={previousPage}
-        nextPage={nextPage}
-        totalPages={totalPages} // Passing the total pages
-      />
+      <div className="mt-4 flex justify-end items-end">
+        <PaginationNew
+          canPreviousPage={canPreviousPage}
+          canNextPage={canNextPage}
+          gotoPage={gotoPage}
+          previousPage={previousPage}
+          nextPage={nextPage}
+          pageIndex={pageIndex}
+          pageOptions={pageOptions}
+        />
+      </div>
     </Card>
   );
 }

@@ -13,19 +13,23 @@ import {
 import { healthcareProfile } from "@/app/services/healthcare-profile";
 
 const schema = yup.object().shape({
-  facility_type: yup.string().required("Select Facility Type"),
-  hospital_services: yup.string().required("Select Any Service"),
-  hospital_amenities: yup.string().required("Select Any Amenity"),
-  pharmacy_services: yup.string().required("Select Any Service"),
-  unique_id: yup.string().required("Id is required"),
+  facility_type: yup
+    .string()
+    .oneOf(
+      ['Conditions', 'Pills Reminder', 'Period Tracker', 'Services', 'Amenities', 'Specialities'],
+      "Select a valid Facility Type"
+    )
+    .required("Facility Type is required"),
+  hospital_services: yup.string().notOneOf(['Select One'], "Select a valid Service").required("Service is required"),
+  hospital_amenities: yup.string().notOneOf(['Select One'], "Select a valid Amenity").required("Amenity is required"),
+  pharmacy_services: yup.string().notOneOf(['Select One'], "Select a valid Pharmacy Service").required("Pharmacy Service is required"),
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
-  whatsapp: yup.string().required("Whatsapp is required"),
+  // whatsapp: yup.string().required("Whatsapp is required"),
   gps_address: yup.string().required("GPS Address is required"),
   street: yup.string().required("Street is required"),
   post_code: yup.string().required("Post Code is required"),
   area: yup.string().required("Area is required"),
-  district: yup.string().required("District is required"),
   district: yup.string().required("District is required"),
   region: yup.string().required("Region is required"),
   country: yup.string().required("Country is required"),
@@ -78,7 +82,6 @@ const FacilityProfileForm = () => {
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-
       <div className="mb-2">
         <p className="font-semibold mb-5">Facility Type</p>
         <SplitDropdown2
@@ -100,20 +103,13 @@ const FacilityProfileForm = () => {
         <p className="font-semibold my-5">Basic Information</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
           <Textinput
-            name="unique_id"
-            label="Unique ID"
-            type="text"
-            placeholder=" "
-            error={errors.unique_id?.message}
-            register={register}
-          />
-          <Textinput
             name="facility_name"
             label="Facility Name"
             type="text"
             placeholder=" "
             register={register}
             error={errors.facility_name?.message}
+            required // Added required prop
           />
           <Textinput
             name="contact_num"
@@ -122,6 +118,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.contact_num?.message}
+            required // Added required prop
           />
           <Textinput
             name="whatsapp"
@@ -129,7 +126,7 @@ const FacilityProfileForm = () => {
             type="text"
             placeholder=" "
             register={register}
-            error={errors.whatsapp?.message}
+            // No error handling for WhatsApp
           />
         </div>
       </div>
@@ -144,6 +141,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.gps_address?.message}
+            required // Added required prop
           />
           <Textinput
             name="street"
@@ -152,6 +150,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.street?.message}
+            required // Added required prop
           />
           <Textinput
             name="post_code"
@@ -160,6 +159,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.post_code?.message}
+            required // Added required prop
           />
           <Textinput
             name="area"
@@ -168,6 +168,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.area?.message}
+            required // Added required prop
           />
           <Textinput
             name="district"
@@ -176,6 +177,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.district?.message}
+            required // Added required prop
           />
           <Textinput
             name="region"
@@ -184,6 +186,7 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.region?.message}
+            required // Added required prop
           />
           <Textinput
             name="country"
@@ -192,18 +195,22 @@ const FacilityProfileForm = () => {
             placeholder=" "
             register={register}
             error={errors.country?.message}
+            required // Added required prop
           />
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 grid-cols-1 w-full">
+      <div className="grid sm:grid-cols-3 grid-cols-1 w-full mt-2">
         <div>
           <p className="font-semibold my-5">Hospital Services</p>
           <SplitDropdown2
             label="Select Service"
             value={selectedHospitalServices}
             onChange={(value) => setValue("hospital_services", value)}
-            items={HOSPITAL_SERVICES.map((service) => ({ label: service }))}
+            items={[
+              { label: "Select One" },
+              ...HOSPITAL_SERVICES.map((service) => ({ label: service })),
+            ]}
           />
         </div>
 
@@ -213,7 +220,10 @@ const FacilityProfileForm = () => {
             label="Select Amenities"
             value={selectedHospitalAmenities}
             onChange={(value) => setValue("hospital_amenities", value)}
-            items={HOSPITAL_AMENITIES.map((amenity) => ({ label: amenity }))}
+            items={[
+              { label: "Select One" },
+              ...HOSPITAL_AMENITIES.map((amenity) => ({ label: amenity })),
+            ]}
           />
         </div>
 
@@ -223,7 +233,10 @@ const FacilityProfileForm = () => {
             label="Select Pharmacy Services"
             value={selectedPharmacyServices}
             onChange={(value) => setValue("pharmacy_services", value)}
-            items={PHARMACY_SERVICES.map((service) => ({ label: service }))}
+            items={[
+              { label: "Select One" },
+              ...PHARMACY_SERVICES.map((service) => ({ label: service })),
+            ]}
           />
         </div>
       </div>
