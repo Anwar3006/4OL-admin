@@ -107,7 +107,7 @@ export default function HealthcareCenters() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto  custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
