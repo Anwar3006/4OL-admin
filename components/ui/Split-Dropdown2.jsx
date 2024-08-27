@@ -16,11 +16,12 @@ const SplitDropdown2 = ({
   required = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
   const handleItemClick = (item) => {
     if (isMultiSelect) {
       const newValue = value.includes(item.label)
-        ? value.filter(v => v !== item.label)
+        ? value.filter((v) => v !== item.label)
         : [...value, item.label];
       onChange(newValue);
     } else {
@@ -28,6 +29,14 @@ const SplitDropdown2 = ({
     }
     if (!isMultiSelect) {
       setIsOpen(false); // Close dropdown if not multi-select
+    }
+  };
+
+  const handleAddItem = () => {
+    if (inputValue.trim()) {
+      const newItem = { label: inputValue.trim() };
+      handleItemClick(newItem);
+      setInputValue("");
     }
   };
 
@@ -44,10 +53,10 @@ const SplitDropdown2 = ({
           className={`flex-0 mb-2 ${labelClass}`}
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="flex form-control py-2">
+          <div className="flex form-control py-2 capitalize">
             {isMultiSelect
               ? value.length > 0
-                ? value.join(', ')
+                ? value.join(", ")
                 : "Select"
               : value || "Select"}
             <span className="ml-4 flex items-center">
@@ -71,6 +80,22 @@ const SplitDropdown2 = ({
   rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
   ${classMenuItems} custom-scrollbar`}
           >
+            <div className="p-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+                placeholder="Add new item..."
+                className="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 capitalize"
+              />
+              {/* <button
+                onClick={handleAddItem}
+                className="mt-2 w-full px-4 py-2 bg-indigo-500 text-white rounded"
+              >
+                Add
+              </button> */}
+            </div>
             {items.map((item, index) => (
               <Menu.Item key={index}>
                 {({ active }) => (
