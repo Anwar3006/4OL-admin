@@ -71,11 +71,24 @@ const FacilityProfileForm = () => {
 
   const onSubmit = (user) => {
     setLoading(true);
-
+  
+    // Filter out any empty values in business hours
+    const businessHours = Object.keys(user.business_hours || {}).reduce(
+      (acc, day) => {
+        const { opening, closing } = user.business_hours[day];
+        if (opening && closing) {
+          acc[day] = { opening, closing };
+        }
+        return acc;
+      },
+      {}
+    );
+  
     const updatedUser = {
       ...user,
+      business_hours: businessHours,
     };
-
+  
     healthcareProfile(
       updatedUser,
       () => {
@@ -94,6 +107,7 @@ const FacilityProfileForm = () => {
       }
     );
   };
+  
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
@@ -309,6 +323,64 @@ const FacilityProfileForm = () => {
           />
         </div>
       </div>
+
+      <div className="mt-2">
+  <p className="font-semibold my-5">Business Info</p>
+  <div className="grid grid-cols-2 gap-8">
+    {/* First half of the days */}
+    <div>
+      {["monday", "tuesday", "wednesday", "thursday"].map((day) => (
+        <div key={day} className="grid grid-cols-3 gap-4 mb-4">
+          <label className="font-semibold capitalize">{day}</label>
+          <Textinput
+            name={`business_hours.${day}.opening`}
+            label="Opening Time"
+            type="time"
+            register={register}
+            error={errors.business_hours?.[day]?.opening?.message}
+            required
+          />
+          <Textinput
+            name={`business_hours.${day}.closing`}
+            label="Closing Time"
+            type="time"
+            register={register}
+            error={errors.business_hours?.[day]?.closing?.message}
+            required
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* Second half of the days */}
+    <div>
+      {["friday", "saturday", "sunday"].map((day) => (
+        <div key={day} className="grid grid-cols-3 gap-4 mb-4">
+          <label className="font-semibold capitalize">{day}</label>
+          <Textinput
+            name={`business_hours.${day}.opening`}
+            label="Opening Time"
+            type="time"
+            register={register}
+            error={errors.business_hours?.[day]?.opening?.message}
+            required
+          />
+          <Textinput
+            name={`business_hours.${day}.closing`}
+            label="Closing Time"
+            type="time"
+            register={register}
+            error={errors.business_hours?.[day]?.closing?.message}
+            required
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+
+
 
       <button
         type="submit"

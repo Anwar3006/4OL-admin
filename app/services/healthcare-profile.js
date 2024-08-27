@@ -50,6 +50,7 @@ export const healthcareProfile = async (
           person_contact_number: user.persn_contact_number,
           position: user.position,
           status: "Active",
+          business_hours: user.business_hours,
           
         },
       ]);
