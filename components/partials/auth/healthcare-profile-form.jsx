@@ -13,19 +13,28 @@ import {
 import { healthcareProfile } from "@/app/services/healthcare-profile";
 
 const schema = yup.object().shape({
-  facility_type: yup
-    .string()
-    .oneOf(
-      ['Conditions', 'Pills Reminder', 'Period Tracker', 'Services', 'Amenities', 'Specialities'],
-      "Select a valid Facility Type"
-    )
-    .required("Facility Type is required"),
-  hospital_services: yup.string().notOneOf(['Select One'], "Select a valid Service").required("Service is required"),
-  hospital_amenities: yup.string().notOneOf(['Select One'], "Select a valid Amenity").required("Amenity is required"),
-  pharmacy_services: yup.string().notOneOf(['Select One'], "Select a valid Pharmacy Service").required("Pharmacy Service is required"),
+  // facility_type: yup
+  //   .array()
+  //   .of(yup.string().oneOf(['Conditions', 'Pills Reminder', 'Period Tracker', 'Services', 'Amenities', 'Specialities']))
+  //   .min(1, "Select at least one Facility Type")
+  //   .required("Facility Type is required"),
+  // hospital_services: yup
+  //   .array()
+  //   .of(yup.string())
+  //   .min(1, "Select at least one Service")
+  //   .required("Service is required"),
+  // hospital_amenities: yup
+  //   .array()
+  //   .of(yup.string())
+  //   .min(1, "Select at least one Amenity")
+  //   .required("Amenity is required"),
+  // pharmacy_services: yup
+  //   .array()
+  //   .of(yup.string())
+  //   .min(1, "Select at least one Pharmacy Service")
+  //   .required("Pharmacy Service is required"),
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
-  // whatsapp: yup.string().required("Whatsapp is required"),
   gps_address: yup.string().required("GPS Address is required"),
   street: yup.string().required("Street is required"),
   post_code: yup.string().required("Post Code is required"),
@@ -33,7 +42,12 @@ const schema = yup.object().shape({
   district: yup.string().required("District is required"),
   region: yup.string().required("Region is required"),
   country: yup.string().required("Country is required"),
+  first_name: yup.string().required("First Name is required"),
+  last_name: yup.string().required("Last Name is required"),
+  person_contact_number: yup.string().required("Contact Number is required"),
+  position: yup.string().required("Position is required"),
 });
+
 
 const FacilityProfileForm = () => {
   const [loading, setLoading] = useState(false);
@@ -47,12 +61,13 @@ const FacilityProfileForm = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    
   });
 
-  const selectedFacilityType = watch("facility_type");
-  const selectedHospitalServices = watch("hospital_services");
-  const selectedHospitalAmenities = watch("hospital_amenities");
-  const selectedPharmacyServices = watch("pharmacy_services");
+  const selectedFacilityType = watch("facility_type") || [];
+  const selectedHospitalServices = watch("hospital_services") || [];
+  const selectedHospitalAmenities = watch("hospital_amenities") || [];
+  const selectedPharmacyServices = watch("pharmacy_services") || [];
 
   const onSubmit = (user) => {
     setLoading(true);
@@ -87,15 +102,17 @@ const FacilityProfileForm = () => {
         <SplitDropdown2
           label="Select Facility"
           value={selectedFacilityType}
+          placeholder=" "
           onChange={(value) => setValue("facility_type", value)}
           items={[
-            { label: "Conditions" },
-            { label: "Pills Reminder" },
-            { label: "Period Tracker" },
-            { label: "Services" },
-            { label: "Amenities" },
-            { label: "Specialities" },
+            { label: "Hospital" },
+            { label: "Pharmacy" },
+            { label: "Herbal Center" },
+            { label: "Diagnostic Center" },
+            { label: "Ambulance Service" },
+            { label: "Pharmacy Wholesale" },
           ]}
+          isMultiSelect={true}
         />
       </div>
 
@@ -122,8 +139,16 @@ const FacilityProfileForm = () => {
           />
           <Textinput
             name="whatsapp"
-            label="Whatsapp Number"
+            label="Whatsapp Number (Optional)"
             type="text"
+            placeholder=" "
+            register={register}
+            // No error handling for WhatsApp
+          />
+          <Textinput
+            name="email"
+            label="Email (Optional)"
+            type="email"
             placeholder=" "
             register={register}
             // No error handling for WhatsApp
@@ -200,7 +225,7 @@ const FacilityProfileForm = () => {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 grid-cols-1 w-full mt-2">
+      <div className="grid sm:grid-cols-3 grid-cols-1 sm:gap-4 w-full mt-2">
         <div>
           <p className="font-semibold my-5">Hospital Services</p>
           <SplitDropdown2
@@ -208,9 +233,9 @@ const FacilityProfileForm = () => {
             value={selectedHospitalServices}
             onChange={(value) => setValue("hospital_services", value)}
             items={[
-              { label: "Select One" },
               ...HOSPITAL_SERVICES.map((service) => ({ label: service })),
             ]}
+            isMultiSelect={true}
           />
         </div>
 
@@ -221,9 +246,9 @@ const FacilityProfileForm = () => {
             value={selectedHospitalAmenities}
             onChange={(value) => setValue("hospital_amenities", value)}
             items={[
-              { label: "Select One" },
               ...HOSPITAL_AMENITIES.map((amenity) => ({ label: amenity })),
             ]}
+            isMultiSelect={true}
           />
         </div>
 
@@ -234,9 +259,53 @@ const FacilityProfileForm = () => {
             value={selectedPharmacyServices}
             onChange={(value) => setValue("pharmacy_services", value)}
             items={[
-              { label: "Select One" },
               ...PHARMACY_SERVICES.map((service) => ({ label: service })),
             ]}
+            isMultiSelect={true}
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="font-semibold my-5">Contact Person</p>
+        <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
+          <Textinput
+            name="first_name"
+            label="First Name"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.first_name?.message}
+            required // Added required prop
+          />
+          <Textinput
+            name="last_name"
+            label="Last Name"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.last_name?.message}
+            required // Added required prop
+          />
+          <Textinput
+            name="person_contact_number"
+            label="Contact Number"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.person_contact_number?.message}
+            required
+            // No error handling for WhatsApp
+          />
+          <Textinput
+            name="position"
+            label="Position"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.position?.message}
+            required
+            // No error handling for WhatsApp
           />
         </div>
       </div>

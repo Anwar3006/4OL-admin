@@ -23,9 +23,9 @@ const schema = yup.object().shape({
       "Select a valid Facility Type"
     )
     .required("Facility Type is required"),
-  hospital_services: yup.string().notOneOf(['Select One'], "Select a valid Service").required("Service is required"),
-  hospital_amenities: yup.string().notOneOf(['Select One'], "Select a valid Amenity").required("Amenity is required"),
-  pharmacy_services: yup.string().notOneOf(['Select One'], "Select a valid Pharmacy Service").required("Pharmacy Service is required"),
+  hospital_services: yup.string().required("Service is required"),
+  hospital_amenities: yup.string().required("Amenity is required"),
+  pharmacy_services: yup.string().required("Pharmacy Service is required"),
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
   // whatsapp: yup.string().required("Whatsapp is required"),
@@ -37,6 +37,10 @@ const schema = yup.object().shape({
   district: yup.string().required("District is required"),
   region: yup.string().required("Region is required"),
   country: yup.string().required("Country is required"),
+  first_name: yup.string().required("First Name is required"),
+  last_name: yup.string().required("Last Name is required"),
+  person_contact_number: yup.string().required("Contact Number is required"),
+  position: yup.string().required("Position is required"),
 });
 
 const EditFacilityProfileForm = () => {
@@ -125,12 +129,12 @@ const EditFacilityProfileForm = () => {
           value={selectedFacilityType}
           onChange={(value) => setValue("facility_type", value)}
           items={[
-            { label: "Conditions" },
-            { label: "Pills Reminder" },
-            { label: "Period Tracker" },
-            { label: "Services" },
-            { label: "Amenities" },
-            { label: "Specialities" },
+            { label: "Hospital" },
+            { label: "Pharmacy" },
+            { label: "Herbal Center" },
+            { label: "Diagnostic Center" },
+            { label: "Ambulance Service" },
+            { label: "Pharmacy Wholesale" },
           ]}
         />
       </div>
@@ -264,6 +268,50 @@ const EditFacilityProfileForm = () => {
             value={selectedPharmacyServices}
             onChange={(value) => setValue("pharmacy_services", value)}
             items={PHARMACY_SERVICES.map((service) => ({ label: service }))}
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="font-semibold my-5">Contact Person</p>
+        <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
+          <Textinput
+            name="first_name"
+            label="First Name"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.first_name?.message}
+            required // Added required prop
+          />
+          <Textinput
+            name="last_name"
+            label="Last Name"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.last_name?.message}
+            required // Added required prop
+          />
+          <Textinput
+            name="person_contact_number"
+            label="Contact Number"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.person_contact_number?.message}
+            required
+            // No error handling for WhatsApp
+          />
+          <Textinput
+            name="position"
+            label="Position"
+            type="text"
+            placeholder=" "
+            register={register}
+            error={errors.position?.message}
+            required
+            // No error handling for WhatsApp
           />
         </div>
       </div>

@@ -34,6 +34,7 @@ export const healthcareProfile = async (
           facility_name: user.facility_name,
           contact_num: user.contact_num,
           whatsapp: user.whatsapp,
+          email: user.email,
           gps_address: user.gps_address,
           street: user.street,
           post_code: user.post_code,
@@ -44,7 +45,12 @@ export const healthcareProfile = async (
           hospital_services: user.hospital_services,
           hospital_amenities: user.hospital_amenities,
           pharmacy_services: user.pharmacy_services,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          person_contact_number: user.persn_contact_number,
+          position: user.position,
           status: "Active",
+          
         },
       ]);
 

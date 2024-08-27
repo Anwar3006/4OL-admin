@@ -53,6 +53,7 @@
     "react-svg-map": "^2.2.0",
     "react-table": "^7.8.0",
     "react-tailwindcss-datepicker": "^1.5.1",
+    "react-time-picker": "^7.0.0",
     "react-toastify": "^9.1.1",
     "react-transition-group": "^4.4.5",
     "recharts": "^2.5.0",

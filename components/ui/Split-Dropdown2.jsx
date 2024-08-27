@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import Icon from "@/components/ui/Icon";
 
 const SplitDropdown2 = ({
@@ -12,20 +12,44 @@ const SplitDropdown2 = ({
   splitIcon = "heroicons-outline:chevron-down",
   items = [{ label: "Male" }, { label: "Female" }],
   classItem = "px-4 py-2",
-  required = true// Added required prop
+  isMultiSelect = false,
+  required = true,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleItemClick = (item) => {
+    if (isMultiSelect) {
+      const newValue = value.includes(item.label)
+        ? value.filter(v => v !== item.label)
+        : [...value, item.label];
+      onChange(newValue);
+    } else {
+      onChange(item.label);
+    }
+    if (!isMultiSelect) {
+      setIsOpen(false); // Close dropdown if not multi-select
+    }
+  };
+
   return (
     <div className={`relative ${wrapperClass}`}>
       <Menu as="div" className="block w-full">
         <div className="split-btngroup flex">
           <div className={`flex-1 cursor-pointer ${labelClass}`}>
             {label}
-            {required && <span className="text-red-500 text-lg">*</span>} {/* Asterisk */}
+            {required && <span className="text-red-500 text-lg">*</span>}
           </div>
         </div>
-        <Menu.Button className={`flex-0 mb-2 ${labelClass}`}>
+        <Menu.Button
+          className={`flex-0 mb-2 ${labelClass}`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
           <div className="flex form-control py-2">
-            {value || "Select"}
+            {isMultiSelect
+              ? value.length > 0
+                ? value.join(', ')
+                : "Select"
+              : value || "Select"}
             <span className="ml-4 flex items-center">
               <Icon icon={splitIcon} />
             </span>
@@ -34,6 +58,7 @@ const SplitDropdown2 = ({
 
         <Transition
           as={Fragment}
+          show={isOpen}
           enter="transition ease-out duration-100"
           enterFrom="transform opacity-0 scale-95"
           enterTo="transform opacity-100 scale-100"
@@ -54,9 +79,17 @@ const SplitDropdown2 = ({
                       active
                         ? "bg-slate-100 text-slate-900 dark:bg-slate-600 dark:text-slate-300 dark:bg-opacity-50"
                         : "text-slate-600 dark:text-slate-300"
-                    } block ${classItem}`}
-                    onClick={() => onChange(item.label)}
+                    } block ${classItem} flex items-center`}
+                    onClick={() => handleItemClick(item)}
                   >
+                    {isMultiSelect && (
+                      <input
+                        type="checkbox"
+                        checked={value.includes(item.label)}
+                        readOnly
+                        className="mr-2"
+                      />
+                    )}
                     {item.label}
                   </div>
                 )}
