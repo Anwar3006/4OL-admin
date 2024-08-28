@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
@@ -88,6 +88,7 @@ export default function HealthcareCenters() {
   const handleEdit = (id) => {
     router.push(`/edit-facility-profile-form?id=${id}`);
   };
+  
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -143,7 +144,7 @@ export default function HealthcareCenters() {
                   {item.contact_num}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.whatsapp || 'N/A'}
+                  {item.whatsapp || "N/A"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.gps_address}
@@ -178,21 +179,31 @@ export default function HealthcareCenters() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {formatDate(item.created_at)}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.status}
+                <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap`}>
+                  {item.status === "Active" ? (
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      <span className="">Active</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      <span className="">In Active</span>
+                    </div>
+                  )}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
                     <Button
-                       icon="heroicons-outline:pencil-alt"
-                       iconClass="text-base text-green-500" // Adjust the color and size as needed
-                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      icon="heroicons-outline:pencil-alt"
+                      iconClass="text-base text-green-500" // Adjust the color and size as needed
+                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
                       onClick={() => handleEdit(item.id)}
                     />
                     <Button
-                       icon="heroicons-outline:trash"
-                       iconClass="text-base text-red-500" // Adjust the color and size as needed
-                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      icon="heroicons-outline:trash"
+                      iconClass="text-base text-red-500" // Adjust the color and size as needed
+                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
                       onClick={() => handleDelete(item.id)}
                     />
                   </div>
