@@ -19,23 +19,16 @@ const SplitDropdown2 = ({
   const [inputValue, setInputValue] = useState("");
 
   const handleItemClick = (item) => {
-    console.log("Item clicked:", item); // Debug log
-  
     if (isMultiSelect) {
       const newValue = value.includes(item.label)
         ? value.filter((v) => v !== item.label)
         : [...value, item.label];
-      console.log("New value (multi-select):", newValue); // Debug log
       onChange(newValue);
     } else {
-      console.log("New value (single-select):", item.label); // Debug log
       onChange(item.label);
-    }
-    if (!isMultiSelect) {
-      setIsOpen(false); // Close dropdown if not multi-select
+      setIsOpen(false); // Close dropdown after selection
     }
   };
-  
 
   const handleAddItem = () => {
     if (inputValue.trim()) {
@@ -94,12 +87,6 @@ const SplitDropdown2 = ({
                 placeholder="Add new item..."
                 className="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 capitalize"
               />
-              {/* <button
-                onClick={handleAddItem}
-                className="mt-2 w-full px-4 py-2 bg-indigo-500 text-white rounded"
-              >
-                Add
-              </button> */}
             </div>
             {items.map((item, index) => (
               <Menu.Item key={index}>

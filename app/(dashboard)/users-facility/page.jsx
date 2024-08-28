@@ -88,6 +88,10 @@ export default function HealthcareCenters() {
   const handleEdit = (id) => {
     router.push(`/edit-facility-profile-form?id=${id}`);
   };
+
+  const handleView = (id) => {
+    router.push(`/view-facility-profile?id=${id}`);
+  };
   
 
   return (
@@ -112,6 +116,7 @@ export default function HealthcareCenters() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+              {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Type</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Name</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Contact Number</th>
@@ -128,53 +133,56 @@ export default function HealthcareCenters() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Pharmacy Services</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Created At</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Status</th>
+              {/* </div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
+              
               <tr key={item.id}>
+                {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.facility_type}
+                {item.facility_type?.join(", ") || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.facility_name}
+                  {item.facility_name || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.contact_num}
+                  {item.contact_num || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.whatsapp || "N/A"}
+                  {item.whatsapp || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.gps_address}
+                  {item.gps_address || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.street}
+                  {item.street || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.post_code}
+                  {item.post_code || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.area}
+                  {item.area || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.district}
+                  {item.district || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.region}
+                  {item.region || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.country}
+                  {item.country || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.hospital_services}
+                  {item.hospital_services?.join(", ") || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.hospital_amenities}
+                  {item.hospital_amenities?.join(", ") || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.pharmacy_services}
+                  {item.pharmacy_services?.join(", ") || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {formatDate(item.created_at)}
@@ -192,6 +200,7 @@ export default function HealthcareCenters() {
                     </div>
                   )}
                 </td>
+                {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
                     <Button
