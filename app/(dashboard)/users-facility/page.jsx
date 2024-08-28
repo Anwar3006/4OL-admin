@@ -140,7 +140,7 @@ export default function HealthcareCenters() {
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
               
-              <tr key={item.id}>
+              <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer">
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                 {item.facility_type?.join(", ") || "Null"}
@@ -207,13 +207,19 @@ export default function HealthcareCenters() {
                       icon="heroicons-outline:pencil-alt"
                       iconClass="text-base text-green-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
-                      onClick={() => handleEdit(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(item.id);
+                      }}
                     />
                     <Button
                       icon="heroicons-outline:trash"
                       iconClass="text-base text-red-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
-                      onClick={() => handleDelete(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
                     />
                   </div>
                 </td>
