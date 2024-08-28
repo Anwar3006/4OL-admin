@@ -50,12 +50,12 @@ export default function page() {
           text="Back"
           className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
           iconClass="text-lg"
-          onClick={() => router.push("/healthcare-centers")}
+          onClick={() => router.push("/users-facility")}
         />
       </div>
       {facility && (
         <div className="my-6  lg:text-base sm:text-sm text-xs">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 capitalize">
             <div className="font-semibold">Facility Name:</div>
             <div>{facility.facility_name || "Not Available"}</div>
 
@@ -67,6 +67,9 @@ export default function page() {
 
             <div className="font-semibold">Whatsapp:</div>
             <div>{facility.whatsapp || "Not Available"}</div>
+
+            <div className="font-semibold ">Email:</div>
+            <div className={`${facility.email? 'lowercase' : 'capitalize'}`}>{facility.email || 'Not Available'}</div>
 
             <div className="font-semibold">GPS Address:</div>
             <div>{facility.gps_address || "Not Available"}</div>
@@ -128,7 +131,7 @@ export default function page() {
           </div>
 
 
-          <div className="my-6 font-semibold">Business Hours</div>
+          <div className="mt-6 mb-4 font-semibold">Business Hours</div>
           <div className="grid grid-cols-1 gap-4">
           <div className="flex justify-between items-center font-semibold xl:w-[30%] sm:w-[50%]">
       <div className=" flex-1">Days</div>

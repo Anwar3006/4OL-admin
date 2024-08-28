@@ -120,14 +120,14 @@ export default function HealthcareCenters() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Type</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Name</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Contact Number</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Whatsapp</th>
+              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Whatsapp</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">GPS Address</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Street</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Post Code</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Area</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">District</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Country</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Country</th> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Hospital Services</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Hospital Amenities</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Pharmacy Services</th>
@@ -151,7 +151,7 @@ export default function HealthcareCenters() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.contact_num || "Null"}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.whatsapp || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
@@ -174,7 +174,7 @@ export default function HealthcareCenters() {
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.country || "Null"}
-                </td>
+                </td> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.hospital_services?.join(", ") || "Null"}
                 </td>
