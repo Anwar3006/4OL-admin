@@ -19,18 +19,23 @@ const SplitDropdown2 = ({
   const [inputValue, setInputValue] = useState("");
 
   const handleItemClick = (item) => {
+    console.log("Item clicked:", item); // Debug log
+  
     if (isMultiSelect) {
       const newValue = value.includes(item.label)
         ? value.filter((v) => v !== item.label)
         : [...value, item.label];
+      console.log("New value (multi-select):", newValue); // Debug log
       onChange(newValue);
     } else {
+      console.log("New value (single-select):", item.label); // Debug log
       onChange(item.label);
     }
     if (!isMultiSelect) {
       setIsOpen(false); // Close dropdown if not multi-select
     }
   };
+  
 
   const handleAddItem = () => {
     if (inputValue.trim()) {
@@ -55,7 +60,7 @@ const SplitDropdown2 = ({
         >
           <div className="flex form-control py-2 capitalize">
             {isMultiSelect
-              ? value.length > 0
+              ? Array.isArray(value) && value.length > 0
                 ? value.join(", ")
                 : "Select"
               : value || "Select"}
