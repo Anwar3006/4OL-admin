@@ -80,7 +80,15 @@ export const menuItems = [
     icon: "carbon:categories",
     child: [
       {
-        childtitle: "Conditions",
+        childtitle: "Diseases & Conditions",
+        childlink: "#",
+      },
+      {
+        childtitle: "Symptoms",
+        childlink: "#",
+      },
+      {
+        childtitle: "Healthy Living",
         childlink: "#",
       },
       {

@@ -9,10 +9,16 @@ import useDarkMode from "@/hooks/useDarkMode";
 import Link from "next/link";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
+import { useDispatch } from "react-redux";
+import { handleLogout } from "../auth/store";
+import { useRouter } from "next/navigation";
 
 const MobileMenu = ({ className = "custom-class" }) => {
   const scrollableNodeRef = useRef();
   const [scroll, setScroll] = useState(false);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
   useEffect(() => {
     const handleScroll = () => {
       if (scrollableNodeRef.current.scrollTop > 0) {
@@ -23,6 +29,13 @@ const MobileMenu = ({ className = "custom-class" }) => {
     };
     scrollableNodeRef.current.addEventListener("scroll", handleScroll);
   }, [scrollableNodeRef]);
+
+     // Logout action handler
+     const handleLogoutAction = () => {
+      console.log("Logout button clicked"); 
+      router.push('/')
+      dispatch(handleLogout(false));
+   };
 
   const [isSemiDark] = useSemiDark();
   // skin
@@ -68,7 +81,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
         className="sidebar-menu px-4 h-[calc(100%-80px)]"
         scrollableNodeProps={{ ref: scrollableNodeRef }}
       >
-        <Navmenu menus={menuItems} />
+        <Navmenu menus={menuItems} onLogout={handleLogoutAction}/>
         {/* <div className="bg-slate-900 mb-24 lg:mb-10 mt-24 p-4 relative text-center rounded-2xl text-white">
           <img
             src="/assets/images/svg/rabit.svg"
