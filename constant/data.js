@@ -81,7 +81,7 @@ export const menuItems = [
     child: [
       {
         childtitle: "Diseases & Conditions",
-        childlink: "#",
+        childlink: "illness_and_complications/form",
       },
       {
         childtitle: "Symptoms",
