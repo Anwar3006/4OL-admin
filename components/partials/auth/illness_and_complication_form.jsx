@@ -12,7 +12,7 @@ export default function IllnessAndComplicationForm() {
   const [loading, setLoading] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'types' or 'causes'
   const [newTypes, setNewTypes] = useState([]);
-const [newCauses, setNewCauses] = useState([]);
+  const [newCauses, setNewCauses] = useState([]);
 
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm();
 
@@ -30,13 +30,7 @@ const [newCauses, setNewCauses] = useState([]);
 
   useEffect(() => {
     // Ensure at least one type and cause field exists
-    if (activeModal === 'types' && typeFields.length === 0) {
-      appendType({ type_name: "", about_type: "" });
-    }
-    if (activeModal === 'causes' && causeFields.length === 0) {
-      appendCause({ cause_name: "", other_possible_causes: "" });
-    }
-  }, [activeModal, typeFields, causeFields, appendType, appendCause]);
+  }, [activeModal]);
 
   const onSubmit = (data) => {
     const listType = data.condition_name.charAt(0).toUpperCase();
@@ -74,11 +68,15 @@ const [newCauses, setNewCauses] = useState([]);
   };
 
   const addItemsToForm = (items, type) => {
+    const validItems = items.filter(item => 
+      Object.values(item).some(value => value.trim() !== "")
+    );
+
     if (type === 'types') {
-      newTypes.forEach(item => appendType(item));
+      validItems.forEach(item => appendType(item));
       setNewTypes([]); // Clear the new items after adding them
     } else if (type === 'causes') {
-      newCauses.forEach(item => appendCause(item));
+      validItems.forEach(item => appendCause(item));
       setNewCauses([]); // Clear the new items after adding them
     }
     closeModal();
@@ -87,15 +85,12 @@ const [newCauses, setNewCauses] = useState([]);
   const handleAddType = () => {
     const newType = { type_name: "", about_type: "" };
     setNewTypes([...newTypes, newType]); // Add new type to state
-    appendType(newType); // Append to form immediately if needed
   };
   
   const handleAddCause = () => {
     const newCause = { cause_name: "", other_possible_causes: "" };
     setNewCauses([...newCauses, newCause]); // Add new cause to state
-    appendCause(newCause); // Append to form immediately if needed
   };
-  
 
   return (
     <>
@@ -113,42 +108,44 @@ const [newCauses, setNewCauses] = useState([]);
             onClick={() => openModal('types')}
             className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
           />
- <div className="mb-4 border p-4 rounded">
-  {/* Check if there are any items in typeFields */}
-  {typeFields.length > 0 ? (
-    <table className="w-full border-collapse">
-      <thead>
-        <tr>
-          <th className="border p-2">Name</th>
-          <th className="border p-2">About</th>
-          <th className="border p-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {typeFields.map((item, index) => (
-          <tr key={item.id}>
-            <td className="border p-2 text-black">{item.type_name}</td>
-            <td className="border p-2 text-black">{item.about_type}</td>
-            <td className="border p-2 text-center">
-              <button
-                type="button"
-                onClick={() => removeType(index)}
-                className="text-red-500"
-                aria-label="Remove"
-              >
-                <Icon icon={'carbon:close-filled'} width={20} height={20} />
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p className="sm:text-sm text-xs">No types added yet.</p> // Display a message or leave it empty when no items are present
-  )}
-</div>
-
-
+          <div className="my-2 rounded">
+            {typeFields.length > 0 && typeFields.some(field => field.type_name || field.about_type) ? (
+            <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border ">Name</th>
+                  <th className="border">About</th>
+                  <th className="border"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {typeFields
+                  .filter(item => item.type_name.trim() !== "" || item.about_type.trim() !== "")
+                  .map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="border p-2 text-black">{item.type_name}</td>
+                      <td className="border p-2 text-black">{item.about_type}</td>
+                      <td className="border p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeType(index)}
+                          className="text-red-500"
+                          aria-label="Remove"
+                        >
+                          <Icon icon={'carbon:close-filled'} width={20} height={20} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          
+            ) : (
+              <p className="sm:text-sm text-xs">No types added yet.</p>
+            )}
+          </div>
         </div>
 
         <div>
@@ -207,118 +204,140 @@ const [newCauses, setNewCauses] = useState([]);
       </form>
 
       {/* Types Modal */}
-  {/* Types Modal */}
-{activeModal === 'types' && (
-  <Modal
-    activeModal={activeModal === 'types'}
-    onClose={closeModal}
-    title="Types"
-    labelClass={'bg-[#56ce83]'}
-    footerContent={
-      <>
-        <button
-          onClick={() => addItemsToForm(newTypes, 'types')}
-          className="btn btn-sm bg-green-500 text-white"
+      {activeModal === 'types' && (
+        <Modal
+          activeModal={activeModal === 'types'}
+          onClose={closeModal}
+          title="Types"
+          labelClass={'bg-[#56ce83]'}
+          footerContent={
+            <>
+              <button
+                onClick={() => {
+                  addItemsToForm(newTypes, 'types');
+                  // setNewTypes([]); // Clear new types after adding
+                }}
+                className="btn btn-sm bg-green-500 text-white"
+              >
+                Added
+              </button>
+              <button onClick={closeModal} className="btn btn-sm bg-gray-500 text-white">
+                Close
+              </button>
+            </>
+          }
         >
-          Added
-        </button>
-        <button onClick={closeModal} className="btn btn-sm bg-red-500 text-white">Cancel</button>
-      </>
-    }
-  >
-    {typeFields.map((item, index) => (
-      <div key={item.id} className="mb-4 border p-4 rounded">
-        <Textinput
-          name={`types[${index}].type_name`}
-          label={`Type ${index + 1} Name`}
-          type="text"
-          placeholder="Type Name"
-          register={register}
-          defaultValue={item.type_name}
-        />
-        <Textarea
-          name={`types[${index}].about_type`}
-          label={`About Type ${index + 1}`}
-          placeholder="Describe this type"
-          register={register}
-          defaultValue={item.about_type}
-        />
-        <button
-          type="button"
-          onClick={() => removeType(index)}
-          className="text-red-500 mt-2 text-sm"
-        >
-          Remove Type
-        </button>
-      </div>
-    ))}
-    <Button
-      icon="heroicons-outline:plus-sm"
-      iconClass="text-base text-white"
-      text="Add Type"
-      type="button"
-      onClick={handleAddType}
-      className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
-    />
-  </Modal>
-)}
+          {newTypes.map((type, index) => (
+            <div key={index} className="mb-4">
+              <Textinput
+                value={type.type_name}
+                onChange={e => {
+                  const updatedTypes = [...newTypes];
+                  updatedTypes[index] = { ...updatedTypes[index], type_name: e.target.value };
+                  setNewTypes(updatedTypes);
+                }}
+                label={`Type Name ${index + 1}`}
+                placeholder="Type Name"
+              />
+              <Textarea
+                value={type.about_type}
+                onChange={e => {
+                  const updatedTypes = [...newTypes];
+                  updatedTypes[index] = { ...updatedTypes[index], about_type: e.target.value };
+                  setNewTypes(updatedTypes);
+                }}
+                label={`About ${index + 1}`}
+                placeholder="About this type"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedTypes = newTypes.filter((_, i) => i !== index);
+                  setNewTypes(updatedTypes);
+                }}
+                className="text-red-500 mt-2"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleAddType}
+            className="btn btn-sm bg-green-500 text-white"
+          >
+            Add Another Type
+          </button>
+        </Modal>
+      )}
 
-{/* Causes Modal */}
-{activeModal === 'causes' && (
-  <Modal
-    activeModal={activeModal === 'causes'}
-    onClose={closeModal}
-    title="Causes"
-    labelClass={'bg-[#56ce83]'}
-    footerContent={
-     <>
-        <button
-          onClick={() => addItemsToForm(newCauses, 'causes')}
-          className="btn btn-sm bg-green-500 text-white"
+      {/* Causes Modal */}
+      {activeModal === 'causes' && (
+        <Modal
+          activeModal={activeModal === 'causes'}
+          onClose={closeModal}
+          title="Causes"
+          labelClass={'bg-[#56ce83]'}
+          footerContent={
+            <>
+              <button
+                onClick={() => {
+                  addItemsToForm(newCauses, 'causes');
+                  setNewCauses([]); // Clear new causes after adding
+                }}
+                className="btn btn-sm bg-green-500 text-white"
+              >
+                Added
+              </button>
+              <button onClick={closeModal} className="btn btn-sm bg-gray-500 text-white">
+                Close
+              </button>
+            </>
+          }
         >
-          Added
-        </button>
-        <button onClick={closeModal} className="btn btn-sm bg-red-500 text-white">Cancel</button>
-      </>
-    }
-  >
-    {causeFields.map((item, index) => (
-      <div key={item.id} className="mb-4 border p-4 rounded">
-        <Textinput
-          name={`causes[${index}].cause_name`}
-          label={`Cause ${index + 1} Name`}
-          type="text"
-          placeholder="Cause Name"
-          register={register}
-          defaultValue={item.cause_name}
-        />
-        <Textarea
-          name={`causes[${index}].other_possible_causes`}
-          label={`Other Possible Causes ${index + 1}`}
-          placeholder="Describe other possible causes"
-          register={register}
-          defaultValue={item.other_possible_causes}
-        />
-        <button
-          type="button"
-          onClick={() => removeCause(index)}
-          className="text-red-500 mt-2"
-        >
-          Remove Cause
-        </button>
-      </div>
-    ))}
-    <Button
-      icon="heroicons-outline:plus-sm"
-      iconClass="text-base text-white"
-      text="Add Cause"
-      type="button"
-      onClick={handleAddCause}
-      className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
-    />
-  </Modal>
-)}
-
+          {newCauses.map((cause, index) => (
+            <div key={index} className="mb-4">
+              <Textinput
+                value={cause.cause_name}
+                onChange={e => {
+                  const updatedCauses = [...newCauses];
+                  updatedCauses[index] = { ...updatedCauses[index], cause_name: e.target.value };
+                  setNewCauses(updatedCauses);
+                }}
+                label={`Cause Name ${index + 1}`}
+                placeholder="Cause Name"
+              />
+              <Textarea
+                value={cause.other_possible_causes}
+                onChange={e => {
+                  const updatedCauses = [...newCauses];
+                  updatedCauses[index] = { ...updatedCauses[index], other_possible_causes: e.target.value };
+                  setNewCauses(updatedCauses);
+                }}
+                label={`Other Possible Causes ${index + 1}`}
+                placeholder="Describe other possible causes"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedCauses = newCauses.filter((_, i) => i !== index);
+                  setNewCauses(updatedCauses);
+                }}
+                className="text-red-500 mt-2"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleAddCause}
+            className="btn btn-sm bg-green-500 text-white"
+          >
+            Add Another Cause
+          </button>
+        </Modal>
+      )}
     </>
   );
 }
