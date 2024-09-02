@@ -85,11 +85,11 @@ export const menuItems = [
       },
       {
         childtitle: "Symptoms",
-        childlink: "#",
+        childlink: "symptoms/form",
       },
       {
         childtitle: "Healthy Living",
-        childlink: "#",
+        childlink: "healthy_living/form",
       },
       {
         childtitle: "Pills Reminder",
