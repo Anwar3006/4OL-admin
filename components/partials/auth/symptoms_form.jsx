@@ -136,7 +136,7 @@ export default function SymptomsForm() {
             onClick={() => openModal("types")}
             className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
           />
-          <div className="my-2 rounded">
+          <div className="my-2 rounded sm:text-sm text-xs">
             {typeFields.length > 0 &&
             typeFields.some((field) => field.type_name || field.about_type) ? (
               <div className="overflow-x-auto">
@@ -198,7 +198,7 @@ export default function SymptomsForm() {
             onClick={() => openModal("causes")}
             className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
           />
-          <div className="my-2 rounded">
+          <div className="my-2 rounded  sm:text-sm text-xs">
             {causeFields.length > 0 &&
             causeFields.some(
               (field) => field.cause_name || field.other_possible_causes

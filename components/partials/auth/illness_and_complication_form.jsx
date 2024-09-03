@@ -111,7 +111,7 @@ export default function IllnessAndComplicationForm() {
           <div className="my-2 rounded">
             {typeFields.length > 0 && typeFields.some(field => field.type_name || field.about_type) ? (
             <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
+            <table className="min-w-full border-collapse sm:text-sm text-xs">
               <thead>
                 <tr>
                   <th className="border ">Name</th>
@@ -124,9 +124,9 @@ export default function IllnessAndComplicationForm() {
                   .filter(item => item.type_name.trim() !== "" || item.about_type.trim() !== "")
                   .map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border p-2 text-black">{item.type_name}</td>
-                      <td className="border p-2 text-black">{item.about_type}</td>
-                      <td className="border p-2 text-center">
+                      <td className="border px-2 text-black">{item.type_name}</td>
+                      <td className="border px-2 text-black">{item.about_type}</td>
+                      <td className="border px-2 text-center">
                         <button
                           type="button"
                           onClick={() => removeType(index)}
@@ -158,9 +158,9 @@ export default function IllnessAndComplicationForm() {
             onClick={() => openModal('causes')}
             className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
           />
-          <div className="my-2 rounded">
+          <div className="my-2 rounded ">
             {causeFields.length > 0 && causeFields.some(field => field.cause_name || field.other_possible_causes) ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto  sm:text-sm text-xs">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr>
@@ -174,9 +174,9 @@ export default function IllnessAndComplicationForm() {
                   .filter(item => item.cause_name.trim() !== "" || item.other_possible_causes.trim() !== "")
                   .map((item, index) => (
                     <tr key={item.id}>
-                      <td className="border p-2 text-black">{item.cause_name}</td>
-                      <td className="border p-2 text-black">{item.other_possible_causes}</td>
-                      <td className="border p-2 text-center">
+                      <td className="border px-2 text-black">{item.cause_name}</td>
+                      <td className="border px-2 text-black">{item.other_possible_causes}</td>
+                      <td className="border px-2 text-center">
                         <button
                           type="button"
                           onClick={() => removeCause(index)}
