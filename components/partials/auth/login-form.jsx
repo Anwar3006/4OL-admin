@@ -8,7 +8,7 @@ import Checkbox from "@/components/ui/Checkbox";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { handleLogin } from "./store";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 const schema = yup
   .object({
@@ -51,15 +51,16 @@ const LoginForm = () => {
         router.push("/analytics"); // Redirect to analytics page
       }
     } catch (error) {
-      toast.error(error || "Unexpected error", {
-        position: "top-right",
-        autoClose: 1500,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "light",
-      });
+      console.log(error)
+      // toast.error(error || "Unexpected error", {
+      //   position: "top-right",
+      //   autoClose: 1500,
+      //   hideProgressBar: false,
+      //   closeOnClick: true,
+      //   pauseOnHover: true,
+      //   draggable: true,
+      //   theme: "light",
+      // });
     } finally {
     setLoading(false);
   }
@@ -67,6 +68,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <ToastContainer />
       <Textinput
         name="email"
         label="Email"

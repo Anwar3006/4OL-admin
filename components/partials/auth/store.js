@@ -28,14 +28,13 @@ export const handleLogin = createAsyncThunk(
       return { isAuth: true, userId };
     } catch (error) {
       console.error('Login error:', error);
-      toast.error("Login failed: " + (error.message || "Unknown error"), {
+      toast.error((error.message || "Unknown error"), {
         position: "top-right",
         autoClose: 1500,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        progress: undefined,
         theme: "light",
       });
       return rejectWithValue(error.message || "Unknown error");
