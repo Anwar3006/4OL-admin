@@ -158,32 +158,44 @@ export default function IllnessAndComplicationForm() {
             onClick={() => openModal('causes')}
             className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
           />
-          {causeFields.map((item, index) => (
-            <div key={item.id} className="mb-4 border p-4 rounded">
-              <Textinput
-                name={`causes[${index}].cause_name`}
-                label={`Cause ${index + 1} Name`}
-                type="text"
-                placeholder="Cause Name"
-                register={register}
-                defaultValue={item.cause_name}
-              />
-              <Textarea
-                name={`causes[${index}].other_possible_causes`}
-                label={`Other Possible Causes ${index + 1}`}
-                placeholder="Describe other possible causes"
-                register={register}
-                defaultValue={item.other_possible_causes}
-              />
-              <button
-                type="button"
-                onClick={() => removeCause(index)}
-                className="text-red-500 mt-2"
-              >
-                Remove Cause
-              </button>
-            </div>
-          ))}
+          <div className="my-2 rounded">
+            {causeFields.length > 0 && causeFields.some(field => field.cause_name || field.other_possible_causes) ? (
+            <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border ">Name</th>
+                  <th className="border">Other Causes</th>
+                  <th className="border"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {causeFields
+                  .filter(item => item.cause_name.trim() !== "" || item.other_possible_causes.trim() !== "")
+                  .map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="border p-2 text-black">{item.cause_name}</td>
+                      <td className="border p-2 text-black">{item.other_possible_causes}</td>
+                      <td className="border p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeCause(index)}
+                          className="text-red-500"
+                          aria-label="Remove"
+                        >
+                          <Icon icon={'carbon:close-filled'} width={20} height={20} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          
+            ) : (
+              <p className="sm:text-sm text-xs">No causes added yet.</p>
+            )}
+          </div>
         </div>
 
         <Textarea name="diagnosis" label="Diagnosis" type="text" placeholder=" " register={register} />
