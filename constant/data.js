@@ -139,7 +139,9 @@ export const menuItems = [
     title: "Map",
     isHide: true,
     icon: "uiw:map",
-    link: "#",
+    child: [
+      {childlink: '#', childtitle: 'Footprint'}
+    ],
   },
   {
     title: "Marketing",
@@ -147,8 +149,12 @@ export const menuItems = [
     icon: "hugeicons:marketing",
     child: [
       {
+        childtitle: "Overview",
+        childlink: "marketing/overview",
+      },
+      {
         childtitle: "Advertisement",
-        childlink: "#",
+        childlink: "marketing/ads",
       },
       {
         childtitle: "News",

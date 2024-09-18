@@ -8,6 +8,7 @@ const SplitDropdown2 = ({
   onChange,
   wrapperClass = "inline-block",
   labelClass = "",
+  inputClass = "",
   classMenuItems = "mt-2 w-[250px] max-h-60 overflow-y-auto",
   splitIcon = "heroicons-outline:chevron-down",
   items = [{ label: "Male" }, { label: "Female" }],
@@ -78,12 +79,12 @@ const SplitDropdown2 = ({
   rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
   ${classMenuItems} custom-scrollbar`}
           >
-            <div className="p-2">
+            <div className={`p-2 ${inputClass}`}>
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
+                onKeyDown={(e) => e.key === "Enter" && handleAddItem()}
                 placeholder="Add new item..."
                 className="w-full px-3 py-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 capitalize"
               />
