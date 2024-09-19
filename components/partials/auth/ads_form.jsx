@@ -280,6 +280,7 @@ const AdsForm = () => {
                 value={headline}
                 onChange={(e) => handleHeadlineChange(e, index)}
                 maxLength={30}
+                className="capitalize"
                 rows={1}
               />
             ))}
@@ -298,7 +299,7 @@ const AdsForm = () => {
           {/* Description */}
           <div>
             <Textarea
-              className="mb-2"
+              className="mb-2 capitalize"
               label="Description (Optional)"
               placeholder="Include additional details..."
               register={register}
@@ -312,7 +313,7 @@ const AdsForm = () => {
 
           {/* Primary Text */}
           <Textarea
-            className="mb-2"
+            className="mb-2 capitalize"
             label="Primary Text"
             placeholder="Add primary text with hyperlinks if necessary..."
             register={register}
