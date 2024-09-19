@@ -5,7 +5,6 @@ import Fileinput from "@/components/ui/Fileinput";
 import Textarea from "@/components/ui/Textarea";
 import SplitDropdown2 from "@/components/ui/Split-Dropdown2";
 import { toast, ToastContainer } from "react-toastify";
-import Link from "next/link";
 import Textinput from "@/components/ui/Textinput";
 import moment from "moment";
 
@@ -19,7 +18,7 @@ const AdsForm = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // For slideshow
   const [charCount, setCharCount] = useState(0);
 
-  const { register, handleSubmit, watch, setValue } = useForm();
+  const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
 
   const ctaLabels = [
@@ -216,6 +215,7 @@ const AdsForm = () => {
       toast.error("Error saving ad: " + error.message);
     } else {
       toast.success("Ad saved successfully!");
+      reset();
     }
   };
 
