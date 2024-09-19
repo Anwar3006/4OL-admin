@@ -163,11 +163,21 @@ module.exports = {
           },
           "100%": { transform: "scale3d(1, 1, 1)" },
         },
+        slideIn: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        slideOut: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
       },
       animation: {
         "spin-slow": "spin 3s linear infinite",
         zoom: "zoom 1s ease-in-out infinite",
         tada: "tada 1.5s ease-in-out infinite",
+        slideIn: 'slideIn 0.5s ease-in-out',
+        slideOut: 'slideOut 0.5s ease-in-out',
       },
     },
   },
