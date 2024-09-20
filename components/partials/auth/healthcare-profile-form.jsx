@@ -403,7 +403,7 @@ const FacilityProfileForm = () => {
         </div>
       </div>
 
-      <div>
+      <div className="md:w-[40%] w-full">
         <p className="text-sm">Upload Photos <span className="text-red-600">(Upto 6 Images)</span></p>
         <Fileinput
         label="Upload Images"
