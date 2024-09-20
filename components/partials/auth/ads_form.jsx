@@ -248,7 +248,7 @@ const AdsForm = () => {
                 name="imageUpload"
                 onChange={handleImageUpload}
                 multiple={true}
-                placeholder="Upload images"
+                placeholder="Upload Images"
                 selectedFiles={
                   mediaType === "multiple" || mediaType === "single"
                     ? mediaFiles
@@ -261,7 +261,7 @@ const AdsForm = () => {
               <Fileinput
                 name="videoUpload"
                 onChange={handleVideoUpload}
-                placeholder="Upload video"
+                placeholder="Upload Video"
                 multiple={false}
                 selectedFile={mediaType === "video" ? mediaFiles[0] : null}
                 //   preview={mediaType === 'video' ? preview : ''}
@@ -315,10 +315,11 @@ const AdsForm = () => {
           <Textarea
             className="mb-2 capitalize"
             label="Primary Text"
-            placeholder="Add primary text with hyperlinks if necessary..."
+            placeholder="Add hyperlinks if necessary..."
             register={register}
             onChange={(e) => setPrimaryText(e.target.value)}
             name="primaryText"
+            rows = {1}
           />
 
           {/* Call to Action */}

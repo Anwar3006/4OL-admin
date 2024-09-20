@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
 import Performance from "@/components/partials/auth/Marketing_Overview/performance";
+import Activity from "@/components/partials/auth/Marketing_Overview/activity";
 
 export default function Page() {
   const [isDark] = useDarkmode();
@@ -44,8 +45,7 @@ export default function Page() {
                 <div className="tab-content">
                   {isSelected === 'activity' && (
                     <div>
-                      <h2 className="text-xl font-bold mb-4">Activity</h2>
-                      <p>This is the activity screen. Display user activities here.</p>
+                      <Activity />
                     </div>
                   )}
                   {isSelected === 'performance' && (

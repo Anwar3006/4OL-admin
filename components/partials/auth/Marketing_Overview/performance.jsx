@@ -1,9 +1,5 @@
 import React from 'react'
-import GroupChart3 from '../../widget/chart/group-chart-3'
-import GroupChart5 from '../../widget/chart/group-chart5'
 import Card from '@/components/ui/Card'
-import GroupChart1 from '../../widget/chart/group-chart-1'
-import GroupChart4 from '../../widget/chart/group-chart-4'
 import GroupChart2 from '../../widget/chart/group-chart-2'
 
 export default function Performance() {

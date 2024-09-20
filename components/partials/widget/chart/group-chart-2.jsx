@@ -2,6 +2,7 @@ import React from "react";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const shapeLine1 = {
@@ -155,7 +156,7 @@ const GroupChart2 = () => {
             </div>
             {/* <div className="ltr:ml-auto rtl:mr-auto max-w-[124px]"> */}
             <div className="text-right">
-              <p className="sm:text-sm text-xs">View All</p>
+              <Link href={'#'} className="sm:text-sm text-xs hover:text-green-600">View All</Link>
               {/* <Chart
                 options={item.name.options}
                 series={item.name.series}
