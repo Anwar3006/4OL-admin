@@ -51,6 +51,7 @@ export const healthcareProfile = async (
           position: user.position,
           status: "Active",
           business_hours: user.business_hours,
+          mediaUrls: user.mediaUrls,
           
         },
       ]);

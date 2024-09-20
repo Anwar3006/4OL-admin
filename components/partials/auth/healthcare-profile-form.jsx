@@ -11,6 +11,9 @@ import {
   PHARMACY_SERVICES,
 } from "@/constant/healthcare-profile-list";
 import { healthcareProfile } from "@/app/services/healthcare-profile";
+import Fileinput from "@/components/ui/Fileinput";
+import { supabase } from "@/app/utils/supabaseClient";
+import { uploadMediaFiles } from "@/app/utils/uploadMedia";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -48,9 +51,11 @@ const schema = yup.object().shape({
   position: yup.string().required("Position is required"),
 });
 
-
 const FacilityProfileForm = () => {
   const [loading, setLoading] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState([]);
+  const [preview, setPreview] = useState(null);
+  const [mediaType, setMediaType] = useState(""); 
 
   const {
     register,
@@ -61,7 +66,6 @@ const FacilityProfileForm = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
-    
   });
 
   const selectedFacilityType = watch("facility_type") || [];
@@ -69,9 +73,29 @@ const FacilityProfileForm = () => {
   const selectedHospitalAmenities = watch("hospital_amenities") || [];
   const selectedPharmacyServices = watch("pharmacy_services") || [];
 
-  const onSubmit = (user) => {
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length <= 6) {
+      setMediaType("multiple");
+      const fileUrls = files.map((file) => URL.createObjectURL(file));
+      setPreview(fileUrls);
+      setMediaFiles(files);
+    }
+  };
+
+  const onSubmit = async(user) => {
     setLoading(true);
-  
+    const mediaUrls = await uploadMediaFiles('media', 'add_facility', 'healthcare_profiles', mediaFiles);
+
+    // Check for errors
+    if (!mediaUrls || mediaUrls.length === 0) {
+      toast.error("No media files uploaded.");
+      return;
+    } else if(mediaUrls >= 6){
+      toast.error("Maximum 6 files are allowed");
+      return;
+    }
+
     // Filter out any empty values in business hours
     const businessHours = Object.keys(user.business_hours || {}).reduce(
       (acc, day) => {
@@ -83,12 +107,13 @@ const FacilityProfileForm = () => {
       },
       {}
     );
-  
+
     const updatedUser = {
       ...user,
       business_hours: businessHours,
+      mediaUrls,
     };
-  
+
     healthcareProfile(
       updatedUser,
       () => {
@@ -107,7 +132,6 @@ const FacilityProfileForm = () => {
       }
     );
   };
-  
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
@@ -325,62 +349,73 @@ const FacilityProfileForm = () => {
       </div>
 
       <div className="mt-2">
-  <p className="font-semibold my-5">Business Info</p>
-  <div className="grid grid-cols-2 gap-8">
-    {/* First half of the days */}
-    <div>
-      {["monday", "tuesday", "wednesday", "thursday"].map((day) => (
-        <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-          <label className="font-semibold capitalize">{day}</label>
-          <Textinput
-            name={`business_hours.${day}.opening`}
-            label="Opening Time"
-            type="time"
-            register={register}
-            error={errors.business_hours?.[day]?.opening?.message}
-            required
-          />
-          <Textinput
-            name={`business_hours.${day}.closing`}
-            label="Closing Time"
-            type="time"
-            register={register}
-            error={errors.business_hours?.[day]?.closing?.message}
-            required
-          />
+        <p className="font-semibold my-5">Business Info</p>
+        <div className="grid grid-cols-2 gap-8">
+          {/* First half of the days */}
+          <div>
+            {["monday", "tuesday", "wednesday", "thursday"].map((day) => (
+              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
+                <label className="font-semibold capitalize">{day}</label>
+                <Textinput
+                  name={`business_hours.${day}.opening`}
+                  label="Opening Time"
+                  type="time"
+                  register={register}
+                  error={errors.business_hours?.[day]?.opening?.message}
+                  required
+                />
+                <Textinput
+                  name={`business_hours.${day}.closing`}
+                  label="Closing Time"
+                  type="time"
+                  register={register}
+                  error={errors.business_hours?.[day]?.closing?.message}
+                  required
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Second half of the days */}
+          <div>
+            {["friday", "saturday", "sunday"].map((day) => (
+              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
+                <label className="font-semibold capitalize">{day}</label>
+                <Textinput
+                  name={`business_hours.${day}.opening`}
+                  label="Opening Time"
+                  type="time"
+                  register={register}
+                  error={errors.business_hours?.[day]?.opening?.message}
+                  required
+                />
+                <Textinput
+                  name={`business_hours.${day}.closing`}
+                  label="Closing Time"
+                  type="time"
+                  register={register}
+                  error={errors.business_hours?.[day]?.closing?.message}
+                  required
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
+      </div>
 
-    {/* Second half of the days */}
-    <div>
-      {["friday", "saturday", "sunday"].map((day) => (
-        <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-          <label className="font-semibold capitalize">{day}</label>
-          <Textinput
-            name={`business_hours.${day}.opening`}
-            label="Opening Time"
-            type="time"
-            register={register}
-            error={errors.business_hours?.[day]?.opening?.message}
-            required
-          />
-          <Textinput
-            name={`business_hours.${day}.closing`}
-            label="Closing Time"
-            type="time"
-            register={register}
-            error={errors.business_hours?.[day]?.closing?.message}
-            required
-          />
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
-
-
-
+      <div>
+        <p className="text-sm">Upload Photos <span className="text-red-600">(Upto 6 Images)</span></p>
+        <Fileinput
+        label="Upload Images"
+          name="mediaUrls"
+          onChange={handleImageUpload}
+          multiple={true}
+          placeholder="Upload Images"
+          selectedFiles={mediaType === "multiple" ? mediaFiles : []}
+          preview={mediaType === "multiple" ? preview : ""}
+          className="mb-2"
+        />
+      </div>
 
       <button
         type="submit"
@@ -393,6 +428,6 @@ const FacilityProfileForm = () => {
       <ToastContainer />
     </form>
   );
-}
+};
 
 export default FacilityProfileForm;
