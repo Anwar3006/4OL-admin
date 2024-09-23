@@ -18,6 +18,7 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
     const [primaryText, setPrimaryText] = useState("");
     const [currentImageIndex, setCurrentImageIndex] = useState(0); // For slideshow
     const [charCount, setCharCount] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     const { register, handleSubmit, watch, setValue, reset } = useForm();
     const selectedCTA = watch("CTA") || ""; // Watch the CTA field
@@ -184,12 +185,14 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
   
 
     const onSubmit = async (data) => {
-      // const mediaUrls = await uploadMediaFiles();
-      const mediaUrls = await uploadMediaFiles('media', 'ads', 'banners_ads', mediaFiles)
+      setLoading(true);  // Set loading to true at the start of the submission
+    
+      const mediaUrls = await uploadMediaFiles('media', 'ads', 'banners_ads', mediaFiles);
     
       // Check for errors
       if (!mediaUrls || mediaUrls.length === 0) {
         toast.error("No media files uploaded.");
+        setLoading(false); // Reset loading state in case of an error
         return;
       }
     
@@ -209,17 +212,25 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
         end_date_and_time: data.end_date_and_time,
       };
     
-      // Insert new ad
-      const { error } = await supabase.from("banners_ads").insert([adData]);
-      console.log("Ad Data to Insert:", adData);
+      try {
+        // Insert new ad
+        const { error } = await supabase.from("banners_ads").insert([adData]);
+        console.log("Ad Data to Insert:", adData);
     
-      if (error) {
-        toast.error("Error saving ad: " + error.message);
-      } else {
-        toast.success("Ad saved successfully!");
-        reset();
+        if (error) {
+          toast.error("Error saving ad: " + error.message);
+        } else {
+          toast.success("Ad saved successfully!");
+          reset(); // Reset the form after successful submission
+        }
+      } catch (error) {
+        console.error("Error during submission:", error);
+        toast.error("An error occurred during submission.");
+      } finally {
+        setLoading(false); // Reset loading state after submission (success or failure)
       }
     };
+    
 
     // Slideshow logic for multiple images
     useEffect(() => {
@@ -431,11 +442,11 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
           </div>
 
           <button
-            type="submit"
-            className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full"
-          >
-            {"Submit"}
-          </button>
+          type="submit"
+          className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full mt-5"
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
         </div>
       </form>
     );
