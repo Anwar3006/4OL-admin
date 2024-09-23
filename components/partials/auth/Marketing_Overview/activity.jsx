@@ -46,9 +46,9 @@ export default function Activity() {
       </div>
 
       {/* Advertisments */}
-      <Card>
+      <Card bodyClass='max-sm:p-2'>
       <div className="mt-2 border-t-1 border-gray-200">
-        <h3 className='text-sm font-semibold text-red-500'>Advertisments: (Max 3 Running)</h3>
+        <h3 className='text-sm font-semibold text-red-500'>Advertisements: (Max 3 Running)</h3>
         <div className="overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -69,7 +69,7 @@ export default function Activity() {
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Shop Now</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-blue-500 ">Performance</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
               <tr className="text-left sm:text-sm text-xs font-normal text-gray-500">
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Email Campaign</td>
@@ -77,7 +77,7 @@ export default function Activity() {
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Sign Up</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-blue-500 ">Performance</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
             </tbody>
           </table>
@@ -86,7 +86,7 @@ export default function Activity() {
       </Card>
 
       {/* News */}
-      <Card className='mt-2'>
+      <Card bodyClass='max-sm:p-2' className='mt-2'>
       <div className="mt-2 border-t-1 border-gray-200">
         <h3 className='text-sm font-semibold text-red-500'>News: (Max 3 Running)</h3>
         <div className="overflow-x-auto custom-scrollbar">
@@ -104,14 +104,14 @@ export default function Activity() {
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Social Media</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Shop Now</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
               <tr className="text-left sm:text-sm text-xs font-normal text-gray-500">
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Email Campaign</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Email Marketing</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Sign Up</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
             </tbody>
           </table>
@@ -120,7 +120,7 @@ export default function Activity() {
       </Card>
 
       {/* Health Tips */}
-      <Card className='mt-2'>
+      <Card bodyClass='max-sm:p-2' className='mt-2'>
       <div className="mt-2 border-t-1 border-gray-200">
         <h3 className='text-sm font-semibold text-red-500'>Health Tips: (Max 3 Running)</h3>
         <div className="overflow-x-auto custom-scrollbar">
@@ -138,14 +138,14 @@ export default function Activity() {
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Photo</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Shop Now</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
               <tr className="text-left sm:text-sm text-xs font-normal text-gray-500">
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Email Campaign</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Video</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Sign Up</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
             </tbody>
           </table>
@@ -154,7 +154,7 @@ export default function Activity() {
       </Card>
 
       {/* Events */}
-      <Card className='mt-2'>
+      <Card bodyClass='max-sm:p-2' className='mt-2'>
       <div className="mt-2 border-t-1 border-gray-200">
         <h3 className='text-sm font-semibold text-red-500'>Events: (Max 3 Running)</h3>
         <div className="overflow-x-auto custom-scrollbar">
@@ -172,14 +172,14 @@ export default function Activity() {
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Photo</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Shop Now</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
               <tr className="text-left sm:text-sm text-xs font-normal text-gray-500">
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Email Campaign</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Video</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">Sign Up</td>
                 <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-green-500 ">Modify</td>
-                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archeive</td>
+                <td className="sm:px-6 px-2 sm:py-3 py-2 font-semibold border text-center cursor-pointer text-orange-500 ">Archive</td>
               </tr>
             </tbody>
           </table>
@@ -188,7 +188,7 @@ export default function Activity() {
       </Card>
       
       {/* Scheduled Activities */}
-      <Card className='mt-2'>
+      <Card bodyClass='max-sm:p-2' className='mt-2'>
       <div className="mt-2 border-t-1 border-gray-200">
         <h3 className='text-sm font-semibold text-red-500'>Scheduled</h3>
         <div className="overflow-x-auto custom-scrollbar">
@@ -227,10 +227,10 @@ export default function Activity() {
       </div>
       </Card>
 
-      {/* Archeive */}
-      <Card className='mt-2'>
+      {/* Archive */}
+      <Card bodyClass='max-sm:p-2' className='mt-2'>
       <div className="mt-2 border-t-1 border-gray-200">
-        <h3 className='text-sm font-semibold text-red-500'>Archeive</h3>
+        <h3 className='text-sm font-semibold text-red-500'>Archive</h3>
         <div className="overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

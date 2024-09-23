@@ -18,7 +18,7 @@ export default function Performance() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Marketing Type</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">CTA</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Total Viewers</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Total Reviews</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Total Re-views</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Avg. Time</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Total Time</th>
             </tr>

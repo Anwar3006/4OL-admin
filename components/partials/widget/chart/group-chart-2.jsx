@@ -80,6 +80,19 @@ const shapeLine6 = {
   },
 };
 
+const shapeLine7 = {
+  series: [{ data: [800, 600, 1000, 800, 600, 1000, 800, 900] }],
+  options: {
+    chart: { toolbar: { show: false }, sparkline: { enabled: true } },
+    stroke: { curve: "smooth", width: 2 },
+    colors: ["#F39C12"],
+    fill: { type: "solid", opacity: [0.1] },
+    xaxis: { show: false },
+    yaxis: { show: false },
+  },
+};
+
+
 const statistics = [
   {
     name: shapeLine1,
@@ -107,7 +120,7 @@ const statistics = [
   },
   {
     name: shapeLine4,
-    title: "Total Reviews",
+    title: "Total Re-views",
     count: "852",
     bg: "bg-[#FFEBEB] dark:bg-slate-900",
     text: "text-[#FF5A5F]",
@@ -129,6 +142,15 @@ const statistics = [
     text: "text-[#F39C12]",
     icon: "fa6-solid:hands", // Updated icon for clicks
   },
+  {
+    name: shapeLine7,
+    title: "Total Opened Events",
+    count: "123",
+    bg: "bg-[#E0FFE5] dark:bg-[#003300]", // Updated background color
+    text: "text-[#009900]", // Updated text color
+    icon: "material-symbols:event-outline", // Icon remains the same
+  }
+  
 ];
 
 const GroupChart2 = () => {
