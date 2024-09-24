@@ -52,7 +52,7 @@ export const menuItems = [
         childlink: "#",
       },
       {
-        childtitle: "Wholeslaers",
+        childtitle: "Wholesalers",
         childlink: "#",
       },
       {
@@ -140,7 +140,8 @@ export const menuItems = [
     isHide: true,
     icon: "uiw:map",
     child: [
-      {childlink: '#', childtitle: 'Footprint'}
+      {childlink: 'map/overview', childtitle: 'Overview'},
+      {childlink: '#', childtitle: 'Footprint'},
     ],
   },
   {

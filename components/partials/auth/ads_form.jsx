@@ -229,8 +229,7 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
       } finally {
         setLoading(false); // Reset loading state after submission (success or failure)
       }
-    };
-    
+    };    
 
     // Slideshow logic for multiple images
     useEffect(() => {
