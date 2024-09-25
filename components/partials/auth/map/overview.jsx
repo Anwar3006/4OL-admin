@@ -103,16 +103,16 @@ export default function Overview() {
           />
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center max-sm:justify-between max-sm:w-full">
           {/* <Icons icon={'bi:search'} className={' text-[#bbbcbb] text-lg'} /> */}
           <Switch
             value={showBusinessPins}
             onChange={() => setShowBusinessPins(!showBusinessPins)}
             label="Business Pins"
             activeClass="bg-green-500"
-            labelClass="-ml-2 sm:text-sm text-xs text-gray-500 "
+            labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500 "
           />
-          <Textinput type={"search"} placeholder={"Search"} className="ml-2" />
+          <Textinput type={"search"} placeholder={"Search"} className="" />
         </div>
       </div>
 
