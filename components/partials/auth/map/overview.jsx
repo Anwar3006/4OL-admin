@@ -42,7 +42,7 @@ export default function Overview() {
   return (
     <>
       <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full">
-        <div className="flex ">
+        <div className="flex">
           <Dropdown
             label={
               <>
