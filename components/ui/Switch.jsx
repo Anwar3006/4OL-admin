@@ -35,7 +35,7 @@ const Swicth = ({
           disabled={disabled}
         />
         <div
-          className={`relative inline-flex h-6 w-[46px] ltr:mr-3 rtl:ml-3 items-center rounded-full transition-all duration-150
+          className={`relative inline-flex sm:h-6 h-5 w-[46px] ltr:mr-3 rtl:ml-3 items-center rounded-full transition-all duration-150
           ${value ? activeClass : "bg-secondary-500"}
           `}
         >
