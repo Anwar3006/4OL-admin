@@ -54,7 +54,7 @@ export default function Overview() {
               </>
             }
             wrapperClass=""
-            labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
+            labelClass="flex items-center  px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
             classMenuItems="mt-2 w-[180px] flex left-0"
             items={regionFilterItems.map((item) => ({
               label: item.label,
@@ -95,7 +95,7 @@ export default function Overview() {
             }
             wrapperClass="ml-2"
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex left-0"
+            classMenuItems="mt-2 w-[180px] flex right-0"
             items={facilityFilterItems.map((item) => ({
               label: item.label,
               onClick: () => handleFilterSelect(item.value),

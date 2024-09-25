@@ -61,7 +61,7 @@ const Dropdown = ({
                               : "text-slate-600 dark:text-slate-300"
                           } block     ${
                             item.hasDivider
-                              ? "border-t border-slate-100 dark:border-slate-700"
+                              ? "border-t border-slate-100 dark:border-slate-700 w-full"
                               : ""
                           }`}
                         >
