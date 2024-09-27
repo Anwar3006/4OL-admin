@@ -85,7 +85,7 @@ export default function Overview() {
           <Dropdown
             label={
               <>
-                <Icons icon={"heroicons-outline:user"} className={"mr-2"} />{" "}
+                <Icons icon={"heroicons-outline:user"} className={"mr-2 "} />{" "}
                 Facility Type{" "}
                 <Icons
                   className={"text-2xl"}

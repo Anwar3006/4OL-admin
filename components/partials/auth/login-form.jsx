@@ -81,10 +81,10 @@ const LoginForm = () => {
         name="password"
         label="Password"
         type="password"
-        icon={"eye"}
         placeholder="Enter your password"
         register={register}
         error={errors.password}
+        hasicon={true}
       />
       <div className="flex justify-between">
         <Checkbox

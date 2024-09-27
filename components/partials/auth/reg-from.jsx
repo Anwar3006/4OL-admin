@@ -143,6 +143,7 @@ const RegForm = () => {
         register={register}
         error={errors.password?.message}
         className='mb-2'
+        hasicon={true}
       />
 
       <Textinput
@@ -153,6 +154,7 @@ const RegForm = () => {
         register={register}
         error={errors.confirm_password?.message}
         className='mb-5'
+        hasicon={true}
       />
 
       <button type="submit" disabled={loading} className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full">

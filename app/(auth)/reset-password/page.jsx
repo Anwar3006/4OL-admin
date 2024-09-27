@@ -79,6 +79,7 @@ const ResetPassword = () => {
                   placeholder="Enter your new password"
                   register={register}
                   error={errors.newPassword}
+                  hasicon={true}
                 />
                 {errors.newPassword && <p className="text-red-500">{errors.newPassword.message}</p>}
                 
@@ -89,6 +90,7 @@ const ResetPassword = () => {
                   placeholder="Confirm your new password"
                   register={register}
                   error={errors.confirmPassword}
+                  hasicon={true}
                 />
                 {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword.message}</p>}
                 
