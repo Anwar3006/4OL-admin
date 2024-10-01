@@ -5,6 +5,8 @@ import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
 import AdsForm from "@/components/partials/auth/ads_form";
 import Overview from "@/components/partials/auth/map/overview";
+import TestMap from "@/components/partials/auth/map/testMap";
+import MapOverview from "@/components/partials/auth/map/MapOverview";
 
 export default function page() {
   const [isDark] = useDarkmode();
@@ -19,7 +21,9 @@ export default function page() {
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
             >
               <div className=" w-full flex flex-col justify-center">
-               <Overview />
+               {/* <Overview /> */}
+              <MapOverview />
+               {/* <TestMap /> */}
               </div>
             </Card>
           </div>
