@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import Dropdown from '@/components/ui/Dropdown';
-import Icons from '@/components/ui/Icon';
-import Swicth from '@/components/ui/Switch';
-import { useForm } from 'react-hook-form';
-import { districts_regions } from '@/constant/district_data';
+import React, { useState, useEffect } from "react";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import Dropdown from "@/components/ui/Dropdown";
+import Icons from "@/components/ui/Icon";
+import Swicth from "@/components/ui/Switch";
+import { useForm } from "react-hook-form";
+import { districts_regions } from "@/constant/district_data";
 
 const mapContainerStyle = {
-  width: '100%',
-  height: '500px',
+  width: "100%",
+  height: "500px",
 };
 
-const defaultCenter = { lat: 7.9465, lng: -1.0232 };  // Ghana's approximate center
+const defaultCenter = { lat: 7.9465, lng: -1.0232 }; // Ghana's approximate center
 const facilityTypes = [
   { label: "Hospitals/ Clinics", value: "ads-display-order" },
   { label: "Herbal Hospitals", value: "advertisement" },
@@ -27,9 +27,9 @@ const MyGoogleMap = () => {
   const [regions] = useState(districts_regions.data);
   const [allDistricts, setAllDistricts] = useState([]);
   const [filteredDistricts, setFilteredDistricts] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
-  const [selectedFacilityType, setSelectedFacilityType] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedFacilityType, setSelectedFacilityType] = useState("");
   const [filteredFacilities, setFilteredFacilities] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [showBusinessPins, setShowBusinessPins] = useState(true);
@@ -45,14 +45,16 @@ const MyGoogleMap = () => {
   // Update districts when a region is selected
   const handleRegionChange = (regionName) => {
     const region = regions.find((r) => r.name === regionName);
+    
     if (region) {
-      setFilteredDistricts(region.districts);  // Show only districts of selected region
+      // setFilteredDistricts(region.districts); // Show only districts of selected region
+      // setSelectedRegion(regionName);
+      setFilteredDistricts(allDistricts); // Show all districts if no region selected
       setSelectedRegion(regionName);
     } else {
-      setFilteredDistricts(allDistricts);  // Show all districts if no region selected
-      setSelectedRegion('');
+      setFilteredDistricts(allDistricts); // Show all districts if no region selected
+      setSelectedRegion("");
     }
-    setSelectedDistrict('');  // Reset district selection
   };
 
   // Update map when a district is selected
@@ -69,11 +71,10 @@ const MyGoogleMap = () => {
     setSelectedFacilityType(facilityType);
   };
 
-  // Handle facility search (you can adjust this to filter based on type, etc.)
+  // Handle facility search
   useEffect(() => {
     const fetchFacilities = async () => {
       if (selectedRegion || selectedDistrict || selectedFacilityType) {
-        // Replace this with your facility search logic if needed
         // Simulating filtered facilities with dummy data
         setFilteredFacilities([
           {
@@ -90,33 +91,54 @@ const MyGoogleMap = () => {
   return (
     <>
       <LoadScript googleMapsApiKey={apiKey}>
-        <div className='flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full'>
+        <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full">
           {/* Region Selector */}
-          <div className='flex'>
+          <div className="flex">
             <Dropdown
-              label={selectedRegion ? selectedRegion : (
+              label={
                 <>
-                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} /> Region{" "}
-                  <Icons className={"text-2xl"} icon={"ri:arrow-drop-down-line"} />
+                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
+                  Region
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
                 </>
-              )}
+              }
               wrapperClass=""
               labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
               classMenuItems="mt-2 w-[180px] flex left-0"
-              items={[{ label: 'All Regions', onClick: () => handleRegionChange('') }, ...regions.map((region) => ({
-                label: region.name,
-                onClick: () => handleRegionChange(region.name),
-              }))]}
+              items={[
+                { onClick: () => handleRegionChange("") },
+                ...regions.map((region) => ({
+                  label: region.name,
+                  onClick: () => handleRegionChange(region.name),
+                })),
+              ]}
+              selectedItem={
+                <>
+                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
+                  {selectedRegion || "Region"}
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
+                </>
+              } // Pass selectedRegion to display
+              onSelect={handleRegionChange} // Handle region selection
             />
 
             <Dropdown
-              label={selectedDistrict ? selectedDistrict : (
+              label={
                 <>
-                  <Icons icon={"carbon:cics-region"} className={"mr-2"} />{" "}
-                  District{" "}
-                  <Icons className={"text-2xl"} icon={"ri:arrow-drop-down-line"} />
+                  <Icons icon={"carbon:cics-region"} className={"mr-2"} />
+                  District
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
                 </>
-              )}
+              }
               wrapperClass="ml-2"
               labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
               classMenuItems="mt-2 w-[180px] flex left-0 h-72 overflow-scroll custom-scrollbar"
@@ -124,15 +146,28 @@ const MyGoogleMap = () => {
                 label: district.name,
                 onClick: () => handleDistrictChange(district.name),
               }))}
-              className=''
+              selectedItem={
+                <>
+                  <Icons icon={"carbon:cics-region"} className={"mr-2"} />
+                  {selectedDistrict || "District"}
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
+                </>
+              } // Pass selectedDistrict to display
+              onSelect={handleDistrictChange} // Handle district selection
             />
 
             <Dropdown
               label={
                 <>
-                  <Icons icon={"heroicons-outline:user"} className={"mr-2 "} />{" "}
-                  Facility Type{" "}
-                  <Icons className={"text-2xl"} icon={"ri:arrow-drop-down-line"} />
+                  <Icons icon={"heroicons-outline:user"} className={"mr-2 "} />
+                  Facility Type
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
                 </>
               }
               wrapperClass="ml-2"
@@ -142,6 +177,17 @@ const MyGoogleMap = () => {
                 label: item.label,
                 onClick: () => handleFacilityTypeChange(item.value),
               }))}
+              selectedItem={
+                <>
+                  <Icons icon={"heroicons-outline:user"} className={"mr-2 "} />
+                  {selectedFacilityType || "Facility Type"}
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
+                </>
+              } // Pass selectedFacilityType to display
+              onSelect={handleFacilityTypeChange} // Handle facility type selection
             />
           </div>
 
@@ -154,15 +200,19 @@ const MyGoogleMap = () => {
               labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500 "
             />
             <input
-              type='search'
-              placeholder='Search'
-              className='border border-green-500 outline-green-500 caret-green-500 rounded-md px-2 py-1 ml-2'
+              type="search"
+              placeholder="Search"
+              className="border border-green-500 outline-green-500 caret-green-500 rounded-md px-2 py-1 ml-2"
             />
           </div>
         </div>
 
         <div className="w-full sm:mt-5 mt-2">
-          <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={8}>
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={mapCenter}
+            zoom={8}
+          >
             {/* Render markers based on filtered facilities */}
             {filteredFacilities.map((facility) => (
               <Marker key={facility.id} position={facility.location} />

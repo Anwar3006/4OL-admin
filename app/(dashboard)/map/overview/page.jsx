@@ -6,7 +6,9 @@ import Card from "@/components/ui/Card";
 import AdsForm from "@/components/partials/auth/ads_form";
 import Overview from "@/components/partials/auth/map/overview";
 import MapOverview from "@/components/partials/auth/map/MapOverview";
+import dynamic from 'next/dynamic';
 import MyGoogleMap from "@/components/partials/auth/map/googleMap";
+
 
 export default function page() {
   const [isDark] = useDarkmode();
