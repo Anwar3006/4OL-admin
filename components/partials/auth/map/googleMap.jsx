@@ -51,9 +51,11 @@ const MyGoogleMap = () => {
       // setSelectedRegion(regionName);
       setFilteredDistricts(allDistricts); // Show all districts if no region selected
       setSelectedRegion(regionName);
+      setMapCenter(region.location);
     } else {
       setFilteredDistricts(allDistricts); // Show all districts if no region selected
       setSelectedRegion("");
+      setMapCenter(defaultCenter); 
     }
   };
 
@@ -213,7 +215,6 @@ const MyGoogleMap = () => {
             center={mapCenter}
             zoom={8}
           >
-            {/* Render markers based on filtered facilities */}
             {filteredFacilities.map((facility) => (
               <Marker key={facility.id} position={facility.location} />
             ))}
