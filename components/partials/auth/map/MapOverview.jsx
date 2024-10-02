@@ -4,6 +4,7 @@ import axios from 'axios';
 import Dropdown from '@/components/ui/Dropdown';
 import Icons from '@/components/ui/Icon';
 import Swicth from '@/components/ui/Switch';
+import BasicMap from './basicMap';
 
 const mapContainerStyle = {
   width: '100%',
@@ -31,23 +32,30 @@ const MapOverview = () => {
   const [showBusinessPins, setShowBusinessPins] = useState(true);
   const apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
-  useEffect(() => {
-    const fetchRegions = async () => {
-      try {
-        const response = await axios.get(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=&types=(regions)&key=${apiKey}&components=country:GH`
-        );
-        const regionResults = response.data.predictions.map((region) => ({
-          name: region.description,
-          place_id: region.place_id,
-        }));
-        setRegions(regionResults);
-      } catch (error) {
-        console.error("Error fetching regions:", error);
-      }
-    };
-    fetchRegions();
-  }, [apiKey]);
+// Fetch regions from Google Places API
+useEffect(() => {
+  const fetchNearbyPlaces = async () => {
+    try {
+      const response = await fetch("/api/fetch-places", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          latitude: 9.367277099999999,
+          longitude: -0.1494988,
+          filter: "Herbal",
+        }),
+      });
+      const data = await response.json();
+      console.log("Regions", data);
+      console.log(data);
+    } catch (error) {
+      console.error("Network request failed:", error);
+    }
+  };
+  fetchNearbyPlaces();
+}, []);
 
   useEffect(() => {
     const fetchDistricts = async () => {
@@ -170,11 +178,12 @@ const MapOverview = () => {
           </div>
         </div>
         <div className="w-full sm:mt-5 mt-2">
-          <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={8}>
+          <BasicMap />
+          {/* <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={8}>
             {filteredFacilities.map((facility) => (
               <Marker key={facility.id} position={facility.location} />
             ))}
-          </GoogleMap>
+          </GoogleMap> */}
         </div>
       </LoadScript>
     </>
