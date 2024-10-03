@@ -45,6 +45,8 @@ const MyGoogleMap = () => {
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [showBusinessPins, setShowBusinessPins] = useState(true);
   const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
+  const [searchInput, setSearchInput] = useState("");
+
 
   useEffect(() => {
     setIsMounted(true); // Set mounted to true when component mounts
@@ -87,6 +89,11 @@ const MyGoogleMap = () => {
     setSelectedFacilityType(facilityType);
   };
 
+  const handleSearchChange = async (event) => {
+    const value = event.target.value;
+    setSearchInput(value);
+  };
+
   // Handle facility search
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -105,6 +112,7 @@ const MyGoogleMap = () => {
         const { data } = await axios.post("/api/places", {
           ...requestData,
         });
+        console.log(data)
         setFilteredFacilities(data?.places);
       }
     };
@@ -112,6 +120,7 @@ const MyGoogleMap = () => {
   }, [selectedRegion, selectedDistrict, selectedFacilityType]);
 
   if (!isMounted) return null; // Prevent rendering until mounted
+
   return (
     <>
       <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full">
@@ -226,6 +235,8 @@ const MyGoogleMap = () => {
             type="search"
             placeholder="Search"
             className="border border-green-500 outline-green-500 caret-green-500 rounded-md px-2 py-1 ml-2"
+            value={searchInput}
+            onChange={handleSearchChange}
           />
         </div>
       </div>
@@ -241,7 +252,8 @@ const MyGoogleMap = () => {
             attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {/* Displaying markers for filtered facilities */}
-          {filteredFacilities.map((facility) => (
+          {showBusinessPins && 
+          filteredFacilities.map((facility) => (
             <Marker
               key={facility?.place_id}
               position={facility?.geometry?.location}
