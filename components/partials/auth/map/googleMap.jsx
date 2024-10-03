@@ -6,6 +6,7 @@ import Swicth from "@/components/ui/Switch";
 import { useForm } from "react-hook-form";
 import { districts_regions } from "@/constant/district_data";
 import L from "leaflet"; // Import Leaflet
+import axios from "axios";
 
 // Leaflet's default icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -23,13 +24,13 @@ const customIcon = L.icon({
 
 const defaultCenter = [9.367277099999999, -0.1494988]; // Ghana's approximate center
 const facilityTypes = [
-  { label: "Hospitals/ Clinics", value: "ads-display-order" },
-  { label: "Herbal Hospitals", value: "advertisement" },
-  { label: "Diagnostic Labs", value: "news" },
+  { label: "Hospital", value: "Hospital" },
+  { label: "Herbal", value: "Herbal" },
+  { label: "Labs", value: "Labs" },
+  { label: "Ambulance", value: "Ambulance" },
   { label: "Pharmacies", value: "health" },
-  { label: "Wholesalers", value: "events" },
-  { label: "Ambulance", value: "auto-slide-delay" },
-  { label: "Homes", value: "auto-slide-delay" },
+  { label: "Pharmacy", value: "Pharmacy" },
+  { label: "Wholesale", value: "Wholesale" },
 ];
 
 const MyGoogleMap = () => {
@@ -39,7 +40,7 @@ const MyGoogleMap = () => {
   const [filteredDistricts, setFilteredDistricts] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedFacilityType, setSelectedFacilityType] = useState("");
+  const [selectedFacilityType, setSelectedFacilityType] = useState("Hospital");
   const [filteredFacilities, setFilteredFacilities] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [showBusinessPins, setShowBusinessPins] = useState(true);
@@ -61,7 +62,7 @@ const MyGoogleMap = () => {
     const region = regions.find((r) => r.name === regionName);
     if (region) {
       setFilteredDistricts(region.districts); // Show filtered districts
-      setSelectedRegion(regionName);
+      setSelectedRegion(region);
       setMapCenter(region.location);
     } else {
       setFilteredDistricts(allDistricts); // Show all districts if no region selected
@@ -75,12 +76,14 @@ const MyGoogleMap = () => {
     const district = filteredDistricts.find((d) => d.name === districtName);
     if (district) {
       setMapCenter(district.location);
-      setSelectedDistrict(districtName);
+      setSelectedDistrict(district);
     }
   };
 
   // Handle facility type selection
   const handleFacilityTypeChange = (facilityType) => {
+    console.log('d', facilityType);
+    
     setSelectedFacilityType(facilityType);
   };
 
@@ -89,20 +92,26 @@ const MyGoogleMap = () => {
     const fetchFacilities = async () => {
       if (selectedRegion || selectedDistrict || selectedFacilityType) {
         // Simulating filtered facilities with dummy data
-        setFilteredFacilities([
-          {
-            id: "1",
-            name: "Sample Facility",
-            location: [9.367277099999999, -0.1494988],
-          },
-        ]);
+        const requestData = {
+          latitude: selectedDistrict
+            ? selectedDistrict?.location?.lat
+            : selectedRegion?.location?.lat || defaultCenter[0],
+          longitude: selectedDistrict
+            ? selectedDistrict?.location?.lng
+            : selectedRegion?.location?.lng || defaultCenter[0],
+          filter: selectedFacilityType || "Pharmacy",
+        };
+
+        const { data } = await axios.post("/api/places", {
+          ...requestData,
+        });
+        setFilteredFacilities(data?.places);
       }
     };
     fetchFacilities();
   }, [selectedRegion, selectedDistrict, selectedFacilityType]);
 
   if (!isMounted) return null; // Prevent rendering until mounted
-
   return (
     <>
       <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full">
@@ -132,7 +141,7 @@ const MyGoogleMap = () => {
             selectedItem={
               <>
                 <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
-                {selectedRegion || "Region"}
+                {selectedRegion?.name || "Region"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -163,7 +172,7 @@ const MyGoogleMap = () => {
             selectedItem={
               <>
                 <Icons icon={"carbon:cics-region"} className={"mr-2"} />
-                {selectedDistrict || "District"}
+                {selectedDistrict?.name || "District"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -222,14 +231,22 @@ const MyGoogleMap = () => {
       </div>
 
       <div className="w-full sm:mt-5 mt-2">
-        <MapContainer center={mapCenter} zoom={8} style={{ height: "500px", width: "100%" }}>
+        <MapContainer
+          center={mapCenter}
+          zoom={8}
+          style={{ height: "500px", width: "100%" }}
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {/* Displaying markers for filtered facilities */}
           {filteredFacilities.map((facility) => (
-            <Marker key={facility.id} position={facility.location} icon={customIcon}>
+            <Marker
+              key={facility?.place_id}
+              position={facility?.geometry?.location}
+              icon={customIcon}
+            >
               {/* <Popup>{facility.name}</Popup> */}
             </Marker>
           ))}
