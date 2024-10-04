@@ -4,8 +4,7 @@ import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
 import dynamic from 'next/dynamic';
-const MyGoogleMap = dynamic(() => import("@/components/partials/auth/map/GoogleMap"), { ssr: false });
-// import MyGoogleMap from "@/components/partials/auth/map/googleMap";
+const MyGoogleMap = dynamic(() => import("@/components/partials/auth/map/googleMap"), { ssr: false });
 
 export default function page() {
   const [isDark] = useDarkmode();
