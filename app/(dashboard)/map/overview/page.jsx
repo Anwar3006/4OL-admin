@@ -4,7 +4,7 @@ import Card from "@/components/ui/Card";
 import dynamic from "next/dynamic";
 
 // Dynamically import the map to prevent SSR issues with window
-const MyGoogleMap = dynamic(() => import("@/components/partials/auth/map/GoogleMap"), {
+const MyGoogleMap = dynamic(() => import("@/components/partials/auth/map/googleMap"), {
   ssr: false,
 });
 
