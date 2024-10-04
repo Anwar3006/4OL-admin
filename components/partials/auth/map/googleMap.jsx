@@ -46,7 +46,8 @@ const MyGoogleMap = () => {
   const [showBusinessPins, setShowBusinessPins] = useState(true);
   const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
   const [searchInput, setSearchInput] = useState("");
-
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   useEffect(() => {
     setIsMounted(true); // Set mounted to true when component mounts
@@ -84,14 +85,50 @@ const MyGoogleMap = () => {
 
   // Handle facility type selection
   const handleFacilityTypeChange = (facilityType) => {
-    console.log('d', facilityType);
-    
+    console.log("d", facilityType);
+
     setSelectedFacilityType(facilityType);
   };
 
   const handleSearchChange = async (event) => {
     const value = event.target.value;
     setSearchInput(value);
+
+    if (value.length > 1) {
+      try {
+        const { data } = await axios.post("/api/places", {
+          searchQuery: value,
+          latitude: selectedDistrict
+            ? selectedDistrict.location.lat
+            : selectedRegion
+            ? selectedRegion.location.lat
+            : mapCenter[0], // Use map center as fallback
+          longitude: selectedDistrict
+            ? selectedDistrict.location.lng
+            : selectedRegion
+            ? selectedRegion.location.lng
+            : mapCenter[1],
+          facilityType: selectedFacilityType, // Include facility type in request
+        });
+        console.log("Places", data);
+        console.log("Sugession", data.places);
+        setSuggestions(data.places);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion) => {
+    setSelectedSuggestion(suggestion);
+    setMapCenter([
+      suggestion.geometry.location.lat,
+      suggestion.geometry.location.lng,
+    ]);
+    setSearchInput(""); // Clear search input after selection
+    setSuggestions([]); // Hide suggestions after selection
   };
 
   // Handle facility search
@@ -112,7 +149,7 @@ const MyGoogleMap = () => {
         const { data } = await axios.post("/api/places", {
           ...requestData,
         });
-        console.log(data)
+        console.log(data);
         setFilteredFacilities(data?.places);
       }
     };
@@ -231,13 +268,34 @@ const MyGoogleMap = () => {
             activeClass="bg-green-500"
             labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500 "
           />
-          <input
-            type="search"
-            placeholder="Search"
-            className="border border-green-500 outline-green-500 caret-green-500 rounded-md px-2 py-1 ml-2"
-            value={searchInput}
-            onChange={handleSearchChange}
-          />
+          <div className="relative">
+            <input
+              type="search"
+              placeholder="Search for a facility"
+              className="border border-green-500 outline-green-500 caret-green-500 rounded-md px-2 py-1 ml-2"
+              value={searchInput}
+              onChange={handleSearchChange}
+            />
+            {/* Suggestions Dropdown */}
+            {suggestions.length > 0 && (
+              <div className="border border-gray-300 rounded-md mt-1 absolute z-[9999] bg-white w-full max-h-64 custom-scrollbar overflow-y-auto">
+                {suggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.place_id}
+                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => handleSuggestionSelect(suggestion)}
+                  >
+                    {suggestion.name}
+                  </div>
+                ))}
+              </div>
+            )}
+            {suggestions.length === 0 && searchInput.length > 2 && (
+              <div className="border border-gray-300 rounded-md mt-1 absolute z-[9999] bg-white w-full p-2 text-sm text-gray-500">
+                No results found for "{searchInput}"
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -245,23 +303,36 @@ const MyGoogleMap = () => {
         <MapContainer
           center={mapCenter}
           zoom={8}
-          style={{ height: "500px", width: "100%" }}
+          scrollWheelZoom={true}
+          className="h-[500px] w-full"
         >
           <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {/* Displaying markers for filtered facilities */}
-          {showBusinessPins && 
-          filteredFacilities.map((facility) => (
-            <Marker
-              key={facility?.place_id}
-              position={facility?.geometry?.location}
+          {/* Show facility markers */}
+          {showBusinessPins &&
+            filteredFacilities.map((facility) => (
+              <Marker
+              key={facility.place_id}
+              position={[facility.geometry.location.lat, facility.geometry.location.lng]}
               icon={customIcon}
             >
-              {/* <Popup>{facility.name}</Popup> */}
+              <Popup>{facility.name}</Popup>
             </Marker>
-          ))}
+            ))}
+          {/* Show selected suggestion marker */}
+          {selectedSuggestion && (
+          <Marker
+          position={[
+            selectedSuggestion.geometry.location.lat,
+            selectedSuggestion.geometry.location.lng,
+          ]}
+          icon={customIcon}
+        >
+          <Popup>{selectedSuggestion.name}</Popup>
+        </Marker>
+          )}
         </MapContainer>
       </div>
     </>
