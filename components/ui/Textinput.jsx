@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import Icon from "@/components/ui/Icon";
-import Cleave from "cleave.js/react";
-import "cleave.js/dist/addons/cleave-phone.us";
 
 const Textinput = ({
   type,
@@ -19,15 +17,14 @@ const Textinput = ({
   disabled,
   id,
   horizontal,
-  validate,
-  isMask,
+  validate, // Use this correctly as boolean or string
   msgTooltip,
   description,
   hasicon,
   onChange,
   options,
   onFocus,
-  defaultValue,
+  defaultValue, // Consider using 'value' instead
   required,
   ...rest
 }) => {
@@ -47,23 +44,23 @@ const Textinput = ({
       )}
       <div className={`relative ${horizontal ? "flex-1" : ""}`}>
         <input
-          type={type === "password" && open ? "text" : type} // Adjusted conditional logic
-          {...register(name)}
-          {...rest}
+          type={type === "password" && open ? "text" : type}
+          {...register(name)} // Ensure correct usage of register
           className={`${error ? "has-error" : ""} form-control py-2 ${className}`}
           placeholder={placeholder}
           readOnly={readonly}
-          defaultValue={defaultValue}
+          value={value} // Use controlled component
           disabled={disabled}
           id={id}
           onChange={onChange}
+          onFocus={onFocus}
+          {...rest} // Include other rest props
         />
-        {type === "password" && hasicon && ( // Ensure the icon only renders for password fields
+        {type === "password" && hasicon && (
           <span className="cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2" onClick={handleOpen}>
             {open ? <Icon icon="heroicons-outline:eye" /> : <Icon icon="heroicons-outline:eye-off"/>}
           </span>
         )}
-        {/* Error and validation icons */}
         {error && (
           <span className="text-danger-500 absolute right-3 top-1/2 transform -translate-y-1/2">
             <Icon icon="heroicons-outline:information-circle" />
@@ -89,6 +86,5 @@ const Textinput = ({
     </div>
   );
 };
-
 
 export default Textinput;
