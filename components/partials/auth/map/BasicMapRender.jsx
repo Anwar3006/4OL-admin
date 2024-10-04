@@ -9,7 +9,7 @@ const customIcon = L.icon({
   iconAnchor: [20, 40], // Anchor point of the icon (center bottom)
 });
 
-const BasicMap = () => {
+const BasicMapRender = () => {
   const position = [9.367277099999999, -0.1494988]; // Ghana's approximate center
 
   return (
@@ -38,4 +38,4 @@ const BasicMap = () => {
   );
 };
 
-export default BasicMap;
+export default BasicMapRender;

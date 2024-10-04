@@ -3,10 +3,6 @@
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
-import AdsForm from "@/components/partials/auth/ads_form";
-import Overview from "@/components/partials/auth/map/overview";
-import MapOverview from "@/components/partials/auth/map/MapOverview";
-import dynamic from 'next/dynamic';
 import MyGoogleMap from "@/components/partials/auth/map/googleMap";
 
 
@@ -23,8 +19,6 @@ export default function page() {
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
             >
               <div className=" w-full flex flex-col justify-center">
-               {/* <Overview /> */}
-              {/* <MapOverview /> */}
                <MyGoogleMap />
               </div>
             </Card>

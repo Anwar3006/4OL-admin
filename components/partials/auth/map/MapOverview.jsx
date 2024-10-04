@@ -4,7 +4,7 @@ import axios from 'axios';
 import Dropdown from '@/components/ui/Dropdown';
 import Icons from '@/components/ui/Icon';
 import Swicth from '@/components/ui/Switch';
-import BasicMap from './basicMap';
+import BasicMapRender from './BasicMapRender';
 
 const mapContainerStyle = {
   width: '100%',
@@ -178,7 +178,7 @@ useEffect(() => {
           </div>
         </div>
         <div className="w-full sm:mt-5 mt-2">
-          <BasicMap />
+          <BasicMapRender />
           {/* <GoogleMap mapContainerStyle={mapContainerStyle} center={mapCenter} zoom={8}>
             {filteredFacilities.map((facility) => (
               <Marker key={facility.id} position={facility.location} />
