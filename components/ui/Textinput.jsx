@@ -8,7 +8,7 @@ const Textinput = ({
   classLabel = "form-label",
   className = "",
   classGroup = "",
-  register,
+  register, // Optional
   name,
   readonly,
   value,
@@ -22,7 +22,6 @@ const Textinput = ({
   description,
   hasicon,
   onChange,
-  options,
   onFocus,
   defaultValue, // Consider using 'value' instead
   required,
@@ -45,7 +44,7 @@ const Textinput = ({
       <div className={`relative ${horizontal ? "flex-1" : ""}`}>
         <input
           type={type === "password" && open ? "text" : type}
-          {...register(name)} // Ensure correct usage of register
+          {...(register && register(name))} // Only use register if defined
           className={`${error ? "has-error" : ""} form-control py-2 ${className}`}
           placeholder={placeholder}
           readOnly={readonly}
