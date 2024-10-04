@@ -5,7 +5,7 @@ import Icons from "@/components/ui/Icon";
 import Swicth from "@/components/ui/Switch";
 import { useForm } from "react-hook-form";
 import { districts_regions } from "@/constant/district_data";
-import L from "leaflet"; // Import Leaflet
+import L from "leaflet"; 
 import axios from "axios";
 
 // Leaflet's default icon
@@ -17,12 +17,12 @@ L.Icon.Default.mergeOptions({
 });
 
 const customIcon = L.icon({
-  iconUrl: "/assets/images/icon/map_marker.svg", // Custom Icon URL
-  iconSize: [30, 30], // Size of the icon
-  iconAnchor: [20, 40], // Anchor point of the icon (center bottom)
+  iconUrl: "/assets/images/icon/map_marker.svg",
+  iconSize: [30, 30],
+  iconAnchor: [20, 40],
 });
 
-const defaultCenter = [9.367277099999999, -0.1494988]; // Ghana's approximate center
+const defaultCenter = [7.946527, -1.023194]; // Ghana's approximate center
 const facilityTypes = [
   { label: "Hospital", value: "Hospital" },
   { label: "Herbal", value: "Herbal" },
@@ -44,49 +44,54 @@ const MyGoogleMap = () => {
   const [filteredFacilities, setFilteredFacilities] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [showBusinessPins, setShowBusinessPins] = useState(true);
-  const [isMounted, setIsMounted] = useState(false); // Track if component is mounted
+  const [isMounted, setIsMounted] = useState(false); 
   const [searchInput, setSearchInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   useEffect(() => {
-    setIsMounted(true); // Set mounted to true when component mounts
+    setIsMounted(true); 
   }, []);
 
-  // Collect all districts on component mount
   useEffect(() => {
     const allDistrictsList = regions.flatMap((region) => region.districts);
     setAllDistricts(allDistrictsList);
-    setFilteredDistricts(allDistrictsList); // Initially show all districts
+    setFilteredDistricts(allDistrictsList);
   }, [regions]);
 
-  // Update districts when a region is selected
   const handleRegionChange = (regionName) => {
     const region = regions.find((r) => r.name === regionName);
     if (region) {
-      setFilteredDistricts(region.districts); // Show filtered districts
+      setFilteredDistricts(region.districts);
       setSelectedRegion(region);
       setMapCenter(region.location);
+
+      // Reset previous search and suggestions
+      setSelectedSuggestion(null);
+      setSearchInput("");
     } else {
-      setFilteredDistricts(allDistricts); // Show all districts if no region selected
+      setFilteredDistricts(allDistricts);
       setSelectedRegion("");
       setMapCenter(defaultCenter);
+
+      setSelectedSuggestion(null);
+      setSearchInput("");
     }
   };
 
-  // Update map when a district is selected
   const handleDistrictChange = (districtName) => {
     const district = filteredDistricts.find((d) => d.name === districtName);
     if (district) {
       setMapCenter(district.location);
       setSelectedDistrict(district);
+
+      // Reset previous search and suggestions
+      setSelectedSuggestion(null);
+      setSearchInput("");
     }
   };
 
-  // Handle facility type selection
   const handleFacilityTypeChange = (facilityType) => {
-    console.log("d", facilityType);
-
     setSelectedFacilityType(facilityType);
   };
 
@@ -102,16 +107,14 @@ const MyGoogleMap = () => {
             ? selectedDistrict.location.lat
             : selectedRegion
             ? selectedRegion.location.lat
-            : mapCenter[0], // Use map center as fallback
+            : mapCenter[0],
           longitude: selectedDistrict
             ? selectedDistrict.location.lng
             : selectedRegion
             ? selectedRegion.location.lng
             : mapCenter[1],
-          facilityType: selectedFacilityType, // Include facility type in request
+          facilityType: selectedFacilityType,
         });
-        console.log("Places", data);
-        console.log("Sugession", data.places);
         setSuggestions(data.places);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -127,15 +130,13 @@ const MyGoogleMap = () => {
       suggestion.geometry.location.lat,
       suggestion.geometry.location.lng,
     ]);
-    setSearchInput(""); // Clear search input after selection
-    setSuggestions([]); // Hide suggestions after selection
+    setSearchInput("");
+    setSuggestions([]);
   };
 
-  // Handle facility search
   useEffect(() => {
     const fetchFacilities = async () => {
       if (selectedRegion || selectedDistrict || selectedFacilityType) {
-        // Simulating filtered facilities with dummy data
         const requestData = {
           latitude: selectedDistrict
             ? selectedDistrict?.location?.lat
@@ -149,14 +150,13 @@ const MyGoogleMap = () => {
         const { data } = await axios.post("/api/places", {
           ...requestData,
         });
-        console.log(data);
         setFilteredFacilities(data?.places);
       }
     };
     fetchFacilities();
   }, [selectedRegion, selectedDistrict, selectedFacilityType]);
 
-  if (!isMounted) return null; // Prevent rendering until mounted
+  if (!isMounted) return null;
 
   return (
     <>
@@ -310,31 +310,31 @@ const MyGoogleMap = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {/* Show facility markers */}
-          {showBusinessPins &&
-            filteredFacilities.map((facility) => (
-              <Marker
-              key={facility.place_id}
-              position={[facility.geometry.location.lat, facility.geometry.location.lng]}
-              icon={customIcon}
-            >
-              <Popup>{facility.name}</Popup>
-            </Marker>
-            ))}
-          {/* Show selected suggestion marker */}
-          {selectedSuggestion && (
-          <Marker
-          position={[
-            selectedSuggestion.geometry.location.lat,
-            selectedSuggestion.geometry.location.lng,
-          ]}
-          icon={customIcon}
-        >
-          <Popup>{selectedSuggestion.name}</Popup>
-        </Marker>
-          )}
+          
+          {showBusinessPins
+            ? filteredFacilities.map((facility) => (
+                <Marker
+                  key={facility.place_id}
+                  position={[facility.geometry.location.lat, facility.geometry.location.lng]}
+                  icon={customIcon}
+                >
+                  <Popup>{facility.name}</Popup>
+                </Marker>
+              ))
+            : selectedSuggestion && (
+                <Marker
+                  position={[
+                    selectedSuggestion.geometry.location.lat,
+                    selectedSuggestion.geometry.location.lng,
+                  ]}
+                  icon={customIcon}
+                >
+                  <Popup>{selectedSuggestion.name}</Popup>
+                </Marker>
+              )}
         </MapContainer>
       </div>
+
     </>
   );
 };
