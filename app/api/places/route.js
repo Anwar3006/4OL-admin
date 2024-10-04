@@ -3,7 +3,7 @@ export async function POST(req, res) {
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
   const data = await req.json();
 
-  const fetchNearbyPlaces = async (latitude, longitude, filter = "Pharmacy", searchQuery = "") => {
+  const fetchNearbyPlaces = async (latitude, longitude, filter = "Hospital", searchQuery = "") => {
     let type = "hospital"; // Default filter
     if (filter === "Herbal") type = "health";
     if (filter === "Labs") type = "laboratory";

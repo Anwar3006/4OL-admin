@@ -30,13 +30,11 @@ const facilityTypes = [
   { label: "Herbal", value: "Herbal" },
   { label: "Labs", value: "Labs" },
   { label: "Ambulance", value: "Ambulance" },
-  { label: "Pharmacies", value: "health" },
   { label: "Pharmacy", value: "Pharmacy" },
   { label: "Wholesale", value: "Wholesale" },
 ];
 
 const MyGoogleMap = () => {
-  const { register, handleSubmit } = useForm();
   const [regions] = useState(districts_regions.data);
   const [allDistricts, setAllDistricts] = useState([]);
   const [filteredDistricts, setFilteredDistricts] = useState([]);
