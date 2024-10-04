@@ -17,13 +17,13 @@ const Textinput = ({
   disabled,
   id,
   horizontal,
-  validate, // Use this correctly as boolean or string
+  validate,
   msgTooltip,
   description,
   hasicon,
   onChange,
   onFocus,
-  defaultValue, // Consider using 'value' instead
+  defaultValue,
   required,
   ...rest
 }) => {
