@@ -3,14 +3,16 @@ export async function POST(req, res) {
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
   const data = await req.json();
 
-  const fetchNearbyPlaces = async (latitude, longitude, filter = "Hospital", searchQuery = "") => {
-    let type = "hospital"; // Default filter
-    if (filter === "Herbal") type = "health";
-    if (filter === "Labs") type = "laboratory";
-    if (filter === "Ambulance") type = "ambulance";
-    if (filter === "Pharmacy") type = "pharmacy";
-    if (filter === "Wholesale") type = "store";
-    if (filter === "Hospital") type = "hospital";
+  const fetchNearbyPlaces = async (latitude, longitude, filter = "All", searchQuery = "") => {
+    let type = ""; // Default filter
+    if (filter !== "All") {
+      if (filter === "Herbal") type = "health";
+      if (filter === "Labs") type = "laboratory";
+      if (filter === "Ambulance") type = "ambulance";
+      if (filter === "Pharmacy") type = "pharmacy";
+      if (filter === "Wholesale") type = "store";
+      if (filter === "Hospital") type = "hospital";
+    }
 
     let url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=50000&type=${type}&key=${API_KEY}`;
     if (searchQuery) {

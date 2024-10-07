@@ -26,6 +26,7 @@ const customIcon = L.icon({
 
 const defaultCenter = [7.946527, -1.023194]; // Ghana's approximate center
 const facilityTypes = [
+  { label: "All", value: "" },
   { label: "Hospital", value: "Hospital" },
   { label: "Herbal", value: "Herbal" },
   { label: "Labs", value: "Labs" },
@@ -40,7 +41,7 @@ const MyGoogleMap = () => {
   const [filteredDistricts, setFilteredDistricts] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedFacilityType, setSelectedFacilityType] = useState("Hospital");
+  const [selectedFacilityType, setSelectedFacilityType] = useState("All");
   const [filteredFacilities, setFilteredFacilities] = useState([]);
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [showBusinessPins, setShowBusinessPins] = useState(true);
@@ -143,8 +144,8 @@ const MyGoogleMap = () => {
             : selectedRegion?.location?.lat || defaultCenter[0],
           longitude: selectedDistrict
             ? selectedDistrict?.location?.lng
-            : selectedRegion?.location?.lng || defaultCenter[0],
-          filter: selectedFacilityType || "Pharmacy",
+            : selectedRegion?.location?.lng || defaultCenter[1],
+            filter: selectedFacilityType === "All" ? "All" : selectedFacilityType,
         };
 
         const { data } = await axios.post("/api/places", {
