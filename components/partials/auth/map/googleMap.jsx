@@ -6,7 +6,7 @@ import Dropdown from "@/components/ui/Dropdown";
 import Icons from "@/components/ui/Icon";
 import Swicth from "@/components/ui/Switch";
 import { useForm } from "react-hook-form";
-import { districts_regions } from "@/constant/district_data";
+import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
 import L from "leaflet"; 
 import axios from "axios";
 
@@ -176,7 +176,7 @@ const MyGoogleMap = () => {
             }
             wrapperClass=""
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex left-0"
+            classMenuItems="mt-2 w-[180px] flex left-0 h-72 overflow-scroll custom-scrollbar"
             items={[
               { onClick: () => handleRegionChange("") },
               ...regions.map((region) => ({
