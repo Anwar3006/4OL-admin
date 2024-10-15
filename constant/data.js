@@ -192,6 +192,13 @@ export const menuItems = [
     link: "#",
   },
   {
+    title: "Notification",
+    isHide: true,
+    icon: "carbon:notification",
+    // link: "faq",
+    link: "notifications",
+  },
+  {
     title: "Logout",
     isHide: true,
     icon: "ant-design:logout-outlined",

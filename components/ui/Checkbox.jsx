@@ -6,6 +6,7 @@ const Checkbox = ({
   name,
   onChange,
   activeClass = "ring-black-500  bg-slate-900 dark:bg-slate-700 dark:ring-slate-700 ",
+  classLabel,
 }) => {
   return (
     <label
@@ -41,7 +42,7 @@ const Checkbox = ({
           />
         )}
       </span>
-      <span className="text-slate-500 dark:text-slate-400 text-sm leading-6 capitalize">
+      <span className={`text-slate-500 dark:text-slate-400 text-sm leading-6 capitalize ${classLabel}`}>
         {label}
       </span>
     </label>
