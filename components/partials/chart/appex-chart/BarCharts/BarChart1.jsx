@@ -1,23 +1,31 @@
-import dynamic from "next/dynamic";
+import dynamic from "next/dynamic"; 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 
 const BarChart1 = () => {
   const [isDark] = useDarkMode();
+  
+  const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
+  const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  
+  // Calculate the total for each category
+  const totalData = maleData.map((value, index) => value + femaleData[index]);
+
   const series = [
     {
       name: "Males",
-      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
+      data: maleData,
     },
     {
       name: "Females",
-      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+      data: femaleData,
     },
-    // {
-    //   name: "Free Cash Flow",
-    //   data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
-    // },
+    {
+      name: "Total",
+      data: totalData,
+    },
   ];
+
   const options = {
     chart: {
       toolbar: {
@@ -44,7 +52,6 @@ const BarChart1 = () => {
         colors: isDark ? "#CBD5E1" : "#475569",
       },
     },
-
     xaxis: {
       categories: [
         "Feb",
@@ -72,7 +79,7 @@ const BarChart1 = () => {
     },
     yaxis: {
       title: {
-        text: "$ (thousands)",
+        text: "",
       },
       labels: {
         style: {
@@ -87,19 +94,18 @@ const BarChart1 = () => {
     tooltip: {
       y: {
         formatter: function (val) {
-          return "$ " + val + " thousands";
+          return val;
         },
       },
     },
-
     grid: {
       show: true,
       borderColor: isDark ? "#334155" : "#e2e8f0",
       position: "back",
     },
-    // colors: ["#609ed6", "#0CE7FA", "#c6505c"],
     colors: ["#3388ff", "#e95e8d", "#0CE7FA"],
   };
+
   return (
     <div>
       <Chart options={options} series={series} type="bar" height="200" />
