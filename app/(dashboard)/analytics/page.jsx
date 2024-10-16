@@ -18,6 +18,9 @@ import GroupChart4 from "@/components/partials/widget/chart/group-chart-4";
 import GroupChart5 from "@/components/partials/widget/chart/group-chart5";
 import ColumnChart from "@/components/partials/chart/appex-chart/HorizontalBar";
 import Pie from "@/components/partials/chart/appex-chart/Pie";
+import BarChart1 from "@/components/partials/chart/appex-chart/BarCharts/BarChart1";
+import BarChart2 from "@/components/partials/chart/appex-chart/BarCharts/BarChart2";
+import BarChart3 from "@/components/partials/chart/appex-chart/BarCharts/BarChart3";
 
 const MostSales = dynamic(
   () => import("@/components/partials/widget/most-sales"),
@@ -39,11 +42,24 @@ const Dashboard = () => {
             <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1 />
             </div>
+            <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4 ">
+              {/* <GroupChart4 /> */}
+              <Card className="legend-ring bg-success-50" title={"Total Online Users"} titleClass="text-base">
+                <BarChart1 />
+              </Card>
+              <Card className="legend-ring bg-warning-50"  title={"Meds Reminder Users"} titleClass="text-base">
+                <BarChart2 />
+              </Card>
+              <Card className="legend-ring bg-yellow-50" title={"Period Tracker Users"} titleClass="text-base">
+                <BarChart3 />
+              </Card>
+            </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
-              <GroupChart4 />
+              <GroupChart3 />
             </div>
           </Card>
         </div>
+
       </div>
         <div className="grid grid-cols-12 gap-5">
           <div className="lg:col-span-8 col-span-12">
