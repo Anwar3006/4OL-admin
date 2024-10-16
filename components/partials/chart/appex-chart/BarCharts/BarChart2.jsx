@@ -1,27 +1,59 @@
 import dynamic from "next/dynamic";
+import { useState } from "react";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 
 const BarChart2 = () => {
   const [isDark] = useDarkMode();
+  const [popupData, setPopupData] = useState(null);
+
+  const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
+  const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+
+  // Calculate the total for each category
+  const totalData = maleData.map((value, index) => value + femaleData[index]);
+
   const series = [
     {
       name: "Males",
-      data: [44, 55, 57, 56, 61, 58, 63, 60, 66],
+      data: [maleData.reduce((a, b) => a + b, 0)], // sum of all males data
     },
     {
       name: "Females",
-      data: [76, 85, 101, 98, 87, 105, 91, 114, 94],
+      data: [femaleData.reduce((a, b) => a + b, 0)], // sum of all females data
     },
     // {
-    //   name: "Free Cash Flow",
-    //   data: [35, 41, 36, 26, 45, 48, 52, 53, 41],
+    //   name: "Total",
+    //   data: [totalData.reduce((a, b) => a + b, 0)], // total sum of all
     // },
   ];
+
   const options = {
     chart: {
       toolbar: {
         show: false,
+      },
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          // Trigger a popup/modal showing breakdown of data
+          const selectedSeries = config.seriesIndex;
+          if (selectedSeries === 0) {
+            setPopupData({
+              category: "Males",
+              data: maleData,
+            });
+          } else if (selectedSeries === 1) {
+            setPopupData({
+              category: "Females",
+              data: femaleData,
+            });
+          } else if (selectedSeries === 2) {
+            setPopupData({
+              category: "Total",
+              data: totalData,
+            });
+          }
+        },
       },
     },
     plotOptions: {
@@ -39,29 +71,10 @@ const BarChart2 = () => {
       width: 10,
       colors: ["transparent"],
     },
-    legend: {
-      labels: {
-        colors: isDark ? "#CBD5E1" : "#475569",
-      },
-    },
-
     xaxis: {
-      categories: [
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-      ],
+      categories: ["Males", "Females"], // only show categories, not months
       labels: {
-        style: {
-          colors: isDark ? "#CBD5E1" : "#475569",
-          fontFamily: "Inter",
-        },
+        show: false, // hide the labels on x-axis
       },
       axisBorder: {
         show: false,
@@ -72,13 +85,7 @@ const BarChart2 = () => {
     },
     yaxis: {
       title: {
-        text: "$ (thousands)",
-      },
-      labels: {
-        style: {
-          colors: isDark ? "#CBD5E1" : "#475569",
-          fontFamily: "Inter",
-        },
+        text: "",
       },
     },
     fill: {
@@ -87,22 +94,62 @@ const BarChart2 = () => {
     tooltip: {
       y: {
         formatter: function (val) {
-          return "$ " + val + " thousands";
+          return val;
         },
       },
     },
-
     grid: {
       show: true,
       borderColor: isDark ? "#334155" : "#e2e8f0",
       position: "back",
     },
-    // colors: ["#609ed6", "#0CE7FA", "#c6505c"],
     colors: ["#3388ff", "#e95e8d", "#0CE7FA"],
   };
+
   return (
     <div>
       <Chart options={options} series={series} type="bar" height="200" />
+
+      {/* Background overlay */}
+      {popupData && <div className="fixed top-0 left-0 bg-black bg-opacity-50 w-full z-[999]" />}
+
+      {/* Popup for displaying breakdown */}
+      {popupData && (
+        <div className="fixed top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded shadow-lg z-[1000]">
+          <h3 className="text-sm">Breakdown for {popupData.category}</h3>
+          <Chart
+            options={{
+              chart: {
+                toolbar: {
+                  show: false,
+                },
+              },
+              plotOptions: {
+                bar: {
+                  horizontal: false,
+                  columnWidth: "45%",
+                },
+              },
+              xaxis: {
+                categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+              },
+              tooltip: {
+                y: {
+                  formatter: function (val) {
+                    return val + " units";
+                  },
+                },
+              },
+            }}
+            series={[{ name: popupData.category, data: popupData.data }]}
+            type="bar"
+            height="150"
+          />
+          <button onClick={() => setPopupData(null)} className="close-button">
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 };
