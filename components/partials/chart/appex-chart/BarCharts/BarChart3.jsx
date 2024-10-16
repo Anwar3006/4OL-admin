@@ -43,14 +43,14 @@ const BarChart3 = () => {
       },
     },
     dataLabels: {
-      enabled: true,
+      enabled: false,
       formatter: function (val) {
         return `${val.toFixed(2)}%`; // Show percentage in the chart
       },
     },
     stroke: {
       show: true,
-      width: 10,
+      width: 1,
       colors: ["transparent"],
     },
     xaxis: {

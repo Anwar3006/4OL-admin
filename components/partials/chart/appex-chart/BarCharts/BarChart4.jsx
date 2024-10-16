@@ -4,26 +4,33 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 import { color } from "framer-motion";
 
-const BarChart1 = () => {
+const BarChart4 = () => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
 
-  const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
-  const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  const adData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
+  const newsData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  const healthTipsData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  const eventData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
 
   const colors = ["#3388ff", "#e95e8d", "#0CE7FA", "#28C76F"];
 
-  // Calculate the total for each category
-  const totalData = maleData.map((value, index) => value + femaleData[index]);
-
   const series = [
     {
-      name: "Males",
-      data: [maleData.reduce((a, b) => a + b, 0)], // sum of all males data
+      name: "Advertisement",
+      data: [adData.reduce((a, b) => a + b, 0)], // sum of all males data
     },
     {
-      name: "Females",
-      data: [femaleData.reduce((a, b) => a + b, 0)], // sum of all females data
+      name: "News",
+      data: [newsData.reduce((a, b) => a + b, 0)], // sum of all females data
+    },
+    {
+      name: "Health Tips",
+      data: [healthTipsData.reduce((a, b) => a + b, 0)], // sum of all females data
+    },
+    {
+      name: "Events",
+      data: [eventData.reduce((a, b) => a + b, 0)], // sum of all females data
     },
     // {
     //   name: "Total",
@@ -42,21 +49,27 @@ const BarChart1 = () => {
           const selectedSeries = config.seriesIndex;
           if (selectedSeries === 0) {
             setPopupData({
-              category: "Males",
-              data: maleData,
+              category: "Advertisement",
+              data: adData,
               color: colors[0],
             });
           } else if (selectedSeries === 1) {
             setPopupData({
-              category: "Females",
-              data: femaleData,
+              category: "News",
+              data: newsData,
               color: colors[1],
             });
           } else if (selectedSeries === 2) {
             setPopupData({
-              category: "Total",
-              data: totalData,
+              category: "HealthTips",
+              data: healthTipsData,
               color: colors[2],
+            });
+          } else if (selectedSeries === 3) {
+            setPopupData({
+              category: "Events",
+              data: eventData,
+              color: colors[3],
             });
           }
         },
@@ -78,7 +91,7 @@ const BarChart1 = () => {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: ["Males", "Females"], // only show categories, not months
+      categories: ["Advertisement", "News", 'Healthy Tips', 'Events'], // only show categories, not months
       labels: {
         show: false, // hide the labels on x-axis
       },
@@ -161,4 +174,4 @@ const BarChart1 = () => {
   );
 };
 
-export default BarChart1;
+export default BarChart4;

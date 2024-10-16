@@ -6,9 +6,11 @@ import useDarkMode from "@/hooks/useDarkMode";
 const BarChart2 = () => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
+  const colors = ["#3388ff", "#e95e8d", "#0CE7FA", "#28C76F"];
 
   const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
   const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+
 
   // Calculate the total for each category
   const totalData = maleData.map((value, index) => value + femaleData[index]);
@@ -41,16 +43,19 @@ const BarChart2 = () => {
             setPopupData({
               category: "Males",
               data: maleData,
+              color: colors[0],
             });
           } else if (selectedSeries === 1) {
             setPopupData({
               category: "Females",
               data: femaleData,
+              color: colors[1],
             });
           } else if (selectedSeries === 2) {
             setPopupData({
               category: "Total",
               data: totalData,
+              color: colors[2]
             });
           }
         },
@@ -103,7 +108,7 @@ const BarChart2 = () => {
       borderColor: isDark ? "#334155" : "#e2e8f0",
       position: "back",
     },
-    colors: ["#3388ff", "#e95e8d", "#0CE7FA"],
+    colors: colors,
   };
 
   return (
@@ -140,6 +145,7 @@ const BarChart2 = () => {
                   },
                 },
               },
+              colors: [popupData.color],
             }}
             series={[{ name: popupData.category, data: popupData.data }]}
             type="bar"

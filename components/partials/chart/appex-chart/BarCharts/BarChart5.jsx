@@ -4,31 +4,32 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 import { color } from "framer-motion";
 
-const BarChart1 = () => {
+const BarChart5 = () => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
 
   const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
   const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
-
   const colors = ["#3388ff", "#e95e8d", "#0CE7FA", "#28C76F"];
 
   // Calculate the total for each category
-  const totalData = maleData.map((value, index) => value + femaleData[index]);
+    const totalMale = maleData.reduce((a, b) => a + b, 0);
+    const totalFemale = femaleData.reduce((a, b) => a + b, 0);
+
+  // Calculate total percentage for male and female
+  const total = totalMale + totalFemale;
+  const malePercentage = (totalMale / total) * 100;
+  const femalePercentage = (totalFemale / total) * 100;
 
   const series = [
     {
       name: "Males",
-      data: [maleData.reduce((a, b) => a + b, 0)], // sum of all males data
+      data: [malePercentage], // Total male percentage
     },
     {
       name: "Females",
-      data: [femaleData.reduce((a, b) => a + b, 0)], // sum of all females data
+      data: [femalePercentage], // Total female percentage
     },
-    // {
-    //   name: "Total",
-    //   data: [totalData.reduce((a, b) => a + b, 0)], // total sum of all
-    // },
   ];
 
   const options = {
@@ -43,20 +44,14 @@ const BarChart1 = () => {
           if (selectedSeries === 0) {
             setPopupData({
               category: "Males",
-              data: maleData,
+              data: [malePercentage],
               color: colors[0],
             });
           } else if (selectedSeries === 1) {
             setPopupData({
               category: "Females",
-              data: femaleData,
+              data: [femalePercentage],
               color: colors[1],
-            });
-          } else if (selectedSeries === 2) {
-            setPopupData({
-              category: "Total",
-              data: totalData,
-              color: colors[2],
             });
           }
         },
@@ -66,7 +61,7 @@ const BarChart1 = () => {
       bar: {
         horizontal: false,
         endingShape: "rounded",
-        columnWidth: "55%",
+        columnWidth: "45%",
       },
     },
     dataLabels: {
@@ -78,20 +73,28 @@ const BarChart1 = () => {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: ["Males", "Females"], // only show categories, not months
+      categories: ["Males", "Females"], // Show two categories: Males and Females
       labels: {
-        show: false, // hide the labels on x-axis
+        show: true,
       },
       axisBorder: {
-        show: false,
+        show: true,
       },
       axisTicks: {
-        show: false,
+        show: true,
       },
     },
     yaxis: {
-      title: {
-        text: "",
+    //   title: {
+    //     text: "Percentage",
+    //   },
+      min: 0,
+      max: 100,
+      tickAmount: 5, // Set the number of ticks to control the gap (100 / 20 = 5, so 6 ticks)
+      labels: {
+        formatter: function (value) {
+          return `${value.toFixed(0)}%`; // Format Y-axis labels as percentage
+        },
       },
     },
     fill: {
@@ -100,7 +103,7 @@ const BarChart1 = () => {
     tooltip: {
       y: {
         formatter: function (val) {
-          return val;
+          return val.toFixed(2) + "%"; // Show percentage in tooltip
         },
       },
     },
@@ -136,13 +139,26 @@ const BarChart1 = () => {
                   columnWidth: "45%",
                 },
               },
+              dataLabels: {
+                enabled: false,
+              },
               xaxis: {
-                categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+                categories: ["Males", "Females"],
+              },
+              yaxis: {
+                min: 0,
+                max: 100,
+                tickAmount: 5, // Set the number of ticks to control the gap (100 / 20 = 5, so 6 ticks)
+                labels: {
+                  formatter: function (value) {
+                    return `${value.toFixed(0)}%`; // Format Y-axis labels as percentage
+                  },
+                },
               },
               tooltip: {
                 y: {
                   formatter: function (val) {
-                    return val + " units";
+                    return val.toFixed(2) + "%"; // Show percentage in popup
                   },
                 },
               },
@@ -161,4 +177,4 @@ const BarChart1 = () => {
   );
 };
 
-export default BarChart1;
+export default BarChart5;
