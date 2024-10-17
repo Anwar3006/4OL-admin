@@ -114,7 +114,7 @@ const BarChart1 = () => {
 
   return (
     <div>
-      <Chart options={options} series={series} type="bar" height="200" />
+      <Chart options={options} series={series} type="bar" height="200" width={"95%"} />
 
       {/* Background overlay */}
       {popupData && <div className="fixed top-0 left-0 bg-black bg-opacity-50 w-full z-[999]" />}

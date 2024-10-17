@@ -46,15 +46,15 @@ const Dashboard = () => {
             <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1 />
             </div>
-            <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4 ">
+            <div className="grid md:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4 ">
               {/* <GroupChart4 /> */}
-              <Card className="w-full bg-success-50" title={"Total Online Users"} titleClass="text-base">
+              <Card className="w-full text-center bg-success-50 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Total Online Users"} titleClass="text-base">
                 <BarChart1 />
               </Card>
-              <Card className="legend-ring bg-warning-50"  title={"Meds Reminder Users"} titleClass="text-base">
+              <Card className="legend-ring bg-warning-50 flex flex-col justify-center items-center" bodyClass={'p-0'}  title={"Meds Reminder Users"} titleClass="text-base">
                 <BarChart2 />
               </Card>
-              <Card className="legend-ring bg-yellow-50" title={"Period Tracker Users"} titleClass="text-base">
+              <Card className="legend-ring bg-yellow-50 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Period Tracker Users"} titleClass="text-base">
                 <BarChart3 />
               </Card>
             </div>
@@ -62,12 +62,12 @@ const Dashboard = () => {
               <GroupChart3 />
             </div>
 
-            <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4" >
-            <Card className="col-span-1" title={"Total Marketing"} titleClass="text-base">
+            <div className="grid lg:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4" >
+            <Card className="col-span-1 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Total Marketing"} titleClass="text-base">
              <BarChart4 />
             </Card>
-            <Card className="col-span-2 w-full flex flex-col" title={"Total Readers"} titleClass="text-base">
-              <div className="w-full flex justify-around ">
+            <Card className="col-span-2 w-full flex flex-col justify-center items-center text-center" bodyClass={'p-0'} title={"Total Readers"} titleClass="text-base text-center">
+              <div className="w-full flex max-sm:flex-col justify-around ">
              <BarChart5 />
              <BarChart6 />
               </div>

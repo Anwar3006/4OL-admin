@@ -109,10 +109,10 @@ const BarChart6 = () => {
         show: false,
       },
       axisBorder: {
-        show: false,
+        show: true,
       },
       axisTicks: {
-        show: false,
+        show: true,
       },
     },
     yaxis: {
@@ -141,11 +141,45 @@ const BarChart6 = () => {
       position: "back",
     },
     colors: colors,
+    responsive: [
+      {
+        breakpoint: 600, // For small screens (width <= 600px)
+        options: {
+          chart: {
+            width: 290, // Set chart width for small screens
+          },
+        },
+      },
+      {
+        breakpoint: 1024, // For medium screens (width <= 1024px)
+        options: {
+          chart: {
+            width: 300, // Set chart width for medium screens
+          },
+        },
+      },
+      {
+        breakpoint: 1400, // For medium screens (width <= 1024px)
+        options: {
+          chart: {
+            width: 290, // Set chart width for medium screens
+          },
+        },
+      },
+      {
+        breakpoint: 1440, // For large screens (width <= 1440px)
+        options: {
+          chart: {
+            width: 300, // Set chart width for large screens
+          },
+        },
+      },
+    ],
   };
 
   return (
     <div>
-      <Chart options={options} series={series} type="bar" height="200" />
+      <Chart options={options} series={series} type="bar" height="200" width={'390'} />
 
       {/* Background overlay */}
       {popupData && <div className="fixed top-0 left-0 bg-black bg-opacity-50 w-full z-[999]" />}
