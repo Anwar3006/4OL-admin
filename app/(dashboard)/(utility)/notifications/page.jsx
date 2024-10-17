@@ -108,6 +108,10 @@ export default function Notifications() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Image</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">District</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Target Group</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
               {/* </div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
             </tr>
@@ -126,6 +130,18 @@ export default function Notifications() {
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.image ? 'Image' : 'Null'}
+                </td>
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  {item.region || 'Ahafo'}
+                </td>
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  {item.district || 'Asunafo South'}
+                </td>
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  {item.target_group || 'Users'}
+                </td>
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  {item.age_range || '18-24'}
                 </td>
                 {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
