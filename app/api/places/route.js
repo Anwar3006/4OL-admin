@@ -1,9 +1,15 @@
 // Backend API Route (e.g., /api/places)
+
 export async function POST(req, res) {
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
   const data = await req.json();
 
-  const fetchNearbyPlaces = async (latitude, longitude, filter = "All", searchQuery = "") => {
+  const fetchNearbyPlaces = async (
+    latitude,
+    longitude,
+    filter = "All",
+    searchQuery = ""
+  ) => {
     let type = ""; // Default filter
     if (filter !== "All") {
       if (filter === "Herbal") type = "health";
@@ -34,14 +40,18 @@ export async function POST(req, res) {
 
   try {
     const { latitude, longitude, filter, searchQuery } = data;
-    const places = await fetchNearbyPlaces(latitude, longitude, filter, searchQuery);
+    const places = await fetchNearbyPlaces(
+      latitude,
+      longitude,
+      filter,
+      searchQuery
+    );
     return new Response(JSON.stringify({ places }));
   } catch (error) {
     console.error("Error fetching places:", error);
     return new Response(error.message, { status: 500 });
   }
 }
-
 
 // export async function POST(req, res) {
 //   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
