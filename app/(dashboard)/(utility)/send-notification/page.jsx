@@ -64,6 +64,14 @@ const SendNotificationPage = () => {
     }
   };
 
+  const handleTargerGroupChange = (group) => {
+    setTargetGroup(group);
+  }
+
+  const handleAgeRangeChange = (age) => {
+    setAgeRange(age);
+  }
+
   const handleRegionChange = (regionName) => {
     const region = regions.find((r) => r.name === regionName);
     if (region) {
@@ -197,7 +205,7 @@ const SendNotificationPage = () => {
                 classMenuItems="mt-2 flex left-0 max-h-72 overflow-scroll custom-scrollbar"
                 items={targetGroups.map((group) => ({
                   label: group,
-                  onClick: () => setTargetGroup(group),
+                  onClick: () => handleRegionChange(group),
                 }))}
                 selectedItem={
                   <>
@@ -208,6 +216,7 @@ const SendNotificationPage = () => {
                     />
                   </>
                 }
+                onSelect={handleTargerGroupChange}
               />
 
               {/* Age Range Selection */}
@@ -217,7 +226,7 @@ const SendNotificationPage = () => {
                 classMenuItems="mt-2 w-[180px] flex left-0 max-h-72 overflow-scroll custom-scrollbar"
                 items={ageRanges.map((range) => ({
                   label: range,
-                  onClick: () => setAgeRange(range),
+                  onClick: () => handleAgeRangeChange(range),
                 }))}
                 selectedItem={
                   <>
@@ -228,6 +237,7 @@ const SendNotificationPage = () => {
                     />
                   </>
                 }
+                onSelect={handleAgeRangeChange}
               />
               </div>
 
