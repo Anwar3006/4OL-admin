@@ -31,7 +31,7 @@ const Dropdown = ({
           leaveTo="transform opacity-0 scale-95"
         >
           <Menu.Items
-            className={`absolute ltr:right-0 rtl:left-0 origin-top-right border border-slate-100
+            className={`absolute w-full ltr:right-0 rtl:left-0 origin-top-right border border-slate-100
             rounded bg-white dark:bg-slate-800 dark:border-slate-700 shadow-dropdown z-[9999]
             ${classMenuItems}`}
           >
@@ -43,36 +43,36 @@ const Dropdown = ({
                       className={`${
                         active
                           ? "bg-slate-100 text-slate-900 dark:bg-slate-600 dark:text-slate-300 dark:bg-opacity-50"
-                          : "text-slate-600 dark:text-slate-300"
-                      } block`}
+                          : "text-slate-600 dark:text-slate-300 w-full"
+                      } block w-full`}  // Ensure full width
                       onClick={() => {
                         if (onSelect) onSelect(item.label); // Call the onSelect function
                       }}
                     >
                       {item.link ? (
-                        <Link href={item.link} className={`block ${classItem}`}>
+                        <Link href={item.link} className={`block w-full hover:bg-gray-100 ${classItem}`}>
                           {item.icon ? (
-                            <div className="flex items-center">
+                            <div className="flex items-center w-full">
                               <span className="block text-xl ltr:mr-3 rtl:ml-3">
                                 <Icon icon={item.icon} />
                               </span>
-                              <span className="block text-sm">{item.label}</span>
+                              <span className="block text-sm w-full">{item.label}</span>
                             </div>
                           ) : (
-                            <span className="block text-sm">{item.label}</span>
+                            <span className="block text-sm w-full">{item.label}</span>
                           )}
                         </Link>
                       ) : (
-                        <div className={`block cursor-pointer ${classItem}`}>
+                        <div className={`block cursor-pointer w-full hover:bg-gray-100 ${classItem}`}>
                           {item.icon ? (
-                            <div className="flex items-center">
+                            <div className="flex items-center w-full">
                               <span className="block text-xl ltr:mr-3 rtl:ml-3">
                                 <Icon icon={item.icon} />
                               </span>
-                              <span className="block text-sm">{item.label}</span>
+                              <span className="block text-sm w-full">{item.label}</span>
                             </div>
                           ) : (
-                            <span className="block text-sm">{item.label}</span>
+                            <span className="block text-sm w-full">{item.label}</span>
                           )}
                         </div>
                       )}
