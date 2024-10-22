@@ -18,7 +18,7 @@
     }
   }
   &.bordered {
-    @apply border border-[#D8DEE6] rounded-[3px] py-1 px-2;
+    @apply border w-full border-[#D8DEE6] rounded-[3px] py-1 px-2;
     li {
       @apply text-slate-500;
       &:first-child,
