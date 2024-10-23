@@ -22,7 +22,7 @@ export async function POST(req, res) {
         },
         {
           scheduled: true,
-          name: "new id assign", // Store the custom ID as the name of the job
+          name: "new id assign 2", // Store the custom ID as the name of the job
         }
       );
 
