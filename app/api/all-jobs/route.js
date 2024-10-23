@@ -1,5 +1,5 @@
 import cron from "node-cron";
-export async function GET(req, res) {
+export async function POST(req, res) {
   const jobs = cron.getTasks();
   const udpate = Array.from(jobs.values()).map((j) => j.options);
   console.log('udpate', udpate);
