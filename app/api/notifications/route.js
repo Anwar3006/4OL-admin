@@ -1,35 +1,37 @@
 import firebase from "firebase-admin";
-import cron from "node-cron";
-import moment from "moment-timezone";
-// import serviceAccountKey from "./serviceAccountKey.json";
-import { supabase } from "@/app/utils/supabaseClient";
+import serviceAccountKey from "../../api/notifications/serviceAccountKey.json";
 
 export async function POST(req, res) {
-  const data = await req.json();
-  const { id } = data
+  // const data = await req.json();
+  // const { id } = data;
 
-  // if (!firebase.apps.length) {
-  //   firebase.initializeApp({
-  //     credential: firebase.credential.cert(serviceAccountKey),
-  //     projectId: serviceAccountKey.project_id,
-  //   });
-  // }
+  if (!firebase.apps.length) {
+    firebase.initializeApp({
+      credential: firebase.credential.cert(serviceAccountKey),
+      projectId: serviceAccountKey.project_id,
+    });
+  }
 
-      const job = cron.schedule(
-        "* * * * * *",
-        async () => {
-          console.log(`Running`);
-        },
-        {
-          scheduled: true,
-          name: "new id assign 2", // Store the custom ID as the name of the job
-        }
-      );
+  try {
+    // Send notification via FCM for this user
+    await firebase.messaging().send({
+      token:
+        "eVAB9iSMQryzXotcjR_QTa:APA91bGw7yyPeJwdO7Qjq6sh01Bg1J1UkzxJ7fA9kgOFKh5lMDUCX_QXwUXZHkD-xd_0qihcTCwpyoOVUjQDfO3DzI7c6COdOR1trMAbKUt9wlQpJtXE4-i5GFR_Zg4SJ33tJeQDFCqR", // Specific user's FCM token
+      notification: {
+        title: "Medication Reminder",
+        body: `It's time to take your medication`,
+      },
+    });
 
-      console.log('created job', job);
-      
+    new Response({ message: "notification send successFully" });
 
-  // // Fetch medications from the database
+    console.log(`Notification sent to user successfully`);
+  } catch (err) {
+    console.log(`Notification sent to user successfully`);
+    // console.error(Error sending notification to user ${medication.user_id});
+  }
+
+  // Fetch medications from the database
   // const { data: medicationsData, error: medicationsError } = await supabase
   //   .from("medications")
   //   .select(
@@ -52,7 +54,7 @@ export async function POST(req, res) {
   // }
 
   // const medication = medicationsData[0]
-  
+
   // const medication_days = medicationsData.map((medication) => medication);
 
   // console.log("Medication days by user:", medication_days);
