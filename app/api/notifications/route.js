@@ -1,10 +1,10 @@
 import firebase from "firebase-admin";
 import serviceAccountKey from "../../api/notifications/serviceAccountKey.json";
+import { supabase } from "@/app/utils/supabaseClient";
+import moment from "moment";
+import cron from "node-cron";
 
 export async function POST(req, res) {
-  // const data = await req.json();
-  // const { id } = data;
-
   if (!firebase.apps.length) {
     firebase.initializeApp({
       credential: firebase.credential.cert(serviceAccountKey),
@@ -12,24 +12,53 @@ export async function POST(req, res) {
     });
   }
 
-  try {
-    // Send notification via FCM for this user
-    await firebase.messaging().send({
-      token:
-        "eVAB9iSMQryzXotcjR_QTa:APA91bGw7yyPeJwdO7Qjq6sh01Bg1J1UkzxJ7fA9kgOFKh5lMDUCX_QXwUXZHkD-xd_0qihcTCwpyoOVUjQDfO3DzI7c6COdOR1trMAbKUt9wlQpJtXE4-i5GFR_Zg4SJ33tJeQDFCqR", // Specific user's FCM token
-      notification: {
-        title: "Medication Reminder",
-        body: `It's time to take your medication`,
-      },
-    });
+  const { data: medicationsData, error: medicationsError } = await supabase
+    .from("medications")
+    .select("*, user_profiles ( fcm_token )");
 
-    new Response({ message: "notification send successFully" });
-
-    console.log(`Notification sent to user successfully`);
-  } catch (err) {
-    console.log(`Notification sent to user successfully`);
-    // console.error(Error sending notification to user ${medication.user_id});
+  if (medicationsError) {
+    console.error("Error fetching medications:", medicationsError.message);
+    return;
   }
+
+  medicationsData.forEach((user) => {
+    const today = moment().format("YYYY-MM-DD");
+
+    // Loop through each intake time entry
+
+    user.intake_times.forEach((intake) => {
+      if (intake.schedule_dates === today) {
+        console.log(`Scheduling notifications for date: ${today}`);
+
+        // Loop through each time in schedule_times
+        intake.schedule_times.forEach((time) => {
+          const [hour, minute] = moment(time, "hh:mm A")
+            .format("HH:mm")
+            .split(":");
+
+          console.log("~ minutes :", minute);
+          console.log("~ hours :", hour);
+          // Schedule a cron job for the specified hour and minute
+          cron.schedule(`${minute} ${hour} * * *`, async () => {
+            console.log(`Sending notification for time: ${time}`);
+
+            try {
+              await firebase.messaging().send({
+                token: user.user_profiles.fcm_token,
+                notification: {
+                  title: "Medication Reminder",
+                  body: `It's time to take your medication scheduled for ${time}`,
+                },
+              });
+              console.log(`Notification sent at ${time}`);
+            } catch (err) {
+              console.error(`Error sending notification at ${time}:`, err);
+            }
+          });
+        });
+      }
+    });
+  });
 
   // Fetch medications from the database
   // const { data: medicationsData, error: medicationsError } = await supabase
