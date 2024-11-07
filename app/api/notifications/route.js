@@ -30,7 +30,7 @@ export async function POST(req, res) {
       if (intake.schedule_dates === today) {
         console.log(`Scheduling notifications for date: ${today}`);
 
-        // Loop through each time in schedule_times
+        // Loop through each time in schedule_time
         intake.schedule_times.forEach((time) => {
           const [hour, minute] = moment(time, "hh:mm A")
             .format("HH:mm")
