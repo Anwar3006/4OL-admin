@@ -24,17 +24,21 @@ export async function POST(req, res) {
   medicationsData.forEach((user) => {
     const today = moment().format("YYYY-MM-DD");
 
-    // Loop through each intake time entry
+    // Loop through each intake time entry_____
 
     user.intake_times.forEach((intake) => {
       if (intake.schedule_dates === today) {
         console.log(`Scheduling notifications for date: ${today}`);
 
         // Loop through each time in schedule_time
-        intake.schedule_times.forEach((time) => {
-          const [hour, minute] = moment(time, "hh:mm A")
-            .format("HH:mm")
-            .split(":");
+        intake.utc_schedule_times.forEach((time) => {
+          //development
+          // const [hour, minute] = moment(time, "hh:mm A")
+          //   .format("HH:mm")
+          //   .split(":");
+
+          //production
+          const [hour, minute] = moment(time).format("HH:mm").split(":");
 
           console.log("~ minutes :", minute);
           console.log("~ hours :", hour);
