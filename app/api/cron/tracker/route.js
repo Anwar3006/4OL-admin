@@ -3,8 +3,8 @@ import { supabase } from "@/app/utils/supabaseClient";
 import firebase from "firebase-admin";
 import moment from "moment";
 
-export async function GET(req, res) {
-  console.log('running cron job ==>> >>> updates');
+export async function POST(req, res) {
+  console.log('running.....');
   
   // if (!firebase.apps.length) {
   //   firebase.initializeApp({
