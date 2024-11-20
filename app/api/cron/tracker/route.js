@@ -3,7 +3,7 @@ import { supabase } from "@/app/utils/supabaseClient";
 import firebase from "firebase-admin";
 import moment from "moment";
 
-export async function POST(req, res) {
+export async function GET(req, res) {
   console.log('running.....');
   
   // if (!firebase.apps.length) {
@@ -64,7 +64,7 @@ export async function POST(req, res) {
 
   //       const updatedReminderDateUTC = new Date(nextCycleStartDate);
   //       updatedReminderDateUTC.setDate(
-  //         nextCycleStartDate.getDate() + cycle_length
+  //         nextCycleStartDate.getDate() + tracker?.cycle_length
   //       );
 
   //       const userTimezoneOffset = new Date().getTimezoneOffset();
