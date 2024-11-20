@@ -4,7 +4,7 @@ import firebase from "firebase-admin";
 import moment from "moment";
 
 export async function GET(req, res) {
-  console.log('running cron job');
+  console.log('running cron job ==>> >>> updates');
   
   // if (!firebase.apps.length) {
   //   firebase.initializeApp({
