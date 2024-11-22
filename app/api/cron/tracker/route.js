@@ -16,7 +16,7 @@ export async function GET(req, res) {
 
   const { data, error } = await supabase
     .from("tracker_logs")
-    .select("*, user_profiles ( fcm_token )");
+    .select("*, user_profiles ( fcm_token, is_tracker_notifications_enabled )");
 
   if (error) {
     console.error("Error fetching tracker logs:", error.message);
@@ -25,18 +25,21 @@ export async function GET(req, res) {
 
   data?.forEach(async (tracker) => {
     if (tracker?.next_reminder_utc === currentUTCDate) {
-      try {
-        await firebase.messaging().send({
-          token: tracker?.user_profiles?.fcm_token,
-          notification: {
-            title: "Period Reminder",
-            body: `It's time to prepare for your period expected to start on ${currentUTCDate}. Stay healthy!`,
-          },
-          data: {
-            screen: "",
-            id: String(tracker?.id),
-          },
-        });
+      try {  
+        if (tracker?.user_profiles?.is_tracker_notifications_enabled)
+        {
+          await firebase.messaging().send({
+            token: tracker?.user_profiles?.fcm_token,
+            notification: {
+              title: "Period Reminder",
+              body: `It's time to prepare for your period expected to start on ${currentUTCDate}. Stay healthy!`,
+            },
+            data: {
+              screen: "",
+              id: String(tracker?.id),
+            },
+          });
+        }
 
         await supabase.from("notifications").insert([
           {
@@ -83,9 +86,25 @@ export async function GET(req, res) {
         const nextReminderLocal = formatDate(updatedReminderDateLocal);
         const nextReminderUTC = formatDate(updatedReminderDateUTC);
 
+        const updatedFlowTypes = [...tracker?.flow_types];
+
+        const currentDate = new Date(tracker?.next_reminder);
+
+        for(let i=0; i<updatedFlowTypes?.length; i++)
+        {
+          updatedFlowTypes[i] = {
+            date: currentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+            selectedFlow: updatedFlowTypes[i].selectedFlow,
+          };
+          currentDate.setDate(currentDate.getDate() + 1); // Increment day
+        }
+
         await supabase
           .from("tracker_logs")
           .update({
+            period_start_date: tracker?.next_reminder,
+            period_start_date_utc: tracker?.next_reminder_utc,
+            flow_types: updatedFlowTypes,
             next_reminder: nextReminderLocal,
             next_reminder_utc: nextReminderUTC,
             updated_at: moment(new Date()).valueOf(),
