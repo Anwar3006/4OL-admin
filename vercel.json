@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/tracker",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/ovulation",
+      "schedule": "0 0 * * *"
     }
   ]
 }

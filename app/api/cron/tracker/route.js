@@ -12,22 +12,54 @@ export async function GET(req, res) {
     });
   }
 
+  function calculateOvulationAndFertileWindow(periodStartDate, cycleLength) {
+    // if (cycleLength < 22 || cycleLength > 82) {
+    //   throw new Error('Cycle length must be between 22 and 82 days.');
+    // }
+    const startDate = new Date(periodStartDate);
+    const ovulationDay = -14;
+    const ovulationDateLocal = new Date(startDate);
+    ovulationDateLocal.setDate(startDate.getDate() + ovulationDay);
+    const fertileStartDateLocal = new Date(ovulationDateLocal);
+    fertileStartDateLocal.setDate(ovulationDateLocal.getDate() - 2);
+    const fertileEndDateLocal = new Date(ovulationDateLocal);
+    fertileEndDateLocal.setDate(ovulationDateLocal.getDate() + 2);
+    const fertileWindowDates = [];
+    const fertileWindowDatesUTC = [];
+    const currentDateLocal = new Date(fertileStartDateLocal);
+    while (currentDateLocal <= fertileEndDateLocal) {
+      fertileWindowDates.push(currentDateLocal.toISOString().split("T")[0]);
+      fertileWindowDatesUTC.push(
+        new Date(currentDateLocal.toISOString()).toISOString().split("T")[0]
+      );
+      currentDateLocal.setDate(currentDateLocal.getDate() + 1);
+    }
+    return {
+      ovulation_date: ovulationDateLocal.toISOString().split("T")[0],
+      ovulation_date_utc: new Date(ovulationDateLocal.toISOString())
+        .toISOString()
+        .split("T")[0],
+      fertile_window_dates: fertileWindowDates,
+      fertile_window_dates_utc: fertileWindowDatesUTC,
+    };
+  }
+
   const currentUTCDate = new Date().toISOString().split("T")[0];
 
   const { data, error } = await supabase
     .from("tracker_logs")
-    .select("*, user_profiles ( fcm_token, is_tracker_notifications_enabled )");
+    .select("*, user_profiles ( fcm_token, is_tracker_notifications_enabled, id )")
+    .eq("next_reminder_utc", currentUTCDate);
 
   if (error) {
     console.error("Error fetching tracker logs:", error.message);
     return;
   }
 
-  data?.forEach(async (tracker) => {
-    if (tracker?.next_reminder_utc === currentUTCDate) {
-      try {  
-        if (tracker?.user_profiles?.is_tracker_notifications_enabled)
-        {
+  for (const tracker of data || []) {
+    try {
+      if (tracker?.next_reminder_utc === currentUTCDate) {
+        if (tracker?.user_profiles?.is_tracker_notifications_enabled) {
           await firebase.messaging().send({
             token: tracker?.user_profiles?.fcm_token,
             notification: {
@@ -55,7 +87,6 @@ export async function GET(req, res) {
         ]);
 
         const currentReminderDate = new Date(tracker?.next_reminder);
-
         const lastPeriodDay = new Date(currentReminderDate);
         lastPeriodDay.setDate(
           currentReminderDate.getDate() + (tracker?.period_length - 1)
@@ -90,14 +121,18 @@ export async function GET(req, res) {
 
         const currentDate = new Date(tracker?.next_reminder);
 
-        for(let i=0; i<updatedFlowTypes?.length; i++)
-        {
+        for (let i = 0; i < updatedFlowTypes?.length; i++) {
           updatedFlowTypes[i] = {
-            date: currentDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+            date: currentDate.toISOString().split("T")[0],
             selectedFlow: updatedFlowTypes[i].selectedFlow,
           };
-          currentDate.setDate(currentDate.getDate() + 1); // Increment day
+          currentDate.setDate(currentDate.getDate() + 1);
         }
+
+        const result = calculateOvulationAndFertileWindow(
+          tracker?.next_reminder,
+          tracker?.cycle_length
+        );
 
         await supabase
           .from("tracker_logs")
@@ -107,12 +142,16 @@ export async function GET(req, res) {
             flow_types: updatedFlowTypes,
             next_reminder: nextReminderLocal,
             next_reminder_utc: nextReminderUTC,
+            ovulation_date: result?.ovulation_date,
+            ovulation_date_utc: result?.ovulation_date_utc,
+            fertile_window_dates: result?.fertile_window_dates,
+            fertile_window_dates_utc: result?.fertile_window_dates_utc,
             updated_at: moment(new Date()).valueOf(),
           })
           .eq("id", tracker.id);
-      } catch (err) {
-        console.error(`Error sending notification at:`, err);
       }
+    } catch (err) {
+      console.error(`Error processing tracker with ID ${tracker.id}:`, err);
     }
-  });
+  }
 }
