@@ -1,30 +1,53 @@
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Collapse } from "react-collapse";
 import Icon from "@/components/ui/Icon";
 import { toggleActiveChat } from "@/components/partials/app/chat/store";
 import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
+import { supabase } from "@/app/utils/supabaseClient";
 import Submenu from "./Submenu";
 
 const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [userRole, setUserRole] = useState(null);  // state to store user role
+  const location = usePathname();
+  const locationName = location.replace("/", "");
+  const [mobileMenu, setMobileMenu] = useMobileMenu();
+  const dispatch = useDispatch();
 
-  const toggleSubmenu = (i) => {
-    if (activeSubmenu === i) {
-      setActiveSubmenu(null);
-    } else {
-      setActiveSubmenu(i);
+  // Function to fetch user role from Supabase
+  const fetchUserRole = async () => {
+    const userId = localStorage.getItem("user_id");  // assuming user_id is stored in localStorage
+    if (!userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")  // Replace with your actual table name
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+      } else {
+        setUserRole(data?.role);  // Set the role to state
+        console.log(data)
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
     }
   };
 
-  const location = usePathname();
-  const locationName = location.replace("/", "");
+  useEffect(() => {
+    fetchUserRole();  // Fetch role when the component mounts
+  }, []);
 
-  const [mobileMenu, setMobileMenu] = useMobileMenu();
-  const dispatch = useDispatch();
+  const toggleSubmenu = (i) => {
+    setActiveSubmenu(activeSubmenu === i ? null : i);
+  };
 
   useEffect(() => {
     let submenuIndex = null;
@@ -41,7 +64,6 @@ const Navmenu = ({ menus, onLogout }) => {
         }
       }
     });
-
     setActiveSubmenu(submenuIndex);
     dispatch(toggleActiveChat(false));
     if (mobileMenu) {
@@ -50,14 +72,21 @@ const Navmenu = ({ menus, onLogout }) => {
   }, [router, location]);
 
   return (
-    <>
-      <ul>
-        {menus.map((item, i) => (
+    <ul>
+      {menus
+        .filter((item) => {
+          // Conditionally filter out the Admin menu based on user role
+          if (item.title === "Admins" && userRole !== "Super Admin") {
+            return false;  // Hide "Admins" menu if the role is not "super admin"
+          }
+          return true;
+        })
+        .map((item, i) => (
           <li
             key={i}
             className={`single-sidebar-menu 
-              ${item.child ? "item-has-children" : ""}
-              ${activeSubmenu === i ? "open" : ""}
+              ${item.child ? "item-has-children" : ""} 
+              ${activeSubmenu === i ? "open" : ""} 
               ${locationName === item.link ? "menu-item-active" : ""}`}
           >
             {/* Single menu with no children */}
@@ -70,10 +99,12 @@ const Navmenu = ({ menus, onLogout }) => {
                 {item.badge && <span className="menu-badge">{item.badge}</span>}
               </Link>
             )}
+
             {/* Menu Label */}
             {item.isHeadr && !item.child && (
               <div className="menulabel">{item.title}</div>
             )}
+
             {/* Submenu Parent */}
             {item.child && (
               <div
@@ -110,17 +141,16 @@ const Navmenu = ({ menus, onLogout }) => {
             />
           </li>
         ))}
-        {/* Logout Menu Item */}
-        <li className="single-sidebar-menu">
-          <div className="menu-link" onClick={onLogout}>
-            <span className="menu-icon flex-grow-0">
-              <Icon icon="ant-design:logout-outlined" />
-            </span>
-            <div className="text-box flex-grow">Logout</div>
-          </div>
-        </li>
-      </ul>
-    </>
+      {/* Logout Menu Item */}
+      <li className="single-sidebar-menu">
+        <div className="menu-link" onClick={onLogout}>
+          <span className="menu-icon flex-grow-0">
+            <Icon icon="ant-design:logout-outlined" />
+          </span>
+          <div className="text-box flex-grow">Logout</div>
+        </div>
+      </li>
+    </ul>
   );
 };
 

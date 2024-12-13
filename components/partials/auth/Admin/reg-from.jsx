@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -16,7 +17,7 @@ const schema = yup.object().shape({
   dob: yup.date().required('Date of Birth is required'),
   email: yup.string().email('Email is invalid').required('Email is required'),
   phone_number: yup.string().required('Phone Number is required'),
-  role: yup.string().oneOf([ 'User'], 'Role is required').required('Role is required'),
+  role: yup.string().oneOf([ 'Admin', 'Super Admin'], 'Role is required').required('Role is required'),
   password: yup.string().min(8, 'Password must be at least 8 characters long').required('Password is required'),
   confirm_password: yup
     .string()
@@ -48,7 +49,7 @@ const RegForm = () => {
     const updatedUser = {
       ...user,
       email: user.email.trim().toLowerCase(),
-      role: user.role || 'user',
+      role: user.role || 'admin',
       phone_number: user.phone_number || 'default_value'
     };
 
@@ -77,7 +78,7 @@ const RegForm = () => {
         placeholder="First Name"
         register={register}
         error={errors.first_name?.message}
-        className='mb-2'
+        className='mb-2 capitalize'
       />
 
       <Textinput
@@ -87,7 +88,7 @@ const RegForm = () => {
         placeholder="Last Name"
         register={register}
         error={errors.last_name?.message}
-        className='mb-2'
+        className='mb-2 capitalize'
       />
 
       <SplitDropdown2
@@ -95,6 +96,7 @@ const RegForm = () => {
         value={selectedSex}
         onChange={(value) => setValue('sex', value)}
         className="mb-4 w-full"
+        inputClass='hidden capitalize'
       />
 
       <Textinput
@@ -130,9 +132,10 @@ const RegForm = () => {
       <SplitDropdown2
         label="Role"
         value={selectedRole}
-        items={[{label: 'User'}]}
+        items={[{label: 'Super Admin'}, {label: 'Admin'}]}
         onChange={(value) => setValue('role', value)}
         className="mb-4 w-full"
+        inputClass='hidden capitalize'
       />
 
       <Textinput
