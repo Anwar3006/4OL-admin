@@ -1,4 +1,4 @@
-import { encryptPassword } from "../utils/helpers";
+import { decryptPassword, encryptPassword } from "../utils/helpers";
 import { supabase } from "../utils/supabaseClient";
 
 export const login = async (user, loadCallback, successCallback, errorCallback) => {
@@ -21,9 +21,11 @@ export const login = async (user, loadCallback, successCallback, errorCallback) 
             emailOrPhone = userProfileByPhone.email;
         }
 
+        const decryptedPassword = decryptPassword(user.passcode);
+
         const { data: signinData, error: signinError } = await supabase.auth.signInWithPassword({
             email: emailOrPhone,
-            password: user.passcode,
+            password: decryptedPassword,
         });
         console.log('Signin data:', signinData);
         if (signinError) {
@@ -132,25 +134,25 @@ export const verifyOtpSentToEmail = async (email, otp) => {
 
 export const resetPassword = async (newPassword, successCallback, errorCallback) => {
     try {
-        // Directly update the password
-        const { data, error } = await supabase.auth.updateUser({
-            password: newPassword,
-        });
-
-        if (error) {
-            console.error("Password Update Failed:", error);
-            errorCallback(error);
-            return;
-        }
-
-        console.log("Password Update Successful:", data);
-        successCallback();
+      // No need to manually encrypt the password, just send the plain password
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+  
+      if (error) {
+        console.error("Password Update Failed:", error);
+        errorCallback(error);
+        return;
+      }
+  
+      console.log("Password Update Successful:", data);
+      successCallback();
     } catch (err) {
-        console.error("Unexpected Error During Password Reset:", err);
-        errorCallback(err);
+      console.error("Unexpected Error During Password Reset:", err);
+      errorCallback(err);
     }
-};
-
+  };
+  
 
 
 

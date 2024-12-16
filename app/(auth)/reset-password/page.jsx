@@ -28,6 +28,7 @@ const ResetPassword = () => {
 
   const onSubmit = async (data) => {
     const { newPassword } = data;
+    console.log(newPassword)
     setLoading(true);
 
     try {

@@ -81,7 +81,7 @@ export default function RolesAndPermissions() {
   };
 
   const handleView = (id) => {
-    router.push(`/view-facility-profile?id=${id}`);
+    router.push(`/admin/view?id=${id}`);
   };
   
 
@@ -122,7 +122,7 @@ export default function RolesAndPermissions() {
               
               <tr key={item.id} onClick={() => handleView(item.id)} className={`cursor-pointer capitalize ${item.role !== 'Admin'? 'hidden': ''}`}>
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */} 
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800">
                 {item.first_name} {" "}
                 <span>
                 { item.last_name}
@@ -153,6 +153,15 @@ export default function RolesAndPermissions() {
                 {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
+                    <Button
+                      icon="lets-icons:eye"
+                      iconClass="text-base text-blue-500" // Adjust the color and size as needed
+                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(item.id);
+                      }}
+                    />
                     <Button
                       icon="heroicons-outline:pencil-alt"
                       iconClass="text-base text-green-500" // Adjust the color and size as needed
