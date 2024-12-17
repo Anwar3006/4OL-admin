@@ -37,31 +37,35 @@ export const menuItems = [
       {
         childtitle: "Hospitals/ Clinics",
         // childlink: "hospitals",
-        childlink: "#",
+        childlink: "/facilities/hospitals",
       },
       {
         childtitle: "Herbal Hospitals",
-        childlink: "#",
+        childlink: "/facilities/herbal-hospitals",
       },
       {
         childtitle: "Diagnostic Labs",
-        childlink: "#",
+        childlink: "/facilities/diagnostic-labs",
       },
       {
         childtitle: "Pharmacies",
-        childlink: "#",
+        childlink: "/facilities/pharmacies",
       },
       {
         childtitle: "Wholesalers",
-        childlink: "#",
+        childlink: "/facilities/wholesalers",
       },
       {
         childtitle: "Ambulance",
-        childlink: "#",
+        childlink: "/facilities/ambulance",
       },
       {
         childtitle: "Homes",
-        childlink: "#",
+        childlink: "/facilities/homes",
+      },
+      {
+        childtitle: "Pending Reviews",
+        childlink: "/facilities/pending-reviews",
       },
 
     ]
