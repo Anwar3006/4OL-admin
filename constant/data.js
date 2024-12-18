@@ -52,16 +52,36 @@ export const menuItems = [
         childlink: "/facilities/pharmacies",
       },
       {
-        childtitle: "Wholesalers",
-        childlink: "/facilities/wholesalers",
+        childtitle: "Dental",
+        childlink: "/facilities/dental",
       },
       {
-        childtitle: "Ambulance",
+        childtitle: "Ambulance Service",
         childlink: "/facilities/ambulance",
       },
       {
         childtitle: "Homes",
         childlink: "/facilities/homes",
+      },
+      {
+        childtitle: "Eye Care",
+        childlink: "/facilities/eye-care",
+      },
+      {
+        childtitle: "Osteopathy",
+        childlink: "/facilities/osteopathy",
+      },
+      {
+        childtitle: "Physiotherapy",
+        childlink: "/facilities/physiotherapy",
+      },
+      {
+        childtitle: "Prosthetics",
+        childlink: "/facilities/prosthetics",
+      },
+      {
+        childtitle: "Psychiatric",
+        childlink: "/facilities/psychiatric",
       },
       {
         childtitle: "Pending Reviews",

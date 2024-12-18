@@ -51,7 +51,7 @@ const schema = yup.object().shape({
   position: yup.string().required("Position is required"),
 });
 
-const FacilityProfileForm = () => {
+const AddHomeFacilityForm = () => {
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
@@ -68,7 +68,7 @@ const FacilityProfileForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const selectedFacilityType = watch("facility_type") || [];
+//   const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
   const selectedHospitalAmenities = watch("hospital_amenities") || [];
   const selectedPharmacyServices = watch("pharmacy_services") || [];
@@ -108,11 +108,16 @@ const FacilityProfileForm = () => {
       {}
     );
 
+    const facility = 'Home';
+
     const updatedUser = {
       ...user,
+      facility_type: facility,
       business_hours: businessHours,
       mediaUrls,
     };
+
+    console.log('updated data', updatedUser)
 
     healthcareProfile(
       updatedUser,
@@ -135,25 +140,6 @@ const FacilityProfileForm = () => {
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-      {/* <div className="mb-2">
-        <p className="font-semibold mb-5">Facility Type</p>
-        <SplitDropdown2
-          label="Select Facility"
-          value={selectedFacilityType}
-          placeholder=" "
-          onChange={(value) => setValue("facility_type", value)}
-          items={[
-            { label: "Hospital" },
-            { label: "Pharmacy" },
-            { label: "Herbal Center" },
-            { label: "Diagnostic Center" },
-            { label: "Ambulance Service" },
-            { label: "Pharmacy Wholesale" },
-          ]}
-          isMultiSelect={true}
-        />
-      </div> */}
-
       <div>
         <p className="font-semibold mb-5">Basic Information</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
@@ -290,7 +276,7 @@ const FacilityProfileForm = () => {
           />
         </div>
 
-        <div>
+        {/* <div>
           <p className="font-semibold my-5">Pharmacy Services</p>
           <SplitDropdown2
             label="Select Pharmacy Services"
@@ -301,7 +287,7 @@ const FacilityProfileForm = () => {
             ]}
             isMultiSelect={true}
           />
-        </div>
+        </div> */}
       </div>
 
       <div>
@@ -430,4 +416,4 @@ const FacilityProfileForm = () => {
   );
 };
 
-export default FacilityProfileForm;
+export default AddHomeFacilityForm;

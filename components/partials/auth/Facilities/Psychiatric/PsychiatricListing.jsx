@@ -6,9 +6,8 @@ import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
-import Switch from "@/components/ui/Switch";
 
-export default function HospitalsListing() {
+export default function PsychiatricListing() {
   const [data, setData] = useState([]); // State to hold fetched data
   const [globalFilter, setGlobalFilter] = useState(""); // Search filter
   const [pageIndex, setPageIndex] = useState(0); // Pagination index
@@ -31,7 +30,7 @@ export default function HospitalsListing() {
         .select("*", { count: "exact" })
         .range(from, to)
         .eq("status", "Approved")
-      .eq("facility_type", "Hospital/ Clinic"); 
+        .eq("facility_type", "Psychiatric"); 
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -79,7 +78,6 @@ export default function HospitalsListing() {
     }
   };
 
-  // Edit a record
   const handleEdit = (id) => {
     router.push(`/edit-facility-profile-form?id=${id}`);
   };
@@ -91,7 +89,7 @@ export default function HospitalsListing() {
   return (
     <Card className="min-h-[80vh] bg-white">
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Hospitals/ Clinics</h6>
+        <h6 className="md:mb-0 mb-3 w-full">Psychiatric</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -100,7 +98,7 @@ export default function HospitalsListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/hospitals/create")}
+              onClick={() => router.push("/facilities/psychiatric/create")}
             />
           </div>
         </div>
@@ -119,13 +117,6 @@ export default function HospitalsListing() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
-          {filteredData.length === 0 && (
-              <tr>
-                <td colSpan="6" className="text-center py-10 text-base text-gray-500">
-                  No Data Available
-                </td>
-              </tr>
-            )}
             {filteredData.map((item) => (
               <tr
                 key={item.id}

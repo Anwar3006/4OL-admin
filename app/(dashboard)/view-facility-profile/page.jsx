@@ -60,7 +60,7 @@ export default function page() {
             <div>{facility.facility_name || "Not Available"}</div>
 
             <div className="font-semibold">Facility Type:</div>
-            <div>{facility.facility_type?.join(", ") || "Not Available"}</div>
+            <div>{facility.facility_type}</div>
 
             <div className="font-semibold">Contact Number:</div>
             <div>{facility.contact_num || "Not Available"}</div>
@@ -116,15 +116,15 @@ export default function page() {
 
             <div className="font-semibold">Status:</div>
             <div>
-              {facility.status === "Active" ? (
+              {facility.status === "Approved" ? (
                 <div className="flex items-center space-x-2">
                   <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  <span className="">Active</span>
+                  <span className="">Approved</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                  <span className="">In Active</span>
+                  <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                  <span className="">Pending</span>
                 </div>
               )}
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -14,6 +14,7 @@ import { healthcareProfile } from "@/app/services/healthcare-profile";
 import Fileinput from "@/components/ui/Fileinput";
 import { supabase } from "@/app/utils/supabaseClient";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
+import { usePathname } from "next/navigation";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -51,11 +52,23 @@ const schema = yup.object().shape({
   position: yup.string().required("Position is required"),
 });
 
-const FacilityProfileForm = () => {
+const AddFacilityForm = () => {
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
   const [mediaType, setMediaType] = useState(""); 
+  const pathname = usePathname();
+  const [facilityType, setFacilityType] = useState(null);
+
+  useEffect(() => {
+    if (pathname === "/facilities/dental/create") setFacilityType("Dental");
+    else if (pathname === "/facilities/eye-care/create") setFacilityType("Eye Care");
+    else if (pathname === "/facilities/osteopathy/create") setFacilityType("Osteopathy");
+    else if (pathname === "/facilities/physiotherapy/create") setFacilityType("Physiotherapy");
+    else if (pathname === "/facilities/prosthetics/create") setFacilityType("Prosthetics");
+    else if (pathname === "/facilities/psychiatric/create") setFacilityType("Psychiatric");
+    else setFacilityType(null);
+  }, [pathname]);
 
   const {
     register,
@@ -68,7 +81,7 @@ const FacilityProfileForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const selectedFacilityType = watch("facility_type") || [];
+//   const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
   const selectedHospitalAmenities = watch("hospital_amenities") || [];
   const selectedPharmacyServices = watch("pharmacy_services") || [];
@@ -110,9 +123,12 @@ const FacilityProfileForm = () => {
 
     const updatedUser = {
       ...user,
+      facility_type: facilityType,
       business_hours: businessHours,
       mediaUrls,
     };
+
+    console.log('updated data', updatedUser)
 
     healthcareProfile(
       updatedUser,
@@ -290,7 +306,7 @@ const FacilityProfileForm = () => {
           />
         </div>
 
-        <div>
+        {/* <div>
           <p className="font-semibold my-5">Pharmacy Services</p>
           <SplitDropdown2
             label="Select Pharmacy Services"
@@ -301,7 +317,7 @@ const FacilityProfileForm = () => {
             ]}
             isMultiSelect={true}
           />
-        </div>
+        </div> */}
       </div>
 
       <div>
@@ -430,4 +446,4 @@ const FacilityProfileForm = () => {
   );
 };
 
-export default FacilityProfileForm;
+export default AddFacilityForm;

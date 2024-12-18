@@ -51,7 +51,7 @@ const schema = yup.object().shape({
   position: yup.string().required("Position is required"),
 });
 
-const FacilityProfileForm = () => {
+const AddHerbalHospitalForm = () => {
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
@@ -68,7 +68,7 @@ const FacilityProfileForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const selectedFacilityType = watch("facility_type") || [];
+//   const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
   const selectedHospitalAmenities = watch("hospital_amenities") || [];
   const selectedPharmacyServices = watch("pharmacy_services") || [];
@@ -108,11 +108,16 @@ const FacilityProfileForm = () => {
       {}
     );
 
+    const facility = 'Herbal Hospital';
+
     const updatedUser = {
       ...user,
+      facility_type: facility,
       business_hours: businessHours,
       mediaUrls,
     };
+
+    console.log('updated data', updatedUser)
 
     healthcareProfile(
       updatedUser,
@@ -290,7 +295,7 @@ const FacilityProfileForm = () => {
           />
         </div>
 
-        <div>
+        {/* <div>
           <p className="font-semibold my-5">Pharmacy Services</p>
           <SplitDropdown2
             label="Select Pharmacy Services"
@@ -301,7 +306,7 @@ const FacilityProfileForm = () => {
             ]}
             isMultiSelect={true}
           />
-        </div>
+        </div> */}
       </div>
 
       <div>
@@ -430,4 +435,4 @@ const FacilityProfileForm = () => {
   );
 };
 
-export default FacilityProfileForm;
+export default AddHerbalHospitalForm;

@@ -1,5 +1,5 @@
   import React, { useEffect, useState } from "react";
-  import { useSearchParams } from "next/navigation";
+  import { usePathname, useSearchParams } from "next/navigation";
   import { useRouter } from "next/navigation";
   import { useForm } from "react-hook-form";
   import { yupResolver } from "@hookform/resolvers/yup";
@@ -48,6 +48,7 @@
     const [facilityData, setFacilityData] = useState(null);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
 
     // Extract ID from query parameters
     const id = searchParams.get("id");
@@ -126,26 +127,9 @@
 
     return (
       <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-        <div className="mb-2">
-          <p className="font-semibold mb-5">Facility Type</p>
-          <SplitDropdown2
-            label="Select Facility"
-            value={[selectedFacilityType]}
-            onChange={(value) => setValue("facility_type", value)}
-            items={[
-              { label: "Hospital" },
-              { label: "Pharmacy" },
-              { label: "Herbal Center" },
-              { label: "Diagnostic Center" },
-              { label: "Ambulance Service" },
-              { label: "Pharmacy Wholesale" },
-            ]}
-            isMultiSelect={true}
-          />
-        </div>
 
         <div>
-          <p className="font-semibold my-5">Basic Information</p>
+          <p className="font-semibold mb-5">Basic Information</p>
           <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
             <Textinput
               name="facility_name"
@@ -246,29 +230,31 @@
         </div>
 
         <div className="grid sm:grid-cols-3 grid-cols-1 w-full">
-          <div>
-            <p className="font-semibold my-5">Hospital Services</p>
+          <div className={`${facilityData?.facility_type === 'Ambulance' ? 'hidden' : 'block'}`}>
+            <p className="font-semibold my-5 ">Services</p>
             <SplitDropdown2
               label="Select Service"
               value={[selectedHospitalServices]}
               onChange={(value) => setValue("hospital_services", value)}
               items={HOSPITAL_SERVICES.map((service) => ({ label: service }))}
               isMultiSelect={true}
+              wrapperClass="sm:mr-3"
             />
           </div>
 
           <div>
-            <p className="font-semibold my-5">Hospital Amenities</p>
+            <p className="font-semibold my-5">Amenities</p>
             <SplitDropdown2
               label="Select Amenities"
               value={[selectedHospitalAmenities]}
               onChange={(value) => setValue("hospital_amenities", value)}
               items={HOSPITAL_AMENITIES.map((amenity) => ({ label: amenity }))}
               isMultiSelect={true}
+              wrapperClass="sm:mr-3"
             />
           </div>
 
-          <div>
+          <div className={`${facilityData?.facility_type !== 'Pharmacy' ? 'hidden' : 'block'}`}>
             <p className="font-semibold my-5">Pharmacy Services</p>
             <SplitDropdown2
               label="Select Pharmacy Services"
@@ -380,18 +366,18 @@
     </div>
   </div>
 
-        <div className="my-5">
+        {/* <div className="my-5">
           <p className="font-semibold mb-5">Status</p>
           <SplitDropdown2
             label="Select Status"
             value={selectedStatus}
             onChange={(value) => setValue("status", value)}
             items={[
-              { label: "Active" },
-              { label: "In Active" },
+              { label: "Pending" },
+              { label: "Approved" },
             ]}
           />
-        </div>
+        </div> */}
 
         <button
           type="submit"

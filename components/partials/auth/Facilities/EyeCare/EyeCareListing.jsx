@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
 
-export default function WholesalersListing() {
+export default function EyeCareListing() {
   const [data, setData] = useState([]); // State to hold fetched data
   const [globalFilter, setGlobalFilter] = useState(""); // Search filter
   const [pageIndex, setPageIndex] = useState(0); // Pagination index
@@ -28,7 +28,9 @@ export default function WholesalersListing() {
       } = await supabase
         .from("healthcare_profiles")
         .select("*", { count: "exact" })
-        .range(from, to);
+        .range(from, to)
+        .eq("status", "Approved")
+        .eq("facility_type", "Eye Care"); 
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -76,16 +78,18 @@ export default function WholesalersListing() {
     }
   };
 
-  // Edit a record
-  const handleEdit = (id) => router.push(`/admin/edit?id=${id}`);
+  const handleEdit = (id) => {
+    router.push(`/edit-facility-profile-form?id=${id}`);
+  };
 
-  // View a record
-  const handleView = (id) => router.push(`/admin/view?id=${id}`);
+  const handleView = (id) => {
+    router.push(`/view-facility-profile?id=${id}`);
+  };
 
   return (
     <Card className="min-h-[80vh] bg-white">
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Wholesalers</h6>
+        <h6 className="md:mb-0 mb-3 w-full">Dental</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -94,7 +98,7 @@ export default function WholesalersListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facility-profile-form")}
+              onClick={() => router.push("/facilities/eye-care/create")}
             />
           </div>
         </div>
@@ -119,7 +123,7 @@ export default function WholesalersListing() {
                 onClick={() => handleView(item.id)}
                 className="cursor-pointer hover:bg-gray-50"
               >
-                <td className="px-4 py-2 capitalize">Wholesalers</td>
+                <td className="px-4 py-2 capitalize">{item.facility_type}</td>
                 <td className="px-4 py-2 capitalize">{item.facility_name}</td>
                 <td className="px-4 py-2">{item.region}</td>
                 <td className="px-4 py-2">{item.contact_num}</td>

@@ -28,7 +28,9 @@ export default function HerbalHospitalsListing() {
       } = await supabase
         .from("healthcare_profiles")
         .select("*", { count: "exact" })
-        .range(from, to);
+        .range(from, to)
+        .eq("status", "Approved")
+        .eq("facility_type", "Herbal Hospital"); 
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -76,11 +78,13 @@ export default function HerbalHospitalsListing() {
     }
   };
 
-  // Edit a record
-  const handleEdit = (id) => router.push(`/admin/edit?id=${id}`);
+  const handleEdit = (id) => {
+    router.push(`/edit-facility-profile-form?id=${id}`);
+  };
 
-  // View a record
-  const handleView = (id) => router.push(`/admin/view?id=${id}`);
+  const handleView = (id) => {
+    router.push(`/view-facility-profile?id=${id}`);
+  };
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -94,7 +98,7 @@ export default function HerbalHospitalsListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facility-profile-form")}
+              onClick={() => router.push("facilities/herbal-hospitals/create")}
             />
           </div>
         </div>
@@ -113,13 +117,20 @@ export default function HerbalHospitalsListing() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+          {filteredData.length === 0 && (
+              <tr>
+                <td colSpan="6" className="text-center py-10 text-base text-gray-500">
+                  No Data Available
+                </td>
+              </tr>
+            )}
             {filteredData.map((item) => (
               <tr
                 key={item.id}
                 onClick={() => handleView(item.id)}
                 className="cursor-pointer hover:bg-gray-50"
               >
-                <td className="px-4 py-2 capitalize">Herbal Hospital</td>
+                <td className="px-4 py-2 capitalize">{item.facility_type}</td>
                 <td className="px-4 py-2 capitalize">{item.facility_name}</td>
                 <td className="px-4 py-2">{item.region}</td>
                 <td className="px-4 py-2">{item.contact_num}</td>

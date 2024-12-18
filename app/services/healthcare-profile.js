@@ -49,7 +49,7 @@ export const healthcareProfile = async (
           last_name: user.last_name,
           person_contact_number: user.persn_contact_number,
           position: user.position,
-          status: "Active",
+          status: "Pending",
           business_hours: user.business_hours,
           mediaUrls: user.mediaUrls,
           
