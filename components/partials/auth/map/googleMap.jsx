@@ -177,7 +177,7 @@ const MyGoogleMap = () => {
             }
             wrapperClass=""
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex left-0 h-72 overflow-scroll custom-scrollbar"
+            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
             items={[
               { onClick: () => handleRegionChange("") },
               ...regions.map((region) => ({
@@ -211,7 +211,7 @@ const MyGoogleMap = () => {
             }
             wrapperClass="ml-2"
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex left-0 h-72 overflow-scroll custom-scrollbar"
+            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
             items={filteredDistricts.map((district) => ({
               label: district.name,
               onClick: () => handleDistrictChange(district.name),
@@ -242,7 +242,7 @@ const MyGoogleMap = () => {
             }
             wrapperClass="ml-2"
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex right-0"
+            classMenuItems="mt-2 w-[180px] flex flex-col right-0"
             items={facilityTypes.map((item) => ({
               label: item.label,
               onClick: () => handleFacilityTypeChange(item.value),

@@ -143,7 +143,7 @@ export default function HealthcareCenters() {
               <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer">
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {item.facility_type?.join(", ") || "Null"}
+                {item.facility_type || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.facility_name || "Null"}
@@ -188,15 +188,15 @@ export default function HealthcareCenters() {
                   {formatDate(item.created_at)}
                 </td>
                 <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap`}>
-                  {item.status === "Active" ? (
+                  {item.status === "Approved" ? (
                     <div className="flex items-center space-x-2">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      <span className="">Active</span>
+                      <span className="">Approved</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                      <span className="">In Active</span>
+                      <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                      <span className="">Pending</span>
                     </div>
                   )}
                 </td>

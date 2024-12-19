@@ -5,6 +5,7 @@ import { supabase } from "@/app/utils/supabaseClient";
 import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
+import Loading from "@/components/Loading";
 
 export default function page() {
   const router = useRouter();
@@ -38,8 +39,12 @@ export default function page() {
     fetchFacility();
   }, [id]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div><Loading /></div>;
   if (error) return <div>Error: {error}</div>;
+
+  const handleEdit = (id) => {
+    router.push(`/edit-facility-profile-form?id=${id}`);
+  };
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -146,6 +151,24 @@ export default function page() {
     </div>
   ))}
 </div>
+
+<div className="flex justify-end space-x-2">
+                
+                    <Button
+                      className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(facility.id);
+                      }}
+                      text= 'Edit'
+                    />
+                    <Button
+                      className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
+                      text={'Approve'}
+                      onClick={(e) => {router.push(`/facilities/pending-reviews`);
+                      }}
+                    />
+                  </div>
 
         </div>
       )}

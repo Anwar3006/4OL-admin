@@ -35,6 +35,10 @@ export const menuItems = [
     icon: "heroicons-outline:user",
     child: [
       {
+        childtitle: "Pending Reviews",
+        childlink: "/facilities/pending-reviews",
+      },
+      {
         childtitle: "Hospitals/ Clinics",
         // childlink: "hospitals",
         childlink: "/facilities/hospitals",
@@ -83,10 +87,7 @@ export const menuItems = [
         childtitle: "Psychiatric",
         childlink: "/facilities/psychiatric",
       },
-      {
-        childtitle: "Pending Reviews",
-        childlink: "/facilities/pending-reviews",
-      },
+    
 
     ]
   },

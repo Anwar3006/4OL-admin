@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { handleLogin } from "./store";
 import { toast, ToastContainer } from "react-toastify";
+import { supabase } from "@/app/utils/supabaseClient"; // Import supabase client
 
 const schema = yup
   .object({
@@ -20,7 +21,7 @@ const schema = yup
 const LoginForm = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  
+
   const {
     register,
     formState: { errors },
@@ -37,6 +38,43 @@ const LoginForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      // First, check if the email exists and retrieve the user's status
+      const { data: userData, error: userError } = await supabase
+        .from("user_profiles")
+        .select("status, id") // Select the user's status and id based on email
+        .eq("email", data.email)
+        .single();
+
+      if (userError) {
+        toast.error("Error fetching user data.", {
+          position: "top-right",
+          autoClose: 1500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if the user status is true
+      if (userData.status !== true) {
+        toast.error("Your account is inactive. Please contact support.", {
+          position: "top-right",
+          autoClose: 1500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Proceed with login if status is true
       const resultAction = await dispatch(handleLogin(data)).unwrap();
       if (resultAction.isAuth) {
         toast.success("Login successful", {
@@ -51,19 +89,19 @@ const LoginForm = () => {
         router.push("/analytics"); // Redirect to analytics page
       }
     } catch (error) {
-      console.log(error)
-      // toast.error(error || "Unexpected error", {
-      //   position: "top-right",
-      //   autoClose: 1500,
-      //   hideProgressBar: false,
-      //   closeOnClick: true,
-      //   pauseOnHover: true,
-      //   draggable: true,
-      //   theme: "light",
-      // });
+      console.log(error);
+      toast.error("Unexpected error. Please try again later.", {
+        position: "top-right",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
     } finally {
-    setLoading(false);
-  }
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,7 +139,7 @@ const LoginForm = () => {
       </div>
 
       <button className="btn bg-[#56ce84] text-white block w-full text-center">
-      {loading ? 'Signing...' : 'Sign In'}
+        {loading ? "Signing..." : "Sign In"}
       </button>
     </form>
   );

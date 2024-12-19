@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
-import Switch from '@/components/ui/Switch';
+import Switch from "@/components/ui/Switch";
 
 export default function RolesAndPermissions() {
   const [data, setData] = useState([]);
@@ -66,7 +66,7 @@ export default function RolesAndPermissions() {
   const handleDelete = async (id) => {
     const { error } = await supabase
       .from("user_profiles")
-      .update({is_deleted: true})
+      .update({ is_deleted: true })
       .eq("id", id); // Use `.eq` to delete a specific item by its ID
 
     if (error) {
@@ -83,7 +83,26 @@ export default function RolesAndPermissions() {
   const handleView = (id) => {
     router.push(`/admin/view?id=${id}`);
   };
-  
+
+  const toggleStatus = async (id, currentStatus) => {
+    const { error } = await supabase
+      .from("user_profiles")
+      .update({ status: currentStatus ? false : true })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating status:", error);
+    } else {
+      // Update local state to reflect the change
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === id
+            ? { ...item, status: currentStatus ? false : true }
+            : item
+        )
+      );
+    }
+  };
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -119,17 +138,18 @@ export default function RolesAndPermissions() {
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
-              
-              <tr key={item.id} onClick={() => handleView(item.id)} className={`cursor-pointer capitalize ${item.role !== 'Admin'? 'hidden': ''}`}>
-                {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */} 
+              <tr
+                key={item.id}
+                className={`cursor-pointer capitalize ${
+                  item.role !== "Admin" ? "hidden" : ""
+                }`}
+              >
+                {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800">
-                {item.first_name} {" "}
-                <span>
-                { item.last_name}
-                    </span> 
+                  {item.first_name} <span>{item.last_name}</span>
                 </td>
                 <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap `}>
-                  {item.role === 'Admin' ? 'Admin' : ' '}
+                  {item.role === "Admin" ? "Admin" : " "}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase">
                   {item.email || "Null"}
@@ -138,18 +158,19 @@ export default function RolesAndPermissions() {
                   {item.phone_number}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {formatDate(item.created_at)}
+                  {formatDate(item.created_at)}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                <Switch
-            //   value={item.status}
-            //   onChange={(e) => e.target.value}
-              label=""
-              activeClass="bg-green-500"
-              labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500 "
-            />
+                  <Switch
+                    value={item.status === true} // Assuming 'enabled' means the user can log in
+                    onChange={() =>
+                      toggleStatus(item.id, item.status === true)
+                    }
+                    activeClass="bg-green-500"
+                    labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500"
+                  />
                 </td>
-           
+
                 {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">

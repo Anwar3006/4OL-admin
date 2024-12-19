@@ -12,6 +12,7 @@ import Submenu from "./Submenu";
 const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [pendingReviews, setPendingReviews] = useState(0);
   const [userRole, setUserRole] = useState(null);  // state to store user role
   const location = usePathname();
   const locationName = location.replace("/", "");
@@ -25,7 +26,7 @@ const Navmenu = ({ menus, onLogout }) => {
 
     try {
       const { data, error } = await supabase
-        .from("user_profiles")  // Replace with your actual table name
+        .from("user_profiles")
         .select("role")
         .eq("id", userId)
         .single();
@@ -41,9 +42,29 @@ const Navmenu = ({ menus, onLogout }) => {
     }
   };
 
+  const fetchPendingReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("healthcare_profiles") // Replace with your actual table name
+        .select("*")
+        .eq("status", "Pending"); // Adjust based on your schema
+  
+      if (error) {
+        console.error("Error fetching pending reviews:", error);
+        return;
+      }
+  
+      setPendingReviews(data.length || 0);
+    } catch (error) {
+      console.error("Error fetching pending reviews:", error);
+    }
+  };
+
+  // Fetch the data once on mount
   useEffect(() => {
+    fetchPendingReviews();
     fetchUserRole();  // Fetch role when the component mounts
-  }, []);
+  }, []);  // Only run once when component mounts
 
   const toggleSubmenu = (i) => {
     setActiveSubmenu(activeSubmenu === i ? null : i);
@@ -108,11 +129,7 @@ const Navmenu = ({ menus, onLogout }) => {
             {/* Submenu Parent */}
             {item.child && (
               <div
-                className={`menu-link ${
-                  activeSubmenu === i
-                    ? "parent_active not-collapsed"
-                    : "collapsed"
-                }`}
+                className={`menu-link ${activeSubmenu === i ? "parent_active not-collapsed" : "collapsed"}`}
                 onClick={() => toggleSubmenu(i)}
               >
                 <div className="flex-1 flex items-start">
@@ -123,9 +140,7 @@ const Navmenu = ({ menus, onLogout }) => {
                 </div>
                 <div className="flex-0">
                   <div
-                    className={`menu-arrow transform transition-all duration-300 ${
-                      activeSubmenu === i ? "rotate-90" : ""
-                    }`}
+                    className={`menu-arrow transform transition-all duration-300 ${activeSubmenu === i ? "rotate-90" : ""}`}
                   >
                     <Icon icon="heroicons-outline:chevron-right" />
                   </div>
@@ -138,6 +153,7 @@ const Navmenu = ({ menus, onLogout }) => {
               item={item}
               i={i}
               locationName={locationName}
+              pendingReviews={pendingReviews}
             />
           </li>
         ))}
