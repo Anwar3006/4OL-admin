@@ -1,4 +1,3 @@
-// Backend API Route (e.g., /api/places)
 
 export async function POST(req, res) {
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
