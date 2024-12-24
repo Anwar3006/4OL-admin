@@ -35,8 +35,7 @@ const Navmenu = ({ menus, onLogout }) => {
       if (error) {
         console.error("Error fetching user role:", error);
       } else {
-        setUserRole(data?.role);  // Set the role to state
-        console.log(data)
+        setUserRole(data?.role);
       }
     } catch (error) {
       console.error("Error fetching user role:", error);
