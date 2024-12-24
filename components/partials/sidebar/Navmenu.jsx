@@ -18,6 +18,7 @@ const Navmenu = ({ menus, onLogout }) => {
   const locationName = location.replace("/", "");
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   // Function to fetch user role from Supabase
   const fetchUserRole = async () => {
@@ -59,6 +60,14 @@ const Navmenu = ({ menus, onLogout }) => {
       console.error("Error fetching pending reviews:", error);
     }
   };
+
+    // Restrict Admin Panel Access
+    useEffect(() => {
+      if (locationName === "admin" && userRole !== "Super Admin") {
+        // Redirect unauthorized users to the analytics page
+        router.push("/analytics");
+      }
+    }, [locationName, userRole]);
 
   // Fetch the data once on mount
   useEffect(() => {

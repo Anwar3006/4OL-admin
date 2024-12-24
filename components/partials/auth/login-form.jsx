@@ -77,6 +77,7 @@ const LoginForm = () => {
       // Proceed with login if status is true
       const resultAction = await dispatch(handleLogin(data)).unwrap();
       if (resultAction.isAuth) {
+        router.push("/analytics");
         toast.success("Login successful", {
           position: "top-right",
           autoClose: 1500,
@@ -86,7 +87,6 @@ const LoginForm = () => {
           draggable: true,
           theme: "light",
         });
-        router.push("/analytics"); // Redirect to analytics page
       }
     } catch (error) {
       console.log(error);

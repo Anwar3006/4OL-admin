@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
 import Switch from "@/components/ui/Switch";
+import Loading from "@/app/loading";
 
 export default function RolesAndPermissions() {
   const [data, setData] = useState([]);
@@ -16,10 +17,12 @@ export default function RolesAndPermissions() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error, count } = await supabase
+      try {
+        const { data, error, count } = await supabase
         .from("user_profiles")
         .select("*", { count: "exact" })
         .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
@@ -30,6 +33,12 @@ export default function RolesAndPermissions() {
         setData(data);
         setTotalPages(Math.ceil(count / pageSize));
       }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+   
     };
 
     fetchData();
@@ -106,6 +115,9 @@ export default function RolesAndPermissions() {
 
   return (
     <Card className="min-h-[80vh] bg-white">
+      {loading && (
+        <Loading />
+      )}
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Roles & Permissions</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
