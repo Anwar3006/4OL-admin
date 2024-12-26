@@ -23,10 +23,10 @@ export const menuItems = [
     ]
   },
     {
-    title: "Users (Patients)",
+    title: "Users",
     isHide: true,
     icon: "ri:empathize-line",
-    link: "users-facility",
+    link: "users",
   },
     {
     title: "Facilities",

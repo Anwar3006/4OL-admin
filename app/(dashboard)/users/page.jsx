@@ -117,78 +117,45 @@ export default function HealthcareCenters() {
           <thead className="bg-gray-50">
             <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
               {/* <div> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Type</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Facility Name</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Contact Number</th>
-              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Whatsapp</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">GPS Address</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Street</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Post Code</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Area</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">District</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Country</th> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Hospital Services</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Hospital Amenities</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Pharmacy Services</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Created At</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Registration Date</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Email</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Phone Number</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Last Activity Date</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Status</th>
               {/* </div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
-            {filteredData.map((item) => (
+            {/* {filteredData.map((item) => ( */}
               
-              <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer">
+              <tr 
+              // key={item.id} onClick={() => handleView(item.id)} 
+              className="cursor-pointer">
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {item.facility_type || "Null"}
+                18/11/2024
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.facility_name || "Null"}
+                  Francis Mensah
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.contact_num || "Null"}
-                </td>
-                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.whatsapp || "Null"}
+                 Male
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.gps_address || "Null"}
+                  kiki@gmail.com
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.street || "Null"}
+                  02001234567
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.post_code || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.area || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.district || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.region || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.country || "Null"}
-                </td> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.hospital_services?.join(", ") || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.hospital_amenities?.join(", ") || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.pharmacy_services?.join(", ") || "Null"}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {formatDate(item.created_at)}
+                 25/12/2024
                 </td>
                 <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap`}>
-                  {item.status === "Approved" ? (
+                  Active
+                  {/* {item.status === "Active" ? (
                     <div className="flex items-center space-x-2">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
                       <span className="">Approved</span>
@@ -196,35 +163,44 @@ export default function HealthcareCenters() {
                   ) : (
                     <div className="flex items-center space-x-2">
                       <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                      <span className="">Pending</span>
+                      <span className="">Inactive</span>
                     </div>
-                  )}
+                  )} */}
                 </td>
                 {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
                     <Button
-                      icon="heroicons-outline:pencil-alt"
+                      icon="heroicons-outline:eye"
+                      iconClass="text-base text-gray-500" // Adjust the color and size as needed
+                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // handleEdit(item.id);
+                      }}
+                    />
+                    <Button
+                      icon="heroicons-outline:download"
                       iconClass="text-base text-green-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEdit(item.id);
+                        // handleEdit(item.id);
                       }}
                     />
                     <Button
-                      icon="heroicons-outline:trash"
+                      icon="uit:print"
                       iconClass="text-base text-red-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(item.id);
+                        // handleDelete(item.id);
                       }}
                     />
                   </div>
                 </td>
               </tr>
-            ))}
+            {/* ))} */}
           </tbody>
         </table>
       </div>
