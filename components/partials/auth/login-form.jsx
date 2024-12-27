@@ -43,6 +43,7 @@ const LoginForm = () => {
         .from("user_profiles")
         .select("status, id") // Select the user's status and id based on email
         .eq("email", data.email)
+        .in("role", ["Admin", "Super Admin"])
         .single();
 
       if (userError) {
@@ -77,6 +78,26 @@ const LoginForm = () => {
       // Proceed with login if status is true
       const resultAction = await dispatch(handleLogin(data)).unwrap();
       if (resultAction.isAuth) {
+        
+        // Update last_activity timestamp in Supabase (store as int8)
+        const { error: updateError } = await supabase
+          .from("user_profiles")
+          .update({ last_activity: new Date().getTime() })
+          .eq("id", userData.id);
+
+        if (updateError) {
+          toast.error("Failed to update last activity. Please try again later.", {
+            position: "top-right",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "light",
+          });
+          setLoading(false);
+          return;
+        }
         router.push("/analytics");
         toast.success("Login successful", {
           position: "top-right",
@@ -103,6 +124,7 @@ const LoginForm = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

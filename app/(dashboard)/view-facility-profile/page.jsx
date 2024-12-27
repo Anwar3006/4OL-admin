@@ -74,7 +74,7 @@ export default function page() {
             <div>{facility.whatsapp || "Not Available"}</div>
 
             <div className="font-semibold ">Email:</div>
-            <div className={`${facility.email? 'lowercase' : 'capitalize'}`}>{facility.email || 'Not Available'}</div>
+            <div className={`${facility.email ? 'lowercase' : 'capitalize'}`}>{facility.email || 'Not Available'}</div>
 
             <div className="font-semibold">GPS Address:</div>
             <div>{facility.gps_address || "Not Available"}</div>
@@ -138,37 +138,38 @@ export default function page() {
 
           <div className="mt-6 mb-4 font-semibold">Business Hours</div>
           <div className="grid grid-cols-1 gap-4">
-          <div className="flex justify-between items-center font-semibold xl:w-[30%] sm:w-[50%]">
-      <div className=" flex-1">Days</div>
-      <div className="flex-1 text-center">Opening Hours</div>
-      <div className="flex-1 text-right">Closing Hours</div>
-    </div>
-  {Object.entries(facility.business_hours).map(([day, hours]) => (
-    <div key={day} className="flex justify-between items-center xl:w-[30%] sm:w-[50%]">
-      <div className="font-medium flex-1">{day.charAt(0).toUpperCase() + day.slice(1)}</div>
-      <div className="flex-1 text-center">{hours.opening}</div>
-      <div className="flex-1 text-center">{hours.closing}</div>
-    </div>
-  ))}
-</div>
+            <div className="flex justify-between items-center font-semibold xl:w-[30%] sm:w-[50%]">
+              <div className=" flex-1">Days</div>
+              <div className="flex-1 text-center">Opening Hours</div>
+              <div className="flex-1 text-right">Closing Hours</div>
+            </div>
+            {Object.entries(facility.business_hours).map(([day, hours]) => (
+              <div key={day} className="flex justify-between items-center xl:w-[30%] sm:w-[50%]">
+                <div className="font-medium flex-1">{day.charAt(0).toUpperCase() + day.slice(1)}</div>
+                <div className="flex-1 text-center">{hours.opening}</div>
+                <div className="flex-1 text-center">{hours.closing}</div>
+              </div>
+            ))}
+          </div>
 
-<div className="flex justify-end space-x-2">
-                
-                    <Button
-                      className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(facility.id);
-                      }}
-                      text= 'Edit'
-                    />
-                    <Button
-                      className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
-                      text={'Approve'}
-                      onClick={(e) => {router.push(`/facilities/pending-reviews`);
-                      }}
-                    />
-                  </div>
+          <div className="flex justify-end space-x-2">
+
+            <Button
+              className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(facility.id);
+              }}
+              text='Edit'
+            />
+            <Button
+              className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
+              text={'Approve'}
+              onClick={(e) => {
+                router.push(`/facilities/pending-reviews`);
+              }}
+            />
+          </div>
 
         </div>
       )}

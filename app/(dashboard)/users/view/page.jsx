@@ -2,8 +2,7 @@
 
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
-import Card from "@/components/ui/Card";
-import UsersListing from "@/components/partials/auth/Users/UsersListing";
+import ViewUserDetails from "@/components/partials/auth/Users/ViewUserDetials";
 
 export default function page() {
   const [isDark] = useDarkmode();
@@ -13,7 +12,7 @@ export default function page() {
         <div className="lg-inner-column">
           <div className="right-column relative w-full">  
               <div className=" w-full flex flex-col justify-center sm:p-5">
-                <UsersListing />
+                <ViewUserDetails />
               </div>
           </div>
         </div>
