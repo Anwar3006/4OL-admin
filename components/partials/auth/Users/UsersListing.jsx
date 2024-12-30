@@ -187,7 +187,7 @@ export default function UsersListing() {
                   {item.phone_number}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {formatDate(item.last_activity) || 'Null'}
+                {item.last_activity ? formatDate(item.last_activity): 'No Activity' }
                 </td>
                 <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap`}>
                   {item.status === true ? (
