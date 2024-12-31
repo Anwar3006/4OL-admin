@@ -3,7 +3,7 @@
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
-import EditFacilityProfileForm from "@/components/partials/auth/edit-facility-profile-form";
+import EditFacilityProfileForm from "@/components/partials/auth/Facilities/edit-facility-profile-form";
 
 export default function page() {
     const [isDark] = useDarkmode();

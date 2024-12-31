@@ -106,15 +106,15 @@ export const menuItems = [
     child: [
       {
         childtitle: "Diseases & Conditions",
-        childlink: "illness_and_complications/form",
+        childlink: "/categories/illness_and_complications/form",
       },
       {
         childtitle: "Symptoms",
-        childlink: "symptoms/form",
+        childlink: "/categories/symptoms/form",
       },
       {
         childtitle: "Healthy Living",
-        childlink: "healthy_living/form",
+        childlink: "/categories/healthy_living/form",
       },
       {
         childtitle: "Pills Reminder",
@@ -165,7 +165,7 @@ export const menuItems = [
     isHide: true,
     icon: "uiw:map",
     child: [
-      {childlink: 'map/overview', childtitle: 'Overview'},
+      {childlink: '/map/overview', childtitle: 'Overview'},
       {childlink: '#', childtitle: 'Footprint'},
     ],
   },
@@ -221,7 +221,7 @@ export const menuItems = [
     isHide: true,
     icon: "carbon:notification",
     // link: "faq",
-    link: "notifications",
+    link: "/notifications",
   },
   {
     title: "Logout",

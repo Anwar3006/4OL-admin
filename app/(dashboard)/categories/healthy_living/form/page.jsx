@@ -2,8 +2,8 @@
 
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
-import Card from "@/components/ui/Card";
-import SymptomsForm from "@/components/partials/auth/symptoms_form";
+import Card from "@/components/ui/Card";    
+import HealthyLiving from "@/components/partials/auth/Categories/healthy_living";
 
 export default function page() {
   const [isDark] = useDarkmode();
@@ -13,11 +13,11 @@ export default function page() {
         <div className="lg-inner-column">
           <div className="right-column relative w-full">
             <Card
-              title={"Symptoms Form"}
+              title={"Healthy Living"}
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
             >
               <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
-               <SymptomsForm/>
+               <HealthyLiving/>
               </div>
             </Card>
           </div>
