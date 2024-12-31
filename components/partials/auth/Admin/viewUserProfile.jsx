@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
+import { decryptPassword } from "@/app/utils/helpers";
 
 const ViewUserProfile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -138,7 +139,7 @@ const ViewUserProfile = () => {
     </div>
     <div className="text-base flex text-slate-600 dark:text-slate-50">
       {passwordVisible
-        ? profileData.password
+        ? decryptPassword(profileData.password) 
         : "*".repeat(profileData.password.length)}
       <Icon
         icon={
