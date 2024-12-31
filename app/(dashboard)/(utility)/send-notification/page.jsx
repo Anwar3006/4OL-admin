@@ -66,11 +66,11 @@ const SendNotificationPage = () => {
 
   const handleTargerGroupChange = (group) => {
     setTargetGroup(group);
-  }
+  };
 
   const handleAgeRangeChange = (age) => {
     setAgeRange(age);
-  }
+  };
 
   const handleRegionChange = (regionName) => {
     const region = regions.find((r) => r.name === regionName);
@@ -140,107 +140,102 @@ const SendNotificationPage = () => {
               <h4 className="text-lg my-4">Targeting Options</h4>
 
               <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
-              {/* Region and District Selection */}
-              <Dropdown
-                label={
-                  <>
-                    Select Region
-                    <Icons
-                      className={"text-2xl"}
-                      icon={"ri:arrow-drop-down-line"}
-                    />
-                  </>
-                }
-                wrapperClass=""
-                labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
-                classMenuItems="mt-2 w-[180px] flex left-0 h-72 overflow-scroll custom-scrollbar"
-                items={[
-                  { onClick: () => handleRegionChange("") },
-                  ...regions.map((region) => ({
-                    label: region.name,
-                    onClick: () => handleRegionChange(region.name),
-                  })),
-                ]}
-                selectedItem={
-                  <>
-                    {selectedRegion?.name || "Region"}
-                    <Icons
-                      className={"text-2xl"}
-                      icon={"ri:arrow-drop-down-line"}
-                    />
-                  </>
-                } // Pass selectedRegion to display
-                onSelect={handleRegionChange} // Handle region selection
-              />
+                {/* Region and District Selection */}
+                <Dropdown
+                  label={
+                    <>
+                      Select Region
+                      <Icons
+                        className={"text-2xl"}
+                        icon={"ri:arrow-drop-down-line"}
+                      />
+                    </>
+                  }
+                  wrapperClass=""
+                  labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
+                  classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
+                  items={[
+                    { onClick: () => handleRegionChange("") },
+                    ...regions.map((region) => ({
+                      label: region.name,
+                      onClick: () => handleRegionChange(region.name),
+                    })),
+                  ]}
+                  selectedItem={
+                    <>
+                      {selectedRegion?.name || "Region"}
+                      <Icons
+                        className={"text-2xl"}
+                        icon={"ri:arrow-drop-down-line"}
+                      />
+                    </>
+                  } // Pass selectedRegion to display
+                  onSelect={handleRegionChange} // Handle region selection
+                />
 
-              <Dropdown
-                label={
-                  <>
-                    Select District
-                  </>
-                }
-                wrapperClass=""
-                labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
-                classMenuItems="mt-2 w-[180px] flex left-0 max-h-72 overflow-scroll custom-scrollbar"
-                items={filteredDistricts.map((district) => ({
-                  label: district.name,
-                  onClick: () => handleDistrictChange(district.name),
-                }))}
-                selectedItem={
-                  <>
-                    {selectedDistrict?.name || "District"}
-                    <Icons
-                      className={"text-2xl"}
-                      icon={"ri:arrow-drop-down-line"}
-                    />
-                  </>
-                } // Pass selectedDistrict to display
-                onSelect={handleDistrictChange} // Handle district selection
-              />
+                <Dropdown
+                  label={<>Select District</>}
+                  wrapperClass=""
+                  labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
+                  classMenuItems="mt-2 w-[180px] flex flex-col left-0 max-h-72 overflow-scroll custom-scrollbar"
+                  items={filteredDistricts.map((district) => ({
+                    label: district.name,
+                    onClick: () => handleDistrictChange(district.name),
+                  }))}
+                  selectedItem={
+                    <>
+                      {selectedDistrict?.name || "District"}
+                      <Icons
+                        className={"text-2xl"}
+                        icon={"ri:arrow-drop-down-line"}
+                      />
+                    </>
+                  } // Pass selectedDistrict to display
+                  onSelect={handleDistrictChange} // Handle district selection
+                />
 
-              {/* Target Group Selection */}
-              <Dropdown
-                label="Target Group"
-                labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
-                classMenuItems="mt-2 flex left-0 max-h-72 overflow-scroll custom-scrollbar"
-                items={targetGroups.map((group) => ({
-                  label: group,
-                  onClick: () => handleRegionChange(group),
-                }))}
-                selectedItem={
-                  <>
-                    {targetGroup || "Target Group"}
-                    <Icons
-                      className={"text-2xl"}
-                      icon={"ri:arrow-drop-down-line"}
-                    />
-                  </>
-                }
-                onSelect={handleTargerGroupChange}
-              />
+                {/* Target Group Selection */}
+                <Dropdown
+                  label="Target Group"
+                  labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
+                  classMenuItems="mt-2 flex flex-col left-0 max-h-72 overflow-scroll custom-scrollbar"
+                  items={targetGroups.map((group) => ({
+                    label: group,
+                    onClick: () => handleRegionChange(group),
+                  }))}
+                  selectedItem={
+                    <>
+                      {targetGroup || "Target Group"}
+                      <Icons
+                        className={"text-2xl"}
+                        icon={"ri:arrow-drop-down-line"}
+                      />
+                    </>
+                  }
+                  onSelect={handleTargerGroupChange}
+                />
 
-              {/* Age Range Selection */}
-              <Dropdown
-                label="Age Range"
-                labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
-                classMenuItems="mt-2 w-[180px] flex left-0 max-h-72 overflow-scroll custom-scrollbar"
-                items={ageRanges.map((range) => ({
-                  label: range,
-                  onClick: () => handleAgeRangeChange(range),
-                }))}
-                selectedItem={
-                  <>
-                    {ageRange || "Age Range"}
-                    <Icons
-                      className={"text-2xl"}
-                      icon={"ri:arrow-drop-down-line"}
-                    />
-                  </>
-                }
-                onSelect={handleAgeRangeChange}
-              />
+                {/* Age Range Selection */}
+                <Dropdown
+                  label="Age Range"
+                  labelClass="flex justify-between items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs"
+                  classMenuItems="mt-2 w-[180px] flex flex-col left-0 max-h-72 overflow-scroll custom-scrollbar"
+                  items={ageRanges.map((range) => ({
+                    label: range,
+                    onClick: () => handleAgeRangeChange(range),
+                  }))}
+                  selectedItem={
+                    <>
+                      {ageRange || "Age Range"}
+                      <Icons
+                        className={"text-2xl"}
+                        icon={"ri:arrow-drop-down-line"}
+                      />
+                    </>
+                  }
+                  onSelect={handleAgeRangeChange}
+                />
               </div>
-
             </div>
           </div>
 
