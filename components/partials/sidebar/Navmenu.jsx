@@ -36,6 +36,7 @@ const Navmenu = ({ menus, onLogout }) => {
         console.error("Error fetching user role:", error);
       } else {
         setUserRole(data?.role);
+        localStorage.setItem("user_role", data?.role);
       }
     } catch (error) {
       console.error("Error fetching user role:", error);
@@ -106,8 +107,17 @@ const Navmenu = ({ menus, onLogout }) => {
         .filter((item) => {
           // Conditionally filter out the Admin menu based on user role
           if (item.title === "Admins" && userRole !== "Super Admin") {
-            return false;  // Hide "Admins" menu if the role is not "super admin"
+            return false; // Hide "Admins" menu if the role is not "Super Admin"
           }
+  
+          // if (item.title === "Facilities" && item.child) {
+          //   // Filter "Pending Reviews" to only be visible for Super Admins
+          //   item.child = item.child.filter(
+          //     (child) =>
+          //       !(child.childtitle === "Pending Reviews" && userRole !== "Super Admin")
+          //   );
+          // }  
+  
           return true;
         })
         .map((item, i) => (
@@ -128,12 +138,12 @@ const Navmenu = ({ menus, onLogout }) => {
                 {item.badge && <span className="menu-badge">{item.badge}</span>}
               </Link>
             )}
-
+  
             {/* Menu Label */}
             {item.isHeadr && !item.child && (
               <div className="menulabel">{item.title}</div>
             )}
-
+  
             {/* Submenu Parent */}
             {item.child && (
               <div
@@ -155,7 +165,7 @@ const Navmenu = ({ menus, onLogout }) => {
                 </div>
               </div>
             )}
-
+  
             <Submenu
               activeSubmenu={activeSubmenu}
               item={item}
@@ -176,6 +186,7 @@ const Navmenu = ({ menus, onLogout }) => {
       </li>
     </ul>
   );
+  
 };
 
 export default Navmenu;

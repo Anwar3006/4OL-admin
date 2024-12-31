@@ -51,6 +51,7 @@ export const handleLogout = createAsyncThunk(
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("isAuth");
         window.localStorage.removeItem("user_id");
+        window.localStorage.removeItem("user_role");
       }
       return { isAuth: false };
     } catch (error) {
