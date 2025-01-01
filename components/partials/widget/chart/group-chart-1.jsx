@@ -273,6 +273,12 @@ const shapeLine4 = {
 
 const statistics = [
   {
+    name: shapeLine3,
+    title: "Total Downloads",
+    count: "5,678",
+    bg: "bg-[#c7f2d7] dark:bg-slate-900	",
+  },
+  {
     name: shapeLine1,
     title: "Totel Users",
     count: "3,564",
@@ -302,7 +308,7 @@ const GroupChart1 = () => {
     <>
       {statistics.map((item, i) => (
         <div className={`py-[18px] px-4 rounded-[6px] ${item.bg}`} key={i}>
-          <div className="flex items-center space-x-6 rtl:space-x-reverse">
+          <div className="flex items-center space-x-6 rtl:space-x-reverse flex-wrap justify-center">
             <div className="flex-none">
               <Chart
                 options={item.name.options}
@@ -312,7 +318,7 @@ const GroupChart1 = () => {
                 width={48}
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 my-1">
               <div className="text-slate-800 dark:text-slate-300 text-sm mb-1 font-medium">
                 {item.title}
               </div>

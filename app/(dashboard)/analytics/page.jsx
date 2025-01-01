@@ -43,7 +43,7 @@ const Dashboard = () => {
           </div> */}
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
           <Card bodyClass="p-4">
-            <div className="grid md:grid-cols-4 col-span-1 gap-4">
+            <div className="grid md:grid-cols-5 col-span-1 gap-4">
               <GroupChart1 />
             </div>
             <div className="grid md:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4 ">
