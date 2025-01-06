@@ -6,7 +6,7 @@ export const menuItems = [
   //   title: "Dashboard",
   // },
 
-    {
+  {
     title: "Dashboard",
     isHide: true,
     icon: "mingcute:dashboard-line",
@@ -20,15 +20,15 @@ export const menuItems = [
         childtitle: "Display Analytics",
         childlink: "analytics",
       },
-    ]
+    ],
   },
-    {
+  {
     title: "Users",
     isHide: true,
     icon: "ri:empathize-line",
     link: "users",
   },
-    {
+  {
     title: "Facilities",
     isHide: true,
     // isOpen: true,
@@ -87,9 +87,7 @@ export const menuItems = [
         childtitle: "Psychiatric",
         childlink: "/facilities/psychiatric",
       },
-    
-
-    ]
+    ],
   },
   {
     title: "Specialists",
@@ -140,13 +138,19 @@ export const menuItems = [
         childtitle: "Specialities",
         childlink: "#",
       },
-    ]
+    ],
   },
   {
     title: "Reviews/ Ratings",
     isHide: true,
     icon: "material-symbols:rate-review-outline",
     link: "#",
+  },
+  {
+    title: "Electronic Records",
+    isHide: true,
+    icon: "material-symbols:description",
+    link: "electronic-records",
   },
   // {
   //   title: "Meds Reminder",
@@ -165,8 +169,8 @@ export const menuItems = [
     isHide: true,
     icon: "uiw:map",
     child: [
-      {childlink: '/map/overview', childtitle: 'Overview'},
-      {childlink: '#', childtitle: 'Footprint'},
+      { childlink: "/map/overview", childtitle: "Overview" },
+      { childlink: "#", childtitle: "Footprint" },
     ],
   },
   {
@@ -230,7 +234,6 @@ export const menuItems = [
     link: "#",
     onClick: () => handleLogout(),
   },
-  
 ];
 
 export const topMenu = [
