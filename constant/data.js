@@ -146,12 +146,6 @@ export const menuItems = [
     icon: "material-symbols:rate-review-outline",
     link: "#",
   },
-  {
-    title: "Electronic Records",
-    isHide: true,
-    icon: "material-symbols:description",
-    link: "electronic-records",
-  },
   // {
   //   title: "Meds Reminder",
   //   isHide: true,

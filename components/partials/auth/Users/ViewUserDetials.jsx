@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
+import UserActivity from "./UsersActivity";
 
 export default function ViewUserDetails() {
   const router = useRouter();
@@ -16,6 +17,33 @@ export default function ViewUserDetails() {
 
   // Extract ID from query parameters
   const id = searchParams.get("id");
+
+  const [user, setUser] = useState();
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const userId = localStorage.getItem("user_id"); // assuming user_id is stored in localStorage
+      if (!userId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user role:", error);
+        } else {
+          setUser(data);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -86,7 +114,7 @@ export default function ViewUserDetails() {
               <div className="text-right">{userData?.dob || " "}</div>
             </div>
             <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Created At:</div>
+              <div className="font-semibold">Registration Date:</div>
               <div className="text-right">
                 {userData.created_at
                   ? formatDate(userData.created_at)
@@ -111,6 +139,9 @@ export default function ViewUserDetails() {
             </div>
           </div>
         </div>
+      )}
+      {user?.role === "Super Admin" && (
+        <UserActivity user={`${userData?.first_name} ${userData?.last_name}`} />
       )}
     </Card>
   );
