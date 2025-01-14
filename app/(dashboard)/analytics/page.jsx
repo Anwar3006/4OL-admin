@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import ImageBlock1 from "@/components/partials/widget/block/image-block-1";
 import GroupChart1 from "@/components/partials/widget/chart/group-chart-1";
@@ -25,6 +25,10 @@ import BarChart4 from "@/components/partials/chart/appex-chart/BarCharts/BarChar
 import PercentBarChart from "@/components/partials/chart/appex-chart/BarCharts/BarChart5";
 import BarChart5 from "@/components/partials/chart/appex-chart/BarCharts/BarChart5";
 import BarChart6 from "@/components/partials/chart/appex-chart/BarCharts/BarChart6";
+import {
+  fetchAllDownloadsCount,
+  fetchTotalUsers,
+} from "@/app/services/dashboard";
 
 const MostSales = dynamic(
   () => import("@/components/partials/widget/most-sales"),
@@ -34,6 +38,39 @@ const MostSales = dynamic(
 );
 const Dashboard = () => {
   const [filterMap, setFilterMap] = useState("usa");
+  const [loadingTotalDownloads, setLoadingTotalDownloads] = useState(false);
+  const [totalDownloads, setTotalDownloads] = useState(null);
+  const [loadingTotalUsers, setLoadingTotalUsers] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(null);
+
+  useEffect(() => {
+    fetchAllDownloadsCount(
+      () => {
+        setLoadingTotalDownloads(true);
+      },
+      (successData) => {
+        setTotalDownloads(successData);
+        setLoadingTotalDownloads(false);
+      },
+      (error) => {
+        console.log("Error fetching Downloads count", error);
+        setLoadingTotalDownloads(false);
+      }
+    );
+    fetchTotalUsers(
+      () => {
+        setLoadingTotalUsers(true);
+      },
+      (successData) => {
+        setTotalUsers(successData);
+        setLoadingTotalUsers(false);
+      },
+      (error) => {
+        console.log("Error fetching users count", error);
+        setLoadingTotalUsers(false);
+      }
+    );
+  }, []);
   return (
     <div>
       {/* <HomeBredCurbs title="Analytics & Monitoring" /> */}
@@ -44,17 +81,37 @@ const Dashboard = () => {
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
           <Card bodyClass="p-4">
             <div className="grid md:grid-cols-5 col-span-1 gap-4">
-              <GroupChart1 />
+              <GroupChart1
+                totalDownloads={totalDownloads || 0}
+                totalUsers={totalUsers?.totalUsers || 0}
+                loadingTotalDownloads={loadingTotalDownloads}
+                loadingTotalUsers={loadingTotalUsers}
+              />
             </div>
             <div className="grid md:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4 ">
               {/* <GroupChart4 /> */}
-              <Card className="w-full text-center bg-success-50 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Total Online Users"} titleClass="text-base">
+              <Card
+                className="w-full text-center bg-success-50 flex flex-col justify-center items-center"
+                bodyClass={"p-0"}
+                title={"Total Online Users"}
+                titleClass="text-base"
+              >
                 <BarChart1 />
               </Card>
-              <Card className="legend-ring bg-warning-50 flex flex-col justify-center items-center" bodyClass={'p-0'}  title={"Meds Reminder Users"} titleClass="text-base">
+              <Card
+                className="legend-ring bg-warning-50 flex flex-col justify-center items-center"
+                bodyClass={"p-0"}
+                title={"Meds Reminder Users"}
+                titleClass="text-base"
+              >
                 <BarChart2 />
               </Card>
-              <Card className="legend-ring bg-yellow-50 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Period Tracker Users"} titleClass="text-base">
+              <Card
+                className="legend-ring bg-yellow-50 flex flex-col justify-center items-center"
+                bodyClass={"p-0"}
+                title={"Period Tracker Users"}
+                titleClass="text-base"
+              >
                 <BarChart3 />
               </Card>
             </div>
@@ -62,22 +119,31 @@ const Dashboard = () => {
               <GroupChart3 />
             </div>
 
-            <div className="grid lg:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4" >
-            <Card className="col-span-1 flex flex-col justify-center items-center" bodyClass={'p-0'} title={"Total Marketing"} titleClass="text-base">
-             <BarChart4 />
-            </Card>
-            <Card className="col-span-2 w-full flex flex-col justify-center items-center text-center" bodyClass={'p-0'} title={"Total Readers"} titleClass="text-base text-center">
-              <div className="w-full flex max-sm:flex-col justify-around ">
-             <BarChart5 />
-             <BarChart6 />
-              </div>
-            </Card>
+            <div className="grid lg:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4">
+              <Card
+                className="col-span-1 flex flex-col justify-center items-center"
+                bodyClass={"p-0"}
+                title={"Total Marketing"}
+                titleClass="text-base"
+              >
+                <BarChart4 />
+              </Card>
+              <Card
+                className="col-span-2 w-full flex flex-col justify-center items-center text-center"
+                bodyClass={"p-0"}
+                title={"Total Readers"}
+                titleClass="text-base text-center"
+              >
+                <div className="w-full flex max-sm:flex-col justify-around ">
+                  <BarChart5 />
+                  <BarChart6 />
+                </div>
+              </Card>
             </div>
           </Card>
         </div>
-
       </div>
-        {/* <div className="grid grid-cols-12 gap-5">
+      {/* <div className="grid grid-cols-12 gap-5">
           <div className="lg:col-span-8 col-span-12">
             new users chart
             <Card title={"New Users"} headerslot={<SelectMonth />}>
@@ -117,7 +183,7 @@ const Dashboard = () => {
           </div>
         </div> */}
 
-        {/* active users chart */}
+      {/* active users chart */}
       {/* <div className="grid grid-cols-12 gap-5">
         <div className=" col-span-12 pt-5">
         <Card title={"Active Users"} headerslot={<SelectMonth />}>

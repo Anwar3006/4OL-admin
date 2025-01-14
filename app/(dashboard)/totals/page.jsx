@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import ImageBlock1 from "@/components/partials/widget/block/image-block-1";
 import GroupChart1 from "@/components/partials/widget/chart/group-chart-1";
@@ -18,6 +18,14 @@ import GroupChart4 from "@/components/partials/widget/chart/group-chart-4";
 import GroupChart5 from "@/components/partials/widget/chart/group-chart5";
 import ColumnChart from "@/components/partials/chart/appex-chart/HorizontalBar";
 import Pie from "@/components/partials/chart/appex-chart/Pie";
+import {
+  fetchAllDownloadsCount,
+  fetchDAULast12Months,
+  fetchDownloadsLast12Months,
+  fetchMAULast12Months,
+  fetchTotalUsers,
+} from "@/app/services/dashboard";
+import DauChart from "@/components/partials/chart/appex-chart/DauChart";
 
 const MostSales = dynamic(
   () => import("@/components/partials/widget/most-sales"),
@@ -27,6 +35,87 @@ const MostSales = dynamic(
 );
 const TotalsDashboard = () => {
   const [filterMap, setFilterMap] = useState("usa");
+  const [loadingDau, setLoadingDau] = useState(false);
+  const [dauData, setDauData] = useState(null);
+  const [dauGrowthRate, setDauGrowthRate] = useState(null);
+  const [loadingMau, setLoadingMau] = useState(false);
+  const [mauData, setMauData] = useState(null);
+  const [mauGrowthRate, setMauGrowthRate] = useState(null);
+  const [loadingDownloads, setLoadingDownloads] = useState(false);
+  const [downloadsData, setDownloadsData] = useState(null);
+  const [loadingTotalDownloads, setLoadingTotalDownloads] = useState(false);
+  const [totalDownloads, setTotalDownloads] = useState(null);
+  const [loadingTotalUsers, setLoadingTotalUsers] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(null);
+
+  useEffect(() => {
+    fetchMAULast12Months(
+      () => {
+        setLoadingMau(true);
+      },
+      (successData) => {
+        setMauData(successData);
+        setLoadingMau(false);
+      },
+      (error) => {
+        console.log("Error fetching MAU", error);
+        setLoadingMau(false);
+      }
+    );
+    fetchDAULast12Months(
+      () => {
+        setLoadingDau(true);
+      },
+      (successData) => {
+        setDauData(successData);
+        setLoadingDau(false);
+      },
+      (error) => {
+        console.log("Error fetching DAU", error);
+        setLoadingDau(false);
+      }
+    );
+    fetchDownloadsLast12Months(
+      () => {
+        setLoadingDownloads(true);
+      },
+      (successData) => {
+        setDownloadsData(successData);
+        setLoadingDownloads(false);
+      },
+      (error) => {
+        console.log("Error fetching Downloads", error);
+        setLoadingDownloads(false);
+      }
+    );
+    fetchAllDownloadsCount(
+      () => {
+        setLoadingTotalDownloads(true);
+      },
+      (successData) => {
+        setTotalDownloads(successData);
+        setLoadingTotalDownloads(false);
+      },
+      (error) => {
+        console.log("Error fetching Downloads count", error);
+        setLoadingTotalDownloads(false);
+      }
+    );
+    fetchTotalUsers(
+      () => {
+        setLoadingTotalUsers(true);
+      },
+      (successData) => {
+        setTotalUsers(successData);
+        setLoadingTotalUsers(false);
+      },
+      (error) => {
+        console.log("Error fetching users count", error);
+        setLoadingTotalUsers(false);
+      }
+    );
+  }, []);
+
   return (
     <div>
       {/* <HomeBredCurbs title="Analytics & Monitoring" /> */}
@@ -37,7 +126,12 @@ const TotalsDashboard = () => {
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
           <Card bodyClass="p-4">
             <div className="grid md:grid-cols-5 col-span-1 gap-4">
-              <GroupChart1 />
+              <GroupChart1
+                totalDownloads={totalDownloads || 0}
+                totalUsers={totalUsers?.totalUsers || 0}
+                loadingTotalDownloads={loadingTotalDownloads}
+                loadingTotalUsers={loadingTotalUsers}
+              />
             </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
               <GroupChart4 />
@@ -45,148 +139,64 @@ const TotalsDashboard = () => {
           </Card>
         </div>
       </div>
-        <div className="grid grid-cols-12 gap-5">
-          <div className="lg:col-span-8 col-span-12">
-            {/* new users chart */}
-            <Card title={"New Users"} headerslot={<SelectMonth />}>
-              <p className="text-right sm:text-sm text-xs text-blue-500">14.21% high than last month</p>
-              <div className="legend-ring">
-                <ColumnChart />
-              </div>
-
-              {/* overall */}
-              <div className="flex justify-between items-center text-center w-full text-sm lg:p-5 p-2 ">
-                <div>
-                  <h6 className="text-sm font-semibold">Overall</h6>
-                  <p className="text-xs">78.51%</p>
-                </div>
-                <div>
-                  <h6 className="text-sm font-semibold">Monthly</h6>
-                  <p className="text-xs">18.51%</p>
-                </div>
-                <div>
-                  <h6 className="text-sm font-semibold">Daily</h6>
-                  <p className="text-xs">63.51%</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* total users chart */}
-          <div className="lg:col-span-4 col-span-12 flex flex-col bg-white shadow-base rounded-lg">
-            <Card
-              title="Total Users"
-              headerslot={<SelectMonth />}
-            >
-              <div className="flex-grow">
-                <Pie />
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* active users chart */}
       <div className="grid grid-cols-12 gap-5">
-        <div className=" col-span-12 pt-5">
-        <Card title={"Active Users"} headerslot={<SelectMonth />}>
-              <p className="text-right sm:text-sm text-xs text-blue-500">14.21% high than last month</p>
-              <div className="legend-ring">
-                <ColumnChart />
-              </div>
-
-              {/* overall */}
-              <div className="flex justify-between items-center text-center w-full text-sm lg:p-5 p-2 ">
-                <div>
-                  <h6 className="text-sm font-semibold">Overall</h6>
-                  <p className="text-xs">78.51%</p>
-                </div>
-                <div>
-                  <h6 className="text-sm font-semibold">Monthly</h6>
-                  <p className="text-xs">18.51%</p>
-                </div>
-                <div>
-                  <h6 className="text-sm font-semibold">Daily</h6>
-                  <p className="text-xs">63.51%</p>
-                </div>
-              </div>
-            </Card>
-        </div>
-        {/* <div className="lg:col-span-4 col-span-12">
-          <Card title="Recent Activity" headerslot={<SelectMonth />}>
-            <RecentActivity />
-          </Card>
-        </div> */}
-        {/* <div className="lg:col-span-8 col-span-12">
-          <Card
-            title="Most Sales"
-            headerslot={
-              <div className="border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded p-1 flex items-center">
-                <span
-                  className={` flex-1 text-sm font-normal px-3 py-1 transition-all duration-150 rounded cursor-pointer
-                ${
-                  filterMap === "global"
-                    ? "bg-[#56ce84] text-white dark:bg-slate-700 dark:text-slate-300"
-                    : "dark:text-slate-300"
-                }  
-                `}
-                  onClick={() => setFilterMap("global")}
-                >
-                  Global
-                </span>
-                <span
-                  className={` flex-1 text-sm font-normal px-3 py-1 rounded transition-all duration-150 cursor-pointer
-                  ${
-                    filterMap === "usa"
-                      ? "bg-[#56ce84] text-white dark:bg-slate-700 dark:text-slate-300"
-                      : "dark:text-slate-300"
-                  }
-              `}
-                  onClick={() => setFilterMap("usa")}
-                >
-                  USA
-                </span>
-              </div>
-            }
-          >
-            <MostSales filterMap={filterMap} />
-          </Card>
-        </div>
-        <div className="lg:col-span-4 col-span-12">
-          <Card title="Overview" headerslot={<SelectMonth />}>
-            <RadarChart />
-            <div className="bg-slate-50 dark:bg-slate-900 rounded p-4 mt-8 flex justify-between flex-wrap">
-              <div className="space-y-1">
-                <h4 className="text-slate-600 dark:text-slate-200 text-xs font-normal">
-                  Invested amount
-                </h4>
-                <div className="text-sm font-medium text-slate-900 dark:text-white">
-                  $8264.35
-                </div>
-                <div className="text-slate-500 dark:text-slate-300 text-xs font-normal">
-                  +0.001.23 (0.2%)
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <h4 className="text-slate-600 dark:text-slate-200 text-xs font-normal">
-                  Invested amount
-                </h4>
-                <div className="text-sm font-medium text-slate-900 dark:text-white">
-                  $8264.35
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <h4 className="text-slate-600 dark:text-slate-200 text-xs font-normal">
-                  Invested amount
-                </h4>
-                <div className="text-sm font-medium text-slate-900 dark:text-white">
-                  $8264.35
-                </div>
-              </div>
+        <div className="lg:col-span-8 col-span-12">
+          {/* new users chart */}
+          <Card title={"Monthly Downloads"}>
+            {/* <p className="text-right sm:text-sm text-xs text-blue-500">
+              {!mauGrowthRate
+                ? "No Previous Record"
+                : mauGrowthRate > 0
+                ? `${mauGrowthRate}% higher than last month`
+                : `${Math.abs(mauGrowthRate)}% lower than last month`}
+            </p> */}
+            <div className="legend-ring">
+              <ColumnChart data={downloadsData} type={"downloads"} />
             </div>
           </Card>
-        </div> */}
+        </div>
+
+        {/* total users chart */}
+        <div className="lg:col-span-4 col-span-12 flex flex-col bg-white shadow-base rounded-lg">
+          <Card title="Total Users">
+            <div className="flex-grow">
+              <Pie totalUsers={totalUsers} />
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* active users chart */}
+      <div className="grid grid-cols-12 gap-5 mt-8">
+        <div className="lg:col-span-6 col-span-12">
+          <Card title={"Daily Active Users (DAU)"}>
+            {/* <p className="text-right sm:text-sm text-xs text-blue-500">
+              {!dauGrowthRate
+                ? "No Previous Record"
+                : dauGrowthRate > 0
+                ? `${dauGrowthRate}% higher than last month`
+                : `${Math.abs(dauGrowthRate)}% lower than last month`}
+            </p> */}
+            <div className="legend-ring">
+              <DauChart data={dauData} />
+            </div>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-6 col-span-12 flex flex-col bg-white shadow-base rounded-lg">
+          <Card title={"Monthly Active Users (MAU)"}>
+            {/* <p className="text-right sm:text-sm text-xs text-blue-500">
+              {!mauGrowthRate
+                ? "No Previous Record"
+                : mauGrowthRate > 0
+                ? `${mauGrowthRate}% higher than last month`
+                : `${Math.abs(mauGrowthRate)}% lower than last month`}
+            </p> */}
+            <div className="legend-ring">
+              <ColumnChart data={mauData} />
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

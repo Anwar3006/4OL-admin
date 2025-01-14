@@ -271,39 +271,46 @@ const shapeLine4 = {
   },
 };
 
-const statistics = [
-  {
-    name: shapeLine3,
-    title: "Total Downloads",
-    count: "5,678",
-    bg: "bg-[#c7f2d7] dark:bg-slate-900	",
-  },
-  {
-    name: shapeLine1,
-    title: "Totel Users",
-    count: "3,564",
-    bg: "bg-[#E5F9FF] dark:bg-slate-900	",
-  },
-  {
-    name: shapeLine2,
-    title: "Total Facilities",
-    count: "564",
-    bg: "bg-[#FFEDE5] dark:bg-slate-900	",
-  },
-  {
-    name: shapeLine3,
-    title: "Total Specialists",
-    count: "+5.0%",
-    bg: "bg-[#c7f2d7] dark:bg-slate-900	",
-  },
-  {
-    name: shapeLine4,
-    title: "Total Facility Visits",
-    count: "+5.0%",
-    bg: "bg-[#EAE5FF] dark:bg-slate-900	",
-  },
-];
-const GroupChart1 = () => {
+const GroupChart1 = ({
+  totalDownloads,
+  totalUsers,
+  loadingTotalDownloads,
+  loadingTotalUsers,
+}) => {
+  const statistics = [
+    {
+      name: shapeLine3,
+      title: "Total Downloads",
+      count: totalDownloads ? totalDownloads : "5,678",
+      bg: "bg-[#c7f2d7] dark:bg-slate-900	",
+      loading: loadingTotalDownloads ? true : false,
+    },
+    {
+      name: shapeLine1,
+      title: "Total Users",
+      count: totalUsers ? totalUsers : "3,564",
+      bg: "bg-[#E5F9FF] dark:bg-slate-900	",
+      loading: loadingTotalUsers ? true : false,
+    },
+    {
+      name: shapeLine2,
+      title: "Total Facilities",
+      count: "564",
+      bg: "bg-[#FFEDE5] dark:bg-slate-900	",
+    },
+    {
+      name: shapeLine3,
+      title: "Total Specialists",
+      count: "+5.0%",
+      bg: "bg-[#c7f2d7] dark:bg-slate-900	",
+    },
+    {
+      name: shapeLine4,
+      title: "Total Facility Visits",
+      count: "+5.0%",
+      bg: "bg-[#EAE5FF] dark:bg-slate-900	",
+    },
+  ];
   return (
     <>
       {statistics.map((item, i) => (
@@ -323,7 +330,7 @@ const GroupChart1 = () => {
                 {item.title}
               </div>
               <div className="text-slate-900 dark:text-white text-lg font-medium">
-                {item.count}
+                {item?.loading ? "Loading..." : item.count}
               </div>
             </div>
           </div>

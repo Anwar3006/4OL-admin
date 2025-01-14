@@ -2,36 +2,36 @@ import dynamic from "next/dynamic";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 
-const Pie = () => {
+const Pie = ({ totalUsers }) => {
   const [isDark] = useDarkMode();
-  const series = [35, 65];
+  const series = [totalUsers?.males || 0, totalUsers?.females || 0];
 
   const options = {
     labels: ["Males", "Females"],
     dataLabels: {
       enabled: true,
-      formatter: (val, opts) => {
-        const label = opts.w.config.labels[opts.seriesIndex];
-        const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-        const percentage = Math.round((val / total) * 100);  // Round to nearest integer
-        return `${label}: ${percentage}%`;
-      },
+      // formatter: (val, opts) => {
+      //   const label = opts.w.config.labels[opts.seriesIndex];
+      //   const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+      //   const percentage = Math.round((val / total) * 100);  // Round to nearest integer
+      //   return `${label}: ${percentage}%`;
+      // },
       style: {
-        fontSize: '18px',
-        fontFamily: 'Inter',
+        fontSize: "18px",
+        fontFamily: "Inter",
         fontWeight: 400,
-        colors: isDark ? ["#CBD5E1"] : ['#FFFFFF'],
-        // colors: ['#FFFFFF'],  
+        colors: isDark ? ["#CBD5E1"] : ["#FFFFFF"],
+        // colors: ['#FFFFFF'],
         // padding: 12,
       },
     },
     plotOptions: {
       pie: {
         donut: {
-          size: '65%',
+          size: "65%",
         },
         dataLabels: {
-          offset: -40,  // Center the labels
+          offset: -40, // Center the labels
         },
       },
     },
@@ -67,7 +67,7 @@ const Pie = () => {
             style: {
               fontSize: "12px",
             },
-          }
+          },
         },
       },
     ],
