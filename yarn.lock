@@ -452,10 +452,10 @@
   dependencies:
     glob "7.1.7"
 
-"@next/swc-darwin-arm64@13.2.4":
+"@next/swc-win32-x64-msvc@13.2.4":
   version "13.2.4"
-  resolved "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-13.2.4.tgz"
-  integrity sha512-S6vBl+OrInP47TM3LlYx65betocKUUlTZDDKzTiRDbsRESeyIkBtZ6Qi5uT2zQs4imqllJznVjFd1bXLx3Aa6A==
+  resolved "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-13.2.4.tgz"
+  integrity sha512-0MffFmyv7tBLlji01qc0IaPP/LVExzvj7/R5x1Jph1bTAIj4Vu81yFQWHHQAP6r4ff9Ukj1mBK6MDNVXm7Tcvw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -2351,11 +2351,6 @@ fs.realpath@^1.0.0:
   resolved "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   integrity sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==
 
-fsevents@~2.3.2:
-  version "2.3.3"
-  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
-  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
-
 function-bind@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/function-bind/-/function-bind-1.1.1.tgz"
@@ -3834,6 +3829,11 @@ react-hook-form@^7.0.0, react-hook-form@^7.43.5:
   resolved "https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.43.5.tgz"
   integrity sha512-YcaXhuFHoOPipu5pC7ckxrLrialiOcU91pKu8P+isAcXZyMgByUK9PkI9j5fENO4+6XU5PwWXRGMIFlk9u9UBQ==
 
+react-icons@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.npmjs.org/react-icons/-/react-icons-5.4.0.tgz"
+  integrity sha512-7eltJxgVt7X64oHh6wSWNwwbKTCtMfK35hcjvJS0yxEAhPM8oUKdS3+kqaW1vicIltw+kR2unHaa12S9pPALoQ==
+
 react-is@^16.10.2, react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
   resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz"
@@ -3991,7 +3991,7 @@ react-transition-group@2.9.0:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-"react@^0.14.0 || ^15.0.0 || ^16 || ^17 || ^18", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16 || ^17 || ^18", react@^16.0.0, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.7.0 || ^17 || ^18", "react@^16.8 || ^17 || ^18", "react@^16.8 || ^17.0 || ^18.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.8.3 || ^17 || ^18", "react@^16.8.3 || ^17.0.0-0 || ^18.0.0", "react@^16.8.5 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", "react@^17.0.2 || ^18.2.0", react@^18.0.0, react@^18.2.0, "react@>= 16.8 || 18.0.0", "react@>= 16.8.0 || 17.x.x || ^18.0.0-0", react@>=0.13, react@>=15.0.0, react@>=16, "react@>=16, <=18", react@>=16.3.0, react@>=16.6.0, react@>=16.8, react@>=16.8.0, react@18.2.0:
+react@*, "react@^0.14.0 || ^15.0.0 || ^16 || ^17 || ^18", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16 || ^17 || ^18", react@^16.0.0, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.7.0 || ^17 || ^18", "react@^16.8 || ^17 || ^18", "react@^16.8 || ^17.0 || ^18.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.8.3 || ^17 || ^18", "react@^16.8.3 || ^17.0.0-0 || ^18.0.0", "react@^16.8.5 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", "react@^17.0.2 || ^18.2.0", react@^18.0.0, react@^18.2.0, "react@>= 16.8 || 18.0.0", "react@>= 16.8.0 || 17.x.x || ^18.0.0-0", react@>=0.13, react@>=15.0.0, react@>=16, "react@>=16, <=18", react@>=16.3.0, react@>=16.6.0, react@>=16.8, react@>=16.8.0, react@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==

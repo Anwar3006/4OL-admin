@@ -204,7 +204,7 @@ export const menuItems = [
     title: "Chats",
     isHide: true,
     icon: "lets-icons:chat",
-    link: "#",
+    link: "chats",
     // link: "chat",
   },
   {
