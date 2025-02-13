@@ -11,8 +11,8 @@ export const add_symptoms = async (
 
   try {
     // Check if the user is authenticated using localStorage
-    const isAuthenticated = localStorage.getItem('isAuth') === 'true';
-    const userId = localStorage.getItem('user_id');
+    const isAuthenticated = localStorage.getItem("isAuth") === "true";
+    const userId = localStorage.getItem("user_id");
 
     if (!isAuthenticated || !userId) {
       console.error("User is not authenticated");
@@ -33,8 +33,8 @@ export const add_symptoms = async (
           symptom_name: user.symptom_name,
           list_type: user.list_type,
           about: user.about,
-          types: JSON.stringify(user.types),
-          causes: JSON.stringify(user.causes),
+          types: user.types,
+          causes: user.causes,
           diagnosis: user.diagnosis,
           treating: user.treating,
           complications: user.complications,
