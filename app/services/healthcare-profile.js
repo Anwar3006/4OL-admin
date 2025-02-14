@@ -11,8 +11,8 @@ export const healthcareProfile = async (
 
   try {
     // Check if the user is authenticated using localStorage
-    const isAuthenticated = localStorage.getItem('isAuth') === 'true';
-    const userId = localStorage.getItem('user_id');
+    const isAuthenticated = localStorage.getItem("isAuth") === "true";
+    const userId = localStorage.getItem("user_id");
 
     if (!isAuthenticated || !userId) {
       console.error("User is not authenticated");
@@ -52,10 +52,8 @@ export const healthcareProfile = async (
           status: "Pending",
           business_hours: user.business_hours,
           mediaUrls: user.mediaUrls,
-          
         },
       ]);
-
     if (healthcareProfileError) {
       errorCallback(healthcareProfileError);
       return;
