@@ -107,10 +107,11 @@ export default function Notifications() {
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Image</th>
+              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Image</th> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">District</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Target Group</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
+              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">District</th> */}
+              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Target Group</th> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
               {/* </div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
@@ -128,25 +129,28 @@ export default function Notifications() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.desc || "Null"}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.image ? 'Image' : 'Null'}
-                </td>
+                </td> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.region || 'Ahafo'}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                  {item.sex || 'Male'}
+                </td>
+                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.district || 'Asunafo South'}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                </td> */}
+                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.target_group || 'Users'}
-                </td>
+                </td> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.age_range || '18-24'}
                 </td>
                 {/* </div> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
-                    <Button
+                    {/* <Button
                       icon="heroicons-outline:pencil-alt"
                       iconClass="text-base text-green-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
@@ -154,7 +158,7 @@ export default function Notifications() {
                         e.stopPropagation();
                         handleEdit(item.id);
                       }}
-                    />
+                    /> */}
                     <Button
                       icon="heroicons-outline:trash"
                       iconClass="text-base text-red-500" // Adjust the color and size as needed

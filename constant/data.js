@@ -168,6 +168,12 @@ export const menuItems = [
     ],
   },
   {
+    title: "User Grouping",
+    isHide: true,
+    icon: "mdi:account-group",
+    link: "user-group"
+  },
+  {
     title: "Marketing",
     isHide: true,
     icon: "hugeicons:marketing",
@@ -561,7 +567,7 @@ export const notifications = [
   {
     title: "Your order is placed",
     desc: "Amet minim mollit non deser unt ullamco est sit aliqua.",
-
+    sex: "Male",
     image: "/assets/images/all-img/user.png",
     link: "#",
   },
@@ -571,32 +577,33 @@ export const notifications = [
     unread: true,
     image: "/assets/images/all-img/user2.png",
     link: "#",
+    sex: "Female",
   },
   {
     title: "Revised Order 👋",
     desc: "Won the monthly best seller badge",
-
+    sex: "Male",
     image: "/assets/images/all-img/user3.png",
     link: "#",
   },
   {
     title: "Brooklyn Simmons",
     desc: "Added you to Top Secret Project group...",
-
+    sex: "Female",
     image: "/assets/images/all-img/user4.png",
     link: "#",
   },
   {
     title: "Revised Order 👋",
     desc: "Won the monthly best seller badge",
-
+    sex: "Male",
     image: "/assets/images/all-img/user3.png",
     link: "#",
   },
   {
     title: "Brooklyn Simmons",
     desc: "Added you to Top Secret Project group...",
-
+    sex: "Female",
     image: "/assets/images/all-img/user4.png",
     link: "#",
   },
