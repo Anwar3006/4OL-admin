@@ -86,11 +86,11 @@ const SendNotificationPage = () => {
     <div>
       <Card title="Send Notification">
         <div className="mb-2">
-          <p className="text-gray-400 text-sm">
+          {/* <p className="text-gray-400 text-sm">
             {" "}
             <span className="text-red-600">*</span> Push Notification will be
             send to all users with access to the selected file.
-          </p>
+          </p> */}
         </div>
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
           <div className="">
