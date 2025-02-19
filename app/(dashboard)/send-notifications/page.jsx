@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
-import * as yup from 'yup';
+import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "@/app/utils/supabaseClient";
@@ -17,13 +17,15 @@ const SendNotifications = () => {
   const Genders = ["Male", "Female"];
   const ageRanges = ["All", "18-24", "25-34", "35-44", "45-54", "55+"];
 
-  const schema = yup.object({
-    title: yup.string().required('title is required'),
-    description: yup.string().required('description is required'),
-    region: yup.string().required('region is required'),
-    sex: yup.string().required('gender is required'),
-    age: yup.string().required('age is required'),
-  }).required();
+  const schema = yup
+    .object({
+      title: yup.string().required("title is required"),
+      description: yup.string().required("description is required"),
+      region: yup.string().required("region is required"),
+      sex: yup.string().required("gender is required"),
+      age: yup.string().required("age is required"),
+    })
+    .required();
 
   const {
     register,
@@ -38,6 +40,7 @@ const SendNotifications = () => {
   });
 
   const handleSendNotification = async (data) => {
+    console.log("data", data);
     setLoading(true);
     await fetchUsers(data);
     reset();
@@ -46,82 +49,77 @@ const SendNotifications = () => {
 
   const fetchUsers = async (data) => {
     const { region, sex, age } = data;
-    console.log('age', age);
-    
-    let query = supabase.from('user_profiles').select('fcm_token, id');
+    console.log("age", age);
+
+    let query = supabase.from("user_profiles").select("fcm_token, id");
     if (region) {
-      query = query.eq('region', region);
+      query = query.eq("region", region);
     }
     if (sex) {
-      query = query.eq('sex', sex);
+      query = query.eq("sex", sex);
     }
     if (age && age !== "All") {
       const currentYear = new Date().getFullYear();
       let minYear, maxYear;
       if (age === "55+") {
         maxYear = currentYear - 55;
-        query = query.lte('dob', `${maxYear}-12-31`);
+        query = query.lte("dob", `${maxYear}-12-31`);
         console.log(`DOB range for 55+: <= ${maxYear}-12-31`);
       } else {
-        const [minAge, maxAge] = age.split('-').map(Number);
+        const [minAge, maxAge] = age.split("-").map(Number);
         minYear = currentYear - maxAge;
         maxYear = currentYear - minAge;
         query = query
-          .gte('dob', `${minYear}-01-01`)
-          .lte('dob', `${maxYear}-12-30`);
-        console.log(`DOB range for ${age}: ${minYear}-01-01 to ${maxYear}-12-31`);
+          .gte("dob", `${minYear}-01-01`)
+          .lte("dob", `${maxYear}-12-30`);
+        console.log(
+          `DOB range for ${age}: ${minYear}-01-01 to ${maxYear}-12-31`
+        );
       }
     }
 
     const { data: users, error } = await query;
-    console.log('users', users);
-    
-    for(const user of users){
-        try {
-            const response = await fetch('/api/send-notifications', {
-                 method: 'POST',
-                 headers: {
-                   'Content-Type': 'application/json',
-                 },
-                 body: JSON.stringify({
-                   fcm_token: user?.fcm_token,
-                   title: data?.title,
-                   description: data?.description,
-                 }),
-               });
-               const result = await response.json();
-               console.log(`Notification sent to ${user.id}:`, result);
-         } catch (error) {
-             console.error(`Error sending notification to ${user.id}:`, err);
-         }
-     
-         await supabase.from("notifications").insert([
-           {
-             created_at: moment(new Date()).valueOf(),
-             updated_at: moment(new Date()).valueOf(),
-             is_seen: false,
-             title: data?.title,
-             body: data?.description,
-             type: "user-grouping",
-             screen: "",
-             user_id: user?.id,
-           },
-         ]);
-         console.log('here is your id:', user?.id);
-    }
+    console.log("users", users);
 
+    const response = await fetch("/api/send-notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: data?.title,
+        description: data?.description,
+        sex: data?.sex,
+        ageRange: data?.age,
+        region: data?.region,
+      }),
+    });
+
+    const result = await response.json();
+    console.log(`Notification sent to ${user.id}:`, result);
+    const insertRecords = users.map((user) => ({
+      created_at: moment(new Date()).valueOf(),
+      updated_at: moment(new Date()).valueOf(),
+      is_seen: false,
+      title: data?.title,
+      body: data?.description,
+      type: "user-grouping",
+      screen: "",
+      user_id: user?.id,
+    }));
+    await supabase.from("notifications").insert(insertRecords);
     await supabase.from("notification_list").insert([
-        {
-          created_at: moment(new Date()).valueOf(),
-          updated_at: moment(new Date()).valueOf(),
-          title: data?.title,
-          description: data?.description,
-          region: data?.region,
-          sex: data?.sex,
-          age_range: data?.age,
-          user_id: userId,
-        },
-      ]);
+      {
+        created_at: moment(new Date()).valueOf(),
+        updated_at: moment(new Date()).valueOf(),
+        title: data?.title,
+        description: data?.description,
+        region: data?.region,
+        sex: data?.sex,
+        age_range: data?.age,
+        user_id: userId,
+      },
+    ]);
 
     if (error) {
       console.error("Error fetching users:", error);
@@ -132,8 +130,8 @@ const SendNotifications = () => {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUserId = localStorage.getItem('user_id');
+    if (typeof window !== "undefined") {
+      const storedUserId = localStorage.getItem("user_id");
       if (storedUserId) {
         setUserId(storedUserId);
       }
@@ -160,10 +158,16 @@ const SendNotifications = () => {
                     type="text"
                     placeholder="Enter Your Title"
                     {...register("title")}
-                    className={`w-full p-2 border rounded-sm focus:ring-black-300 ${loading ? 'border-gray-100' : 'border-gray-300'}`}
+                    className={`w-full p-2 border rounded-sm focus:ring-black-300 ${
+                      loading ? "border-gray-100" : "border-gray-300"
+                    }`}
                     disabled={loading}
                   />
-                  {errors.title && <p className="text-red-500 text-sm mb-2">*{errors?.title?.message}</p>}
+                  {errors.title && (
+                    <p className="text-red-500 text-sm mb-2">
+                      *{errors?.title?.message}
+                    </p>
+                  )}
                 </div>
                 <div className="lg:col-span-2 col-span-1">
                   <label className="block text-md font-medium text-gray-700 mt-2">
@@ -174,10 +178,16 @@ const SendNotifications = () => {
                     placeholder="Enter Your description"
                     {...register("description")}
                     rows={2}
-                    className={`w-full p-2 border rounded-sm focus:ring-black-300 resize-none ${loading ? 'border-gray-100' : 'border-gray-300'}`}
+                    className={`w-full p-2 border rounded-sm focus:ring-black-300 resize-none ${
+                      loading ? "border-gray-100" : "border-gray-300"
+                    }`}
                     disabled={loading}
                   />
-                  {errors.description && <p className="text-red-500 text-sm">*{errors?.description?.message}</p>}
+                  {errors.description && (
+                    <p className="text-red-500 text-sm">
+                      *{errors?.description?.message}
+                    </p>
+                  )}
                 </div>
               </div>
               <div>
@@ -198,7 +208,11 @@ const SendNotifications = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.region && <p className="text-red-500 text-sm mb-2">*{errors.region.message}</p>}
+                  {errors.region && (
+                    <p className="text-red-500 text-sm mb-2">
+                      *{errors.region.message}
+                    </p>
+                  )}
 
                   {/* Gender Selection */}
                   <span className="text-md font-bold mt-2">Select Gender</span>
@@ -215,7 +229,11 @@ const SendNotifications = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.sex && <p className="text-red-500 text-sm mb-2">*{errors.sex.message}</p>}
+                  {errors.sex && (
+                    <p className="text-red-500 text-sm mb-2">
+                      *{errors.sex.message}
+                    </p>
+                  )}
 
                   {/* Age Range Selection */}
                   <span className="text-md font-bold mt-2">Select Age</span>
@@ -232,7 +250,11 @@ const SendNotifications = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.age && <p className="text-red-500 text-sm">*{errors.age.message}</p>}
+                  {errors.age && (
+                    <p className="text-red-500 text-sm">
+                      *{errors.age.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
