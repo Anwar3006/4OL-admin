@@ -10,10 +10,12 @@ export const signup = async (
 ) => {
   loadCallback();
   try {
-    const { data: signupData, error: signupError } = await supabase.auth.signUp({
-      email: user.email,
-      password: user.password,
-    });
+    const { data: signupData, error: signupError } = await supabase.auth.signUp(
+      {
+        email: user.email,
+        password: user.password,
+      }
+    );
 
     if (signupError) {
       errorCallback(signupError);
@@ -24,30 +26,30 @@ export const signup = async (
     if (userId) {
       const encryptedPassword = encryptPassword(user.password);
       const updatedUser = { ...user };
-      delete updatedUser['confirm_password'];
-      delete updatedUser['password'];
-
-      const { error: updateError } = await supabase.from('user_profiles').insert([
-        {
-          id: userId,
-          password: encryptedPassword,
-          created_at: new Date().getTime(), // Convert date to timestamp
-          updated_at: new Date().getTime(), // Convert date to timestamp
-          created_by: userId,
-          updated_by: userId,
-          is_created_by_admin_panel: false,
-          ...updatedUser,
-        },
-      ]);
-
+      delete updatedUser["confirm_password"];
+      delete updatedUser["password"];
+      const { error: updateError } = await supabase
+        .from("user_profiles")
+        .insert([
+          {
+            ...updatedUser,
+            id: userId,
+            password: encryptedPassword,
+            created_at: new Date().getTime(), // Convert date to timestamp
+            updated_at: new Date().getTime(), // Convert date to timestamp
+            created_by: userId,
+            updated_by: userId,
+            is_created_by_admin_panel: true,
+            dob: moment(user.dob).format("YYYY-MM-DD"),
+          },
+        ]);
       if (updateError) {
         errorCallback(updateError);
         return;
       }
-
       successCallback(signupData);
     } else {
-      errorCallback(new Error('User ID is not available.'));
+      errorCallback(new Error("User ID is not available."));
     }
   } catch (err) {
     errorCallback(err);

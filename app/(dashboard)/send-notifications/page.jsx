@@ -15,7 +15,7 @@ const SendNotifications = () => {
   const [loading, setLoading] = useState(false);
   const [regions] = useState(districts_regions.data);
   const Genders = ["Male", "Female"];
-  const ageRanges = ["All", "18-24", "25-34", "35-44", "45-54", "55+"];
+  const ageRanges = ["All", "18-24", "25-34", "35-44", "45-54", "55-Above"];
 
   const schema = yup
     .object({
@@ -61,10 +61,10 @@ const SendNotifications = () => {
     if (age && age !== "All") {
       const currentYear = new Date().getFullYear();
       let minYear, maxYear;
-      if (age === "55+") {
+      if (age === "55-Above") {
         maxYear = currentYear - 55;
         query = query.lte("dob", `${maxYear}-12-31`);
-        console.log(`DOB range for 55+: <= ${maxYear}-12-31`);
+        console.log(`DOB range for 55-Above: <= ${maxYear}-12-31`);
       } else {
         const [minAge, maxAge] = age.split("-").map(Number);
         minYear = currentYear - maxAge;
@@ -246,7 +246,7 @@ const SendNotifications = () => {
                     <option value="">Select Age</option>
                     {ageRanges.map((age) => (
                       <option key={age} value={age}>
-                        {age}
+                        {age === "55-Above" ? "55+" : age}
                       </option>
                     ))}
                   </select>
