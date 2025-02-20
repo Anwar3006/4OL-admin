@@ -269,14 +269,17 @@ export default function ChatPage() {
                   </td>
                   <td className="whitespace-nowrap">{moment(ticket.created_at).format('DD/MM/YYYY')}</td>
                   <td className="text-gray-500 whitespace-nowrap">{moment(ticket.updated_at).format('DD/MM/YYYY')}</td>
-                  <td className='justify-center flex'>
-                    <button
-                      className="text-gray-400 hover:text-gray-700"
-                      onClick={(event) => handleOpenModal(event, ticket.id)}
-                    >
-                      <FaEllipsisH />
-                    </button>
-                  </td>
+                  <td className="align-middle">
+  <div className="flex justify-center items-center h-full">
+    <button
+      className="text-gray-400 hover:text-gray-700"
+      onClick={(event) => handleOpenModal(event, ticket.id)}
+    >
+      <FaEllipsisH />
+    </button>
+  </div>
+</td>
+
                 </tr>
               ))}
             </tbody>

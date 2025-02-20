@@ -69,7 +69,7 @@ export default function TicketTable({ visible, closeModal, fetchTicks, fetchData
             <div className="mb-[3%] w-full">
               <p className="text-gray-500 text-sm">Request By</p>
               <div className="flex items-center mt-[1%]">
-                <img src={selectedTicket?.users?.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full mr-[2%]" />
+                <img src={selectedTicket?.users?.avatar_url || '/assets/images/chat/chat-4.png'} alt="Avatar" className="w-8 h-8 rounded-full mr-[2%]" />
                 <span className="text-black font-bold ml-[2%]">{selectedTicket.user_name}</span>
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function TicketTable({ visible, closeModal, fetchTicks, fetchData
             {/* Message */}
             <div className="mb-[3%] w-full">
               <p className="text-gray-500 text-sm">Message</p>
-              <p className="text-black font-bold ml-[2%]">{selectedTicket.message}</p>
+              <p className="text-black font-bold ml-[2%] break-words whitespace-pre-line">{selectedTicket.message}</p>
             </div>
 
             {/* Dropdowns */}
