@@ -36,7 +36,7 @@ export default function UserGroups() {
   }
   useEffect(() => {
     fetchData();
-  },[])
+  },[pageIndex, pageSize]);
 
   const pageOptions = Array.from({ length: totalPages }, (_, i) => i);
   const canPreviousPage = pageIndex > 0;
