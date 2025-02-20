@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTicketAlt, FaHourglassStart, FaLock, FaTrash, FaEllipsisH, FaEdit } from "react-icons/fa";
+import { FaTicketAlt, FaHourglassStart, FaLock, FaTrash, FaEllipsisH, FaEdit, FaReply } from "react-icons/fa";
 import { supabase } from '@/app/utils/supabaseClient';
 import moment from 'moment';
 import PaginationNew from '@/components/ui/PaginationNew';
@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [loading, setLoading] = useState(false);
+  {/**Edit, delete and reply modal state */}
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,8 +20,9 @@ export default function ChatPage() {
     totalTickets: 0, pendingTickets: 0, closedTickets: 0, deletedTickets: 0
   });
   const [pageIndex, setPageIndex] = useState(0); // Pagination index
-  const [pageSize] = useState(10); // Items per page
+  const [pageSize] = useState(7); // Items per page
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
+  const [userEmail, setUserEmail] = useState("");
   const modalRef = useRef(null);
 
   const TicketCards = [
@@ -44,7 +46,7 @@ export default function ChatPage() {
     setLoading(true);
     const { data, error, count } = await supabase
       .from('chat_support')
-      .select('*, users:requested_by(avatar_url)', { count: "exact" }) // Fetch user details
+      .select('*, users:requested_by(avatar_url), user_profiles(email)', { count: "exact" }) // Fetch user details
       .eq('is_deleted', false)
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -77,7 +79,7 @@ export default function ChatPage() {
 
   const handleOpenModal = (event, id) => {
     const rect = event.target.getBoundingClientRect(); // Get the button's position
-    const modalWidth = 160; // Modal width (adjust based on w-40 = 10rem)
+    const modalWidth = 140; // Modal width (adjust based on w-40 = 10rem)
     const modalHeight = 100;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -97,8 +99,9 @@ export default function ChatPage() {
       y: calculatedTop,
     });
     const ticket = data.find(item => item.id === id);
-    setIsModalOpen(!isModalOpen);
+    setIsModalOpen(true);
     setSelectedTicketId(ticket);
+    setUserEmail(ticket?.user_profiles?.email || "gmail.com");
   };
 
   const handleEditModal = () => {
@@ -170,8 +173,16 @@ export default function ChatPage() {
     };
   }, [isModalOpen]);
 
+  const handleOpenGmailWeb = () => {
+    if (!userEmail) {
+      alert("No email found for this user.");
+      return;
+    }
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${userEmail}`, "_blank");
+  };
+
   return (
-    <div className="min-h-screen bg-white flex flex-col p-[1%]">
+    <div className="bg-white flex flex-col p-[1%]">
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
@@ -231,7 +242,9 @@ export default function ChatPage() {
                   </td>
                   <td className="text-gray-500 max-w-[120px] sm:max-w-none truncate">{ticket.subject}</td>
                   {/* Message Column */}
-                  <td className="text-gray-500 max-w-[150px] sm:max-w-none truncate overflow-hidden">{ticket.message}</td>
+                  <td className="text-gray-500 max-w-[150px] sm:max-w-none truncate overflow-hidden">
+                  {ticket.message.length > 30 ? `${ticket.message.slice(0, 30)}...` : ticket.message}
+                  </td>
                   <td>
                     <span
                       className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${ticket.priority === "High"
@@ -283,12 +296,16 @@ export default function ChatPage() {
         >
           <div ref={modalRef} className="flex flex-col items-start justify-center p-[7%] space-y-[6%]">
             <button className="text-black-500 flex items-center justify-start w-full hover:bg-gray-100" onClick={handleEditModal}>
-              <FaEdit className="mr-2" />
+              <FaEdit className="mr-4" />
               <span>Edit</span>
             </button>
             <button className="text-black-500 flex items-center justify-start w-full hover:bg-gray-100" onClick={toggleDeleteModal}>
-              <FaTrash className="mr-2" />
+              <FaTrash className="mr-4" />
               <span>Delete</span>
+            </button>
+            <button className="text-black-500 flex items-center justify-start w-full hover:bg-gray-100" onClick={handleOpenGmailWeb}>
+              <FaReply className="mr-4" />
+              <span>Reply</span>
             </button>
           </div>
         </div>
@@ -325,7 +342,7 @@ export default function ChatPage() {
           selectedTicket={selectedTicketId} />
       </div>
       {/**pagination */}
-      <div className=" flex justify-end mt-[-1.5%]">
+      <div className=" flex justify-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}
