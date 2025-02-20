@@ -100,6 +100,7 @@ export default function ChatPage() {
     });
     const ticket = data.find(item => item.id === id);
     setIsModalOpen(true);
+    
     setSelectedTicketId(ticket);
     setUserEmail(ticket?.user_profiles?.email || "gmail.com");
   };
