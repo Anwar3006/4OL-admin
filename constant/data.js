@@ -89,13 +89,13 @@ export const menuItems = [
       },
     ],
   },
-  {
-    title: "Specialists",
-    isHide: true,
-    icon: "vaadin:specialist",
-    // link: "specialists",
-    link: "#",
-  },
+  // {
+  //   title: "Specialists",
+  //   isHide: true,
+  //   icon: "vaadin:specialist",
+  //   // link: "specialists",
+  //   link: "#",
+  // },
   {
     title: "Categories",
     isHide: true,
@@ -122,22 +122,22 @@ export const menuItems = [
         childtitle: "Period Tracker",
         childlink: "#",
       },
-      {
-        childtitle: "Services",
-        childlink: "#",
-        // child: [
-        //   {childtitle: "Symptoms", childlink: "#"},
-        //   {childtitle: "Healthy Living", childlink: "#"},
-        // ]
-      },
-      {
-        childtitle: "Amenities",
-        childlink: "#",
-      },
-      {
-        childtitle: "Specialities",
-        childlink: "#",
-      },
+      // {
+      //   childtitle: "Services",
+      //   childlink: "#",
+      //   // child: [
+      //   //   {childtitle: "Symptoms", childlink: "#"},
+      //   //   {childtitle: "Healthy Living", childlink: "#"},
+      //   // ]
+      // },
+      // {
+      //   childtitle: "Amenities",
+      //   childlink: "#",
+      // },
+      // {
+      //   childtitle: "Specialities",
+      //   childlink: "#",
+      // },
     ],
   },
   {
@@ -164,7 +164,7 @@ export const menuItems = [
     icon: "uiw:map",
     child: [
       { childlink: "/map/overview", childtitle: "Overview" },
-      { childlink: "#", childtitle: "Footprint" },
+      { childlink: "/map/overview", childtitle: "Footprint" },
     ],
   },
   {
