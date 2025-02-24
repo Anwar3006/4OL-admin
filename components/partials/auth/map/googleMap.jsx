@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import Dropdown from "@/components/ui/Dropdown";
@@ -37,14 +36,18 @@ const facilityTypes = [
 
 const MyGoogleMap = () => {
   const [regions] = useState(districts_regions.data);
-  const defaultRegion = regions.find((r) => r.name === 'Greater Accra');
+  const defaultRegion = regions.find((r) => r.name === "Greater Accra");
   const [allDistricts] = useState(regions.flatMap((r) => r.districts));
-  const [filteredDistricts, setFilteredDistricts] = useState(defaultRegion?.districts || []);
-  const [selectedRegion, setSelectedRegion] = useState(defaultRegion || null);
+  const [filteredDistricts, setFilteredDistricts] = useState(
+    defaultRegion?.districts || []
+  );
+  const [selectedRegion, setSelectedRegion] = useState("Greater Accra");
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [selectedFacilityType, setSelectedFacilityType] = useState("All");
   const [filteredFacilities, setFilteredFacilities] = useState([]);
-  const [mapCenter, setMapCenter] = useState(defaultRegion?.location || defaultCenter);
+  const [mapCenter, setMapCenter] = useState(
+    defaultRegion?.location || defaultCenter
+  );
   const [showBusinessPins, setShowBusinessPins] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -66,8 +69,9 @@ const MyGoogleMap = () => {
     setSelectedRegion(region || null);
     setFilteredDistricts(region ? region.districts : allDistricts);
     setMapCenter(region?.location || defaultCenter);
-    setSelectedDistrict(null);
+    setSelectedDistrict(region ? region.districts[0] : allDistricts);
     setSearchInput("");
+    setSelectedFacilityType("Hospital");
     setSuggestions([]);
   };
 
@@ -91,8 +95,14 @@ const MyGoogleMap = () => {
       try {
         const { data } = await axios.post("/api/places", {
           searchQuery: value,
-          latitude: selectedDistrict?.location?.lat || selectedRegion?.location?.lat || defaultCenter[0],
-          longitude: selectedDistrict?.location?.lng || selectedRegion?.location?.lng || defaultCenter[1],
+          latitude:
+            selectedDistrict?.location?.lat ||
+            selectedRegion?.location?.lat ||
+            defaultCenter[0],
+          longitude:
+            selectedDistrict?.location?.lng ||
+            selectedRegion?.location?.lng ||
+            defaultCenter[1],
           facilityType: selectedFacilityType,
         });
         setSuggestions(data.places || []);
@@ -119,8 +129,14 @@ const MyGoogleMap = () => {
     const fetchFacilities = async () => {
       try {
         const { data } = await axios.post("/api/places", {
-          latitude: selectedDistrict?.location?.lat || selectedRegion?.location?.lat || defaultCenter[0],
-          longitude: selectedDistrict?.location?.lng || selectedRegion?.location?.lng || defaultCenter[1],
+          latitude:
+            selectedDistrict?.location?.lat ||
+            selectedRegion?.location?.lat ||
+            defaultCenter[0],
+          longitude:
+            selectedDistrict?.location?.lng ||
+            selectedRegion?.location?.lng ||
+            defaultCenter[1],
           filter: selectedFacilityType, // Ensures facility type is correctly used
         });
         setFilteredFacilities(data?.places || []);
@@ -143,7 +159,7 @@ const MyGoogleMap = () => {
             label={
               <>
                 <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
-                {selectedRegion?.name || "Region"}
+                {selectedRegion?.name || "Greater Accra"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -154,7 +170,7 @@ const MyGoogleMap = () => {
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
             classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
             items={[
-              { onClick: () => handleRegionChange("") },
+              // { onClick: () => handleRegionChange("") },
               ...regions.map((region) => ({
                 label: region.name,
                 onClick: () => handleRegionChange(region.name),
@@ -287,35 +303,37 @@ const MyGoogleMap = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {showBusinessPins
+          {showBusinessPins && filteredFacilities
             ? filteredFacilities.map((facility) => (
-              <Marker
-                key={facility.place_id}
-                position={[facility.geometry.location.lat, facility.geometry.location.lng]}
-                icon={customIcon}
-              >
-                <Popup closeButton={false} offset={[-4, -28]}>
-                  <div>
-                    <strong>{facility.name}</strong> <br />
-                    {facility.vicinity}
-                  </div>
-                </Popup>
-              </Marker>
-            ))
+                <Marker
+                  key={facility.place_id}
+                  position={[
+                    facility.geometry.location.lat,
+                    facility.geometry.location.lng,
+                  ]}
+                  icon={customIcon}
+                >
+                  <Popup closeButton={false} offset={[-4, -28]}>
+                    <div>
+                      <strong>{facility.name}</strong> <br />
+                      {facility.vicinity}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))
             : selectedSuggestion && (
-              <Marker
-                position={[
-                  selectedSuggestion.geometry.location.lat,
-                  selectedSuggestion.geometry.location.lng,
-                ]}
-                icon={customIcon}
-              >
-                <Popup>{selectedSuggestion.name}</Popup>
-              </Marker>
-            )}
+                <Marker
+                  position={[
+                    selectedSuggestion.geometry.location.lat,
+                    selectedSuggestion.geometry.location.lng,
+                  ]}
+                  icon={customIcon}
+                >
+                  <Popup>{selectedSuggestion.name}</Popup>
+                </Marker>
+              )}
         </MapContainer>
       </div>
-
     </>
   );
 };
