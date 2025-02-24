@@ -49,13 +49,14 @@ const schema = yup.object().shape({
   last_name: yup.string().required("Last Name is required"),
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
+  keywords: yup.string(),
 });
 
 const AddAmbulanceFacilityForm = () => {
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
-  const [mediaType, setMediaType] = useState(""); 
+  const [mediaType, setMediaType] = useState("");
 
   const {
     register,
@@ -83,15 +84,20 @@ const AddAmbulanceFacilityForm = () => {
     }
   };
 
-  const onSubmit = async(user) => {
+  const onSubmit = async (user) => {
     setLoading(true);
-    const mediaUrls = await uploadMediaFiles('media', 'add_facility', 'healthcare_profiles', mediaFiles);
+    const mediaUrls = await uploadMediaFiles(
+      "media",
+      "add_facility",
+      "healthcare_profiles",
+      mediaFiles
+    );
 
     // Check for errors
     if (!mediaUrls || mediaUrls.length === 0) {
       toast.error("No media files uploaded.");
       return;
-    } else if(mediaUrls >= 6){
+    } else if (mediaUrls >= 6) {
       toast.error("Maximum 6 files are allowed");
       return;
     }
@@ -110,7 +116,7 @@ const AddAmbulanceFacilityForm = () => {
 
     const updatedUser = {
       ...user,
-      facility_type: 'Ambulance',
+      facility_type: "Ambulance",
       business_hours: businessHours,
       mediaUrls,
     };
@@ -241,6 +247,13 @@ const AddAmbulanceFacilityForm = () => {
             register={register}
             error={errors.country?.message}
             required // Added required prop
+          />
+          <Textinput
+            name="keywords"
+            label="Keywords"
+            type="text"
+            placeholder="comma separated, upto 20"
+            register={register}
           />
         </div>
       </div>
@@ -386,9 +399,11 @@ const AddAmbulanceFacilityForm = () => {
       </div>
 
       <div className="md:w-[40%] w-full">
-        <p className="text-sm mb-2">Upload Photos <span className="text-red-600">(Upto 6 Images)</span></p>
+        <p className="text-sm mb-2">
+          Upload Photos <span className="text-red-600">(Upto 6 Images)</span>
+        </p>
         <Fileinput
-        label="Upload Images"
+          label="Upload Images"
           name="mediaUrls"
           onChange={handleImageUpload}
           multiple={true}
