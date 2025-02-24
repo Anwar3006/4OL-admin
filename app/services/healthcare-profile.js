@@ -52,6 +52,7 @@ export const healthcareProfile = async (
           status: "Pending",
           business_hours: user.business_hours,
           mediaUrls: user.mediaUrls,
+          keywords: user.keywords,
         },
       ]);
     if (healthcareProfileError) {

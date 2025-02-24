@@ -49,6 +49,7 @@ const schema = yup.object().shape({
   last_name: yup.string().required("Last Name is required"),
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
+  keywords: yup.string(),
 });
 
 const AddHospitalFacilityForm = () => {
@@ -269,6 +270,13 @@ const AddHospitalFacilityForm = () => {
             register={register}
             error={errors.country?.message}
             required // Added required prop
+          />
+          <Textinput
+            name="keywords"
+            label="Keywords"
+            type="text"
+            placeholder="comma separated, upto 20"
+            register={register}
           />
         </div>
       </div>
