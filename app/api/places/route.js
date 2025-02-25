@@ -1,4 +1,3 @@
-
 export async function POST(req, res) {
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
   const data = await req.json();
@@ -13,7 +12,8 @@ export async function POST(req, res) {
 
     // Define keywords for filtering
     if (filter === "All") {
-      keyword = "hospital|herbal|pharmacy|ambulance|wholesale|labs|herbal medicine|natural health|herbal clinic|laboratory|medical test|diagnostics|ambulance service|emergency transport|medicine store|drugstore|medical supplies|wholesale pharmacy|clinic|medical center"; 
+      keyword =
+        "hospital|herbal|pharmacy|ambulance|wholesale|labs|herbal medicine|natural health|herbal clinic|laboratory|medical test|diagnostics|ambulance service|emergency transport|medicine store|drugstore|medical supplies|wholesale pharmacy|clinic|medical center";
     } else if (filter === "Herbal") {
       keyword = "herbal medicine|natural health|herbal clinic";
     } else if (filter === "Labs") {
@@ -26,12 +26,12 @@ export async function POST(req, res) {
       keyword = "medical supplies|wholesale pharmacy";
     } else if (filter === "Hospital") {
       keyword = "hospital|clinic|medical center";
-    }    
+    }
 
     console.log("Filter:", filter, "Keyword:", keyword);
 
     let url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=50000&key=${API_KEY}`;
-    if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+    if (keyword) url += `&type=${keyword}`;
     if (searchQuery) url += `&keyword=${encodeURIComponent(searchQuery)}`;
 
     let nextPageToken = "";
@@ -46,7 +46,6 @@ export async function POST(req, res) {
         }
 
         const data = await response.json();
-        console.log("Fetched data:", data);
 
         if (data.results) {
           allPlaces.push(...data.results);
@@ -54,7 +53,7 @@ export async function POST(req, res) {
 
         nextPageToken = data.next_page_token || "";
         if (nextPageToken) {
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Prevents API rate limits
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // Prevents API rate limits
         }
       } catch (error) {
         console.error("Network request failed:", error);
@@ -67,7 +66,12 @@ export async function POST(req, res) {
 
   try {
     const { latitude, longitude, filter, searchQuery } = data;
-    const places = await fetchNearbyPlaces(latitude, longitude, filter, searchQuery);
+    const places = await fetchNearbyPlaces(
+      latitude,
+      longitude,
+      filter,
+      searchQuery
+    );
     return new Response(JSON.stringify({ places }));
   } catch (error) {
     console.error("Error fetching places:", error);

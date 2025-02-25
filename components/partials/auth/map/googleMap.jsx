@@ -4,7 +4,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import Dropdown from "@/components/ui/Dropdown";
 import Icons from "@/components/ui/Icon";
 import Swicth from "@/components/ui/Switch";
-import { useForm } from "react-hook-form";
 import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
 import L from "leaflet";
 import axios from "axios";
@@ -306,6 +305,11 @@ const MyGoogleMap = () => {
           {showBusinessPins && filteredFacilities
             ? filteredFacilities.map((facility) => (
                 <Marker
+                  eventHandlers={{
+                    click: (e) => {
+                      e.target._map.setView(e.latlng, 14);
+                    },
+                  }}
                   key={facility.place_id}
                   position={[
                     facility.geometry.location.lat,

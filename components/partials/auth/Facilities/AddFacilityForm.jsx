@@ -15,6 +15,9 @@ import Fileinput from "@/components/ui/Fileinput";
 import { supabase } from "@/app/utils/supabaseClient";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
 import { usePathname } from "next/navigation";
+import Dropdown from "@/components/ui/Dropdown";
+import Icons from "@/components/ui/Icon";
+import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -60,6 +63,22 @@ const AddFacilityForm = () => {
   const [mediaType, setMediaType] = useState("");
   const pathname = usePathname();
   const [facilityType, setFacilityType] = useState(null);
+
+  const ghanaRegions = districts_regions.data;
+  const [selectedRegion, setSelectedRegion] = useState(ghanaRegions[6]);
+  const [selectedDistrict, setSelectedDistrict] = useState(
+    selectedRegion.districts[0].name
+  );
+  const [availableDistricts, setAvailableDistricts] = useState([]);
+
+  useEffect(() => {
+    setSelectedDistrict(selectedRegion.districts[0].name);
+    console.log(JSON.stringify(selectedRegion, null, 2));
+    const availableDistricts = selectedRegion.districts.map((district) => ({
+      label: district.name,
+    }));
+    setAvailableDistricts(availableDistricts);
+  }, [selectedRegion]);
 
   useEffect(() => {
     if (pathname === "/facilities/dental/create") setFacilityType("Dental");
@@ -260,7 +279,7 @@ const AddFacilityForm = () => {
             error={errors.area?.message}
             required // Added required prop
           />
-          <Textinput
+          {/* <Textinput
             name="district"
             label="District"
             type="text"
@@ -277,7 +296,59 @@ const AddFacilityForm = () => {
             register={register}
             error={errors.region?.message}
             required // Added required prop
-          />
+          /> */}
+          <div className="w-full gap-2 flex flex-col">
+            <label className="font-light text-sm">Select Region</label>
+            <Dropdown
+              wrapperClass="w-full"
+              labelClass="flex items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs text-black"
+              classMenuItems="mt-2 w-full flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
+              label={
+                <>
+                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
+                  {selectedRegion.name}
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
+                </>
+              }
+              items={ghanaRegions.map((region) => ({
+                label: region.name,
+                action: () => {
+                  setValue("region", region.name);
+                  setSelectedRegion(region);
+                },
+              }))} // Added items prop
+              // Added onSelect prop
+            />
+          </div>
+          <div className="w-full gap-2 flex flex-col">
+            <label className="font-light text-sm">Select District</label>
+            <Dropdown
+              wrapperClass="w-full"
+              labelClass="flex items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs text-black"
+              classMenuItems="mt-2 w-full flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
+              label={
+                <>
+                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
+                  {selectedDistrict || "Select District"}
+                  <Icons
+                    className={"text-2xl"}
+                    icon={"ri:arrow-drop-down-line"}
+                  />
+                </>
+              }
+              items={availableDistricts.map((district) => ({
+                label: district.label,
+                action: () => {
+                  setValue("district", district.label);
+                  setSelectedDistrict(district.label);
+                },
+              }))}
+              onSelect={(value) => setValue("district", value)}
+            />
+          </div>
           <Textinput
             name="country"
             label="Country"
