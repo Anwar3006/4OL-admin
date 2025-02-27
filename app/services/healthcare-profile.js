@@ -53,6 +53,13 @@ export const healthcareProfile = async (
           business_hours: user.business_hours,
           mediaUrls: user.mediaUrls,
           keywords: user.keywords,
+          device_name: user.device_name,
+          device_model: user.device_model,
+          device_vendor: user.device_vendor,
+          operating_system: user.os,
+          operating_system_version: user.os_version,
+          device_type: user.device_type,
+          browser: user.os,
         },
       ]);
     if (healthcareProfileError) {

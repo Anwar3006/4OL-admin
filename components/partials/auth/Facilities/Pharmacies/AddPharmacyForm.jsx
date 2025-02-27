@@ -17,6 +17,10 @@ import { uploadMediaFiles } from "@/app/utils/uploadMedia";
 import Dropdown from "@/components/ui/Dropdown";
 import Icons from "@/components/ui/Icon";
 import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
+import useDeviceInfo from "@/hooks/useDeviceInfo";
+import useGhanaPostGPS from "@/hooks/useGhanaPostGPS";
+import useGeolocation from "@/hooks/useLocation";
+import { ActivityIndicator } from "@/components/ui/ActivityIndicator";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -53,6 +57,13 @@ const schema = yup.object().shape({
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
   keywords: yup.string(),
+  device_type: yup.string(),
+  device_name: yup.string(),
+  device_model: yup.string(),
+  device_vendor: yup.string(),
+  os: yup.string(),
+  os_version: yup.string(),
+  browser: yup.string(),
 });
 
 const AddPharmacyForm = () => {
@@ -87,6 +98,56 @@ const AddPharmacyForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  // LOCATION, DEVICE, GHANA GPS
+  const location = useGeolocation({ enableHighAccuracy: true });
+  const deviceInfo = useDeviceInfo();
+  const { fetchGhanaPostAddress, addressData, error } = useGhanaPostGPS();
+  const [fetchingGPSLocation, setFetchingGPSLocation] = useState(false);
+
+  useEffect(() => {
+    console.log("Location: ", location || null);
+    console.log("Device Info: ", deviceInfo);
+    handleFetchAddress();
+  }, [location.loaded]);
+
+  const handleFetchAddress = async () => {
+    setFetchingGPSLocation(true);
+    if (
+      location.loaded &&
+      !location.error &&
+      location.coordinates.lat &&
+      location.coordinates.lng
+    ) {
+      await fetchGhanaPostAddress(
+        location.coordinates.lat,
+        location.coordinates.lng
+      )
+        .then((data) => {
+          if (data.data.Table !== null) {
+            setValue("gps_address", data?.data?.Table[0]?.GPSName || "");
+            setValue("street", data?.data?.Table[0]?.Street || "");
+            setValue("post_code", data?.data?.Table[0]?.PostCode || "");
+            setValue("area", data?.data?.Table[0]?.Area || "");
+            setValue("region", data?.data?.Table[0]?.Region || "");
+            setValue("district", data?.data?.Table[0]?.District || "");
+          }
+        })
+        .finally(() => setFetchingGPSLocation(false));
+    }
+  };
+
+  useEffect(() => {
+    setValue("device_name", deviceInfo.deviceName);
+    setValue("device_model", deviceInfo.deviceModel);
+    setValue("device_vendor", deviceInfo.deviceVendor);
+    setValue("os", deviceInfo.os);
+    setValue("os_version", deviceInfo.osVersion);
+    setValue("device_type", deviceInfo.isMobile ? "Mobile" : "Desktop");
+    setValue("browser", deviceInfo.browser);
+
+    // console.log("Device Info: ", JSON.stringify(value, null, 2));
+  }, [deviceInfo.loaded]);
 
   //   const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
@@ -208,15 +269,40 @@ const AddPharmacyForm = () => {
       <div>
         <p className="font-semibold my-5">Location</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
-          <Textinput
-            name="gps_address"
-            label="GPS Address"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.gps_address?.message}
-            required // Added required prop
-          />
+          <div className="flex flex-row flex-grow items-end gap-2 mb-4 w-full">
+            <div className="flex-grow">
+              <Textinput
+                name="gps_address"
+                label="GPS Address"
+                type="text"
+                placeholder=""
+                register={register}
+                error={errors.gps_address?.message}
+                required
+              />
+            </div>
+            <button
+              disabled={fetchingGPSLocation}
+              type="button"
+              className="flex flex-row items-center btn px-4 bg-[#56ce84] text-white"
+              onClick={() => {
+                handleFetchAddress();
+              }}
+            >
+              {fetchingGPSLocation ? (
+                <ActivityIndicator />
+              ) : (
+                <>
+                  <Icons
+                    icon="heroicons-outline:refresh"
+                    width={24}
+                    className="mr-2"
+                  />
+                </>
+              )}
+              Refresh
+            </button>
+          </div>
           <Textinput
             name="street"
             label="Street"
@@ -226,59 +312,6 @@ const AddPharmacyForm = () => {
             error={errors.street?.message}
             required // Added required prop
           />
-
-          <div className="w-full gap-2 flex flex-col">
-            <label className="font-light text-sm">Select Region</label>
-            <Dropdown
-              wrapperClass="w-full"
-              labelClass="flex items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs text-black"
-              classMenuItems="mt-2 w-full flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
-              label={
-                <>
-                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
-                  {selectedRegion.name}
-                  <Icons
-                    className={"text-2xl"}
-                    icon={"ri:arrow-drop-down-line"}
-                  />
-                </>
-              }
-              items={ghanaRegions.map((region) => ({
-                label: region.name,
-                action: () => {
-                  setValue("region", region.name);
-                  setSelectedRegion(region);
-                },
-              }))} // Added items prop
-              // Added onSelect prop
-            />
-          </div>
-          <div className="w-full gap-2 flex flex-col">
-            <label className="font-light text-sm">Select District</label>
-            <Dropdown
-              wrapperClass="w-full"
-              labelClass="flex items-center px-2 py-1 border border-gray-200 rounded-sm lg:text-sm text-xs text-black"
-              classMenuItems="mt-2 w-full flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
-              label={
-                <>
-                  <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
-                  {selectedDistrict || "Select District"}
-                  <Icons
-                    className={"text-2xl"}
-                    icon={"ri:arrow-drop-down-line"}
-                  />
-                </>
-              }
-              items={availableDistricts.map((district) => ({
-                label: district.label,
-                action: () => {
-                  setValue("district", district.label);
-                  setSelectedDistrict(district.label);
-                },
-              }))}
-              onSelect={(value) => setValue("district", value)}
-            />
-          </div>
           <Textinput
             name="post_code"
             label="Post Code"
@@ -288,7 +321,7 @@ const AddPharmacyForm = () => {
             error={errors.post_code?.message}
             required // Added required prop
           />
-          {/* <Textinput
+          <Textinput
             name="area"
             label="Area"
             type="text"
@@ -305,8 +338,8 @@ const AddPharmacyForm = () => {
             register={register}
             error={errors.district?.message}
             required // Added required prop
-          /> */}
-          {/* <Textinput
+          />
+          <Textinput
             name="region"
             label="Region"
             type="text"
@@ -314,7 +347,7 @@ const AddPharmacyForm = () => {
             register={register}
             error={errors.region?.message}
             required // Added required prop
-          /> */}
+          />
           <Textinput
             name="country"
             label="Country"
