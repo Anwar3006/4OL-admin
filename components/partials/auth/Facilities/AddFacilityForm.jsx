@@ -489,53 +489,59 @@ const AddFacilityForm = () => {
 
       <div className="mt-2">
         <p className="font-semibold my-5">Business Info</p>
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
           {/* First half of the days */}
           <div>
             {["monday", "tuesday", "wednesday", "thursday"].map((day) => (
-              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-                <label className="font-semibold capitalize">{day}</label>
-                <Textinput
-                  name={`business_hours.${day}.opening`}
-                  label="Opening Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.opening?.message}
-                  required
-                />
-                <Textinput
-                  name={`business_hours.${day}.closing`}
-                  label="Closing Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.closing?.message}
-                  required
-                />
+              <div key={day} className="mb-6">
+                <div className="mb-2">
+                  <label className="font-semibold capitalize">{day}</label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Textinput
+                    name={`business_hours.${day}.opening`}
+                    label="Opening Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.opening?.message}
+                    required
+                  />
+                  <Textinput
+                    name={`business_hours.${day}.closing`}
+                    label="Closing Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.closing?.message}
+                    required
+                  />
+                </div>
               </div>
             ))}
           </div>
-
-          {/* Second half of the days */}
           <div>
             {["friday", "saturday", "sunday"].map((day) => (
-              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-                <label className="font-semibold capitalize">{day}</label>
-                <Textinput
-                  name={`business_hours.${day}.opening`}
-                  label="Opening Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.opening?.message}
-                  required
-                />
-                <Textinput
-                  name={`business_hours.${day}.closing`}
-                  label="Closing Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.closing?.message}
-                  required
-                />
+              <div key={day} className="mb-6">
+                <div className="mb-2">
+                  <label className="font-semibold capitalize">{day}</label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Textinput
+                    name={`business_hours.${day}.opening`}
+                    label="Opening Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.opening?.message}
+                    required
+                  />
+                  <Textinput
+                    name={`business_hours.${day}.closing`}
+                    label="Closing Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.closing?.message}
+                    required
+                  />
+                </div>
               </div>
             ))}
           </div>
