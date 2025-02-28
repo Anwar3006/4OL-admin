@@ -25,8 +25,6 @@ export const healthcareProfile = async (
       .from("healthcare_profiles")
       .insert([
         {
-          created_at: moment(new Date()).valueOf(), // Convert date to timestamp
-          updated_at: moment(new Date()).valueOf(), // Convert date to timestamp
           created_by: userId,
           updated_by: userId,
           is_created_by_admin_panel: false,
@@ -60,6 +58,8 @@ export const healthcareProfile = async (
           operating_system_version: user.os_version,
           device_type: user.device_type,
           browser: user.os,
+          latitude: user.latitude,
+          longitude: user.longitude,
         },
       ]);
     if (healthcareProfileError) {

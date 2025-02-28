@@ -1,15 +1,16 @@
-
-import React  from "react";
+import React from "react";
 import Card from "@/components/ui/Card";
 import dynamic from "next/dynamic";
 
 // Dynamically import the map to prevent SSR issues with window
-const MyGoogleMap = dynamic(() => import("@/components/partials/auth/map/googleMap"), {
-  ssr: false,
-});
+const BasicMapRender = dynamic(
+  () => import("@/components/partials/auth/map/BasicMapRender"),
+  {
+    ssr: false,
+  }
+);
 
 export default function Page() {
-
   return (
     <div className="">
       <div className="lg-inner-column">
@@ -20,7 +21,7 @@ export default function Page() {
             className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
           >
             <div className="w-full flex flex-col justify-center">
-              <MyGoogleMap />
+              <BasicMapRender />
             </div>
           </Card>
         </div>

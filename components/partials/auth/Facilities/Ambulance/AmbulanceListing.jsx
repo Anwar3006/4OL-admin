@@ -30,7 +30,7 @@ export default function AmbulanceListing() {
         .select("*", { count: "exact" })
         .range(from, to)
         .eq("status", "Approved")
-        .eq("facility_type", "Ambulance"); 
+        .eq("facility_type", "Ambulance");
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -120,7 +120,10 @@ export default function AmbulanceListing() {
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-base text-gray-500">
+                <td
+                  colSpan="6"
+                  className="text-center py-10 text-base text-gray-500"
+                >
                   No Data Available
                 </td>
               </tr>

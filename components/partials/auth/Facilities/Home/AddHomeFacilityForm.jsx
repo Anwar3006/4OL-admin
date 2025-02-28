@@ -20,6 +20,7 @@ import { districts_regions } from "@/constant/ghana_regions_districts_coordinate
 import useGeolocation from "@/hooks/useLocation";
 import useGhanaPostGPS from "@/hooks/useGhanaPostGPS";
 import useDeviceInfo from "@/hooks/useDeviceInfo";
+import { useRouter } from "next/navigation";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -63,9 +64,12 @@ const schema = yup.object().shape({
   os: yup.string(),
   os_version: yup.string(),
   browser: yup.string(),
+  latitude: yup.string(),
+  longitude: yup.string(),
 });
 
 const AddHomeFacilityForm = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
@@ -124,6 +128,8 @@ const AddHomeFacilityForm = () => {
       )
         .then((data) => {
           if (data.data.Table !== null) {
+            setValue("longitude", location.coordinates.lng);
+            setValue("latitude", location.coordinates.lat);
             setValue("gps_address", data?.data?.Table[0]?.GPSName || "");
             setValue("street", data?.data?.Table[0]?.Street || "");
             setValue("post_code", data?.data?.Table[0]?.PostCode || "");
@@ -213,7 +219,7 @@ const AddHomeFacilityForm = () => {
         setLoading(false);
         toast.success("Healthcare Profile Added Successfully");
         reset(); // Reset form fields after successful submission
-        // router.replace("/login2"); // Uncomment if you want to redirect after submission
+        router.back();
       },
       (error) => {
         setLoading(false);
