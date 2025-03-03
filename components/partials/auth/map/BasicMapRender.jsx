@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import * as mapService from "@/app/services/map_service";
 import Dropdown from "@/components/ui/Dropdown";
@@ -55,12 +55,9 @@ const BasicMapRender = () => {
 
   // Load region and district data
   useEffect(() => {
-    const getDistinctFacilityTypes = mapService
-      .getFacilityTypes()
-      .then((res) => {
-        setFacilityTypes(res);
-      });
-    console.log("Facility Types:", getDistinctFacilityTypes);
+    mapService.getFacilityTypes().then((res) => {
+      setFacilityTypes(["All", ...res]);
+    });
     const fetchRegionsAndDistricts = async () => {
       try {
         const regionsData = await mapService.getAllRegions();
@@ -135,7 +132,7 @@ const BasicMapRender = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const result = await mapService
+        await mapService
           .getMapMarkerDetails({
             region: selectedRegion === "All" ? null : selectedRegion,
             district: selectedDistrict === "All" ? null : selectedDistrict,
@@ -144,7 +141,6 @@ const BasicMapRender = () => {
               selectedFacilityType === "All" ? null : selectedFacilityType,
           })
           .then((res) => {
-            console.log("RES:", res);
             setData(res);
           });
 
@@ -213,7 +209,7 @@ const BasicMapRender = () => {
     <>
       <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full mb-4">
         {/* Region, District, Facility Type Filters */}
-        <div className="flex flex-wrap gap-2">
+        <div className="grid sm:grid-cols-2 md:flex lg:flex gap-3 grid-cols-2">
           <Dropdown
             label={
               <>
@@ -225,9 +221,8 @@ const BasicMapRender = () => {
                 />
               </>
             }
-            wrapperClass=""
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
+            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-96 overflow-scroll custom-scrollbar"
             items={regionList.map((region) => ({
               label: region,
               onClick: () => handleRegionChange(region),
@@ -244,7 +239,6 @@ const BasicMapRender = () => {
             }
             onSelect={handleRegionChange}
           />
-
           <Dropdown
             label={
               <>
@@ -256,9 +250,8 @@ const BasicMapRender = () => {
                 />
               </>
             }
-            wrapperClass=""
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
-            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
+            classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-96 overflow-scroll custom-scrollbar"
             items={districtList.map((district) => ({
               label: district,
               onClick: () => handleDistrictChange(district),
@@ -350,8 +343,11 @@ const BasicMapRender = () => {
 
       {/* Loading indicator */}
       {loading && (
-        <div className="flex justify-center items-center mb-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#56ce84]"></div>
+        <div
+          className="flex justify-center items-center mb-4"
+          style={{ zIndex: 1000 }}
+        >
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#56ce84]" />
           <span className="ml-2 text-sm text-gray-600">
             Loading facilities...
           </span>
@@ -359,7 +355,7 @@ const BasicMapRender = () => {
       )}
 
       {/* Map */}
-      <div className="w-full h-[480px]" style={{ zIndex: 0 }}>
+      <div className="w-full h-[520px]" style={{ zIndex: 0 }}>
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}
@@ -387,7 +383,7 @@ const BasicMapRender = () => {
                     : approvedFacilityIcon
                 }
               >
-                <Popup offset={[-5, -30]} className="w-96">
+                <Popup offset={[-5, -30]}>
                   <div className="flex gap-2 flex-col flex-grow">
                     <div>
                       <strong>Facility Name:</strong> {item.facility_name}

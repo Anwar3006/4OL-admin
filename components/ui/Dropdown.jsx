@@ -14,10 +14,10 @@ const Dropdown = ({
   onSelect,
 }) => {
   return (
-    <div className={`relative ${wrapperClass}`}>
+    <div className={`relative ${wrapperClass}  w-full`}>
       <Menu as="div" className={`block ${className}`}>
         {/* Dropdown Toggle */}
-        <Menu.Button className="block">
+        <Menu.Button className="block w-full">
           <div className={labelClass}>{label}</div>
         </Menu.Button>
 
@@ -39,9 +39,7 @@ const Dropdown = ({
                 {({ active }) => (
                   <div
                     className={`${
-                      active
-                        ? "bg-slate-100 text-slate-900"
-                        : "text-slate-600"
+                      active ? "bg-slate-100 text-slate-900" : "text-slate-600"
                     } block cursor-pointer w-full ${classItem}`}
                     onClick={() => {
                       if (onSelect) onSelect(item.label);

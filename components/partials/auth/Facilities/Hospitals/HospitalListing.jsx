@@ -6,7 +6,6 @@ import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
-import Switch from "@/components/ui/Switch";
 
 export default function HospitalsListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -31,7 +30,7 @@ export default function HospitalsListing() {
         .select("*", { count: "exact" })
         .range(from, to)
         .eq("status", "Approved")
-      .eq("facility_type", "Hospital/ Clinic"); 
+        .eq("facility_type", "Hospital/ Clinic");
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -119,9 +118,12 @@ export default function HospitalsListing() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
-          {filteredData.length === 0 && (
+            {filteredData.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-base text-gray-500">
+                <td
+                  colSpan="6"
+                  className="text-center py-10 text-base text-gray-500"
+                >
                   No Data Available
                 </td>
               </tr>
