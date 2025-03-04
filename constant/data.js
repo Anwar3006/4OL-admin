@@ -164,14 +164,14 @@ export const menuItems = [
     icon: "uiw:map",
     child: [
       { childlink: "/map/overview", childtitle: "Overview" },
-      { childlink: "/map/overview", childtitle: "Footprint" },
+      // { childlink: "/map/overview", childtitle: "Footprint" },
     ],
   },
   {
     title: "User Grouping",
     isHide: true,
     icon: "mdi:account-group",
-    link: "user-group"
+    link: "user-group",
   },
   {
     title: "Marketing",
