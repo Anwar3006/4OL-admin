@@ -209,7 +209,7 @@ const BasicMapRender = () => {
     <>
       <div className="flex lg:justify-between max-lg:flex-col max-lg:space-y-2 w-full mb-4">
         {/* Region, District, Facility Type Filters */}
-        <div className="grid sm:grid-cols-2 md:flex lg:flex gap-3 grid-cols-2">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 grid-cols-2">
           <Dropdown
             label={
               <>
