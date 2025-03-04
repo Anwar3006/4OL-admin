@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { set, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
@@ -14,6 +14,14 @@ import { healthcareProfile } from "@/app/services/healthcare-profile";
 import Fileinput from "@/components/ui/Fileinput";
 import { supabase } from "@/app/utils/supabaseClient";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
+import Dropdown from "@/components/ui/Dropdown";
+import Icons from "@/components/ui/Icon";
+import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
+import useDeviceInfo from "@/hooks/useDeviceInfo";
+import useGhanaPostGPS from "@/hooks/useGhanaPostGPS";
+import useGeolocation from "@/hooks/useLocation";
+import { ActivityIndicator } from "@/components/ui/ActivityIndicator";
+import { useRouter } from "next/navigation";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -49,13 +57,39 @@ const schema = yup.object().shape({
   last_name: yup.string().required("Last Name is required"),
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
+  keywords: yup.string(),
+  device_type: yup.string(),
+  device_name: yup.string(),
+  device_model: yup.string(),
+  device_vendor: yup.string(),
+  os: yup.string(),
+  os_version: yup.string(),
+  browser: yup.string(),
+  latitude: yup.string(),
+  longitude: yup.string(),
 });
 
 const AddAmbulanceFacilityForm = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
-  const [mediaType, setMediaType] = useState(""); 
+  const [mediaType, setMediaType] = useState("");
+  const ghanaRegions = districts_regions.data;
+  const [selectedRegion, setSelectedRegion] = useState(ghanaRegions[6]);
+  const [selectedDistrict, setSelectedDistrict] = useState(
+    selectedRegion.districts[0].name
+  );
+  const [availableDistricts, setAvailableDistricts] = useState([]);
+
+  useEffect(() => {
+    setSelectedDistrict(selectedRegion.districts[0].name);
+    console.log(JSON.stringify(selectedRegion, null, 2));
+    const availableDistricts = selectedRegion.districts.map((district) => ({
+      label: district.name,
+    }));
+    setAvailableDistricts(availableDistricts);
+  }, [selectedRegion]);
 
   const {
     register,
@@ -67,6 +101,60 @@ const AddAmbulanceFacilityForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  // LOCATION, DEVICE, GHANA GPS
+  const location = useGeolocation({ enableHighAccuracy: true });
+  const deviceInfo = useDeviceInfo();
+  const { fetchGhanaPostAddress, addressData, error } = useGhanaPostGPS();
+  const [fetchingGPSLocation, setFetchingGPSLocation] = useState(false);
+
+  useEffect(() => {
+    console.log("Location: ", location || null);
+    console.log("Device Info: ", deviceInfo);
+    handleFetchAddress();
+  }, [location.loaded]);
+
+  const handleFetchAddress = async () => {
+    setFetchingGPSLocation(true);
+    if (
+      location.loaded &&
+      !location.error &&
+      location.coordinates.lat &&
+      location.coordinates.lng
+    ) {
+      await fetchGhanaPostAddress(
+        location.coordinates.lat,
+        location.coordinates.lng
+      )
+        .then((data) => {
+          if (data.data.Table !== null) {
+            setValue("longitude", location.coordinates.lng);
+            setValue("latitude", location.coordinates.lat);
+            setValue("longitude", location.coordinates.lng);
+            setValue("latitude", location.coordinates.lat);
+            setValue("gps_address", data?.data?.Table[0]?.GPSName || "");
+            setValue("street", data?.data?.Table[0]?.Street || "");
+            setValue("post_code", data?.data?.Table[0]?.PostCode || "");
+            setValue("area", data?.data?.Table[0]?.Area || "");
+            setValue("region", data?.data?.Table[0]?.Region || "");
+            setValue("district", data?.data?.Table[0]?.District || "");
+          }
+        })
+        .finally(() => setFetchingGPSLocation(false));
+    }
+  };
+
+  useEffect(() => {
+    setValue("device_name", deviceInfo.deviceName);
+    setValue("device_model", deviceInfo.deviceModel);
+    setValue("device_vendor", deviceInfo.deviceVendor);
+    setValue("os", deviceInfo.os);
+    setValue("os_version", deviceInfo.osVersion);
+    setValue("device_type", deviceInfo.isMobile ? "Mobile" : "Desktop");
+    setValue("browser", deviceInfo.browser);
+
+    // console.log("Device Info: ", JSON.stringify(value, null, 2));
+  }, [deviceInfo.loaded]);
 
   const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
@@ -83,15 +171,20 @@ const AddAmbulanceFacilityForm = () => {
     }
   };
 
-  const onSubmit = async(user) => {
+  const onSubmit = async (user) => {
     setLoading(true);
-    const mediaUrls = await uploadMediaFiles('media', 'add_facility', 'healthcare_profiles', mediaFiles);
+    const mediaUrls = await uploadMediaFiles(
+      "media",
+      "add_facility",
+      "healthcare_profiles",
+      mediaFiles
+    );
 
     // Check for errors
     if (!mediaUrls || mediaUrls.length === 0) {
       toast.error("No media files uploaded.");
       return;
-    } else if(mediaUrls >= 6){
+    } else if (mediaUrls >= 6) {
       toast.error("Maximum 6 files are allowed");
       return;
     }
@@ -110,7 +203,7 @@ const AddAmbulanceFacilityForm = () => {
 
     const updatedUser = {
       ...user,
-      facility_type: 'Ambulance',
+      facility_type: "Ambulance",
       business_hours: businessHours,
       mediaUrls,
     };
@@ -124,7 +217,7 @@ const AddAmbulanceFacilityForm = () => {
         setLoading(false);
         toast.success("Healthcare Profile Added Successfully");
         reset(); // Reset form fields after successful submission
-        // router.replace("/login2"); // Uncomment if you want to redirect after submission
+        router.back();
       },
       (error) => {
         setLoading(false);
@@ -178,16 +271,41 @@ const AddAmbulanceFacilityForm = () => {
 
       <div>
         <p className="font-semibold my-5">Location</p>
-        <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
-          <Textinput
-            name="gps_address"
-            label="GPS Address"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.gps_address?.message}
-            required // Added required prop
-          />
+        <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4 gap-4">
+          <div className="flex flex-row flex-grow items-end gap-2 mb-4 w-full">
+            <div className="flex-grow">
+              <Textinput
+                name="gps_address"
+                label="GPS Address"
+                type="text"
+                placeholder=""
+                register={register}
+                error={errors.gps_address?.message}
+                required
+              />
+            </div>
+            <button
+              disabled={fetchingGPSLocation}
+              type="button"
+              className="flex flex-row items-center btn px-4 bg-[#56ce84] text-white"
+              onClick={() => {
+                handleFetchAddress();
+              }}
+            >
+              {fetchingGPSLocation ? (
+                <ActivityIndicator />
+              ) : (
+                <>
+                  <Icons
+                    icon="heroicons-outline:refresh"
+                    width={24}
+                    className="mr-2"
+                  />
+                </>
+              )}
+              Refresh
+            </button>
+          </div>
           <Textinput
             name="street"
             label="Street"
@@ -241,6 +359,13 @@ const AddAmbulanceFacilityForm = () => {
             register={register}
             error={errors.country?.message}
             required // Added required prop
+          />
+          <Textinput
+            name="keywords"
+            label="Keywords"
+            type="text"
+            placeholder="comma separated, upto 20"
+            register={register}
           />
         </div>
       </div>
@@ -332,53 +457,59 @@ const AddAmbulanceFacilityForm = () => {
 
       <div className="mt-2">
         <p className="font-semibold my-5">Business Info</p>
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
           {/* First half of the days */}
           <div>
             {["monday", "tuesday", "wednesday", "thursday"].map((day) => (
-              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-                <label className="font-semibold capitalize">{day}</label>
-                <Textinput
-                  name={`business_hours.${day}.opening`}
-                  label="Opening Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.opening?.message}
-                  required
-                />
-                <Textinput
-                  name={`business_hours.${day}.closing`}
-                  label="Closing Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.closing?.message}
-                  required
-                />
+              <div key={day} className="mb-6">
+                <div className="mb-2">
+                  <label className="font-semibold capitalize">{day}</label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Textinput
+                    name={`business_hours.${day}.opening`}
+                    label="Opening Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.opening?.message}
+                    required
+                  />
+                  <Textinput
+                    name={`business_hours.${day}.closing`}
+                    label="Closing Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.closing?.message}
+                    required
+                  />
+                </div>
               </div>
             ))}
           </div>
-
-          {/* Second half of the days */}
           <div>
             {["friday", "saturday", "sunday"].map((day) => (
-              <div key={day} className="grid grid-cols-3 gap-4 mb-4">
-                <label className="font-semibold capitalize">{day}</label>
-                <Textinput
-                  name={`business_hours.${day}.opening`}
-                  label="Opening Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.opening?.message}
-                  required
-                />
-                <Textinput
-                  name={`business_hours.${day}.closing`}
-                  label="Closing Time"
-                  type="time"
-                  register={register}
-                  error={errors.business_hours?.[day]?.closing?.message}
-                  required
-                />
+              <div key={day} className="mb-6">
+                <div className="mb-2">
+                  <label className="font-semibold capitalize">{day}</label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Textinput
+                    name={`business_hours.${day}.opening`}
+                    label="Opening Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.opening?.message}
+                    required
+                  />
+                  <Textinput
+                    name={`business_hours.${day}.closing`}
+                    label="Closing Time"
+                    type="time"
+                    register={register}
+                    error={errors.business_hours?.[day]?.closing?.message}
+                    required
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -386,9 +517,11 @@ const AddAmbulanceFacilityForm = () => {
       </div>
 
       <div className="md:w-[40%] w-full">
-        <p className="text-sm mb-2">Upload Photos <span className="text-red-600">(Upto 6 Images)</span></p>
+        <p className="text-sm mb-2">
+          Upload Photos <span className="text-red-600">(Upto 6 Images)</span>
+        </p>
         <Fileinput
-        label="Upload Images"
+          label="Upload Images"
           name="mediaUrls"
           onChange={handleImageUpload}
           multiple={true}

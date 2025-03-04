@@ -14,6 +14,7 @@ import { healthcareProfile } from "@/app/services/healthcare-profile";
 import Fileinput from "@/components/ui/Fileinput";
 import { supabase } from "@/app/utils/supabaseClient";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
+import { useRouter } from "next/navigation";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -52,10 +53,11 @@ const schema = yup.object().shape({
 });
 
 const FacilityProfileForm = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState([]);
   const [preview, setPreview] = useState(null);
-  const [mediaType, setMediaType] = useState(""); 
+  const [mediaType, setMediaType] = useState("");
 
   const {
     register,
@@ -83,15 +85,20 @@ const FacilityProfileForm = () => {
     }
   };
 
-  const onSubmit = async(user) => {
+  const onSubmit = async (user) => {
     setLoading(true);
-    const mediaUrls = await uploadMediaFiles('media', 'add_facility', 'healthcare_profiles', mediaFiles);
+    const mediaUrls = await uploadMediaFiles(
+      "media",
+      "add_facility",
+      "healthcare_profiles",
+      mediaFiles
+    );
 
     // Check for errors
     if (!mediaUrls || mediaUrls.length === 0) {
       toast.error("No media files uploaded.");
       return;
-    } else if(mediaUrls >= 6){
+    } else if (mediaUrls >= 6) {
       toast.error("Maximum 6 files are allowed");
       return;
     }
@@ -123,7 +130,7 @@ const FacilityProfileForm = () => {
         setLoading(false);
         toast.success("Healthcare Profile Added Successfully");
         reset(); // Reset form fields after successful submission
-        // router.replace("/login2"); // Uncomment if you want to redirect after submission
+        router.back();
       },
       (error) => {
         setLoading(false);
@@ -404,9 +411,11 @@ const FacilityProfileForm = () => {
       </div>
 
       <div className="md:w-[40%] w-full">
-        <p className="text-sm mb-2">Upload Photos <span className="text-red-600">(Upto 6 Images)</span></p>
+        <p className="text-sm mb-2">
+          Upload Photos <span className="text-red-600">(Upto 6 Images)</span>
+        </p>
         <Fileinput
-        label="Upload Images"
+          label="Upload Images"
           name="mediaUrls"
           onChange={handleImageUpload}
           multiple={true}

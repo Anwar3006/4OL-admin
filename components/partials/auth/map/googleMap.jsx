@@ -1,13 +1,11 @@
-"use client"
-
+"use client";
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import Dropdown from "@/components/ui/Dropdown";
 import Icons from "@/components/ui/Icon";
 import Swicth from "@/components/ui/Switch";
-import { useForm } from "react-hook-form";
 import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
-import L from "leaflet"; 
+import L from "leaflet";
 import axios from "axios";
 
 // Leaflet's default icon
@@ -24,7 +22,7 @@ const customIcon = L.icon({
   iconAnchor: [20, 40],
 });
 
-const defaultCenter = [7.946527, -1.023194]; // Ghana's approximate center
+const defaultCenter = [5.614818, -0.205874]; // Greater Accra Region
 const facilityTypes = [
   { label: "All", value: "" },
   { label: "Hospital", value: "Hospital" },
@@ -37,59 +35,51 @@ const facilityTypes = [
 
 const MyGoogleMap = () => {
   const [regions] = useState(districts_regions.data);
-  const [allDistricts, setAllDistricts] = useState([]);
-  const [filteredDistricts, setFilteredDistricts] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const defaultRegion = regions.find((r) => r.name === "Greater Accra");
+  const [allDistricts] = useState(regions.flatMap((r) => r.districts));
+  const [filteredDistricts, setFilteredDistricts] = useState(
+    defaultRegion?.districts || []
+  );
+  const [selectedRegion, setSelectedRegion] = useState("Greater Accra");
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [selectedFacilityType, setSelectedFacilityType] = useState("All");
   const [filteredFacilities, setFilteredFacilities] = useState([]);
-  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapCenter, setMapCenter] = useState(
+    defaultRegion?.location || defaultCenter
+  );
   const [showBusinessPins, setShowBusinessPins] = useState(true);
-  const [isMounted, setIsMounted] = useState(false); 
+  const [isMounted, setIsMounted] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   useEffect(() => {
-    setIsMounted(true); 
+    setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    const allDistrictsList = regions.flatMap((region) => region.districts);
-    setAllDistricts(allDistrictsList);
-    setFilteredDistricts(allDistrictsList);
-  }, [regions]);
+  // useEffect(() => {
+  //   const allDistrictsList = regions.flatMap((region) => region.districts);
+  //   setAllDistricts(allDistrictsList);
+  //   setFilteredDistricts(allDistrictsList);
+  // }, [regions]);
 
   const handleRegionChange = (regionName) => {
     const region = regions.find((r) => r.name === regionName);
-    if (region) {
-      setFilteredDistricts(region.districts);
-      setSelectedRegion(region);
-      setMapCenter(region.location);
-
-      // Reset previous search and suggestions
-      setSelectedSuggestion(null);
-      setSearchInput("");
-    } else {
-      setFilteredDistricts(allDistricts);
-      setSelectedRegion("");
-      setMapCenter(defaultCenter);
-
-      setSelectedSuggestion(null);
-      setSearchInput("");
-    }
+    setSelectedRegion(region || null);
+    setFilteredDistricts(region ? region.districts : allDistricts);
+    setMapCenter(region?.location || defaultCenter);
+    setSelectedDistrict(region ? region.districts[0] : allDistricts);
+    setSearchInput("");
+    setSelectedFacilityType("Hospital");
+    setSuggestions([]);
   };
 
   const handleDistrictChange = (districtName) => {
     const district = filteredDistricts.find((d) => d.name === districtName);
-    if (district) {
-      setMapCenter(district.location);
-      setSelectedDistrict(district);
-
-      // Reset previous search and suggestions
-      setSelectedSuggestion(null);
-      setSearchInput("");
-    }
+    setSelectedDistrict(district || null);
+    setMapCenter(district?.location || mapCenter);
+    setSearchInput("");
+    setSuggestions([]);
   };
 
   const handleFacilityTypeChange = (facilityType) => {
@@ -104,21 +94,20 @@ const MyGoogleMap = () => {
       try {
         const { data } = await axios.post("/api/places", {
           searchQuery: value,
-          latitude: selectedDistrict
-            ? selectedDistrict.location.lat
-            : selectedRegion
-            ? selectedRegion.location.lat
-            : mapCenter[0],
-          longitude: selectedDistrict
-            ? selectedDistrict.location.lng
-            : selectedRegion
-            ? selectedRegion.location.lng
-            : mapCenter[1],
+          latitude:
+            selectedDistrict?.location?.lat ||
+            selectedRegion?.location?.lat ||
+            defaultCenter[0],
+          longitude:
+            selectedDistrict?.location?.lng ||
+            selectedRegion?.location?.lng ||
+            defaultCenter[1],
           facilityType: selectedFacilityType,
         });
-        setSuggestions(data.places);
+        setSuggestions(data.places || []);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
+        setSuggestions([]);
       }
     } else {
       setSuggestions([]);
@@ -137,21 +126,22 @@ const MyGoogleMap = () => {
 
   useEffect(() => {
     const fetchFacilities = async () => {
-      if (selectedRegion || selectedDistrict || selectedFacilityType) {
-        const requestData = {
-          latitude: selectedDistrict
-            ? selectedDistrict?.location?.lat
-            : selectedRegion?.location?.lat || defaultCenter[0],
-          longitude: selectedDistrict
-            ? selectedDistrict?.location?.lng
-            : selectedRegion?.location?.lng || defaultCenter[1],
-            filter: selectedFacilityType === "All" ? "All" : selectedFacilityType,
-        };
-
+      try {
         const { data } = await axios.post("/api/places", {
-          ...requestData,
+          latitude:
+            selectedDistrict?.location?.lat ||
+            selectedRegion?.location?.lat ||
+            defaultCenter[0],
+          longitude:
+            selectedDistrict?.location?.lng ||
+            selectedRegion?.location?.lng ||
+            defaultCenter[1],
+          filter: selectedFacilityType, // Ensures facility type is correctly used
         });
-        setFilteredFacilities(data?.places);
+        setFilteredFacilities(data?.places || []);
+      } catch (error) {
+        console.error("Error fetching facilities:", error);
+        setFilteredFacilities([]);
       }
     };
     fetchFacilities();
@@ -168,7 +158,7 @@ const MyGoogleMap = () => {
             label={
               <>
                 <Icons icon={"oui:vis-map-region"} className={"mr-2"} />
-                Region
+                {selectedRegion?.name || "Greater Accra"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -179,7 +169,7 @@ const MyGoogleMap = () => {
             labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm lg:text-sm text-xs text-[#56ce84]"
             classMenuItems="mt-2 w-[180px] flex flex-col left-0 h-72 overflow-scroll custom-scrollbar"
             items={[
-              { onClick: () => handleRegionChange("") },
+              // { onClick: () => handleRegionChange("") },
               ...regions.map((region) => ({
                 label: region.name,
                 onClick: () => handleRegionChange(region.name),
@@ -202,7 +192,7 @@ const MyGoogleMap = () => {
             label={
               <>
                 <Icons icon={"carbon:cics-region"} className={"mr-2"} />
-                District
+                {selectedDistrict?.name || "District"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -233,7 +223,7 @@ const MyGoogleMap = () => {
             label={
               <>
                 <Icons icon={"heroicons-outline:user"} className={"mr-2 "} />
-                Facility Type
+                {selectedFacilityType || "Facility Type"}
                 <Icons
                   className={"text-2xl"}
                   icon={"ri:arrow-drop-down-line"}
@@ -311,15 +301,28 @@ const MyGoogleMap = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
-          {showBusinessPins
+
+          {showBusinessPins && filteredFacilities
             ? filteredFacilities.map((facility) => (
                 <Marker
+                  eventHandlers={{
+                    click: (e) => {
+                      e.target._map.setView(e.latlng, 14);
+                    },
+                  }}
                   key={facility.place_id}
-                  position={[facility.geometry.location.lat, facility.geometry.location.lng]}
+                  position={[
+                    facility.geometry.location.lat,
+                    facility.geometry.location.lng,
+                  ]}
                   icon={customIcon}
                 >
-                  <Popup>{facility.name}</Popup>
+                  <Popup closeButton={false} offset={[-4, -28]}>
+                    <div>
+                      <strong>{facility.name}</strong> <br />
+                      {facility.vicinity}
+                    </div>
+                  </Popup>
                 </Marker>
               ))
             : selectedSuggestion && (
@@ -335,7 +338,6 @@ const MyGoogleMap = () => {
               )}
         </MapContainer>
       </div>
-
     </>
   );
 };
