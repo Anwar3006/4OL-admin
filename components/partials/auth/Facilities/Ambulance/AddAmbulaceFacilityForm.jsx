@@ -100,6 +100,7 @@ const AddAmbulanceFacilityForm = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    mode: "onChange",
   });
 
   // LOCATION, DEVICE, GHANA GPS
@@ -232,24 +233,44 @@ const AddAmbulanceFacilityForm = () => {
       <div>
         <p className="font-semibold mb-5">Basic Information</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
-          <Textinput
-            name="facility_name"
-            label="Facility Name"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.facility_name?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="contact_num"
-            label="Contact Number"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.contact_num?.message}
-            required // Added required prop
-          />
+          <div>
+            <Textinput
+              name="facility_name"
+              label="Facility Name"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors?.facility_name?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.facility_name ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.facility_name && (
+              <p className="text-red-500 text-xs mt-2">
+                {errors?.facility_name?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="contact_num"
+              label="Contact Number"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.contact_num?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.contact_num ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.contact_num && (
+              <p className="text-red-500 text-xs mt-2">
+                {errors?.contact_num?.message} *
+              </p>
+            )}
+          </div>
           <Textinput
             name="whatsapp"
             label="Whatsapp Number (Optional)"
@@ -272,94 +293,164 @@ const AddAmbulanceFacilityForm = () => {
       <div>
         <p className="font-semibold my-5">Location</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4 gap-4">
-          <div className="flex flex-row flex-grow items-end gap-2 mb-4 w-full">
-            <div className="flex-grow">
-              <Textinput
-                name="gps_address"
-                label="GPS Address"
-                type="text"
-                placeholder=""
-                register={register}
-                error={errors.gps_address?.message}
-                required
-              />
+          <div className="flex flex-col">
+            <div className="flex flex-row items-end gap-2 w-full">
+              <div className="flex-grow">
+                <Textinput
+                  name="gps_address"
+                  label="GPS Address"
+                  type="text"
+                  placeholder=""
+                  register={register}
+                  error={errors.gps_address?.message}
+                  required
+                  className={`border p-2 ${
+                    errors?.gps_address ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+              </div>
+              <div>
+                <button
+                  disabled={fetchingGPSLocation}
+                  type="button"
+                  className="flex flex-row items-center btn px-4 bg-[#56ce84] text-white"
+                  onClick={() => {
+                    handleFetchAddress();
+                  }}
+                >
+                  {fetchingGPSLocation ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <>
+                      <Icons
+                        icon="heroicons-outline:refresh"
+                        width={24}
+                        className="mr-2"
+                      />
+                    </>
+                  )}
+                  Refresh
+                </button>
+              </div>
             </div>
-            <button
-              disabled={fetchingGPSLocation}
-              type="button"
-              className="flex flex-row items-center btn px-4 bg-[#56ce84] text-white"
-              onClick={() => {
-                handleFetchAddress();
-              }}
-            >
-              {fetchingGPSLocation ? (
-                <ActivityIndicator />
-              ) : (
-                <>
-                  <Icons
-                    icon="heroicons-outline:refresh"
-                    width={24}
-                    className="mr-2"
-                  />
-                </>
-              )}
-              Refresh
-            </button>
+            {errors?.gps_address && (
+              <p className="text-red-500 text-xs">
+                {errors?.gps_address?.message} *
+              </p>
+            )}
           </div>
-          <Textinput
-            name="street"
-            label="Street"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.street?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="post_code"
-            label="Post Code"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.post_code?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="area"
-            label="Area"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.area?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="district"
-            label="District"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.district?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="region"
-            label="Region"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.region?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="country"
-            label="Country"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.country?.message}
-            required // Added required prop
-          />
+          <div>
+            <Textinput
+              name="street"
+              label="Street"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.street?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.street ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.street && (
+              <p className="text-red-500 text-xs">
+                {errors?.street?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="post_code"
+              label="Post Code"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.post_code?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.post_code ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.post_code && (
+              <p className="text-red-500 text-xs">
+                {errors?.post_code?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="area"
+              label="Area"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.area?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.area ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.area && (
+              <p className="text-red-500 text-xs">{errors?.area?.message} *</p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="district"
+              label="District"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.district?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.district ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.district && (
+              <p className="text-red-500 text-xs">
+                {errors?.district?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="region"
+              label="Region"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.region?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.region ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.region && (
+              <p className="text-red-500 text-xs">
+                {errors?.region?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="country"
+              label="Country"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.country?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.country ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.country && (
+              <p className="text-red-500 text-xs">
+                {errors?.country?.message} *
+              </p>
+            )}
+          </div>
           <Textinput
             name="keywords"
             label="Keywords"
@@ -414,44 +505,86 @@ const AddAmbulanceFacilityForm = () => {
       <div>
         <p className="font-semibold my-5">Contact Person</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
-          <Textinput
-            name="first_name"
-            label="First Name"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.first_name?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="last_name"
-            label="Last Name"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.last_name?.message}
-            required // Added required prop
-          />
-          <Textinput
-            name="person_contact_number"
-            label="Contact Number"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.person_contact_number?.message}
-            required
-            // No error handling for WhatsApp
-          />
-          <Textinput
-            name="position"
-            label="Position"
-            type="text"
-            placeholder=" "
-            register={register}
-            error={errors.position?.message}
-            required
-            // No error handling for WhatsApp
-          />
+          <div>
+            <Textinput
+              name="first_name"
+              label="First Name"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.first_name?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.first_name ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.first_name && (
+              <p className="text-red-500 text-xs">
+                {errors?.first_name?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="last_name"
+              label="Last Name"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.last_name?.message}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.last_name ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.last_name && (
+              <p className="text-red-500 text-xs">
+                {errors?.last_name?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="person_contact_number"
+              label="Contact Number"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.person_contact_number?.message}
+              required
+              className={`border p-2 ${
+                errors?.person_contact_number
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
+              // No error handling for WhatsApp
+            />
+            {errors?.person_contact_number && (
+              <p className="text-red-500 text-xs">
+                {errors?.person_contact_number?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="position"
+              label="Position"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.position?.message}
+              required
+              className={`border p-2 ${
+                errors?.position ? "border-red-500" : "border-gray-300"
+              }`}
+              // No error handling for WhatsApp
+            />
+            {errors?.position && (
+              <p className="text-red-500 text-xs">
+                {errors?.position?.message} *
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
