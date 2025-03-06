@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
+import { changeFacilityStatus } from "@/services/approveFacility";
 
 export default function page() {
   const router = useRouter();
@@ -172,13 +173,17 @@ export default function page() {
               }}
               text="Edit"
             />
-            {/* <Button
+            <Button
               className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
-              text={'Approve'}
-              onClick={(e) => {
-                router.push(`/facilities/pending-reviews`);
+              text={"Approve"}
+              onClick={async () => {
+                await changeFacilityStatus(
+                  facility.id,
+                  facility.contact_num,
+                  facility.facility_name
+                ).then(() => router.back());
               }}
-            /> */}
+            />
           </div>
         </div>
       )}
