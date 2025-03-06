@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
+import { changeFacilityStatus } from "@/services/approveFacility";
 
 export default function page() {
   const router = useRouter();
@@ -39,7 +40,12 @@ export default function page() {
     fetchFacility();
   }, [id]);
 
-  if (loading) return <div><Loading /></div>;
+  if (loading)
+    return (
+      <div>
+        <Loading />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   const handleEdit = (id) => {
@@ -74,7 +80,9 @@ export default function page() {
             <div>{facility.whatsapp || "Not Available"}</div>
 
             <div className="font-semibold ">Email:</div>
-            <div className={`${facility.email ? 'lowercase' : 'capitalize'}`}>{facility.email || 'Not Available'}</div>
+            <div className={`${facility.email ? "lowercase" : "capitalize"}`}>
+              {facility.email || "Not Available"}
+            </div>
 
             <div className="font-semibold">GPS Address:</div>
             <div>{facility.gps_address || "Not Available"}</div>
@@ -135,7 +143,6 @@ export default function page() {
             </div>
           </div>
 
-
           <div className="mt-6 mb-4 font-semibold">Business Hours</div>
           <div className="grid grid-cols-1 gap-4">
             <div className="flex justify-between items-center font-semibold xl:w-[30%] sm:w-[50%]">
@@ -144,8 +151,13 @@ export default function page() {
               <div className="flex-1 text-right">Closing Hours</div>
             </div>
             {Object.entries(facility.business_hours).map(([day, hours]) => (
-              <div key={day} className="flex justify-between items-center xl:w-[30%] sm:w-[50%]">
-                <div className="font-medium flex-1">{day.charAt(0).toUpperCase() + day.slice(1)}</div>
+              <div
+                key={day}
+                className="flex justify-between items-center xl:w-[30%] sm:w-[50%]"
+              >
+                <div className="font-medium flex-1">
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                </div>
                 <div className="flex-1 text-center">{hours.opening}</div>
                 <div className="flex-1 text-center">{hours.closing}</div>
               </div>
@@ -153,24 +165,26 @@ export default function page() {
           </div>
 
           <div className="flex justify-end space-x-2">
-
             <Button
               className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit(facility.id);
               }}
-              text='Edit'
+              text="Edit"
             />
             <Button
               className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
-              text={'Approve'}
-              onClick={(e) => {
-                router.push(`/facilities/pending-reviews`);
+              text={"Approve"}
+              onClick={async () => {
+                await changeFacilityStatus(
+                  facility.id,
+                  facility.contact_num,
+                  facility.facility_name
+                ).then(() => router.back());
               }}
             />
           </div>
-
         </div>
       )}
     </Card>

@@ -188,15 +188,15 @@ export const menuItems = [
       },
       {
         childtitle: "News",
-        childlink: "#",
+        childlink: "marketing/news",
       },
       {
         childtitle: "Health Tips",
-        childlink: "#",
+        childlink: "marketing/health",
       },
       {
         childtitle: "Events",
-        childlink: "#",
+        childlink: "marketing/events",
       },
     ],
   },

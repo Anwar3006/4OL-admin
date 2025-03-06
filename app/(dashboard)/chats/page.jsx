@@ -14,8 +14,6 @@ import moment from "moment";
 import PaginationNew from "@/components/ui/PaginationNew";
 import TicketTable from "./TicketModal";
 import { toast } from "react-toastify";
-// import { deviceDetect, mobileModel } from 'react-device-detect';
-import * as rdd from "react-device-detect";
 
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
