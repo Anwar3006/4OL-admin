@@ -113,7 +113,7 @@ const AddHerbalHospitalForm = () => {
         location.coordinates.lng
       )
         .then((data) => {
-          if (data.data.Table !== null) {
+          if (data && data?.data?.Table !== null) {
             setValue("longitude", location.coordinates.lng);
             setValue("latitude", location.coordinates.lat);
             setValue("gps_address", data?.data?.Table[0]?.GPSName || "");
@@ -162,14 +162,32 @@ const AddHerbalHospitalForm = () => {
   }, [selectedRegion]);
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length <= 6) {
-      setMediaType("multiple");
-      const fileUrls = files.map((file) => URL.createObjectURL(file));
-      setPreview(fileUrls);
-      setMediaFiles(files);
-    }
+    const newFiles = Array.from(e.target.files || []);
+    if (!newFiles.length) return;
+    setMediaFiles((prev) => {
+      const mergedFiles = [...prev, ...newFiles];
+      if (mergedFiles.length > 6) {
+        mergedFiles.length = 6;
+      }
+      setPreview((prevPreview) => {
+        if (prevPreview) {
+          prevPreview.forEach((url) => URL.revokeObjectURL(url));
+        }
+        return mergedFiles.map((file) => URL.createObjectURL(file));
+      });
+      return mergedFiles;
+    });
+    setMediaType("multiple");
+    e.target.value = ""; // Reset input
   };
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        preview.forEach((url) => URL.revokeObjectURL(url));
+      }
+    };
+  }, [preview]);
 
   const onSubmit = async (user) => {
     setLoading(true);
@@ -316,7 +334,7 @@ const AddHerbalHospitalForm = () => {
         <p className="font-semibold my-5">Location</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4 gap-4">
           <div>
-            <div className="flex flex-row flex-grow items-end gap-2 mb-4 w-full">
+            <div className="flex flex-row flex-grow items-end gap-2 w-full">
               <div className="flex-grow">
                 <Textinput
                   name="gps_address"
@@ -354,7 +372,7 @@ const AddHerbalHospitalForm = () => {
               </button>
             </div>
             {errors?.gps_address && (
-              <p className="text-red-500 text-xs mt-2">
+              <p className="text-red-500 text-xs">
                 {errors?.gps_address?.message} *
               </p>
             )}

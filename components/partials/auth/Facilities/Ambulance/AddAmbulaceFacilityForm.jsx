@@ -163,14 +163,32 @@ const AddAmbulanceFacilityForm = () => {
   const selectedPharmacyServices = watch("pharmacy_services") || [];
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length <= 6) {
-      setMediaType("multiple");
-      const fileUrls = files.map((file) => URL.createObjectURL(file));
-      setPreview(fileUrls);
-      setMediaFiles(files);
-    }
+    const newFiles = Array.from(e.target.files || []);
+    if (!newFiles.length) return;
+    setMediaFiles((prev) => {
+      const mergedFiles = [...prev, ...newFiles];
+      if (mergedFiles.length > 6) {
+        mergedFiles.length = 6;
+      }
+      setPreview((prevPreview) => {
+        if (prevPreview) {
+          prevPreview.forEach((url) => URL.revokeObjectURL(url));
+        }
+        return mergedFiles.map((file) => URL.createObjectURL(file));
+      });
+      return mergedFiles;
+    });
+    setMediaType("multiple");
+    e.target.value = ""; // Reset input
   };
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        preview.forEach((url) => URL.revokeObjectURL(url));
+      }
+    };
+  }, [preview]);
 
   const onSubmit = async (user) => {
     setLoading(true);
