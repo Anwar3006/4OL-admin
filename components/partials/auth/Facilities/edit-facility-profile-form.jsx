@@ -41,6 +41,7 @@ const schema = yup.object().shape({
   last_name: yup.string().required("Last Name is required"),
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
+  keywords: yup.string(),
 });
 
 const EditFacilityProfileForm = () => {
@@ -222,6 +223,13 @@ const EditFacilityProfileForm = () => {
             register={register}
             error={errors.country?.message}
             required
+          />
+          <Textinput
+            name="keywords"
+            label="Keywords"
+            type="text"
+            placeholder="comma separated, upto 20"
+            register={register}
           />
         </div>
       </div>

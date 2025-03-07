@@ -9,7 +9,9 @@ import Textinput from "@/components/ui/Textinput";
 import moment from "moment";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
 
-const AdsForm = (props) => {
+const marketingTypes = ["ads", "events", "news", "health"];
+
+const AdsForm = () => {
   const [mediaType, setMediaType] = useState(""); // 'single', 'multiple', 'video'
   const [mediaFiles, setMediaFiles] = useState([]); // Holds uploaded files
   const [preview, setPreview] = useState(null); // For single image preview
@@ -19,6 +21,7 @@ const AdsForm = (props) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // For slideshow
   const [charCount, setCharCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [marketingType, setMarketingType] = useState("Ads");
 
   const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
@@ -201,13 +204,13 @@ const AdsForm = (props) => {
 
     // Prepare the ad data
     const adData = {
-      bannerType: props.type,
+      bannerType: marketingType.toLowerCase(),
       created_at: moment(new Date()).valueOf(),
       updated_at: moment(new Date()).valueOf(),
       created_by: localStorage.getItem("user_id"),
       updated_by: localStorage.getItem("user_id"),
       is_created_by_admin_panel: true,
-      headlines,
+      headline: headlines,
       description: data.description,
       callToAction: selectedCTA,
       mediaType,
@@ -252,6 +255,28 @@ const AdsForm = (props) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="">
       <ToastContainer />
+      <div className="mb-2 w-full">
+        <SplitDropdown2
+          label={"Marketing Type"}
+          labelClass="font-normal"
+          placeholder="Select marketing type"
+          value={marketingType}
+          onChange={(value) => {
+            setMarketingType(value);
+            console.log("Marketing Type:", marketingType);
+          }}
+          items={
+            marketingTypes.map((type) => ({
+              label: type.charAt(0).toUpperCase() + type.slice(1),
+              value: type,
+            })) || []
+          }
+          classMenuItems="ltr:left-0 max-h-40 overflow-y-auto w-[300px]  shadow-md  rounded-lg"
+          inputClass="hidden"
+          required={true}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           {/* Media Type Inputs */}
@@ -290,21 +315,38 @@ const AdsForm = (props) => {
           </div>
 
           {/* Headlines */}
-          <div className="mb-2">
+          <div className="mb-2 w-full">
             {headlines.map((headline, index) => (
-              <Textarea
-                key={index}
-                label={`Headline (Up to 30 characters)`}
-                placeholder="Write a short headline..."
-                value={headline}
-                onChange={(e) => handleHeadlineChange(e, index)}
-                maxLength={30}
-                className="capitalize"
-                rows={1}
-              />
+              <div key={index} className="flex items-center gap-2 mb-2">
+                <div className="w-full">
+                  <Textarea
+                    label={`Headline (Up to 30 characters)`}
+                    placeholder="Write a short headline..."
+                    value={headline}
+                    onChange={(e) => handleHeadlineChange(e, index)}
+                    maxLength={30}
+                    className="capitalize w-full"
+                    rows={1}
+                  />
+                </div>
+                {headlines.length > 1 && (
+                  <button
+                    type="button"
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => {
+                      const newHeadlines = headlines.filter(
+                        (_, i) => i !== index
+                      );
+                      setHeadlines(newHeadlines);
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             ))}
             <p className="text-right text-gray-500 text-sm">{charCount}/30</p>
-            {/* {headlines.length < 3 && (
+            {headlines.length < 3 && (
               <button
                 type="button"
                 className="text-xs mt-2 text-[#56ce84] font-semibold"
@@ -312,7 +354,7 @@ const AdsForm = (props) => {
               >
                 + Headline
               </button>
-            )} */}
+            )}
           </div>
 
           {/* Description */}

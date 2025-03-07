@@ -1,5 +1,6 @@
 import moment from "moment";
 import { supabase } from "../utils/supabaseClient";
+import { toast } from "react-toastify";
 
 export const banners_ads = async (
   user,
@@ -11,8 +12,8 @@ export const banners_ads = async (
 
   try {
     // Check if the user is authenticated using localStorage
-    const isAuthenticated = localStorage.getItem('isAuth') === 'true';
-    const userId = localStorage.getItem('user_id');
+    const isAuthenticated = localStorage.getItem("isAuth") === "true";
+    const userId = localStorage.getItem("user_id");
 
     if (!isAuthenticated || !userId) {
       console.error("User is not authenticated");
@@ -48,5 +49,108 @@ export const banners_ads = async (
     successCallback(insertData);
   } catch (err) {
     errorCallback(err);
+  }
+};
+
+export const getBannersAds = async () => {
+  try {
+    const { data: adsData, error: adsError } = await supabase
+      .from("banners_ads")
+      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .eq("bannerType", "ads")
+      .is("isPublished", true)
+      .limit(3)
+      .lt("starting_date_and_time", new Date().toISOString())
+      .gt("end_date_and_time", new Date().toISOString())
+      .order("created_at", { ascending: false });
+
+    const { data: newsData, error: newsError } = await supabase
+      .from("banners_ads")
+      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .eq("bannerType", "news")
+      .is("isPublished", true)
+      .limit(3)
+      .lt("starting_date_and_time", new Date().toISOString())
+      .gt("end_date_and_time", new Date().toISOString())
+      .order("created_at", { ascending: false });
+
+    const { data: healthData, error: healthError } = await supabase
+      .from("banners_ads")
+      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .eq("bannerType", "health")
+      .is("isPublished", true)
+      .limit(3)
+      .lt("starting_date_and_time", new Date().toISOString())
+      .gt("end_date_and_time", new Date().toISOString())
+      .order("created_at", { ascending: false });
+
+    const { data: eventsData, error: eventsError } = await supabase
+      .from("banners_ads")
+      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .eq("bannerType", "events")
+      .is("isPublished", true)
+      .limit(3)
+      .lt("starting_date_and_time", new Date().toISOString())
+      .gt("end_date_and_time", new Date().toISOString())
+      .order("created_at", { ascending: false });
+
+    const { data: archiveData, error: archiveError } = await supabase
+      .from("banners_ads")
+      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .order("created_at", { ascending: false })
+      .is("isPublished", false);
+
+    const { data: scheduledData, error: scheduledError } = await supabase
+      .from("banners_ads")
+      .select(
+        "id, headline, mediaType, bannerType, callToAction, starting_date_and_time, isPublished"
+      )
+      .gt("starting_date_and_time", new Date().toISOString())
+      .gt("end_date_and_time", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .is("isPublished", true);
+
+    if (
+      adsError ||
+      newsError ||
+      healthError ||
+      eventsError ||
+      archiveError ||
+      scheduledError
+    ) {
+      console.log(adsError || newsError || healthError || eventsError);
+      toast.error("Error fetching Ads data");
+    }
+
+    return {
+      adsData,
+      newsData,
+      healthData,
+      eventsData,
+      archiveData,
+      scheduledData,
+    };
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+};
+
+export const changeStatus = async (id, status) => {
+  try {
+    const { data, error } = await supabase
+      .from("banners_ads")
+      .update({ isPublished: status })
+      .eq("id", id);
+
+    if (error) {
+      console.log(error);
+      toast.error("Error updating status");
+    }
+
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
   }
 };

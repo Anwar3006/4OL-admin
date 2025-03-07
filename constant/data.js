@@ -183,21 +183,25 @@ export const menuItems = [
         childlink: "marketing/overview",
       },
       {
-        childtitle: "Advertisement",
-        childlink: "marketing/ads",
+        childtitle: "Create",
+        childlink: "marketing/create",
       },
-      {
-        childtitle: "News",
-        childlink: "marketing/news",
-      },
-      {
-        childtitle: "Health Tips",
-        childlink: "marketing/health",
-      },
-      {
-        childtitle: "Events",
-        childlink: "marketing/events",
-      },
+      // {
+      //   childtitle: "Advertisement",
+      //   childlink: "marketing/ads",
+      // },
+      // {
+      //   childtitle: "News",
+      //   childlink: "marketing/news",
+      // },
+      // {
+      //   childtitle: "Health Tips",
+      //   childlink: "marketing/health",
+      // },
+      // {
+      //   childtitle: "Events",
+      //   childlink: "marketing/events",
+      // },
     ],
   },
   {
