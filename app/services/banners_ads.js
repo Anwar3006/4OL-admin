@@ -52,6 +52,7 @@ export const banners_ads = async (
   }
 };
 
+// GET AD TYPES
 export const getBannersAds = async () => {
   try {
     const { data: adsData, error: adsError } = await supabase
@@ -132,6 +133,7 @@ export const getBannersAds = async () => {
   }
 };
 
+// UPDATE AD
 export const changeStatus = async (id, status) => {
   try {
     const { error } = await supabase
@@ -150,6 +152,7 @@ export const changeStatus = async (id, status) => {
   }
 };
 
+// DELETE AD
 export const deleteAd = async (id) => {
   try {
     const { error } = await supabase.from("banners_ads").delete().eq("id", id);
