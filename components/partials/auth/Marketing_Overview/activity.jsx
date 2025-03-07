@@ -1,23 +1,48 @@
 import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
-import GroupChart2 from "../../widget/chart/group-chart-2";
 import Icons from "@/components/ui/Icon";
 import Dropdown from "@/components/ui/Dropdown"; // Import the Dropdown component
-import { getBannersAds } from "@/app/services/banners_ads";
-import { Icon } from "@iconify/react";
+import {
+  changeStatus,
+  deleteAd,
+  getBannersAds,
+} from "@/app/services/banners_ads";
 import Button from "@/components/ui/Button";
-import Loading from "@/app/loading";
 import moment from "moment";
 
 export default function Activity() {
   const [filter, setFilter] = useState("");
+
   const [adsData, setAdsData] = useState([]);
   const [newsData, setNewsData] = useState([]);
   const [healthData, setHealthData] = useState([]);
   const [eventsData, setEventsData] = useState([]);
-  const [archiveData, setArchiveData] = useState([]);
   const [scheduledData, setScheduledData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [archiveData, setArchiveData] = useState([]);
+
+  const [archiveLoading, setArchiveLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const data = await getBannersAds().finally(() => setLoading(false));
+      setAdsData(data.adsData);
+      setNewsData(data.newsData);
+      setHealthData(data.healthData);
+      setEventsData(data.eventsData);
+      setScheduledData(data.scheduledData);
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const data = await getBannersAds().finally(() =>
+        setArchiveLoading(false)
+      );
+      setArchiveData(data.archiveData);
+    })();
+  }, [archiveLoading]);
 
   const handleFilterSelect = (value) => {
     setFilter(value);
@@ -34,19 +59,19 @@ export default function Activity() {
     { label: "Auto Slide Delay (seconds)", value: "auto-slide-delay" },
   ];
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const data = await getBannersAds().finally(() => setLoading(false));
-      console.log(data);
-      setAdsData(data.adsData);
-      setNewsData(data.newsData);
-      setHealthData(data.healthData);
-      setEventsData(data.eventsData);
-      setArchiveData(data.archiveData);
-      setScheduledData(data.scheduledData);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     setLoading(true);
+  //     const data = await getBannersAds().finally(() => setLoading(false));
+  //     console.log(data);
+  //     setAdsData(data.adsData);
+  //     setNewsData(data.newsData);
+  //     setHealthData(data.healthData);
+  //     setEventsData(data.eventsData);
+  //     setArchiveData(data.archiveData);
+  //     setScheduledData(data.scheduledData);
+  //   })();
+  // }, [loading]);
 
   return (
     <div>
@@ -142,9 +167,12 @@ export default function Activity() {
                             icon="material-symbols:archive"
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
+                            onClick={() => {
+                              setArchiveLoading(true);
+                              changeStatus(item.id, false);
+                              setAdsData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
                             }}
                           />
                         </td>
@@ -171,7 +199,7 @@ export default function Activity() {
             <div className="flex w-full justify-center items-center p-4">
               <AcitivityIndicator />
             </div>
-          ) : newsData.length > 0 ? (
+          ) : newsData.length > 0 && !loading ? (
             <div className="overflow-x-auto custom-scrollbar">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -199,17 +227,6 @@ export default function Activity() {
                         </td>
                         <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
                           <Button
-                            icon="ic:baseline-query-stats"
-                            iconClass="text-blue-500 text-2xl"
-                            className="p-0 bg-transparent border-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
-                            }}
-                          />
-                        </td>
-                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                          <Button
                             icon="heroicons-outline:pencil-alt"
                             iconClass="text-green-500 text-2xl"
                             className="p-0 bg-transparent border-none"
@@ -225,8 +242,11 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
+                              setArchiveLoading(true);
+                              changeStatus(item.id, false);
+                              setEventsData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
                             }}
                           />
                         </td>
@@ -253,7 +273,7 @@ export default function Activity() {
             <div className="flex w-full justify-center items-center p-4">
               <AcitivityIndicator />
             </div>
-          ) : healthData.length > 0 ? (
+          ) : healthData.length > 0 && !loading ? (
             <div className="overflow-x-auto custom-scrollbar">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -281,17 +301,6 @@ export default function Activity() {
                         </td>
                         <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
                           <Button
-                            icon="ic:baseline-query-stats"
-                            iconClass="text-blue-500 text-2xl"
-                            className="p-0 bg-transparent border-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
-                            }}
-                          />
-                        </td>
-                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                          <Button
                             icon="heroicons-outline:pencil-alt"
                             iconClass="text-green-500 text-2xl"
                             className="p-0 bg-transparent border-none"
@@ -307,8 +316,11 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
+                              setArchiveLoading(true);
+                              changeStatus(item.id, false);
+                              setHealthData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
                             }}
                           />
                         </td>
@@ -335,7 +347,7 @@ export default function Activity() {
             <div className="flex w-full justify-center items-center p-4">
               <AcitivityIndicator />
             </div>
-          ) : eventsData.length > 0 ? (
+          ) : eventsData.length > 0 && !loading ? (
             <div className="overflow-x-auto custom-scrollbar">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -363,17 +375,6 @@ export default function Activity() {
                         </td>
                         <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
                           <Button
-                            icon="ic:baseline-query-stats"
-                            iconClass="text-blue-500 text-2xl"
-                            className="p-0 bg-transparent border-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
-                            }}
-                          />
-                        </td>
-                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                          <Button
                             icon="heroicons-outline:pencil-alt"
                             iconClass="text-green-500 text-2xl"
                             className="p-0 bg-transparent border-none"
@@ -389,8 +390,11 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
+                              setArchiveLoading(true);
+                              changeStatus(item.id, false);
+                              setEventsData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
                             }}
                           />
                         </td>
@@ -417,7 +421,7 @@ export default function Activity() {
             <div className="flex w-full justify-center items-center p-4">
               <AcitivityIndicator />
             </div>
-          ) : scheduledData.length > 0 ? (
+          ) : scheduledData.length > 0 && !loading ? (
             <div className="overflow-x-auto custom-scrollbar">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -455,17 +459,7 @@ export default function Activity() {
                             "DD/MM/YYYY hh:mm A"
                           )}
                         </td>
-                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                          <Button
-                            icon="ic:baseline-query-stats"
-                            iconClass="text-blue-500 text-2xl"
-                            className="p-0 bg-transparent border-none"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item.id);
-                            }}
-                          />
-                        </td>
+
                         <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
                           <Button
                             icon="heroicons-outline:pencil-alt"
@@ -483,8 +477,25 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
+                              changeStatus(item.id, false);
+                              setScheduledData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
+                              setArchiveLoading(true);
+                            }}
+                          />
+                        </td>
+                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
+                          <Button
+                            icon="heroicons-outline:trash"
+                            iconClass="text-red-500 text-2xl"
+                            className="p-0 bg-transparent border-none"
+                            onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              deleteAd(item.id);
+                              setScheduledData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
                             }}
                           />
                         </td>
@@ -507,78 +518,86 @@ export default function Activity() {
           <p className="text-[#ffa200] font-semibold max-sm:text-sm">
             Archived
           </p>
-          {loading ? (
+          {archiveLoading ? (
             <div className="flex w-full justify-center items-center p-4">
               <AcitivityIndicator />
             </div>
+          ) : archiveData.length > 0 && !loading ? (
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+                    <th className="sm:px-6 px-2 sm:py-3 py-2">Headline</th>
+                    <th className="sm:px-6 px-2 sm:py-3 py-2">Banner Type</th>
+                    <th className="sm:px-6 px-2 sm:py-3 py-2">Media Type</th>
+                    <th className="sm:px-6 px-2 sm:py-3 py-2">CTA</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+                  {archiveData &&
+                    archiveData.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="text-left sm:text-sm text-xs font-normal text-gray-500"
+                      >
+                        <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
+                          {item.headline.join(", ")}
+                        </td>
+                        <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
+                          {item.bannerType}
+                        </td>
+                        <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
+                          {item.mediaType === "video" ? "Video" : "Image"}
+                        </td>
+                        <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
+                          {item.callToAction}
+                        </td>
+
+                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
+                          <Button
+                            icon="heroicons-outline:pencil-alt"
+                            iconClass="text-green-500 text-2xl"
+                            className="p-0 bg-transparent border-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(item.id);
+                            }}
+                          />
+                        </td>
+                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
+                          <Button
+                            icon="material-symbols:unarchive"
+                            iconClass="text-[#0078fd] text-2xl"
+                            className="p-0 bg-transparent border-none"
+                            onClick={(e) => {
+                              changeStatus(item.id, true);
+                              setLoading(true);
+                            }}
+                          />
+                        </td>
+                        <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
+                          <Button
+                            icon="heroicons-outline:trash"
+                            iconClass="text-red-500 text-2xl"
+                            className="p-0 bg-transparent border-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteAd(item.id);
+                              setArchiveData((prev) =>
+                                prev.filter((i) => i.id !== item.id)
+                              );
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            archiveData &&
-            archiveData.map((item, index) => (
-              <div className="overflow-x-auto custom-scrollbar">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-                      <th className="sm:px-6 px-2 sm:py-3 py-2">Headline</th>
-                      <th className="sm:px-6 px-2 sm:py-3 py-2">Banner Type</th>
-                      <th className="sm:px-6 px-2 sm:py-3 py-2">Media Type</th>
-                      <th className="sm:px-6 px-2 sm:py-3 py-2">CTA</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
-                    <tr
-                      key={index}
-                      className="text-left sm:text-sm text-xs font-normal text-gray-500"
-                    >
-                      <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
-                        {item.headline.join(", ")}
-                      </td>
-                      <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
-                        {item.bannerType}
-                      </td>
-                      <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
-                        {item.mediaType === "video" ? "Video" : "Image"}
-                      </td>
-                      <td className="sm:px-6 px-2 sm:py-3 py-2 font-normal">
-                        {item.callToAction}
-                      </td>
-                      <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                        <Button
-                          icon="ic:baseline-query-stats"
-                          iconClass="text-blue-500 text-2xl"
-                          className="p-0 bg-transparent border-none"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(item.id);
-                          }}
-                        />
-                      </td>
-                      <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                        <Button
-                          icon="heroicons-outline:pencil-alt"
-                          iconClass="text-green-500 text-2xl"
-                          className="p-0 bg-transparent border-none"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(item.id);
-                          }}
-                        />
-                      </td>
-                      <td className="  sm:py-3 py-2 font-semibold border text-center cursor-pointer">
-                        <Button
-                          icon="material-symbols:unarchive"
-                          iconClass="text-[#0078fd] text-2xl"
-                          className="p-0 bg-transparent border-none"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(item.id);
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            ))
+            <div className="flex w-full justify-start items-center p-4">
+              <p>No Archived Activities</p>
+            </div>
           )}
         </div>
       </Card>

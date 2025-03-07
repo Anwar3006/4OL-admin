@@ -14,6 +14,7 @@ import moment from "moment";
 import PaginationNew from "@/components/ui/PaginationNew";
 import TicketTable from "./TicketModal";
 import { toast } from "react-toastify";
+import ActivityIndicator from "@/components/ui/ActivityIndicator";
 
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -227,13 +228,25 @@ export default function ChatPage() {
     );
   };
 
-  const androidUserAgentString = window.navigator.userAgent.slice(
-    window.navigator.userAgent.indexOf("Android")
-  );
-  const androidDeviceName = androidUserAgentString.slice(
-    androidUserAgentString.indexOf("; ") + 1,
-    androidUserAgentString.indexOf(")")
-  );
+  const [androidDeviceName, setAndroidDeviceName] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const androidUserAgentString = window.navigator.userAgent.slice(
+        window.navigator.userAgent.indexOf("Android")
+      );
+      if (
+        androidUserAgentString &&
+        typeof androidUserAgentString === "string"
+      ) {
+        const deviceName = androidUserAgentString.slice(
+          androidUserAgentString.indexOf("; ") + 1,
+          androidUserAgentString.indexOf(")")
+        );
+        setAndroidDeviceName(deviceName);
+      }
+    }
+  }, []);
 
   return (
     <div className="bg-white flex flex-col p-[1%]">
@@ -241,7 +254,7 @@ export default function ChatPage() {
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
           <div className="w-full flex flex-col items-center justify-center">
-            <LoadingComponent />
+            <ActivityIndicator />
           </div>
         ) : (
           TicketCards.map((label, index) => (
@@ -460,13 +473,6 @@ export default function ChatPage() {
       <div>
         <p>{androidDeviceName}</p>
       </div>
-    </div>
-  );
-}
-export function LoadingComponent() {
-  return (
-    <div className="flex justify-center items-center">
-      <div className="w-7 h-7 border-4 border-gray-300 border-t-green-500 rounded-full animate-spin"></div>
     </div>
   );
 }

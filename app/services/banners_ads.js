@@ -60,7 +60,6 @@ export const getBannersAds = async () => {
       .eq("bannerType", "ads")
       .is("isPublished", true)
       .limit(3)
-      .lt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false });
 
@@ -70,7 +69,6 @@ export const getBannersAds = async () => {
       .eq("bannerType", "news")
       .is("isPublished", true)
       .limit(3)
-      .lt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false });
 
@@ -80,7 +78,6 @@ export const getBannersAds = async () => {
       .eq("bannerType", "health")
       .is("isPublished", true)
       .limit(3)
-      .lt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false });
 
@@ -90,7 +87,6 @@ export const getBannersAds = async () => {
       .eq("bannerType", "events")
       .is("isPublished", true)
       .limit(3)
-      .lt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false });
 
@@ -138,19 +134,33 @@ export const getBannersAds = async () => {
 
 export const changeStatus = async (id, status) => {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("banners_ads")
       .update({ isPublished: status })
       .eq("id", id);
 
     if (error) {
       console.log(error);
-      toast.error("Error updating status");
+      toast.error("Error updating status", error);
     }
-
-    return data;
+    toast.success("Ad Status updated successfully");
   } catch (err) {
+    toast.error("Error updating status", err);
     console.log(err);
-    return null;
+  }
+};
+
+export const deleteAd = async (id) => {
+  try {
+    const { error } = await supabase.from("banners_ads").delete().eq("id", id);
+
+    if (error) {
+      console.log(error);
+      toast.error("Error deleting Ad", error);
+    }
+    toast.success("Ad deleted successfully");
+  } catch (err) {
+    toast.error("Error deleting Ad", err);
+    console.log(err);
   }
 };
