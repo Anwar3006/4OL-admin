@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/app/utils/supabaseClient";
 import { useForm } from "react-hook-form";
@@ -8,6 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import Textinput from "@/components/ui/Textinput";
 import moment from "moment";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
+import { useSearchParams } from "next/navigation";
 
 const marketingTypes = ["ads", "events", "news", "health"];
 
@@ -26,6 +28,28 @@ const AdsForm = () => {
 
   const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
+
+  const searchParams = useSearchParams();
+  const itemData = searchParams.get("item");
+  const item = itemData ? JSON.parse(decodeURIComponent(itemData)) : null;
+
+  const [formData, setFormData] = useState({
+    bannerType: item?.bannerType || "",
+    callToAction: item?.callToAction || "",
+    headline: item?.headline || "",
+    isPublished: item?.isPublished ?? null,
+    mediaType: item?.mediaType || "",
+    description: item?.description || "",
+    imageUrls: Array.isArray(item?.imageUrls) ? item.imageUrls : [], // Ensure it's an array
+    videoUrls: Array.isArray(item?.videoUrls) ? item.videoUrls : [],
+    starting_date_and_time: item?.starting_date_and_time || "",
+    end_date_and_time: item?.end_date_and_time || "",
+    mediaUrls: Array.isArray(item?.mediaUrls) ? item.mediaUrls : [],
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const ctaLabels = [
     "Apply now",
@@ -76,25 +100,25 @@ const AdsForm = () => {
 
     // Stop typing if input length exceeds 90 characters
     if (inputLength <= 90) {
-      setDescription(inputValue);
+      setFormData((prevState) => ({ ...prevState, description: inputValue }));
       setCharCount(inputLength);
     }
   };
 
-  const handleHeadingChange = (e) => {};
-
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 1) {
-      setMediaType("single");
-      const fileUrl = URL.createObjectURL(files[0]);
-      setPreview(fileUrl);
-      setMediaFiles(files);
+      setFormData((prev) => ({
+        ...prev,
+        mediaType: "single",
+        imageUrls: [URL.createObjectURL(files[0])], // Store image URL
+      }));
     } else if (files.length > 1 && files.length <= 5) {
-      setMediaType("multiple");
-      const fileUrls = files.map((file) => URL.createObjectURL(file));
-      setPreview(fileUrls);
-      setMediaFiles(files);
+      setFormData((prev) => ({
+        ...prev,
+        mediaType: "multiple",
+        imageUrls: files.map((file) => URL.createObjectURL(file)), // Store multiple image URLs
+      }));
       setCurrentImageIndex(0); // Reset slideshow to first image
     }
   };
@@ -104,11 +128,12 @@ const AdsForm = () => {
     if (videoFile) {
       if (videoFile.size <= 15 * 1024 * 1024) {
         // 15MB limit
-        const videoUrl = URL.createObjectURL(videoFile);
-        setMediaType("video");
-        setPreview(videoUrl);
-        setMediaFiles([videoFile]);
-        console.log("Video URL created:", videoUrl); // Log the video URL
+        setFormData((prev) => ({
+          ...prev,
+          mediaType: "video",
+          videoUrls: [URL.createObjectURL(videoFile)], // Store video URL
+        }));
+        console.log("Video URL created:", URL.createObjectURL(videoFile));
       } else {
         toast.error("Video size exceeds 15MB limit.");
       }
@@ -118,6 +143,10 @@ const AdsForm = () => {
   const handleAddHeadline = () => {
     if (headlines.length < 3) {
       setHeadlines([...headlines, ""]);
+      setFormData((prev) => ({
+        ...prev,
+        headline: [...prev.headline, ""], // Ensure formData updates correctly
+      }));
     }
   };
 
@@ -128,77 +157,23 @@ const AdsForm = () => {
     // Stop typing if input length exceeds 30 characters
     if (inputLength <= 30) {
       // Update only the headline at the specific index
-      const updatedHeadlines = headlines.map((headline, i) =>
-        i === index ? inputValue : headline
+      const updatedHeadlines = [...formData.headline];
+      updatedHeadlines[index] = inputValue;
+
+      // Remove empty headlines while updating
+      const filteredHeadlines = updatedHeadlines.filter(
+        (headline) => headline.trim() !== ""
       );
-      setHeadlines(updatedHeadlines);
-      setCharCount(inputLength); // Update character count based on the current input
+
+      setFormData((prev) => ({
+        ...prev,
+        headline: filteredHeadlines,
+      }));
+
+      setHeadlines(filteredHeadlines); // Keep headlines array in sync
+      setCharCount(inputLength); // Update character count
     }
   };
-  // const uploadMediaFiles = async () => {
-  //   const userId = localStorage.getItem("user_id");
-  //   const mediaUrls = [];
-
-  //   for (const file of mediaFiles) {
-  //     // Check if the file already exists
-  //     const { data: existingFiles, error: listError } = await supabase.storage.from("media").list('ads');
-
-  //     if (listError) {
-  //       console.error("Error listing files:", listError);
-  //       return null;
-  //     }
-
-  //     // Check for duplicates
-  //     const fileExists = existingFiles.some(existingFile => existingFile.name === file.name);
-
-  //     let fileName = file.name;
-  //     if (fileExists) {
-  //       // If the file exists, append a timestamp or a counter to the filename
-  //       const timestamp = new Date().getTime();
-  //       fileName = `${timestamp}_${file.name}`;
-  //       toast.warn("File with the same name exists. Renaming to: " + fileName);
-  //     }
-
-  //     // Step 1: Upload the file
-  //     const { data, error: uploadError } = await supabase.storage.from("media").upload(`ads/${fileName}`, file);
-
-  //     if (uploadError) {
-  //       console.error("Error uploading file:", uploadError);
-  //       return null;
-  //     }
-
-  //     console.log("Image uploaded successfully:", data);
-
-  //     // Step 2: Get the public URL
-  //     const { publicURL, error: urlError } = supabase.storage.from("media").getPublicUrl(`ads/${fileName}`);
-
-  //     if (urlError || !publicURL) {
-  //       const baseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/ads/`;
-  //       const manualPublicURL = `${baseUrl}${fileName}`;
-  //       console.log("Manual Public URL:", manualPublicURL);
-  //       mediaUrls.push(manualPublicURL);
-  //       continue;
-  //     }
-
-  //     mediaUrls.push(publicURL);
-  //     console.log(`Uploaded: ${fileName}, Public URL: ${publicURL}`);
-  //   }
-
-  //   console.log("Media URLs:", mediaUrls);
-
-  //   // Update the database with all media URLs at once
-  //   const { error: updateError } = await supabase
-  //     .from("banners_ads")
-  //     .update({ mediaUrls })
-  //     .eq("id", userId);
-
-  //   if (updateError) {
-  //     console.error("Error updating media URLs in database:", updateError);
-  //     return null;
-  //   }
-
-  //   return mediaUrls;
-  // };
 
   const onSubmit = async (data) => {
     setLoading(true); // Set loading to true at the start of the submission
@@ -211,41 +186,46 @@ const AdsForm = () => {
     );
 
     // Check for errors
-    if (!mediaUrls || mediaUrls.length === 0) {
-      toast.error("No media files uploaded.");
-      setLoading(false); // Reset loading state in case of an error
-      return;
-    }
+    // if (!mediaUrls || mediaUrls.length === 0) {
+    //   toast.error("No media files uploaded.");
+    //   setLoading(false); // Reset loading state in case of an error
+    //   return;
+    // }
 
     // Prepare the ad data
     const adData = {
-      bannerType: marketingType.toLowerCase(),
+      bannerType: formData?.bannerType,
       created_at: moment(new Date()).valueOf(),
       updated_at: moment(new Date()).valueOf(),
       created_by: localStorage.getItem("user_id"),
       updated_by: localStorage.getItem("user_id"),
       is_created_by_admin_panel: true,
-      headline: headlines,
-      description: data.description,
-      callToAction: selectedCTA,
-      mediaType,
-      videoUrls: mediaType === "video" ? mediaUrls : null,
+      headline: formData?.headline,
+      description: formData?.description,
+      callToAction: formData?.callToAction,
+      mediaType: formData?.mediaType,
+      videoUrls: formData?.mediaType === "video" ? formData?.videoUrls : null,
       imageUrls:
-        mediaType === "single" || mediaType === "multiple" ? mediaUrls : null,
-      //mediaUrls: mediaUrls, // Store the array of URLs
-      starting_date_and_time: data.starting_date_and_time,
-      end_date_and_time: data.end_date_and_time,
+        formData?.mediaType === "single" || formData?.mediaType === "multiple"
+          ? formData?.imageUrls
+          : null,
+      mediaUrls: formData?.mediaUrls, // Store the array of URLs
+      starting_date_and_time: formData?.starting_date_and_time,
+      end_date_and_time: formData?.end_date_and_time,
     };
 
     try {
       // Insert new ad
-      const { error } = await supabase.from("banners_ads").insert([adData]);
+      const { error } = await supabase
+        .from("banners_ads")
+        .update([adData])
+        .eq("id", item?.id);
       console.log("Ad Data to Insert:", adData);
 
       if (error) {
-        toast.error("Error saving ad: " + error.message);
+        toast.error("Error updating ad: " + error.message);
       } else {
-        toast.success("Ad saved successfully!");
+        toast.success("Ad updated successfully!");
         reset(); // Reset the form after successful submission
       }
     } catch (error) {
@@ -267,18 +247,23 @@ const AdsForm = () => {
     }
   }, [mediaType, preview]);
 
+  console.log("Here is =>", item);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-4">
       <ToastContainer />
       <div className="mb-2 w-full">
         <SplitDropdown2
           label={"Marketing Type"}
           labelClass="font-normal"
           placeholder="Select marketing type"
-          value={marketingType}
-          onChange={(value) => {
-            setMarketingType(value);
-            console.log("Marketing Type:", marketingType);
+          value={formData?.bannerType || null}
+          onChange={(selectedValue) => {
+            console.log("selected banner:", selectedValue);
+            setFormData((prev) => ({
+              ...prev,
+              bannerType: selectedValue.toLowerCase(),
+            }));
           }}
           items={
             marketingTypes.map((type) => ({
@@ -309,8 +294,9 @@ const AdsForm = () => {
                 multiple={true}
                 placeholder="Upload Images"
                 selectedFiles={
-                  mediaType === "multiple" || mediaType === "single"
-                    ? mediaFiles
+                  formData?.mediaType === "multiple" ||
+                  formData?.mediaType === "single"
+                    ? formData?.imageUrls
                     : []
                 }
                 //   preview={mediaType === 'multiple' || mediaType === 'single' ? preview : ''}
@@ -322,7 +308,7 @@ const AdsForm = () => {
                 onChange={handleVideoUpload}
                 placeholder="Upload Video"
                 multiple={false}
-                selectedFile={mediaType === "video" ? mediaFiles[0] : null}
+                selectedFile={mediaType === "video" ? formData?.videoUrls : []}
                 //   preview={mediaType === 'video' ? preview : ''}
                 mediaType="video"
               />
@@ -335,13 +321,17 @@ const AdsForm = () => {
               <div key={index} className="flex items-center gap-2 mb-2">
                 <div className="w-full">
                   <Textarea
+                    name={`headline_${index}`} // Unique name for each field
                     label={`Headline (Up to 30 characters)`}
-                    placeholder="Write a short headline..."
-                    value={headline}
+                    placeholder={formData?.headline[0] || ""}
+                    value={
+                      formData?.headline?.find((_, i) => i === index) || ""
+                    }
                     onChange={(e) => handleHeadlineChange(e, index)}
                     maxLength={30}
                     className="capitalize w-full"
                     rows={1}
+                    register={register}
                   />
                 </div>
                 {headlines.length > 1 && (
@@ -377,9 +367,10 @@ const AdsForm = () => {
             <Textarea
               className="mb-2 capitalize"
               label="Description (Optional)"
-              placeholder="Include additional details..."
+              placeholder={formData?.description || ""}
               register={register}
               name="description"
+              value={formData?.description || ""}
               // onChange={(e) => setDescription(e.target.value)}
               onChange={handleDescriptionChange}
               maxLength={90}
@@ -387,13 +378,24 @@ const AdsForm = () => {
             <p className="text-right text-gray-500 text-sm">{charCount}/90</p>
           </div>
 
-          {/* Primary Text */}
+          {/*Link */}
           <Textarea
             className="mb-2 capitalize"
             label="Link"
             placeholder="Add hyperlinks if necessary..."
+            value={formData?.mediaUrls[0] || ""}
             register={register}
-            onChange={(e) => setPrimaryText(e.target.value)}
+            onChange={(e) => {
+              console.log("mediaUrl:", e.target.value);
+              setFormData((prev) => {
+                const updatedForm = {
+                  ...prev,
+                  mediaUrls: [e.target.value], // Ensure it's stored as an array
+                };
+                console.log("Updated formData:", updatedForm);
+                return updatedForm;
+              });
+            }}
             name="primaryText"
             rows={1}
           />
@@ -404,11 +406,14 @@ const AdsForm = () => {
             <SplitDropdown2
               label={" "} // Display selected CTA or a placeholder
               labelClass="font-normal"
-              value={selectedCTA} // This should reflect the selected CTA value
+              value={formData?.callToAction || null} // This should reflect the selected CTA value
               placeholder="Select an option"
-              onChange={(value) => {
-                setValue("CTA", value);
-              }}
+              onChange={(selectedValue) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  callToAction: selectedValue,
+                }))
+              }
               items={ctaLabels.map((label) => ({ label }))} // Pass the CTA labels as options
               classMenuItems="ltr:left-0 max-h-40 overflow-y-auto w-[200px]"
               required={false}
@@ -428,21 +433,21 @@ const AdsForm = () => {
                   : "Medicine"}
               </h2>
               <p className="sm:tracking-wider tracking-wide my-2 max-sm:text-xs">
-                {description ||
+                {formData?.description ||
                   "Lorem ipsum dolor sit amet consectetur adipisicing elit. Eveniet assumendasz"}
               </p>
               <a
-                href={primaryText || "#"}
+                href={formData?.mediaUrls || "#"}
                 target="_blank"
                 className="text-[#000] sm:text-sm text-xs px-2 py-1 bg-white rounded"
               >
-                {selectedCTA || "Call to Action"}
+                {formData?.callToAction || "Call to Action"}
               </a>
             </div>
 
             <div className="flex flex-col items-center justify-center">
               {/* Media Preview */}
-              {mediaType === "" && !preview && (
+              {formData?.mediaType === "" && (
                 <div>
                   <img
                     src="/assets/images/all-img/pills.jpg"
@@ -452,16 +457,16 @@ const AdsForm = () => {
                   />
                 </div>
               )}
-              {mediaType === "single" && preview && (
+              {formData?.mediaType === "single" && (
                 <div className="w-full h-full overflow-hidden flex items-center">
                   <img
-                    src={preview}
+                    src={formData?.imageUrls}
                     alt="Single Preview"
                     className="w-full h-full object-cover rounded"
                   />
                 </div>
               )}
-              {mediaType === "multiple" && preview && preview.length > 0 && (
+              {formData?.mediaType === "multiple" && (
                 <div>
                   <img
                     src={preview[currentImageIndex]} // Show the current image
@@ -471,7 +476,7 @@ const AdsForm = () => {
                   />
                 </div>
               )}
-              {mediaType === "video" && preview && (
+              {formData?.mediaType === "video" && preview && (
                 <div>
                   <video
                     src={preview}
@@ -493,6 +498,19 @@ const AdsForm = () => {
               placeholder=" "
               register={register}
               className="mb-2"
+              value={
+                formData?.starting_date_and_time
+                  ? new Date(formData.starting_date_and_time)
+                      .toISOString()
+                      .slice(0, 16) // Format correctly
+                  : ""
+              }
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  starting_date_and_time: e.target.value, // Store as string to prevent conversion issues
+                }))
+              }
             />
             <Textinput
               name="end_date_and_time"
@@ -501,6 +519,19 @@ const AdsForm = () => {
               placeholder=" "
               register={register}
               className="mb-2"
+              value={
+                formData?.end_date_and_time
+                  ? new Date(formData.end_date_and_time)
+                      .toISOString()
+                      .slice(0, 16) // Format correctly
+                  : ""
+              }
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  end_date_and_time: e.target.value, // Store as string to prevent conversion issues
+                }))
+              }
             />
           </div>
         </div>
@@ -509,7 +540,7 @@ const AdsForm = () => {
           type="submit"
           className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full mt-5"
         >
-          {loading ? "Submitting..." : "Submit"}
+          {loading ? "Updating..." : "Update"}
         </button>
       </div>
     </form>
