@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "@/app/utils/supabaseClient";
 import moment from "moment";
+import Checkbox from "@/components/ui/Checkbox";
 
 const SendNotifications = () => {
   const [user, setUser] = useState([]);
@@ -17,15 +18,23 @@ const SendNotifications = () => {
   const Genders = ["Male", "Female"];
   const ageRanges = ["All", "18-24", "25-34", "35-44", "45-54", "55-Above"];
 
-  const schema = yup
-    .object({
-      title: yup.string().required("title is required"),
-      description: yup.string().required("description is required"),
-      region: yup.string().required("region is required"),
-      sex: yup.string().required("gender is required"),
-      age: yup.string().required("age is required"),
-    })
-    .required();
+  const schema = yup.object({
+    title: yup.string().required("Title is required"),
+    description: yup.string().required("Description is required"),
+    region: yup.string().when("isTrackerNotification", {
+      is: false,
+      then: (schema) => schema.required("Region is required"),
+    }),
+    sex: yup.string().when("isTrackerNotification", {
+      is: false,
+      then: (schema) => schema.required("Gender is required"),
+    }),
+    age: yup.string().when("isTrackerNotification", {
+      is: false,
+      then: (schema) => schema.required("Age is required"),
+    }),
+    isTrackerNotification: yup.boolean().default(false),
+  });
 
   const {
     register,
@@ -34,17 +43,32 @@ const SendNotifications = () => {
     setValue,
     trigger,
     reset,
+    watch,
   } = useForm({
     resolver: yupResolver(schema),
     mode: "onTouched",
+    defaultValues: {
+      isTrackerNotification: false, // Initialize checkbox state
+    },
   });
 
+  const isTrackerNotification = watch("isTrackerNotification");
+
   const handleSendNotification = async (data) => {
-    console.log("data", data);
     setLoading(true);
-    await fetchUsers(data);
-    reset();
-    setLoading(false);
+    try {
+      if (data.isTrackerNotification) {
+        await sendTrackerNotification(data);
+        reset();
+      } else {
+        await fetchUsers(data);
+        reset();
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchUsers = async (data) => {
@@ -129,6 +153,19 @@ const SendNotifications = () => {
     }
   };
 
+  const sendTrackerNotification = async (data) => {
+    await fetch("/api/send-tracker-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: data?.title,
+        description: data?.description,
+      }),
+    });
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("user_id");
@@ -141,6 +178,11 @@ const SendNotifications = () => {
   const handleSelectChange = (field) => (e) => {
     setValue(field, e.target.value);
     trigger(field);
+  };
+
+  const handleCheckboxChange = (e) => {
+    setValue("isTrackerNotification", e.target.checked);
+    trigger(["region", "sex", "age"]); // Explicitly trigger validation for conditional fields
   };
 
   return (
@@ -192,6 +234,13 @@ const SendNotifications = () => {
               </div>
               <div>
                 <h4 className="text-lg my-4">Targeting Options</h4>
+                <Checkbox
+                  activeClass="ring-black-500 bg-black-500"
+                  label="Period tracker notifications enabled?"
+                  value={isTrackerNotification}
+                  {...register("isTrackerNotification")}
+                  onChange={handleCheckboxChange}
+                />
                 <div className="flex flex-col">
                   {/* Region Selection */}
                   <span className="text-md font-bold">Select Region</span>
