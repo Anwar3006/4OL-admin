@@ -57,7 +57,7 @@ export const getBannersAds = async () => {
   try {
     const { data: adsData, error: adsError } = await supabase
       .from("banners_ads")
-      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .select("*")
       .eq("bannerType", "ads")
       .is("isPublished", true)
       .limit(3)
@@ -66,7 +66,7 @@ export const getBannersAds = async () => {
 
     const { data: newsData, error: newsError } = await supabase
       .from("banners_ads")
-      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .select("*")
       .eq("bannerType", "news")
       .is("isPublished", true)
       .limit(3)
@@ -75,7 +75,7 @@ export const getBannersAds = async () => {
 
     const { data: healthData, error: healthError } = await supabase
       .from("banners_ads")
-      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .select("*")
       .eq("bannerType", "health")
       .is("isPublished", true)
       .limit(3)
@@ -84,7 +84,7 @@ export const getBannersAds = async () => {
 
     const { data: eventsData, error: eventsError } = await supabase
       .from("banners_ads")
-      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .select("*")
       .eq("bannerType", "events")
       .is("isPublished", true)
       .limit(3)
@@ -93,14 +93,14 @@ export const getBannersAds = async () => {
 
     const { data: archiveData, error: archiveError } = await supabase
       .from("banners_ads")
-      .select("id, headline, mediaType, bannerType, callToAction, isPublished")
+      .select("*")
       .order("created_at", { ascending: false })
       .is("isPublished", false);
 
     const { data: scheduledData, error: scheduledError } = await supabase
       .from("banners_ads")
       .select(
-        "id, headline, mediaType, bannerType, callToAction, starting_date_and_time, isPublished"
+        "*"
       )
       .gt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())

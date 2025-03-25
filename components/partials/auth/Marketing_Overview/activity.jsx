@@ -9,6 +9,7 @@ import {
 } from "@/app/services/banners_ads";
 import Button from "@/components/ui/Button";
 import moment from "moment";
+import { useRouter } from "next/navigation";
 
 export default function Activity() {
   const [filter, setFilter] = useState("");
@@ -20,29 +21,84 @@ export default function Activity() {
   const [scheduledData, setScheduledData] = useState([]);
   const [archiveData, setArchiveData] = useState([]);
 
-  const [archiveLoading, setArchiveLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Track changes
+  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const data = await getBannersAds().finally(() => setLoading(false));
-      setAdsData(data.adsData);
-      setNewsData(data.newsData);
-      setHealthData(data.healthData);
-      setEventsData(data.eventsData);
-      setScheduledData(data.scheduledData);
-    })();
-  }, []);
+    const fetchActiveData = async () => {
+      setLoading(true); // Start loading
+      try {
+        const data = await getBannersAds();
+        setAdsData(data.adsData);
+        setNewsData(data.newsData);
+        setHealthData(data.healthData);
+        setEventsData(data.eventsData);
+        setScheduledData(data.scheduledData);
+      } catch (error) {
+        console.error("Error fetching active data:", error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+
+    fetchActiveData();
+  }, [refreshTrigger]); // ✅ Refetch when data changes
 
   useEffect(() => {
-    (async () => {
-      const data = await getBannersAds().finally(() =>
-        setArchiveLoading(false)
-      );
-      setArchiveData(data.archiveData);
-    })();
-  }, [archiveLoading]);
+    const fetchArchiveData = async () => {
+      setArchiveLoading(true); // Start loader
+      try {
+        const data = await getBannersAds();
+        setArchiveData(data.archiveData);
+      } catch (error) {
+        console.error("Error fetching archive data:", error);
+      } finally {
+        setArchiveLoading(false); // Stop loader
+      }
+    };
+
+    fetchArchiveData();
+  }, [refreshTrigger]); // ✅ Re-fetch when `refreshTrigger` updates
+
+  const handleArchive = async (id, status, category) => {
+    setArchiveLoading(true); // Start loading
+
+    try {
+      await changeStatus(id, status); // ✅ Pass correct status value
+
+      // Update the correct state based on the category
+      switch (category) {
+        case "events":
+          setEventsData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        case "news":
+          setNewsData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        case "ads":
+          setAdsData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        case "health":
+          setHealthData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        case "scheduled":
+          setScheduledData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        case "archive":
+          setArchiveData((prev) => prev.filter((i) => i.id !== id));
+          break;
+        default:
+          console.warn("Unknown category:", category);
+      }
+
+      setRefreshTrigger((prev) => prev + 1); // ✅ Trigger re-fetch
+    } catch (error) {
+      console.error(`Error archiving/unarchiving item:`, error);
+    } finally {
+      setArchiveLoading(false); // Stop loading
+    }
+  };
 
   const handleFilterSelect = (value) => {
     setFilter(value);
@@ -58,6 +114,11 @@ export default function Activity() {
     { label: "Events", value: "events" },
     { label: "Auto Slide Delay (seconds)", value: "auto-slide-delay" },
   ];
+
+  const handleEdit = (item) => {
+    const encodedItem = encodeURIComponent(JSON.stringify(item));
+    router.push(`/edit-form?item=${encodedItem}`);
+  };
 
   // useEffect(() => {
   //   (async () => {
@@ -147,7 +208,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              // handleEdit(item);
                             }}
                           />
                         </td>
@@ -158,7 +219,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -168,11 +229,7 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={() => {
-                              setArchiveLoading(true);
-                              changeStatus(item.id, false);
-                              setAdsData((prev) =>
-                                prev.filter((i) => i.id !== item.id)
-                              );
+                              handleArchive(item.id, false, "ads");
                             }}
                           />
                         </td>
@@ -232,7 +289,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -242,11 +299,7 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              setArchiveLoading(true);
-                              changeStatus(item.id, false);
-                              setEventsData((prev) =>
-                                prev.filter((i) => i.id !== item.id)
-                              );
+                              handleArchive(item.id, false, "news");
                             }}
                           />
                         </td>
@@ -306,7 +359,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -316,11 +369,7 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              setArchiveLoading(true);
-                              changeStatus(item.id, false);
-                              setHealthData((prev) =>
-                                prev.filter((i) => i.id !== item.id)
-                              );
+                              handleArchive(item.id, false, "health");
                             }}
                           />
                         </td>
@@ -380,7 +429,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -390,11 +439,7 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              setArchiveLoading(true);
-                              changeStatus(item.id, false);
-                              setEventsData((prev) =>
-                                prev.filter((i) => i.id !== item.id)
-                              );
+                              handleArchive(item.id, false, "events");
                             }}
                           />
                         </td>
@@ -467,7 +512,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -477,11 +522,7 @@ export default function Activity() {
                             iconClass="text-[#fd9500] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              changeStatus(item.id, false);
-                              setScheduledData((prev) =>
-                                prev.filter((i) => i.id !== item.id)
-                              );
-                              setArchiveLoading(true);
+                              handleArchive(item.id, false, "scheduled");
                             }}
                           />
                         </td>
@@ -560,7 +601,7 @@ export default function Activity() {
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEdit(item.id);
+                              handleEdit(item);
                             }}
                           />
                         </td>
@@ -570,8 +611,8 @@ export default function Activity() {
                             iconClass="text-[#0078fd] text-2xl"
                             className="p-0 bg-transparent border-none"
                             onClick={(e) => {
-                              changeStatus(item.id, true);
-                              setLoading(true);
+                              e.stopPropagation();
+                              handleArchive(item.id, true, "archive");
                             }}
                           />
                         </td>

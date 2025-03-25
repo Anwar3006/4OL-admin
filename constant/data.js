@@ -118,10 +118,7 @@ export const menuItems = [
         childtitle: "Pills Reminder",
         childlink: "#",
       },
-      {
-        childtitle: "Period Tracker",
-        childlink: "#",
-      },
+
       // {
       //   childtitle: "Services",
       //   childlink: "#",
@@ -138,6 +135,22 @@ export const menuItems = [
       //   childtitle: "Specialities",
       //   childlink: "#",
       // },
+    ],
+  },
+  {
+    title: "Period Tracker",
+    //isHide: true,
+    isOpen: true,
+    icon: "bi:droplet-fill",
+    child: [
+      {
+        childtitle: "Overview",
+        childlink: "/categories/period_tracker/overview",
+      },
+      {
+        childtitle: "Create",
+        childlink: "/categories/period_tracker/create",
+      },
     ],
   },
   {
