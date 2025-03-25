@@ -248,7 +248,7 @@ const SendNotifications = () => {
                     {...register("region")}
                     onChange={handleSelectChange("region")}
                     className="border rounded-sm px-3 py-2 w-full"
-                    disabled={loading}
+                    disabled={isTrackerNotification && loading}
                   >
                     <option value="">Select Region</option>
                     {regions.map((region) => (
@@ -269,7 +269,7 @@ const SendNotifications = () => {
                     {...register("sex")}
                     onChange={handleSelectChange("sex")}
                     className="border rounded-sm px-3 py-2 w-full"
-                    disabled={loading}
+                    disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Gender</option>
                     {Genders.map((gender) => (
@@ -290,7 +290,7 @@ const SendNotifications = () => {
                     {...register("age")}
                     onChange={handleSelectChange("age")}
                     className="border rounded-sm px-3 py-2 w-full"
-                    disabled={loading}
+                    disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Age</option>
                     {ageRanges.map((age) => (
@@ -309,7 +309,7 @@ const SendNotifications = () => {
             </div>
           </div>
           <div className="mt-5 space-x-3 rtl:space-x-reverse relative">
-            {loading ? (
+            {loading || (loading && isTrackerNotification) ? (
               <div className="w-7 h-7 border-4 border-gray-300 border-t-green-500 rounded-full animate-spin"></div>
             ) : (
               <Button
