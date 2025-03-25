@@ -16,6 +16,7 @@ function Button({
   onClick,
   textClass,
   div,
+  iconWidth,
 }) {
   return (
     <>
@@ -41,12 +42,12 @@ function Button({
                   className={`
           ${iconPosition === "right" ? "order-1 ltr:ml-2 rtl:mr-2" : " "}
           ${text && iconPosition === "left" ? "ltr:mr-2 rtl:ml-2" : ""}
-          
+
           ${iconClass}
-          
+
           `}
                 >
-                  <Icon icon={icon} />
+                  <Icon width={iconWidth} icon={icon} />
                 </span>
               )}
               <span className={`${textClass}`}>{text}</span>
@@ -102,9 +103,9 @@ function Button({
                   className={`
           ${iconPosition === "right" ? "order-1 ltr:ml-2 rtl:mr-2" : " "}
           ${text && iconPosition === "left" ? "ltr:mr-2 rtl:ml-2" : ""}
-          
+
           ${iconClass}
-          
+
           `}
                 >
                   <Icon icon={icon} />
@@ -163,9 +164,9 @@ function Button({
                   className={`
           ${iconPosition === "right" ? "order-1 ltr:ml-2 rtl:mr-2" : " "}
           ${text && iconPosition === "left" ? "ltr:mr-2 rtl:ml-2" : ""}
-          
+
           ${iconClass}
-          
+
           `}
                 >
                   <Icon icon={icon} />

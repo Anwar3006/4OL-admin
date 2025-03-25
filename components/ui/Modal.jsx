@@ -17,6 +17,7 @@ const Modal = ({
   uncontrol,
   label = "Basic Modal",
   labelClass,
+  titleClass = "text-white font-medium ",
   ref,
 }) => {
   const [showModal, setShowModal] = useState(false);
@@ -150,7 +151,9 @@ const Modal = ({
                     <div
                       className={`relative overflow-hidden py-4 px-5 text-white flex justify-between  ${themeClass}`}
                     >
-                      <h2 className="capitalize leading-6 tracking-wider font-medium text-base text-white">
+                      <h2
+                        className={`capitalize leading-6 tracking-wider text-base ${titleClass}`}
+                      >
                         {title}
                       </h2>
                       <button onClick={onClose} className="text-[22px]">

@@ -31,7 +31,7 @@ const Breadcrumbs = () => {
   return (
     <>
       {!isHide ? (
-        <div className="md:mb-6 mb-4 flex space-x-3 rtl:space-x-reverse">
+        <div className="flex space-x-3 rtl:space-x-reverse">
           <ul className="breadcrumbs">
             <li className="text-primary-500">
               <Link href="/dashboard" className="text-lg">
