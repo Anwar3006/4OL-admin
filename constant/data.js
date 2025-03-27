@@ -97,46 +97,91 @@ export const menuItems = [
   //   link: "#",
   // },
   {
-    title: "Categories",
+    title: "Diseases & Conditions",
     isHide: true,
-    // isOpen: true,
-    icon: "carbon:categories",
+    icon: "fa6-solid:virus-covid",
     child: [
       {
-        childtitle: "Diseases & Conditions",
+        childtitle: "Overview",
+        childlink: "/categories/illness_and_complications/overview",
+      },
+      {
+        childtitle: "Create",
         childlink: "/categories/illness_and_complications/form",
       },
-      {
-        childtitle: "Symptoms",
-        childlink: "/categories/symptoms/form",
-      },
-      {
-        childtitle: "Healthy Living",
-        childlink: "/categories/healthy_living/form",
-      },
-      {
-        childtitle: "Pills Reminder",
-        childlink: "#",
-      },
-
-      // {
-      //   childtitle: "Services",
-      //   childlink: "#",
-      //   // child: [
-      //   //   {childtitle: "Symptoms", childlink: "#"},
-      //   //   {childtitle: "Healthy Living", childlink: "#"},
-      //   // ]
-      // },
-      // {
-      //   childtitle: "Amenities",
-      //   childlink: "#",
-      // },
-      // {
-      //   childtitle: "Specialities",
-      //   childlink: "#",
-      // },
     ],
   },
+  {
+    title: "Symptoms",
+    isHide: true,
+    icon: "mdi:bacteria",
+    child: [
+      {
+        childtitle: "Overview",
+        childlink: "/categories/symptoms/overview",
+      },
+      {
+        childtitle: "Create",
+        childlink: "/categories/symptoms/form",
+      },
+    ],
+  },
+  {
+    title: "Healthy Living",
+    isHide: true,
+    icon: "ion:book",
+    child: [
+      {
+        childtitle: "Overview",
+        childlink: "/categories/healthy_living/overview",
+      },
+      {
+        childtitle: "Create",
+        childlink: "/categories/healthy_living/form",
+      },
+    ],
+  },
+  // {
+  //   title: "Categories",
+  //   isHide: true,
+  //   // isOpen: true,
+  //   icon: "carbon:categories",
+  //   child: [
+  //     {
+  //       childtitle: "Diseases & Conditions",
+  //       childlink: "/categories/illness_and_complications/form",
+  //     },
+  //     {
+  //       childtitle: "Symptoms",
+  //       childlink: "/categories/symptoms/form",
+  //     },
+  //     {
+  //       childtitle: "Healthy Living",
+  //       childlink: "/categories/healthy_living/form",
+  //     },
+  //     {
+  //       childtitle: "Pills Reminder",
+  //       childlink: "#",
+  //     },
+
+  //     // {
+  //     //   childtitle: "Services",
+  //     //   childlink: "#",
+  //     //   // child: [
+  //     //   //   {childtitle: "Symptoms", childlink: "#"},
+  //     //   //   {childtitle: "Healthy Living", childlink: "#"},
+  //     //   // ]
+  //     // },
+  //     // {
+  //     //   childtitle: "Amenities",
+  //     //   childlink: "#",
+  //     // },
+  //     // {
+  //     //   childtitle: "Specialities",
+  //     //   childlink: "#",
+  //     // },
+  //   ],
+  // },
   {
     title: "Period Tracker",
     //isHide: true,

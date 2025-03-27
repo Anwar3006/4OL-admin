@@ -567,7 +567,6 @@ const PeriodTrackerForm = () => {
             </div>
 
             {/* Calendar styling */}
-            {/* Calendar styling */}
             <style jsx global>{`
               /* Fix weekend colors */
               .custom-calendar .react-calendar__month-view__days__day--weekend {

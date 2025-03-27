@@ -690,8 +690,11 @@ const PeriodsTrackerPage = () => {
           className="bg-white dark:bg-slate-800 overflow-hidden"
           bodyClass="p-0"
         >
-          <div ref={scrollContainerRef} className="overflow-x-auto relative">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto relative hidden-scrollbar"
+          >
+            <table className="min-w-full divide-y divide-gray-200 ">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
