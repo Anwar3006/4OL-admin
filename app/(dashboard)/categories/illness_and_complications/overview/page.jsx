@@ -62,7 +62,7 @@ const IllnessAndComplicationsPage = () => {
   const handleEdit = (item) => {
     const encodedItem = encodeURIComponent(JSON.stringify(item));
     router.push(
-      `/categories/illness_and_complications/create?item=${encodedItem}`
+      `/categories/illness_and_complications/form?disease=${encodedItem}`
     );
   };
 
@@ -116,7 +116,7 @@ const IllnessAndComplicationsPage = () => {
               icon="heroicons-outline:plus"
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
               onClick={() =>
-                router.push("/categories/illness_and_complications/create")
+                router.push("/categories/illness_and_complications/form")
               }
             />
           </div>

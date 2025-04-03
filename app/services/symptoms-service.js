@@ -52,7 +52,6 @@ export const updateSymptom = async (id, symptomData) => {
       .from("symptoms")
       .update(symptomData)
       .eq("id", id)
-      .select();
 
     if (error) throw error;
     return data;

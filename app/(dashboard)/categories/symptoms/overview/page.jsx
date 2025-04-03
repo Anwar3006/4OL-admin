@@ -61,7 +61,7 @@ const SymptomsOverviewPage = () => {
 
   const handleEdit = (item) => {
     const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(`/categories/symptoms/create?item=${encodedItem}`);
+    router.push(`/categories/symptoms/form?symptom=${encodedItem}`);
   };
 
   const handleView = (item) => {
@@ -113,7 +113,7 @@ const SymptomsOverviewPage = () => {
               text="Add New Symptom"
               icon="heroicons-outline:plus"
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
-              onClick={() => router.push("/categories/symptoms/create")}
+              onClick={() => router.push("/categories/symptoms/form")}
             />
           </div>
           <div ref={scrollContainerRef} className="overflow-x-auto relative">

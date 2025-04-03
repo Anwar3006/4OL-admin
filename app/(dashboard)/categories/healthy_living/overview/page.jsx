@@ -64,7 +64,7 @@ const HealthyLivingOverviewPage = () => {
 
   const handleEdit = (item) => {
     const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(`/categories/healthy_living/create?item=${encodedItem}`);
+    router.push(`/categories/healthy_living/form?healthyliving=${encodedItem}`);
   };
 
   const handleView = (item) => {
@@ -116,7 +116,7 @@ const HealthyLivingOverviewPage = () => {
               text="Add New Article"
               icon="heroicons-outline:plus"
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
-              onClick={() => router.push("/categories/healthy_living/create")}
+              onClick={() => router.push("/categories/healthy_living/form")}
             />
           </div>
           <div ref={scrollContainerRef} className="overflow-x-auto relative">

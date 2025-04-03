@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
-import Textinput from "@/components/ui/Textinput";
-import Textarea from "@/components/ui/Textarea";
+import TextinputNew from "@/components/ui/TextinputNew";
+import TextareaNew from "@/components/ui/TextareaNew";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import { add_symptoms } from "@/app/services/symptoms";
+import { useSearchParams } from "next/navigation";
+import { updateSymptom } from "@/app/services/symptoms-service";
+import handleSuccess from "@/utils/handleSuccess";
+import { useRouter } from "next/navigation";
 
 export default function SymptomsForm() {
   const [loading, setLoading] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'types' or 'causes'
   const [newTypes, setNewTypes] = useState([]);
   const [newCauses, setNewCauses] = useState([]);
+  const searchParams = useSearchParams();
+  const itemParam = searchParams.get("symptom");
+  const data = JSON.parse(itemParam) || {};
+  const router = useRouter();
 
   const {
     register,
@@ -46,31 +54,36 @@ export default function SymptomsForm() {
     // Ensure at least one type and cause field exists
   }, [activeModal]);
 
-  const onSubmit = (data) => {
-    const listType = data.symptom_name.charAt(0).toUpperCase();
+  const onSubmit = async (formData) => {
+    const listType = formData.symptom_name.charAt(0).toUpperCase();
     const newData = {
-      ...data,
+      ...formData,
       list_type: listType,
     };
 
-    setLoading(true);
-
-    add_symptoms(
-      newData,
-      () => {
-        setLoading(true);
-      },
-      (successData) => {
-        setLoading(false);
-        toast.success("Added Successfully");
-        reset(); // Reset form fields after successful submission
-      },
-      (error) => {
-        setLoading(false);
-        toast.error(error.message);
-        console.error("Error:", error);
-      }
-    );
+    if (data?.id) {
+      await updateSymptom(data?.id, newData);
+      handleSuccess(router, "Updated Successfully");
+      reset();
+    } else {
+      setLoading(true);
+      add_symptoms(
+        newData,
+        () => {
+          setLoading(true);
+        },
+        (successData) => {
+          setLoading(false);
+          toast.success("Added Successfully");
+          reset(); // Reset form fields after successful submission
+        },
+        (error) => {
+          setLoading(false);
+          toast.error(error.message);
+          console.error("Error:", error);
+        }
+      );
+    }
   };
 
   const openModal = (type) => {
@@ -112,18 +125,20 @@ export default function SymptomsForm() {
         className="w-full grid md:grid-cols-2 grid-cols-1 gap-4"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <Textinput
+        <TextinputNew
           name="symptom_name"
           label="Symptom Name"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.symptom_name || ""}
         />
-        <Textarea
+        <TextareaNew
           name="about"
           label="About"
           placeholder=" "
           register={register}
+          defaultValue={data?.about || ""}
         />
 
         <div>
@@ -252,66 +267,80 @@ export default function SymptomsForm() {
           </div>
         </div>
 
-        <Textarea
+        <TextareaNew
           name="diagnosis"
           label="Diagnosis"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.diagnosis || ""}
         />
-        <Textarea
+        <TextareaNew
           name="treating"
           label="Treating"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.treating || ""}
         />
-        <Textarea
+        <TextareaNew
           name="complications"
           label="Complications"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.complications || ""}
         />
-        <Textarea
+        <TextareaNew
           name="prevention"
           label="Prevention"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.prevention || ""}
         />
-        <Textinput
+        <TextinputNew
           name="specialist_to_contact"
           label="Specialist(s) to Contact"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.specialist_to_contact || ""}
         />
-        <Textarea
+        <TextareaNew
           name="contact_your_doctor"
           label="Contact your Doctor"
           placeholder="Contact your Doctor or visit a health facility if"
           register={register}
+          defaultValue={data?.contact_your_doctor || ""}
         />
-        <Textarea
+        <TextareaNew
           name="more_information"
           label="More Information"
           placeholder=" "
           register={register}
+          defaultValue={data?.more_information || ""}
         />
-        <Textinput
+        <TextinputNew
           name="attribution"
           label="Attribution"
           type="text"
           placeholder=" "
           register={register}
+          defaultValue={data?.attribution || ""}
         />
 
         <button
           type="submit"
           className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full mt-5"
         >
-          {loading ? "Submitting..." : "Submit"}
+          {data?.id
+            ? loading
+              ? "Updating..."
+              : "Update"
+            : loading
+            ? "Submitting..."
+            : "Submit"}
         </button>
 
         <ToastContainer />
@@ -346,7 +375,7 @@ export default function SymptomsForm() {
         >
           {newTypes.map((type, index) => (
             <div key={index} className="mb-4">
-              <Textinput
+              <TextinputNew
                 value={type.type_name}
                 onChange={(e) => {
                   const updatedTypes = [...newTypes];
@@ -359,7 +388,7 @@ export default function SymptomsForm() {
                 label={`Type Name ${index + 1}`}
                 placeholder="Type Name"
               />
-              <Textarea
+              <TextareaNew
                 value={type.about_type}
                 onChange={(e) => {
                   const updatedTypes = [...newTypes];
@@ -423,7 +452,7 @@ export default function SymptomsForm() {
         >
           {newCauses.map((cause, index) => (
             <div key={index} className="mb-4">
-              <Textinput
+              <TextinputNew
                 value={cause.cause_name}
                 onChange={(e) => {
                   const updatedCauses = [...newCauses];
@@ -436,7 +465,7 @@ export default function SymptomsForm() {
                 label={`Cause Name ${index + 1}`}
                 placeholder="Cause Name"
               />
-              <Textarea
+              <TextareaNew
                 value={cause.other_possible_causes}
                 onChange={(e) => {
                   const updatedCauses = [...newCauses];
