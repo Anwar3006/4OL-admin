@@ -10,10 +10,13 @@ import {
 import Button from "@/components/ui/Button";
 import moment from "moment";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/app/utils/supabaseClient";
+import { toast } from "react-toastify";
 
 export default function Activity() {
   const [filter, setFilter] = useState("");
-
+  const [duration, setDuration] = useState();
+  const [selectedDuration, setSelectedDuration] = useState(null);
   const [adsData, setAdsData] = useState([]);
   const [newsData, setNewsData] = useState([]);
   const [healthData, setHealthData] = useState([]);
@@ -106,6 +109,32 @@ export default function Activity() {
     console.log("Selected Filter:", value);
   };
 
+  const handleSelectDuration = async (label, value) => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase
+        .from("banners_ads")
+        .update({ duration: value })
+        .not("id", "is", null); // select all rows
+
+      if (error) {
+        console.log("Error updating entries", error);
+        toast.error("❌ Failed to update duration.");
+        return;
+      }
+
+      toast.success("✅ Duration updated successfully!");
+      setDuration(value);
+      setSelectedDuration(label);
+    } catch (error) {
+      console.error("Error updating rows", error);
+      toast.error("⚠️ Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filterItems = [
     { label: "Ads Display Order", value: "ads-display-order" },
     { label: "Advertisement", value: "advertisement" },
@@ -113,6 +142,15 @@ export default function Activity() {
     { label: "Health", value: "health" },
     { label: "Events", value: "events" },
     { label: "Auto Slide Delay (seconds)", value: "auto-slide-delay" },
+  ];
+
+  const durationItems = [
+    { label: "10 sec", value: "10000" },
+    { label: "20 sec", value: "20000" },
+    { label: "30 sec", value: "30000" },
+    { label: "40 sec", value: "40000" },
+    { label: "50 sec", value: "50000" },
+    { label: "1 min", value: "60000" },
   ];
 
   const handleEdit = (item) => {
@@ -140,7 +178,7 @@ export default function Activity() {
         <p className="text-[#56ce84] font-semibold max-sm:text-sm">Running</p>
         <div className="flex items-center">
           <p className="flex items-center text-[#56ce84] font-semibold"></p>
-          <Dropdown
+          {/* <Dropdown
             label={
               <>
                 <Icons icon={"hugeicons:filter"} /> Filter{" "}
@@ -156,6 +194,33 @@ export default function Activity() {
             items={filterItems.map((item) => ({
               label: item.label,
               onClick: () => handleFilterSelect(item.value),
+            }))}
+          /> */}
+          <Dropdown
+            label={
+              <>
+                <Icons icon={"mdi:timer-outline"} />
+                {loading ? (
+                  <div className="justify-center ml-3">
+                    <AcitivityIndicator />
+                  </div>
+                ) : (
+                  <span className="ml-1">
+                    {selectedDuration ? selectedDuration : "Select Duration"}
+                  </span>
+                )}
+                <Icons
+                  className={"text-2xl"}
+                  icon={"ri:arrow-drop-down-line"}
+                />
+              </>
+            }
+            wrapperClass="ml-2"
+            labelClass="flex items-center px-2 py-1 border border-[#56ce84] rounded-sm text-sm text-[#56ce84]"
+            classMenuItems="mt-2 w-[180px] flex flex-col gap-1 bg-white shadow-lg border border-gray-200 rounded-md p-2"
+            items={durationItems.map((item) => ({
+              label: item.label,
+              action: () => handleSelectDuration(item.label, item.value),
             }))}
           />
         </div>

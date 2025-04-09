@@ -232,9 +232,10 @@ const AdsForm = () => {
       videoUrls: mediaType === "video" ? mediaUrls : null,
       imageUrls:
         mediaType === "single" || mediaType === "multiple" ? mediaUrls : null,
-      //mediaUrls: mediaUrls, // Store the array of URLs
+      mediaUrls: [data?.primaryText.toLowerCase()],
       starting_date_and_time: data.starting_date_and_time,
       end_date_and_time: data.end_date_and_time,
+      duration: 10000,
     };
 
     try {
