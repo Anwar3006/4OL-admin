@@ -102,12 +102,12 @@ export default function Activity() {
       setArchiveLoading(false); // Stop loading
     }
   };
-
-  const handleFilterSelect = (value) => {
-    setFilter(value);
-    // Handle filter logic here based on selected value
-    console.log("Selected Filter:", value);
-  };
+  // ADS ORDER FILTER
+  // const handleFilterSelect = (value) => {
+  //   setFilter(value);
+  //   // Handle filter logic here based on selected value
+  //   console.log("Selected Filter:", value);
+  // };
 
   const handleSelectDuration = async (label, value) => {
     try {
@@ -120,29 +120,30 @@ export default function Activity() {
 
       if (error) {
         console.log("Error updating entries", error);
-        toast.error("❌ Failed to update duration.");
+        toast.error("Failed to update duration.");
         return;
       }
 
-      toast.success("✅ Duration updated successfully!");
+      toast.success("Duration updated successfully!");
       setDuration(value);
       setSelectedDuration(label);
     } catch (error) {
       console.error("Error updating rows", error);
-      toast.error("⚠️ Something went wrong!");
+      toast.error("Something went wrong!");
     } finally {
       setLoading(false);
     }
   };
 
-  const filterItems = [
-    { label: "Ads Display Order", value: "ads-display-order" },
-    { label: "Advertisement", value: "advertisement" },
-    { label: "News", value: "news" },
-    { label: "Health", value: "health" },
-    { label: "Events", value: "events" },
-    { label: "Auto Slide Delay (seconds)", value: "auto-slide-delay" },
-  ];
+  // ADS ORDER FILTER
+  // const filterItems = [
+  //   { label: "Ads Display Order", value: "ads-display-order" },
+  //   { label: "Advertisement", value: "advertisement" },
+  //   { label: "News", value: "news" },
+  //   { label: "Health", value: "health" },
+  //   { label: "Events", value: "events" },
+  //   { label: "Auto Slide Delay (seconds)", value: "auto-slide-delay" },
+  // ];
 
   const durationItems = [
     { label: "10 sec", value: "10000" },

@@ -98,9 +98,7 @@ export const getBannersAds = async () => {
 
     const { data: scheduledData, error: scheduledError } = await supabase
       .from("banners_ads")
-      .select(
-        "*"
-      )
+      .select("*")
       .gt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false })
@@ -163,4 +161,20 @@ export const deleteAd = async (id) => {
     toast.error("Error deleting Ad", err);
     console.log(err);
   }
+};
+
+export const handleArchive = async (id, status, category) => {};
+
+export const getExistingAdsDuration = async () => {
+  const { data: adsData, error: adsError } = await supabase
+    .from("banners_ads")
+    .select("duration")
+    .limit(1);
+
+  if (adsError) {
+    console.error("ERROR GETTING DURATION: ", adsError);
+    return;
+  }
+
+  return adsData[0].duration;
 };

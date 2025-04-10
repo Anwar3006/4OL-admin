@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import Textinput from "@/components/ui/Textinput";
 import moment from "moment";
 import { uploadMediaFiles } from "@/app/utils/uploadMedia";
+import { getExistingAdsDuration } from "@/app/services/banners_ads";
 
 const marketingTypes = ["ads", "events", "news", "health"];
 
@@ -68,6 +69,13 @@ const AdsForm = () => {
     document
       .getElementsByName("end_date_and_time")[0]
       ?.setAttribute("min", formattedDateTime);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const data = await getExistingAdsDuration();
+      console.log("DURATION", JSON.stringify(data, null, 2));
+    })();
   }, []);
 
   const handleDescriptionChange = (e) => {
