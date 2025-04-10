@@ -24,6 +24,7 @@ const AdsForm = () => {
   const [loading, setLoading] = useState(false);
   const [marketingType, setMarketingType] = useState("Ads");
   const [minDateTime, setMinDateTime] = useState("");
+  const [videoDuration, setVideoDuration] = useState(0); // New state for video duration
 
   const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
@@ -107,16 +108,65 @@ const AdsForm = () => {
     }
   };
 
-  const handleVideoUpload = (e) => {
+  // Function to get the duration of a video file
+  const getVideoDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      // Create a temporary video element
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
+      // Listen for when metadata is loaded (includes duration)
+      video.onloadedmetadata = () => {
+        // Set the video back to the start
+        video.currentTime = 0;
+        // Resolve with the duration in seconds
+        resolve(Math.round(video.duration));
+      };
+
+      // Handle errors
+      video.onerror = () => {
+        reject("Error getting video duration");
+      };
+
+      // Create a temporary URL for the video file
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Update the handleVideoUpload function to check duration and warn if over 10 seconds
+  const handleVideoUpload = async (e) => {
     const videoFile = e.target.files[0];
     if (videoFile) {
       if (videoFile.size <= 15 * 1024 * 1024) {
         // 15MB limit
-        const videoUrl = URL.createObjectURL(videoFile);
-        setMediaType("video");
-        setPreview(videoUrl);
-        setMediaFiles([videoFile]);
-        console.log("Video URL created:", videoUrl); // Log the video URL
+        try {
+          const videoUrl = URL.createObjectURL(videoFile);
+
+          // Get video duration
+          const duration = await getVideoDuration(videoFile);
+          setVideoDuration(duration);
+
+          console.log(`Video duration: ${duration} seconds`);
+
+          // Check if video is longer than 10 seconds
+          if (duration > 10) {
+            toast.warning(
+              `Video is ${duration} seconds long. Videos longer than 10 seconds may affect performance.`,
+              {
+                autoClose: 5000, // Keep the warning visible longer
+              }
+            );
+          } else {
+            toast.info(`Video duration: ${duration} seconds`);
+          }
+
+          setMediaType("video");
+          setPreview(videoUrl);
+          setMediaFiles([videoFile]);
+        } catch (error) {
+          console.error("Error processing video:", error);
+          toast.error("Error processing video file.");
+        }
       } else {
         toast.error("Video size exceeds 15MB limit.");
       }
@@ -303,7 +353,7 @@ const AdsForm = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
-          {/* Media Type Inputs */}
+          {/* Media Type Inputs with accept attribute */}
           <div className="mb-2">
             <label className="mb-5 text-sm">
               Media Type{" "}
@@ -322,9 +372,9 @@ const AdsForm = () => {
                     ? mediaFiles
                     : []
                 }
-                //   preview={mediaType === 'multiple' || mediaType === 'single' ? preview : ''}
                 mediaType="image"
                 className="mb-2"
+                accept="image/*" // Only allow image files
               />
               <Fileinput
                 name="videoUpload"
@@ -332,9 +382,15 @@ const AdsForm = () => {
                 placeholder="Upload Video"
                 multiple={false}
                 selectedFile={mediaType === "video" ? mediaFiles[0] : null}
-                //   preview={mediaType === 'video' ? preview : ''}
                 mediaType="video"
+                accept="video/*" // Only allow video files
               />
+              {mediaType === "video" && videoDuration > 10 && (
+                <p className="text-amber-600 text-xs mt-1">
+                  Warning: Video is {videoDuration} seconds long. Using videos
+                  longer than 10 seconds may affect performance.
+                </p>
+              )}
             </div>
           </div>
 
