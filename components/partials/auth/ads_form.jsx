@@ -24,6 +24,7 @@ const AdsForm = () => {
   const [loading, setLoading] = useState(false);
   const [marketingType, setMarketingType] = useState("Ads");
   const [minDateTime, setMinDateTime] = useState("");
+  const [existingDuration, setExistingDuration] = useState(null);
 
   const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
@@ -74,7 +75,7 @@ const AdsForm = () => {
   useEffect(() => {
     (async () => {
       const data = await getExistingAdsDuration();
-      console.log("DURATION", JSON.stringify(data, null, 2));
+      setExistingDuration(data);
     })();
   }, []);
 
@@ -243,7 +244,7 @@ const AdsForm = () => {
       mediaUrls: [data?.primaryText.toLowerCase()],
       starting_date_and_time: data.starting_date_and_time,
       end_date_and_time: data.end_date_and_time,
-      duration: 10000,
+      duration: existingDuration,
     };
 
     try {

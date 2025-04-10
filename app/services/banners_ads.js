@@ -163,7 +163,23 @@ export const deleteAd = async (id) => {
   }
 };
 
-export const handleArchive = async (id, status, category) => {};
+export const archiveItem = async (
+  id, 
+  status, 
+  category,
+  loadCallback,
+  errorCallback,
+  successCallback
+) => {
+  try {
+    loadCallback()
+    await changeStatus(id, status);
+    successCallback(id, category);
+  } catch (error) {
+    console.error(`Error archiving item with ID ${id}:`, error);
+    errorCallback('Error archiving Item');
+  }
+};
 
 export const getExistingAdsDuration = async () => {
   const { data: adsData, error: adsError } = await supabase
@@ -178,3 +194,30 @@ export const getExistingAdsDuration = async () => {
 
   return adsData[0].duration;
 };
+
+export const updateBannerAdsDuration = async (
+  value,
+  loadCallback,
+  errorCallback,
+  successCallback,
+) => {
+    try {
+      loadCallback();
+
+      const { error } = await supabase
+        .from("banners_ads")
+        .update({ duration: value })
+        .not("id", "is", null); // select all rows
+
+      if (error) {
+        console.log("Error updating entries", error);
+        errorCallback("Failed to update duration");
+        return;
+      }
+
+      successCallback();
+    } catch (error) {
+      console.error("Error updating rows", error);
+      errorCallback("Failed to update duration");
+    }
+  };
