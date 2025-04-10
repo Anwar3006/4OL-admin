@@ -3,9 +3,12 @@ import Card from "@/components/ui/Card";
 import Icons from "@/components/ui/Icon";
 import Dropdown from "@/components/ui/Dropdown"; // Import the Dropdown component
 import {
+  archiveItem,
   changeStatus,
   deleteAd,
   getBannersAds,
+  getExistingAdsDuration,
+  updateBannerAdsDuration,
 } from "@/app/services/banners_ads";
 import Button from "@/components/ui/Button";
 import moment from "moment";
@@ -65,41 +68,58 @@ export default function Activity() {
     fetchArchiveData();
   }, [refreshTrigger]); // ✅ Re-fetch when `refreshTrigger` updates
 
+  useEffect(() => {
+    const fetchDuration = async () => {
+      const data = await getExistingAdsDuration();
+      setSelectedDuration(data);
+    };
+
+    fetchDuration();
+  }, []);
+
   const handleArchive = async (id, status, category) => {
-    setArchiveLoading(true); // Start loading
+    await archiveItem(
+      id,
+      status,
+      category,
+      () => setArchiveLoading(true),
+      () => {
+        console.error(`Error archiving/unarchiving item:`, error);
+      },
+      (id, category) => {
+        switch (category) {
+          case "events":
+            setEventsData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          case "news":
+            setNewsData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          case "ads":
+            setAdsData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          case "health":
+            setHealthData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          case "scheduled":
+            setScheduledData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          case "archive":
+            setArchiveData((prev) => prev.filter((i) => i.id !== id));
+            break;
+          default:
+            console.warn("Unknown category:", category);
+        }
+        setRefreshTrigger((prev) => prev + 1); // ✅ Trigger re-fetch
+        setArchiveLoading(false); // Stop loading
+      }
+    );
 
     try {
       await changeStatus(id, status); // ✅ Pass correct status value
 
       // Update the correct state based on the category
-      switch (category) {
-        case "events":
-          setEventsData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        case "news":
-          setNewsData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        case "ads":
-          setAdsData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        case "health":
-          setHealthData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        case "scheduled":
-          setScheduledData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        case "archive":
-          setArchiveData((prev) => prev.filter((i) => i.id !== id));
-          break;
-        default:
-          console.warn("Unknown category:", category);
-      }
-
-      setRefreshTrigger((prev) => prev + 1); // ✅ Trigger re-fetch
     } catch (error) {
-      console.error(`Error archiving/unarchiving item:`, error);
     } finally {
-      setArchiveLoading(false); // Stop loading
     }
   };
   // ADS ORDER FILTER
@@ -109,30 +129,20 @@ export default function Activity() {
   //   console.log("Selected Filter:", value);
   // };
 
-  const handleSelectDuration = async (label, value) => {
-    try {
-      setLoading(true);
-
-      const { error } = await supabase
-        .from("banners_ads")
-        .update({ duration: value })
-        .not("id", "is", null); // select all rows
-
-      if (error) {
-        console.log("Error updating entries", error);
+  const handleSelectDuration = async (value) => {
+    await updateBannerAdsDuration(
+      value,
+      () => setLoading(true),
+      () => {
         toast.error("Failed to update duration.");
-        return;
+      },
+      () => {
+        toast.success("Duration updated successfully!");
+        setDuration(value);
+        setSelectedDuration(value);
+        setLoading(false);
       }
-
-      toast.success("Duration updated successfully!");
-      setDuration(value);
-      setSelectedDuration(label);
-    } catch (error) {
-      console.error("Error updating rows", error);
-      toast.error("Something went wrong!");
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   // ADS ORDER FILTER
@@ -221,7 +231,7 @@ export default function Activity() {
             classMenuItems="mt-2 w-[180px] flex flex-col gap-1 bg-white shadow-lg border border-gray-200 rounded-md p-2"
             items={durationItems.map((item) => ({
               label: item.label,
-              action: () => handleSelectDuration(item.label, item.value),
+              action: () => handleSelectDuration(item.value),
             }))}
           />
         </div>

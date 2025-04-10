@@ -690,6 +690,14 @@ const PeriodsTrackerPage = () => {
           className="bg-white dark:bg-slate-800 overflow-hidden"
           bodyClass="p-0"
         >
+          <div className="absolute top-2 right-2 justify-end p-4">
+            <Button
+              text="Add Period Tracker"
+              icon="heroicons-outline:plus"
+              className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
+              onClick={() => router.push("/categories/period_tracker/create")}
+            />
+          </div>
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto relative hidden-scrollbar"
