@@ -13,6 +13,8 @@ import {
   PHARMACY_SERVICES,
 } from "@/constant/healthcare-profile-list";
 import { supabase } from "@/app/utils/supabaseClient";
+import StarRatings from "react-star-ratings";
+import Rating from "react-rating";
 
 // Schema for validation
 const schema = yup.object().shape({
@@ -47,6 +49,7 @@ const schema = yup.object().shape({
 const EditFacilityProfileForm = () => {
   const [loading, setLoading] = useState(false);
   const [facilityData, setFacilityData] = useState(null);
+  const [rating, setRating] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -84,7 +87,9 @@ const EditFacilityProfileForm = () => {
           if (error) throw error;
 
           setFacilityData(data);
+          setRating(data?.avg_rating ?? 1);
           console.log("Fetched data:", data);
+          console.log("Fetched rating:", rating);
           // Populate form with existing data
           Object.keys(data).forEach((key) => {
             setValue(key, data[key]);
@@ -105,9 +110,13 @@ const EditFacilityProfileForm = () => {
 
     try {
       // Perform update action
+      const updateData = {
+        ...formData,
+        avg_rating: rating,
+      };
       const { error } = await supabase
         .from("healthcare_profiles")
-        .update(formData)
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;
@@ -234,11 +243,11 @@ const EditFacilityProfileForm = () => {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 grid-cols-1 w-full">
+      <div className="flex sm:grid-cols-2 grid-cols-1 w-full">
         <div
           className={`${
             facilityData?.facility_type === "Ambulance" ? "hidden" : "block"
-          }`}
+          } w-full`}
         >
           <p className="font-semibold my-5 ">Services</p>
           <SplitDropdown2
@@ -251,7 +260,7 @@ const EditFacilityProfileForm = () => {
           />
         </div>
 
-        <div>
+        <div className="w-full">
           <p className="font-semibold my-5">Amenities</p>
           <SplitDropdown2
             label="Select Amenities"
@@ -269,6 +278,7 @@ const EditFacilityProfileForm = () => {
           }`}
         >
           <p className="font-semibold my-5">Pharmacy Services</p>
+
           <SplitDropdown2
             label="Select Pharmacy Services"
             value={[selectedPharmacyServices]}
@@ -277,6 +287,29 @@ const EditFacilityProfileForm = () => {
             isMultiSelect={true}
           />
         </div>
+      </div>
+      <p className="font-semibold mt-5 mb-2">Rating</p>
+      <div>
+        {/* <StarRatings
+          rating={rating}
+          numberOfStars={5}
+          starRatedColor="#ffc107"
+          starEmptyColor="#dcdcdc"
+          starHoverColor="#ff9800"
+          starDimension="25px"
+          changeRating={(rate) => setRating(rate)}
+        /> */}
+        <Rating
+          fractions={2}
+          initialRating={rating}
+          onChange={(value) => setRating(value)}
+          emptySymbol={
+            <span style={{ color: "#ccc", fontSize: "2rem" }}>☆</span>
+          }
+          fullSymbol={
+            <span style={{ color: "#ffc107", fontSize: "2rem" }}>★</span>
+          }
+        />
       </div>
 
       <div>

@@ -59,6 +59,7 @@ export const healthcareProfile = async (
           browser: user.os,
           latitude: user.latitude,
           longitude: user.longitude,
+          avg_rating: 0
         },
       ]);
     if (healthcareProfileError) {
