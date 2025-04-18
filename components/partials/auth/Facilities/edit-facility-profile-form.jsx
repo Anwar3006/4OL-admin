@@ -13,7 +13,6 @@ import {
   PHARMACY_SERVICES,
 } from "@/constant/healthcare-profile-list";
 import { supabase } from "@/app/utils/supabaseClient";
-import StarRatings from "react-star-ratings";
 import Rating from "react-rating";
 
 // Schema for validation
@@ -290,15 +289,6 @@ const EditFacilityProfileForm = () => {
       </div>
       <p className="font-semibold mt-5 mb-2">Rating</p>
       <div>
-        {/* <StarRatings
-          rating={rating}
-          numberOfStars={5}
-          starRatedColor="#ffc107"
-          starEmptyColor="#dcdcdc"
-          starHoverColor="#ff9800"
-          starDimension="25px"
-          changeRating={(rate) => setRating(rate)}
-        /> */}
         <Rating
           fractions={2}
           initialRating={rating}
