@@ -482,8 +482,8 @@ const AddDiagnosticLabsForm = () => {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 grid-cols-1 sm:gap-4 w-full mt-2">
-        <div>
+      <div className="flex sm:grid-cols-2 grid-cols-1 sm:gap-4 w-full mt-2">
+        <div className="w-full">
           <p className="font-semibold my-5">Services</p>
           <SplitDropdown2
             label="Select Service"
@@ -496,7 +496,7 @@ const AddDiagnosticLabsForm = () => {
           />
         </div>
 
-        <div>
+        <div className="w-full">
           <p className="font-semibold my-5">Amenities</p>
           <SplitDropdown2
             label="Select Amenities"

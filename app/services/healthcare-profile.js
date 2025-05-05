@@ -1,4 +1,3 @@
-import moment from "moment";
 import { supabase } from "../utils/supabaseClient";
 
 export const healthcareProfile = async (
@@ -60,6 +59,7 @@ export const healthcareProfile = async (
           browser: user.os,
           latitude: user.latitude,
           longitude: user.longitude,
+          avg_rating: 0
         },
       ]);
     if (healthcareProfileError) {

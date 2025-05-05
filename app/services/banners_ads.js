@@ -99,9 +99,7 @@ export const getBannersAds = async () => {
 
     const { data: scheduledData, error: scheduledError } = await supabase
       .from("banners_ads")
-      .select(
-        "*"
-      )
+      .select("*")
       .gt("starting_date_and_time", new Date().toISOString())
       .gt("end_date_and_time", new Date().toISOString())
       .order("created_at", { ascending: false })
@@ -167,3 +165,62 @@ export const deleteAd = async (id) => {
     console.log(err);
   }
 };
+
+export const archiveItem = async (
+  id, 
+  status, 
+  category,
+  loadCallback,
+  errorCallback,
+  successCallback
+) => {
+  try {
+    loadCallback()
+    await changeStatus(id, status);
+    successCallback(id, category);
+  } catch (error) {
+    console.error(`Error archiving item with ID ${id}:`, error);
+    errorCallback('Error archiving Item');
+  }
+};
+
+export const getExistingAdsDuration = async () => {
+  const { data: adsData, error: adsError } = await supabase
+    .from("banners_ads")
+    .select("duration")
+    .limit(1);
+
+  if (adsError) {
+    console.error("ERROR GETTING DURATION: ", adsError);
+    return;
+  }
+
+  return adsData[0].duration;
+};
+
+export const updateBannerAdsDuration = async (
+  value,
+  loadCallback,
+  errorCallback,
+  successCallback,
+) => {
+    try {
+      loadCallback();
+
+      const { error } = await supabase
+        .from("banners_ads")
+        .update({ duration: value })
+        .not("id", "is", null); // select all rows
+
+      if (error) {
+        console.log("Error updating entries", error);
+        errorCallback("Failed to update duration");
+        return;
+      }
+
+      successCallback();
+    } catch (error) {
+      console.error("Error updating rows", error);
+      errorCallback("Failed to update duration");
+    }
+  };

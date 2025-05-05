@@ -255,6 +255,7 @@ const PeriodTrackerForm = () => {
           <label className="mb-2 font-semibold">Select User</label>
           <Select
             options={users}
+            label={"Select a user"}
             value={selectedUser}
             onChange={(option) => {
               setSelectedUser(option);
@@ -566,7 +567,6 @@ const PeriodTrackerForm = () => {
               </button>
             </div>
 
-            {/* Calendar styling */}
             {/* Calendar styling */}
             <style jsx global>{`
               /* Fix weekend colors */
