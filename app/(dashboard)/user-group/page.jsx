@@ -19,32 +19,38 @@ export default function UserGroups() {
     const from = pageIndex * pageSize;
     const to = from + pageSize - 1;
     try {
-      const {data, error, count} = await supabase
-      .from('notification_list')
-      .select('*', {count: "exact"})
-      .order("created_at", {ascending: false})
-      .range(from, to);
-      if(error){
+      const { data, error, count } = await supabase
+        .from("notification_list")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+      if (error) {
         console.error(error);
-      } else{
+      } else {
         setData(data);
-        setTotalPages(Math.ceil(count / pageSize))
+        setTotalPages(Math.ceil(count / pageSize));
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  };
   useEffect(() => {
     fetchData();
-  },[pageIndex, pageSize]);
+  }, [pageIndex, pageSize]);
 
   const pageOptions = Array.from({ length: totalPages }, (_, i) => i);
   const canPreviousPage = pageIndex > 0;
   const canNextPage = pageIndex < pageOptions.length - 1;
 
-  const gotoPage = (pageIndex) => { setPageIndex(pageIndex)};
-  const previousPage = () => { if (canPreviousPage) setPageIndex(pageIndex - 1);};
-  const nextPage = () => { if (canNextPage) setPageIndex(pageIndex + 1);};
+  const gotoPage = (pageIndex) => {
+    setPageIndex(pageIndex);
+  };
+  const previousPage = () => {
+    if (canPreviousPage) setPageIndex(pageIndex - 1);
+  };
+  const nextPage = () => {
+    if (canNextPage) setPageIndex(pageIndex + 1);
+  };
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -73,27 +79,67 @@ export default function UserGroups() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
             {data.map((item) => (
-              
               <tr key={item.id} className="cursor-pointer">
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {item.title || "Null"}
-                <p className="text-xs">{item.created_at ? new Date(item.created_at).toDateString(): "null"}</p>
+                  {item.title || "Null"}
+                  <p className="text-xs">
+                    {item.created_at
+                      ? new Date(item.created_at).toDateString()
+                      : "null"}
+                  </p>
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.description || "Null"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.region || 'Ahafo'}
+                  {item.region || "Ahafo"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.sex || 'Male'}
+                  {item.sex || "Male"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.age_range || '18-24'}
+                  {item.age_range || "18-24"}
+                </td>
+                <td className="text-center gap-2">
+                  <div className="flex justify-center items-center gap-4">
+                    <Button
+                      icon="mdi:eye"
+                      iconClass="text-green-500 text-2xl"
+                      className="p-0 bg-transparent border-none"
+                      // onClick={(e) => {
+                      //   e.stopPropagation();
+                      //   deleteModal(log);
+                      // }}
+                    />
+                    <Button
+                      icon="heroicons-outline:pencil-alt"
+                      iconClass="text-blue-500 text-2xl"
+                      className="p-0 bg-transparent border-none"
+                      // onClick={(e) => {
+                      //   e.stopPropagation();
+                      //   handleEdit(log);
+                      // }}
+                    />
+                    <Button
+                      icon="fluent:arrow-clockwise-20-filled"
+                      iconClass="text-yellow-500 text-2xl"
+                      className="p-0 bg-transparent border-none"
+                    />
+                    <Button
+                      icon="bi:trash"
+                      iconClass="text-red-500 text-2xl"
+                      className="p-0 bg-transparent border-none"
+                      // onClick={(e) => {
+                      //   e.stopPropagation();
+                      //   deleteModal(log);
+                      // }}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
