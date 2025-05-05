@@ -61,7 +61,7 @@ export default function page() {
           text="Back"
           className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
           iconClass="text-lg"
-          onClick={() => router.push("/users-facility")}
+          onClick={() => router.back()}
         />
       </div>
       {facility && (
