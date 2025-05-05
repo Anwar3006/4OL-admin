@@ -217,7 +217,9 @@ export default function Activity() {
                   </div>
                 ) : (
                   <span className="ml-1">
-                    {selectedDuration ? selectedDuration : "Select Duration"}
+                    {selectedDuration
+                      ? String(selectedDuration / 1000) + " sec"
+                      : "Select Duration"}
                   </span>
                 )}
                 <Icons

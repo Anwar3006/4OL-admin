@@ -12,7 +12,7 @@ const Fileinput = ({
   selectedFile,
   badge,
   selectedFiles,
-  mediaType = 'image' // Default mediaType to 'image'
+  mediaType = "image", // Default mediaType to 'image'
 }) => {
   return (
     <div>
@@ -26,6 +26,13 @@ const Fileinput = ({
             id={id}
             multiple={multiple}
             placeholder={placeholder}
+            accept={
+              mediaType === "image"
+                ? "image/*"
+                : mediaType === "video"
+                ? "video/*"
+                : "*"
+            }
           />
           <div
             className={`w-full h-[40px] file-control flex items-center ${className}`}
@@ -69,7 +76,7 @@ const Fileinput = ({
               {label}
             </span>
           </div>
-          {!multiple && mediaType === 'image' && preview && selectedFile && (
+          {!multiple && mediaType === "image" && preview && selectedFile && (
             <div className="w-[200px] h-[200px] mx-auto mt-6">
               <img
                 src={preview}
@@ -78,7 +85,7 @@ const Fileinput = ({
               />
             </div>
           )}
-          {!multiple && mediaType === 'video' && preview && selectedFile && (
+          {!multiple && mediaType === "video" && preview && selectedFile && (
             <div className="w-[300px] mx-auto mt-6">
               <video
                 src={preview}
@@ -88,39 +95,45 @@ const Fileinput = ({
               />
             </div>
           )}
-          {multiple && mediaType === 'image' && preview && selectedFiles.length > 0 && (
-            <div className="flex flex-wrap space-x-5 rtl:space-x-reverse">
-              {selectedFiles.map((file, index) => (
-                <div
-                  className="xl:w-1/5 md:w-1/3 w-1/2 rounded mt-6 border p-2 border-slate-200"
-                  key={index}
-                >
-                  <img
-                    src={URL.createObjectURL(file)}
-                    className="object-cover w-full h-full rounded"
-                    alt={file?.name}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-          {multiple && mediaType === 'video' && preview && selectedFiles.length > 0 && (
-            <div className="flex flex-wrap space-x-5 rtl:space-x-reverse">
-              {selectedFiles.map((file, index) => (
-                <div
-                  className="xl:w-1/5 md:w-1/3 w-1/2 rounded mt-6 border p-2 border-slate-200"
-                  key={index}
-                >
-                  <video
-                    src={URL.createObjectURL(file)}
-                    controls
-                    className="object-cover w-full h-full rounded"
-                    alt={file?.name}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          {multiple &&
+            mediaType === "image" &&
+            preview &&
+            selectedFiles.length > 0 && (
+              <div className="flex flex-wrap space-x-5 rtl:space-x-reverse">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    className="xl:w-1/5 md:w-1/3 w-1/2 rounded mt-6 border p-2 border-slate-200"
+                    key={index}
+                  >
+                    <img
+                      src={URL.createObjectURL(file)}
+                      className="object-cover w-full h-full rounded"
+                      alt={file?.name}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          {multiple &&
+            mediaType === "video" &&
+            preview &&
+            selectedFiles.length > 0 && (
+              <div className="flex flex-wrap space-x-5 rtl:space-x-reverse">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    className="xl:w-1/5 md:w-1/3 w-1/2 rounded mt-6 border p-2 border-slate-200"
+                    key={index}
+                  >
+                    <video
+                      src={URL.createObjectURL(file)}
+                      controls
+                      className="object-cover w-full h-full rounded"
+                      alt={file?.name}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
         </label>
       </div>
     </div>
