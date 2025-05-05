@@ -199,10 +199,16 @@ export const menuItems = [
     ],
   },
   {
+    title: "Pills Reminder",
+    isHide: true,
+    icon: "material-symbols:medication-outline",
+    link: "pill-reminder",
+  },
+  {
     title: "Reviews/ Ratings",
     isHide: true,
     icon: "material-symbols:rate-review-outline",
-    link: "#",
+    link: "reviews",
   },
   // {
   //   title: "Meds Reminder",
