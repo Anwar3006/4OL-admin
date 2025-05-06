@@ -13,6 +13,8 @@ export default function UserGroups() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [data, setData] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const router = useRouter();
 
   const fetchData = async () => {
@@ -51,6 +53,40 @@ export default function UserGroups() {
   const nextPage = () => {
     if (canNextPage) setPageIndex(pageIndex + 1);
   };
+
+  const handleView = (id) => {
+    router.push(`view-notification?id=${id}`);
+  };
+
+  const handleEdit = (id) => {
+    router.push(`/send-notifications?id=${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    const { error } = await supabase
+      .from("notification_list")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("Error deleting notification record", error);
+    }
+    setData((prev) => prev.filter((item) => item.id !== id));
+    setShowModal(false);
+    setSelectedId(null);
+    await fetchData();
+  };
+
+  const openModal = (id) => {
+    setShowModal(true);
+    setSelectedId(id);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedId(null);
+  };
+
+  const handleResendNotification = async () => {};
 
   return (
     <Card className="min-h-[80vh] bg-white">
@@ -108,36 +144,36 @@ export default function UserGroups() {
                 <td className="text-center gap-2">
                   <div className="flex justify-center items-center gap-4">
                     <Button
-                      icon="mdi:eye"
-                      iconClass="text-green-500 text-2xl"
+                      icon="lets-icons:eye"
+                      iconClass="text-blue-500 text-xl"
                       className="p-0 bg-transparent border-none"
-                      // onClick={(e) => {
-                      //   e.stopPropagation();
-                      //   deleteModal(log);
-                      // }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(item.id);
+                      }}
                     />
                     <Button
                       icon="heroicons-outline:pencil-alt"
-                      iconClass="text-blue-500 text-2xl"
+                      iconClass="text-green-500 text-xl"
                       className="p-0 bg-transparent border-none"
-                      // onClick={(e) => {
-                      //   e.stopPropagation();
-                      //   handleEdit(log);
-                      // }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(item.id);
+                      }}
                     />
                     <Button
                       icon="fluent:arrow-clockwise-20-filled"
-                      iconClass="text-yellow-500 text-2xl"
+                      iconClass="text-yellow-500 text-xl"
                       className="p-0 bg-transparent border-none"
                     />
                     <Button
-                      icon="bi:trash"
-                      iconClass="text-red-500 text-2xl"
+                      icon="heroicons-outline:trash"
+                      iconClass="text-red-500 text-xl"
                       className="p-0 bg-transparent border-none"
-                      // onClick={(e) => {
-                      //   e.stopPropagation();
-                      //   deleteModal(log);
-                      // }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openModal(item.id);
+                      }}
                     />
                   </div>
                 </td>
@@ -145,6 +181,30 @@ export default function UserGroups() {
             ))}
           </tbody>
         </table>
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 border-4 border-gray-600">
+            <div className="bg-black-200 p-6 rounded-lg shadow-lg max-w-sm w-full">
+              <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
+              <p className="mb-6">
+                Are you sure you want to delete this notification?
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 bg-white rounded hover:bg-gray-300 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => selectedId && handleDelete(selectedId)}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 text-sm"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex justify-end items-end">

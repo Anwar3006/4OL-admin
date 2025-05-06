@@ -9,6 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "@/app/utils/supabaseClient";
 import moment from "moment";
 import Checkbox from "@/components/ui/Checkbox";
+import { useSearchParams } from "next/navigation";
 
 const SendNotifications = () => {
   const [user, setUser] = useState([]);
@@ -17,6 +18,8 @@ const SendNotifications = () => {
   const [regions] = useState(districts_regions.data);
   const Genders = ["Male", "Female"];
   const ageRanges = ["All", "18-24", "25-34", "35-44", "45-54", "55-Above"];
+  const searchparams = useSearchParams();
+  const id = searchparams.get("id");
 
   const schema = yup.object({
     title: yup.string().required("Title is required"),
@@ -54,16 +57,63 @@ const SendNotifications = () => {
 
   const isTrackerNotification = watch("isTrackerNotification");
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!id) return;
+      try {
+        const { data, error } = await supabase
+          .from("notification_list")
+          .select("title, description, sex, region, age_range")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          // Set form values with fetched data
+          setValue("title", data.title);
+          setValue("description", data.description);
+          setValue("region", data.region);
+          setValue("sex", data.sex);
+          setValue("age", data.age_range);
+
+          // Determine if it's a tracker notification
+          const isTracker = !data.region && !data.sex && !data.age_range;
+          setValue("isTrackerNotification", isTracker);
+        }
+      } catch (error) {
+        console.error("Error fetching notifications", error);
+      }
+    };
+
+    fetchNotifications();
+  }, [id, setValue]); // Add setValue to dependencies
+
   const handleSendNotification = async (data) => {
     setLoading(true);
     try {
-      if (data.isTrackerNotification) {
-        await sendTrackerNotification(data);
-        reset();
+      if (id) {
+        // Update existing notification
+        await supabase
+          .from("notification_list")
+          .update({
+            title: data.title,
+            description: data.description,
+            region: data.region,
+            sex: data.sex,
+            age_range: data.age,
+            updated_at: moment(new Date()).valueOf(),
+          })
+          .eq("id", id);
       } else {
-        await fetchUsers(data);
-        reset();
+        // Existing create logic
+        if (data.isTrackerNotification) {
+          await sendTrackerNotification(data);
+        } else {
+          await fetchUsers(data);
+        }
       }
+      reset();
     } catch (error) {
       console.error("Error sending notification:", error);
     } finally {

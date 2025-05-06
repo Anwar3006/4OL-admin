@@ -68,13 +68,13 @@ export default function UsersListing() {
     if (!str) return str;
     return str
       .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
   };
 
   const downloadPDF = () => {
     const doc = new jsPDF();
-  
+
     // Add Logo to the Right Side
     const logoUrl = "/assets/images/all-img/logo.png"; // Replace with your logo URL or base64 string
     const imgWidth = 12; // Width of the logo
@@ -83,12 +83,12 @@ export default function UsersListing() {
     const xPos = pageWidth - imgWidth - 10; // Position on the right
     const yPos = 10; // Position on the top
     doc.addImage(logoUrl, "PNG", xPos, yPos, imgWidth, imgHeight);
-  
+
     // Title on the Left Side
     doc.setFontSize(14);
-    doc.setFont("helvetica", "bold"); 
-    doc.text("List of Users", 14, 20,); // Adjust x and y to align with the logo if needed
-  
+    doc.setFont("helvetica", "bold");
+    doc.text("List of Users", 14, 20); // Adjust x and y to align with the logo if needed
+
     // Table Headers
     const headers = [
       "Registration Date",
@@ -99,17 +99,17 @@ export default function UsersListing() {
       "Last Activity Date",
       "Status",
     ];
-  
+
     const tableData = data.map((item) => [
-        capitalizeFirstLetter(formatDate(item.created_at) || "N/A"),
-        capitalizeFirstLetter(`${item.first_name || ""} ${item.last_name || ""}`),
-        capitalizeFirstLetter(item.sex || "N/A"),
-        (item.email.toLowerCase() || "N/A"),
-        capitalizeFirstLetter(item.phone_number || "N/A"),
-        capitalizeFirstLetter(formatDate(item.last_activity) || "N/A"),
-        item.status === true ? "Active" : "Inactive", // Ensure status is capitalized
-      ]);
-  
+      capitalizeFirstLetter(formatDate(item.created_at) || "N/A"),
+      capitalizeFirstLetter(`${item.first_name || ""} ${item.last_name || ""}`),
+      capitalizeFirstLetter(item.sex || "N/A"),
+      item.email.toLowerCase() || "N/A",
+      capitalizeFirstLetter(item.phone_number || "N/A"),
+      capitalizeFirstLetter(formatDate(item.last_activity) || "N/A"),
+      item.status === true ? "Active" : "Inactive", // Ensure status is capitalized
+    ]);
+
     // Add Table to PDF
     doc.autoTable({
       head: [headers],
@@ -121,11 +121,11 @@ export default function UsersListing() {
         fontSize: 10, // Optional: Set font size for header text
       },
     });
-  
+
     // Save the PDF
     doc.save("users_list.pdf");
   };
-  
+
   const handleView = (id) => {
     router.push(`/users/view?id=${id}`);
   };
@@ -166,19 +166,21 @@ export default function UsersListing() {
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
-              
-              <tr 
-              // key={item.id} onClick={() => handleView(item.id)} 
-              className="cursor-pointer capitalize">
+              <tr
+                // key={item.id} onClick={() => handleView(item.id)}
+                className="cursor-pointer capitalize"
+              >
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-               {item.created_at ? formatDate(item.created_at) : "Not Available"}
+                  {item.created_at
+                    ? formatDate(item.created_at)
+                    : "Not Available"}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.first_name} {item.last_name}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                 {item.sex}
+                  {item.sex}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase">
                   {item.email}
@@ -187,7 +189,9 @@ export default function UsersListing() {
                   {item.phone_number}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {item.last_activity ? formatDate(item.last_activity): 'No Activity' }
+                  {item.last_activity
+                    ? formatDate(item.last_activity)
+                    : "No Activity"}
                 </td>
                 <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap`}>
                   {item.status === true ? (
@@ -206,8 +210,8 @@ export default function UsersListing() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   <div className="flex space-x-2">
                     <Button
-                      icon="heroicons-outline:eye"
-                      iconClass="text-base text-gray-500" // Adjust the color and size as needed
+                      icon="lets-icons:eye"
+                      iconClass="text-base text-blue-500" // Adjust the color and size as needed
                       className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
                       onClick={(e) => {
                         e.stopPropagation();

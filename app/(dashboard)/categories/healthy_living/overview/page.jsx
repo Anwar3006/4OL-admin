@@ -164,7 +164,7 @@ const HealthyLivingOverviewPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center gap-2">
                         <Button
-                          icon="heroicons-outline:eye"
+                          icon="lets-icons:eye"
                           iconClass="text-blue-500 text-xl"
                           className="p-1 bg-transparent border-none"
                           onClick={() => handleView(article)}
@@ -172,13 +172,13 @@ const HealthyLivingOverviewPage = () => {
                         />
                         <Button
                           icon="heroicons-outline:pencil-alt"
-                          iconClass="text-blue-500 text-xl"
+                          iconClass="text-green-500 text-xl"
                           className="p-1 bg-transparent border-none"
                           onClick={() => handleEdit(article)}
                           tooltip="Edit"
                         />
                         <Button
-                          icon="bi:trash"
+                          icon="heroicons-outline:trash"
                           iconClass="text-red-500 text-xl"
                           className="p-1 bg-transparent border-none"
                           onClick={() => deleteModal(article)}

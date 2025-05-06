@@ -839,7 +839,7 @@ const PeriodsTrackerPage = () => {
                       <div className="flex justify-center items-center gap-4">
                         <Button
                           icon="heroicons-outline:pencil-alt"
-                          iconClass="text-blue-500 text-2xl"
+                          iconClass="text-green-500 text-xl"
                           className="p-0 bg-transparent border-none"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -847,8 +847,8 @@ const PeriodsTrackerPage = () => {
                           }}
                         />
                         <Button
-                          icon="bi:trash"
-                          iconClass="text-red-500 text-2xl"
+                          icon="heroicons-outline:trash"
+                          iconClass="text-red-500 text-xl"
                           className="p-0 bg-transparent border-none"
                           onClick={(e) => {
                             e.stopPropagation();
