@@ -54,20 +54,20 @@ const Notifications = () => {
       </div>
 
       {data && (
-        <div className="my-5 grid grid-cols-3 sm:grid-cols-2 gap-y-4 text-sm">
-          <div className="font-semibold text-lg">Title:</div>
+        <div className="my-5 grid grid-cols-3 sm:grid-cols-2 gap-y-4 text-sm p-6">
+          <div className="text-black-500 text-lg">Title:</div>
           <div className="text-base">{data.title}</div>
 
-          <div className="font-semibold text-lg">Description:</div>
+          <div className="text-black-500 text-lg">Description:</div>
           <div className="text-base">{data.description}</div>
 
-          <div className="font-semibold text-lg">Region:</div>
+          <div className="text-black-500 text-lg">Region:</div>
           <div className="text-base">{data.region}</div>
 
-          <div className="font-semibold text-lg">Sex:</div>
+          <div className="text-black-500 text-lg">Sex:</div>
           <div className="text-base">{data.sex}</div>
 
-          <div className="font-semibold text-lg">Age Range:</div>
+          <div className="text-black-500 text-lg">Age Range:</div>
           <div className="text-base">{data.age_range}</div>
         </div>
       )}

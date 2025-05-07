@@ -6,7 +6,6 @@ import Card from "@/components/ui/Card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
-import Image from "next/image";
 
 const viewPilldetails = () => {
   const [data, setData] = useState([]);
@@ -29,7 +28,6 @@ const viewPilldetails = () => {
       }
 
       setData(data || []);
-      console.log("PILL DETAILS==>", data);
     } catch (error) {
       console.error("Error fetching pills details", error);
     } finally {
@@ -61,58 +59,66 @@ const viewPilldetails = () => {
         />
       </div>
       {data && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white shadow-md p-6 rounded-lg">
-          {/* Color Swatch */}
-          <div>
-            <div className="text-sm font-medium mb-1">Color</div>
+        <div className="p-6 bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-6">
+            {/* Color */}
+            <div className="text-lg text-black-500">Color</div>
             <div
-              className="w-10 h-10 rounded border border-gray-300"
+              className="w-10 h-10 rounded border border-gray-200"
               style={{ backgroundColor: data.color }}
             />
-          </div>
 
-          {/* Image */}
-          <div>
-            <div className="text-sm font-medium mb-1">Image</div>
-            <img
-              src={data.imageUrl}
-              alt="Medication"
-              width={100}
-              height={100}
-              className="rounded object-cover"
-            />
-          </div>
-
-          {/* Notification Schedule */}
-          <div>
-            <div className="text-sm font-medium mb-1">
-              Notification Schedule
+            {/* Image */}
+            <div className="text-lg text-black-500">Image</div>
+            <div className="flex items-center">
+              <img
+                src={data.imageUrl}
+                alt="Medication"
+                className="rounded-lg object-contain w-24 h-24 border border-gray-200"
+              />
             </div>
-            <div className="text-gray-700">{data.reminder_type}</div>
-          </div>
 
-          {/* Start Date */}
-          <div>
-            <div className="text-sm font-medium mb-1">Start Date</div>
-            <div className="text-gray-700">{data.start_date}</div>
-          </div>
+            {/* Start Date */}
+            <div className="text-lg text-black-500">Start Date</div>
+            <div className="text-gray-700">{data.start_date.slice(0, 10)}</div>
 
-          {/* End Date */}
-          <div>
-            <div className="text-sm font-medium mb-1">End Date</div>
-            <div className="text-gray-700">{data.end_date}</div>
-          </div>
+            {/* End Date */}
+            <div className="text-lg text-black-500">End Date</div>
+            <div className="text-gray-700">{data.end_date.slice(0, 10)}</div>
 
-          {/* Amount */}
-          <div>
-            <div className="text-sm font-medium mb-1">Amount</div>
+            {/* Amount */}
+            <div className="text-lg text-black-500">Amount</div>
             <div className="text-gray-700">{data.medication_amount}</div>
-          </div>
 
-          {/* Dose Number of Times */}
-          <div>
-            <div className="text-sm font-medium mb-1">Dose</div>
+            {/* Dose */}
+            <div className="text-lg text-black-500">Dose</div>
             <div className="text-gray-700">{data.medication_dose}</div>
+
+            <div className="text-lg text-black-500">No. of times</div>
+            <div className="text-gray-700">{data.intake_amount}</div>
+
+            {/* Notification Schedule */}
+            <div className="text-lg text-black-500">Notification Schedule</div>
+          </div>
+          <div className="text-gray-700 mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-1">
+            {Array.isArray(data.reminder_timestamps)
+              ? data.reminder_timestamps.map((ts, index) => {
+                  const date = new Date(ts);
+                  const formatted = date.toLocaleDateString("en-GB", {
+                    month: "long",
+                    day: "2-digit",
+                    year: "numeric",
+                  });
+                  return (
+                    <div
+                      key={index}
+                      className="text-sm p-1 whitespace-nowrap truncate"
+                    >
+                      {formatted}
+                    </div>
+                  );
+                })
+              : "No Reminders Found"}
           </div>
         </div>
       )}
