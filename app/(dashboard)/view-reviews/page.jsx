@@ -13,7 +13,6 @@ const ViewReviews = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const router = useRouter();
-  console.log("rew", reviewData);
 
   const fetchReviews = async () => {
     if (!id) return;
@@ -42,7 +41,6 @@ const ViewReviews = () => {
   useEffect(() => {
     fetchReviews();
   }, [id]);
-  console.log("REVIEW DATA==>", reviewData);
 
   if (loading) {
     return (

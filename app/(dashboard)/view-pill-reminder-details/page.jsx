@@ -100,25 +100,33 @@ const viewPilldetails = () => {
             {/* Notification Schedule */}
             <div className="text-lg text-black-500">Notification Schedule</div>
           </div>
-          <div className="text-gray-700 mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-1">
-            {Array.isArray(data.reminder_timestamps)
-              ? data.reminder_timestamps.map((ts, index) => {
-                  const date = new Date(ts);
-                  const formatted = date.toLocaleDateString("en-GB", {
-                    month: "long",
-                    day: "2-digit",
-                    year: "numeric",
-                  });
-                  return (
-                    <div
-                      key={index}
-                      className="text-sm p-1 whitespace-nowrap truncate"
-                    >
-                      {formatted}
-                    </div>
-                  );
-                })
-              : "No Reminders Found"}
+          <div className="mt-4 flex gap-x-12 text-gray-700">
+            {Array.isArray(data.reminder_timestamps) ? (
+              // Create 3 columns from the timestamps
+              [0, 1, 2].map((colIndex) => (
+                <div key={colIndex} className="flex flex-col space-y-2 text-sm">
+                  {data.reminder_timestamps
+                    .filter((_, i) => i % 3 === colIndex)
+                    .map((ts, index) => {
+                      const date = new Date(ts);
+                      const formatted = date
+                        .toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                        .replace(",", "");
+                      return (
+                        <div key={index} className="whitespace-nowrap truncate">
+                          {formatted}
+                        </div>
+                      );
+                    })}
+                </div>
+              ))
+            ) : (
+              <div>No Reminders Found</div>
+            )}
           </div>
         </div>
       )}

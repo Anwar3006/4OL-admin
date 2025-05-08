@@ -167,7 +167,6 @@ const Reviews = () => {
                       className="p-1 bg-transparent border-none"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("ITEM: ", item);
                         handleView(item.id);
                       }}
                     />

@@ -75,7 +75,7 @@ const AdsForm = () => {
   useEffect(() => {
     (async () => {
       const data = await getExistingAdsDuration();
-      setExistingDuration(data);
+      // setExistingDuration(data);
     })();
   }, []);
 
