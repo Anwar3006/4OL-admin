@@ -14,7 +14,6 @@ import moment from "moment";
 import PaginationNew from "@/components/ui/PaginationNew";
 import TicketTable from "./TicketModal";
 import { toast } from "react-toastify";
-import ActivityIndicator from "@/components/ui/ActivityIndicator";
 
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -142,7 +141,7 @@ export default function ChatPage() {
     });
     const ticket = data.find((item) => item.id === id);
     setIsModalOpen(true);
-    
+
     setSelectedTicketId(ticket);
     setUserEmail(ticket?.user_profiles?.email || "gmail.com");
   };
@@ -254,8 +253,8 @@ export default function ChatPage() {
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
-          <div className="w-full flex flex-col items-center justify-center">
-            <ActivityIndicator />
+          <div className="flex justify-center items-center min-w-full">
+            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           TicketCards.map((label, index) => (
@@ -283,8 +282,8 @@ export default function ChatPage() {
       {/* Table Section */}
       <div className="w-full px-[1%] overflow-x-auto h-full">
         {loading ? (
-          <div className="flex items-center justify-center h-48">
-            <LoadingComponent />
+          <div className="justify-center items-center flex h-40">
+            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -305,6 +304,16 @@ export default function ChatPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
+                {data.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="text-center py-6 text-base text-gray-500 min-h-[50vh]"
+                    >
+                      No Data Available
+                    </td>
+                  </tr>
+                )}
                 {data.map((ticket, index) => (
                   <tr
                     key={index}
@@ -444,7 +453,11 @@ export default function ChatPage() {
                 onClick={handleDelete}
                 disabled={loading}
               >
-                {loading ? <LoadingComponent /> : "Ok"}
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Ok"
+                )}
               </button>
             </div>
           </div>
