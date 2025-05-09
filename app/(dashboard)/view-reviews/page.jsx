@@ -64,26 +64,22 @@ const ViewReviews = () => {
       {reviewData && (
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-6">
-            <div className="text-lg text-black-500">First Name</div>
+            <div className="text-lg text-black-500">Full Name</div>
             <div className="text-gray-700">
-              {reviewData.user_profiles.first_name || "Ali"}
-            </div>
-
-            <div className="text-lg text-black-500">Last Name</div>
-            <div className="text-gray-700">
-              {reviewData?.user_profiles?.last_name || "Hassan"}
+              {reviewData.user_profiles.first_name || "N/A"}{" "}
+              {reviewData?.user_profiles?.last_name || "N/A"}
             </div>
 
             <div className="text-lg text-black-500">Facility Name</div>
             <div className="text-gray-700">
-              {reviewData.healthcare_profiles.facility_name || "Facility"}
+              {reviewData.healthcare_profiles.facility_name || "N/A"}
             </div>
 
             <div className="text-lg text-black-500">Comment</div>
-            <div className="text-gray-700">{reviewData.comment}</div>
+            <div className="text-gray-700">{reviewData.comment || "N/A"}</div>
 
             <div className="text-lg text-black-500">Rating</div>
-            <div className="text-gray-700">{reviewData.rating}</div>
+            <div className="text-gray-700">{reviewData.rating || "N/A"}</div>
           </div>
         </div>
       )}

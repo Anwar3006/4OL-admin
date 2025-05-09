@@ -132,8 +132,7 @@ const Reviews = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">First name</th>
-              <th className="px-4 py-3">Last name</th>
+              <th className="px-4 py-3">Full Name</th>
               <th className="px-4 py-3">Facility name</th>
               <th className="px-4 py-3">Comments</th>
               <th className="px-4 py-3">Rating</th>
@@ -148,10 +147,7 @@ const Reviews = () => {
                 className="cursor-pointer hover:bg-gray-50 border-b border-gray-100"
               >
                 <td className="px-4 py-2 capitalize">
-                  {item.first_name || "Ali"}
-                </td>
-                <td className="px-4 py-2 capitalize">
-                  {item.last_name || "Hassan"}
+                  {item.first_name || "N/A"} {item.last_name || "N/A"}
                 </td>
                 <td className="px-4 py-2 capitalize">
                   {item.facility_name || "Ali"}

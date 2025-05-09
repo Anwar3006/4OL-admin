@@ -133,13 +133,35 @@ const viewPilldetails = () => {
             <div className="text-lg text-black-500 whitespace-nowrap">
               Notification Schedule
             </div>
-            <div className="text-gray-700"></div>
+            {/* <div className="">
+              {Array.isArray(data.reminder_timestamps) ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-4">
+                  {data.reminder_timestamps.map((ts, index) => {
+                    const date = new Date(ts);
+                    const formatted = date
+                      .toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                      .replace(",", "");
+                    return (
+                      <div key={index} className="text-sm p-2">
+                        {formatted}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-gray-500">No reminders scheduled</div>
+              )}
+            </div> */}
           </div>
 
           {/* Notification Schedule Grid */}
-          <div className="mt-4 text-gray-700">
+          <div className="text-gray-700 mt-3">
             {Array.isArray(data.reminder_timestamps) ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2">
                 {data.reminder_timestamps.map((ts, index) => {
                   const date = new Date(ts);
                   const formatted = date
@@ -150,10 +172,7 @@ const viewPilldetails = () => {
                     })
                     .replace(",", "");
                   return (
-                    <div
-                      key={index}
-                      className="whitespace-nowrap truncate text-sm"
-                    >
+                    <div key={index} className="text-sm">
                       {formatted}
                     </div>
                   );
