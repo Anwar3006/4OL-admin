@@ -19,7 +19,7 @@ const viewPilldetails = () => {
     try {
       const { data, error } = await supabase
         .from("medication_reminders")
-        .select("*")
+        .select("*, user_profiles (first_name, last_name)")
         .eq("id", id)
         .single();
 
@@ -60,16 +60,45 @@ const viewPilldetails = () => {
       </div>
       {data && (
         <div className="p-6 bg-white">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-6">
-            {/* Color */}
-            <div className="text-lg text-black-500">Color</div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-[1fr_2fr] md:gap-6">
+            {/* Key-Value Pairs */}
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Full Name
+            </div>
+            <div className="text-base text-gray-700">
+              {data.user_profiles.first_name} {data.user_profiles.last_name}
+            </div>
+
+            <div className="text-lg text-black-500 break-words min-w-[120px]">
+              Medication Name
+            </div>
+            <div className="text-base text-gray-700 break-words">
+              {data.medication_name}
+            </div>
+
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Condition
+            </div>
+            <div className="text-base text-gray-700">{data.condition}</div>
+
+            <div className="text-lg text-black-500 break-words min-w-[120px]">
+              Medication Type
+            </div>
+            <div className="text-base text-gray-700 break-words">
+              {data.medication_type}
+            </div>
+
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Color
+            </div>
             <div
               className="w-10 h-10 rounded border border-gray-200"
               style={{ backgroundColor: data.color }}
             />
 
-            {/* Image */}
-            <div className="text-lg text-black-500">Image</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Image
+            </div>
             <div className="flex items-center">
               <img
                 src={data.imageUrl}
@@ -78,52 +107,58 @@ const viewPilldetails = () => {
               />
             </div>
 
-            {/* Start Date */}
-            <div className="text-lg text-black-500">Start Date</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Start Date
+            </div>
             <div className="text-gray-700">{data.start_date.slice(0, 10)}</div>
 
-            {/* End Date */}
-            <div className="text-lg text-black-500">End Date</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              End Date
+            </div>
             <div className="text-gray-700">{data.end_date.slice(0, 10)}</div>
 
-            {/* Amount */}
-            <div className="text-lg text-black-500">Amount</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Amount
+            </div>
             <div className="text-gray-700">{data.medication_amount}</div>
 
-            {/* Dose */}
-            <div className="text-lg text-black-500">Dose</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">Dose</div>
             <div className="text-gray-700">{data.medication_dose}</div>
 
-            <div className="text-lg text-black-500">No. of times</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              No. of times
+            </div>
             <div className="text-gray-700">{data.intake_amount}</div>
 
-            {/* Notification Schedule */}
-            <div className="text-lg text-black-500">Notification Schedule</div>
+            <div className="text-lg text-black-500 whitespace-nowrap">
+              Notification Schedule
+            </div>
+            <div className="text-gray-700"></div>
           </div>
-          <div className="mt-4 flex gap-x-12 text-gray-700">
+
+          {/* Notification Schedule Grid */}
+          <div className="mt-4 text-gray-700">
             {Array.isArray(data.reminder_timestamps) ? (
-              // Create 3 columns from the timestamps
-              [0, 1, 2].map((colIndex) => (
-                <div key={colIndex} className="flex flex-col space-y-2 text-sm">
-                  {data.reminder_timestamps
-                    .filter((_, i) => i % 3 === colIndex)
-                    .map((ts, index) => {
-                      const date = new Date(ts);
-                      const formatted = date
-                        .toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                        .replace(",", "");
-                      return (
-                        <div key={index} className="whitespace-nowrap truncate">
-                          {formatted}
-                        </div>
-                      );
-                    })}
-                </div>
-              ))
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {data.reminder_timestamps.map((ts, index) => {
+                  const date = new Date(ts);
+                  const formatted = date
+                    .toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                    .replace(",", "");
+                  return (
+                    <div
+                      key={index}
+                      className="whitespace-nowrap truncate text-sm"
+                    >
+                      {formatted}
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div>No Reminders Found</div>
             )}
