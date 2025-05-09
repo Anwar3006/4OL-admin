@@ -55,7 +55,7 @@ const Notifications = () => {
 
       {data && (
         <div className="p-6 bg-white">
-          <div className="grid grid-cols-2 md:grid-cols-[1fr_2fr] md:gap-6">
+          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3">
             <div className="text-black-500 text-lg">Title</div>
             <div className="text-base">{data.title}</div>
 

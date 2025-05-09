@@ -60,7 +60,7 @@ const viewPilldetails = () => {
       </div>
       {data && (
         <div className="p-6 bg-white">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-[1fr_2fr] md:gap-6">
+          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2">
             {/* Key-Value Pairs */}
             <div className="text-lg text-black-500 whitespace-nowrap">
               Full Name
@@ -103,7 +103,7 @@ const viewPilldetails = () => {
               <img
                 src={data.imageUrl}
                 alt="Medication"
-                className="rounded-lg object-contain w-24 h-24 border border-gray-200"
+                className="rounded-xl object-contain w-24 h-24"
               />
             </div>
 
@@ -159,25 +159,30 @@ const viewPilldetails = () => {
           </div>
 
           {/* Notification Schedule Grid */}
-          <div className="text-gray-700 mt-3">
+          <div className="mt-4 flex gap-x-2 text-gray-700">
             {Array.isArray(data.reminder_timestamps) ? (
-              <div className="grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2">
-                {data.reminder_timestamps.map((ts, index) => {
-                  const date = new Date(ts);
-                  const formatted = date
-                    .toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                    .replace(",", "");
-                  return (
-                    <div key={index} className="text-sm">
-                      {formatted}
-                    </div>
-                  );
-                })}
-              </div>
+              // Create 3 columns from the timestamps
+              [0, 1].map((colIndex) => (
+                <div key={colIndex} className="flex flex-col space-y-1 text-sm">
+                  {data.reminder_timestamps
+                    .filter((_, i) => i % 3 === colIndex)
+                    .map((ts, index) => {
+                      const date = new Date(ts);
+                      const formatted = date
+                        .toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                        .replace(",", "");
+                      return (
+                        <div key={index} className="whitespace-nowrap truncate">
+                          {formatted}
+                        </div>
+                      );
+                    })}
+                </div>
+              ))
             ) : (
               <div>No Reminders Found</div>
             )}

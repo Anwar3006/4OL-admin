@@ -63,7 +63,7 @@ const ViewReviews = () => {
       </div>
       {reviewData && (
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:gap-6">
+          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3">
             <div className="text-lg text-black-500">Full Name</div>
             <div className="text-gray-700">
               {reviewData.user_profiles.first_name || "N/A"}{" "}
