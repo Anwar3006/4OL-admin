@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PaginationNew from "@/components/ui/PaginationNew";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Rating from "react-rating";
 
 const Reviews = () => {
   const [ratings, setRatings] = useState([]);
@@ -115,8 +116,8 @@ const Reviews = () => {
 
   return (
     <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Reviews</h6>
+      <div className="flex flex-row pb-6 justify-between items-center w-full">
+        <h6 className="mb-0">Reviews</h6>
         <Button
           icon="heroicons-outline:download"
           iconClass="text-white text-xl"
@@ -156,9 +157,25 @@ const Reviews = () => {
                   {item.facility_name || "Ali"}
                 </td>
                 <td className="px-4 py-2 capitalize">
-                  {item.comment || "Hello"}
+                  {item.comment || "N/A"}
                 </td>
-                <td className="px-4 py-2 capitalize">{item.rating || "2"}</td>
+                <td className="px-4 py-2">
+                  <Rating
+                    fractions={2}
+                    initialRating={item.rating}
+                    onChange={(value) => handleUpdateRating(value, item.id)}
+                    emptySymbol={
+                      <span style={{ color: "#ccc", fontSize: "1.5rem" }}>
+                        ☆
+                      </span>
+                    }
+                    fullSymbol={
+                      <span style={{ color: "#ffc107", fontSize: "1.5rem" }}>
+                        ★
+                      </span>
+                    }
+                  />
+                </td>
                 <td className="px-4 py-2">
                   <div className="">
                     <Button

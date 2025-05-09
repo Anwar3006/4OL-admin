@@ -66,7 +66,7 @@ const pillReminder = () => {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
 
     // Add Logo to the Right Side
     const logoUrl = "/assets/images/all-img/logo.png"; // Replace with your logo URL or base64 string
@@ -136,8 +136,8 @@ const pillReminder = () => {
   }
   return (
     <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Pills Reminder</h6>
+      <div className="flex flex-row pb-6 justify-between items-center w-full">
+        <h6 className="mb-0">Pills Reminder</h6>
         <Button
           icon="heroicons-outline:download"
           iconClass="text-white text-xl"
