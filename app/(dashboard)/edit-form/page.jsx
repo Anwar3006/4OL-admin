@@ -460,7 +460,9 @@ const AdsForm = () => {
               {formData?.mediaType === "single" && (
                 <div className="w-full h-full overflow-hidden flex items-center">
                   <img
-                    src={formData?.imageUrls}
+                    src={
+                      formData?.imageUrls || "/assets/images/all-img/pills.jpg"
+                    }
                     alt="Single Preview"
                     className="w-full h-full object-cover rounded"
                   />
@@ -469,7 +471,11 @@ const AdsForm = () => {
               {formData?.mediaType === "multiple" && (
                 <div>
                   <img
-                    src={preview[currentImageIndex]} // Show the current image
+                    src={
+                      preview
+                        ? preview[currentImageIndex]
+                        : "/assets/images/all-img/c1.png"
+                    } // Show the current image
                     alt="Image Slideshow"
                     width={300}
                     className={`object-cover rounded shadow`}
@@ -479,7 +485,7 @@ const AdsForm = () => {
               {formData?.mediaType === "video" && preview && (
                 <div>
                   <video
-                    src={preview}
+                    src={preview || "/assets/images/all-img/pills.jpg"}
                     controls
                     width={300}
                     className="rounded"
