@@ -286,7 +286,7 @@ export const menuItems = [
     isHide: true,
     icon: "mdi:faq",
     // link: "faq",
-    link: "#",
+    link: "questions",
   },
   {
     title: "Notification",
