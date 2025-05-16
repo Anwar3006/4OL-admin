@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import Header from "@/components/partials/header";
@@ -12,7 +12,6 @@ import useContentWidth from "@/hooks/useContentWidth";
 import useMenulayout from "@/hooks/useMenulayout";
 import useMenuHidden from "@/hooks/useMenuHidden";
 import Footer from "@/components/partials/footer";
-// import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import MobileMenu from "@/components/partials/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import useMonoChrome from "@/hooks/useMonoChrome";

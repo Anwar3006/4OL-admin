@@ -1,57 +1,69 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Icon from "@/components/ui/Icon";
-const Accordion = ({ items, className = "space-y-5" }) => {
-  const [activeIndex, setActiveIndex] = useState(null);
+import Button from "@/components/ui/Button";
 
-  const [open, setOpen] = useState(false);
+const Accordion = ({
+  question,
+  answer,
+  onEdit,
+  onDelete,
+  className = "",
+  questionClassName = "",
+  answerClassName = "",
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleAccrodian = (index) => {
-    setActiveIndex(index);
-    setOpen(!open);
+  const toggleAccordion = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
-    <div className={className}>
-      {items.map((item, index) => (
-        <div
-          className="accordion shadow-base dark:shadow-none rounded-md"
-          key={index}
-        >
-          <div
-            className={`flex justify-between cursor-pointer transition duration-150 font-medium w-full text-start text-base text-slate-600 dark:text-slate-300 px-8 py-4 ${
-              activeIndex === index
-                ? "bg-slate-50 dark:bg-slate-700 dark:bg-opacity-60 rounded-t-md "
-                : "bg-white dark:bg-slate-700  rounded-md"
+    <div
+      className={`border border-slate-200 dark:border-slate-700 rounded-md mb-5 ${className}`}
+    >
+      <div
+        className={`flex justify-between items-center p-4 cursor-pointer ${questionClassName}`}
+        onClick={toggleAccordion}
+      >
+        <h6 className="text-md font-medium text-slate-800 dark:text-slate-600">
+          {question}
+        </h6>
+        <div className="flex items-center space-x-2">
+          <Button
+            icon="heroicons-outline:pencil-alt"
+            iconClass="text-green-500 text-xl"
+            className="p-0 bg-transparent border-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit && onEdit();
+            }}
+          />
+          <Button
+            icon="heroicons-outline:trash"
+            iconClass="text-red-500 text-xl"
+            className="p-0 bg-transparent border-none"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete && onDelete();
+            }}
+          />
+          <Icon
+            icon="heroicons-outline:chevron-down"
+            className={`text-slate-500 transform transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
             }`}
-            onClick={() => toggleAccrodian(index)}
-          >
-            <span>{item.title} </span>
-            <span
-              className={`text-slate-900 dark:text-white text-[22px] transition-all duration-300 h-5 ${
-                activeIndex === index ? "rotate-180 transform" : ""
-              }`}
-            >
-              <Icon icon="heroicons-outline:chevron-down" />
-            </span>
-          </div>
-
-          {activeIndex === index && (
-            <div
-              className={`${
-                index === activeIndex
-                  ? "dark:border dark:border-slate-700 dark:border-t-0"
-                  : "l"
-              } text-sm text-slate-600 font-normal bg-white dark:bg-slate-900 dark:text-slate-300 rounded-b-md`}
-            >
-              <div
-                className="px-8 py-4"
-                dangerouslySetInnerHTML={{ __html: item.content }}
-              ></div>
-            </div>
-          )}
+          />
         </div>
-      ))}
+      </div>
+      {isOpen && (
+        <div
+          className={`p-4 border-t border-slate-200 dark:border-slate-700 ${answerClassName}`}
+        >
+          <p className="text-slate-600 dark:text-slate-400">{answer}</p>
+        </div>
+      )}
     </div>
   );
 };
+
 export default Accordion;

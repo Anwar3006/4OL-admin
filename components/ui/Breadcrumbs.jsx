@@ -6,7 +6,10 @@ import Icon from "@/components/ui/Icon";
 
 const Breadcrumbs = () => {
   const location = usePathname();
-  const locationName = location.replace("/", "");
+  const locationName = location
+    .replace("/", "")
+    .replace("_", " ")
+    .replace(/-/g, " ");
 
   const [isHide, setIsHide] = useState(null);
   const [groupTitle, setGroupTitle] = useState("");
