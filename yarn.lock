@@ -34,6 +34,7 @@ __metadata:
     cross-env: ^7.0.3
     crypto-js: ^4.2.0
     dayjs: ^1.11.7
+    dotenv: ^16.5.0
     eslint: 8.36.0
     eslint-config-next: 13.2.4
     firebase-admin: ^12.6.0
@@ -2714,6 +2715,13 @@ __metadata:
   version: 2.5.8
   resolution: "dompurify@npm:2.5.8"
   checksum: 8d7acd42bfc75d3dd9030d61201e346fffc4fd5f62e491a446564f0d5e0ffc1635712ccf7781302b00c4fefe412a030b5434c9e803605d81343e923b088cde7e
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.5.0":
+  version: 16.5.0
+  resolution: "dotenv@npm:16.5.0"
+  checksum: 6543fe87b5ddf2d60dd42df6616eec99148a5fc150cb4530fef5bda655db5204a3afa0e6f25f7cd64b20657ace4d79c0ef974bec32fdb462cad18754191e7a90
   languageName: node
   linkType: hard
 

@@ -1,6 +1,11 @@
 import { supabase } from "./supabaseClient";
 
-export const uploadMediaFiles = async (bucketName, folderName, tableName, mediaFiles) => {
+export const uploadMediaFiles = async (
+  bucketName,
+  folderName,
+  tableName,
+  mediaFiles
+) => {
   const userId = localStorage.getItem("user_id");
   const mediaUrls = [];
 
@@ -16,7 +21,9 @@ export const uploadMediaFiles = async (bucketName, folderName, tableName, mediaF
     }
 
     // Check for duplicates
-    const fileExists = existingFiles?.some(existingFile => existingFile.name === file.name);
+    const fileExists = existingFiles?.some(
+      (existingFile) => existingFile.name === file.name
+    );
 
     let fileName = file.name;
     if (fileExists) {

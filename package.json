@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prod": "node scripts/build.js"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.4",
@@ -32,6 +33,7 @@
     "cleave.js": "^1.6.0",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.7",
+    "dotenv": "^16.5.0",
     "eslint": "8.36.0",
     "eslint-config-next": "13.2.4",
     "firebase-admin": "^12.6.0",

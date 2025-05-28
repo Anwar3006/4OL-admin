@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
@@ -57,19 +56,21 @@ const Profile = () => {
       }
       console.log("Image uploaded successfully:", data);
 
-      // Manually construct the public URL
-      const avatar_url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatar/${file.name}`;
+      // Get the public URL from Supabase storage
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatar").getPublicUrl(file.name);
 
       // Update the profile with the new avatar URL
       const { error: updateError } = await supabase
         .from("user_profiles")
-        .update({ avatar_url })
+        .update({ avatar_url: publicUrl })
         .eq("id", userId);
 
       if (updateError) {
         console.error("Error updating profile image:", updateError);
       } else {
-        setProfileData((prev) => ({ ...prev, avatar_url }));
+        setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }));
       }
     } catch (error) {
       console.error("Unexpected error during upload:", error);

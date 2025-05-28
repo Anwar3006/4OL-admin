@@ -28,6 +28,14 @@ export const menuItems = [
     icon: "ri:empathize-line",
     link: "users",
   },
+
+  {
+    title: "Delete",
+    icon: "ri:empathize-line",
+    isHide: true,
+    link: "delete",
+  },
+
   {
     title: "Facilities",
     isHide: true,
