@@ -80,7 +80,6 @@ export default function DeleteAccountPage() {
           }
         );
         setLoading(false);
-        setShowModal(false);
         return;
       }
 
@@ -101,29 +100,15 @@ export default function DeleteAccountPage() {
         return;
       }
 
-      // Delete user profile
-      const { error: deleteProfileError } = await supabase
-        .from("user_profiles")
-        .delete()
-        .eq("id", userData.id);
-
-      if (deleteProfileError) {
-        toast.error("Failed to delete account profile.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        setLoading(false);
-        setShowModal(false);
-        return;
-      }
-
-      // Delete auth user
-      const { error: deleteUserError } = await supabase.auth.admin.deleteUser(
-        authData.user.id
+      // Call the database function to delete all user data
+      const { error: deleteError } = await supabase.rpc(
+        "delete_user_and_related_data",
+        { p_user_id: userData.id }
       );
 
-      if (deleteUserError) {
-        toast.error("Failed to complete account deletion.", {
+      if (deleteError) {
+        console.error("Delete error:", deleteError);
+        toast.error(`Failed to delete account: ${deleteError.message}`, {
           position: "top-right",
           autoClose: 3000,
         });
@@ -131,6 +116,9 @@ export default function DeleteAccountPage() {
         setShowModal(false);
         return;
       }
+
+      // Sign out the user since their account has been deleted
+      await supabase.auth.signOut();
 
       toast.success("Account successfully deleted", {
         position: "top-right",
@@ -140,11 +128,6 @@ export default function DeleteAccountPage() {
       // Reset form and close modal
       reset();
       setShowModal(false);
-
-      // Redirect to login page after short delay
-      setTimeout(() => {
-        router.push("/");
-      }, 2000);
     } catch (error) {
       console.error("Delete account error:", error);
       toast.error("An unexpected error occurred. Please try again.", {
