@@ -11,6 +11,7 @@ import { supabase } from "@/app/utils/supabaseClient";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import useDarkMode from "@/hooks/useDarkMode";
+import deleteAccount from "@/services/deleteAccount";
 
 // Validation schema
 const schema = yup
@@ -21,7 +22,6 @@ const schema = yup
   .required();
 
 export default function DeleteAccountPage() {
-  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false); // New state for checkbox
@@ -63,7 +63,6 @@ export default function DeleteAccountPage() {
     setLoading(true);
     try {
       const { email, password } = getValues();
-
       // First authenticate the user
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
@@ -82,28 +81,12 @@ export default function DeleteAccountPage() {
         setLoading(false);
         return;
       }
-
-      // Get the user profile data
-      const { data: userData, error: userError } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("email", email)
-        .single();
-
-      if (userError) {
-        toast.error("Error retrieving account information.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        setLoading(false);
-        setShowModal(false);
-        return;
-      }
+      const { data: session } = await supabase.auth.getUser();
 
       // Call the database function to delete all user data
       const { error: deleteError } = await supabase.rpc(
         "delete_user_and_related_data",
-        { p_user_id: userData.id }
+        { p_user_id: session.user.id }
       );
 
       if (deleteError) {
@@ -117,8 +100,21 @@ export default function DeleteAccountPage() {
         return;
       }
 
+      const deleteEdgeFunction = await deleteAccount(session.user.id);
+      console.log(deleteEdgeFunction);
+
+      // if (edgeError) {
+      //   console.error("Delete error:", edgeError);
+      //   toast.error(`Failed to delete account: ${edgeError.message}`, {
+      //     position: "top-right",
+      //     autoClose: 3000,
+      //   });
+      //   setLoading(false);
+      //   setShowModal(false);
+      //   return;
+      // }
+
       // Sign out the user since their account has been deleted
-      await supabase.auth.signOut();
 
       toast.success("Account successfully deleted", {
         position: "top-right",
