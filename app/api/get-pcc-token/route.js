@@ -1,22 +1,23 @@
+import { NextResponse } from "next/server";
 import axios from "axios";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method Not Allowed" });
-  }
-
-  const clientId = process.env.CLIENT_ID;
-  const clientSecret = process.env.CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
-    return res.status(500).json({ message: "Missing client credentials" });
-  }
-
-  const encodedCredentials = Buffer.from(
-    `${clientId}:${clientSecret}`
-  ).toString("base64");
-
+export async function POST(request) {
   try {
+    const clientId = process.env.CLIENT_ID;
+    const clientSecret = process.env.CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      console.error("Missing client credentials");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    const encodedCredentials = Buffer.from(
+      `${clientId}:${clientSecret}`
+    ).toString("base64");
+
     const response = await axios.post(
       "https://connect2.pointclickcare.com/auth/token",
       "grant_type=client_credentials",
@@ -28,7 +29,8 @@ export default async function handler(req, res) {
       }
     );
 
-    res.status(200).json({
+    return NextResponse.json({
+      success: true,
       message: "Token fetched successfully",
       data: response.data,
     });
@@ -38,9 +40,12 @@ export default async function handler(req, res) {
       error.response?.data || error.message
     );
 
-    res.status(500).json({
-      message: "Error fetching token",
-      error: error.response?.data || error.message,
-    });
+    return NextResponse.json(
+      {
+        error: "Error fetching token",
+        details: error.response?.data || error.message,
+      },
+      { status: 500 }
+    );
   }
 }
