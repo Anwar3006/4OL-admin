@@ -8,14 +8,8 @@ const Hospitals = () => {
   const [isDark] = useDarkmode();
   return (
     <>
-      <div className="loginwrapper">
-        <div className="lg-inner-column">
-          <div className="right-column relative w-full">
-          <div className=" w-full flex flex-col justify-center sm:p-5">
-                <HospitalsListing />
-              </div>
-          </div>
-        </div>
+      <div className="mt-8 relative">
+        <HospitalsListing />
       </div>
     </>
   );

@@ -37,6 +37,7 @@ export const add_healthy_living = async (
           contact_your_doctor: user.contact_your_doctor,
           more_information: user.more_information,
           attribution: user.attribution,
+          image_url: user.image_url,
         },
       ]);
 

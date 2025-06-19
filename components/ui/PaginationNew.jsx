@@ -11,7 +11,7 @@ const PaginationNew = ({
   canNextPage,
 }) => {
   return (
-    <div className="md:flex  justify-end mt-6 items-end sm:text-sm text-xs">
+    <div className="md:flex  justify-end my-2 items-end sm:text-sm text-xs">
       {/* <div className="flex items-center space-x-3 rtl:space-x-reverse">
         <span className="flex space-x-2 rtl:space-x-reverse items-center">
           <span className="sm:text-sm text-xs font-medium text-slate-600 dark:text-slate-300">

@@ -88,10 +88,10 @@ export default function HospitalsListing() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Hospitals/ Clinics</h6>
-        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
+    <Card className=" bg-white" bodyClass="p-0">
+      <div className="flex max-lg:flex-col items-center w-full p-6">
+        <h6 className="md:mb-0 mb-0 w-full">Hospitals/ Clinics</h6>
+        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
             <Button
@@ -105,16 +105,16 @@ export default function HospitalsListing() {
         </div>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar">
+      <div className="overflow-x-auto relative custom-scrollbar -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">Contact No</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3">Type</th>
+              <th className="px-6 py-3">Name</th>
+              <th className="px-6 py-3">Region</th>
+              <th className="px-6 py-3">Contact No</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
@@ -134,12 +134,12 @@ export default function HospitalsListing() {
                 onClick={() => handleView(item.id)}
                 className="cursor-pointer hover:bg-gray-50"
               >
-                <td className="px-4 py-2 capitalize">{item.facility_type}</td>
-                <td className="px-4 py-2 capitalize">{item.facility_name}</td>
-                <td className="px-4 py-2">{item.region}</td>
-                <td className="px-4 py-2">{item.contact_num}</td>
-                <td className="px-4 py-2">{item.status || "Null"}</td>
-                <td className="px-4 py-2">
+                <td className="px-6 py-4 text-sm text-gray-900 capitalize">{item.facility_type}</td>
+                <td className="px-6 py-4 text-sm text-gray-500 capitalize">{item.facility_name}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{item.region}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{item.contact_num}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{item.status || "Null"}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">
                   <div className="flex space-x-2">
                     <Button
                       icon="lets-icons:eye"
@@ -177,7 +177,7 @@ export default function HospitalsListing() {
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-end">
+      <div className="flex justify-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

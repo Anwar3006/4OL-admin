@@ -47,9 +47,9 @@ const viewPilldetails = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white">
+    <Card className="min-h-[80vh] bg-white mt-8">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Pills Details</h1>
+        <h6 className="md:mb-0 mb-0 w-full">Pills Reminder</h6>
         <Button
           icon="heroicons-outline:arrow-left"
           text="Back"
@@ -59,107 +59,105 @@ const viewPilldetails = () => {
         />
       </div>
       {data && (
-        <div className="p-6 bg-white">
-          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2">
+        <div className=" bg-white flex justify-between lg:w-[50%] md:w-[80%] w-full">
+          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2 text-sm">
             {/* Key-Value Pairs */}
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Full Name
-            </div>
-            <div className="text-base text-gray-700">
+            <div className=" text-black-500 whitespace-nowrap">Full Name</div>
+            <div className=" text-gray-700">
               {data.user_profiles.first_name} {data.user_profiles.last_name}
             </div>
 
-            <div className="text-lg text-black-500 break-words min-w-[120px]">
+            <div className=" text-black-500 break-words min-w-[120px]">
               Medication Name
             </div>
-            <div className="text-base text-gray-700 break-words">
+            <div className=" text-gray-700 break-words">
               {data.medication_name}
             </div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Condition
-            </div>
-            <div className="text-base text-gray-700">{data.condition}</div>
+            <div className=" text-black-500 whitespace-nowrap">Condition</div>
+            <div className=" text-gray-700">{data.condition}</div>
 
-            <div className="text-lg text-black-500 break-words min-w-[120px]">
+            <div className=" text-black-500 break-words min-w-[120px]">
               Medication Type
             </div>
-            <div className="text-base text-gray-700 break-words">
+            <div className=" text-gray-700 break-words">
               {data.medication_type}
             </div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Color
-            </div>
+            <div className=" text-black-500 whitespace-nowrap">Color</div>
             <div
               className="w-10 h-10 rounded border border-gray-200"
               style={{ backgroundColor: data.color }}
             />
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Image
-            </div>
+            <div className=" text-black-500 whitespace-nowrap">Image</div>
             <div className="flex items-center">
               <img
                 src={data.imageUrl}
                 alt="Medication"
-                className="rounded-xl object-contain w-24 h-24"
+                className="rounded-md object-cover w-24 h-24"
               />
             </div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Start Date
-            </div>
+            <div className=" text-black-500 whitespace-nowrap">Start Date</div>
             <div className="text-gray-700">{data.start_date.slice(0, 10)}</div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              End Date
-            </div>
+            <div className=" text-black-500 whitespace-nowrap">End Date</div>
             <div className="text-gray-700">{data.end_date.slice(0, 10)}</div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Amount
-            </div>
+            <div className=" text-black-500 whitespace-nowrap">Amount</div>
             <div className="text-gray-700">{data.medication_amount}</div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">Dose</div>
+            <div className=" text-black-500 whitespace-nowrap">Dose</div>
             <div className="text-gray-700">{data.medication_dose}</div>
 
-            <div className="text-lg text-black-500 whitespace-nowrap">
+            <div className=" text-black-500 whitespace-nowrap">
               No. of times
             </div>
             <div className="text-gray-700">{data.intake_amount}</div>
-
-            <div className="text-lg text-black-500 whitespace-nowrap">
-              Notification Schedule
-            </div>
-            {/* <div className="">
-              {Array.isArray(data.reminder_timestamps) ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-4">
-                  {data.reminder_timestamps.map((ts, index) => {
-                    const date = new Date(ts);
-                    const formatted = date
-                      .toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                      .replace(",", "");
-                    return (
-                      <div key={index} className="text-sm p-2">
-                        {formatted}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-gray-500">No reminders scheduled</div>
-              )}
-            </div> */}
           </div>
 
+          <div className=" md:gap-x-3 gap-y-2 text-sm">
+            <div className=" text-black-500 font-bold font-base mb-2 whitespace-nowrap">
+              Notification Schedule
+            </div>
+            <div className=" flex gap-x-2 text-gray-700">
+              {Array.isArray(data.reminder_timestamps) ? (
+                // Create 3 columns from the timestamps
+                [0, 1].map((colIndex) => (
+                  <div
+                    key={colIndex}
+                    className="flex flex-col space-y-1 text-sm"
+                  >
+                    {data.reminder_timestamps
+                      .filter((_, i) => i % 3 === colIndex)
+                      .map((ts, index) => {
+                        const date = new Date(ts);
+                        const formatted = date
+                          .toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                          .replace(",", "");
+                        return (
+                          <div
+                            key={index}
+                            className="whitespace-nowrap truncate"
+                          >
+                            {formatted}
+                          </div>
+                        );
+                      })}
+                  </div>
+                ))
+              ) : (
+                <div>No Reminders Found</div>
+              )}
+            </div>
+          </div>
           {/* Notification Schedule Grid */}
-          <div className="mt-4 flex gap-x-2 text-gray-700">
+          {/* <div className="mt-4 flex gap-x-2 text-gray-700">
             {Array.isArray(data.reminder_timestamps) ? (
               // Create 3 columns from the timestamps
               [0, 1].map((colIndex) => (
@@ -186,7 +184,7 @@ const viewPilldetails = () => {
             ) : (
               <div>No Reminders Found</div>
             )}
-          </div>
+          </div> */}
         </div>
       )}
     </Card>

@@ -135,57 +135,74 @@ const pillReminder = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex flex-row pb-6 justify-between items-center w-full">
-        <h6 className="mb-0">Pills Reminder</h6>
-        <Button
-          icon="heroicons-outline:download"
-          iconClass="text-white text-xl"
-          className="p-2 bg-green-500 border-none"
-          onClick={(e) => {
-            e.stopPropagation();
-            downloadPDF();
-          }}
-        />
+    <Card className="min-h-[80vh] bg-white mt-8" bodyClass="p-0">
+
+      <div className="flex max-lg:flex-col items-center w-full p-6">
+        <h6 className="md:mb-0 mb-0 w-full">Pills Reminder</h6>
+        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
+          <div className="flex ">
+            <Button
+              icon="heroicons-outline:download"
+              iconClass="text-white text-lg"
+              text="Download PDF"
+              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadPDF();
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="overflow-x-auto custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">Full Name</th>
-              {/* <th className="px-4 py-3">Date</th> */}
-              <th className="px-4 py-3">Medication name</th>
-              <th className="px-4 py-3">Condition</th>
-              <th className="px-4 py-3">Medication Type</th>
-              <th className="px-4 py-3">Action</th>
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3">Full Name</th>
+              {/* <th className=6 px-4 py-3">Date</th> */}
+              <th className="px-6 py-3">Medication name</th>
+              <th className="px-6 py-3">Condition</th>
+              <th className="px-6 py-3">Medication Type</th>
+              <th className="px-6 py-3">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+                 {data.length === 0 && (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="text-center py-10 text-base text-gray-500"
+                >
+                  No Data Available
+                </td>
+              </tr>
+            )}
             {data.map((item) => (
-              <tr className="cursor-pointer hover:bg-gray-50">
-                <td className="px-4 py-2 capitalize">
+              <tr className="cursor-pointer hover:bg-gray-50 text-sm">
+                <td className="px-6 py-4 capitalize">
                   {item.user_profiles.first_name || "Ali"}{" "}
                   {item.user_profiles.last_name || "Hassan"}
                 </td>
                 {/* <td className="px-4 py-2 capitalize">5-5-2025</td> */}
-                <td className="px-4 py-2 capitalize">
+                <td className="px-6 py-4 capitalize">
                   {item.medication_name || "Cosmelon"}
                 </td>
-                <td className="px-4 py-2 capitalize">{item.condition}</td>
-                <td className="px-4 py-2 capitalize">
+                <td className="px-6 py-4 capitalize">{item.condition}</td>
+                <td className="px-6 py-4 capitalize">
                   {item.medication_type || "Antibiotic"}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-6 py-4">
                   <div className="">
                     <Button
                       icon="lets-icons:eye"
-                      iconClass="text-blue-500 text-xl"
-                      className="p-1 bg-transparent border-none"
+                      iconClass="text-green-500 text-lg"
+                      className="p-0 bg-transparent border-none font-normal text-green-500"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleView(item.id);
                       }}
+                      text={"View"}
                     />
                   </div>
                 </td>

@@ -11,6 +11,8 @@ import { useSearchParams } from "next/navigation";
 import { updateDisease } from "@/app/services/diseases-service";
 import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
+import Fileinput from "@/components/ui/Fileinput";
+import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
 
 export default function IllnessAndComplicationForm() {
   const searchParams = useSearchParams();
@@ -21,6 +23,8 @@ export default function IllnessAndComplicationForm() {
   const [newTypes, setNewTypes] = useState([]);
   const [newCauses, setNewCauses] = useState([]);
   const router = useRouter();
+  const [imageFile, setImageFile] = useState(null); // raw file
+  const [imageUrl, setImageUrl] = useState("");
 
   const {
     register,
@@ -55,36 +59,58 @@ export default function IllnessAndComplicationForm() {
   }, [activeModal]);
 
   const onSubmit = async (formData) => {
-    const listType = formData.condition_name
-      ? formData.condition_name.charAt(0).toUpperCase()
-      : ""; // Default to empty string if undefined
+    setLoading(true);
 
-    const newData = {
-      ...formData,
-      list_type: listType,
-    };
+    try {
+      let imageUrl = "";
 
-    if (data?.id) {
-      await updateDisease(data?.id, newData);
-      handleSuccess(router, "Updated Successfully");
-    } else {
-      setLoading(true);
-      add_illness_and_condition(
-        newData,
-        () => {
-          setLoading(true);
-        },
-        (successData) => {
-          setLoading(false);
-          toast.success("Added Successfully");
-          reset();
-        },
-        (error) => {
-          setLoading(false);
-          toast.error(error.message);
-          console.error("Error:", error);
-        }
-      );
+      if (imageFile) {
+        imageUrl = await uploadSingleFileToSupabase(
+          imageFile,
+          "illness-and-conditions"
+        );
+        setImageUrl(imageUrl); // ← optional, for preview if needed after submit
+      }
+
+      const listType = formData.condition_name
+        ? formData.condition_name.charAt(0).toUpperCase()
+        : "";
+
+      const newData = {
+        ...formData,
+        list_type: listType,
+        image_url: imageUrl || data?.image_url || "",
+      };
+
+      if (data?.id) {
+        await updateDisease(data?.id, newData);
+        handleSuccess(router, "Updated Successfully");
+      } else {
+        add_illness_and_condition(
+          newData,
+          () => setLoading(true),
+          () => {
+            setLoading(false);
+            toast.success("Added Successfully");
+            reset();
+            setImageFile(null);
+            setImageUrl("");
+            setNewTypes([]);
+            setNewCauses([]);
+            while (typeFields.length) removeType(0);
+            while (causeFields.length) removeCause(0);
+          },
+          (error) => {
+            setLoading(false);
+            toast.error(error.message);
+            console.error("Error:", error);
+          }
+        );
+      }
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
+      console.log(err.message || "Something went wrong");
+      setLoading(false);
     }
   };
 
@@ -320,7 +346,7 @@ export default function IllnessAndComplicationForm() {
         <TextareaNew
           name="contact_your_doctor"
           label="Contact your Doctor"
-          placeholder="Contact your Doctor or visit a health facility if"
+          placeholder="Contact your doctor or visit a health facility if"
           register={register}
           defaultValue={data?.contact_your_doctor}
         />
@@ -339,6 +365,31 @@ export default function IllnessAndComplicationForm() {
           register={register}
           defaultValue={data?.attribution || ""}
         />
+
+        <div>
+          <label
+            htmlFor={"upload image"}
+            className={`text-sm capitalize flex-0 mr-6 md:w-[100px] w-[60px] break-words`}
+          >
+            Upload Image
+          </label>
+          <Fileinput
+            name="image"
+            onChange={(e) => setImageFile(e.target.files[0])}
+            multiple={false}
+            placeholder="Upload Image"
+            mediaType="image"
+            className="my-2"
+            accept="image/*"
+          />
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="w-32 h-32 object-cover rounded mt-2 border"
+            />
+          )}
+        </div>
 
         <button
           type="submit"

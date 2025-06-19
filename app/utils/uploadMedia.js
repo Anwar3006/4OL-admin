@@ -77,3 +77,31 @@ export const uploadMediaFiles = async (
 
   return mediaUrls;
 };
+
+
+/**
+ * Uploads a file to Supabase Storage and returns the public URL.
+ *
+ * @param {File} file - The file to upload.
+ * @param {string} bucket - Supabase storage bucket name.
+ * @param {string} folder - Optional folder inside the bucket.
+ * @returns {Promise<string>} - Public URL of uploaded file.
+ */
+export const uploadSingleFileToSupabase = async (file, bucket, folder = "") => {
+  if (!file || !file.name) throw new Error("Invalid file provided");
+
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = folder ? `${folder}/${fileName}` : fileName;
+
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file);
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+  return data.publicUrl;
+};
+

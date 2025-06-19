@@ -110,9 +110,10 @@ const SymptomsOverviewPage = () => {
         >
           <div className="flex justify-end p-4 absolute top-2 right-2">
             <Button
+              icon="heroicons-outline:plus-sm"
               text="Add New Symptom"
-              icon="heroicons-outline:plus"
-              className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
+              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+              iconClass="text-lg"
               onClick={() => router.push("/categories/symptoms/form")}
             />
           </div>
@@ -168,22 +169,22 @@ const SymptomsOverviewPage = () => {
                       <div className="flex items-center gap-2">
                         <Button
                           icon="lets-icons:eye"
-                          iconClass="text-blue-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-blue-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => handleView(symptom)}
                           tooltip="View Details"
                         />
                         <Button
                           icon="heroicons-outline:pencil-alt"
-                          iconClass="text-green-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-green-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => handleEdit(symptom)}
                           tooltip="Edit"
                         />
                         <Button
                           icon="heroicons-outline:trash"
-                          iconClass="text-red-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-red-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => deleteModal(symptom)}
                           tooltip="Delete"
                         />

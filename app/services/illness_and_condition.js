@@ -44,6 +44,7 @@ export const add_illness_and_condition = async (
           contact_your_doctor: user.contact_your_doctor,
           more_information: user.more_information,
           attribution: user.attribution,
+          image_url: user.image_url,
         },
       ]);
 

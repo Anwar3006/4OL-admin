@@ -11,6 +11,8 @@ import { useSearchParams } from "next/navigation";
 import { updateSymptom } from "@/app/services/symptoms-service";
 import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
+import Fileinput from "@/components/ui/Fileinput";
+import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
 
 export default function SymptomsForm() {
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,8 @@ export default function SymptomsForm() {
   const itemParam = searchParams.get("symptom");
   const data = JSON.parse(itemParam) || {};
   const router = useRouter();
+  const [imageFile, setImageFile] = useState(null); // raw file
+  const [imageUrl, setImageUrl] = useState("");
 
   const {
     register,
@@ -55,10 +59,18 @@ export default function SymptomsForm() {
   }, [activeModal]);
 
   const onSubmit = async (formData) => {
+    let imageUrl = "";
+
+    if (imageFile) {
+      imageUrl = await uploadSingleFileToSupabase(imageFile, "symptoms");
+      setImageUrl(imageUrl); // ← optional, for preview if needed after submit
+    }
+
     const listType = formData.symptom_name.charAt(0).toUpperCase();
     const newData = {
       ...formData,
       list_type: listType,
+      image_url: imageUrl || data?.image_url || "",
     };
 
     if (data?.id) {
@@ -76,6 +88,12 @@ export default function SymptomsForm() {
           setLoading(false);
           toast.success("Added Successfully");
           reset(); // Reset form fields after successful submission
+          setImageFile(null);
+          setImageUrl("");
+          setNewTypes([]);
+          setNewCauses([]);
+          while (typeFields.length) removeType(0);
+          while (causeFields.length) removeCause(0);
         },
         (error) => {
           setLoading(false);
@@ -329,6 +347,37 @@ export default function SymptomsForm() {
           register={register}
           defaultValue={data?.attribution || ""}
         />
+
+        <div>
+          <label
+            htmlFor={"upload image"}
+            className={`text-sm capitalize flex-0 mr-6 md:w-[100px] w-[60px] break-words`}
+          >
+            Upload Image
+          </label>
+          <Fileinput
+            name="image"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setImageFile(file);
+                setImageUrl(URL.createObjectURL(file)); // <-- Show preview
+              }
+            }}
+            multiple={false}
+            placeholder="Upload Image"
+            mediaType="image"
+            className="my-2"
+            accept="image/*"
+          />
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="w-32 h-32 object-cover rounded mt-2 border"
+            />
+          )}
+        </div>
 
         <button
           type="submit"
