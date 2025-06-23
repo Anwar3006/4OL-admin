@@ -375,7 +375,13 @@ export default function IllnessAndComplicationForm() {
           </label>
           <Fileinput
             name="image"
-            onChange={(e) => setImageFile(e.target.files[0])}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setImageFile(file);
+                setImageUrl(URL.createObjectURL(file)); // <-- Show preview
+              }
+            }}
             multiple={false}
             placeholder="Upload Image"
             mediaType="image"
