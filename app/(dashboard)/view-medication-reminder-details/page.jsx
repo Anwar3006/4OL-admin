@@ -47,17 +47,22 @@ const viewPilldetails = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white mt-5">
-      <div className="flex justify-between items-center mb-4">
-        <h6 className="md:mb-0 mb-0 w-full">Medication Reminder</h6>
-        <Button
-          icon="heroicons-outline:arrow-left"
-          text="Back"
-          className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() => router.back()}
-        />
-      </div>
+    <Card
+      className="min-h-[80vh] bg-white mt-5"
+      title={"Medication Reminder"}
+      headerslot={
+        <>
+          {" "}
+          <Button
+            icon="heroicons-outline:arrow-left"
+            text="Back"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+            iconClass="text-lg"
+            onClick={() => router.back()}
+          />
+        </>
+      }
+    >
       {data && (
         <div className=" bg-white flex justify-between lg:w-[50%] md:w-[80%] w-full">
           <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2 text-sm">

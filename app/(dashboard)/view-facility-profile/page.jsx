@@ -49,7 +49,7 @@ export default function Page() {
   return (
     <Card
       className="min-h-[80vh] bg-white mt-5"
-      title={"Facility Profile"}
+      title={"Facility Details"}
       headerslot={
         <>
           {" "}
@@ -64,7 +64,7 @@ export default function Page() {
       }
     >
       {facility && (
-        <div className="lg:text-base sm:text-sm text-xs text-gray-500">
+        <div className="sm:text-sm text-xs text-gray-500 lg:w-[80%] w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 capitalize">
             {facilityFields.map(({ label, key, format }) => (
               <div className="flex" key={key}>
@@ -85,14 +85,14 @@ export default function Page() {
               <div className="w-2/3">
                 {facility.status === "Approved" ? (
                   <div className="flex items-center">
-                    <p className="bg-green-100 text-green-500 px-4 py-2 rounded-full flex items-center text-sm">
+                    <p className="bg-green-100 text-green-500 px-4 py-1 rounded-full flex items-center text-sm">
                       <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>{" "}
                       Approved
                     </p>
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <p className="bg-yellow-100 text-yellow-500 px-4 py-2 rounded-full flex items-center text-sm">
+                    <p className="bg-yellow-100 text-yellow-500 px-4 py-1 rounded-full flex items-center text-sm">
                       <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>{" "}
                       Pending
                     </p>
@@ -105,10 +105,10 @@ export default function Page() {
           {/* Business Hours */}
           {facility.business_hours && (
             <>
-              <div className="mt-6 mb-2 font-medium text-gray-900">
+              <div className="mt-6 mb-2 text-sm font-bold text-black-500">
                 Business Hours
               </div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4 text-sm">
                 <div className="flex justify-between items-center text-gray-900 xl:w-[30%] sm:w-[50%]">
                   <div className="flex-1">Days</div>
                   <div className="flex-1 text-center">Opening Hours</div>

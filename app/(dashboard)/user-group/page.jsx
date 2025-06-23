@@ -161,8 +161,8 @@ export default function UserGroups() {
   }
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
+    <Card className="min-h-[80vh] bg-white mt-5" bodyClass="p-0">
+      <div className="flex max-lg:flex-col p-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
@@ -178,19 +178,19 @@ export default function UserGroups() {
         </div>
       </div>
 
-      <div className="overflow-x-auto  custom-scrollbar">
+      <div className="overflow-x-auto  custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 w-full">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Action</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs capitalize">
             {data.map((item) => (
               <tr key={item.id} className="cursor-pointer">
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
@@ -213,11 +213,11 @@ export default function UserGroups() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.age_range || "18-24"}
                 </td>
-                <td className="text-center gap-2">
-                  <div className="flex justify-center items-center gap-4">
+                <td className="text-center">
+                  <div className="flex justify-center items-center gap-2">
                     <Button
                       icon="lets-icons:eye"
-                      iconClass="text-blue-500 text-xl"
+                      iconClass="text-blue-500 text-lg"
                       className="p-0 bg-transparent border-none"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -226,7 +226,7 @@ export default function UserGroups() {
                     />
                     <Button
                       icon="heroicons-outline:pencil-alt"
-                      iconClass="text-green-500 text-xl"
+                      iconClass="text-green-500 text-lg"
                       className="p-0 bg-transparent border-none"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -235,7 +235,7 @@ export default function UserGroups() {
                     />
                     <Button
                       icon="fluent:arrow-clockwise-20-filled"
-                      iconClass="text-yellow-500 text-xl"
+                      iconClass="text-yellow-500 text-lg"
                       className="p-0 bg-transparent border-none"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -244,7 +244,7 @@ export default function UserGroups() {
                     />
                     <Button
                       icon="heroicons-outline:trash"
-                      iconClass="text-red-500 text-xl"
+                      iconClass="text-red-500 text-lg"
                       className="p-0 bg-transparent border-none"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -317,7 +317,7 @@ export default function UserGroups() {
         )}
       </div>
 
-      <div className="mt-4 flex justify-end items-end">
+      <div className="m-6 flex justify-end items-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

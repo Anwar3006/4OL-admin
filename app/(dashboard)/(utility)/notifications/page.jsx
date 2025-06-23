@@ -83,8 +83,8 @@ export default function Notifications() {
   
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
+    <Card className="min-h-[80vh] bg-white mt-5" bodyClass="p-0">
+      <div className="flex max-lg:flex-col p-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
@@ -100,21 +100,21 @@ export default function Notifications() {
         </div>
       </div>
 
-      <div className="overflow-x-auto  custom-scrollbar">
+      <div className="overflow-x-auto  custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
               {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Image</th> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Region</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
               {/* <th className="sm:px-6 px-2 sm:py-3 py-2">District</th> */}
               {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Target Group</th> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Age Range</th>
               {/* </div> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
@@ -132,7 +132,7 @@ export default function Notifications() {
                 {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.image ? 'Image' : 'Null'}
                 </td> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-center">
                   {item.region || 'Ahafo'}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
@@ -144,12 +144,12 @@ export default function Notifications() {
                 {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                   {item.target_group || 'Users'}
                 </td> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-center">
                   {item.age_range || '18-24'}
                 </td>
                 {/* </div> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  <div className="flex space-x-2">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap x">
+                  <div className="flex justify-center items-center space-x-2">
                     {/* <Button
                       icon="heroicons-outline:pencil-alt"
                       iconClass="text-base text-green-500" // Adjust the color and size as needed
@@ -176,7 +176,7 @@ export default function Notifications() {
         </table>
       </div>
 
-      <div className="mt-4 flex justify-end items-end">
+      <div className="m-6 flex justify-end items-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

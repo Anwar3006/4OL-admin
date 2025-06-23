@@ -272,7 +272,7 @@ export default function ChatPage() {
               </div>
               {/* Text Content */}
               <div className="ml-[4%]">
-                <h2 className="text-2xl font-bold">{label.count}</h2>
+                <h2 className="text-xl font-medium">{label.count}</h2>
                 <p className="text-gray-500">{label.tickets}</p>
               </div>
             </div>
@@ -288,19 +288,19 @@ export default function ChatPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full bg-white rounded-lg overflow-hidden border border-gray-200 divide-y divide-gray-200 min-w-max">
-              <thead className="bg-gray-100">
-                <tr className="text-left text-black border-b text-sm sm:text-base">
-                  <th className="p-[1%] whitespace-nowrap">ID</th>
-                  <th className="p-[1%] whitespace-nowrap">Request By</th>
-                  <th className="p-[1%] whitespace-nowrap">Subject</th>
-                  <th className="p-[1%] text-wrap max-w-[150px] sm:max-w-none">
+              <thead className="bg-gray-50">
+                <tr className="text-center text-xs font-medium text-gray-500 uppercase">
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">ID</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap text-left">Request By</th>
+                  <th className="sm:py-3 py-2 whitespace-nowrap text-left">Subject</th>
+                  <th className="sm:py-3 py-2 text-wrap max-w-[150px] sm:max-w-none text-left">
                     Message
                   </th>
-                  <th className="p-[1%] whitespace-nowrap">Priority</th>
-                  <th className="p-[1%] whitespace-nowrap">Status</th>
-                  <th className="p-[1%] whitespace-nowrap">Created At</th>
-                  <th className="p-[1%] whitespace-nowrap">Updated At</th>
-                  <th className="p-[1%] whitespace-nowrap">Action</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">Priority</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">Status</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">Created At</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">Updated At</th>
+                  <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -317,13 +317,13 @@ export default function ChatPage() {
                 {data.map((ticket, index) => (
                   <tr
                     key={index}
-                    className="border-b hover:bg-gray-50 text-sm sm:text-base"
+                    className="border-b hover:bg-gray-50 text-sm text-center"
                   >
-                    <td className="text-gray-500 px-3 py-[1%] whitespace-nowrap">
+                    <td className="text-gray-900 px-3 py-[1%] whitespace-nowrap">
                       #{ticket.id}
                     </td>
                     {/* Request By Column */}
-                    <td className="flex items-center space-x-3 text-gray-500 py-[6%] pl-4">
+                    <td className="flex items-center text-left space-x-3 text-gray-500 py-[6%] pl-4">
                       <img
                         src={
                           ticket?.users?.avatar_url ||
@@ -336,11 +336,11 @@ export default function ChatPage() {
                         {ticket.user_name}
                       </span>
                     </td>
-                    <td className="text-gray-500 max-w-[120px] sm:max-w-none truncate">
+                    <td className="text-gray-500 max-w-[120px] sm:max-w-none truncate text-left">
                       {ticket.subject}
                     </td>
                     {/* Message Column */}
-                    <td className="text-gray-500 max-w-[150px] sm:max-w-none truncate overflow-hidden">
+                    <td className="text-gray-500 max-w-[150px] sm:max-w-none text-left truncate overflow-hidden">
                       {ticket.message.length > 30
                         ? `${ticket.message.slice(0, 30)}...`
                         : ticket.message}

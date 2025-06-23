@@ -135,40 +135,40 @@ const pillReminder = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white mt-8" bodyClass="p-0">
-
-      <div className="flex max-lg:flex-col items-center w-full p-6">
-        <h6 className="md:mb-0 mb-0 w-full">Medication Reminder</h6>
-        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
-          <div className="flex ">
-            <Button
-              icon="heroicons-outline:download"
-              iconClass="text-white text-lg"
-              text="Download PDF"
-              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                downloadPDF();
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
+    <Card
+      className="min-h-[80vh] bg-white mt-8"
+      bodyClass="p-0"
+      title={"Medication Reminder"}
+      headerslot={
+        <>
+          {" "}
+          <Button
+            icon="heroicons-outline:download"
+            iconClass="text-white text-lg"
+            // text="Download PDF"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadPDF();
+            }}
+          />
+        </>
+      }
+    >
       <div className="overflow-x-auto custom-scrollbar">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
           <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
               <th className="px-6 py-3">Full Name</th>
               {/* <th className=6 px-4 py-3">Date</th> */}
               <th className="px-6 py-3">Medication name</th>
               <th className="px-6 py-3">Condition</th>
               <th className="px-6 py-3">Medication Type</th>
-              <th className="px-6 py-3">Action</th>
+              <th className="px-6 py-3 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
-                 {data.length === 0 && (
+            {data.length === 0 && (
               <tr>
                 <td
                   colSpan="6"
@@ -193,7 +193,7 @@ const pillReminder = () => {
                   {item.medication_type || "Antibiotic"}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="">
+                  <div className="text-center">
                     <Button
                       icon="lets-icons:eye"
                       iconClass="text-green-500 text-lg"

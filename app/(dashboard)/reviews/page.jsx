@@ -115,47 +115,54 @@ const Reviews = () => {
     );
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex flex-row pb-6 justify-between items-center w-full">
-        <h6 className="mb-0">Reviews</h6>
-        <Button
-          icon="heroicons-outline:download"
-          iconClass="text-white text-xl"
-          className="p-2 bg-green-500 border-none"
-          onClick={(e) => {
-            e.stopPropagation();
-            downloadPDF();
-          }}
-        />
-      </div>
+    <Card
+      className="min-h-[80vh] bg-white mt-5"
+      bodyClass="p-0"
+      title="Reviews"
+      headerslot={
+        <>
+          {" "}
+          <Button
+            icon="heroicons-outline:download"
+            iconClass="text-white text-lg"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+            // text="Download PDF"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadPDF();
+            }}
+          />
+        </>
+      }
+    >
       <div className="overflow-x-auto custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">Full Name</th>
-              <th className="px-4 py-3">Facility name</th>
-              <th className="px-4 py-3">Comments</th>
-              <th className="px-4 py-3">Rating</th>
+            <tr className="text-left  text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3">Full Name</th>
+              <th className="px-6 py-3">Facility name</th>
+              <th className="px-6 py-3">Comments</th>
+              <th className="px-6 py-3 text-center">Rating</th>
               {/* <th className="px-4 py-3">Medication Type</th> */}
-              <th className="px-4 py-3">Action</th>
+              <th className="px-6 py-3 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {ratings.map((item) => (
               <tr
                 key={item.id}
-                className="cursor-pointer hover:bg-gray-50 border-b border-gray-100"
+                className="cursor-pointer hover:bg-gray-50 border-b text-sm border-gray-100"
               >
-                <td className="px-4 py-2 capitalize">
+                <td className="px-6 py-3 capitalize">
                   {item.first_name || "N/A"} {item.last_name || "N/A"}
                 </td>
-                <td className="px-4 py-2 capitalize">
+                <td className="px-6 py-3 capitalize">
                   {item.facility_name || "Ali"}
                 </td>
-                <td className="px-4 py-2 capitalize">
+                <td className="px-6 py-3 capitalize">
                   {item.comment || "N/A"}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-6 py-3 text-center">
                   <Rating
                     fractions={2}
                     initialRating={item.rating}
@@ -172,8 +179,8 @@ const Reviews = () => {
                     }
                   />
                 </td>
-                <td className="px-4 py-2">
-                  <div className="">
+                <td className="px-6 py-3">
+                  <div className="text-center">
                     <Button
                       icon="lets-icons:eye"
                       iconClass="text-blue-500 text-xl"
@@ -190,7 +197,7 @@ const Reviews = () => {
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex justify-end">
+      <div className="m-4 flex justify-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}
