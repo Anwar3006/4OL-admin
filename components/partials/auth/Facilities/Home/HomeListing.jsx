@@ -188,7 +188,7 @@ export default function HomeListing() {
       </div>
 
       {/* Pagination */}
-      <div className="mt-6 flex justify-end absolute bottom-0 right-0">
+      <div className="m-6 flex justify-end absolute bottom-0 right-0">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

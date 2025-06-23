@@ -189,7 +189,7 @@ export default function AmbulanceListing() {
       </div>
 
       {/* Pagination */}
-      <div className="m-6 flex justify-end absolute bottom-0 right-0">
+      <div className="flex justify-end p-4 border-t bg-white z-10">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

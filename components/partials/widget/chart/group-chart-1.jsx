@@ -325,11 +325,11 @@ const GroupChart1 = ({
                 width={48}
               />
             </div>
-            <div className="flex-1 my-1">
-              <div className="text-slate-800 dark:text-slate-300 text-sm mb-1 font-medium">
+            <div className="flex-1 my-1  text-center">
+              <div className="text-slate-600 dark:text-slate-300 text-sm mb-1 font-medium">
                 {item.title}
               </div>
-              <div className="text-slate-900 dark:text-white text-lg font-medium">
+              <div className="text-slate-900 text-2xl dark:text-white font-medium">
                 {item?.loading ? "Loading..." : item.count}
               </div>
             </div>

@@ -7,15 +7,14 @@ import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
 import { changeFacilityStatus } from "@/services/approveFacility";
+import { facilityFields } from "@/constant/facility-labels-data";
 
-export default function page() {
+export default function Page() {
   const router = useRouter();
   const [facility, setFacility] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const searchParams = useSearchParams();
-
-  // Extract ID from query parameters
   const id = searchParams.get("id");
 
   useEffect(() => {
@@ -40,12 +39,7 @@ export default function page() {
     fetchFacility();
   }, [id]);
 
-  if (loading)
-    return (
-      <div>
-        <Loading />
-      </div>
-    );
+  if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
 
   const handleEdit = (id) => {
@@ -53,124 +47,92 @@ export default function page() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Facility Details</h1>
-        <Button
-          icon="heroicons-outline:arrow-left"
-          text="Back"
-          className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() => router.back()}
-        />
-      </div>
+    <Card
+      className="min-h-[80vh] bg-white mt-5"
+      title={"Facility Profile"}
+      headerslot={
+        <>
+          {" "}
+          <Button
+            icon="heroicons-outline:arrow-left"
+            text="Back"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+            iconClass="text-lg"
+            onClick={() => router.back()}
+          />
+        </>
+      }
+    >
       {facility && (
-        <div className="my-6  lg:text-base sm:text-sm text-xs">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 capitalize">
-            <div className="font-semibold">Facility Name:</div>
-            <div>{facility.facility_name || "Not Available"}</div>
-
-            <div className="font-semibold">Facility Type:</div>
-            <div>{facility.facility_type}</div>
-
-            <div className="font-semibold">Contact Number:</div>
-            <div>{facility.contact_num || "Not Available"}</div>
-
-            <div className="font-semibold">Whatsapp:</div>
-            <div>{facility.whatsapp || "Not Available"}</div>
-
-            <div className="font-semibold ">Email:</div>
-            <div className={`${facility.email ? "lowercase" : "capitalize"}`}>
-              {facility.email || "Not Available"}
-            </div>
-
-            <div className="font-semibold">GPS Address:</div>
-            <div>{facility.gps_address || "Not Available"}</div>
-
-            <div className="font-semibold">Street:</div>
-            <div>{facility.street || "Not Available"}</div>
-
-            <div className="font-semibold">Post Code:</div>
-            <div>{facility.post_code || "Not Available"}</div>
-
-            <div className="font-semibold">Area:</div>
-            <div>{facility.area || "Not Available"}</div>
-
-            <div className="font-semibold">District:</div>
-            <div>{facility.district || "Not Available"}</div>
-
-            <div className="font-semibold">Region:</div>
-            <div>{facility.region || "Not Available"}</div>
-
-            <div className="font-semibold">Country:</div>
-            <div>{facility.country || "Not Available"}</div>
-
-            <div className="font-semibold">Hospital Services:</div>
-            <div>
-              {facility.hospital_services?.join(", ") || "Not Available"}
-            </div>
-
-            <div className="font-semibold">Hospital Amenities:</div>
-            <div>
-              {facility.hospital_amenities?.join(", ") || "Not Available"}
-            </div>
-
-            <div className="font-semibold">Pharmacy Services:</div>
-            <div>
-              {facility.pharmacy_services?.join(", ") || "Not Available"}
-            </div>
-
-            <div className="font-semibold">Created At:</div>
-            <div>
-              {facility.created_at
-                ? formatDate(facility.created_at)
-                : "Not Available"}
-            </div>
-
-            <div className="font-semibold">Status:</div>
-            <div>
-              {facility.status === "Approved" ? (
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  <span className="">Approved</span>
+        <div className="lg:text-base sm:text-sm text-xs text-gray-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 capitalize">
+            {facilityFields.map(({ label, key, format }) => (
+              <div className="flex" key={key}>
+                <div className="w-1/3 text-gray-900">{label}</div>
+                <div className={`w-2/3 ${key === "email" ? "lowercase" : ""}`}>
+                  {facility[key]
+                    ? format
+                      ? format(facility[key])
+                      : facility[key]
+                    : "Not Available"}
                 </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                  <span className="">Pending</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6 mb-4 font-semibold">Business Hours</div>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="flex justify-between items-center font-semibold xl:w-[30%] sm:w-[50%]">
-              <div className=" flex-1">Days</div>
-              <div className="flex-1 text-center">Opening Hours</div>
-              <div className="flex-1 text-right">Closing Hours</div>
-            </div>
-            {Object.entries(facility.business_hours).map(([day, hours]) => (
-              <div
-                key={day}
-                className="flex justify-between items-center xl:w-[30%] sm:w-[50%]"
-              >
-                <div className="font-medium flex-1">
-                  {day.charAt(0).toUpperCase() + day.slice(1)}
-                </div>
-                <div className="flex-1 text-center">{hours.opening}</div>
-                <div className="flex-1 text-center">{hours.closing}</div>
               </div>
             ))}
+
+            {/* Status */}
+            <div className="flex">
+              <div className="w-1/3 text-gray-900">Status</div>
+              <div className="w-2/3">
+                {facility.status === "Approved" ? (
+                  <div className="flex items-center">
+                    <p className="bg-green-100 text-green-500 px-4 py-2 rounded-full flex items-center text-sm">
+                      <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>{" "}
+                      Approved
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <p className="bg-yellow-100 text-yellow-500 px-4 py-2 rounded-full flex items-center text-sm">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>{" "}
+                      Pending
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          {/* Business Hours */}
+          {facility.business_hours && (
+            <>
+              <div className="mt-6 mb-2 font-medium text-gray-900">
+                Business Hours
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex justify-between items-center text-gray-900 xl:w-[30%] sm:w-[50%]">
+                  <div className="flex-1">Days</div>
+                  <div className="flex-1 text-center">Opening Hours</div>
+                  <div className="flex-1 text-right">Closing Hours</div>
+                </div>
+                {Object.entries(facility.business_hours).map(([day, hours]) => (
+                  <div
+                    key={day}
+                    className="flex justify-between items-center xl:w-[30%] sm:w-[50%]"
+                  >
+                    <div className="font-medium flex-1 capitalize">{day}</div>
+                    <div className="flex-1 text-center">{hours.opening}</div>
+                    <div className="flex-1 text-center">{hours.closing}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Buttons */}
+          <div className="flex justify-end space-x-2 mt-6">
             <Button
               className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit(facility.id);
-              }}
+              onClick={() => handleEdit(facility.id)}
               text="Edit"
             />
             <Button

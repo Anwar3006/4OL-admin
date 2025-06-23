@@ -49,7 +49,7 @@ const GroupChart3 = () => {
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="block mb-2  text-slate-900 dark:text-white font-medium">
+          <span className="block mb-2 text-sm text-slate-600 dark:text-white font-medium">
             {item.title}
           </span>
           <span className="block text-2xl text-slate-900 dark:text-white font-medium">
