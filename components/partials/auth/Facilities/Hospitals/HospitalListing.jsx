@@ -88,9 +88,9 @@ export default function HospitalsListing() {
   };
 
   return (
-    <Card className=" bg-white" bodyClass="p-0">
+    <Card className="min-h-[70vh] bg-white" bodyClass="p-0">
       <div className="flex max-lg:flex-col items-center w-full p-6">
-        <h6 className="md:mb-0 mb-0 w-full">Hospitals/ Clinics</h6>
+        <h6 className="md:mb-0 mb-3 w-full">Hospitals/ Clinics</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -132,13 +132,25 @@ export default function HospitalsListing() {
               <tr
                 key={item.id}
                 onClick={() => handleView(item.id)}
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
               >
-                <td className="px-6 py-4 text-sm text-gray-900 capitalize">{item.facility_type}</td>
-                <td className="px-6 py-4 text-sm text-gray-500 capitalize">{item.facility_name}</td>
-                <td className="px-6 py-4 text-sm text-gray-500">{item.region}</td>
-                <td className="px-6 py-4 text-sm text-gray-500">{item.contact_num}</td>
-                <td className="px-6 py-4 text-sm text-gray-500">{item.status || "Null"}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                  {item.facility_type}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500 capitalize">
+                  {item.facility_name}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {item.region}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {item.contact_num}
+                </td>
+                <td className="py-4 text-sm">
+                  <span className="bg-green-100 py-2 px-4 text-green-700 rounded-full">
+                    {item.status || "Null"}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
                   <div className="flex space-x-2">
                     <Button
@@ -177,7 +189,7 @@ export default function HospitalsListing() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-end">
+      <div className="flex justify-end m-6 absolute bottom-0 right-0">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

@@ -53,7 +53,7 @@ const pillReminder = () => {
   const nextPage = () => canNextPage && setPageIndex(pageIndex + 1);
 
   const handleView = (id) => {
-    router.push(`/view-pill-reminder-details?id=${id}`);
+    router.push(`/view-medication-reminder-details?id=${id}`);
   };
 
   const capitalizeFirstLetter = (str) => {
@@ -80,7 +80,7 @@ const pillReminder = () => {
     // Title on the Left Side
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Pills Reminders", 14, 20); // Adjust x and y to align with the logo if needed
+    doc.text("Medication Reminders", 14, 20); // Adjust x and y to align with the logo if needed
 
     // Table Headers
     const headers = [
@@ -124,7 +124,7 @@ const pillReminder = () => {
     });
 
     // Save the PDF
-    doc.save("Pills_reminder.pdf");
+    doc.save("Medication_reminder.pdf");
   };
 
   if (loading) {
@@ -138,7 +138,7 @@ const pillReminder = () => {
     <Card className="min-h-[80vh] bg-white mt-8" bodyClass="p-0">
 
       <div className="flex max-lg:flex-col items-center w-full p-6">
-        <h6 className="md:mb-0 mb-0 w-full">Pills Reminder</h6>
+        <h6 className="md:mb-0 mb-0 w-full">Medication Reminder</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <div className="flex ">
             <Button

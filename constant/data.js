@@ -207,10 +207,10 @@ export const menuItems = [
     ],
   },
   {
-    title: "Pills Reminder",
+    title: "Medication Reminder",
     isHide: true,
     icon: "material-symbols:medication-outline",
-    link: "pill-reminder",
+    link: "medication-reminder",
   },
   {
     title: "Reviews/ Ratings",

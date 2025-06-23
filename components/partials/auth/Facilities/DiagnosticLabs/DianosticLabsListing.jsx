@@ -30,7 +30,7 @@ export default function DiagnosticLabsListing() {
         .select("*", { count: "exact" })
         .range(from, to)
         .eq("status", "Approved")
-      .eq("facility_type", "Diagnostic Lab"); 
+        .eq("facility_type", "Diagnostic Lab");
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -87,9 +87,9 @@ export default function DiagnosticLabsListing() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Diagnostic Labs</h6>
+    <Card className="min-h-[70vh] bg-white" bodyClass="p-0">
+      <div className="flex max-lg:flex-col p-6 items-center w-full">
+        <h6 className="md:mb-0 mb-0 w-full">Diagnostic Labs</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -104,22 +104,25 @@ export default function DiagnosticLabsListing() {
         </div>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar">
+      <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">Contact No</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3">Type</th>
+              <th className="px-6 py-3">Name</th>
+              <th className="px-6 py-3">Region</th>
+              <th className="px-6 py-3">Contact No</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
-          {filteredData.length === 0 && (
+            {filteredData.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-10 text-base text-gray-500">
+                <td
+                  colSpan="6"
+                  className="text-center py-10 text-base text-gray-500"
+                >
                   No Data Available
                 </td>
               </tr>
@@ -130,12 +133,24 @@ export default function DiagnosticLabsListing() {
                 onClick={() => handleView(item.id)}
                 className="cursor-pointer hover:bg-gray-50"
               >
-                <td className="px-4 py-2 capitalize">{item.facility_type}</td>
-                <td className="px-4 py-2 capitalize">{item.facility_name}</td>
-                <td className="px-4 py-2">{item.region}</td>
-                <td className="px-4 py-2">{item.contact_num}</td>
-                <td className="px-4 py-2">{item.status || "Null"}</td>
-                <td className="px-4 py-2">
+                <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                  {item.facility_type}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500 capitalize">
+                  {item.facility_name}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {item.region}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {item.contact_num}
+                </td>
+                <td className="py-4 text-sm">
+                  <span className="bg-green-100 py-2 px-4 text-green-700 rounded-full">
+                    {item.status || "Null"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
                   <div className="flex space-x-2">
                     <Button
                       icon="lets-icons:eye"
@@ -173,7 +188,7 @@ export default function DiagnosticLabsListing() {
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-end">
+      <div className="m-6 flex justify-end absolute bottom-0 right-0">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

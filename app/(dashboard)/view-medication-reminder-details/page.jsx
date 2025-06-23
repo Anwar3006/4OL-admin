@@ -47,9 +47,9 @@ const viewPilldetails = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white mt-8">
+    <Card className="min-h-[80vh] bg-white mt-5">
       <div className="flex justify-between items-center mb-4">
-        <h6 className="md:mb-0 mb-0 w-full">Pills Reminder</h6>
+        <h6 className="md:mb-0 mb-0 w-full">Medication Reminder</h6>
         <Button
           icon="heroicons-outline:arrow-left"
           text="Back"

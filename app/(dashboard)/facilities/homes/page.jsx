@@ -8,14 +8,8 @@ const Homes = () => {
   const [isDark] = useDarkmode();
   return (
     <>
-      <div className="loginwrapper">
-        <div className="lg-inner-column">
-          <div className="right-column relative w-full">
-          <div className=" w-full flex flex-col justify-center sm:p-5">
-                <HomeListing />
-              </div>
-          </div>
-        </div>
+      <div className="mt-5 relative">
+        <HomeListing />
       </div>
     </>
   );

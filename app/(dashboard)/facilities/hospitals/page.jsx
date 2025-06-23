@@ -8,7 +8,7 @@ const Hospitals = () => {
   const [isDark] = useDarkmode();
   return (
     <>
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <HospitalsListing />
       </div>
     </>
