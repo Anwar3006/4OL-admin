@@ -37,7 +37,7 @@ const Breadcrumbs = () => {
       {!isHide ? (
         <div className="flex space-x-3 rtl:space-x-reverse">
           <ul className="breadcrumbs">
-            <li className="text-primary-500">
+            <li className="text-secondary-800">
               <Link href="/totals" className="text-lg">
                 <Icon icon="heroicons-outline:home" />
               </Link>
