@@ -24,7 +24,7 @@ export const menuItems = [
   },
   {
     title: "Users",
-    isHide: true,
+    isHide: false,
     icon: "ri:empathize-line",
     link: "users",
   },
@@ -32,7 +32,7 @@ export const menuItems = [
   {
     title: "Delete",
     icon: "ri:empathize-line",
-    isHide: true,
+    isHide: false,
     link: "delete",
   },
 
@@ -208,13 +208,13 @@ export const menuItems = [
   },
   {
     title: "Medication Reminder",
-    isHide: true,
+    isHide: false,
     icon: "material-symbols:medication-outline",
     link: "medication-reminder",
   },
   {
     title: "Reviews/ Ratings",
-    isHide: true,
+    isHide: false,
     icon: "material-symbols:rate-review-outline",
     link: "reviews",
   },
@@ -232,7 +232,7 @@ export const menuItems = [
   // },
   {
     title: "Map",
-    isHide: true,
+    isHide: false,
     icon: "uiw:map",
     child: [
       // { childlink: "/map/overview", childtitle: "Overview" },
@@ -241,13 +241,13 @@ export const menuItems = [
   },
   {
     title: "User Grouping",
-    isHide: true,
+    isHide: false,
     icon: "mdi:account-group",
     link: "user-group",
   },
   {
     title: "Marketing",
-    isHide: true,
+    isHide: false,
     icon: "hugeicons:marketing",
     child: [
       {
@@ -278,27 +278,27 @@ export const menuItems = [
   },
   {
     title: "Admins",
-    isHide: true,
+    isHide: false,
     icon: "heroicons-outline:lock-closed",
     link: "admin",
   },
   {
     title: "Chats",
-    isHide: true,
+    isHide: false,
     icon: "lets-icons:chat",
     link: "chats",
     // link: "chat",
   },
   {
     title: "FAQs",
-    isHide: true,
+    isHide: false,
     icon: "mdi:faq",
     // link: "faq",
     link: "questions",
   },
   {
     title: "Notification",
-    isHide: true,
+    isHide: false,
     icon: "carbon:notification",
     // link: "faq",
     link: "/notifications",

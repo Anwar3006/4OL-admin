@@ -104,8 +104,7 @@ const HealthyLivingOverviewPage = () => {
   };
 
   return (
-    <div className="">
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <Card
           title="Healthy Living Articles"
           className="bg-white dark:bg-slate-800 overflow-hidden relative"
@@ -114,8 +113,8 @@ const HealthyLivingOverviewPage = () => {
           <div className="flex justify-end p-4 absolute top-2 right-2">
             <Button
               text="Add New Article"
-              icon="heroicons-outline:plus"
-              className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
+    className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+              iconClass="text-lg"
               onClick={() => router.push("/categories/healthy_living/form")}
             />
           </div>
@@ -138,7 +137,7 @@ const HealthyLivingOverviewPage = () => {
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
                     Attribution
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -162,25 +161,25 @@ const HealthyLivingOverviewPage = () => {
                       {article.attribution}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         <Button
                           icon="lets-icons:eye"
-                          iconClass="text-blue-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-blue-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => handleView(article)}
                           tooltip="View Details"
                         />
                         <Button
                           icon="heroicons-outline:pencil-alt"
-                          iconClass="text-green-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-green-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => handleEdit(article)}
                           tooltip="Edit"
                         />
                         <Button
                           icon="heroicons-outline:trash"
-                          iconClass="text-red-500 text-xl"
-                          className="p-1 bg-transparent border-none"
+                          iconClass="text-red-500 text-lg"
+                          className="p-0 bg-transparent border-none"
                           onClick={() => deleteModal(article)}
                           tooltip="Delete"
                         />
@@ -201,6 +200,15 @@ const HealthyLivingOverviewPage = () => {
               </tbody>
             </table>
           </div>
+             {totalPages > 0 && (
+        <div className="flex justify-end items-center m-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
         </Card>
 
         {/* Delete Confirmation Modal */}
@@ -314,17 +322,6 @@ const HealthyLivingOverviewPage = () => {
           </div>
         </Modal>
       </div>
-
-      {totalPages > 0 && (
-        <div className="flex justify-end items-center m-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
-    </div>
   );
 };
 

@@ -8,7 +8,8 @@ const Breadcrumbs = () => {
   const location = usePathname();
   const locationName = location
     .replace("/", "")
-    .replace("_", " ")
+    // .replace("_", " ")
+    .replace(/_/g, " ")
     .replace(/-/g, " ");
 
   const [isHide, setIsHide] = useState(null);
@@ -37,7 +38,7 @@ const Breadcrumbs = () => {
         <div className="flex space-x-3 rtl:space-x-reverse">
           <ul className="breadcrumbs">
             <li className="text-primary-500">
-              <Link href="/dashboard" className="text-lg">
+              <Link href="/totals" className="text-lg">
                 <Icon icon="heroicons-outline:home" />
               </Link>
               <span className="breadcrumbs-icon rtl:transform rtl:rotate-180">

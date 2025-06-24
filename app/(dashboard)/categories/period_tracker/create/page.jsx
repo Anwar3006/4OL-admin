@@ -252,7 +252,7 @@ const PeriodTrackerForm = () => {
       >
         {/* Select User */}
         <div className="flex flex-col">
-          <label className="mb-2 font-semibold">Select User</label>
+          <label className="block font-medium text-gray-700">Select User</label>
           <Select
             options={users}
             label={"Select a user"}
@@ -278,7 +278,7 @@ const PeriodTrackerForm = () => {
         </div>
         {/* Cycle Length Dropdown */}
         <div className="flex flex-col">
-          <label className="mb-2 font-semibold">Cycle Length</label>
+          <label className="block font-medium text-gray-700">Cycle Length</label>
           <Select
             className="bg-white dark:bg-slate-800"
             options={cycleOptions}
@@ -302,7 +302,7 @@ const PeriodTrackerForm = () => {
         </div>
         {/* Period Length Dropdown */}
         <div className="flex flex-col">
-          <label className="mb-2 font-semibold">Period Length</label>
+          <label className="block font-medium text-gray-700">Period Length</label>
           <Select
             options={periodOptions}
             value={periodOptions.find((opt) => opt.value === periodLength)}
@@ -325,7 +325,7 @@ const PeriodTrackerForm = () => {
         </div>
         {/* Consistency Dropdown */}
         <div className="flex flex-col">
-          <label className="mb-2 font-semibold">Are periods consistent?</label>
+          <label className="block font-medium text-gray-700">Are periods consistent?</label>
           <Select
             options={consistencyOptions}
             value={consistencyOptions.find((opt) => opt.value === consistent)}
@@ -349,7 +349,7 @@ const PeriodTrackerForm = () => {
         {/* Start Date Input */}
         <div className="flex gap-2">
           <div className="flex flex-col flex-1">
-            <label className="mb-2 font-semibold">Period Start</label>
+            <label className="block font-medium text-gray-700">Period Start</label>
             <input
               type="date"
               value={startDate}
@@ -367,7 +367,7 @@ const PeriodTrackerForm = () => {
           </div>
           {/* Calculate Button */}
           <div className="flex flex-col flex-1">
-            <label className="mb-2 font-semibold">Calculate Cycle</label>
+            <label className="block font-medium text-gray-700">Calculate Cycle</label>
             <button
               type="submit"
               className="w-full md:w-full px-4 py-2 bg-[#56ce84] text-white rounded"
