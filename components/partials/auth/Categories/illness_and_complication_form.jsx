@@ -138,13 +138,26 @@ export default function IllnessAndComplicationForm() {
           () => {
             setLoading(false);
             toast.success("Added Successfully");
-            reset();
+               reset({
+              condition_name: "",
+              about: "",
+              diagnosis: "",
+              treating: "",
+              complications: "",
+              symptoms: "",
+              prevention: "",
+              specialist_to_contact: "",
+              contact_your_doctor: "",
+              more_information: "",
+              attribution: "",
+              types: [],
+              causes: [],
+            });
+
             setImageFile(null);
             setImageUrl("");
             setNewTypes([]);
             setNewCauses([]);
-            while (typeFields.length) removeType(0);
-            while (causeFields.length) removeCause(0);
           },
           (error) => {
             setLoading(false);

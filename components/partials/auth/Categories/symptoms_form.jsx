@@ -13,6 +13,8 @@ import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 export default function SymptomsForm() {
   const [loading, setLoading] = useState(false);
@@ -26,13 +28,53 @@ export default function SymptomsForm() {
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
 
+  const schema = yup.object().shape({
+    symptom_name: yup.string().required("Symptom name is required"),
+    about: yup.string().required("About is required"),
+    diagnosis: yup.string().required("Diagnosis is required"),
+    treating: yup.string().required("Treating is required"),
+    complications: yup.string().required("Complications is required"),
+    prevention: yup.string().required("Prevention is required"),
+    specialist_to_contact: yup
+      .string()
+      .required("Specialist(s) to contact is required"),
+    contact_your_doctor: yup
+      .string()
+      .required("Contact your doctor is required"),
+    more_information: yup.string().required("More information is required"),
+    attribution: yup.string().required("Attribution is required"),
+    types: yup
+      .array()
+      .of(
+        yup.object().shape({
+          type_name: yup.string().required("Type name is required"),
+          about_type: yup.string().required("About this type is required"),
+        })
+      )
+      .min(1, "At least one type is required"),
+
+    causes: yup
+      .array()
+      .of(
+        yup.object().shape({
+          cause_name: yup.string().required("Cause name is required"),
+          other_possible_causes: yup
+            .string()
+            .required("Other causes are required"),
+        })
+      )
+      .min(1, "At least one cause is required"),
+  });
+
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   // For dynamic Types
   const {
@@ -59,48 +101,67 @@ export default function SymptomsForm() {
   }, [activeModal]);
 
   const onSubmit = async (formData) => {
-    let imageUrl = "";
+    try {
+      let imageUrl = "";
 
-    if (imageFile) {
-      imageUrl = await uploadSingleFileToSupabase(imageFile, "symptoms");
-      setImageUrl(imageUrl); // ← optional, for preview if needed after submit
-    }
+      if (imageFile) {
+        imageUrl = await uploadSingleFileToSupabase(imageFile, "symptoms");
+        setImageUrl(imageUrl); // ← optional, for preview if needed after submit
+      }
 
-    const listType = formData.symptom_name.charAt(0).toUpperCase();
-    const newData = {
-      ...formData,
-      list_type: listType,
-      image_url: imageUrl || data?.image_url || "",
-    };
+      const listType = formData.symptom_name.charAt(0).toUpperCase();
+      const newData = {
+        ...formData,
+        list_type: listType,
+        image_url: imageUrl || data?.image_url || "",
+      };
 
-    if (data?.id) {
-      await updateSymptom(data?.id, newData);
-      handleSuccess(router, "Updated Successfully");
-      reset();
-    } else {
-      setLoading(true);
-      add_symptoms(
-        newData,
-        () => {
-          setLoading(true);
-        },
-        (successData) => {
-          setLoading(false);
-          toast.success("Added Successfully");
-          reset(); // Reset form fields after successful submission
-          setImageFile(null);
-          setImageUrl("");
-          setNewTypes([]);
-          setNewCauses([]);
-          while (typeFields.length) removeType(0);
-          while (causeFields.length) removeCause(0);
-        },
-        (error) => {
-          setLoading(false);
-          toast.error(error.message);
-          console.error("Error:", error);
-        }
-      );
+      if (data?.id) {
+        await updateSymptom(data?.id, newData);
+        handleSuccess(router, "Updated Successfully");
+        reset();
+      } else {
+        setLoading(true);
+        add_symptoms(
+          newData,
+          () => {
+            setLoading(true);
+          },
+          (successData) => {
+            setLoading(false);
+            toast.success("Added Successfully");
+            reset({
+              symptom_name: "",
+              about: "",
+              diagnosis: "",
+              treating: "",
+              complications: "",
+              prevention: "",
+              specialist_to_contact: "",
+              contact_your_doctor: "",
+              more_information: "",
+              attribution: "",
+              types: [],
+              causes: [],
+            });
+
+            setImageFile(null);
+            setImageUrl("");
+            setNewTypes([]);
+            setNewCauses([]);
+          },
+          (error) => {
+            setLoading(false);
+            toast.error(error.message);
+            console.error("Error:", error);
+          }
+        );
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.error("Submission Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,6 +211,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.symptom_name || ""}
+          error={errors.symptom_name}
         />
         <TextareaNew
           name="about"
@@ -157,6 +219,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.about || ""}
+          error={errors.about}
         />
 
         <div>
@@ -167,7 +230,7 @@ export default function SymptomsForm() {
             text="Add Type"
             type="button"
             onClick={() => openModal("types")}
-            className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
+            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
           />
           <div className="my-2 rounded sm:text-sm text-xs">
             {typeFields.length > 0 &&
@@ -218,6 +281,11 @@ export default function SymptomsForm() {
             ) : (
               <p className="sm:text-sm text-xs">No types added yet.</p>
             )}
+            {errors.types?.message && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.types.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -229,7 +297,7 @@ export default function SymptomsForm() {
             text="Add Cause"
             type="button"
             onClick={() => openModal("causes")}
-            className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
+            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
           />
           <div className="my-2 rounded  sm:text-sm text-xs">
             {causeFields.length > 0 &&
@@ -282,6 +350,11 @@ export default function SymptomsForm() {
             ) : (
               <p className="sm:text-sm text-xs">No causes added yet.</p>
             )}
+            {errors.causes?.message && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.causes.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -292,6 +365,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.diagnosis || ""}
+          error={errors.diagnosis}
         />
         <TextareaNew
           name="treating"
@@ -300,6 +374,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.treating || ""}
+          error={errors.treating}
         />
         <TextareaNew
           name="complications"
@@ -308,6 +383,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.complications || ""}
+          error={errors.complications}
         />
         <TextareaNew
           name="prevention"
@@ -316,6 +392,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.prevention || ""}
+          error={errors.prevention}
         />
         <TextinputNew
           name="specialist_to_contact"
@@ -324,6 +401,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.specialist_to_contact || ""}
+          error={errors.specialist_to_contact}
         />
         <TextareaNew
           name="contact_your_doctor"
@@ -331,6 +409,7 @@ export default function SymptomsForm() {
           placeholder="Contact your Doctor or visit a health facility if"
           register={register}
           defaultValue={data?.contact_your_doctor || ""}
+          error={errors.contact_your_doctor}
         />
         <TextareaNew
           name="more_information"
@@ -338,6 +417,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.more_information || ""}
+          error={errors.more_information}
         />
         <TextinputNew
           name="attribution"
@@ -346,6 +426,7 @@ export default function SymptomsForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.attribution || ""}
+          error={errors.attribution}
         />
 
         <div>
