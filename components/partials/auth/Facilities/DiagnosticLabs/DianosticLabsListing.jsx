@@ -87,7 +87,7 @@ export default function DiagnosticLabsListing() {
   };
 
   return (
-    <Card className="min-h-[70vh] bg-white" bodyClass="p-0">
+    <Card className="bg-white" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
         <h6 className="md:mb-0 mb-0 w-full">Diagnostic Labs</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
@@ -188,7 +188,7 @@ export default function DiagnosticLabsListing() {
       </div>
 
       {/* Pagination */}
-      <div className="m-6 flex justify-end absolute bottom-0 right-0">
+      <div className="m-6 flex justify-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

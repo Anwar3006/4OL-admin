@@ -64,8 +64,8 @@ export default function Page() {
       }
     >
       {facility && (
-        <div className="sm:text-sm text-xs text-gray-500 lg:w-[80%] w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 capitalize">
+        <div className="sm:text-sm text-xs text-gray-600 lg:w-[80%] w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 capitalize">
             {facilityFields.map(({ label, key, format }) => (
               <div className="flex" key={key}>
                 <div className="w-1/3 text-gray-900">{label}</div>
@@ -131,12 +131,12 @@ export default function Page() {
           {/* Buttons */}
           <div className="flex justify-end space-x-2 mt-6">
             <Button
-              className="px-6 py-2 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
+              className="px-6 py-1 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
               onClick={() => handleEdit(facility.id)}
               text="Edit"
             />
             <Button
-              className="px-6 py-2 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
+              className="px-6 py-1 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
               text={"Approve"}
               onClick={async () => {
                 await changeFacilityStatus(

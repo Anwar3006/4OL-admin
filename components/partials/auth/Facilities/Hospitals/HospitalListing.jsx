@@ -88,7 +88,7 @@ export default function HospitalsListing() {
   };
 
   return (
-    <Card className="min-h-[70vh] bg-white" bodyClass="p-0">
+    <Card className="bg-white" bodyClass="p-0">
       <div className="flex max-lg:flex-col items-center w-full p-6">
         <h6 className="md:mb-0 mb-3 w-full">Hospitals/ Clinics</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
@@ -189,7 +189,7 @@ export default function HospitalsListing() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-end m-6 absolute bottom-0 right-0">
+      <div className="flex justify-end m-6">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

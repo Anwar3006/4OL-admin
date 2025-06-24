@@ -9,14 +9,8 @@ export default function page() {
   const [isDark] = useDarkmode();
   return (
     <>
-      <div className="">
-        <div className="lg-inner-column">
-          <div className="right-column relative w-full">  
-              <div className=" w-full flex flex-col justify-center sm:p-5">
-                <UsersListing />
-              </div>
-          </div>
-        </div>
+      <div className="relative mt-5">
+        <UsersListing />
       </div>
     </>
   );

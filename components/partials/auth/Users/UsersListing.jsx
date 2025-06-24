@@ -131,27 +131,13 @@ export default function UsersListing() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex max-lg:flex-col pb-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Users</h6>
-        {/* <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
-          <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-          <div className="flex ">
-            <Button
-              icon="heroicons-outline:plus-sm"
-              text="Add Facility"
-              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-              iconClass="text-lg"
-              onClick={() => router.push("/facility-profile-form")}
-            />
-          </div>
-        </div> */}
-      </div>
+    <>
+    <Card className="bg-white" bodyClass="p-0" title={"Users"}>
 
-      <div className="overflow-x-auto  custom-scrollbar">
+      <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Registration Date</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
@@ -235,7 +221,7 @@ export default function UsersListing() {
         </table>
       </div>
 
-      <div className="mt-4 flex justify-end items-end">
+      <div className="m-4 flex justify-end items-end">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}
@@ -247,5 +233,6 @@ export default function UsersListing() {
         />
       </div>
     </Card>
+    </>
   );
 }

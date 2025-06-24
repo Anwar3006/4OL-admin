@@ -121,6 +121,10 @@ const pillReminder = () => {
         textColor: [255, 255, 255], // Optional: Set text color to white
         fontSize: 10, // Optional: Set font size for header text
       },
+      columnStyles: {
+        6: { halign: "center" }, // "Amount"
+        8: { halign: "center" }, // "Number of Times"
+      },
     });
 
     // Save the PDF
