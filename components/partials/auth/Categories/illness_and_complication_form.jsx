@@ -225,7 +225,7 @@ export default function IllnessAndComplicationForm() {
             text="Add Type"
             type="button"
             onClick={() => openModal("types")}
-            className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
+            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
           />
           <div className="my-2 rounded">
             {typeFields.length > 0 &&
@@ -291,7 +291,7 @@ export default function IllnessAndComplicationForm() {
             text="Add Cause"
             type="button"
             onClick={() => openModal("causes")}
-            className="py-0 px-2 mt-2 border-none text-center bg-green-500 text-white"
+            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
           />
           <div className="my-2 rounded ">
             {causeFields.length > 0 &&

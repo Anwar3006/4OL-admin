@@ -44,7 +44,7 @@ const Textinput = ({
           disabled={disabled}
           onChange={onChange}
           onFocus={onFocus}
-          {...register} 
+          {...(register && register(name))}
           {...rest}
           className={`form-control py-2 ${error ? "border-red-500" : ""} ${className}`}
         />

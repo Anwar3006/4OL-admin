@@ -20,7 +20,6 @@ const schema = yup.object().shape({
   contact_your_doctor: yup.string().required("Contact your doctor is required"),
   more_information: yup.string().required("More information is required"),
   attribution: yup.string().required("Attribution is required"),
-  image_url: yup.string().required("Image is required"),
 });
 
 // ✅ Field configuration array
