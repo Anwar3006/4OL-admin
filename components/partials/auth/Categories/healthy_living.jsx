@@ -1,148 +1,158 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
+import { useRouter, useSearchParams } from "next/navigation";
 import TextinputNew from "@/components/ui/TextinputNew";
 import TextareaNew from "@/components/ui/TextareaNew";
-import { add_healthy_living } from "@/app/services/healthy_living";
-import { useSearchParams } from "next/navigation";
-import { updateHealthyLivingEntry } from "@/app/services/healthy-living-service";
-import handleSuccess from "@/utils/handleSuccess";
-import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
+import { add_healthy_living } from "@/app/services/healthy_living";
+import { updateHealthyLivingEntry } from "@/app/services/healthy-living-service";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
+import handleSuccess from "@/utils/handleSuccess";
+
+// ✅ Yup validation schema
+const schema = yup.object().shape({
+  topic_name: yup.string().required("Topic name is required"),
+  about: yup.string().required("About is required"),
+  category: yup.string().required("Category is required"),
+  contact_your_doctor: yup.string().required("Contact your doctor is required"),
+  more_information: yup.string().required("More information is required"),
+  attribution: yup.string().required("Attribution is required"),
+  image_url: yup.string().required("Image is required"),
+});
+
+// ✅ Field configuration array
+const fields = [
+  { name: "topic_name", label: "Topic Name", component: TextinputNew },
+  { name: "about", label: "About", component: TextareaNew },
+  { name: "category", label: "Category", component: TextareaNew },
+  {
+    name: "contact_your_doctor",
+    label: "Contact your Doctor",
+    placeholder: "Contact your doctor or visit a health facility if",
+    component: TextareaNew,
+  },
+  { name: "more_information", label: "More Information", component: TextareaNew },
+  { name: "attribution", label: "Attribution", component: TextinputNew },
+];
 
 export default function HealthyLiving() {
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("healthyliving");
   const data = itemParam ? JSON.parse(itemParam) : null;
-  const router = useRouter();
-  const [imageFile, setImageFile] = useState(null); // raw file
+
+  const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
 
+  // ✅ useForm with yup schema and defaultValues
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors },
     reset,
-  } = useForm();
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema)
+  });
+
+  // ✅ Populate form values when editing
+  useEffect(() => {
+    if (data) {
+      reset({
+        topic_name: data.topic_name || "",
+        about: data.about || "",
+        category: data.category || "",
+        contact_your_doctor: data.contact_your_doctor || "",
+        more_information: data.more_information || "",
+        attribution: data.attribution || "",
+      });
+      setImageUrl(data.image_url || "");
+    }
+  }, [data, reset]);
 
   const onSubmit = async (formData) => {
-    let imageUrl = "";
-
-    if (imageFile) {
-      imageUrl = await uploadSingleFileToSupabase(imageFile, "healthy-living");
-      setImageUrl(imageUrl); // ← optional, for preview if needed after submit
-    }
-    // Automatically generate list_type based on the first character of the name
-    const listType = formData.topic_name.charAt(0).toUpperCase();
-
-    const newData = {
-      ...formData,
-      list_type: listType,
-      image_url: imageUrl || data?.image_url || "",
-    };
-
-    if (data?.id) {
-      await updateHealthyLivingEntry(data?.id, newData);
-      handleSuccess(router, "Updated Successfully");
-      reset();
-    } else {
+    try {
       setLoading(true);
-      add_healthy_living(
-        newData,
-        () => {
-          setLoading(true);
-        },
-        (successData) => {
-          setLoading(false);
-          toast.success("Added Successfully");
-          reset();
-          setImageFile(null);
-          setImageUrl("");
-        },
-        (error) => {
-          setLoading(false);
-          toast.error(error.message);
-          console.error("Error:", error);
-        }
-      );
+
+      // ✅ Upload image if selected
+      let uploadedImageUrl = imageUrl;
+      if (imageFile) {
+        uploadedImageUrl = await uploadSingleFileToSupabase(imageFile, "healthy-living");
+        setImageUrl(uploadedImageUrl);
+      }
+
+      // ✅ Generate list_type from first character of topic_name
+      const listType = formData.topic_name.charAt(0).toUpperCase();
+
+      const payload = {
+        ...formData,
+        list_type: listType,
+        image_url: uploadedImageUrl || "",
+      };
+
+      if (data?.id) {
+        await updateHealthyLivingEntry(data.id, payload);
+        handleSuccess(router, "Updated Successfully");
+        reset();
+      } else {
+        add_healthy_living(
+          payload,
+          () => setLoading(true),
+          () => {
+            setLoading(false);
+            toast.success("Added Successfully");
+            reset();
+            setImageFile(null);
+            setImageUrl("");
+          },
+          (error) => {
+            setLoading(false);
+            toast.error(error.message || "Submission failed");
+            console.error("Error:", error);
+          }
+        );
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.error("Submission Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form
-      className="w-full grid md:grid-cols-2 grid-cols-1 gap-4 capitalize"
       onSubmit={handleSubmit(onSubmit)}
+      className="w-full grid md:grid-cols-2 grid-cols-1 gap-4 capitalize"
     >
-      <TextinputNew
-        name="topic_name"
-        label="Topic Name"
-        type="text"
-        placeholder=" "
-        register={register}
-        defaultValue={data?.topic_name || ""}
-      />
-      <TextareaNew
-        name="about"
-        label="About"
-        placeholder=" "
-        register={register}
-        defaultValue={data?.about || ""}
-      />
-      <TextareaNew
-        name="category"
-        label="Category"
-        type="text"
-        placeholder=" "
-        register={register}
-        defaultValue={data?.category}
-      />
-      <TextareaNew
-        name="contact_your_doctor"
-        label="Contact your Doctor"
-        placeholder="Contact your Doctor or visit a health facility if"
-        register={register}
-        className="capitalize"
-        defaultValue={data?.contact_your_doctor}
-      />
-      <TextareaNew
-        name="more_information"
-        label="More Information"
-        placeholder=" "
-        register={register}
-        defaultValue={data?.more_information}
-      />
-      <TextinputNew
-        name="attribution"
-        label="Attribution"
-        type="text"
-        placeholder=" "
-        register={register}
-        defaultValue={data?.attribution}
-      />
+      {fields.map(({ name, label, component: Component, placeholder }) => (
+        <div key={name}>
+          <Component
+            name={name}
+            label={label}
+            placeholder={placeholder || " "}
+            register={register}
+            error={errors[name]}
+          />
+        </div>
+      ))}
 
+      {/* ✅ File Upload */}
       <div>
-        <label
-          htmlFor={"upload image"}
-          className={`text-sm capitalize flex-0 mr-6 md:w-[100px] w-[60px] break-words`}
-        >
-          Upload Image
-        </label>
+        <label className="text-sm capitalize block mb-1">Upload Image</label>
         <Fileinput
           name="image"
           onChange={(e) => {
             const file = e.target.files[0];
             if (file) {
               setImageFile(file);
-              setImageUrl(URL.createObjectURL(file)); // <-- Show preview
+              setImageUrl(URL.createObjectURL(file));
             }
           }}
-          multiple={false}
-          placeholder="Upload Image"
           mediaType="image"
-          className="my-2"
           accept="image/*"
         />
         {imageUrl && (
@@ -158,12 +168,12 @@ export default function HealthyLiving() {
         type="submit"
         className="btn bg-[#56ce84] text-white block lg:w-[50%] w-full text-center col-span-full mt-5"
       >
-        {data?.id
-          ? loading
+        {loading
+          ? data?.id
             ? "Updating..."
-            : "Update"
-          : loading
-          ? "Submitting..."
+            : "Submitting..."
+          : data?.id
+          ? "Update"
           : "Submit"}
       </button>
 

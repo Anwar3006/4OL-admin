@@ -9,20 +9,14 @@ export default function page() {
   const [isDark] = useDarkmode();
   return (
     <>
-      <div className="">
-        <div className="lg-inner-column">
-          <div className="right-column relative w-full">
-            <Card
-              title={"Symptoms Form"}
-              className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
-            >
-              <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
-               <SymptomsForm/>
-              </div>
-            </Card>
-          </div>
+      <Card
+        title={"Symptoms Form"}
+        className="inner-content w-full flex flex-col bg-white dark:bg-slate-800 mt-5"
+      >
+        <div className="lg:w-[80%] w-full flex flex-col justify-center sm:p-2">
+          <SymptomsForm />
         </div>
-      </div>
+      </Card>
     </>
   );
 }

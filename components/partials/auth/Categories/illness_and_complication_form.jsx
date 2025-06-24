@@ -13,6 +13,8 @@ import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 export default function IllnessAndComplicationForm() {
   const searchParams = useSearchParams();
@@ -26,13 +28,57 @@ export default function IllnessAndComplicationForm() {
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
 
+  const schema = yup.object().shape({
+    condition_name: yup.string().required("Condition name is required"),
+    about: yup.string().required("About is required"),
+    diagnosis: yup.string().required("Diagnosis is required"),
+    treating: yup.string().required("Treating is required"),
+    complications: yup.string().required("Complications are required"),
+    symptoms: yup.string().required("Symptoms are required"),
+    prevention: yup.string().required("Prevention is required"),
+    specialist_to_contact: yup
+      .string()
+      .required("Specialist(s) to contact is required"),
+    contact_your_doctor: yup
+      .string()
+      .required("Contact your doctor is required"),
+    more_information: yup.string().required("More information is required"),
+    attribution: yup.string().required("Attribution is required"),
+
+    // 👇 Add dynamic field validation
+    types: yup
+      .array()
+      .of(
+        yup.object().shape({
+          type_name: yup.string().required("Type name is required"),
+          about_type: yup.string().required("About this type is required"),
+        })
+      )
+      .min(1, "At least one type is required"),
+
+    causes: yup
+      .array()
+      .of(
+        yup.object().shape({
+          cause_name: yup.string().required("Cause name is required"),
+          other_possible_causes: yup
+            .string()
+            .required("Other causes are required"),
+        })
+      )
+      .min(1, "At least one cause is required"),
+  });
+
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm(
+    { 
+      resolver: yupResolver(schema)
+    });
 
   // For dynamic Types
   const {
@@ -160,6 +206,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.condition_name || ""}
+          error={errors.condition_name}
         />
         <TextareaNew
           name="about"
@@ -167,6 +214,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.about || ""}
+          error={errors.about}
         />
 
         <div>
@@ -227,6 +275,10 @@ export default function IllnessAndComplicationForm() {
               </div>
             ) : (
               <p className="sm:text-sm text-xs">No types added yet.</p>
+            )}
+            {/* ✅ Type Array Error Message */}
+            {errors.types?.message && (
+              <p className="text-red-500 text-sm mt-1">{errors.types.message}</p>
             )}
           </div>
         </div>
@@ -292,6 +344,10 @@ export default function IllnessAndComplicationForm() {
             ) : (
               <p className="sm:text-sm text-xs">No causes added yet.</p>
             )}
+            {/* ✅ Cause Array Error Message */}
+            {errors.causes?.message && (
+              <p className="text-red-500 text-sm mt-1">{errors.causes.message}</p>
+            )}
           </div>
         </div>
 
@@ -302,6 +358,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.diagnosis}
+          error={errors.diagnosis}
         />
         <TextareaNew
           name="treating"
@@ -310,6 +367,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.treating}
+          error={errors.treating}
         />
         <TextareaNew
           name="complications"
@@ -318,6 +376,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.complications}
+          error={errors.complications}
         />
         <TextareaNew
           name="symptoms"
@@ -326,6 +385,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.symptoms || ""}
+          error={errors.symptoms}
         />
         <TextareaNew
           name="prevention"
@@ -334,6 +394,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.prevention}
+          error={errors.prevention}
         />
         <TextinputNew
           name="specialist_to_contact"
@@ -342,6 +403,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.specialist_to_contact}
+          error={errors.specialist_to_contact}
         />
         <TextareaNew
           name="contact_your_doctor"
@@ -349,6 +411,7 @@ export default function IllnessAndComplicationForm() {
           placeholder="Contact your doctor or visit a health facility if"
           register={register}
           defaultValue={data?.contact_your_doctor}
+          error={errors.contact_your_doctor}
         />
         <TextareaNew
           name="more_information"
@@ -356,6 +419,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.more_information}
+          error={errors.more_information}
         />
         <TextinputNew
           name="attribution"
@@ -364,6 +428,7 @@ export default function IllnessAndComplicationForm() {
           placeholder=" "
           register={register}
           defaultValue={data?.attribution || ""}
+          error={errors.attribution}
         />
 
         <div>

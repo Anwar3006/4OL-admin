@@ -92,7 +92,7 @@ const MyGoogleMap = () => {
 
     if (value.length > 1) {
       try {
-        const { data } = await axios.post("/api/places", {
+        const { data } = await axios.post("", {
           searchQuery: value,
           latitude:
             selectedDistrict?.location?.lat ||
@@ -127,7 +127,7 @@ const MyGoogleMap = () => {
   useEffect(() => {
     const fetchFacilities = async () => {
       try {
-        const { data } = await axios.post("/api/places", {
+        const { data } = await axios.post("", {
           latitude:
             selectedDistrict?.location?.lat ||
             selectedRegion?.location?.lat ||
