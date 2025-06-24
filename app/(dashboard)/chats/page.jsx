@@ -249,7 +249,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="bg-white flex flex-col p-[1%]">
+    <div className="bg-white flex flex-col p-[1%] mt-5">
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
