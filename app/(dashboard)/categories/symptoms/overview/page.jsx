@@ -100,6 +100,36 @@ const SymptomsOverviewPage = () => {
       : text;
   };
 
+  const fields = [
+    { label: "Image", key: "image_url", type: "image" },
+    { label: "About", key: "about" },
+    {
+      label: "Types",
+      key: "types",
+      type: "list",
+      fields: [
+        { label: "About", key: "about_type" },
+        { label: "Type Name", key: "type_name" },
+      ],
+    },
+    {
+      label: "Causes",
+      key: "causes",
+      type: "list",
+      fields: [
+        { label: "Cause Name", key: "cause_name" },
+        { label: "Other Possible Cause", key: "other_possible_causes" },
+      ],
+    },
+    { label: "Diagnosis", key: "diagnosis" },
+    { label: "Treatment", key: "treating" },
+    { label: "Complications", key: "complications" },
+    { label: "Prevention", key: "prevention" },
+    { label: "Specialist to Contact", key: "specialist_to_contact" },
+    { label: "Contact your Doctor", key: "contact_your_doctor" },
+    { label: "Attribution", key: "attribution" },
+  ];
+
   return (
     <div className="mt-5 relative">
       <Card
@@ -278,45 +308,63 @@ const SymptomsOverviewPage = () => {
         size="lg"
         themeClass="bg-[#4ab573]"
       >
-        <div className="p-4 max-h-[80vh] overflow-y-auto">
+        <div
+          style={{ scrollbarWidth: 0 }}
+          className="lg:max-h-[80vh] max-h-[95vh] overflow-y-auto hidden-scrollbar sm:text-sm text-xs text-gray-600 w-full"
+        >
           {viewDetails && (
-            <div className="space-y-4">
-              <div>
-                <h5 className="text-md font-semibold text-gray-700">About</h5>
-                <p className="text-gray-600 mt-1">{viewDetails.about}</p>
-              </div>
+            <div className="grid grid-cols-1 gap-2 capitalize">
+              {fields.map(({ label, key, type, fields: subFields }) => {
+                const value = viewDetails[key];
 
-              <div>
-                <h5 className="text-md font-semibold text-gray-700">
-                  Diagnosis
-                </h5>
-                <p className="text-gray-600 mt-1">{viewDetails.diagnosis}</p>
-              </div>
+                if (!value) return null;
 
-              <div>
-                <h5 className="text-md font-semibold text-gray-700">
-                  Treatment
-                </h5>
-                <p className="text-gray-600 mt-1">{viewDetails.treating}</p>
-              </div>
+                if (type === "image") {
+                  return (
+                    <div key={key} className="flex">
+                      <div className="w-1/3 text-gray-900">{label}</div>
+                      <p className="w-2/3">
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={value}
+                            alt="image url"
+                            className="w-16 h-16 object-cover rounded-sm"
+                          />
+                        </a>
+                      </p>
+                    </div>
+                  );
+                }
 
-              <div>
-                <h5 className="text-md font-semibold text-gray-700">
-                  Complications
-                </h5>
-                <p className="text-gray-600 mt-1">
-                  {viewDetails.complications}
-                </p>
-              </div>
+                if (type === "list") {
+                  return value.map((item, index) => (
+                    <div key={`${key}-${index}`} className="flex">
+                      <div className="w-1/3 text-gray-900">
+                        {label} {index + 1}
+                      </div>
+                      <div className="w-2/3">
+                        {subFields.map(({ label: subLabel, key: subKey }) => (
+                          <p key={subKey}>
+                            <span className="text-gray-900">{subLabel}:</span>{" "}
+                            {item[subKey] || "-"}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                }
 
-              <div>
-                <h5 className="text-md font-semibold text-gray-700">
-                  Specialist to Contact
-                </h5>
-                <p className="text-gray-600 mt-1">
-                  {viewDetails.specialist_to_contact}
-                </p>
-              </div>
+                return (
+                  <div key={key} className="flex">
+                    <div className="w-1/3 text-gray-900">{label}</div>
+                    <p className="w-2/3">{value || "-"}</p>
+                  </div>
+                );
+              })}
 
               <div className="pt-4 border-t border-gray-200 flex justify-end">
                 <Button
