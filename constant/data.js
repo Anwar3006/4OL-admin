@@ -33,7 +33,7 @@ export const menuItems = [
     title: "Delete",
     icon: "ri:empathize-line",
     isHide: false,
-    link: "delete",
+    link: "delete-account",
   },
 
   {
