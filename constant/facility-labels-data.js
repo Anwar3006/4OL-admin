@@ -34,3 +34,11 @@ export const facilityFields = [
       format: (v) => formatDate(v),
     },
   ];
+
+export const reviewsFields = [
+    { label: "Name", key: "user_profiles.first_name" },
+    { label: "Email", key: "user_profiles?.last_name" },
+    { label: "Rating", key: "rating" },
+    { label: "Review", key: "review" },
+    { label: "Created At", key: "created_at", format: (v) => formatDate(v) },
+  ];

@@ -50,36 +50,50 @@ const ViewReviews = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Reviews Details</h1>
-        <Button
-          icon="heroicons-outline:arrow-left"
-          text="Back"
-          className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() => router.back()}
-        />
-      </div>
+    <Card
+      className="min-h-[80vh] bg-white mt-5"
+      bodyClass="p-0"
+      title={"Reviews Details"}
+      headerslot={
+        <>
+          {" "}
+          <Button
+            icon="heroicons-outline:arrow-left"
+            text="Back"
+            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+            iconClass="text-lg"
+            onClick={() => router.back()}
+          />
+        </>
+      }
+    >
       {reviewData && (
-        <div className="p-6">
-          <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3">
-            <div className="text-lg text-black-500">Full Name</div>
-            <div className="text-gray-700">
-              {reviewData.user_profiles.first_name || "N/A"}{" "}
-              {reviewData?.user_profiles?.last_name || "N/A"}
+        <div className="sm:text-sm text-xs text-gray-600 lg:w-[50%] w-full">
+          <div className="grid grid-cols-1 gap-2 capitalize  lg:p-6 p-4">
+            <div className="flex">
+              <p className="w-1/3 text-gray-900">Full Name</p>
+              <p className="w-2/3">
+                {reviewData.user_profiles.first_name || "N/A"}{" "}
+                {reviewData?.user_profiles?.last_name || "N/A"}
+              </p>
             </div>
 
-            <div className="text-lg text-black-500">Facility Name</div>
-            <div className="text-gray-700">
-              {reviewData.healthcare_profiles.facility_name || "N/A"}
+            <div className="flex">
+              <p className="w-1/3 text-gray-900">Facility Name</p>
+              <p className="w-2/3">
+                {reviewData.healthcare_profiles.facility_name || "N/A"}
+              </p>
             </div>
 
-            <div className="text-lg text-black-500">Comment</div>
-            <div className="text-gray-700">{reviewData.comment || "N/A"}</div>
+            <div className="flex">
+              <p className="w-1/3 text-gray-900">Comment</p>
+              <p className="w-2/3">{reviewData.comment || "N/A"}</p>
+            </div>
 
-            <div className="text-lg text-black-500">Rating</div>
-            <div className="text-gray-700">{reviewData.rating || "N/A"}</div>
+            <div className="flex">
+              <p className="w-1/3 text-gray-900">Rating</p>
+              <p className="w-2/3">{reviewData.rating || "N/A"}</p>
+            </div>
           </div>
         </div>
       )}
