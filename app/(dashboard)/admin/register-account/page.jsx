@@ -10,7 +10,7 @@ export default function page() {
               <div className="right-column relative w-full">
                 <Card
                   title={"Register User Account"}
-                  className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
+                  className="inner-content w-full flex flex-col bg-white dark:bg-slate-800 mt-5"
                 >
                   <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
                     <RegForm />

@@ -30,13 +30,6 @@ export const menuItems = [
   },
 
   {
-    title: "Delete",
-    icon: "ri:empathize-line",
-    isHide: false,
-    link: "delete-account",
-  },
-
-  {
     title: "Facilities",
     isHide: true,
     // isOpen: true,
@@ -281,6 +274,12 @@ export const menuItems = [
     isHide: false,
     icon: "heroicons-outline:lock-closed",
     link: "admin",
+  },
+    {
+    title: "Delete",
+    icon: "ri:empathize-line",
+    isHide: false,
+    link: "delete-account",
   },
   {
     title: "Chats",
