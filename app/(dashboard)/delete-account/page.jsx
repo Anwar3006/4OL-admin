@@ -12,11 +12,12 @@ import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import useDarkMode from "@/hooks/useDarkMode";
 import deleteAccount from "@/services/deleteAccount";
+import Card from "@/components/ui/Card";
 
 // Validation schema
 const schema = yup
   .object({
-    email: yup.string().email("Invalid email").required("Email is Required"),
+    // email: yup.string().email("Invalid email").required("Email is Required"),
     password: yup.string().required("Password is Required"),
   })
   .required();
@@ -44,9 +45,34 @@ export default function DeleteAccountPage() {
   const { ref: passwordHookRef, ...passwordRest } = register("password");
 
   // Handle form submission
-  const onSubmit = (data) => {
-    // Open confirmation modal before proceeding with deletion
-    setShowModal(true);
+  const onSubmit = async (data) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      console.log("User data:", user);
+
+      if (userError || !user?.email) {
+        toast.error("You must be logged in to delete your account");
+        return;
+      }
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: data.password,
+      });
+
+      if (authError) {
+        toast.error("Invalid Credentials. Please Verify Your Password.");
+        return;
+      }
+      // Open confirmation modal before proceeding with deletion
+      setShowModal(true);
+    } catch (error) {
+      console.log("Password verification failed:", error);
+      toast.error("An unexpected error occur. Please try again.");
+    }
   };
 
   // Handle actual account deletion after confirmation
@@ -143,35 +169,28 @@ export default function DeleteAccountPage() {
 
   return (
     <>
-      <div className="loginwrapper">
-        <div className="lg-inner-column">
-          <div className="right-column relative">
-            <div className="inner-content h-full flex flex-col bg-white dark:bg-slate-800">
-              <div className="auth-box h-full flex flex-col justify-center">
-                <div className="mobile-logo text-center mb-6 lg:hidden block w-10 mx-auto">
-                  <Link href="/">
-                    <img
-                      src={
-                        isDark
-                          ? "assets/images/all-img/logo-green.png"
-                          : "/assets/images/all-img/logo-green.png"
-                      }
-                      alt=""
-                      className="mx-auto"
-                    />
-                  </Link>
-                </div>
-                <div className="text-center 2xl:mb-10 mb-4">
-                  <h4 className="font-medium">Delete Account</h4>
-                  <div className="text-red-500 text-base">
-                    This action is permanent and cannot be undone.
-                  </div>
-                </div>
-
-                <ToastContainer />
-                <div className="md:max-w-[345px] w-full mx-auto">
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <Textinput
+      <Card
+        className="mt-5 bg-white dark:bg-slate-800"
+        title={"Danger Zone"}
+        subtitle={"Irreversible and destructive actions"}
+        titleClass="text-red-600 font-bold"
+      >
+        <ToastContainer />
+        <div className="w-full">
+          <div className="w-full">
+            <h1 className="text-base font-semibold text-gray-700">
+              Delete Account
+            </h1>
+            <p className="text-sm mt-1">
+              Please enter your password to proceed with permanently deleting
+              your account.
+            </p>
+          </div>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 mt-5 flex max-lg:flex-col justify-between w-full"
+          >
+            {/* <Textinput
                       name="email"
                       label="Email"
                       type="email"
@@ -185,55 +204,34 @@ export default function DeleteAccountPage() {
                       error={errors?.email}
                       autoComplete="username"
                       className="w-full"
-                    />
-                    <Textinput
-                      name="password"
-                      label="Password"
-                      type="password"
-                      placeholder="Enter your password"
-                      ref={(e) => {
-                        passwordHookRef(e);
-                        passwordRef.current = e;
-                      }}
-                      {...passwordRest}
-                      register={register}
-                      error={errors?.password}
-                      hasicon={true}
-                      autoComplete="current-password"
-                      className="w-full"
-                    />
+                    /> */}
+            <Textinput
+              name="password"
+              type="password"
+              label={"Password"}
+              placeholder="Enter Your Password"
+              ref={(e) => {
+                passwordHookRef(e);
+                passwordRef.current = e;
+              }}
+              {...passwordRest}
+              register={register}
+              error={errors?.password}
+              hasicon={true}
+              classLabel=" after:ml-0.5 after:text-red-500 after:content-['*'] text-sm"
+              autoComplete="current-password"
+              className="w-full border"
+            />
 
-                    <button
-                      type="submit"
-                      className="btn bg-red-500 hover:bg-red-600 text-white block w-full text-center transition-colors"
-                    >
-                      Delete Account
-                    </button>
-                  </form>
-                </div>
-              </div>
-              <div className="auth-footer text-center">
-                Copyright 2024, 4-Our Life All Rights Reserved.
-              </div>
-            </div>
-          </div>
-
-          {/* left side with background image */}
-          <div
-            className="left-column bg-cover bg-no-repeat bg-center"
-            style={{
-              backgroundImage: `url('/assets/images/all-img/4 Our Life.png')`,
-              height: "100vh",
-            }}
-          >
-            <div className="flex flex-col h-full justify-center">
-              <div className="flex-1 flex flex-col justify-center items-center">
-                <Link href="/">{/* Logo can be added here if needed */}</Link>
-              </div>
-            </div>
-          </div>
+            <button
+              type="submit"
+              className="btn rounded-md bg-red-500 hover:bg-red-600 text-white  text-center transition-colors"
+            >
+              Delete Account
+            </button>
+          </form>
         </div>
-      </div>
+      </Card>
 
       {/* Updated Confirmation Modal */}
       <Modal
