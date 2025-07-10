@@ -17,7 +17,7 @@ import Card from "@/components/ui/Card";
 // Validation schema
 const schema = yup
   .object({
-    // email: yup.string().email("Invalid email").required("Email is Required"),
+    email: yup.string().email("Invalid email").required("Email is Required"),
     password: yup.string().required("Password is Required"),
   })
   .required();
@@ -59,7 +59,7 @@ export default function DeleteAccountPage() {
       }
 
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email: user.email,
+        email: data.email,
         password: data.password,
       });
 
@@ -186,25 +186,23 @@ export default function DeleteAccountPage() {
               your account.
             </p>
           </div>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 mt-5 flex max-lg:flex-col justify-between w-full"
-          >
-            {/* <Textinput
-                      name="email"
-                      label="Email"
-                      type="email"
-                      placeholder="Enter your email"
-                      ref={(e) => {
-                        emailHookRef(e);
-                        emailRef.current = e;
-                      }}
-                      {...emailRest}
-                      register={register}
-                      error={errors?.email}
-                      autoComplete="username"
-                      className="w-full"
-                    /> */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:w-1/3 w-full mt-5">
+            <Textinput
+              name="email"
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              ref={(e) => {
+                emailHookRef(e);
+                emailRef.current = e;
+              }}
+              {...emailRest}
+              register={register}
+              error={errors?.email}
+              classLabel=" after:ml-0.5 after:text-red-500 after:content-['*'] text-sm"
+              autoComplete="username"
+              className="w-full"
+            />
             <Textinput
               name="password"
               type="password"
