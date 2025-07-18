@@ -64,7 +64,7 @@ export default function DeleteAccountPage() {
       });
 
       if (authError) {
-        toast.error("Invalid Credentials. Please Verify Your Password.");
+        toast.error("Invalid Credentials. Please Verify User  Credentials.");
         return;
       }
       // Open confirmation modal before proceeding with deletion
