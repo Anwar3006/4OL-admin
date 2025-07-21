@@ -37,7 +37,7 @@ const CustomDropdown = ({ options, selectedValue, onChange }) => {
                 onChange(option);
                 setIsOpen(false);
               }}
-              className="cursor-pointer px-4 py-2 hover:bg-secondary-800 hover:text-white"
+              className="cursor-pointer px-2 py-2 hover:bg-secondary-800 hover:text-white"
             >
               {option}
              

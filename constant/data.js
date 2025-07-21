@@ -276,10 +276,10 @@ export const menuItems = [
     link: "admin",
   },
     {
-    title: "Delete",
-    icon: "ri:empathize-line",
+    title: "Delete Account Request",
+    icon: "line-md:account-delete",
     isHide: false,
-    link: "delete-account",
+    link: "delete-account-request",
   },
   {
     title: "Chats",

@@ -65,7 +65,7 @@ const LoginForm = () => {
       // First, check if the email exists and retrieve the user's status
       const { data: userData, error: userError } = await supabase
         .from("user_profiles")
-        .select("status, id") // Select the user's status and id based on email
+        .select("status, id, is_deleted")
         .eq("email", data.email)
         .in("role", ["Admin", "Super Admin"])
         .single();
@@ -87,6 +87,21 @@ const LoginForm = () => {
       // Check if the user status is true
       if (userData.status !== true) {
         toast.error("Your account is inactive. Please contact support.", {
+          position: "top-right",
+          autoClose: 1500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (userData.is_deleted === true
+      ) {
+        toast.error("Your account has been deleted. Please contact support.", {
           position: "top-right",
           autoClose: 1500,
           hideProgressBar: false,

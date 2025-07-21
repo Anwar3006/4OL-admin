@@ -11,7 +11,7 @@ const PaginationNew = ({
   canNextPage,
 }) => {
   return (
-    <div className="md:flex  justify-end my-2 items-end sm:text-sm text-xs">
+    <div className="md:flex  w-full overflow-x-auto  justify-end my-2 items-end sm:text-sm text-xs">
       {/* <div className="flex items-center space-x-3 rtl:space-x-reverse">
         <span className="flex space-x-2 rtl:space-x-reverse items-center">
           <span className="sm:text-sm text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -36,7 +36,7 @@ const PaginationNew = ({
           Page {pageIndex + 1} of {pageOptions.length}
         </span>
       </div> */}
-      <ul className="flex items-center space-x-3 rtl:space-x-reverse">
+      <ul className="flex items-center space-x-3 whitespace-nowrap rtl:space-x-reverse">
         <li className="text-xl leading-4 text-slate-900 dark:text-white rtl:rotate-180">
           <button
             className={`${

@@ -11,6 +11,8 @@ const Card = ({
   bodyClass = "p-6",
   noborder,
   titleClass = "custom-class ",
+  image,
+  imageClass
 }) => {
   const [skin] = useSkin();
 
@@ -26,6 +28,11 @@ const Card = ({
     ${className}
         `}
     >
+     {image && (
+      <div className="card-image">
+        <img src={image} alt="logo" className={`object-cover ${imageClass}`} />
+      </div>  
+     )}
       {(title || subtitle) && (
         <header className={`card-header ${noborder ? "no-border" : ""}`}>
           <div>

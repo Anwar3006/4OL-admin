@@ -22,7 +22,7 @@ const schema = yup
   })
   .required();
 
-export default function DeleteAccountPage() {
+export default function DeleteAppUserAccount() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false); // New state for checkbox
@@ -47,16 +47,6 @@ export default function DeleteAccountPage() {
   // Handle form submission
   const onSubmit = async (data) => {
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      console.log("User data:", user);
-
-      if (userError || !user?.email) {
-        toast.error("You must be logged in to delete your account");
-        return;
-      }
 
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -76,92 +66,169 @@ export default function DeleteAccountPage() {
   };
 
   // Handle actual account deletion after confirmation
+//   const handleDeleteAccount = async () => {
+//     // Only proceed if checkbox is checked
+//     if (!confirmDelete) {
+//       toast.error("Please confirm you understand the consequences", {
+//         position: "top-right",
+//         autoClose: 3000,
+//       });
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       const { email, password } = getValues();
+//       // First authenticate the user
+//       const { data: authData, error: authError } =
+//         await supabase.auth.signInWithPassword({
+//           email,
+//           password,
+//         });
+
+//       if (authError) {
+//         toast.error(
+//           "Invalid credentials. Please verify your email and password.",
+//           {
+//             position: "top-right",
+//             autoClose: 3000,
+//           }
+//         );
+//         setLoading(false);
+//         return;
+//       }
+//       const { data: session } = await supabase.auth.getUser();
+
+//       // Call the database function to delete all user data
+//       const { error: deleteError } = await supabase.rpc(
+//         "delete_user_and_related_data",
+//         { p_user_id: session.user.id }
+//       );
+
+//       if (deleteError) {
+//         console.error("Delete error:", deleteError);
+//         toast.error(`Failed to delete account: ${deleteError.message}`, {
+//           position: "top-right",
+//           autoClose: 3000,
+//         });
+//         setLoading(false);
+//         setShowModal(false);
+//         return;
+//       }
+
+//       const deleteEdgeFunction = await deleteAccount(session.user.id);
+//       console.log(deleteEdgeFunction);
+
+//       // if (edgeError) {
+//       //   console.error("Delete error:", edgeError);
+//       //   toast.error(`Failed to delete account: ${edgeError.message}`, {
+//       //     position: "top-right",
+//       //     autoClose: 3000,
+//       //   });
+//       //   setLoading(false);
+//       //   setShowModal(false);
+//       //   return;
+//       // }
+
+//       // Sign out the user since their account has been deleted
+
+//       toast.success("Account successfully deleted", {
+//         position: "top-right",
+//         autoClose: 2000,
+//       });
+
+//       // Reset form and close modal
+//       reset();
+//       setShowModal(false);
+//     } catch (error) {
+//       console.error("Delete account error:", error);
+//       toast.error("An unexpected error occurred. Please try again.", {
+//         position: "top-right",
+//         autoClose: 3000,
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+
+  // Add this when modal closes to reset the checkbox
+  
   const handleDeleteAccount = async () => {
-    // Only proceed if checkbox is checked
-    if (!confirmDelete) {
-      toast.error("Please confirm you understand the consequences", {
+  if (!confirmDelete) {
+    toast.error("Please confirm you understand the consequences", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const { email, password } = getValues();
+
+    // Re-authenticate the user
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      toast.error("Invalid credentials. Please verify your email and password.", {
         position: "top-right",
         autoClose: 3000,
       });
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    try {
-      const { email, password } = getValues();
-      // First authenticate the user
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+    const { data: userSession, error: userError } = await supabase.auth.getUser();
 
-      if (authError) {
-        toast.error(
-          "Invalid credentials. Please verify your email and password.",
-          {
-            position: "top-right",
-            autoClose: 3000,
-          }
-        );
-        setLoading(false);
-        return;
-      }
-      const { data: session } = await supabase.auth.getUser();
+    if (userError || !userSession?.user) {
+      toast.error("Failed to fetch user info. Please try again.");
+      setLoading(false);
+      return;
+    }
 
-      // Call the database function to delete all user data
-      const { error: deleteError } = await supabase.rpc(
-        "delete_user_and_related_data",
-        { p_user_id: session.user.id }
-      );
+    const userId = userSession.user.id;
 
-      if (deleteError) {
-        console.error("Delete error:", deleteError);
-        toast.error(`Failed to delete account: ${deleteError.message}`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        setLoading(false);
-        setShowModal(false);
-        return;
-      }
+    // Update only the delete_account_request field
+    const { error: updateError } = await supabase
+      .from("user_profiles") // Replace this with your actual user table name
+      .update({ delete_account_request: true })
+      .eq("id", userId);
 
-      const deleteEdgeFunction = await deleteAccount(session.user.id);
-      console.log(deleteEdgeFunction);
-
-      // if (edgeError) {
-      //   console.error("Delete error:", edgeError);
-      //   toast.error(`Failed to delete account: ${edgeError.message}`, {
-      //     position: "top-right",
-      //     autoClose: 3000,
-      //   });
-      //   setLoading(false);
-      //   setShowModal(false);
-      //   return;
-      // }
-
-      // Sign out the user since their account has been deleted
-
-      toast.success("Account successfully deleted", {
-        position: "top-right",
-        autoClose: 2000,
-      });
-
-      // Reset form and close modal
-      reset();
-      setShowModal(false);
-    } catch (error) {
-      console.error("Delete account error:", error);
-      toast.error("An unexpected error occurred. Please try again.", {
+    if (updateError) {
+      console.error("Update error:", updateError);
+      toast.error(`Failed to submit delete request: ${updateError.message}`, {
         position: "top-right",
         autoClose: 3000,
       });
-    } finally {
       setLoading(false);
+      setShowModal(false);
+      return;
     }
-  };
 
-  // Add this when modal closes to reset the checkbox
+    toast.success("Delete request submitted successfully", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+
+    reset();
+    setShowModal(false);
+  } catch (error) {
+    console.error("Delete account error:", error);
+    toast.error("An unexpected error occurred. Please try again.", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const closeModal = () => {
     setShowModal(false);
     setConfirmDelete(false); // Reset checkbox when modal closes
@@ -169,16 +236,13 @@ export default function DeleteAccountPage() {
 
   return (
     <>
-      <Card
-        className="mt-5 bg-white dark:bg-slate-800"
-        title={"Danger Zone"}
-        subtitle={"Irreversible and destructive actions"}
-        titleClass="text-red-600 font-bold"
+      <div
+        className=" bg-white flex flex-col justify-center items-center text-center h-full mx-auto w-full dark:bg-slate-800"
       >
         <ToastContainer />
-        <div className="w-full">
+        <div className="w-full flex flex-col items-center">
           <div className="w-full">
-            <h1 className="text-base font-semibold text-gray-700">
+            <h1 className="text-base font-semibold text-red-700">
               Delete Account
             </h1>
             <p className="text-sm mt-1">
@@ -186,12 +250,12 @@ export default function DeleteAccountPage() {
               your account.
             </p>
           </div>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:w-1/3 w-full mt-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full mt-5">
             <Textinput
               name="email"
-              label="Email"
+              // label="Email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Enter your Email"
               ref={(e) => {
                 emailHookRef(e);
                 emailRef.current = e;
@@ -206,8 +270,8 @@ export default function DeleteAccountPage() {
             <Textinput
               name="password"
               type="password"
-              label={"Password"}
-              placeholder="Enter Your Password"
+              // label={"Password"}
+              placeholder="Enter your Password"
               ref={(e) => {
                 passwordHookRef(e);
                 passwordRef.current = e;
@@ -229,7 +293,7 @@ export default function DeleteAccountPage() {
             </button>
           </form>
         </div>
-      </Card>
+      </div>
 
       {/* Updated Confirmation Modal */}
       <Modal
