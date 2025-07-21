@@ -181,13 +181,15 @@ export default function DeleteUserAccountListing() {
                       />
                     ) : (
                       <span
-                        className={`${
+                        className={`text-center ${
                           item.delete_account_request === true
-                            ? "text-green-500"
-                            : "text-yellow-500"
+                            ? "text-green-500 text-center"
+                            : "text-yellow-500 text-center"
                         }`}
                       >
-                        {item.delete_account_request}
+                        {item.delete_account_request === true
+                            ? "Pending"
+                            : "Approved"}
                       </span>
                     )}
                   </td>
