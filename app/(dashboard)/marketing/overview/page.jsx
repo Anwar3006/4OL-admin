@@ -18,7 +18,7 @@ export default function Page() {
     <>
       <div className="">
         <div className="lg-inner-column">
-          <div className="right-column relative w-full">
+          <div className="right-column relative w-full mt-5">
             <Card
               title={"Overview"}
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"

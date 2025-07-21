@@ -239,7 +239,7 @@ const SymptomsOverviewPage = () => {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              handlePageChange={setCurrentPage}
             />
           </div>
         )}

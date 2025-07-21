@@ -214,7 +214,7 @@ const HealthyLivingOverviewPage = () => {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              handlePageChange={setCurrentPage}
             />
           </div>
         )}
