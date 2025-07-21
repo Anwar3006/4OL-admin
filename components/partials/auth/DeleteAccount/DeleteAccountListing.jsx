@@ -187,7 +187,7 @@ export default function DeleteUserAccountListing() {
                             : "text-yellow-500"
                         }`}
                       >
-                        {item.status}
+                        {item.delete_account_request}
                       </span>
                     )}
                   </td>
