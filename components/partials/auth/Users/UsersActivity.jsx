@@ -335,7 +335,7 @@ export default function UserActivity({ user }) {
                   </div>
                 )}
                 {data.length > 0 && !isLoading && (
-                  <div className="mt-4 flex justify-end items-end">
+                  <div className="mt-4 flex justify-end items-end w-full overflow-auto">
                     <PaginationNew
                       canPreviousPage={canPreviousPage}
                       canNextPage={canNextPage}

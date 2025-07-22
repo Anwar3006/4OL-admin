@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
 import CustomDropdown from "@/components/ui/CustomDropdown";
 import { toast, ToastContainer } from "react-toastify";
+import Loading from "@/components/Loading";
 
 export default function DeleteUserAccountListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -17,6 +18,7 @@ export default function DeleteUserAccountListing() {
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
   const router = useRouter();
   const [userRole, setUserRole] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -27,28 +29,38 @@ export default function DeleteUserAccountListing() {
 
   // Fetch data from Supabase on component mount and when page changes
   const fetchData = async () => {
-    const from = pageIndex * pageSize;
-    const to = from + pageSize - 1;
+    setLoading(true);
+    try {
 
-    const {
-      data: fetchedData,
-      error,
-      count,
-    } = await supabase
-      .from("user_profiles")
-      .select("*", { count: "exact" })
-      .eq("delete_account_request", true)
-      .eq("is_deleted", false)
-      .order("updated_at", { ascending: false })
-      .range(from, to);
-
-    if (error) {
+      const from = pageIndex * pageSize;
+      const to = from + pageSize - 1;
+  
+      const {
+        data: fetchedData,
+        error,
+        count,
+      } = await supabase
+        .from("user_profiles")
+        .select("*", { count: "exact" })
+        .eq("delete_account_request", true)
+        .eq("is_deleted", false)
+        .order("updated_at", { ascending: false })
+        .range(from, to);
+  
+      if (error) {
+        console.error("Error fetching data:", error);
+        return;
+      }
+  
+      setData(fetchedData || []);
+      setTotalPages(Math.ceil(count / pageSize));
+      
+    } catch (error) {
       console.error("Error fetching data:", error);
-      return;
+      
+    } finally {
+      setLoading(false);
     }
-
-    setData(fetchedData || []);
-    setTotalPages(Math.ceil(count / pageSize));
   };
   useEffect(() => {
     fetchData();
@@ -131,6 +143,13 @@ export default function DeleteUserAccountListing() {
       </div>
 
       <div className="overflow-x-auto  flex-1 px-2 custom-scrollbar">
+      {loading && (
+        <div>
+          <div className="flex justify-center items-center h-screen">
+            <Loading />
+          </div>
+        </div>
+      )}
         {filteredData.length === 0 ? (
           <div className="text-center py-6 text-gray-500 min-h-[50vh] justify-items-center align-middle">
             <p className="text-lg font-semibold">No Request Found</p>
