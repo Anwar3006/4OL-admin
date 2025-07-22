@@ -15,6 +15,8 @@ export default function ViewUserDetails() {
   const [error, setError] = useState(null);
   const searchParams = useSearchParams();
 
+  const from = searchParams.get("from");
+
   // Extract ID from query parameters
   const id = searchParams.get("id");
 
@@ -90,7 +92,9 @@ export default function ViewUserDetails() {
           text="Back"
           className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
           iconClass="text-lg"
-          onClick={() => router.push("/users")}
+           onClick={() =>
+            router.push(from === "delete-request-account" ? "/delete-account-request" : "/users")
+          }
         />
       </div>
       {userData && (

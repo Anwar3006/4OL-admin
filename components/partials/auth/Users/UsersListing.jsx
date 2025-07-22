@@ -127,7 +127,7 @@ export default function UsersListing() {
   };
 
   const handleView = (id) => {
-    router.push(`/users/view?id=${id}`);
+    router.push(`/users/view?id=${id}&from=users`);
   };
 
   return (

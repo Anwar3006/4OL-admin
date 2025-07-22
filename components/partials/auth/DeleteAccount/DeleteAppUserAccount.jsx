@@ -45,25 +45,55 @@ export default function DeleteAppUserAccount() {
   const { ref: passwordHookRef, ...passwordRest } = register("password");
 
   // Handle form submission
-  const onSubmit = async (data) => {
-    try {
+const onSubmit = async (data) => {
+  try {
+    // Step 1: Re-authenticate user
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
 
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (authError) {
-        toast.error("Invalid Credentials. Please Verify User  Credentials.");
-        return;
-      }
-      // Open confirmation modal before proceeding with deletion
-      setShowModal(true);
-    } catch (error) {
-      console.log("Password verification failed:", error);
-      toast.error("An unexpected error occur. Please try again.");
+    if (authError) {
+      toast.error("Invalid Credentials. Please verify your credentials.");
+      return;
     }
-  };
+
+    // Step 2: Get current user
+    const { data: userSession, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userSession?.user) {
+      toast.error("Failed to fetch user info. Please try again.");
+      return;
+    }
+
+    const userId = userSession.user.id;
+
+    // Step 3: Check if delete request is already submitted
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles") // replace with your actual table
+      .select("delete_account_request")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      toast.error("Failed to check account status. Please try again.");
+      return;
+    }
+
+    if (profile?.delete_account_request) {
+      toast.error("Your account deletion request has already been submitted.");
+      return;
+    }
+
+    // Step 4: Show confirmation modal
+    setShowModal(true);
+
+  } catch (error) {
+    console.log("Password verification failed:", error);
+    toast.error("An unexpected error occurred. Please try again.");
+  }
+};
+
 
   // Handle actual account deletion after confirmation
 //   const handleDeleteAccount = async () => {

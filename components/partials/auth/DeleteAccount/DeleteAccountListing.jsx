@@ -101,7 +101,7 @@ export default function DeleteUserAccountListing() {
   const nextPage = () => canNextPage && setPageIndex(pageIndex + 1);
 
   const handleView = (id) => {
-    router.push(`users/view?id=${id}`);
+    router.push(`users/view?id=${id}&from=delete-request-account`);
   };
 
   const handleDeleteAccountStatusChange = async (newStatus, user) => {
