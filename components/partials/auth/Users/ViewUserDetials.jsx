@@ -7,6 +7,7 @@ import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
 import UserActivity from "./UsersActivity";
+import { userDetailsFields } from "@/constant/facility-labels-data";
 
 export default function ViewUserDetails() {
   const router = useRouter();
@@ -82,68 +83,61 @@ export default function ViewUserDetails() {
   //   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold capitalize">
-          {userData.first_name} {userData.last_name}
-        </h1>
+    <Card
+      className="min-h-[80vh] bg-white"
+      title={`${userData.first_name} ${userData.last_name}`}
+      headerslot={
         <Button
           icon="heroicons-outline:arrow-left"
           text="Back"
           className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
           iconClass="text-lg"
-           onClick={() =>
-            router.push(from === "delete-request-account" ? "/delete-account-request" : "/users")
+          onClick={() =>
+            router.push(
+              from === "delete-request-account"
+                ? "/delete-account-request"
+                : "/users"
+            )
           }
         />
-      </div>
-      {userData && (
-        <div className="my-6  lg:text-base sm:text-sm text-xs">
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 xl:w-[40%] lg:w-[50%] capitalize">
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold ">Email:</div>
-              <div className={`lowercase`}>{userData?.email || " "}</div>
-            </div>
-
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Contact Number:</div>
-              <div className="text-right">{userData?.phone_number || " "}</div>
-            </div>
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Sex:</div>
-              <div className="text-right">{userData?.sex || " "}</div>
-            </div>
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Date of Birth:</div>
-              <div className="text-right">{userData?.dob || " "}</div>
-            </div>
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Registration Date:</div>
-              <div className="text-right">
-                {userData.created_at
-                  ? formatDate(userData.created_at)
-                  : "Not Available"}
-              </div>
-            </div>
-            <div className="shadow-md sm:p-3 p-2 flex items-center justify-between">
-              <div className="font-semibold">Status:</div>
-              <div className="text-right">
-                {userData.status === true ? (
-                  <div className="flex items-center justify-end space-x-2 text-right ">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                    <span className="">Active</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                    <span className="">Inactive</span>
-                  </div>
-                )}
-              </div>
+      }
+    >
+      <div className="grid grid-cols-1 gap-2 sm:text-sm text-xs text-gray-600 xl:w-[40%] lg:w-[50%] capitalize">
+        {userDetailsFields.map(({ label, key, format }) => (
+          <div className="flex" key={key}>
+            <div className="w-1/3 text-gray-900">{label}</div>
+            <div className={`w-2/3 ${key === "email" ? "lowercase" : ""}`}>
+              {userData[key]
+                ? format
+                  ? format(userData[key])
+                  : userData[key]
+                : "Not Available"}
             </div>
           </div>
+        ))}
+
+        <div className="flex">
+          <div className="w-1/3 text-gray-900">Status</div>
+          <div className="w-2/3">
+            {userData.status === true ? (
+              <div className="flex items-center">
+                <p className="bg-green-100 text-green-500 px-4 py-1 rounded-full flex items-center text-sm">
+                  <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>{" "}
+                  Active
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <p className="bg-yellow-100 text-yellow-500 px-4 py-1 rounded-full flex items-center text-sm">
+                  <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>{" "}
+                  Inactive
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
+
       {user?.role === "Super Admin" && (
         <UserActivity user={`${userData?.first_name} ${userData?.last_name}`} />
       )}
