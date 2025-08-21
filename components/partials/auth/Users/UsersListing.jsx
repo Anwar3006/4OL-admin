@@ -132,7 +132,7 @@ export default function UsersListing() {
 
   return (
     <>
-    <Card className="bg-white" bodyClass="p-0" title={"Users"}>
+    <Card className="bg-white" bodyClass="p-0 dark:bg-slate-800" title={"Users"}>
 
       <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">

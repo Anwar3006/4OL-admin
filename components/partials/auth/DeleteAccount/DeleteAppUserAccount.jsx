@@ -11,8 +11,6 @@ import { supabase } from "@/app/utils/supabaseClient";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import useDarkMode from "@/hooks/useDarkMode";
-import deleteAccount from "@/services/deleteAccount";
-import Card from "@/components/ui/Card";
 
 // Validation schema
 const schema = yup

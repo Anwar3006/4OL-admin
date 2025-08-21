@@ -1,5 +1,4 @@
 "use client";
-import Card from "@/components/period_tracker/Card";
 import Button from "@/components/ui/Button";
 import Accordion from "@/components/ui/Accordion";
 import getFaqs from "@/services/getFaqs";
@@ -8,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
 import Modal from "@/components/ui/Modal";
+import Card from "@/components/ui/Card";
 
 export default function FaqPage() {
   const [faqs, setFaqs] = useState([]);
@@ -138,22 +138,23 @@ export default function FaqPage() {
   return (
     <div className="">
       <ToastContainer />
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <Card
           title="FAQs"
           className="bg-white dark:bg-slate-800 overflow-hidden min-h-[80vh]"
           bodyClass=""
+          headerslot={
+            <>
+              <Button
+                text="Add new FAQ"
+                icon="heroicons-outline:plus"
+                className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+                onClick={openAddModal}
+              />
+            </>
+          }
         >
-          <div className="absolute top-2 right-2 justify-end p-4">
-            <Button
-              text="Add new FAQ"
-              icon="heroicons-outline:plus"
-              className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
-              onClick={openAddModal}
-            />
-          </div>
-
-          <div className="mt-8">
+          <div className="p-5">
             {loading ? (
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ce84]"></div>
@@ -172,6 +173,7 @@ export default function FaqPage() {
                   answer={faq.answer}
                   onEdit={() => handleEdit(faq)}
                   onDelete={() => handleDelete(faq)}
+                  questionClassName="text-sm"
                 />
               ))
             )}

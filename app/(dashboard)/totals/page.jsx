@@ -167,7 +167,7 @@ const TotalsDashboard = () => {
       </div>
 
       {/* active users chart */}
-      <div className="grid grid-cols-12 gap-5 mt-8">
+      <div className="grid grid-cols-12 gap-5 mt-5">
         <div className="lg:col-span-6 col-span-12">
           <Card title={"Daily Active Users (DAU)"}>
             {/* <p className="text-right sm:text-sm text-xs text-blue-500">

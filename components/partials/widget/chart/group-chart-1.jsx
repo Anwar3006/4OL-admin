@@ -281,14 +281,14 @@ const GroupChart1 = ({
     {
       name: shapeLine3,
       title: "Total Downloads",
-      count: totalDownloads ? totalDownloads : "5,678",
+      count: totalDownloads ?? "0",
       bg: "bg-[#c7f2d7] dark:bg-slate-900	",
       loading: loadingTotalDownloads ? true : false,
     },
     {
       name: shapeLine1,
       title: "Total Users",
-      count: totalUsers ? totalUsers : "3,564",
+      count: totalUsers ?? "0",
       bg: "bg-[#E5F9FF] dark:bg-slate-900	",
       loading: loadingTotalUsers ? true : false,
     },

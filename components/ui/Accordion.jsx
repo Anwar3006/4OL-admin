@@ -25,7 +25,7 @@ const Accordion = ({
         className={`flex justify-between items-center p-4 cursor-pointer ${questionClassName}`}
         onClick={toggleAccordion}
       >
-        <h6 className="text-md font-medium text-slate-800 dark:text-slate-600">
+        <h6 className="text-base font-medium text-slate-800 dark:text-slate-600">
           {question}
         </h6>
         <div className="flex items-center space-x-2">
@@ -59,7 +59,7 @@ const Accordion = ({
         <div
           className={`p-4 border-t border-slate-200 dark:border-slate-700 ${answerClassName}`}
         >
-          <p className="text-slate-600 dark:text-slate-400">{answer}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-base">{answer}</p>
         </div>
       )}
     </div>

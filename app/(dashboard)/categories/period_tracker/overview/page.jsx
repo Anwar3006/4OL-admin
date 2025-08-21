@@ -684,20 +684,30 @@ const PeriodsTrackerPage = () => {
 
   return (
     <div className="">
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <Card
           title="Periods Tracker"
           className="bg-white dark:bg-slate-800 overflow-hidden"
           bodyClass="p-0"
+          headerslot={
+            <>
+              <Button
+                text="Add Period Tracker"
+                icon="heroicons-outline:plus"
+                className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+                onClick={() => router.push("/categories/period_tracker/create")}
+              />
+            </>
+          }
         >
-          <div className="absolute top-2 right-2 justify-end p-4">
+          {/* <div className="absolute top-2 right-2 justify-end p-4">
             <Button
               text="Add Period Tracker"
               icon="heroicons-outline:plus"
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
               onClick={() => router.push("/categories/period_tracker/create")}
             />
-          </div>
+          </div> */}
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto relative hidden-scrollbar"

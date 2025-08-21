@@ -94,7 +94,7 @@ export default function Notifications() {
               text="Push Notification"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/send-notification")}
+              onClick={() => router.push("/send-notifications")}
             />
           </div>
         </div>
