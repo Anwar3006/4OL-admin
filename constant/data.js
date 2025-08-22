@@ -228,7 +228,7 @@ export const menuItems = [
     isHide: false,
     icon: "uiw:map",
     child: [
-      // { childlink: "/map/overview", childtitle: "Overview" },
+      { childlink: "/map/overview", childtitle: "Overview" },
       // { childlink: "/map/overview", childtitle: "Footprint" },
     ],
   },

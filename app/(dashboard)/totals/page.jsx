@@ -24,6 +24,9 @@ import {
   fetchDownloadsLast12Months,
   fetchMAULast12Months,
   fetchTotalUsers,
+  fetchTotalFacilities,
+  fetchTotalSpecialists,
+  fetchTotalFacilityVisits,
 } from "@/app/services/dashboard";
 import DauChart from "@/components/partials/chart/appex-chart/DauChart";
 
@@ -47,6 +50,12 @@ const TotalsDashboard = () => {
   const [totalDownloads, setTotalDownloads] = useState(null);
   const [loadingTotalUsers, setLoadingTotalUsers] = useState(false);
   const [totalUsers, setTotalUsers] = useState(null);
+  
+  // New state variables for facilities, specialists, and facility visits
+  const [loadingTotalFacilities, setLoadingTotalFacilities] = useState(false);
+  const [totalFacilities, setTotalFacilities] = useState(null);
+  const [loadingTotalSpecialists, setLoadingTotalSpecialists] = useState(false);
+  const [totalSpecialists, setTotalSpecialists] = useState(null);
 
   useEffect(() => {
     fetchMAULast12Months(
@@ -114,6 +123,36 @@ const TotalsDashboard = () => {
         setLoadingTotalUsers(false);
       }
     );
+    
+    // Fetch total facilities
+    fetchTotalFacilities(
+      () => {
+        setLoadingTotalFacilities(true);
+      },
+      (successData) => {
+        setTotalFacilities(successData);
+        setLoadingTotalFacilities(false);
+      },
+      (error) => {
+        console.log("Error fetching facilities count", error);
+        setLoadingTotalFacilities(false);
+      }
+    );
+    
+    // Fetch total specialists
+    fetchTotalSpecialists(
+      () => {
+        setLoadingTotalSpecialists(true);
+      },
+      (successData) => {
+        setTotalSpecialists(successData);
+        setLoadingTotalSpecialists(false);
+      },
+      (error) => {
+        console.log("Error fetching specialists count", error);
+        setLoadingTotalSpecialists(false);
+      }
+    );
   }, []);
 
   return (
@@ -125,12 +164,16 @@ const TotalsDashboard = () => {
           </div> */}
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
           <Card bodyClass="p-4">
-            <div className="grid md:grid-cols-5 col-span-1 gap-4">
+            <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1
                 totalDownloads={totalDownloads || 0}
                 totalUsers={totalUsers?.totalUsers || 0}
+                totalFacilities={totalFacilities?.totalFacilities || 0}
+                totalSpecialists={totalSpecialists?.totalSpecialists || 0}
                 loadingTotalDownloads={loadingTotalDownloads}
                 loadingTotalUsers={loadingTotalUsers}
+                loadingTotalFacilities={loadingTotalFacilities}
+                loadingTotalSpecialists={loadingTotalSpecialists}
               />
             </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">

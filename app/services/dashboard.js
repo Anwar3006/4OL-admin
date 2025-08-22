@@ -310,3 +310,113 @@ const groupDataByDateAndOS = (data) => {
   //     { date: '2024-01-04', male: 170, female: 150 },
   // ]
 };
+
+// New function to fetch total facilities count
+export const fetchTotalFacilities = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all healthcare facilities
+    const { data, error } = await supabase
+      .from("healthcare_profiles")
+      .select("id, status");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total facilities
+    const totalFacilities = data?.length || 0;
+
+    // Count approved and pending facilities
+    let approvedCount = 0;
+    let pendingCount = 0;
+
+    data.forEach((facility) => {
+      if (facility.status === "Approved") {
+        approvedCount++;
+      } else if (facility.status === "Pending") {
+        pendingCount++;
+      }
+    });
+
+    const result = {
+      totalFacilities,
+      approvedCount,
+      pendingCount,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total specialists count
+export const fetchTotalSpecialists = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all specialists from illness_and_conditions table
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, specialist_to_contact");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total specialists (conditions that have specialist_to_contact)
+    let totalSpecialists = 0;
+    let uniqueSpecialists = new Set();
+
+    data.forEach((condition) => {
+      if (condition.specialist_to_contact) {
+        totalSpecialists++;
+        uniqueSpecialists.add(condition.specialist_to_contact);
+      }
+    });
+
+    const result = {
+      totalSpecialists: uniqueSpecialists.size, // Count unique specialists
+      totalConditions: totalSpecialists, // Total conditions with specialists
+    };
+
+    successCallback(result);
+    console.log("fetchTotalSpecialists result", result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total facility visits count (placeholder since table doesn't exist)
+export const fetchTotalFacilityVisits = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Since facility_visits table doesn't exist, we'll return a placeholder
+    // You can replace this with actual logic when you have the table
+    const result = {
+      totalVisits: 0,
+      currentMonthVisits: 0,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};

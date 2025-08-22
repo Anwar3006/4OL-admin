@@ -12,12 +12,12 @@ const BasicMapRender = dynamic(
 
 export default function Page() {
   return (
-    <div className="">
+    <div className="mt-5">
       <div className="lg-inner-column">
         <div className="right-column relative w-full">
           <Card
             title={"Map Overview"}
-            bodyClass="max-sm:p-2 p-6"
+            bodyClass="max-sm:p-2 p-6 "
             className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
           >
             <div className="w-full flex flex-col justify-center">
