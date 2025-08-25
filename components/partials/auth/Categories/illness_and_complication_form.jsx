@@ -27,46 +27,48 @@ export default function IllnessAndComplicationForm() {
   const router = useRouter();
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   const schema = yup.object().shape({
     condition_name: yup.string().required("Condition name is required"),
-    about: yup.string().required("About is required"),
-    diagnosis: yup.string().required("Diagnosis is required"),
-    treating: yup.string().required("Treating is required"),
-    complications: yup.string().required("Complications are required"),
-    symptoms: yup.string().required("Symptoms are required"),
-    prevention: yup.string().required("Prevention is required"),
-    specialist_to_contact: yup
-      .string()
-      .required("Specialist(s) to contact is required"),
-    contact_your_doctor: yup
-      .string()
-      .required("Contact your doctor is required"),
-    more_information: yup.string().required("More information is required"),
     attribution: yup.string().required("Attribution is required"),
+    image_url: yup.string().required("Image is required"),
+    // about: yup.string().required("About is required"),
+    // diagnosis: yup.string().required("Diagnosis is required"),
+    // treating: yup.string().required("Treating is required"),
+    // complications: yup.string().required("Complications are required"),
+    // symptoms: yup.string().required("Symptoms are required"),
+    // prevention: yup.string().required("Prevention is required"),
+    // specialist_to_contact: yup
+    //   .string()
+    //   .required("Specialist(s) to contact is required"),
+    // contact_your_doctor: yup
+    //   .string()
+    //   .required("Contact your doctor is required"),
+    // more_information: yup.string().required("More information is required"),
 
     // 👇 Add dynamic field validation
-    types: yup
-      .array()
-      .of(
-        yup.object().shape({
-          type_name: yup.string().required("Type name is required"),
-          about_type: yup.string().required("About this type is required"),
-        })
-      )
-      .min(1, "At least one type is required"),
+    // types: yup
+    //   .array()
+    //   .of(
+    //     yup.object().shape({
+    //       type_name: yup.string().required("Type name is required"),
+    //       about_type: yup.string().required("About this type is required"),
+    //     })
+    //   )
+    //   .min(1, "At least one type is required"),
 
-    causes: yup
-      .array()
-      .of(
-        yup.object().shape({
-          cause_name: yup.string().required("Cause name is required"),
-          other_possible_causes: yup
-            .string()
-            .required("Other causes are required"),
-        })
-      )
-      .min(1, "At least one cause is required"),
+    // causes: yup
+    //   .array()
+    //   .of(
+    //     yup.object().shape({
+    //       cause_name: yup.string().required("Cause name is required"),
+    //       other_possible_causes: yup
+    //         .string()
+    //         .required("Other causes are required"),
+    //     })
+    //   )
+    //   .min(1, "At least one cause is required"),
   });
 
   const {
@@ -75,6 +77,7 @@ export default function IllnessAndComplicationForm() {
     control,
     formState: { errors },
     reset,
+    watch,
   } = useForm(
     { 
       resolver: yupResolver(schema)
@@ -105,9 +108,17 @@ export default function IllnessAndComplicationForm() {
   }, [activeModal]);
 
   const onSubmit = async (formData) => {
+    setFormSubmitted(true);
     setLoading(true);
 
     try {
+      // Check if image is required and not provided
+      if (!imageFile && !data?.image_url) {
+        toast.error("Image is required");
+        setLoading(false);
+        return;
+      }
+
       let imageUrl = "";
 
       if (imageFile) {
@@ -158,6 +169,7 @@ export default function IllnessAndComplicationForm() {
             setImageUrl("");
             setNewTypes([]);
             setNewCauses([]);
+            setFormSubmitted(false);
           },
           (error) => {
             setLoading(false);
@@ -449,7 +461,7 @@ export default function IllnessAndComplicationForm() {
             htmlFor={"upload image"}
             className={`text-sm capitalize flex-0 mr-6 md:w-[100px] w-[60px] break-words`}
           >
-            Upload Image
+            Upload Image <span className="text-red-500">*</span>
           </label>
           <Fileinput
             name="image"
@@ -461,7 +473,7 @@ export default function IllnessAndComplicationForm() {
               }
             }}
             multiple={false}
-            placeholder="Upload Image"
+            placeholder="Upload Image (Required)"
             mediaType="image"
             className="my-2"
             accept="image/*"
@@ -472,6 +484,10 @@ export default function IllnessAndComplicationForm() {
               alt="Preview"
               className="w-32 h-32 object-cover rounded mt-2 border"
             />
+          )}
+          {/* Show error if no image is selected */}
+          {formSubmitted && !imageFile && !data?.image_url && (
+            <p className="text-red-500 text-sm mt-1">Image is required</p>
           )}
         </div>
 
