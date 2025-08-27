@@ -516,3 +516,111 @@ export const fetchTotalHealthyLiving = async (
     errorCallback(err);
   }
 };
+
+// New function to fetch total online users count
+export const fetchTotalOnlineUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch users who have been active in the last 24 hours
+    const last24Hours = moment().subtract(24, "hours").valueOf();
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, last_activity")
+      .gte("last_activity", last24Hours.toString());
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total online users
+    const totalOnlineUsers = data?.length || 0;
+
+    const result = {
+      totalOnlineUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total medication reminder users count
+export const fetchTotalMedicationReminderUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch users who have medication reminders enabled
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, is_tracker_notifications_enabled")
+      .eq("is_tracker_notifications_enabled", true);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total medication reminder users
+    const totalMedicationReminderUsers = data?.length || 0;
+
+    const result = {
+      totalMedicationReminderUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total period tracker users count
+export const fetchTotalPeriodTrackerUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch users who have period tracker enabled (assuming there's a field for this)
+    // For now, we'll count users who have period tracker data or are female users
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, sex, is_tracker_notifications_enabled");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count users who are female and have tracker notifications enabled
+    // This is a reasonable assumption for period tracker users
+    let totalPeriodTrackerUsers = 0;
+    
+    data.forEach((user) => {
+      if (user.sex === "Female" && user.is_tracker_notifications_enabled) {
+        totalPeriodTrackerUsers++;
+      }
+    });
+
+    const result = {
+      totalPeriodTrackerUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};

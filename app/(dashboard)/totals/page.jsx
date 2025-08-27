@@ -2,20 +2,9 @@
 import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
-import ImageBlock1 from "@/components/partials/widget/block/image-block-1";
 import GroupChart1 from "@/components/partials/widget/chart/group-chart-1";
-import RevenueBarChart from "@/components/partials/widget/chart/revenue-bar-chart";
-import RadialsChart from "@/components/partials/widget/chart/radials";
-import SelectMonth from "@/components/partials/SelectMonth";
-import CompanyTable from "@/components/partials/table/company-table";
-import RecentActivity from "@/components/partials/widget/recent-activity";
-import RadarChart from "@/components/partials/widget/chart/radar-chart";
-import HomeBredCurbs from "@/components/partials/HomeBredCurbs";
-import LineChart from "@/components/partials/chart/chartjs/LineChart";
-import GroupChart2 from "@/components/partials/widget/chart/group-chart-2";
-import GroupChart3 from "@/components/partials/widget/chart/group-chart-3";
+
 import GroupChart4 from "@/components/partials/widget/chart/group-chart-4";
-import GroupChart5 from "@/components/partials/widget/chart/group-chart5";
 import ColumnChart from "@/components/partials/chart/appex-chart/HorizontalBar";
 import Pie from "@/components/partials/chart/appex-chart/Pie";
 import {
@@ -27,6 +16,9 @@ import {
   fetchTotalFacilities,
   fetchTotalSpecialists,
   fetchTotalFacilityVisits,
+  fetchTotalOnlineUsers,
+  fetchTotalMedicationReminderUsers,
+  fetchTotalPeriodTrackerUsers,
 } from "@/app/services/dashboard";
 import DauChart from "@/components/partials/chart/appex-chart/DauChart";
 
@@ -56,6 +48,14 @@ const TotalsDashboard = () => {
   const [totalFacilities, setTotalFacilities] = useState(null);
   const [loadingTotalSpecialists, setLoadingTotalSpecialists] = useState(false);
   const [totalSpecialists, setTotalSpecialists] = useState(null);
+
+  // New state variables for GroupChart4 data
+  const [loadingTotalOnlineUsers, setLoadingTotalOnlineUsers] = useState(false);
+  const [totalOnlineUsers, setTotalOnlineUsers] = useState(null);
+  const [loadingTotalMedicationReminderUsers, setLoadingTotalMedicationReminderUsers] = useState(false);
+  const [totalMedicationReminderUsers, setTotalMedicationReminderUsers] = useState(null);
+  const [loadingTotalPeriodTrackerUsers, setLoadingTotalPeriodTrackerUsers] = useState(false);
+  const [totalPeriodTrackerUsers, setTotalPeriodTrackerUsers] = useState(null);
 
   useEffect(() => {
     fetchMAULast12Months(
@@ -153,6 +153,51 @@ const TotalsDashboard = () => {
         setLoadingTotalSpecialists(false);
       }
     );
+
+    // Fetch total online users
+    fetchTotalOnlineUsers(
+      () => {
+        setLoadingTotalOnlineUsers(true);
+      },
+      (successData) => {
+        setTotalOnlineUsers(successData);
+        setLoadingTotalOnlineUsers(false);
+      },
+      (error) => {
+        console.log("Error fetching online users count", error);
+        setLoadingTotalOnlineUsers(false);
+      }
+    );
+
+    // Fetch total medication reminder users
+    fetchTotalMedicationReminderUsers(
+      () => {
+        setLoadingTotalMedicationReminderUsers(true);
+      },
+      (successData) => {
+        setTotalMedicationReminderUsers(successData);
+        setLoadingTotalMedicationReminderUsers(false);
+      },
+      (error) => {
+        console.log("Error fetching medication reminder users count", error);
+        setLoadingTotalMedicationReminderUsers(false);
+      }
+    );
+
+    // Fetch total period tracker users
+    fetchTotalPeriodTrackerUsers(
+      () => {
+        setLoadingTotalPeriodTrackerUsers(true);
+      },
+      (successData) => {
+        setTotalPeriodTrackerUsers(successData);
+        setLoadingTotalPeriodTrackerUsers(false);
+      },
+      (error) => {
+        console.log("Error fetching period tracker users count", error);
+        setLoadingTotalPeriodTrackerUsers(false);
+      }
+    );
   }, []);
 
   return (
@@ -177,7 +222,14 @@ const TotalsDashboard = () => {
               />
             </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
-              <GroupChart4 />
+              <GroupChart4
+                totalOnlineUsers={totalOnlineUsers?.totalOnlineUsers || 0}
+                totalMedicationReminderUsers={totalMedicationReminderUsers?.totalMedicationReminderUsers || 0}
+                totalPeriodTrackerUsers={totalPeriodTrackerUsers?.totalPeriodTrackerUsers || 0}
+                loadingOnlineUsers={loadingTotalOnlineUsers}
+                loadingMedicationReminderUsers={loadingTotalMedicationReminderUsers}
+                loadingPeriodTrackerUsers={loadingTotalPeriodTrackerUsers}
+              />
             </div>
           </Card>
         </div>
