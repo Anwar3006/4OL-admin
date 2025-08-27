@@ -63,6 +63,7 @@ export default function ViewUserDetails() {
         setError(error.message);
       } else {
         setUserData(data);
+        console.log(data);
       }
       setLoading(false);
     };

@@ -30,6 +30,9 @@ import {
   fetchTotalUsers,
   fetchTotalFacilities,
   fetchTotalSpecialists,
+  fetchTotalDiseasesAndConditions,
+  fetchTotalSymptoms,
+  fetchTotalHealthyLiving,
 } from "@/app/services/dashboard";
 
 const MostSales = dynamic(
@@ -49,6 +52,14 @@ const Dashboard = () => {
     const [totalFacilities, setTotalFacilities] = useState(null);
     const [loadingTotalSpecialists, setLoadingTotalSpecialists] = useState(false);
     const [totalSpecialists, setTotalSpecialists] = useState(null);
+    
+    // New state variables for diseases, symptoms, and healthy living
+    const [loadingTotalDiseases, setLoadingTotalDiseases] = useState(false);
+    const [totalDiseases, setTotalDiseases] = useState(null);
+    const [loadingTotalSymptoms, setLoadingTotalSymptoms] = useState(false);
+    const [totalSymptoms, setTotalSymptoms] = useState(null);
+    const [loadingTotalHealthyLiving, setLoadingTotalHealthyLiving] = useState(false);
+    const [totalHealthyLiving, setTotalHealthyLiving] = useState(null);
 
   useEffect(() => {
     fetchAllDownloadsCount(
@@ -108,6 +119,51 @@ const Dashboard = () => {
         setLoadingTotalSpecialists(false);
       }
     );
+
+    // Fetch total diseases and conditions
+    fetchTotalDiseasesAndConditions(
+      () => {
+        setLoadingTotalDiseases(true);
+      },
+      (successData) => {
+        setTotalDiseases(successData);
+        setLoadingTotalDiseases(false);
+      },
+      (error) => {
+        console.log("Error fetching diseases count", error);
+        setLoadingTotalDiseases(false);
+      }
+    );
+
+    // Fetch total symptoms
+    fetchTotalSymptoms(
+      () => {
+        setLoadingTotalSymptoms(true);
+      },
+      (successData) => {
+        setTotalSymptoms(successData);
+        setLoadingTotalSymptoms(false);
+      },
+      (error) => {
+        console.log("Error fetching symptoms count", error);
+        setLoadingTotalSymptoms(false);
+      }
+    );
+
+    // Fetch total healthy living
+    fetchTotalHealthyLiving(
+      () => {
+        setLoadingTotalHealthyLiving(true);
+      },
+      (successData) => {
+        setTotalHealthyLiving(successData);
+        setLoadingTotalHealthyLiving(false);
+      },
+      (error) => {
+        console.log("Error fetching healthy living count", error);
+        setLoadingTotalHealthyLiving(false);
+      }
+    );
   }, []);
   return (
     <div>
@@ -158,7 +214,14 @@ const Dashboard = () => {
               </Card>
             </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
-              <GroupChart3 />
+              <GroupChart3 
+                totalDiseasesAndConditions={totalDiseases?.totalDiseasesAndConditions || 0}
+                totalSymptoms={totalSymptoms?.totalSymptoms || 0}
+                totalHealthyLiving={totalHealthyLiving?.totalHealthyLiving || 0}
+                loadingDiseases={loadingTotalDiseases}
+                loadingSymptoms={loadingTotalSymptoms}
+                loadingHealthyLiving={loadingTotalHealthyLiving}
+              />
             </div>
 
             <div className="grid lg:grid-cols-3 grid-cols-1 col-span-1 gap-4 pt-4">

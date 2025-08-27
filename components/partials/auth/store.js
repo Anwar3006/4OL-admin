@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
+import { logAuthActivity } from "@/utils/activityLogger";
 
 // Function to initialize authentication state from localStorage
 const initialIsAuth = () => {
@@ -20,11 +21,39 @@ export const handleLogin = createAsyncThunk(
       if (error) throw error;
 
       const userId = data?.user?.id;
+      console.log(data)
 
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
         window.localStorage.setItem("user_id", userId);
+        window.localStorage.setItem("user_email", data.user.email);
       }
+
+      // Log the login activity
+      try {
+        let userName = "Unknown User";
+        
+        // Get user's full name from user_profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from("user_profiles")
+          .select("first_name, last_name")
+          .eq("id", userId)
+          .single();
+
+        if (!profileError && profileData) {
+          const fullName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+          userName = fullName || data.user.email || "Unknown User";
+        } else {
+          userName = data.user.email || "Unknown User";
+        }
+
+        await logAuthActivity(userId, userName, "logged in");
+        console.log("Login activity logged successfully for user:", userName);
+      } catch (logError) {
+        console.error("Failed to log login activity:", logError);
+        // Don't fail login if logging fails
+      }
+
       return { isAuth: true, userId };
     } catch (error) {
       console.error('Login error:', error);
@@ -45,13 +74,45 @@ export const handleLogin = createAsyncThunk(
 // Async thunk for handling logout
 export const handleLogout = createAsyncThunk(
   "auth/handleLogout",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Get current user info before logout
+      const state = getState();
+      const userId = state.auth.userId;
+      
+      // Log the logout activity
+      if (userId) {
+        try {
+          let userName = "Unknown User";
+          
+          // Get user's full name from user_profiles table
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("first_name, last_name")
+            .eq("id", userId)
+            .single();
+
+          if (!profileError && profileData) {
+            const fullName = `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
+            userName = fullName || localStorage.getItem("user_email") || "Unknown User";
+          } else {
+            userName = typeof window !== "undefined" ? localStorage.getItem("user_email") || "Unknown User" : "Unknown User";
+          }
+
+          await logAuthActivity(userId, userName, "logged out");
+          console.log("Logout activity logged successfully for user:", userName);
+        } catch (logError) {
+          console.error("Failed to log logout activity:", logError);
+          // Don't fail logout if logging fails
+        }
+      }
+
       await supabase.auth.signOut();
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("isAuth");
         window.localStorage.removeItem("user_id");
         window.localStorage.removeItem("user_role");
+        window.localStorage.removeItem("user_email");
       }
       return { isAuth: false };
     } catch (error) {

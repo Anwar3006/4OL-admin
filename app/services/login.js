@@ -56,6 +56,8 @@ export const login = async (user, loadCallback, successCallback, errorCallback) 
                 errorCallback(fetchError);
                 return;
             }
+            console.log('User profile:', userProfile);
+            console.log('User ID:', userId);
             localStorage.setItem('user_id', userId);
             successCallback(userProfile);
         } else {

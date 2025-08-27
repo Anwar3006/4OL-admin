@@ -65,10 +65,11 @@ const LoginForm = () => {
       // First, check if the email exists and retrieve the user's status
       const { data: userData, error: userError } = await supabase
         .from("user_profiles")
-        .select("status, id, is_deleted")
+        .select("status, id, role, is_deleted")
         .eq("email", data.email)
         .in("role", ["Admin", "Super Admin"])
         .single();
+        console.log(userData)
 
       if (userError) {
         toast.error("Error fetching user data.", {

@@ -1,39 +1,45 @@
 import Icon from "@/components/ui/Icon";
 
-const statistics = [
-  {
-    title: "Total Diseases & Conditions",
-    count: "240",
-    bg: "bg-warning-500",
-    text: "text-primary-500",
-    percent: "25.67% ",
-    icon: "heroicons:arrow-trending-up",
-    img: "/assets/images/all-img/shade-1.png",
-    percentClass: "text-primary-500",
-  },
-  {
-    title: "Total Symptoms ",
-    count: "871",
-
-    bg: "bg-info-500",
-    text: "text-primary-500",
-    percent: "8.67%",
-    icon: "heroicons:arrow-trending-up",
-    img: "/assets/images/all-img/shade-2.png",
-    percentClass: "text-primary-500",
-  },
-  {
-    title: "Total Healthy Living",
-    count: "188",
-    bg: "bg-success-500",
-    text: "text-danger-500",
-    percent: "1.67%  ",
-    icon: "heroicons:arrow-trending-down",
-    img: "/assets/images/all-img/shade-3.png",
-    percentClass: "text-danger-500",
-  },
-];
-const GroupChart3 = () => {
+const GroupChart3 = ({ 
+  totalDiseasesAndConditions = 0, 
+  totalSymptoms = 0, 
+  totalHealthyLiving = 0,
+  loadingDiseases = false,
+  loadingSymptoms = false,
+  loadingHealthyLiving = false
+}) => {
+  const statistics = [
+    {
+      title: "Total Diseases & Conditions",
+      count: loadingDiseases ? "..." : totalDiseasesAndConditions.toString(),
+      bg: "bg-warning-500",
+      text: "text-primary-500",
+      percent: "25.67% ",
+      icon: "heroicons:arrow-trending-up",
+      img: "/assets/images/all-img/shade-1.png",
+      percentClass: "text-primary-500",
+    },
+    {
+      title: "Total Symptoms ",
+      count: loadingSymptoms ? "..." : totalSymptoms.toString(),
+      bg: "bg-info-500",
+      text: "text-primary-500",
+      percent: "8.67%",
+      icon: "heroicons:arrow-trending-up",
+      img: "/assets/images/all-img/shade-2.png",
+      percentClass: "text-primary-500",
+    },
+    {
+      title: "Total Healthy Living",
+      count: loadingHealthyLiving ? "..." : totalHealthyLiving.toString(),
+      bg: "bg-success-500",
+      text: "text-danger-500",
+      percent: "1.67%  ",
+      icon: "heroicons:arrow-trending-down",
+      img: "/assets/images/all-img/shade-3.png",
+      percentClass: "text-danger-500",
+    },
+  ];
   return (
     <>
       {statistics.map((item, i) => (

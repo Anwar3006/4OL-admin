@@ -420,3 +420,99 @@ export const fetchTotalFacilityVisits = async (
     errorCallback(err);
   }
 };
+
+// New function to fetch total diseases and conditions count
+export const fetchTotalDiseasesAndConditions = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all diseases and conditions
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total diseases and conditions
+    const totalDiseasesAndConditions = data?.length || 0;
+
+    const result = {
+      totalDiseasesAndConditions,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total symptoms count
+export const fetchTotalSymptoms = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all symptoms
+    const { data, error } = await supabase
+      .from("symptoms")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total symptoms
+    const totalSymptoms = data?.length || 0;
+
+    const result = {
+      totalSymptoms,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total healthy living count
+export const fetchTotalHealthyLiving = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all healthy living articles
+    const { data, error } = await supabase
+      .from("healthy_living")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total healthy living articles
+    const totalHealthyLiving = data?.length || 0;
+
+    const result = {
+      totalHealthyLiving,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
