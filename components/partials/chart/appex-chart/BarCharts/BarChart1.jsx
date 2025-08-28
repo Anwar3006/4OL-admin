@@ -4,12 +4,18 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 import { color } from "framer-motion";
 
-const BarChart1 = () => {
+const BarChart1 = ({ totalOnlineUsers = 0, males = 0, females = 0, loading = false }) => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
 
+  // Use actual data or fallback to sample data
   const maleData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
   const femaleData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  
+  // Use actual gender breakdown data
+  const actualMales = males || 0;
+  const actualFemales = females || 0;
+  const totalUsers = totalOnlineUsers || 0;
 
   const colors = ["#3388ff", "#e95e8d", "#0CE7FA", "#28C76F"];
 
@@ -19,16 +25,12 @@ const BarChart1 = () => {
   const series = [
     {
       name: "Males",
-      data: [maleData.reduce((a, b) => a + b, 0)], // sum of all males data
+      data: [actualMales], // Use actual male online users count
     },
     {
       name: "Females",
-      data: [femaleData.reduce((a, b) => a + b, 0)], // sum of all females data
+      data: [actualFemales], // Use actual female online users count
     },
-    // {
-    //   name: "Total",
-    //   data: [totalData.reduce((a, b) => a + b, 0)], // total sum of all
-    // },
   ];
 
   const options = {
@@ -78,7 +80,7 @@ const BarChart1 = () => {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: ["Males", "Females"], // only show categories, not months
+      categories: ["Males", "Females"], // show male and female categories
       labels: {
         show: false, // hide the labels on x-axis
       },
@@ -111,6 +113,14 @@ const BarChart1 = () => {
     },
     colors: colors,
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <div className="text-sm text-slate-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -12,7 +12,8 @@ const Card = ({
   noborder,
   titleClass = "custom-class ",
   image,
-  imageClass
+  imageClass,
+  headerClass = "flex max-sm:flex-col sm:justify-between items-center"
 }) => {
   const [skin] = useSkin();
 
@@ -34,7 +35,7 @@ const Card = ({
       </div>  
      )}
       {(title || subtitle) && (
-        <header className={`card-header ${noborder ? "no-border" : ""}`}>
+        <header className={`card-header ${headerClass} ${noborder ? "no-border" : ""}`}>
           <div>
             {title && <div className={`card-title ${titleClass}`}>{title}</div>}
             {subtitle && <div className="card-subtitle">{subtitle}</div>}

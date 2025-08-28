@@ -531,7 +531,7 @@ export const fetchTotalOnlineUsers = async (
     
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("id, last_activity")
+      .select("id, last_activity, sex")
       .gte("last_activity", last24Hours.toString());
 
     if (error) {
@@ -539,11 +539,24 @@ export const fetchTotalOnlineUsers = async (
       return;
     }
 
-    // Count total online users
-    const totalOnlineUsers = data?.length || 0;
+    // Count total online users by gender
+    let totalOnlineUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((user) => {
+      totalOnlineUsers++;
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
+      }
+    });
 
     const result = {
       totalOnlineUsers,
+      males,
+      females,
     };
 
     successCallback(result);
@@ -561,22 +574,43 @@ export const fetchTotalMedicationReminderUsers = async (
   loadCallback();
 
   try {
-    // Fetch users who have medication reminders enabled
+    // Fetch users who have medication reminders from the medication_reminders table
     const { data, error } = await supabase
-      .from("user_profiles")
-      .select("id, is_tracker_notifications_enabled")
-      .eq("is_tracker_notifications_enabled", true);
+      .from("medication_reminders")
+      .select(`
+        id,
+        user_id,
+        user_profiles!inner(sex)
+      `);
 
     if (error) {
       errorCallback(error);
       return;
     }
 
-    // Count total medication reminder users
-    const totalMedicationReminderUsers = data?.length || 0;
+    // Count unique users who have medication reminders by gender
+    const uniqueUsers = new Set();
+    let totalMedicationReminderUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((reminder) => {
+      if (!uniqueUsers.has(reminder.user_id)) {
+        uniqueUsers.add(reminder.user_id);
+        totalMedicationReminderUsers++;
+        
+        if (reminder.user_profiles?.sex === "Male") {
+          males++;
+        } else if (reminder.user_profiles?.sex === "Female") {
+          females++;
+        }
+      }
+    });
 
     const result = {
       totalMedicationReminderUsers,
+      males,
+      females,
     };
 
     successCallback(result);
@@ -594,26 +628,570 @@ export const fetchTotalPeriodTrackerUsers = async (
   loadCallback();
 
   try {
-    // Fetch users who have period tracker enabled (assuming there's a field for this)
-    // For now, we'll count users who have period tracker data or are female users
+    // Fetch total count of tracker logs
     const { data, error } = await supabase
-      .from("user_profiles")
-      .select("id, sex, is_tracker_notifications_enabled");
+      .from("tracker_logs")
+      .select("id", { count: "exact" });
 
     if (error) {
       errorCallback(error);
       return;
     }
 
-    // Count users who are female and have tracker notifications enabled
-    // This is a reasonable assumption for period tracker users
-    let totalPeriodTrackerUsers = 0;
+    // Get the total count of tracker logs
+    const totalPeriodTrackerUsers = data?.length || 0;
+
+    const result = {
+      totalPeriodTrackerUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch marketing breakdown by banner types from banners_ads table
+export const fetchTotalMarketing = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch all banners with their types
+    const { data, error } = await supabase
+      .from("banners_ads")
+      .select("id, banner_type");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count banners by type
+    const bannerTypeCounts = {};
+    data.forEach((banner) => {
+      const type = banner.banner_type || "unknown";
+      bannerTypeCounts[type] = (bannerTypeCounts[type] || 0) + 1;
+    });
+
+    // Get counts for each banner type
+    const health = bannerTypeCounts["health"] || 0;
+    const ads = bannerTypeCounts["ads"] || 0;
+    const event = bannerTypeCounts["event"] || 0;
+    const news = bannerTypeCounts["news"] || 0;
+    const marketing = bannerTypeCounts["marketing"] || 0;
+
+    const result = {
+      health,
+      ads,
+      event,
+      news,
+      marketing,
+      totalMarketing: Object.values(bannerTypeCounts).reduce((sum, count) => sum + count, 0),
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Time-based filtering functions
+
+// Helper function to get date range based on period for bigint fields (Unix timestamp)
+const getDateRangeBigint = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+  }
+};
+
+// Helper function to get date range based on period for timestamptz fields
+const getDateRangeTimestamptz = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+  }
+};
+
+// Helper function to get date range based on period for text date fields
+const getDateRangeText = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+  }
+};
+
+// Fetch downloads count by time period
+export const fetchDownloadsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeText(period); // downloads.install_date is text
     
+    const { data, error } = await supabase
+      .from("downloads")
+      .select("*")
+      .gte("install_date", start)
+      .lte("install_date", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const downloadsCount = data?.length || 0;
+    successCallback(downloadsCount);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch users count by time period (users created in the period)
+export const fetchUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // user_profiles.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("sex, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    let males = 0;
+    let females = 0;
+
     data.forEach((user) => {
-      if (user.sex === "Female" && user.is_tracker_notifications_enabled) {
-        totalPeriodTrackerUsers++;
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
       }
     });
+
+    const totalUsers = males + females;
+
+    const result = {
+      totalUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch facilities count by time period (facilities created in the period)
+export const fetchFacilitiesCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeTimestamptz(period); // healthcare_profiles.created_at is timestamptz
+    
+    const { data, error } = await supabase
+      .from("healthcare_profiles")
+      .select("id, status, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalFacilities = data?.length || 0;
+    let approvedCount = 0;
+    let pendingCount = 0;
+
+    data.forEach((facility) => {
+      if (facility.status === "Approved") {
+        approvedCount++;
+      } else if (facility.status === "Pending") {
+        pendingCount++;
+      }
+    });
+
+    const result = {
+      totalFacilities,
+      approvedCount,
+      pendingCount,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch specialists count by time period (specialists added in the period)
+export const fetchSpecialistsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // illness_and_conditions.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, specialist_to_contact, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    let totalSpecialists = 0;
+    let uniqueSpecialists = new Set();
+
+    data.forEach((condition) => {
+      if (condition.specialist_to_contact) {
+        totalSpecialists++;
+        uniqueSpecialists.add(condition.specialist_to_contact);
+      }
+    });
+
+    const result = {
+      totalSpecialists: uniqueSpecialists.size,
+      totalConditions: totalSpecialists,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch diseases and conditions count by time period
+export const fetchDiseasesCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // illness_and_conditions.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalDiseasesAndConditions = data?.length || 0;
+
+    const result = {
+      totalDiseasesAndConditions,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch symptoms count by time period
+export const fetchSymptomsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // symptoms.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("symptoms")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalSymptoms = data?.length || 0;
+
+    const result = {
+      totalSymptoms,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch healthy living count by time period
+export const fetchHealthyLivingCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // healthy_living.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("healthy_living")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalHealthyLiving = data?.length || 0;
+
+    const result = {
+      totalHealthyLiving,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch online users count by time period (users active in the period)
+export const fetchOnlineUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // user_profiles.last_activity is likely bigint
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, last_activity, sex")
+      .gte("last_activity", start)
+      .lte("last_activity", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total online users by gender
+    let totalOnlineUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((user) => {
+      totalOnlineUsers++;
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
+      }
+    });
+
+    const result = {
+      totalOnlineUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch medication reminder users count by time period
+export const fetchMedicationReminderUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeTimestamptz(period); // medication_reminders.start_date is timestamptz
+    
+    const { data, error } = await supabase
+      .from("medication_reminders")
+      .select(`
+        id,
+        user_id,
+        start_date,
+        user_profiles!inner(sex)
+      `)
+      .gte("start_date", start)
+      .lte("start_date", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count unique users who have medication reminders within the time period by gender
+    const uniqueUsers = new Set();
+    let totalMedicationReminderUsers = 0;
+    let males = 0;
+    let females = 0;
+    
+    data.forEach((reminder) => {
+      if (!uniqueUsers.has(reminder.user_id)) {
+        uniqueUsers.add(reminder.user_id);
+        totalMedicationReminderUsers++;
+        
+        if (reminder.user_profiles?.sex === "Male") {
+          males++;
+        } else if (reminder.user_profiles?.sex === "Female") {
+          females++;
+        }
+      }
+    });
+
+    const result = {
+      totalMedicationReminderUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch period tracker users count by time period
+export const fetchPeriodTrackerUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // Assuming tracker_logs has created_at as bigint
+    
+    const { data, error } = await supabase
+      .from("tracker_logs")
+      .select("id", { count: "exact" })
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Get the total count of tracker logs within the time period
+    const totalPeriodTrackerUsers = data?.length || 0;
 
     const result = {
       totalPeriodTrackerUsers,

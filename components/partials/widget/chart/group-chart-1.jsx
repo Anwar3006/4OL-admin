@@ -371,7 +371,7 @@ const GroupChart1 = ({
                 {item.title}
               </div>
               <div className="text-slate-900 text-2xl dark:text-white font-medium">
-                {item?.loading ? "Loading..." : item.count}
+                {item?.loading ? "..." : item.count}
               </div>
             </div>
           </div>

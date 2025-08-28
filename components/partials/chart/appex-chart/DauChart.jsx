@@ -1,6 +1,27 @@
 import { Line } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import moment from "moment";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const DauChart = ({ data }) => {
   // Generate last 30 days list
