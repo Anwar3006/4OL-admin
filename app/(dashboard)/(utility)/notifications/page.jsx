@@ -7,39 +7,47 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
-import { notifications } from "@/constant/data";
-
 export default function Notifications() {
-  // const [data, setData] = useState(notifications);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [globalFilter, setGlobalFilter] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const { data, error, count } = await supabase
-  //       .from("healthcare_profiles")
-  //       .select("*", { count: "exact" })
-  //       .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      setLoading(true);
+      try {
+        const { data, error, count } = await supabase
+          .from("notification_list")
+          .select("*", { count: "exact" })
+          .order("created_at", { ascending: false })
+          .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
 
-  //     if (error) {
-  //       console.error("Error fetching data:", error);
-  //     } else {
-  //       setData(data);
-  //       setTotalPages(Math.ceil(count / pageSize));
-  //     }
-  //   };
+        if (error) {
+          console.error("Error fetching notifications:", error);
+        } else {
+          setData(data || []);
+          setTotalPages(Math.ceil((count || 0) / pageSize));
+        }
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //   fetchData();
-  // }, [pageIndex, pageSize]);
+    fetchNotifications();
+  }, [pageIndex, pageSize]);
 
-  const filteredData = notifications.filter((item) => {
+  const filteredData = data.filter((item) => {
     const searchText = (globalFilter || "").toLowerCase();
     return (
       (item.title || "").toLowerCase().includes(searchText) ||
-      (item.desc || "").toLowerCase().includes(searchText)
+      (item.description || "").toLowerCase().includes(searchText) ||
+      (item.region || "").toLowerCase().includes(searchText)
     );
   });
 
@@ -61,16 +69,20 @@ export default function Notifications() {
   };
 
   const handleDelete = async (id) => {
-    // const { error } = await supabase
-    //   .from("healthcare_profiles")
-    //   .delete()
-    //   .eq("id", id); // Use `.eq` to delete a specific item by its ID
+    try {
+      const { error } = await supabase
+        .from("notification_list")
+        .delete()
+        .eq("id", id);
 
-    // if (error) {
-    //   console.error("Error deleting data:", error);
-    // } else {
-    //   setData((prevData) => prevData.filter((item) => item.id !== id));
-    // }
+      if (error) {
+        console.error("Error deleting notification:", error);
+      } else {
+        setData((prevData) => prevData.filter((item) => item.id !== id));
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
   const handleEdit = (id) => {
@@ -104,74 +116,83 @@ export default function Notifications() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr className="text-left text-xs font-medium text-gray-500 uppercase">
-              {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
-              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Image</th> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Region</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Sex</th>
-              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">District</th> */}
-              {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Target Group</th> */}
-              <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Age Range</th>
-              {/* </div> */}
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Age Range</th>
+              <th className="sm:px-6 px-2 sm:py-3 py-2">Created Date</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
-            {filteredData.map((item) => (
-              
-              <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer">
-                {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                {item.title || "Null"}
-                <p className="text-xs">Created Mon Aug 17 2024</p>
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.desc || "Null"}
-                </td>
-                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.image ? 'Image' : 'Null'}
-                </td> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-center">
-                  {item.region || 'Ahafo'}
-                </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.sex || 'Male'}
-                </td>
-                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.district || 'Asunafo South'}
-                </td> */}
-                {/* <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                  {item.target_group || 'Users'}
-                </td> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-center">
-                  {item.age_range || '18-24'}
-                </td>
-                {/* </div> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap x">
-                  <div className="flex justify-center items-center space-x-2">
-                    {/* <Button
-                      icon="heroicons-outline:pencil-alt"
-                      iconClass="text-base text-green-500" // Adjust the color and size as needed
-                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(item.id);
-                      }}
-                    /> */}
-                    <Button
-                      icon="heroicons-outline:trash"
-                      iconClass="text-base text-red-500" // Adjust the color and size as needed
-                      className="p-0 bg-transparent border-none text-center " // No padding, transparent background, no border
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                    />
+            {loading ? (
+              <tr>
+                <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
+                  <div className="flex justify-center items-center">
+                    <div className="text-sm text-gray-500">Loading notifications...</div>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : filteredData.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
+                  <div className="flex justify-center items-center">
+                    <div className="text-sm text-gray-500">No notifications found</div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredData.map((item) => (
+                <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer hover:bg-gray-50">
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                    <div className="font-medium text-gray-900">
+                      {item.title || ""}
+                    </div>
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2">
+                    <div className="max-w-xs truncate">
+                      {item.description || ""}
+                    </div>
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {item.region || ''}
+                    </span>
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      item.sex === 'Male' ? 'bg-blue-100 text-blue-800' :
+                      item.sex === 'Female' ? 'bg-pink-100 text-pink-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {item.sex || 'All'}
+                    </span>
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      {item.age_range || ''}
+                    </span>
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {item.created_at ? formatDate(item.created_at) : 'Unknown'}
+                  </td>
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                    <div className="flex justify-center items-center space-x-2">
+                      <Button
+                        icon="heroicons-outline:trash"
+                        iconClass="text-base text-red-500"
+                        className="p-0 bg-transparent border-none text-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(item.id);
+                        }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

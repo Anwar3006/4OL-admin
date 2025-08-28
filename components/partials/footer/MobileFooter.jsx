@@ -19,9 +19,9 @@ const MobileFooter = () => {
           `}
           >
             <Icon icon="heroicons-outline:mail" />
-            <span className="absolute right-[5px] lg:top-0 -top-2 h-4 w-4 bg-red-500 text-[8px] font-semibold flex flex-col items-center justify-center rounded-full text-white z-[99]">
+            {/* <span className="absolute right-[5px] lg:top-0 -top-2 h-4 w-4 bg-red-500 text-[8px] font-semibold flex flex-col items-center justify-center rounded-full text-white z-[99]">
               10
-            </span>
+            </span> */}
           </span>
           <span
             className={` block text-[11px]
@@ -66,9 +66,9 @@ const MobileFooter = () => {
           `}
           >
             <Icon icon="heroicons-outline:bell" />
-            <span className="absolute right-[17px] lg:top-0 -top-2 h-4 w-4 bg-red-500 text-[8px] font-semibold flex flex-col items-center justify-center rounded-full text-white z-[99]">
+            {/* <span className="absolute right-[17px] lg:top-0 -top-2 h-4 w-4 bg-red-500 text-[8px] font-semibold flex flex-col items-center justify-center rounded-full text-white z-[99]">
               2
-            </span>
+            </span> */}
           </span>
           <span
             className={` block text-[11px]
