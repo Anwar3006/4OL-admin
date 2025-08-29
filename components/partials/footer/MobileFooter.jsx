@@ -42,7 +42,7 @@ const MobileFooter = () => {
       >
         <div className="h-[50px] w-[50px] rounded-full relative left-[0px] top-[0px] custom-dropshadow">
           <img
-            src="/assets/images/users/user-1.jpg"
+            src="/assets/images/all-img/user.webp"
             alt=""
             className={` w-full h-full rounded-full
           ${

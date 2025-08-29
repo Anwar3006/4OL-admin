@@ -46,7 +46,7 @@ const MyProfile = () => {
               <div className="flex-none">
                 <div className="h-10 w-10 rounded-full">
                   <img
-                    src="/assets/images/users/user-1.jpg"
+                    src="/assets/images/all-img/user.webp"
                     alt=""
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -95,7 +95,7 @@ const MyProfile = () => {
               <header className="mx-auto max-w-[200px] mt-6 text-center">
                 <div className="h-16 w-16 rounded-full border border-slate-400 p-[2px] shadow-md mx-auto mb-3 relative">
                   <img
-                    src="/assets/images/users/user-1.jpg"
+                    src="/assets/images/all-img/user.webp"
                     alt=""
                     className="block w-full h-full rounded-full object-contain"
                   />

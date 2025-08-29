@@ -39,6 +39,7 @@ export default function ViewUserDetails() {
           console.error("Error fetching user role:", error);
         } else {
           setUser(data);
+          console.log(user)
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

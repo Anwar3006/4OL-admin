@@ -8,7 +8,7 @@ export const tableData = [
     gender: "Female",
     phone: "232(152)707-0110",
     ccupation: "Financial Advisor",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 2,
@@ -74,7 +74,7 @@ export const tableData = [
     gender: "Female",
     phone: "1(941)734-6255",
     ccupation: "Budget/Accounting Analyst II",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 8,
@@ -140,7 +140,7 @@ export const tableData = [
     gender: "Male",
     phone: "57(354)171-9855",
     ccupation: "Senior Financial Analyst",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 14,
@@ -206,7 +206,7 @@ export const tableData = [
     gender: "Male",
     phone: "374(646)574-6654",
     ccupation: "Chemical Engineer",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 20,
@@ -272,7 +272,7 @@ export const tableData = [
     gender: "Female",
     phone: "48(356)235-7306",
     ccupation: "Senior Sales Associate",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 26,
@@ -338,7 +338,7 @@ export const tableData = [
     gender: "Male",
     phone: "48(938)552-5576",
     ccupation: "Financial Analyst",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 32,
@@ -404,7 +404,7 @@ export const tableData = [
     gender: "Male",
     phone: "86(695)839-0433",
     ccupation: "Senior Financial Analyst",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 38,
@@ -470,7 +470,7 @@ export const tableData = [
     gender: "Female",
     phone: "353(823)187-8422",
     ccupation: "Administrative Assistant I",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 44,
@@ -536,7 +536,7 @@ export const tableData = [
     gender: "Female",
     phone: "54(565)109-8803",
     ccupation: "Physical Therapy Assistant",
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 50,
@@ -1206,7 +1206,7 @@ export const advancedTable = [
 
 export const homeTable = [
   {
-    company: "/assets/images/users/user-1.jpg",
+    company: "/assets/images/all-img/user.webp",
     category: "Ornamental Railings",
     views: 343,
     revenue: "$231.26",
@@ -1254,7 +1254,7 @@ export const homeTable = [
     up: true,
   },
   {
-    company: "/assets/images/users/user-1.jpg",
+    company: "/assets/images/all-img/user.webp",
     category: "Epoxy Flooring",
     views: 433,
     revenue: "$207.61",
@@ -1302,7 +1302,7 @@ export const homeTable = [
     up: false,
   },
   {
-    company: "/assets/images/users/user-1.jpg",
+    company: "/assets/images/all-img/user.webp",
     category: "Curb & Gutter",
     views: 493,
     revenue: "$420.26",
@@ -1350,7 +1350,7 @@ export const homeTable = [
     up: false,
   },
   {
-    company: "/assets/images/users/user-1.jpg",
+    company: "/assets/images/all-img/user.webp",
     category: "Site Furnishings",
     views: 357,
     revenue: "$147.36",
@@ -1398,7 +1398,7 @@ export const homeTable = [
     up: false,
   },
   {
-    company: "/assets/images/users/user-1.jpg",
+    company: "/assets/images/all-img/user.webp",
     category: "HVAC",
     views: 361,
     revenue: "$484.64",
@@ -1451,7 +1451,7 @@ export const recentOrder = [
   {
     user: {
       name: "Esther Howard",
-      image: "/assets/images/users/user-1.jpg",
+      image: "/assets/images/all-img/user.webp",
     },
     product: "Headphone",
     invoice: "#324567",
@@ -1511,7 +1511,7 @@ export const recentOrder = [
   {
     user: {
       name: "Esther Howard",
-      image: "/assets/images/users/user-1.jpg",
+      image: "/assets/images/all-img/user.webp",
     },
     product: "Headphone",
     invoice: "#324567",
@@ -1571,7 +1571,7 @@ export const recentOrder = [
   {
     user: {
       name: "Esther Howard",
-      image: "/assets/images/users/user-1.jpg",
+      image: "/assets/images/all-img/user.webp",
     },
     product: "Headphone",
     invoice: "#324567",
@@ -1631,7 +1631,7 @@ export const recentOrder = [
   {
     user: {
       name: "Esther Howard",
-      image: "/assets/images/users/user-1.jpg",
+      image: "/assets/images/all-img/user.webp",
     },
     product: "Headphone",
     invoice: "#324567",
@@ -1694,7 +1694,7 @@ export const teamData = [
   {
     customer: {
       name: "Arlene McCoy",
-      image: "/assets/images/users/user-1.jpg",
+      image: "/assets/images/all-img/user.webp",
       deg: "Ux designer",
     },
     status: "progress",

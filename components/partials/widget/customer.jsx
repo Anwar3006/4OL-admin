@@ -31,7 +31,7 @@ const Customer = () => {
   const customers2 = [
     {
       title: "Dianne Russell",
-      img: "/assets/images/users/user-1.jpg",
+      img: "/assets/images/all-img/user.webp",
       value: 60,
       bg: "before:bg-info-500",
       barColor: "bg-info-500",
