@@ -109,6 +109,10 @@ const Navmenu = ({ menus, onLogout }) => {
           if (item.title === "Admins" && userRole !== "Super Admin") {
             return false; // Hide "Admins" menu if the role is not "Super Admin"
           }
+
+          if (item.title === "Delete Account Request" && userRole !== "Super Admin") {
+            return false; // Hide "Delete Account Request" menu if the role is not "Super Admin"
+          }
   
           // if (item.title === "Facilities" && item.child) {
           //   // Filter "Pending Reviews" to only be visible for Super Admins
