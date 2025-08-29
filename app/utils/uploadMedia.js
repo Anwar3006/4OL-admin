@@ -64,17 +64,8 @@ export const uploadMediaFiles = async (
 
   console.log("Media URLs:", mediaUrls);
 
-  // Step 4: Update the database with all media URLs at once in the specified table
-  const { error: updateError } = await supabase
-    .from(tableName)
-    .update({ mediaUrls })
-    .eq("id", userId);
-
-  if (updateError) {
-    console.error("Error updating media URLs in the database:", updateError);
-    return null;
-  }
-
+  // Note: Database update is handled by the calling function
+  // This function only handles file uploads and returns URLs
   return mediaUrls;
 };
 

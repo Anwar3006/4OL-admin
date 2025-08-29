@@ -25,6 +25,7 @@ const AdsForm = () => {
   const [marketingType, setMarketingType] = useState("Ads");
   const [minDateTime, setMinDateTime] = useState("");
   const [videoDuration, setVideoDuration] = useState(0); // New state for video duration
+  const [existingDuration, setExistingDuration] = useState(null); // Add missing state
 
   const { register, handleSubmit, watch, setValue, reset } = useForm();
   const selectedCTA = watch("CTA") || ""; // Watch the CTA field
@@ -75,7 +76,7 @@ const AdsForm = () => {
   useEffect(() => {
     (async () => {
       const data = await getExistingAdsDuration();
-      // setExistingDuration(data);
+      setExistingDuration(data);
     })();
   }, []);
 
@@ -197,55 +198,70 @@ const AdsForm = () => {
   const onSubmit = async (data) => {
     setLoading(true); // Set loading to true at the start of the submission
 
-    const mediaUrls = await uploadMediaFiles(
-      "media",
-      "ads",
-      "banners_ads",
-      mediaFiles
-    );
-
-    // Check for errors
-    if (!mediaUrls || mediaUrls.length === 0) {
-      toast.error("No media files uploaded.");
-      setLoading(false); // Reset loading state in case of an error
-      return;
-    }
-
-    // Prepare the ad data
-    const adData = {
-      bannerType: marketingType.toLowerCase(),
-      created_at: moment(new Date()).valueOf(),
-      updated_at: moment(new Date()).valueOf(),
-      created_by: localStorage.getItem("user_id"),
-      updated_by: localStorage.getItem("user_id"),
-      is_created_by_admin_panel: true,
-      headline: headlines,
-      description: data.description,
-      callToAction: selectedCTA,
-      mediaType,
-      videoUrls: mediaType === "video" ? mediaUrls : null,
-      imageUrls:
-        mediaType === "single" || mediaType === "multiple" ? mediaUrls : null,
-      mediaUrls: [data?.primaryText.toLowerCase()],
-      starting_date_and_time: data.starting_date_and_time,
-      end_date_and_time: data.end_date_and_time,
-      duration: existingDuration,
-    };
-
     try {
+      // Check if media files are selected
+      if (!mediaFiles || mediaFiles.length === 0) {
+        toast.error("Please select media files to upload.");
+        setLoading(false);
+        return;
+      }
+
+      const mediaUrls = await uploadMediaFiles(
+        "media",
+        "ads",
+        "banners_ads",
+        mediaFiles
+      );
+
+      // Check for errors
+      if (!mediaUrls || mediaUrls.length === 0) {
+        toast.error("Failed to upload media files. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare the ad data
+      const adData = {
+        bannerType: marketingType.toLowerCase(),
+        created_at: moment(new Date()).valueOf(),
+        updated_at: moment(new Date()).valueOf(),
+        created_by: localStorage.getItem("user_id"),
+        updated_by: localStorage.getItem("user_id"),
+        is_created_by_admin_panel: true,
+        headline: headlines,
+        description: data.description,
+        callToAction: selectedCTA,
+        mediaType,
+        videoUrls: mediaType === "video" ? mediaUrls : null,
+        imageUrls:
+          mediaType === "single" || mediaType === "multiple" ? mediaUrls : null,
+        mediaUrls: [data?.primaryText?.toLowerCase() || ""],
+        starting_date_and_time: data.starting_date_and_time,
+        end_date_and_time: data.end_date_and_time,
+        duration: existingDuration,
+      };
+
       // Insert new ad
       const { error } = await supabase.from("banners_ads").insert([adData]);
       console.log("Ad Data to Insert:", adData);
 
       if (error) {
+        console.error("Database error:", error);
         toast.error("Error saving ad: " + error.message);
       } else {
         toast.success("Ad saved successfully!");
         reset(); // Reset the form after successful submission
+        // Reset form state
+        setMediaFiles([]);
+        setPreview(null);
+        setMediaType("");
+        setHeadlines([""]);
+        setDescription("");
+        setPrimaryText("");
       }
     } catch (error) {
       console.error("Error during submission:", error);
-      toast.error("An error occurred during submission.");
+      toast.error("An error occurred during submission: " + error.message);
     } finally {
       setLoading(false); // Reset loading state after submission (success or failure)
     }

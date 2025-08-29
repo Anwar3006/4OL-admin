@@ -70,8 +70,13 @@ export default function Activity() {
 
   useEffect(() => {
     const fetchDuration = async () => {
-      const data = await getExistingAdsDuration();
-      setSelectedDuration(data);
+      try {
+        const data = await getExistingAdsDuration();
+        setSelectedDuration(data);
+      } catch (error) {
+        console.error("Error fetching duration:", error);
+        setSelectedDuration(null);
+      }
     };
 
     fetchDuration();

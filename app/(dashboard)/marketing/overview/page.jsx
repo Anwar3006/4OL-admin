@@ -36,7 +36,7 @@ export default function Page() {
                   >
                     ACTIVITY
                   </button>
-                  <button
+                  {/* <button
                     className={`px-4 sm:py-2 py-1  ${
                       isSelected === "performance"
                         ? "bg-[#56ce84] text-white"
@@ -45,7 +45,7 @@ export default function Page() {
                     onClick={() => handleTabClick("performance")}
                   >
                     PERFORMANCE
-                  </button>
+                  </button> */}
                 </div>
 
                 {/* Tab Content */}
@@ -55,11 +55,11 @@ export default function Page() {
                       <Activity />
                     </div>
                   )}
-                  {isSelected === "performance" && (
+                  {/* {isSelected === "performance" && (
                     <div>
                       <Performance />
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </Card>
