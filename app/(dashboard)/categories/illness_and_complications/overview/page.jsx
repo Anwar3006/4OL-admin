@@ -190,35 +190,30 @@ const IllnessAndComplicationsPage = () => {
                     <HtmlRenderer 
                       htmlContent={condition.about} 
                       maxLength={100}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={condition.diagnosis} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={condition.treating} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={condition.complications} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={condition.prevention} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">

@@ -162,21 +162,18 @@ const HealthyLivingOverviewPage = () => {
                     <HtmlRenderer 
                       htmlContent={article.about} 
                       maxLength={100}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
                     <HtmlRenderer 
                       htmlContent={article.category} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
                     <HtmlRenderer 
                       htmlContent={article.more_information} 
                       maxLength={100}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">

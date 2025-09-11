@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew";
 import TextareaNew from "@/components/ui/TextareaNew";
 import RichTextEditor from "@/components/ui/RichTextEditor";
+import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
@@ -292,7 +293,7 @@ export default function SymptomsForm() {
                             {item.type_name}
                           </td>
                           <td className="border p-2 text-black">
-                            {item.about_type}
+                            <HtmlRenderer htmlContent={item.about_type} />
                           </td>
                           <td className="border p-2 text-center">
                             <button
@@ -361,7 +362,7 @@ export default function SymptomsForm() {
                             {item.cause_name}
                           </td>
                           <td className="border p-2 text-black">
-                            {item.other_possible_causes}
+                            <HtmlRenderer htmlContent={item.other_possible_causes} />
                           </td>
                           <td className="border p-2 text-center">
                             <button

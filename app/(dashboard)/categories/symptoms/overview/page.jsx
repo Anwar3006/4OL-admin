@@ -184,28 +184,24 @@ const SymptomsOverviewPage = () => {
                     <HtmlRenderer 
                       htmlContent={symptom.about} 
                       maxLength={100}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={symptom.diagnosis} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={symptom.treating} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={symptom.complications} 
                       maxLength={80}
-                      className="truncate"
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">

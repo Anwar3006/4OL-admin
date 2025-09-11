@@ -70,12 +70,21 @@ const HtmlRenderer = ({
         .html-content u {
           text-decoration: underline;
         }
-        .html-content ul, .html-content ol {
+        .html-content ul {
           margin: 0.5em 0;
           padding-left: 1.5em;
+          list-style-type: disc;
+          list-style-position: outside;
+        }
+        .html-content ol {
+          margin: 0.5em 0;
+          padding-left: 1.5em;
+          list-style-type: decimal;
+          list-style-position: outside;
         }
         .html-content li {
           margin: 0.25em 0;
+          display: list-item;
         }
         .html-content a {
           color: #3b82f6;
@@ -112,12 +121,21 @@ const HtmlRenderer = ({
         .safe-html-content u {
           text-decoration: underline;
         }
-        .safe-html-content ul, .safe-html-content ol {
+        .safe-html-content ul {
           margin: 0.5em 0;
           padding-left: 1.5em;
+          list-style-type: disc;
+          list-style-position: outside;
+        }
+        .safe-html-content ol {
+          margin: 0.5em 0;
+          padding-left: 1.5em;
+          list-style-type: decimal;
+          list-style-position: outside;
         }
         .safe-html-content li {
           margin: 0.25em 0;
+          display: list-item;
         }
         .safe-html-content a {
           color: #3b82f6;
@@ -125,6 +143,75 @@ const HtmlRenderer = ({
         }
         .safe-html-content a:hover {
           color: #1d4ed8;
+        }
+        
+        /* Force list styling - Override Tailwind CSS resets */
+        .html-content ul, .safe-html-content ul {
+          list-style: disc !important;
+          list-style-type: disc !important;
+          list-style-position: outside !important;
+          padding-left: 1.5em !important;
+          margin: 0.5em 0 !important;
+        }
+        .html-content ol, .safe-html-content ol {
+          list-style: decimal !important;
+          list-style-type: decimal !important;
+          list-style-position: outside !important;
+          padding-left: 1.5em !important;
+          margin: 0.5em 0 !important;
+        }
+        .html-content li, .safe-html-content li {
+          list-style: inherit !important;
+          display: list-item !important;
+          margin-left: 0 !important;
+          text-indent: 0 !important;
+        }
+        
+        /* Reset any conflicting styles */
+        .html-content ul li::before, .safe-html-content ul li::before,
+        .html-content ol li::before, .safe-html-content ol li::before {
+          content: none !important;
+        }
+        
+        /* Ensure proper spacing in constrained containers */
+        td .html-content ul, td .safe-html-content ul,
+        td .html-content ol, td .safe-html-content ol {
+          margin: 0.5em 0 !important;
+          padding-left: 1.5em !important;
+        }
+        
+        /* Handle inline lists */
+        .html-content.inline ul, .safe-html-content.inline ul {
+          display: inline-block !important;
+          margin: 0 0.5em !important;
+          vertical-align: top !important;
+        }
+        .html-content.inline ol, .safe-html-content.inline ol {
+          display: inline-block !important;
+          margin: 0 0.5em !important;
+          vertical-align: top !important;
+        }
+        
+        /* Ensure list markers are visible even in truncated containers */
+        .html-content, .safe-html-content {
+          overflow: visible !important;
+        }
+        
+        /* Additional specificity for stubborn cases */
+        div .html-content ul, div .safe-html-content ul,
+        span .html-content ul, span .safe-html-content ul {
+          list-style: disc !important;
+          padding-left: 1.5em !important;
+        }
+        div .html-content ol, div .safe-html-content ol,
+        span .html-content ol, span .safe-html-content ol {
+          list-style: decimal !important;
+          padding-left: 1.5em !important;
+        }
+        div .html-content li, div .safe-html-content li,
+        span .html-content li, span .safe-html-content li {
+          display: list-item !important;
+          list-style: inherit !important;
         }
       `}</style>
     </>
