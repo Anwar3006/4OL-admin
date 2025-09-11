@@ -1,8 +1,10 @@
+"use client";
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew";
 import TextareaNew from "@/components/ui/TextareaNew";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import { add_illness_and_condition } from "@/app/services/illness_and_condition";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
@@ -29,46 +31,31 @@ export default function IllnessAndComplicationForm() {
   const [imageUrl, setImageUrl] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
 
+  // Custom validation function for rich text content
+  const validateRichText = (value) => {
+    if (!value) return false;
+    // Remove HTML tags and check if there's actual text content
+    const textContent = value.replace(/<[^>]*>/g, '').trim();
+    return textContent.length > 0;
+  };
+
   const schema = yup.object().shape({
     condition_name: yup.string().required("Condition name is required"),
     attribution: yup.string().required("Attribution is required"),
-    image_url: yup.string().required("Image is required"),
-    // about: yup.string().required("About is required"),
-    // diagnosis: yup.string().required("Diagnosis is required"),
-    // treating: yup.string().required("Treating is required"),
-    // complications: yup.string().required("Complications are required"),
-    // symptoms: yup.string().required("Symptoms are required"),
-    // prevention: yup.string().required("Prevention is required"),
-    // specialist_to_contact: yup
-    //   .string()
-    //   .required("Specialist(s) to contact is required"),
-    // contact_your_doctor: yup
-    //   .string()
-    //   .required("Contact your doctor is required"),
-    // more_information: yup.string().required("More information is required"),
+    // Make all rich text fields optional for now to test
+    about: yup.string().optional(),
+    diagnosis: yup.string().optional(),
+    treating: yup.string().optional(),
+    complications: yup.string().optional(),
+    symptoms: yup.string().optional(),
+    prevention: yup.string().optional(),
+    specialist_to_contact: yup.string().optional(),
+    contact_your_doctor: yup.string().optional(),
+    more_information: yup.string().optional(),
 
-    // 👇 Add dynamic field validation
-    // types: yup
-    //   .array()
-    //   .of(
-    //     yup.object().shape({
-    //       type_name: yup.string().required("Type name is required"),
-    //       about_type: yup.string().required("About this type is required"),
-    //     })
-    //   )
-    //   .min(1, "At least one type is required"),
-
-    // causes: yup
-    //   .array()
-    //   .of(
-    //     yup.object().shape({
-    //       cause_name: yup.string().required("Cause name is required"),
-    //       other_possible_causes: yup
-    //         .string()
-    //         .required("Other causes are required"),
-    //     })
-    //   )
-    //   .min(1, "At least one cause is required"),
+    // 👇 Add dynamic field validation - make these optional for now
+    types: yup.array().optional(),
+    causes: yup.array().optional(),
   });
 
   const {
@@ -104,10 +91,32 @@ export default function IllnessAndComplicationForm() {
   });
 
   useEffect(() => {
-    // Ensure at least one type and cause field exists
-  }, [activeModal]);
+    // Initialize form with default values if editing
+    if (data?.id) {
+      reset({
+        condition_name: data.condition_name || "",
+        about: data.about || "",
+        diagnosis: data.diagnosis || "",
+        treating: data.treating || "",
+        complications: data.complications || "",
+        symptoms: data.symptoms || "",
+        prevention: data.prevention || "",
+        specialist_to_contact: data.specialist_to_contact || "",
+        contact_your_doctor: data.contact_your_doctor || "",
+        more_information: data.more_information || "",
+        attribution: data.attribution || "",
+        types: data.types || [{ type_name: "", about_type: "" }],
+        causes: data.causes || [{ cause_name: "", other_possible_causes: "" }],
+      });
+    } else {
+      // For new forms, initialize with empty arrays (types and causes are now optional)
+      // Users can add them manually if needed
+    }
+  }, [data?.id, appendType, appendCause, typeFields.length, causeFields.length]);
 
   const onSubmit = async (formData) => {
+    console.log("Form submitted with data:", formData);
+    console.log("Form errors:", errors);
     setFormSubmitted(true);
     setLoading(true);
 
@@ -116,6 +125,7 @@ export default function IllnessAndComplicationForm() {
       if (!imageFile && !data?.image_url) {
         toast.error("Image is required");
         setLoading(false);
+        setFormSubmitted(false);
         return;
       }
 
@@ -180,8 +190,23 @@ export default function IllnessAndComplicationForm() {
       }
     } catch (err) {
       toast.error(err.message || "Something went wrong");
-      console.log(err.message || "Something went wrong");
+      console.log("Error during submission:", err);
       setLoading(false);
+    }
+  };
+
+  const onError = (errors) => {
+    console.log("Form validation errors:", errors);
+    
+    // Check if it's just the image that's missing
+    if (Object.keys(errors).length === 0 && !imageFile && !data?.image_url) {
+      toast.error("Please upload an image");
+    } else if (Object.keys(errors).length > 0) {
+      // Show specific field errors
+      const firstError = Object.values(errors)[0];
+      toast.error(firstError?.message || "Please fill in all required fields");
+    } else {
+      toast.error("Please fill in all required fields");
     }
   };
 
@@ -222,7 +247,7 @@ export default function IllnessAndComplicationForm() {
     <>
       <form
         className="w-full grid md:grid-cols-2 grid-cols-1 gap-4"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, onError)}
       >
         <TextinputNew
           name="condition_name"
@@ -233,13 +258,20 @@ export default function IllnessAndComplicationForm() {
           defaultValue={data?.condition_name || ""}
           error={errors.condition_name}
         />
-        <TextareaNew
+        <Controller
           name="about"
-          label="About"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.about || ""}
-          error={errors.about}
+          render={({ field }) => (
+            <RichTextEditor
+              name="about"
+              label="About"
+              placeholder="Enter about information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.about}
+            />
+          )}
         />
 
         <div>
@@ -376,50 +408,80 @@ export default function IllnessAndComplicationForm() {
           </div>
         </div>
 
-        <TextareaNew
+        <Controller
           name="diagnosis"
-          label="Diagnosis"
-          type="text"
-          placeholder=" "
-          register={register}
-          defaultValue={data?.diagnosis}
-          error={errors.diagnosis}
+          control={control}
+          defaultValue={data?.diagnosis || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="diagnosis"
+              label="Diagnosis"
+              placeholder="Enter diagnosis information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.diagnosis}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="treating"
-          label="Treating"
-          type="text"
-          placeholder=" "
-          register={register}
-          defaultValue={data?.treating}
-          error={errors.treating}
+          control={control}
+          defaultValue={data?.treating || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="treating"
+              label="Treating"
+              placeholder="Enter treatment information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.treating}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="complications"
-          label="Complications"
-          type="text"
-          placeholder=" "
-          register={register}
-          defaultValue={data?.complications}
-          error={errors.complications}
+          control={control}
+          defaultValue={data?.complications || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="complications"
+              label="Complications"
+              placeholder="Enter complications information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.complications}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="symptoms"
-          label="Symptoms"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.symptoms || ""}
-          error={errors.symptoms}
+          render={({ field }) => (
+            <RichTextEditor
+              name="symptoms"
+              label="Symptoms"
+              placeholder="Enter symptoms information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.symptoms}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="prevention"
-          label="Prevention"
-          type="text"
-          placeholder=" "
-          register={register}
-          defaultValue={data?.prevention}
-          error={errors.prevention}
+          control={control}
+          defaultValue={data?.prevention || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="prevention"
+              label="Prevention"
+              placeholder="Enter prevention information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.prevention}
+            />
+          )}
         />
         <TextinputNew
           name="specialist_to_contact"
@@ -430,21 +492,35 @@ export default function IllnessAndComplicationForm() {
           defaultValue={data?.specialist_to_contact}
           error={errors.specialist_to_contact}
         />
-        <TextareaNew
+        <Controller
           name="contact_your_doctor"
-          label="Contact your Doctor"
-          placeholder="Contact your doctor or visit a health facility if"
-          register={register}
-          defaultValue={data?.contact_your_doctor}
-          error={errors.contact_your_doctor}
+          control={control}
+          defaultValue={data?.contact_your_doctor || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="contact_your_doctor"
+              label="Contact your Doctor"
+              placeholder="Contact your doctor or visit a health facility if..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.contact_your_doctor}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="more_information"
-          label="More Information"
-          placeholder=" "
-          register={register}
-          defaultValue={data?.more_information}
-          error={errors.more_information}
+          control={control}
+          defaultValue={data?.more_information || ""}
+          render={({ field }) => (
+            <RichTextEditor
+              name="more_information"
+              label="More Information"
+              placeholder="Enter additional information..."
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.more_information}
+            />
+          )}
         />
         <TextinputNew
           name="attribution"
@@ -455,6 +531,7 @@ export default function IllnessAndComplicationForm() {
           defaultValue={data?.attribution || ""}
           error={errors.attribution}
         />
+
 
         <div>
           <label
@@ -549,18 +626,18 @@ export default function IllnessAndComplicationForm() {
                 label={`Type Name ${index + 1}`}
                 placeholder="Type Name"
               />
-              <TextareaNew
+              <RichTextEditor
                 value={type.about_type}
-                onChange={(e) => {
+                onChange={(content) => {
                   const updatedTypes = [...newTypes];
                   updatedTypes[index] = {
                     ...updatedTypes[index],
-                    about_type: e.target.value,
+                    about_type: content,
                   };
                   setNewTypes(updatedTypes);
                 }}
                 label={`About ${index + 1}`}
-                placeholder="About this type"
+                placeholder="About this type..."
               />
               <button
                 type="button"
@@ -626,18 +703,18 @@ export default function IllnessAndComplicationForm() {
                 label={`Cause Name ${index + 1}`}
                 placeholder="Cause Name"
               />
-              <TextareaNew
+              <RichTextEditor
                 value={cause.other_possible_causes}
-                onChange={(e) => {
+                onChange={(content) => {
                   const updatedCauses = [...newCauses];
                   updatedCauses[index] = {
                     ...updatedCauses[index],
-                    other_possible_causes: e.target.value,
+                    other_possible_causes: content,
                   };
                   setNewCauses(updatedCauses);
                 }}
                 label={`Other Possible Causes ${index + 1}`}
-                placeholder="Describe other possible causes"
+                placeholder="Describe other possible causes..."
               />
               <button
                 type="button"

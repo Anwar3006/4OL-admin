@@ -1,40 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import TextinputNew from "@/components/ui/TextinputNew";
 import TextareaNew from "@/components/ui/TextareaNew";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import Fileinput from "@/components/ui/Fileinput";
 import { add_healthy_living } from "@/app/services/healthy_living";
 import { updateHealthyLivingEntry } from "@/app/services/healthy-living-service";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
 import handleSuccess from "@/utils/handleSuccess";
 
+// ✅ Helper function to validate rich text content
+const validateRichTextContent = (value) => {
+  if (!value) return false;
+  // Remove HTML tags and check if there's actual text content
+  const textContent = value.replace(/<[^>]*>/g, '').trim();
+  return textContent.length > 0;
+};
+
 // ✅ Yup validation schema
 const schema = yup.object().shape({
   topic_name: yup.string().required("Topic name is required"),
-  about: yup.string().required("About is required"),
-  category: yup.string().required("Category is required"),
-  contact_your_doctor: yup.string().required("Contact your doctor is required"),
-  more_information: yup.string().required("More information is required"),
+  about: yup
+    .string()
+    .required("About is required")
+    .test("has-content", "About content is required", validateRichTextContent),
+  category: yup
+    .string()
+    .required("Category is required")
+    .test("has-content", "Category content is required", validateRichTextContent),
+  contact_your_doctor: yup
+    .string()
+    .required("Contact your doctor is required")
+    .test("has-content", "Contact your doctor content is required", validateRichTextContent),
+  more_information: yup
+    .string()
+    .required("More information is required")
+    .test("has-content", "More information content is required", validateRichTextContent),
   attribution: yup.string().required("Attribution is required"),
 });
 
 // ✅ Field configuration array
 const fields = [
-  { name: "topic_name", label: "Topic Name", component: TextinputNew },
-  { name: "about", label: "About", component: TextareaNew },
-  { name: "category", label: "Category", component: TextareaNew },
+  { name: "topic_name", label: "Topic Name", component: TextinputNew, isRichText: false },
+  { name: "about", label: "About", component: RichTextEditor, isRichText: true },
+  { name: "category", label: "Category", component: RichTextEditor, isRichText: true },
   {
     name: "contact_your_doctor",
     label: "Contact your Doctor",
     placeholder: "Contact your doctor or visit a health facility if",
-    component: TextareaNew,
+    component: RichTextEditor,
+    isRichText: true,
   },
-  { name: "more_information", label: "More Information", component: TextareaNew },
-  { name: "attribution", label: "Attribution", component: TextinputNew },
+  { name: "more_information", label: "More Information", component: RichTextEditor, isRichText: true },
+  { name: "attribution", label: "Attribution", component: TextinputNew, isRichText: false },
 ];
 
 export default function HealthyLiving() {
@@ -52,6 +74,7 @@ export default function HealthyLiving() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema)
@@ -127,15 +150,32 @@ export default function HealthyLiving() {
       onSubmit={handleSubmit(onSubmit)}
       className="w-full grid md:grid-cols-2 grid-cols-1 gap-4 capitalize"
     >
-      {fields.map(({ name, label, component: Component, placeholder }) => (
+      {fields.map(({ name, label, component: Component, placeholder, isRichText }) => (
         <div key={name}>
-          <Component
-            name={name}
-            label={label}
-            placeholder={placeholder || " "}
-            register={register}
-            error={errors[name]}
-          />
+          {isRichText ? (
+            <Controller
+              name={name}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Component
+                  name={name}
+                  label={label}
+                  placeholder={placeholder || " "}
+                  value={value || ""}
+                  onChange={onChange}
+                  error={errors[name]}
+                />
+              )}
+            />
+          ) : (
+            <Component
+              name={name}
+              label={label}
+              placeholder={placeholder || " "}
+              register={register}
+              error={errors[name]}
+            />
+          )}
         </div>
       ))}
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew";
 import TextareaNew from "@/components/ui/TextareaNew";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
@@ -28,20 +29,47 @@ export default function SymptomsForm() {
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
 
+  // ✅ Helper function to validate rich text content
+  const validateRichTextContent = (value) => {
+    if (!value) return false;
+    // Remove HTML tags and check if there's actual text content
+    const textContent = value.replace(/<[^>]*>/g, '').trim();
+    return textContent.length > 0;
+  };
+
   const schema = yup.object().shape({
     symptom_name: yup.string().required("Symptom name is required"),
-    about: yup.string().required("About is required"),
-    diagnosis: yup.string().required("Diagnosis is required"),
-    treating: yup.string().required("Treating is required"),
-    complications: yup.string().required("Complications is required"),
-    prevention: yup.string().required("Prevention is required"),
+    about: yup
+      .string()
+      .required("About is required")
+      .test("has-content", "About content is required", validateRichTextContent),
+    diagnosis: yup
+      .string()
+      .required("Diagnosis is required")
+      .test("has-content", "Diagnosis content is required", validateRichTextContent),
+    treating: yup
+      .string()
+      .required("Treating is required")
+      .test("has-content", "Treating content is required", validateRichTextContent),
+    complications: yup
+      .string()
+      .required("Complications is required")
+      .test("has-content", "Complications content is required", validateRichTextContent),
+    prevention: yup
+      .string()
+      .required("Prevention is required")
+      .test("has-content", "Prevention content is required", validateRichTextContent),
     specialist_to_contact: yup
       .string()
       .required("Specialist(s) to contact is required"),
     contact_your_doctor: yup
       .string()
-      .required("Contact your doctor is required"),
-    more_information: yup.string().required("More information is required"),
+      .required("Contact your doctor is required")
+      .test("has-content", "Contact your doctor content is required", validateRichTextContent),
+    more_information: yup
+      .string()
+      .required("More information is required")
+      .test("has-content", "More information content is required", validateRichTextContent),
     attribution: yup.string().required("Attribution is required"),
     types: yup
       .array()
@@ -213,13 +241,20 @@ export default function SymptomsForm() {
           defaultValue={data?.symptom_name || ""}
           error={errors.symptom_name}
         />
-        <TextareaNew
+        <Controller
           name="about"
-          label="About"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.about || ""}
-          error={errors.about}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="about"
+              label="About"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.about}
+            />
+          )}
         />
 
         <div>
@@ -358,41 +393,65 @@ export default function SymptomsForm() {
           </div>
         </div>
 
-        <TextareaNew
+        <Controller
           name="diagnosis"
-          label="Diagnosis"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.diagnosis || ""}
-          error={errors.diagnosis}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="diagnosis"
+              label="Diagnosis"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.diagnosis}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="treating"
-          label="Treating"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.treating || ""}
-          error={errors.treating}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="treating"
+              label="Treating"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.treating}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="complications"
-          label="Complications"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.complications || ""}
-          error={errors.complications}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="complications"
+              label="Complications"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.complications}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="prevention"
-          label="Prevention"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.prevention || ""}
-          error={errors.prevention}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="prevention"
+              label="Prevention"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.prevention}
+            />
+          )}
         />
         <TextinputNew
           name="specialist_to_contact"
@@ -403,21 +462,35 @@ export default function SymptomsForm() {
           defaultValue={data?.specialist_to_contact || ""}
           error={errors.specialist_to_contact}
         />
-        <TextareaNew
+        <Controller
           name="contact_your_doctor"
-          label="Contact your Doctor"
-          placeholder="Contact your Doctor or visit a health facility if"
-          register={register}
+          control={control}
           defaultValue={data?.contact_your_doctor || ""}
-          error={errors.contact_your_doctor}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="contact_your_doctor"
+              label="Contact your Doctor"
+              placeholder="Contact your Doctor or visit a health facility if"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.contact_your_doctor}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="more_information"
-          label="More Information"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.more_information || ""}
-          error={errors.more_information}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="more_information"
+              label="More Information"
+              placeholder=" "
+              value={value || ""}
+              onChange={onChange}
+              error={errors.more_information}
+            />
+          )}
         />
         <TextinputNew
           name="attribution"
