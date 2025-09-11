@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import HtmlRenderer from "@/components/ui/HtmlRenderer";
 
 const SymptomsOverviewPage = () => {
   const router = useRouter();
@@ -179,17 +180,33 @@ const SymptomsOverviewPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {symptom.symptom_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">
-                    {truncateText(symptom.about)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                    <HtmlRenderer 
+                      htmlContent={symptom.about} 
+                      maxLength={100}
+                      className="truncate"
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
-                    {truncateText(symptom.diagnosis)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                    <HtmlRenderer 
+                      htmlContent={symptom.diagnosis} 
+                      maxLength={80}
+                      className="truncate"
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
-                    {truncateText(symptom.treating)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                    <HtmlRenderer 
+                      htmlContent={symptom.treating} 
+                      maxLength={80}
+                      className="truncate"
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
-                    {truncateText(symptom.complications)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                    <HtmlRenderer 
+                      htmlContent={symptom.complications} 
+                      maxLength={80}
+                      className="truncate"
+                    />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
                     {symptom.specialist_to_contact}
@@ -347,21 +364,41 @@ const SymptomsOverviewPage = () => {
                         {label} {index + 1}
                       </div>
                       <div className="w-2/3">
-                        {subFields.map(({ label: subLabel, key: subKey }) => (
-                          <p key={subKey}>
-                            <span className="text-gray-900">{subLabel}:</span>{" "}
-                            {item[subKey] || "-"}
-                          </p>
-                        ))}
+                        {subFields.map(({ label: subLabel, key: subKey }) => {
+                          // Check if this nested field should be rendered as HTML
+                          const nestedRichTextFields = ['about_type', 'other_possible_causes'];
+                          const shouldRenderNestedAsHtml = nestedRichTextFields.includes(subKey);
+                          
+                          return (
+                            <div key={subKey} className="mb-1">
+                              <span className="text-gray-900">{subLabel}:</span>{" "}
+                              {shouldRenderNestedAsHtml ? (
+                                <HtmlRenderer htmlContent={item[subKey] || "-"} className="inline" />
+                              ) : (
+                                <span>{item[subKey] || "-"}</span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ));
                 }
 
+                // Check if this field should be rendered as HTML
+                const richTextFields = ['about', 'diagnosis', 'treating', 'complications', 'prevention', 'contact_your_doctor'];
+                const shouldRenderAsHtml = richTextFields.includes(key);
+
                 return (
                   <div key={key} className="flex">
                     <div className="w-1/3 text-gray-900">{label}</div>
-                    <p className="w-2/3">{value || "-"}</p>
+                    <div className="w-2/3">
+                      {shouldRenderAsHtml ? (
+                        <HtmlRenderer htmlContent={value || "-"} />
+                      ) : (
+                        <p>{value || "-"}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}

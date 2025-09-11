@@ -11,6 +11,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import HtmlRenderer from "@/components/ui/HtmlRenderer";
 
 const HealthyLivingOverviewPage = () => {
   const router = useRouter();
@@ -157,14 +158,26 @@ const HealthyLivingOverviewPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {article.topic_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[250px] truncate">
-                    {truncateText(article.about)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[250px]">
+                    <HtmlRenderer 
+                      htmlContent={article.about} 
+                      maxLength={100}
+                      className="truncate"
+                    />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {article.category}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                    <HtmlRenderer 
+                      htmlContent={article.category} 
+                      maxLength={80}
+                      className="truncate"
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">
-                    {truncateText(article.more_information)}
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                    <HtmlRenderer 
+                      htmlContent={article.more_information} 
+                      maxLength={100}
+                      className="truncate"
+                    />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
                     {article.attribution}
@@ -315,10 +328,20 @@ const HealthyLivingOverviewPage = () => {
                   );
                 }
 
+                // Check if this field should be rendered as HTML
+                const richTextFields = ['about', 'category', 'contact_your_doctor', 'more_information'];
+                const shouldRenderAsHtml = richTextFields.includes(key);
+
                 return (
                   <div key={key} className="flex">
                     <div className="w-1/3 text-gray-900">{label}</div>
-                    <p className="w-2/3">{value || "-"}</p>
+                    <div className="w-2/3">
+                      {shouldRenderAsHtml ? (
+                        <HtmlRenderer htmlContent={value || "-"} />
+                      ) : (
+                        <p>{value || "-"}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}
