@@ -88,9 +88,9 @@ export default function HospitalsListing() {
   };
 
   return (
-    <Card className="bg-white" bodyClass="p-0">
+    <Card className="" bodyClass="p-0">
       <div className="flex max-lg:flex-col items-center w-full p-6">
-        <h6 className="md:mb-0 mb-3 w-full">Hospitals/ Clinics</h6>
+        <h6 className="md:mb-0 mb-3 w-full dark:text-gray-100">Hospitals/ Clinics</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -107,8 +107,8 @@ export default function HospitalsListing() {
 
       <div className="overflow-x-auto relative custom-scrollbar -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
               <th className="px-6 py-3">Type</th>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Region</th>
@@ -117,12 +117,12 @@ export default function HospitalsListing() {
               <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 text-xs sm:text-sm">
             {filteredData.length === 0 && (
               <tr>
                 <td
                   colSpan="6"
-                  className="text-center py-10 text-base text-gray-500"
+                  className="text-center py-10 text-base text-gray-500 dark:text-gray-100"
                 >
                   No Data Available
                 </td>
@@ -132,9 +132,9 @@ export default function HospitalsListing() {
               <tr
                 key={item.id}
                 onClick={() => handleView(item.id)}
-                className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 whitespace-nowrap"
               >
-                <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 capitalize">
                   {item.facility_type}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 capitalize">

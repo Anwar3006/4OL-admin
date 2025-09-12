@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
-import TextinputNew from "@/components/ui/TextinputNew";
-import TextareaNew from "@/components/ui/TextareaNew";
+import TextinputNew from "@/components/ui/TextinputNew"
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import { add_illness_and_condition } from "@/app/services/illness_and_condition";

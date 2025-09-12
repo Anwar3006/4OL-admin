@@ -132,12 +132,12 @@ export default function UsersListing() {
 
   return (
     <>
-    <Card className="bg-white" bodyClass="p-0 dark:bg-slate-800" title={"Users"}>
+    <Card className="" bodyClass="p-0 dark:bg-slate-800" title={"Users"}>
 
       <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Registration Date</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
@@ -150,7 +150,7 @@ export default function UsersListing() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
               <tr
                 // key={item.id} onClick={() => handleView(item.id)}
