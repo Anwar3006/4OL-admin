@@ -184,7 +184,7 @@ export default function UserActivity({ user }) {
         <div className="lg-inner-column">
           <div className="right-column relative w-full">
             <div className="w-full flex flex-col justify-center sm:p-5">
-              <div className="min-h-[80vh] bg-white">
+              <div className="min-h-[80vh]">
                 <div className="flex max-lg:flex-col pb-6 items-center w-full">
                   <h6 className="md:mb-0 mb-3 w-full text-xl font-bold capitalize">
                     User Activity
@@ -198,13 +198,13 @@ export default function UserActivity({ user }) {
                     <div className="flex flex-col">
                       <label
                         htmlFor="logTypeFilter"
-                        className="text-sm font-medium mb-1"
+                        className="text-sm font-medium mb-1 dark:text-slate-200 dark:bg-slate-800"
                       >
                         Log Type
                       </label>
                       <select
                         id="logTypeFilter"
-                        className="px-4 py-2 border rounded-md"
+                        className="px-4 py-2 border rounded-md dark:text-slate-200 dark:bg-slate-800"
                         value={logTypeFilter}
                         onChange={(e) => {
                           if (isLoading) return;
@@ -226,14 +226,14 @@ export default function UserActivity({ user }) {
                     <div className="flex flex-col">
                       <label
                         htmlFor="fromDate"
-                        className="text-sm font-medium mb-1"
+                        className="text-sm font-medium mb-1 dark:text-slate-200 dark:bg-slate-800"
                       >
                         From Date
                       </label>
                       <input
                         id="fromDate"
                         type="date"
-                        className="px-4 py-2 border rounded-md"
+                        className="px-4 py-2 border rounded-md dark:text-slate-200 dark:bg-slate-800"
                         value={fromDate}
                         onChange={(e) => {
                           if (isLoading) return;
@@ -246,14 +246,14 @@ export default function UserActivity({ user }) {
                     <div className="flex flex-col">
                       <label
                         htmlFor="toDate"
-                        className="text-sm font-medium mb-1"
+                        className="text-sm font-medium mb-1 dark:text-slate-200 dark:bg-slate-800"
                       >
                         To Date
                       </label>
                       <input
                         id="toDate"
                         type="date"
-                        className="px-4 py-2 border rounded-md"
+                        className="px-4 py-2 border rounded-md dark:text-slate-200 dark:bg-slate-800"
                         value={toDate}
                         onChange={(e) => {
                           if (isLoading) return;
@@ -271,7 +271,7 @@ export default function UserActivity({ user }) {
                       >
                         <Icons
                           icon={"heroicons-outline:download"}
-                          className="text-base text-green-500"
+                          className="text-base text-green-500 dark:text-slate-200"
                         />
                         <button className="text-base text-green-500">
                           Download
@@ -283,7 +283,7 @@ export default function UserActivity({ user }) {
                       >
                         <Icons
                           icon={"heroicons-outline:download"}
-                          className="text-base text-green-500"
+                          className="text-base text-green-500 dark:text-slate-200"
                         />
                         <button className="text-base text-green-500">
                           Download All
@@ -296,7 +296,7 @@ export default function UserActivity({ user }) {
                 {/* Loader */}
                 {isLoading && (
                   <div className="flex justify-center items-center py-10">
-                    <p>Loading...</p>
+                    <p className="text-gray-500 dark:text-slate-200">Loading...</p>
                   </div>
                 )}
 
@@ -312,15 +312,15 @@ export default function UserActivity({ user }) {
                 {/* Data Table */}
                 {!isLoading && data.length === 0 && !hasError && (
                   <div className="flex justify-center items-center py-10">
-                    <p>No records found.</p>
+                    <p className="text-gray-500 dark:text-slate-200">No records found.</p>
                   </div>
                 )}
 
                 {!isLoading && data.length > 0 && (
                   <div className="overflow-x-auto custom-scrollbar">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+                      <thead className="bg-gray-50 dark:bg-slate-800">
+                        <tr className="text-left sm:text-sm text-xs font-medium text-gray-500 dark:text-slate-200">
                           <th className="sm:px-6 px-2 sm:py-3 py-2">
                             Date & Time
                           </th>
@@ -335,7 +335,7 @@ export default function UserActivity({ user }) {
                           {/* <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th> */}
                         </tr>
                       </thead>
-                      <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+                      <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
                         {data?.map((item) => (
                           <tr className="capitalize" key={item.id}>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
@@ -345,7 +345,7 @@ export default function UserActivity({ user }) {
                               {item.type}
                             </td>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                              {userNames[item.user_id] || item.user_name || "Unknown User"}
+                              {userNames[item.user_id] || item.user_name || "Unknown User"}{" "}
                             </td>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                               {item.description}{" "}

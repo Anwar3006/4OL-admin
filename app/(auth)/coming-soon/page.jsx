@@ -15,7 +15,7 @@ const ComingSoonPage = () => {
               <img
                 src={
                   isDark
-                    ? "assets/images/logo/logo-white.svg"
+                    ? "/assets/images/logo/logo-white.svg"
                     : "/assets/images/logo/logo.svg"
                 }
                 alt=""

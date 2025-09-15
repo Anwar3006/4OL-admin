@@ -86,7 +86,7 @@ export default function ViewUserDetails() {
 
   return (
     <Card
-      className="min-h-[80vh] bg-white"
+      className="min-h-[80vh]"
       title={`${userData.first_name} ${userData.last_name}`}
       headerslot={
         <Button
@@ -104,10 +104,10 @@ export default function ViewUserDetails() {
         />
       }
     >
-      <div className="grid grid-cols-1 gap-2 sm:text-sm text-xs text-gray-600 xl:w-[40%] lg:w-[50%] capitalize">
+      <div className="grid grid-cols-1 gap-2 sm:text-sm text-xs text-gray-600 dark:text-slate-200 xl:w-[40%] lg:w-[50%] capitalize">
         {userDetailsFields.map(({ label, key, format }) => (
           <div className="flex" key={key}>
-            <div className="w-1/3 text-gray-900">{label}</div>
+            <div className="w-1/3 text-gray-900 dark:text-slate-200">{label}</div>
             <div className={`w-2/3 ${key === "email" ? "lowercase" : ""}`}>
               {userData[key]
                 ? format
@@ -119,7 +119,7 @@ export default function ViewUserDetails() {
         ))}
 
         <div className="flex">
-          <div className="w-1/3 text-gray-900">Status</div>
+          <div className="w-1/3 text-gray-900 dark:text-slate-200">Status</div>
           <div className="w-2/3">
             {userData.status === true ? (
               <div className="flex items-center">
