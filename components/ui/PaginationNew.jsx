@@ -73,7 +73,7 @@ const PaginationNew = ({
       <ul className="flex items-center space-x-2 whitespace-nowrap rtl:space-x-reverse">
         <li>
           <button
-            className={`flex items-center space-x-1 ${
+            className={`flex items-center space-x-1 dark:text-slate-200 ${
               !canPreviousPage ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={() => previousPage()}
@@ -89,7 +89,7 @@ const PaginationNew = ({
 
         <li>
           <button
-            className={`flex items-center space-x-1 ${
+            className={`flex items-center space-x-1 dark:text-slate-200 ${
               !canNextPage ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={() => nextPage()}

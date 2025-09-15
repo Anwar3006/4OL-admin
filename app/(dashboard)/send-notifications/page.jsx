@@ -154,7 +154,6 @@ const SendNotifications = () => {
     }
 
     const { data: users, error } = await query;
-    console.log("users", users);
 
     const response = await fetch("/api/send-notifications", {
       method: "POST",
@@ -200,8 +199,7 @@ const SendNotifications = () => {
 
     if (error) {
       console.error("Error fetching users:", error);
-    } else {
-      console.log("Filtered Users:", users); // Debugging output
+    } else {// Debugging output
       setUser(users);
     }
   };
@@ -242,19 +240,19 @@ const SendNotifications = () => {
     <div>
       <form onSubmit={handleSubmit(handleSendNotification)}>
         <ToastContainer />
-        <Card title="Send Notification" className="mt-5 bg-white">
+        <Card title="Send Notification" className="mt-5 ">
           <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
             <div className="text-sm">
               <div>
                 <div className="lg:col-span-2 col-span-1">
-                  <label className="block text-sm mb-2 font-medium text-gray-700">
+                  <label className="block text-sm mb-2 font-medium text-gray-700 dark:text-slate-200">
                     Title
                   </label>
                   <input
                     type="text"
                     placeholder="Enter Your Title"
                     {...register("title")}
-                    className={`w-full p-2 text-sm border rounded-md focus:ring-black-300 ${
+                    className={`w-full dark:bg-slate-800 p-2 text-sm border rounded-md focus:ring-black-300 ${
                       loading ? "border-gray-100" : "border-gray-300"
                     }`}
                     disabled={loading}
@@ -266,7 +264,7 @@ const SendNotifications = () => {
                   )}
                 </div>
                 <div className="lg:col-span-2 col-span-1">
-                  <label className="block text-sm my-2 font-medium text-gray-700 mt-2">
+                  <label className="block text-sm my-2 font-medium text-gray-700 dark:text-slate-200 mt-2">
                     Description
                   </label>
                   <textarea
@@ -274,7 +272,7 @@ const SendNotifications = () => {
                     placeholder="Enter Your Description"
                     {...register("description")}
                     rows={2}
-                    className={`w-full p-2 border rounded-md focus:ring-black-300 resize-none ${
+                    className={`w-full p-2 border dark:bg-slate-800 rounded-md focus:ring-black-300 resize-none ${
                       loading ? "border-gray-100" : "border-gray-300"
                     }`}
                     disabled={loading}
@@ -301,7 +299,7 @@ const SendNotifications = () => {
                   <select
                     {...register("region")}
                     onChange={handleSelectChange("region")}
-                    className="border rounded-md px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={isTrackerNotification && loading}
                   >
                     <option value="">Select Region</option>
@@ -322,7 +320,7 @@ const SendNotifications = () => {
                   <select
                     {...register("sex")}
                     onChange={handleSelectChange("sex")}
-                    className="border rounded-md px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Gender</option>
@@ -343,7 +341,7 @@ const SendNotifications = () => {
                   <select
                     {...register("age")}
                     onChange={handleSelectChange("age")}
-                    className="border rounded-md px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Age</option>

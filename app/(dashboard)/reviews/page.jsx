@@ -116,7 +116,7 @@ const Reviews = () => {
 
   return (
     <Card
-      className="min-h-[80vh] bg-white mt-5"
+      className="min-h-[80vh]  mt-5"
       bodyClass="p-0"
       title="Reviews"
       headerslot={
@@ -137,8 +137,8 @@ const Reviews = () => {
     >
       <div className="overflow-x-auto custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left  text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left  text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
               <th className="px-6 py-3">Full Name</th>
               <th className="px-6 py-3">Facility name</th>
               <th className="px-6 py-3">Comments</th>
@@ -151,7 +151,7 @@ const Reviews = () => {
             {ratings.map((item) => (
               <tr
                 key={item.id}
-                className="cursor-pointer hover:bg-gray-50 border-b text-sm border-gray-100"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 border-b text-sm border-gray-100"
               >
                 <td className="px-6 py-3 capitalize">
                   {item.first_name || "N/A"} {item.last_name || "N/A"}

@@ -160,9 +160,9 @@ const pillReminder = () => {
       }
     >
       <div className="overflow-x-auto custom-scrollbar">
-        <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+        <table className="min-w-full divide-y divide-gray-200 whitespace-nowrap dark:divide-slate-700">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase whitespace-nowrap">
               <th className="px-6 py-3">Full Name</th>
               {/* <th className=6 px-4 py-3">Date</th> */}
               <th className="px-6 py-3">Medication name</th>
@@ -171,19 +171,19 @@ const pillReminder = () => {
               <th className="px-6 py-3 text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+          <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm dark:bg-slate-800 dark:divide-slate-700">
             {data.length === 0 && (
               <tr>
                 <td
                   colSpan="6"
-                  className="text-center py-10 text-base text-gray-500"
+                  className="text-center py-10 text-base text-gray-500 dark:text-slate-200"
                 >
                   No Data Available
                 </td>
               </tr>
             )}
             {data.map((item) => (
-              <tr className="cursor-pointer hover:bg-gray-50 text-sm">
+              <tr className="cursor-pointer hover:bg-gray-50 text-sm dark:hover:bg-slate-700">
                 <td className="px-6 py-4 capitalize">
                   {item.user_profiles.first_name || "Ali"}{" "}
                   {item.user_profiles.last_name || "Hassan"}
@@ -200,7 +200,7 @@ const pillReminder = () => {
                   <div className="text-center">
                     <Button
                       icon="lets-icons:eye"
-                      iconClass="text-green-500 text-lg"
+                      iconClass="text-green-500 text-lg dark:text-green-500"
                       className="p-0 bg-transparent border-none font-normal text-green-500"
                       onClick={(e) => {
                         e.stopPropagation();
