@@ -366,7 +366,7 @@ const SendNotifications = () => {
             ) : (
               <Button
                 text="Send Notification"
-                className="btn-dark"
+                className="btn-dark dark:bg-green-500"
                 type="submit"
                 disabled={loading}
               />

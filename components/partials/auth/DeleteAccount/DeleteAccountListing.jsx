@@ -132,7 +132,7 @@ export default function DeleteUserAccountListing() {
   };
 
   return (
-    <Card className="relative bg-white min-h-[70vh] mt-5" bodyClass="p-0">
+    <Card className="relative min-h-[80vh] mt-5" bodyClass="p-0">
       <ToastContainer />
 
       <div className="flex max-lg:flex-col items-center w-full p-6">
@@ -151,13 +151,13 @@ export default function DeleteUserAccountListing() {
         </div>
       )}
         {filteredData.length === 0 ? (
-          <div className="text-center py-6 text-gray-500 min-h-[50vh] justify-items-center align-middle">
+          <div className="text-center py-6 text-gray-500 dark:text-slate-200 min-h-[50vh] justify-items-center align-middle">
             <p className="text-lg font-semibold">No Request Found</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+            <thead className="bg-gray-50 dark:bg-slate-800">
+              <tr className="text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
                 <th className="px-6 py-3">Name</th>
                 <th className="px-6 py-3">Email</th>
                 <th className="px-6 py-3">Sex</th>
@@ -166,22 +166,22 @@ export default function DeleteUserAccountListing() {
                 <th className="px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200 text-xs">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 text-xs">
               {filteredData.map((item) => (
                 <tr
                   key={item.id}
-                  className="cursor-pointer hover:bg-gray-50 whitespace-nowrap"
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 whitespace-nowrap"
                 >
-                  <td className="px-6 py-4 text-sm text-gray-500 capitalize">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 capitalize">
                     {item.first_name + " " + item.last_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 capitalize">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 capitalize">
                     {item.email}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200">
                     {item.sex}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200">
                     {item.phone_number}
                   </td>
 
@@ -235,7 +235,7 @@ export default function DeleteUserAccountListing() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-end p-4 border-t bg-white w-full z-10">
+      <div className="flex justify-end p-4 w-full z-10">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

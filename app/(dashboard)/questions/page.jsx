@@ -141,7 +141,7 @@ export default function FaqPage() {
       <div className="mt-5 relative">
         <Card
           title="FAQs"
-          className="bg-white dark:bg-slate-800 overflow-hidden min-h-[80vh]"
+          className=" overflow-hidden min-h-[80vh]"
           bodyClass=""
           headerslot={
             <>
@@ -161,7 +161,7 @@ export default function FaqPage() {
               </div>
             ) : faqs.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-slate-500">
+                <p className="text-slate-500 dark:text-slate-200">
                   No FAQs found. Create your first one!
                 </p>
               </div>
@@ -173,7 +173,7 @@ export default function FaqPage() {
                   answer={faq.answer}
                   onEdit={() => handleEdit(faq)}
                   onDelete={() => handleDelete(faq)}
-                  questionClassName="text-sm"
+                  questionClassName="text-sm dark:text-slate-200"
                 />
               ))
             )}
@@ -193,12 +193,12 @@ export default function FaqPage() {
           <>
             <Button
               text="Clear"
-              className="bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200"
+              className="bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
               onClick={handleClearForm}
             />
             <Button
               text={isEditing ? "Update FAQ" : "Add FAQ"}
-              className="bg-[#56ce84] text-white hover:bg-[#46b276]"
+              className="bg-[#56ce84] text-white hover:bg-[#46b276] dark:bg-[#56ce84] dark:text-white dark:hover:bg-[#46b276]"
               onClick={handleAddFaq}
             />
           </>
@@ -206,7 +206,7 @@ export default function FaqPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
               Question
             </label>
             <textarea

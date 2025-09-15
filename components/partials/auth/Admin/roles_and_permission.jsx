@@ -114,7 +114,7 @@ export default function RolesAndPermissions() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
+    <Card className="min-h-[80vh]">
       {loading && (
         <Loading />
       )}
@@ -136,8 +136,8 @@ export default function RolesAndPermissions() {
 
       <div className="overflow-x-auto  custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500 dark:text-slate-200">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Role</th>
@@ -148,7 +148,7 @@ export default function RolesAndPermissions() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
               <tr
                 key={item.id}
@@ -157,22 +157,22 @@ export default function RolesAndPermissions() {
                 }`}
               >
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800 dark:text-slate-200">
                   {item.first_name} <span>{item.last_name}</span>
                 </td>
-                <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap `}>
+                <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200`}>
                   {item.role === "Admin" ? "Admin" : " "}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase dark:text-slate-200">
                   {item.email || "Null"}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   {item.phone_number}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   {formatDate(item.created_at)}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   <Switch
                     value={item.status === true} // Assuming 'enabled' means the user can log in
                     onChange={() =>
@@ -184,7 +184,7 @@ export default function RolesAndPermissions() {
                 </td>
 
                 {/* </div> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   <div className="flex space-x-2">
                     <Button
                       icon="lets-icons:eye"

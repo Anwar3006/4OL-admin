@@ -95,7 +95,7 @@ export default function Notifications() {
   
 
   return (
-    <Card className="min-h-[80vh] bg-white mt-5" bodyClass="p-0">
+    <Card className="min-h-[80vh]  mt-5" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
@@ -114,8 +114,8 @@ export default function Notifications() {
 
       <div className="overflow-x-auto  custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
@@ -125,12 +125,12 @@ export default function Notifications() {
               <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
             {loading ? (
               <tr>
                 <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
                   <div className="flex justify-center items-center">
-                    <div className="text-sm text-gray-500">Loading notifications...</div>
+                    <div className="text-sm text-gray-500 dark:text-slate-200">Loading notifications...</div>
                   </div>
                 </td>
               </tr>
@@ -138,7 +138,7 @@ export default function Notifications() {
               <tr>
                 <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
                   <div className="flex justify-center items-center">
-                    <div className="text-sm text-gray-500">No notifications found</div>
+                    <div className="text-sm text-gray-500 dark:text-slate-200">No Notifications Found</div>
                   </div>
                 </td>
               </tr>
@@ -146,42 +146,42 @@ export default function Notifications() {
               filteredData.map((item) => (
                 <tr key={item.id} onClick={() => handleView(item.id)} className="cursor-pointer hover:bg-gray-50">
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-gray-900 dark:text-slate-200">
                       {item.title || ""}
                     </div>
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2">
-                    <div className="max-w-xs truncate">
+                    <div className="max-w-xs truncate dark:text-slate-200">
                       {item.description || ""}
                     </div>
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:text-slate-200">
                       {item.region || ''}
                     </span>
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      item.sex === 'Male' ? 'bg-blue-100 text-blue-800' :
+                      item.sex === 'Male' ? 'bg-blue-100 text-blue-800 dark:text-slate-200' :
                       item.sex === 'Female' ? 'bg-pink-100 text-pink-800' :
-                      'bg-gray-100 text-gray-800'
+                      'bg-gray-100 text-gray-800 dark:text-slate-200'
                     }`}>
                       {item.sex || 'All'}
                     </span>
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:text-slate-200">
                       {item.age_range || ''}
                     </span>
                   </td>
-                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                     {item.created_at ? formatDate(item.created_at) : 'Unknown'}
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                     <div className="flex justify-center items-center space-x-2">
                       <Button
                         icon="heroicons-outline:trash"
-                        iconClass="text-base text-red-500"
+                        iconClass="text-base text-red-500 dark:text-slate-200"
                         className="p-0 bg-transparent border-none text-center"
                         onClick={(e) => {
                           e.stopPropagation();
