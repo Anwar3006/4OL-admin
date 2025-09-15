@@ -137,12 +137,12 @@ const IllnessAndComplicationsPage = () => {
     <div className="mt-5 relative">
       <Card
         title="Diseases & Conditions"
-        className="bg-white dark:bg-slate-800 overflow-hidden relative"
+        className="overflow-hidden relative"
         bodyClass="p-0"
       >
         <div className="absolute top-2 right-2 justify-end p-4">
           <Button
-            text="Add New Disease"
+            text="+ Add New Disease"
             className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
             iconClass="text-lg"
             onClick={() =>
@@ -152,74 +152,74 @@ const IllnessAndComplicationsPage = () => {
         </div>
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Condition Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   About
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Diagnosis
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Treatment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Complications
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Prevention
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Specialist
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-slate-700">
               {getCurrentPageData().map((condition) => (
-                <tr key={condition.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={condition.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                     {condition.condition_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] dark:text-slate-200">
                     <HtmlRenderer 
                       htmlContent={condition.about} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
                     <HtmlRenderer 
                       htmlContent={condition.diagnosis} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
                     <HtmlRenderer 
                       htmlContent={condition.treating} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
                     <HtmlRenderer 
                       htmlContent={condition.complications} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
                     <HtmlRenderer 
                       htmlContent={condition.prevention} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate dark:text-slate-200">
                     {condition.specialist_to_contact}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                     <div className="flex items-center justify-center gap-2">
                       <Button
                         icon="lets-icons:eye"
@@ -250,9 +250,9 @@ const IllnessAndComplicationsPage = () => {
                 <tr>
                   <td
                     colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
                   >
-                    No conditions found
+                    No Conditions Found
                   </td>
                 </tr>
               )}
@@ -290,7 +290,7 @@ const IllnessAndComplicationsPage = () => {
                 className="w-24 h-24 text-red-500"
               />
             </div>
-            <p className="text-center text-gray-700 dark:text-gray-300">
+            <p className="text-center text-gray-700 ">
               Are you sure you want to delete <br />
               <span className="font-semibold">
                 "{itemToDelete?.condition_name}"

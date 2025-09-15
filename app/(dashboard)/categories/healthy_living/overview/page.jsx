@@ -117,12 +117,12 @@ const HealthyLivingOverviewPage = () => {
     <div className="mt-5 relative">
       <Card
         title="Healthy Living Articles"
-        className="bg-white dark:bg-slate-800 overflow-hidden relative"
+        className=" overflow-hidden relative"
         bodyClass="p-0"
       >
         <div className="flex justify-end p-4 absolute top-2 right-2">
           <Button
-            text="Add New Article"
+            text="+ Add New Article"
             className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
             iconClass="text-lg"
             onClick={() => router.push("/categories/healthy_living/form")}
@@ -130,56 +130,56 @@ const HealthyLivingOverviewPage = () => {
         </div>
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Topic Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   About
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   More Information
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Attribution
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                     {article.topic_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[250px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px]">
                     <HtmlRenderer 
                       htmlContent={article.about} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px]">
                     <HtmlRenderer 
                       htmlContent={article.category} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px]">
                     <HtmlRenderer 
                       htmlContent={article.more_information} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px] truncate">
                     {article.attribution}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                     <div className="flex items-center justify-center gap-2">
                       <Button
                         icon="lets-icons:eye"
@@ -210,9 +210,9 @@ const HealthyLivingOverviewPage = () => {
                 <tr>
                   <td
                     colSpan="6"
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
                   >
-                    No healthy living articles found
+                    No Healthy Living Articles Found
                   </td>
                 </tr>
               )}

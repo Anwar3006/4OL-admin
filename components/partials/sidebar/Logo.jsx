@@ -31,7 +31,7 @@ const SidebarLogo = ({ menuHover }) => {
             {!isDark && !isSemiDark ? (
               <img src="/assets/images/all-img/logo.png" alt="" className="w-14 ml-2"/>
             ) : (
-              <img src="/assets/images/all-img/logo.png" alt="" />
+              <img src="/assets/images/all-img/logo-green.png" alt="" className="w-14 ml-2"/>
             )}
           </div>
 

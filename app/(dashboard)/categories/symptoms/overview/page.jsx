@@ -135,7 +135,7 @@ const SymptomsOverviewPage = () => {
     <div className="mt-5 relative">
       <Card
         title="Symptoms"
-        className="bg-white dark:bg-slate-800 overflow-hidden relative"
+        className="overflow-hidden relative"
         bodyClass="p-0"
       >
         <div className="flex justify-end p-4 absolute top-2 right-2">
@@ -149,50 +149,50 @@ const SymptomsOverviewPage = () => {
         </div>
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Symptom Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   About
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Diagnosis
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Treatment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Complications
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Specialist
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((symptom) => (
                 <tr key={symptom.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                     {symptom.symptom_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px]">
                     <HtmlRenderer 
                       htmlContent={symptom.about} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={symptom.diagnosis} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px]">
                     <HtmlRenderer 
                       htmlContent={symptom.treating} 
                       maxLength={80}
@@ -204,10 +204,10 @@ const SymptomsOverviewPage = () => {
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px] truncate">
                     {symptom.specialist_to_contact}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                     <div className="flex items-center justify-center gap-2">
                       <Button
                         icon="lets-icons:eye"
@@ -238,9 +238,8 @@ const SymptomsOverviewPage = () => {
                 <tr>
                   <td
                     colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No symptoms found
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200">
+                    No Symptoms Found
                   </td>
                 </tr>
               )}

@@ -687,7 +687,7 @@ const PeriodsTrackerPage = () => {
       <div className="mt-5 relative">
         <Card
           title="Periods Tracker"
-          className="bg-white dark:bg-slate-800 overflow-hidden"
+          className=" overflow-hidden"
           bodyClass="p-0"
           headerslot={
             <>
@@ -713,56 +713,56 @@ const PeriodsTrackerPage = () => {
             className="overflow-x-auto relative hidden-scrollbar"
           >
             <table className="min-w-full divide-y divide-gray-200 ">
-              <thead className="bg-gray-50 sticky top-0 z-10">
+              <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10 whitespace-nowrap">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Region
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Goal
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Cycle Length
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Period Length
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Consistent?
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Period Start
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Next Reminder
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Ovulation Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Fertile Window
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Flow Types
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
                 {logs.map((log) => (
                   <tr key={log.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
                           {log.user_profiles?.avatar_url ? (
@@ -790,37 +790,37 @@ const PeriodsTrackerPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.phone_number}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.region}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.goal}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.cycle_length} days
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.period_length} days
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.is_consistent}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.period_start_date).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.next_reminder).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.ovulation_date).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
                       <Button
                         iconWidth={24}
                         text="Fertile Window"
@@ -833,7 +833,7 @@ const PeriodsTrackerPage = () => {
                         }}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
                       <Button
                         text="Flow Types"
                         icon="bi:droplet-fill"

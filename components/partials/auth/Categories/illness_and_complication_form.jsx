@@ -275,7 +275,7 @@ export default function IllnessAndComplicationForm() {
         />
 
         <div>
-          <label className="block font-medium text-gray-700">Types</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Types</label>
           <Button
             icon="heroicons-outline:plus-sm"
             iconClass="text-base text-white"
@@ -341,7 +341,7 @@ export default function IllnessAndComplicationForm() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">Causes</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Causes</label>
           <Button
             icon="heroicons-outline:plus-sm"
             iconClass="text-base text-white"
