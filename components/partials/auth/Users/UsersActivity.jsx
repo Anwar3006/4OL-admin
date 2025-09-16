@@ -264,7 +264,7 @@ export default function UserActivity({ user }) {
                     </div>
                   </div>
                   {data.length > 0 && !isLoading && (
-                    <div className="flex flex-wrap sm:space-x-4 max-sm:justify-between w-full max-sm:mt-4 items-center">
+                    <div className="flex flex-wrap sm:space-x-4 max-sm:justify-between sm:items-center max-sm:w-full mt-4 items-center">
                       <div
                         className="flex items-center space-x-2 cursor-pointer border rounded-md px-4 py-2"
                         onClick={() => downloadExcel(data)}
