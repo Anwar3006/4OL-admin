@@ -390,7 +390,7 @@ const Dashboard = () => {
               <TimePeriodFilter 
                 selectedPeriod={selectedPeriod}
                 onPeriodChange={handlePeriodChange}
-                className="ml-auto"
+                className="ml-auto max-sm:mt-2"
               />
             }
             bodyClass="p-4"

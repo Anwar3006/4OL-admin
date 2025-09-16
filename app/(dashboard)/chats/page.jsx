@@ -260,7 +260,7 @@ export default function ChatPage() {
           TicketCards.map((label, index) => (
             <div
               key={index}
-              className="flex flex-row justify-start items-center px-[4%] py-[1.5%] bg-gray-100 dark:bg-slate-800 rounded-lg w-[100%] hover:bg-gray-50"
+              className="flex flex-row max-sm:flex-col justify-start items-center px-[4%] py-[1.5%] bg-gray-100 dark:bg-slate-800 rounded-lg w-[100%] hover:bg-gray-50"
             >
               {/* Icon on the left */}
               <div
@@ -271,7 +271,7 @@ export default function ChatPage() {
                 </span>
               </div>
               {/* Text Content */}
-              <div className="ml-[4%]">
+              <div className="ml-[4%] max-sm:text-center">
                 <h2 className="text-xl font-medium">{label.count}</h2>
                 <p className="text-gray-500 dark:text-slate-200">{label.tickets}</p>
               </div>

@@ -139,17 +139,15 @@ const IllnessAndComplicationsPage = () => {
         title="Diseases & Conditions"
         className="overflow-hidden relative"
         bodyClass="p-0"
+        headerslot={<>  <Button
+          text="+ Add New Disease"
+          className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+          iconClass="text-lg"
+          onClick={() =>
+            router.push("/categories/illness_and_complications/form")
+          }
+        /></>}
       >
-        <div className="absolute top-2 right-2 justify-end p-4">
-          <Button
-            text="+ Add New Disease"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
-            onClick={() =>
-              router.push("/categories/illness_and_complications/form")
-            }
-          />
-        </div>
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
@@ -183,44 +181,44 @@ const IllnessAndComplicationsPage = () => {
             <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-slate-700">
               {getCurrentPageData().map((condition) => (
                 <tr key={condition.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
                     {condition.condition_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] dark:text-slate-200 align-top">
                     <HtmlRenderer 
                       htmlContent={condition.about} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
                     <HtmlRenderer 
                       htmlContent={condition.diagnosis} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
                     <HtmlRenderer 
                       htmlContent={condition.treating} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
                     <HtmlRenderer 
                       htmlContent={condition.complications} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
                     <HtmlRenderer 
                       htmlContent={condition.prevention} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate dark:text-slate-200 align-top">
                     {condition.specialist_to_contact}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                    <div className="flex items-center justify-center gap-2">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
+                    <div className="flex justify-center gap-2">
                       <Button
                         icon="lets-icons:eye"
                         iconClass="text-blue-500 text-lg"

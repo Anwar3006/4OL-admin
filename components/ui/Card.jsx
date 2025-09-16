@@ -13,7 +13,7 @@ const Card = ({
   titleClass = "custom-class ",
   image,
   imageClass,
-  headerClass = "flex max-sm:flex-col sm:justify-between items-center"
+  headerClass = "flex max-sm:flex-col sm:justify-between sm:items-center items-start"
 }) => {
   const [skin] = useSkin();
 

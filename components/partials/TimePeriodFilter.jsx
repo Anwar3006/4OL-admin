@@ -11,8 +11,8 @@ const TimePeriodFilter = ({ selectedPeriod, onPeriodChange, className = "" }) =>
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <span className="text-sm font-medium text-slate-600">Filter by:</span>
-      <div className="flex bg-slate-100 rounded-lg p-1">
+      <span className="text-sm font-medium text-slate-600 dark:text-slate-200">Filter by:</span>
+      <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
         {periods.map((period) => (
           <button
             key={period.value}
@@ -20,7 +20,7 @@ const TimePeriodFilter = ({ selectedPeriod, onPeriodChange, className = "" }) =>
             className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
               selectedPeriod === period.value
                 ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                : "text-slate-600 dark:text-slate-200 hover:text-slate-900 hover:bg-slate-50"
             }`}
             type="button"
           >

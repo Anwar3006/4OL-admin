@@ -192,8 +192,8 @@ export default function UserActivity({ user }) {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap justify-center space-x-4 mb-8 items-center">
-                  <div className="flex-1 flex flex-wrap space-x-4 items-center">
+                <div className="flex flex-wrap justify-center sm:space-x-4 mb-8 items-center">
+                  <div className="flex-1 flex flex-wrap sm:space-x-4 items-center">
                     {/* Log Type Filter */}
                     <div className="flex flex-col">
                       <label
@@ -226,7 +226,7 @@ export default function UserActivity({ user }) {
                     <div className="flex flex-col">
                       <label
                         htmlFor="fromDate"
-                        className="text-sm font-medium mb-1 dark:text-slate-200 dark:bg-slate-800"
+                        className="text-sm font-medium mb-1 max-sm:mt-1 dark:text-slate-200 dark:bg-slate-800"
                       >
                         From Date
                       </label>
@@ -246,7 +246,7 @@ export default function UserActivity({ user }) {
                     <div className="flex flex-col">
                       <label
                         htmlFor="toDate"
-                        className="text-sm font-medium mb-1 dark:text-slate-200 dark:bg-slate-800"
+                        className="text-sm font-medium mb-1 max-sm:mt-1 dark:text-slate-200 dark:bg-slate-800"
                       >
                         To Date
                       </label>
@@ -264,7 +264,7 @@ export default function UserActivity({ user }) {
                     </div>
                   </div>
                   {data.length > 0 && !isLoading && (
-                    <div className="flex flex-wrap space-x-4 items-center">
+                    <div className="flex flex-wrap sm:space-x-4 max-sm:justify-between w-full max-sm:mt-4 items-center">
                       <div
                         className="flex items-center space-x-2 cursor-pointer border rounded-md px-4 py-2"
                         onClick={() => downloadExcel(data)}

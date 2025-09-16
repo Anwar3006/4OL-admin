@@ -119,15 +119,14 @@ const HealthyLivingOverviewPage = () => {
         title="Healthy Living Articles"
         className=" overflow-hidden relative"
         bodyClass="p-0"
+        headerslot={<>  <Button
+          text="+ Add New Article"
+          className="btn-dark max-sm:text-xs font-normal btn-sm sm:mr-3 max-sm:mt-2"
+          iconClass="text-lg"
+          onClick={() => router.push("/categories/healthy_living/form")}
+        /></>}
       >
-        <div className="flex justify-end p-4 absolute top-2 right-2">
-          <Button
-            text="+ Add New Article"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
-            onClick={() => router.push("/categories/healthy_living/form")}
-          />
-        </div>
+       
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
@@ -155,32 +154,32 @@ const HealthyLivingOverviewPage = () => {
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((article) => (
                 <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
                     {article.topic_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px] align-top">
                     <HtmlRenderer 
                       htmlContent={article.about} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
                     <HtmlRenderer 
                       htmlContent={article.category} 
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px]">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
                     <HtmlRenderer 
                       htmlContent={article.more_information} 
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px] truncate">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px] truncate align-top">
                     {article.attribution}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                    <div className="flex items-center justify-center gap-2">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
+                    <div className="flex justify-center gap-2">
                       <Button
                         icon="lets-icons:eye"
                         iconClass="text-blue-500 text-lg"
