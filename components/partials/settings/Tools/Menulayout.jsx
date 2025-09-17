@@ -22,14 +22,14 @@ const Menulayout = () => {
           onChange={handleChange}
           className="h-4 w-4"
         />
-        <Radio
+        {/* <Radio
           label="Horizontal"
           name="menulayout"
           value="horizontal"
           checked={menuType === "horizontal"}
           onChange={handleChange}
           className="h-4 w-4"
-        />
+        /> */}
       </div>
     </div>
   );
