@@ -23,9 +23,38 @@ export default function SymptomsForm() {
   const [activeModal, setActiveModal] = useState(null); // 'types' or 'causes'
   const [newTypes, setNewTypes] = useState([]);
   const [newCauses, setNewCauses] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null); // Track which item is being edited
+  const [editingType, setEditingType] = useState(null); // 'types' or 'causes'
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("symptom");
-  const data = JSON.parse(itemParam) || {};
+  
+  // Safe JSON parsing with error handling for rich text content with images
+  let data = {};
+  try {
+    if (itemParam) {
+      // Try to decode URL-encoded data first (better for complex content)
+      const decodedParam = decodeURIComponent(itemParam);
+      data = JSON.parse(decodedParam);
+    }
+  } catch (error) {
+    console.error("Error parsing symptom data:", error);
+    console.warn("Failed to parse symptom data - this might be due to embedded images in rich text content");
+    
+    // Try alternative parsing method
+    try {
+      if (itemParam) {
+        data = JSON.parse(itemParam);
+      }
+    } catch (secondError) {
+      console.error("Second parsing attempt failed:", secondError);
+      // Show user-friendly message and redirect to overview
+      if (typeof toast !== 'undefined') {
+        toast.error("Unable to load this entry for editing. This may be due to embedded images in the content. Please try creating a new entry or contact support.");
+      }
+      // Fallback to empty data to allow form to load
+      data = {};
+    }
+  }
   const router = useRouter();
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
@@ -194,12 +223,29 @@ export default function SymptomsForm() {
     }
   };
 
-  const openModal = (type) => {
+  const openModal = (type, editIndex = null) => {
     setActiveModal(type);
+    setEditingIndex(editIndex);
+    setEditingType(type);
+    
+    // If editing, populate the modal with existing data
+    if (editIndex !== null) {
+      if (type === 'types') {
+        const existingType = typeFields[editIndex];
+        setNewTypes([existingType]);
+      } else if (type === 'causes') {
+        const existingCause = causeFields[editIndex];
+        setNewCauses([existingCause]);
+      }
+    }
   };
 
   const closeModal = () => {
     setActiveModal(null);
+    setEditingIndex(null);
+    setEditingType(null);
+    setNewTypes([]);
+    setNewCauses([]);
   };
 
   const addItemsToForm = (items, type) => {
@@ -208,10 +254,34 @@ export default function SymptomsForm() {
     );
 
     if (type === "types") {
-      validItems.forEach((item) => appendType(item));
+      if (editingIndex !== null) {
+        // Update existing type
+        const updatedTypes = [...typeFields];
+        updatedTypes[editingIndex] = validItems[0];
+        // Remove the old item and add the updated one
+        removeType(editingIndex);
+        setTimeout(() => {
+          appendType(validItems[0]);
+        }, 0);
+      } else {
+        // Add new types
+        validItems.forEach((item) => appendType(item));
+      }
       setNewTypes([]); // Clear the new items after adding them
     } else if (type === "causes") {
-      validItems.forEach((item) => appendCause(item));
+      if (editingIndex !== null) {
+        // Update existing cause
+        const updatedCauses = [...causeFields];
+        updatedCauses[editingIndex] = validItems[0];
+        // Remove the old item and add the updated one
+        removeCause(editingIndex);
+        setTimeout(() => {
+          appendCause(validItems[0]);
+        }, 0);
+      } else {
+        // Add new causes
+        validItems.forEach((item) => appendCause(item));
+      }
       setNewCauses([]); // Clear the new items after adding them
     }
     closeModal();
@@ -237,7 +307,7 @@ export default function SymptomsForm() {
           name="symptom_name"
           label="Symptom Name"
           type="text"
-          placeholder=" "
+          placeholder="Enter Symptom Name"
           register={register}
           defaultValue={data?.symptom_name || ""}
           error={errors.symptom_name}
@@ -250,7 +320,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="about"
               label="About"
-              placeholder=" "
+              placeholder="Enter About Information"
               value={value || ""}
               onChange={onChange}
               error={errors.about}
@@ -262,11 +332,11 @@ export default function SymptomsForm() {
           <label className="block font-medium text-gray-700 dark:text-slate-200">Types</label>
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-white"
+            iconClass="text-base text-black hover:text-green-500"
             text="Add Type"
             type="button"
             onClick={() => openModal("types")}
-            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
+            className="py-0 px-2 mt-2 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-full"
           />
           <div className="my-2 rounded sm:text-sm text-xs">
             {typeFields.length > 0 &&
@@ -277,7 +347,7 @@ export default function SymptomsForm() {
                     <tr>
                       <th className="border ">Name</th>
                       <th className="border">About</th>
-                      <th className="border"></th>
+                      <th className="border">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -296,18 +366,32 @@ export default function SymptomsForm() {
                             <HtmlRenderer htmlContent={item.about_type} />
                           </td>
                           <td className="border p-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removeType(index)}
-                              className="text-red-500"
-                              aria-label="Remove"
-                            >
-                              <Icon
-                                icon={"carbon:close-filled"}
-                                width={20}
-                                height={20}
-                              />
-                            </button>
+                            <div className="flex justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openModal("types", index)}
+                                className="text-blue-500"
+                                aria-label="Edit"
+                              >
+                                <Icon
+                                  icon={"heroicons-outline:pencil-alt"}
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeType(index)}
+                                className="text-red-500"
+                                aria-label="Remove"
+                              >
+                                <Icon
+                                  icon={"carbon:close-filled"}
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -329,11 +413,11 @@ export default function SymptomsForm() {
           <label className="block font-medium text-gray-700 dark:text-slate-200">Causes</label>
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-white"
+            iconClass="text-base text-black hover:text-green-500"
             text="Add Cause"
             type="button"
             onClick={() => openModal("causes")}
-            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
+            className="py-0 px-2 mt-2 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-full"
           />
           <div className="my-2 rounded  sm:text-sm text-xs">
             {causeFields.length > 0 &&
@@ -346,7 +430,7 @@ export default function SymptomsForm() {
                     <tr>
                       <th className="border ">Name</th>
                       <th className="border">Other Causes</th>
-                      <th className="border"></th>
+                      <th className="border">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -365,18 +449,32 @@ export default function SymptomsForm() {
                             <HtmlRenderer htmlContent={item.other_possible_causes} />
                           </td>
                           <td className="border p-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removeCause(index)}
-                              className="text-red-500"
-                              aria-label="Remove"
-                            >
-                              <Icon
-                                icon={"carbon:close-filled"}
-                                width={20}
-                                height={20}
-                              />
-                            </button>
+                            <div className="flex justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openModal("causes", index)}
+                                className="text-blue-500"
+                                aria-label="Edit"
+                              >
+                                <Icon
+                                  icon={"heroicons-outline:pencil-alt"}
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeCause(index)}
+                                className="text-red-500"
+                                aria-label="Remove"
+                              >
+                                <Icon
+                                  icon={"carbon:close-filled"}
+                                  width={16}
+                                  height={16}
+                                />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -402,7 +500,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="diagnosis"
               label="Diagnosis"
-              placeholder=" "
+              placeholder="Enter Diagnosis Information"
               value={value || ""}
               onChange={onChange}
               error={errors.diagnosis}
@@ -417,7 +515,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="treating"
               label="Treating"
-              placeholder=" "
+              placeholder="Enter Treating Information"
               value={value || ""}
               onChange={onChange}
               error={errors.treating}
@@ -432,7 +530,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="complications"
               label="Complications"
-              placeholder=" "
+              placeholder="Enter Complications Information"
               value={value || ""}
               onChange={onChange}
               error={errors.complications}
@@ -447,7 +545,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="prevention"
               label="Prevention"
-              placeholder=" "
+              placeholder="Enter Prevention Information"
               value={value || ""}
               onChange={onChange}
               error={errors.prevention}
@@ -458,7 +556,7 @@ export default function SymptomsForm() {
           name="specialist_to_contact"
           label="Specialist(s) to Contact"
           type="text"
-          placeholder=" "
+          placeholder="Enter Specialist(s) to Contact"
           register={register}
           defaultValue={data?.specialist_to_contact || ""}
           error={errors.specialist_to_contact}
@@ -471,7 +569,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="contact_your_doctor"
               label="Contact your Doctor"
-              placeholder="Contact your Doctor or visit a health facility if"
+              placeholder="Enter Contact your Doctor Information"
               value={value || ""}
               onChange={onChange}
               error={errors.contact_your_doctor}
@@ -486,7 +584,7 @@ export default function SymptomsForm() {
             <RichTextEditor
               name="more_information"
               label="More Information"
-              placeholder=" "
+              placeholder="Enter More Information"
               value={value || ""}
               onChange={onChange}
               error={errors.more_information}
@@ -497,7 +595,7 @@ export default function SymptomsForm() {
           name="attribution"
           label="Attribution"
           type="text"
-          placeholder=" "
+          placeholder="Enter Attribution"
           register={register}
           defaultValue={data?.attribution || ""}
           error={errors.attribution}
@@ -555,7 +653,7 @@ export default function SymptomsForm() {
         <Modal
           activeModal={activeModal === "types"}
           onClose={closeModal}
-          title="Types"
+          title={editingIndex !== null ? "Edit Type" : "Add Types"}
           labelClass={"bg-[#56ce83]"}
           footerContent={
             <>
@@ -566,7 +664,7 @@ export default function SymptomsForm() {
                 }}
                 className="btn btn-sm bg-green-500 text-white"
               >
-                Added
+                {editingIndex !== null ? "Update" : "Add"}
               </button>
               <button
                 onClick={closeModal}
@@ -592,18 +690,18 @@ export default function SymptomsForm() {
                 label={`Type Name ${index + 1}`}
                 placeholder="Type Name"
               />
-              <TextareaNew
+              <RichTextEditor
                 value={type.about_type}
-                onChange={(e) => {
+                onChange={(content) => {
                   const updatedTypes = [...newTypes];
                   updatedTypes[index] = {
                     ...updatedTypes[index],
-                    about_type: e.target.value,
+                    about_type: content,
                   };
                   setNewTypes(updatedTypes);
                 }}
                 label={`About ${index + 1}`}
-                placeholder="About this type"
+                placeholder="About this type..."
               />
               <button
                 type="button"
@@ -617,13 +715,15 @@ export default function SymptomsForm() {
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={handleAddType}
-            className="btn btn-sm bg-green-500 text-white"
-          >
-            Add Another Type
-          </button>
+          {editingIndex === null && (
+            <button
+              type="button"
+              onClick={handleAddType}
+              className="btn btn-sm bg-green-500 text-white"
+            >
+              Add Another Type
+            </button>
+          )}
         </Modal>
       )}
 
@@ -632,7 +732,7 @@ export default function SymptomsForm() {
         <Modal
           activeModal={activeModal === "causes"}
           onClose={closeModal}
-          title="Causes"
+          title={editingIndex !== null ? "Edit Cause" : "Add Causes"}
           labelClass={"bg-[#56ce83]"}
           footerContent={
             <>
@@ -643,7 +743,7 @@ export default function SymptomsForm() {
                 }}
                 className="btn btn-sm bg-green-500 text-white"
               >
-                Added
+                {editingIndex !== null ? "Update" : "Add"}
               </button>
               <button
                 onClick={closeModal}
@@ -669,18 +769,18 @@ export default function SymptomsForm() {
                 label={`Cause Name ${index + 1}`}
                 placeholder="Cause Name"
               />
-              <TextareaNew
+              <RichTextEditor
                 value={cause.other_possible_causes}
-                onChange={(e) => {
+                onChange={(content) => {
                   const updatedCauses = [...newCauses];
                   updatedCauses[index] = {
                     ...updatedCauses[index],
-                    other_possible_causes: e.target.value,
+                    other_possible_causes: content,
                   };
                   setNewCauses(updatedCauses);
                 }}
                 label={`Other Possible Causes ${index + 1}`}
-                placeholder="Describe other possible causes"
+                placeholder="Describe other possible causes..."
               />
               <button
                 type="button"
@@ -694,13 +794,15 @@ export default function SymptomsForm() {
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={handleAddCause}
-            className="btn btn-sm bg-green-500 text-white"
-          >
-            Add Another Cause
-          </button>
+          {editingIndex === null && (
+            <button
+              type="button"
+              onClick={handleAddCause}
+              className="btn btn-sm bg-green-500 text-white"
+            >
+              Add Another Cause
+            </button>
+          )}
         </Modal>
       )}
     </>

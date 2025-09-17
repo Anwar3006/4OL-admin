@@ -58,7 +58,7 @@ const RichTextEditor = ({
         ["bold", "italic", "underline"],
         [{ list: "ordered" }, { list: "bullet" }],
         [{ align: [] }],
-        ["link"],
+        ["link", "image"],
         ["clean"]
       ],
     }),
@@ -73,6 +73,7 @@ const RichTextEditor = ({
     "bullet",
     "align",
     "link",
+    "image",
   ];
 
   const handleChange = (content, delta, source, editor) => {
