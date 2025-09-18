@@ -49,15 +49,16 @@ const SearchModal = () => {
   return (
     <>
       <div>
-        <button
+        {/* <button
           className="flex items-center xl:text-sm text-lg xl:text-slate-400 text-slate-800 dark:text-slate-300 px-1 space-x-3 rtl:space-x-reverse"
           onClick={openModal}
-        >
+        >nb ,'
+        \
           <>
             <Icon icon="heroicons-outline:search" />
             <span className="xl:inline-block hidden">Search... </span>
           </>
-        </button>
+        </button> */}
       </div>
 
       <Transition show={isOpen} as={Fragment}>
