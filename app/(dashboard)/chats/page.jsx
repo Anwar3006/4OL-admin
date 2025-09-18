@@ -43,15 +43,15 @@ export default function ChatPage() {
       tickets: "Total Tickets",
       count: dataCount.totalTickets,
       icon: <FaTicketAlt />,
-      iconColor: "blue",
-      iconbgColor: "bg-blue-100",
+      iconColor: "purple",
+      iconbgColor: "bg-purple-100",
     },
     {
       tickets: "Pending Tickets",
       count: dataCount.pendingTickets,
       icon: <FaHourglassStart />,
-      iconColor: "Goldenrod",
-      iconbgColor: "bg-yellow-100",
+      iconColor: "orange",
+      iconbgColor: "bg-orange-100",
     },
     {
       tickets: "Closed Tickets",
@@ -249,7 +249,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="flex flex-col p-[1%] mt-5">
+    <div className="flex flex-col p-[1%] mt-5 bg-white dark:bg-slate-800">
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
@@ -260,20 +260,20 @@ export default function ChatPage() {
           TicketCards.map((label, index) => (
             <div
               key={index}
-              className="flex flex-row max-sm:flex-col justify-start items-center px-[4%] py-[1.5%] bg-gray-100 dark:bg-slate-800 rounded-lg w-[100%] hover:bg-gray-50"
+              className="flex flex-row max-sm:flex-col justify-start items-center px-[4%] py-[1.5%] bg-slate-100 dark:bg-slate-800 rounded-lg w-[100%] hover:bg-gray-50"
             >
               {/* Icon on the left */}
               <div
                 className={`flex justify-center items-center w-12 h-12 rounded-full ${label.iconbgColor}`}
               >
-                <span className="text-2xl" style={{ color: label.iconColor }}>
+                <span className="sm:text-2xl text-xl" style={{ color: label.iconColor }}>
                   {label.icon}
                 </span>
               </div>
               {/* Text Content */}
               <div className="ml-[4%] max-sm:text-center">
-                <h2 className="text-xl font-medium">{label.count}</h2>
-                <p className="text-gray-500 dark:text-slate-200">{label.tickets}</p>
+                <h2 className="sm:text-xl text-base sm:font-medium font-semibold">{label.count}</h2>
+                <p className="text-gray-500 dark:text-slate-200 max-sm:text-sm">{label.tickets}</p>
               </div>
             </div>
           ))

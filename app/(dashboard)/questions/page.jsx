@@ -141,7 +141,7 @@ export default function FaqPage() {
       <div className="mt-5 relative">
         <Card
           title="FAQs"
-          className=" overflow-hidden min-h-[80vh]"
+          className=" overflow-hidden min-h-[70vh]"
           bodyClass=""
           headerslot={
             <>

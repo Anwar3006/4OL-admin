@@ -177,6 +177,7 @@ export default function SymptomsForm() {
       if (data?.id) {
         await updateSymptom(data?.id, newData);
         handleSuccess(router, "Updated Successfully");
+        router.push('/categories/symptoms/overview')
         reset();
       } else {
         setLoading(true);
@@ -188,6 +189,7 @@ export default function SymptomsForm() {
           (successData) => {
             setLoading(false);
             toast.success("Added Successfully");
+            router.push('/categories/symptoms/overview')
             reset({
               symptom_name: "",
               about: "",

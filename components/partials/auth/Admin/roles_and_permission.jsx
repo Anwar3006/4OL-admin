@@ -114,7 +114,7 @@ export default function RolesAndPermissions() {
   };
 
   return (
-    <Card className="min-h-[80vh]">
+    <Card className="min-h-[70vh] ">
       {loading && (
         <Loading />
       )}

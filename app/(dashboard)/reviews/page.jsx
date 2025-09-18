@@ -116,7 +116,7 @@ const Reviews = () => {
 
   return (
     <Card
-      className="min-h-[80vh]  mt-5"
+      className="min-h-[70vh]  mt-5"
       bodyClass="p-0"
       title="Reviews"
       headerslot={

@@ -9,10 +9,9 @@ import { add_illness_and_condition } from "@/app/services/illness_and_condition"
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { updateDisease } from "@/app/services/diseases-service";
 import handleSuccess from "@/utils/handleSuccess";
-import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
 import * as yup from "yup";
@@ -144,8 +143,6 @@ export default function IllnessAndComplicationForm() {
   }, [data?.id, appendType, appendCause, typeFields.length, causeFields.length]);
 
   const onSubmit = async (formData) => {
-    console.log("Form submitted with data:", formData);
-    console.log("Form errors:", errors);
     setFormSubmitted(true);
     setLoading(true);
 
@@ -181,6 +178,7 @@ export default function IllnessAndComplicationForm() {
       if (data?.id) {
         await updateDisease(data?.id, newData);
         handleSuccess(router, "Updated Successfully");
+        router.push('/categories/illness_and_complications/overview')
       } else {
         add_illness_and_condition(
           newData,
@@ -203,6 +201,7 @@ export default function IllnessAndComplicationForm() {
               types: [],
               causes: [],
             });
+            router.push("/categories/illness_and_complications/overview")
 
             setImageFile(null);
             setImageUrl("");

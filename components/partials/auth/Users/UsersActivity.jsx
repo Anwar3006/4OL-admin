@@ -184,7 +184,7 @@ export default function UserActivity({ user }) {
         <div className="lg-inner-column">
           <div className="right-column relative w-full">
             <div className="w-full flex flex-col justify-center sm:p-5">
-              <div className="min-h-[80vh]">
+              <div className="min-h-[70vh]">
                 <div className="flex max-lg:flex-col pb-6 items-center w-full">
                   <h6 className="md:mb-0 mb-3 w-full text-xl font-bold capitalize">
                     User Activity

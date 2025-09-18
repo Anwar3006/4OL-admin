@@ -132,7 +132,7 @@ export default function DeleteUserAccountListing() {
   };
 
   return (
-    <Card className="relative min-h-[80vh] mt-5" bodyClass="p-0">
+    <Card className="relative min-h-[70vh] mt-5 bg-white dark:bg-slate-800" bodyClass="p-0">
       <ToastContainer />
 
       <div className="flex max-lg:flex-col items-center w-full p-6">

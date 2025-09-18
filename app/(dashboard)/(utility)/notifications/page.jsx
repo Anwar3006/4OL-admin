@@ -95,7 +95,7 @@ export default function Notifications() {
   
 
   return (
-    <Card className="min-h-[80vh]  mt-5" bodyClass="p-0">
+    <Card className="min-h-[70vh]  mt-5" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">

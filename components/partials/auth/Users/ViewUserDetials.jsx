@@ -86,7 +86,7 @@ export default function ViewUserDetails() {
 
   return (
     <Card
-      className="min-h-[80vh] mt-5"
+      className="min-h-[70vh] mt-5"
       title={`${userData.first_name} ${userData.last_name}`}
       headerslot={
         <Button

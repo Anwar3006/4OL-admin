@@ -118,6 +118,7 @@ export default function HealthyLiving() {
       if (data?.id) {
         await updateHealthyLivingEntry(data.id, payload);
         handleSuccess(router, "Updated Successfully");
+        router.push('/categories/healthy_living/overview')
         reset();
       } else {
         add_healthy_living(
@@ -126,6 +127,7 @@ export default function HealthyLiving() {
           () => {
             setLoading(false);
             toast.success("Added Successfully");
+            router.push('/categories/healthy_living/overview')
             reset();
             setImageFile(null);
             setImageUrl("");

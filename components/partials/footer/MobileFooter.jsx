@@ -7,7 +7,7 @@ const MobileFooter = () => {
   const router = useRouter();
   return (
     <div className="bg-white bg-no-repeat custom-dropshadow footer-bg dark:bg-slate-700 flex justify-around items-center backdrop-filter backdrop-blur-[40px] fixed left-0 w-full z-[9999] bottom-0 py-[12px] px-4">
-      <Link href="chat">
+      <Link href="chats">
         <div>
           <span
             className={` relative cursor-pointer rounded-full text-[20px] flex flex-col items-center justify-center mb-1
