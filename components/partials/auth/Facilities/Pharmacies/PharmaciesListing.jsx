@@ -6,6 +6,8 @@ import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function PharmaciesListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -14,31 +16,33 @@ export default function PharmaciesListing() {
   const [pageSize] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from Supabase on component mount and when page changes
   useEffect(() => {
     const fetchData = async () => {
-      const from = pageIndex * pageSize;
-      const to = from + pageSize - 1;
-
-      const {
-        data: fetchedData,
-        error,
-        count,
-      } = await supabase
-        .from("healthcare_profiles")
-        .select("*", { count: "exact" })
-        .range(from, to)
-        .eq("status", "Approved")
-        .eq("facility_type", "Pharmacy");
-
-      if (error) {
+      try {
+        setLoading(true);
+        const from = pageIndex * pageSize;
+        const to = from + pageSize - 1;
+  
+        const {
+          data: fetchedData,
+          error,
+          count,
+        } = await supabase
+          .from("healthcare_profiles")
+          .select("*", { count: "exact" })
+          .range(from, to)
+          .eq("status", "Approved")
+          .eq("facility_type", "Pharmacy");
+          setData(fetchedData || []);
+          setTotalPages(Math.ceil(count / pageSize));
+      } catch (error) {
         console.error("Error fetching data:", error);
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      setData(fetchedData || []);
-      setTotalPages(Math.ceil(count / pageSize));
     };
 
     fetchData();
@@ -123,7 +127,7 @@ export default function PharmaciesListing() {
                   colSpan="6"
                   className="text-center py-10 text-base text-gray-500 dark:text-gray-100"
                 >
-                  No Data Available
+                  <NoDataFound />
                 </td>
               </tr>
             )}
@@ -183,6 +187,14 @@ export default function PharmaciesListing() {
                 </td>
               </tr>
             ))}
+
+            {loading && (
+              <tr>
+                <td colSpan="6" className="text-center py-10">
+                  <Loading />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

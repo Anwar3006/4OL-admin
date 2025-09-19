@@ -6,6 +6,8 @@ import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function AmbulanceListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -14,32 +16,39 @@ export default function AmbulanceListing() {
   const [pageSize] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from Supabase on component mount and when page changes
   useEffect(() => {
     const fetchData = async () => {
-      const from = pageIndex * pageSize;
-      const to = from + pageSize - 1;
+      try {
+        setLoading(true);
+        const from = pageIndex * pageSize;
+        const to = from + pageSize - 1;
 
-      const {
-        data: fetchedData,
-        error,
-        count,
-      } = await supabase
-        .from("healthcare_profiles")
-        .select("*", { count: "exact" })
-        .range(from, to)
-        .eq("status", "Approved")
-        .eq("facility_type", "Ambulance");
+        const {
+          data: fetchedData,
+          error,
+          count,
+        } = await supabase
+          .from("healthcare_profiles")
+          .select("*", { count: "exact" })
+          .range(from, to)
+          .eq("status", "Approved")
+          .eq("facility_type", "Ambulance");
 
-      if (error) {
+        if (error) {
+          throw error;
+        }
+
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
+      } catch (error) {
         console.error("Error fetching data:", error);
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      setData(fetchedData || []);
-      setTotalPages(Math.ceil(count / pageSize));
-    };
+    }
 
     fetchData();
   }, [pageIndex, pageSize]);
@@ -124,7 +133,7 @@ export default function AmbulanceListing() {
                   colSpan="6"
                   className="text-center py-10 text-base text-gray-500 dark:text-gray-100"
                 >
-                  No Data Available
+                 <NoDataFound />
                 </td>
               </tr>
             )}
@@ -184,6 +193,16 @@ export default function AmbulanceListing() {
                 </td>
               </tr>
             ))}
+
+            {loading && (
+              <tr>
+                <td colSpan="6" className="text-center py-10">
+                  <div className="text-center py-6 text-gray-500 dark:text-slate-200 min-h-[50vh] justify-items-center align-middle">
+                    <Loading />
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
