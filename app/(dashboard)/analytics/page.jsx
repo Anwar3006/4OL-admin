@@ -376,6 +376,8 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDataByPeriod(selectedPeriod);
   }, [selectedPeriod]);
+
+  console.log("total users", totalUsers)
   return (
     <div>
       {/* <HomeBredCurbs title="Analytics & Monitoring" /> */}

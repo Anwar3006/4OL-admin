@@ -9,6 +9,8 @@ import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 const SymptomsOverviewPage = () => {
   const router = useRouter();
@@ -20,12 +22,14 @@ const SymptomsOverviewPage = () => {
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const itemsPerPage = 10;
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchSymptoms();
   }, [currentPage]);
 
   const fetchSymptoms = async () => {
+    setLoading(true);
     try {
       const data = await getAllSymptoms();
       if (data) {
@@ -35,6 +39,8 @@ const SymptomsOverviewPage = () => {
     } catch (error) {
       console.error("Error fetching symptoms:", error);
       toast.error("Failed to load symptoms");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -232,12 +238,19 @@ const SymptomsOverviewPage = () => {
                   </td>
                 </tr>
               ))}
+              {loading && (
+                <tr>
+                  <td colSpan="8" className="px-6 py-4 text-center text-gray-500 dark:text-slate-200">
+                    <Loading />
+                  </td>
+                </tr>
+              )}
               {symptoms.length === 0 && (
                 <tr>
                   <td
                     colSpan="8"
                     className="px-6 py-4 text-center text-gray-500 dark:text-slate-200">
-                    No Symptoms Found
+                    <NoDataFound />
                   </td>
                 </tr>
               )}

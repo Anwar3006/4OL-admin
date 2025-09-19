@@ -12,6 +12,8 @@ import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 const HealthyLivingOverviewPage = () => {
   const router = useRouter();
@@ -23,6 +25,7 @@ const HealthyLivingOverviewPage = () => {
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const itemsPerPage = 10;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchArticles();
@@ -30,6 +33,7 @@ const HealthyLivingOverviewPage = () => {
 
   const fetchArticles = async () => {
     try {
+      setLoading(true);
       const data = await getAllHealthyLivingEntries();
       if (data) {
         setArticles(data);
@@ -38,6 +42,8 @@ const HealthyLivingOverviewPage = () => {
     } catch (error) {
       console.error("Error fetching healthy living articles:", error);
       toast.error("Failed to load articles");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,14 +125,18 @@ const HealthyLivingOverviewPage = () => {
         title="Healthy Living Articles"
         className=" overflow-hidden relative"
         bodyClass="p-0"
-        headerslot={<>  <Button
-          text="+ Add New Article"
-          className="btn-dark max-sm:text-xs font-normal btn-sm sm:mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() => router.push("/categories/healthy_living/form")}
-        /></>}
+        headerslot={
+          <>
+            {" "}
+            <Button
+              text="+ Add New Article"
+              className="btn-dark max-sm:text-xs font-normal btn-sm sm:mr-3 max-sm:mt-2"
+              iconClass="text-lg"
+              onClick={() => router.push("/categories/healthy_living/form")}
+            />
+          </>
+        }
       >
-       
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
@@ -153,25 +163,25 @@ const HealthyLivingOverviewPage = () => {
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
+                <tr
+                  key={article.id}
+                  className="hover:bg-gray-50 dark:hover:bg-slate-700"
+                >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
                     {article.topic_name}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px] align-top">
-                    <HtmlRenderer 
-                      htmlContent={article.about} 
-                      maxLength={100}
-                    />
+                    <HtmlRenderer htmlContent={article.about} maxLength={100} />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
-                    <HtmlRenderer 
-                      htmlContent={article.category} 
+                    <HtmlRenderer
+                      htmlContent={article.category}
                       maxLength={80}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
-                    <HtmlRenderer 
-                      htmlContent={article.more_information} 
+                    <HtmlRenderer
+                      htmlContent={article.more_information}
                       maxLength={100}
                     />
                   </td>
@@ -205,13 +215,23 @@ const HealthyLivingOverviewPage = () => {
                   </td>
                 </tr>
               ))}
+              {loading && (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
+                  >
+                    <Loading />
+                  </td>
+                </tr>
+              )}
               {articles.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"
                     className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
                   >
-                    No Healthy Living Articles Found
+                    <NoDataFound />
                   </td>
                 </tr>
               )}
@@ -325,7 +345,12 @@ const HealthyLivingOverviewPage = () => {
                 }
 
                 // Check if this field should be rendered as HTML
-                const richTextFields = ['about', 'category', 'contact_your_doctor', 'more_information'];
+                const richTextFields = [
+                  "about",
+                  "category",
+                  "contact_your_doctor",
+                  "more_information",
+                ];
                 const shouldRenderAsHtml = richTextFields.includes(key);
 
                 return (

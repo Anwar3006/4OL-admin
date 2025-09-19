@@ -9,6 +9,8 @@ import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 const IllnessAndComplicationsPage = () => {
   const router = useRouter();
@@ -20,12 +22,14 @@ const IllnessAndComplicationsPage = () => {
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const itemsPerPage = 10;
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchConditions();
   }, [currentPage]);
 
   const fetchConditions = async () => {
+    setLoading(true);
     try {
       const data = await getAllDiseases();
       if (data) {
@@ -35,6 +39,8 @@ const IllnessAndComplicationsPage = () => {
     } catch (error) {
       console.error("Error fetching conditions:", error);
       toast.error("Failed to load conditions");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,14 +145,19 @@ const IllnessAndComplicationsPage = () => {
         title="Diseases & Conditions"
         className="overflow-hidden relative"
         bodyClass="p-0"
-        headerslot={<>  <Button
-          text="+ Add New Disease"
-          className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() =>
-            router.push("/categories/illness_and_complications/form")
-          }
-        /></>}
+        headerslot={
+          <>
+            {" "}
+            <Button
+              text="+ Add New Disease"
+              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+              iconClass="text-lg"
+              onClick={() =>
+                router.push("/categories/illness_and_complications/form")
+              }
+            />
+          </>
+        }
       >
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
@@ -180,37 +191,40 @@ const IllnessAndComplicationsPage = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-slate-700">
               {getCurrentPageData().map((condition) => (
-                <tr key={condition.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
+                <tr
+                  key={condition.id}
+                  className="hover:bg-gray-50 dark:hover:bg-slate-700"
+                >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
                     {condition.condition_name}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] dark:text-slate-200 align-top">
-                    <HtmlRenderer 
-                      htmlContent={condition.about} 
+                    <HtmlRenderer
+                      htmlContent={condition.about}
                       maxLength={100}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
-                    <HtmlRenderer 
-                      htmlContent={condition.diagnosis} 
+                    <HtmlRenderer
+                      htmlContent={condition.diagnosis}
                       maxLength={80}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
-                    <HtmlRenderer 
-                      htmlContent={condition.treating} 
+                    <HtmlRenderer
+                      htmlContent={condition.treating}
                       maxLength={80}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
-                    <HtmlRenderer 
-                      htmlContent={condition.complications} 
+                    <HtmlRenderer
+                      htmlContent={condition.complications}
                       maxLength={80}
                     />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
-                    <HtmlRenderer 
-                      htmlContent={condition.prevention} 
+                    <HtmlRenderer
+                      htmlContent={condition.prevention}
                       maxLength={80}
                     />
                   </td>
@@ -244,13 +258,20 @@ const IllnessAndComplicationsPage = () => {
                   </td>
                 </tr>
               ))}
+              {loading && (
+                <tr>
+                  <td colSpan="8" className="px-6 py-4 text-center">
+                    <Loading />
+                  </td>
+                </tr>
+              )}
               {conditions.length === 0 && (
                 <tr>
                   <td
                     colSpan="8"
                     className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
                   >
-                    No Conditions Found
+                    <NoDataFound />
                   </td>
                 </tr>
               )}
@@ -370,14 +391,21 @@ const IllnessAndComplicationsPage = () => {
                       <div className="w-2/3">
                         {subFields.map(({ label: subLabel, key: subKey }) => {
                           // Check if this nested field should be rendered as HTML
-                          const nestedRichTextFields = ['about_type', 'other_possible_causes'];
-                          const shouldRenderNestedAsHtml = nestedRichTextFields.includes(subKey);
-                          
+                          const nestedRichTextFields = [
+                            "about_type",
+                            "other_possible_causes",
+                          ];
+                          const shouldRenderNestedAsHtml =
+                            nestedRichTextFields.includes(subKey);
+
                           return (
                             <div key={subKey} className="mb-1">
                               <span className="text-gray-900">{subLabel}:</span>{" "}
                               {shouldRenderNestedAsHtml ? (
-                                <HtmlRenderer htmlContent={item[subKey] || "-"} className="inline" />
+                                <HtmlRenderer
+                                  htmlContent={item[subKey] || "-"}
+                                  className="inline"
+                                />
                               ) : (
                                 <span>{item[subKey] || "-"}</span>
                               )}
@@ -390,7 +418,17 @@ const IllnessAndComplicationsPage = () => {
                 }
 
                 // Check if this field should be rendered as HTML
-                const richTextFields = ['about', 'types.about_type', 'causes.other_possible_causes', 'diagnosis', 'treating', 'complications', 'prevention', 'contact_your_doctor', 'more_information'];
+                const richTextFields = [
+                  "about",
+                  "types.about_type",
+                  "causes.other_possible_causes",
+                  "diagnosis",
+                  "treating",
+                  "complications",
+                  "prevention",
+                  "contact_your_doctor",
+                  "more_information",
+                ];
                 const shouldRenderAsHtml = richTextFields.includes(key);
 
                 return (

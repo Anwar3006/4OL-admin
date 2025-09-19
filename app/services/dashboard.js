@@ -205,35 +205,30 @@ export const fetchTotalUsers = async (
   loadCallback();
 
   try {
-    // Fetch the count of all users and count males and females
-    const { data, error } = await supabase.from("user_profiles").select("sex");
+    // Fetch all users except Super Admin
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, role");
+
+    console.log("Supabase user_profiles data:", data, error);
 
     if (error) {
       errorCallback(error);
       return;
     }
 
-    // Initialize counters for males and females
-    let males = 0;
-    let females = 0;
+    if (!Array.isArray(data)) {
+      errorCallback("Supabase returned non-array data");
+      return;
+    }
 
-    // Iterate through the data and count the males and females
-    data.forEach((user) => {
-      if (user.sex === "Male") {
-        males++;
-      } else if (user.sex === "Female") {
-        females++;
-      }
-    });
-
-    // Total users count is the sum of males and females
-    const totalUsers = males + females;
+    // Filter out Super Admin users
+    const filteredUsers = data.filter(user => user.role !== "Super Admin");
+    const totalUsers = filteredUsers.length;
 
     // Construct the result object
     const result = {
       totalUsers,
-      males,
-      females,
     };
 
     // Call the successCallback with the result object
@@ -242,6 +237,53 @@ export const fetchTotalUsers = async (
     errorCallback(err);
   }
 };
+
+// export const fetchTotalUsers = async (
+//   loadCallback,
+//   successCallback,
+//   errorCallback
+// ) => {
+//   loadCallback();
+
+//   try {
+//     // Fetch the count of all users and count males and females
+//     const { data, error } = await supabase.from("user_profiles").select("sex");
+//         console.log("Supabase user_profiles data:", data, error);
+
+//     if (error) {
+//       errorCallback(error);
+//       return;
+//     }
+
+//     // Initialize counters for males and females
+//     let males = 0;
+//     let females = 0;
+
+//     // Iterate through the data and count the males and females
+//     data.forEach((user) => {
+//       if (user.sex === "Male") {
+//         males++;
+//       } else if (user.sex === "Female") {
+//         females++;
+//       }
+//     });
+
+//     // Total users count is the sum of males and females
+//     const totalUsers = males + females;
+
+//     // Construct the result object
+//     const result = {
+//       totalUsers,
+//       males,
+//       females,
+//     };
+
+//     // Call the successCallback with the result object
+//     successCallback(result);
+//   } catch (err) {
+//     errorCallback(err);
+//   }
+// };
 
 const groupDataByDateAndGenderMAU = (data) => {
   // Initialize an empty object to store the grouped data
