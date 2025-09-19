@@ -115,9 +115,6 @@ export default function RolesAndPermissions() {
 
   return (
     <Card className="min-h-[70vh] ">
-      {loading && (
-        <Loading />
-      )}
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Roles & Permissions</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
@@ -149,6 +146,9 @@ export default function RolesAndPermissions() {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
+                  {loading && (
+        <Loading />
+      )}
             {filteredData.map((item) => (
               <tr
                 key={item.id}

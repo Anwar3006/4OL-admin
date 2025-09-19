@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
 import Loading from "@/components/Loading";
 import { toast } from "react-toastify";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function UserGroups() {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -163,7 +164,7 @@ export default function UserGroups() {
   return (
     <Card className="min-h-[70vh] mt-5" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
+        <h6 className="md:mb-0 mb-3 w-full">User Group</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -191,6 +192,14 @@ export default function UserGroups() {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-slate-800 dark:text-slate-200 sm:text-sm divide-y divide-gray-200 text-xs capitalize">
+
+            {data.length === 0 && (
+              <tr>
+                <td colspan="6">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {data.map((item) => (
               <tr key={item.id} className="cursor-pointer">
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">

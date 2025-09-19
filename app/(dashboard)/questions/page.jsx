@@ -8,6 +8,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
 import Modal from "@/components/ui/Modal";
 import Card from "@/components/ui/Card";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function FaqPage() {
   const [faqs, setFaqs] = useState([]);
@@ -157,13 +159,11 @@ export default function FaqPage() {
           <div className="p-5">
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ce84]"></div>
+                <Loading />
               </div>
             ) : faqs.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-slate-500 dark:text-slate-200">
-                  No FAQs found. Create your first one!
-                </p>
+                <NoDataFound />
               </div>
             ) : (
               faqs.map((faq) => (

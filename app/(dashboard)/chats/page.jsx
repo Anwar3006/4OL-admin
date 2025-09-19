@@ -14,6 +14,8 @@ import moment from "moment";
 import PaginationNew from "@/components/ui/PaginationNew";
 import TicketTable from "./TicketModal";
 import { toast } from "react-toastify";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -253,8 +255,8 @@ export default function ChatPage() {
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center items-center min-w-full">
-            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+          <div>
+            <Loading />
           </div>
         ) : (
           TicketCards.map((label, index) => (
@@ -282,9 +284,11 @@ export default function ChatPage() {
       {/* Table Section */}
       <div className="w-full px-[1%] overflow-x-auto h-full">
         {loading ? (
-          <div className="justify-center items-center flex h-40">
-            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <tr>
+            <td colSpan="9" className="text-center">
+              <Loading />
+            </td>
+          </tr>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-gray-200 divide-y divide-gray-200 min-w-max">
@@ -310,7 +314,7 @@ export default function ChatPage() {
                       colSpan="8"
                       className="text-center py-6 text-base text-gray-500 dark:text-slate-200 min-h-[50vh]"
                     >
-                      No Data Available
+                      <NoDataFound />
                     </td>
                   </tr>
                 )}
@@ -347,24 +351,22 @@ export default function ChatPage() {
                     </td>
                     <td>
                       <span
-                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${
-                          ticket.priority === "High"
+                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${ticket.priority === "High"
                             ? "text-red-500 font-bold bg-red-100"
                             : ticket.priority === "Medium"
-                            ? "text-yellow-500 font-bold bg-yellow-100"
-                            : "text-cyan-500 font-bold bg-cyan-100"
-                        }`}
+                              ? "text-yellow-500 font-bold bg-yellow-100"
+                              : "text-cyan-500 font-bold bg-cyan-100"
+                          }`}
                       >
                         {ticket.priority}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${
-                          ticket.status === "Open"
+                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${ticket.status === "Open"
                             ? "bg-green-100 text-green-500 font-bold"
                             : "bg-gray-200 text-gray-700 dark:text-slate-200 font-bold"
-                        }`}
+                          }`}
                       >
                         {ticket.status}
                       </span>
@@ -438,18 +440,16 @@ export default function ChatPage() {
             </h2>
             <div className="flex justify-between">
               <button
-                className={`px-[3%] py-[2%] ${
-                  loading ? "bg-gray-100" : "bg-gray-300"
-                } text-gray-700 rounded-md hover:bg-gray-400`}
+                className={`px-[3%] py-[2%] ${loading ? "bg-gray-100" : "bg-gray-300"
+                  } text-gray-700 rounded-md hover:bg-gray-400`}
                 onClick={toggleDeleteModal}
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
-                className={`px-[3%] py-[2%] ${
-                  loading ? "bg-white" : "bg-green-500"
-                } text-white rounded-md hover:bg-green-600`}
+                className={`px-[3%] py-[2%] ${loading ? "bg-white" : "bg-green-500"
+                  } text-white rounded-md hover:bg-green-600`}
                 onClick={handleDelete}
                 disabled={loading}
               >

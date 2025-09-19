@@ -7,6 +7,8 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 export default function Notifications() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,17 +131,13 @@ export default function Notifications() {
             {loading ? (
               <tr>
                 <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
-                  <div className="flex justify-center items-center">
-                    <div className="text-sm text-gray-500 dark:text-slate-200">Loading notifications...</div>
-                  </div>
+                  <Loading />
                 </td>
               </tr>
             ) : filteredData.length === 0 ? (
               <tr>
                 <td colSpan="7" className="sm:px-6 px-2 sm:py-4 py-2 text-center">
-                  <div className="flex justify-center items-center">
-                    <div className="text-sm text-gray-500 dark:text-slate-200">No Notifications Found</div>
-                  </div>
+                 <NoDataFound />
                 </td>
               </tr>
             ) : (

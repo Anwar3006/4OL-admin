@@ -9,6 +9,7 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import CustomDropdown from "@/components/ui/CustomDropdown";
 import { toast, ToastContainer } from "react-toastify";
 import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function DeleteUserAccountListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -150,10 +151,12 @@ export default function DeleteUserAccountListing() {
           </div>
         </div>
       )}
-        {filteredData.length === 0 ? (
-          <div className="text-center py-6 text-gray-500 dark:text-slate-200 min-h-[50vh] justify-items-center align-middle">
-            <p className="text-lg font-semibold">No Request Found</p>
-          </div>
+      {filteredData.length === 0 ? (
+        <tr className="w-full flex justify-center">
+          <td colSpan="6" className="text-center py-4">
+            <NoDataFound />
+          </td>
+        </tr>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-slate-800">
