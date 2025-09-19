@@ -8,6 +8,7 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import NoDataFound from "@/components/NoDataFound";
 
 const pillReminder = () => {
   const [data, setData] = useState([]);
@@ -178,7 +179,7 @@ const pillReminder = () => {
                   colSpan="6"
                   className="text-center py-10 text-base text-gray-500 dark:text-slate-200"
                 >
-                  No Data Available
+                  <NoDataFound />
                 </td>
               </tr>
             )}

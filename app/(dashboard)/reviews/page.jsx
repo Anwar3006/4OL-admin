@@ -8,6 +8,8 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Rating from "react-rating";
+import Loading from "@/app/loading";
+import NoDataFound from "@/components/NoDataFound";
 
 const Reviews = () => {
   const [ratings, setRatings] = useState([]);
@@ -109,10 +111,7 @@ const Reviews = () => {
     doc.save("Reviews.pdf");
   };
 
-  if (loading)
-    return (
-      <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
-    );
+  if (loading) return <Loading />;
 
   return (
     <Card
@@ -148,6 +147,13 @@ const Reviews = () => {
             </tr>
           </thead>
           <tbody>
+            {ratings.length === 0 && !loading && (
+              <tr>
+                <td colSpan="5" className="text-center py-10">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {ratings.map((item) => (
               <tr
                 key={item.id}

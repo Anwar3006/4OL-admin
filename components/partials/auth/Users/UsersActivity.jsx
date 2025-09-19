@@ -10,6 +10,8 @@ import Button from "@/components/ui/Button";
 import moment from "moment";
 import * as XLSX from "xlsx"; // Import XLSX library
 import Icons from "@/components/ui/Icon";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function UserActivity({ user }) {
   const [isDark] = useDarkmode();
@@ -296,7 +298,7 @@ export default function UserActivity({ user }) {
                 {/* Loader */}
                 {isLoading && (
                   <div className="flex justify-center items-center py-10">
-                    <p className="text-gray-500 dark:text-slate-200">Loading...</p>
+                    <Loading />
                   </div>
                 )}
 
@@ -312,7 +314,7 @@ export default function UserActivity({ user }) {
                 {/* Data Table */}
                 {!isLoading && data.length === 0 && !hasError && (
                   <div className="flex justify-center items-center py-10">
-                    <p className="text-gray-500 dark:text-slate-200">No records found.</p>
+                    <NoDataFound />
                   </div>
                 )}
 

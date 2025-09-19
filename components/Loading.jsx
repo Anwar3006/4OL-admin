@@ -29,7 +29,7 @@ const Loading = () => {
         ></path>
       </svg>
 
-      <span className=" inline-block mt-1 font-medium  text-sm">
+      <span className=" inline-block mt-1 font-medium text-sm dark:text-slate-200">
         Loading ...
       </span>
     </div>
