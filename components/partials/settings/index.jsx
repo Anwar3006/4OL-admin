@@ -91,7 +91,7 @@ const Setings = () => {
             </div>
             <hr className="-mx-6 border-slate-200 dark:border-slate-700" />
             <NavbarType />
-            <FooType />
+            {/* <FooType /> */}
           </div>
         </SimpleBar>
       </div>
