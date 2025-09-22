@@ -349,6 +349,7 @@ const IllnessAndComplicationsPage = () => {
         centered
         size="lg"
         themeClass="bg-[#4ab573]"
+        className="sm:max-w-[70vw] max-w-[90vw]"
       >
         <div
           style={{ scrollbarWidth: 0 }}

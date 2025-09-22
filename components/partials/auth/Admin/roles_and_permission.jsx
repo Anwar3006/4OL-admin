@@ -9,6 +9,7 @@ import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
 import Switch from "@/components/ui/Switch";
 import Loading from "@/app/loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function RolesAndPermissions() {
   const [data, setData] = useState([]);
@@ -23,22 +24,21 @@ export default function RolesAndPermissions() {
     const fetchData = async () => {
       try {
         const { data, error, count } = await supabase
-        .from("user_profiles")
-        .select("*", { count: "exact" })
-        .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
+          .from("user_profiles")
+          .select("*", { count: "exact" })
+          .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setTotalPages(Math.ceil(count / pageSize));
-      }
+        if (error) {
+          console.error("Error fetching data:", error);
+        } else {
+          setData(data);
+          setTotalPages(Math.ceil(count / pageSize));
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
-   
     };
 
     fetchData();
@@ -146,9 +146,14 @@ export default function RolesAndPermissions() {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
-                  {loading && (
-        <Loading />
-      )}
+            {loading && <Loading />}
+            {filteredData.length === 0 && (
+              <tr>
+                <td colSpan="7" className="text-center py-10">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {filteredData.map((item) => (
               <tr
                 key={item.id}
@@ -160,7 +165,9 @@ export default function RolesAndPermissions() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800 dark:text-slate-200">
                   {item.first_name} <span>{item.last_name}</span>
                 </td>
-                <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200`}>
+                <td
+                  className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200`}
+                >
                   {item.role === "Admin" ? "Admin" : " "}
                 </td>
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase dark:text-slate-200">
@@ -175,9 +182,7 @@ export default function RolesAndPermissions() {
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   <Switch
                     value={item.status === true} // Assuming 'enabled' means the user can log in
-                    onChange={() =>
-                      toggleStatus(item.id, item.status === true)
-                    }
+                    onChange={() => toggleStatus(item.id, item.status === true)}
                     activeClass="bg-green-500"
                     labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500"
                   />

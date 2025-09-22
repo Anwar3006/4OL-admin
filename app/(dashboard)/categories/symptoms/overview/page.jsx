@@ -279,6 +279,7 @@ const SymptomsOverviewPage = () => {
         }}
         centered
         themeClass="bg-red-500"
+        className="sm:max-w-[70vw] max-w-[90vw]"
       >
         <div className="p-6">
           <div className="flex flex-col items-center gap-4">
