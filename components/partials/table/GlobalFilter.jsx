@@ -11,7 +11,7 @@ const GlobalFilter = ({ filter, setFilter }) => {
       <Textinput
         value={value || ""}
         onChange={onChange}
-        placeholder="search..."
+        placeholder="🔍︎ Search..."
       />
     </div>
   );

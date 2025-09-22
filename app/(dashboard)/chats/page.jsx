@@ -255,7 +255,7 @@ export default function ChatPage() {
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
-          <div>
+          <div className="w-full flex justify-center items-center">
             <Loading />
           </div>
         ) : (

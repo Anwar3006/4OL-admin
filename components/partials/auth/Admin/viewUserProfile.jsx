@@ -60,7 +60,7 @@ const ViewUserProfile = () => {
   };
 
   return (
-    <Card>
+    <Card className="mt-5">
       <div className="space-y-5 w-full">
         <div className="flex max-lg:flex-col pb-6 items-center w-full">
           <h6 className="md:mb-0 mb-3 w-full">User Profile</h6>

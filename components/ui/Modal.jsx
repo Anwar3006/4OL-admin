@@ -146,7 +146,7 @@ const Modal = ({
                 >
                   <Dialog.Panel
                     className={`w-full transform overflow-hidden rounded-md
-                 bg-white dark:bg-slate-800 text-left align-middle shadow-xl transition-alll ${className}`}
+                 bg-white dark:bg-[#1e293b] text-left align-middle shadow-xl transition-alll ${className}`}
                   >
                     <div
                       className={`relative overflow-hidden py-4 px-5 text-white flex justify-between  ${themeClass}`}
@@ -161,7 +161,7 @@ const Modal = ({
                       </button>
                     </div>
                     <div
-                      className={`px-6 py-8 ${
+                      className={`px-6 py-8  ${
                         scrollContent ? "overflow-y-auto max-h-[400px]" : ""
                       }`}
                     >
