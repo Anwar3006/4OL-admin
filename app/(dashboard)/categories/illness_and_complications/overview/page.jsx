@@ -200,41 +200,41 @@ const IllnessAndComplicationsPage = () => {
                   key={condition.id}
                   className="hover:bg-gray-50 dark:hover:bg-slate-700"
                 >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
-                    {condition.condition_name}
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.condition_name === '' ? 'text-center' : ''}`}>
+                    {condition.condition_name || "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] dark:text-slate-200 align-top">
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.about === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
-                      htmlContent={condition.about}
+                      htmlContent={condition.about || "N/A"}
                       maxLength={100}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.diagnosis === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
-                      htmlContent={condition.diagnosis}
+                      htmlContent={condition.diagnosis || "N/A"}
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.treating === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
-                      htmlContent={condition.treating}
+                      htmlContent={condition.treating || "N/A"}
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.complications === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
-                      htmlContent={condition.complications}
+                      htmlContent={condition.complications || "N/A"}
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top">
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.prevention === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
-                      htmlContent={condition.prevention}
+                      htmlContent={condition.prevention || "N/A"}
                       maxLength={80}
                     />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate dark:text-slate-200 align-top">
-                    {condition.specialist_to_contact}
+                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.specialist_to_contact === '' ? 'text-center' : ''}`}>
+                    {condition.specialist_to_contact || "N/A" }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
                     <div className="flex justify-center gap-2">
