@@ -70,8 +70,8 @@ const HealthyLivingOverviewPage = () => {
   }, []);
 
   const handleEdit = (item) => {
-    const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(`/categories/healthy_living/form?healthyliving=${encodedItem}`);
+    // router.push(`/categories/healthy_living/form?healthyliving=${encodedItem}`);
+    router.push(`/categories/healthy_living/form?id=${item.id}`);
   };
 
   const handleView = (item) => {

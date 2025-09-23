@@ -67,8 +67,9 @@ const SymptomsOverviewPage = () => {
   }, []);
 
   const handleEdit = (item) => {
-    const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(`/categories/symptoms/form?symptom=${encodedItem}`);
+    // const encodedItem = encodeURIComponent(JSON.stringify(item));
+    // router.push(`/categories/symptoms/form?symptom=${encodedItem}`);
+    router.push(`/categories/symptoms/form?id=${item.id}`);
   };
 
   const handleView = (item) => {

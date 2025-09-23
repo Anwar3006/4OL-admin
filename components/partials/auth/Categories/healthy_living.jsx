@@ -5,11 +5,10 @@ import * as yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
 import TextinputNew from "@/components/ui/TextinputNew";
-import TextareaNew from "@/components/ui/TextareaNew";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import Fileinput from "@/components/ui/Fileinput";
 import { add_healthy_living } from "@/app/services/healthy_living";
-import { updateHealthyLivingEntry } from "@/app/services/healthy-living-service";
+import { getHealthyLivingEntryById, updateHealthyLivingEntry } from "@/app/services/healthy-living-service";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
 import handleSuccess from "@/utils/handleSuccess";
 
@@ -64,10 +63,19 @@ export default function HealthyLiving() {
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("healthyliving");
   const data = itemParam ? JSON.parse(itemParam) : null;
-
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  const id = searchParams.get("id");
+  const [healthyLiving, setHealthyLiving] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      getHealthyLivingEntryById(id).then((data) => {
+        setHealthyLiving(data);
+      });
+    }
+  }, [id]);
 
   // ✅ useForm with yup schema and defaultValues
   const {
@@ -82,18 +90,18 @@ export default function HealthyLiving() {
 
   // ✅ Populate form values when editing
   useEffect(() => {
-    if (data) {
+    if (healthyLiving) {
       reset({
-        topic_name: data.topic_name || "",
-        about: data.about || "",
-        category: data.category || "",
-        contact_your_doctor: data.contact_your_doctor || "",
-        more_information: data.more_information || "",
-        attribution: data.attribution || "",
+        topic_name: healthyLiving.topic_name || "",
+        about: healthyLiving.about || "",
+        category: healthyLiving.category || "",
+        contact_your_doctor: healthyLiving.contact_your_doctor || "",
+        more_information: healthyLiving.more_information || "",
+        attribution: healthyLiving.attribution || "",
       });
-      setImageUrl(data.image_url || "");
+      setImageUrl(healthyLiving.image_url || "");
     }
-  }, [data, reset]);
+  }, [healthyLiving, reset]);
 
   const onSubmit = async (formData) => {
     try {
@@ -112,11 +120,11 @@ export default function HealthyLiving() {
       const payload = {
         ...formData,
         list_type: listType,
-        image_url: uploadedImageUrl || "",
+        image_url: uploadedImageUrl || healthyLiving?.image_url || "",
       };
 
-      if (data?.id) {
-        await updateHealthyLivingEntry(data.id, payload);
+      if (healthyLiving?.id) {
+        await updateHealthyLivingEntry(healthyLiving.id, payload);
         handleSuccess(router, "Updated Successfully");
         router.push('/categories/healthy_living/overview')
         reset();
@@ -196,9 +204,9 @@ export default function HealthyLiving() {
           mediaType="image"
           accept="image/*"
         />
-        {imageUrl && (
+        {(imageUrl || healthyLiving?.image_url) && (
           <img
-            src={imageUrl}
+            src={imageUrl || healthyLiving?.image_url}
             alt="Preview"
             className="w-32 h-32 object-cover rounded mt-2 border"
           />

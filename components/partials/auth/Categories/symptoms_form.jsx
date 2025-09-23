@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew";
-import TextareaNew from "@/components/ui/TextareaNew";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import Button from "@/components/ui/Button";
@@ -10,7 +9,7 @@ import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import { add_symptoms } from "@/app/services/symptoms";
 import { useSearchParams } from "next/navigation";
-import { updateSymptom } from "@/app/services/symptoms-service";
+import { getSymptomById, updateSymptom } from "@/app/services/symptoms-service";
 import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
@@ -27,35 +26,9 @@ export default function SymptomsForm() {
   const [editingType, setEditingType] = useState(null); // 'types' or 'causes'
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("symptom");
-  
-  // Safe JSON parsing with error handling for rich text content with images
-  let data = {};
-  try {
-    if (itemParam) {
-      // Try to decode URL-encoded data first (better for complex content)
-      const decodedParam = decodeURIComponent(itemParam);
-      data = JSON.parse(decodedParam);
-    }
-  } catch (error) {
-    console.error("Error parsing symptom data:", error);
-    console.warn("Failed to parse symptom data - this might be due to embedded images in rich text content");
-    
-    // Try alternative parsing method
-    try {
-      if (itemParam) {
-        data = JSON.parse(itemParam);
-      }
-    } catch (secondError) {
-      console.error("Second parsing attempt failed:", secondError);
-      // Show user-friendly message and redirect to overview
-      if (typeof toast !== 'undefined') {
-        toast.error("Unable to load this entry for editing. This may be due to embedded images in the content. Please try creating a new entry or contact support.");
-      }
-      // Fallback to empty data to allow form to load
-      data = {};
-    }
-  }
-  const router = useRouter();
+  const id = searchParams.get("id");
+  const [symptoms, setSymptoms] = useState(null);
+    const router = useRouter();
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
 
@@ -66,8 +39,7 @@ export default function SymptomsForm() {
     const textContent = value.replace(/<[^>]*>/g, '').trim();
     return textContent.length > 0;
   };
-
-  const schema = yup.object().shape({
+    const schema = yup.object().shape({
     symptom_name: yup.string().required("Symptom name is required"),
     about: yup
       .string()
@@ -155,6 +127,71 @@ export default function SymptomsForm() {
   });
 
   useEffect(() => {
+    if (id) {
+      getSymptomById(id).then((data) => {
+        setSymptoms(data);
+      });
+    }
+  }, [id]);
+  
+  // Safe JSON parsing with error handling for rich text content with images
+  let data = {};
+  try {
+    if (itemParam) {
+      // Try to decode URL-encoded data first (better for complex content)
+      const decodedParam = decodeURIComponent(itemParam);
+      data = JSON.parse(decodedParam);
+    }
+  } catch (error) {
+    console.error("Error parsing symptom data:", error);
+    console.warn("Failed to parse symptom data - this might be due to embedded images in rich text content");
+    
+    // Try alternative parsing method
+    try {
+      if (itemParam) {
+        data = JSON.parse(itemParam);
+      }
+    } catch (secondError) {
+      console.error("Second parsing attempt failed:", secondError);
+      // Show user-friendly message and redirect to overview
+      if (typeof toast !== 'undefined') {
+        toast.error("Unable to load this entry for editing. This may be due to embedded images in the content. Please try creating a new entry or contact support.");
+      }
+      // Fallback to empty data to allow form to load
+      data = {};
+    }
+  }
+
+  useEffect(() => {
+  if (symptoms) {
+    reset({
+      symptom_name: symptoms.symptom_name || "",
+      about: symptoms.about || "",
+      diagnosis: symptoms.diagnosis || "",
+      treating: symptoms.treating || "",
+      complications: symptoms.complications || "",
+      prevention: symptoms.prevention || "",
+      specialist_to_contact: symptoms.specialist_to_contact || "",
+      contact_your_doctor: symptoms.contact_your_doctor || "",
+      more_information: symptoms.more_information || "",
+      attribution: symptoms.attribution || "",
+      types: symptoms.types || [],
+      causes: symptoms.causes || [],
+    });
+
+    // ✅ handle image preview
+    if (symptoms.image_url) {
+      setImageUrl(symptoms.image_url); // if you stored publicUrl in DB
+      // or, if you stored only path, convert to public URL:
+      // const { data } = supabase.storage.from("symptoms").getPublicUrl(symptoms.image_url);
+      // setImageUrl(data.publicUrl);
+    }
+  }
+}, [symptoms, reset]);
+
+
+
+  useEffect(() => {
     // Ensure at least one type and cause field exists
   }, [activeModal]);
 
@@ -171,11 +208,11 @@ export default function SymptomsForm() {
       const newData = {
         ...formData,
         list_type: listType,
-        image_url: imageUrl || data?.image_url || "",
+        image_url: imageUrl || symptoms?.image_url || "",
       };
 
-      if (data?.id) {
-        await updateSymptom(data?.id, newData);
+      if (symptoms?.id) {
+        await updateSymptom(symptoms?.id, newData);
         handleSuccess(router, "Updated Successfully");
         router.push('/categories/symptoms/overview')
         reset();
@@ -625,9 +662,9 @@ export default function SymptomsForm() {
             className="my-2"
             accept="image/*"
           />
-          {imageUrl && (
+          {(imageUrl || symptoms?.image_url) && (
             <img
-              src={imageUrl}
+              src={imageUrl || symptoms?.image_url}
               alt="Preview"
               className="w-32 h-32 object-cover rounded mt-2 border"
             />

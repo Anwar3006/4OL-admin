@@ -10,7 +10,7 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { updateDisease } from "@/app/services/diseases-service";
+import { getDiseaseById, updateDisease } from "@/app/services/diseases-service";
 import handleSuccess from "@/utils/handleSuccess";
 import Fileinput from "@/components/ui/Fileinput";
 import { uploadSingleFileToSupabase } from "@/app/utils/uploadMedia";
@@ -20,6 +20,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 export default function IllnessAndComplicationForm() {
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("disease");
+  const id = searchParams.get("id");
+  const [disease, setDisease] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      getDiseaseById(id).then((data) => {
+        setDisease(data);
+      });
+    }
+  }, [id])
   
   // Safe JSON parsing with error handling for rich text content with images
   let data = {};
@@ -58,14 +68,6 @@ export default function IllnessAndComplicationForm() {
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
-
-  // Custom validation function for rich text content
-  const validateRichText = (value) => {
-    if (!value) return false;
-    // Remove HTML tags and check if there's actual text content
-    const textContent = value.replace(/<[^>]*>/g, '').trim();
-    return textContent.length > 0;
-  };
 
   const schema = yup.object().shape({
     condition_name: yup.string().required("Condition name is required"),
@@ -120,27 +122,27 @@ export default function IllnessAndComplicationForm() {
 
   useEffect(() => {
     // Initialize form with default values if editing
-    if (data?.id) {
+    if (disease) {
       reset({
-        condition_name: data.condition_name || "",
-        about: data.about || "",
-        diagnosis: data.diagnosis || "",
-        treating: data.treating || "",
-        complications: data.complications || "",
-        symptoms: data.symptoms || "",
-        prevention: data.prevention || "",
-        specialist_to_contact: data.specialist_to_contact || "",
-        contact_your_doctor: data.contact_your_doctor || "",
-        more_information: data.more_information || "",
-        attribution: data.attribution || "",
-        types: data.types || [{ type_name: "", about_type: "" }],
-        causes: data.causes || [{ cause_name: "", other_possible_causes: "" }],
+        condition_name: disease.condition_name || "",
+        about: disease.about || "",
+        diagnosis: disease.diagnosis || "",
+        treating: disease.treating || "",
+        complications: disease.complications || "",
+        symptoms: disease.symptoms || "",
+        prevention: disease.prevention || "",
+        specialist_to_contact: disease.specialist_to_contact || "",
+        contact_your_doctor: disease.contact_your_doctor || "",
+        more_information: disease.more_information || "",
+        attribution: disease.attribution || "",
+        types: disease.types || [{ type_name: "", about_type: "" }],
+        causes: disease.causes || [{ cause_name: "", other_possible_causes: "" }],
       });
     } else {
       // For new forms, initialize with empty arrays (types and causes are now optional)
       // Users can add them manually if needed
     }
-  }, [data?.id, appendType, appendCause, typeFields.length, causeFields.length]);
+  }, [disease, appendType, appendCause, typeFields.length, causeFields.length]);
 
   const onSubmit = async (formData) => {
     setFormSubmitted(true);
@@ -172,11 +174,11 @@ export default function IllnessAndComplicationForm() {
       const newData = {
         ...formData,
         list_type: listType,
-        image_url: imageUrl || data?.image_url || "",
+        image_url: imageUrl || disease?.image_url || "",
       };
 
-      if (data?.id) {
-        await updateDisease(data?.id, newData);
+      if (disease?.id) {
+        await updateDisease(disease?.id, newData);
         handleSuccess(router, "Updated Successfully");
         router.push('/categories/illness_and_complications/overview')
       } else {
@@ -652,9 +654,9 @@ export default function IllnessAndComplicationForm() {
             className="my-2"
             accept="image/*"
           />
-          {imageUrl && (
+          {(imageUrl || disease?.image_url) && (
             <img
-              src={imageUrl}
+              src={imageUrl || disease?.image_url}
               alt="Preview"
               className="w-32 h-32 object-cover rounded mt-2 border"
             />

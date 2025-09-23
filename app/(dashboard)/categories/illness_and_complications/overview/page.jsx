@@ -66,12 +66,17 @@ const IllnessAndComplicationsPage = () => {
     };
   }, []);
 
+  // const handleEdit = (item) => {
+  //   const encodedItem = encodeURIComponent(JSON.stringify(item));
+  //   console.log(encodedItem);
+  //   router.push(
+  //     `/categories/illness_and_complications/form?disease=${encodedItem}`
+  //   );
+  // };
+
   const handleEdit = (item) => {
-    const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(
-      `/categories/illness_and_complications/form?disease=${encodedItem}`
-    );
-  };
+  router.push(`/categories/illness_and_complications/form?id=${item.id}`);
+};
 
   const handleView = (item) => {
     setViewDetails(item); // updates state
