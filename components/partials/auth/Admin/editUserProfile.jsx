@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import Textinput from "@/components/ui/Textinput";
 import SplitDropdown2 from "@/components/ui/Split-Dropdown2";
 import { supabase } from "@/app/utils/supabaseClient";
+import Loading from "@/components/Loading";
 
 
 const EditUserProfile = () => {
@@ -92,7 +93,7 @@ const EditUserProfile = () => {
   };
   
 
-  if (!id) return <p>Loading...</p>;
+  if (!id) return <p className="w-full mx-auto"><Loading /></p>;
 
   return (
     <form className="w-full grid grid-cols-1 lg:grid-cols-2 sm:gap-4" onSubmit={handleSubmit(onSubmit)}>
@@ -120,7 +121,7 @@ const EditUserProfile = () => {
         label="Sex"
         value={selectedSex}
         onChange={(value) => setValue('sex', value)}
-        className="mb-4 w-full"
+        className="mb-4 w-full text-sm"
         inputClass='hidden capitalize'
       />
 
