@@ -392,7 +392,7 @@ const IllnessAndComplicationsPage = () => {
                   return value.map((item, index) => (
                     <div key={`${key}-${index}`} className="flex">
                       <div className="w-1/3 text-gray-900">
-                        {label} {index + 1}
+                        {label}
                       </div>
                       <div className="w-2/3">
                         {subFields.map(({ label: subLabel, key: subKey }) => {

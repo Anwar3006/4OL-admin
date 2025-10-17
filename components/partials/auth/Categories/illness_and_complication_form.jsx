@@ -4,10 +4,8 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew"
 import RichTextEditor from "@/components/ui/RichTextEditor";
-import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import { add_illness_and_condition } from "@/app/services/illness_and_condition";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getDiseaseById, updateDisease } from "@/app/services/diseases-service";
@@ -59,11 +57,6 @@ export default function IllnessAndComplicationForm() {
     }
   }
   const [loading, setLoading] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'types' or 'causes'
-  const [newTypes, setNewTypes] = useState([]);
-  const [newCauses, setNewCauses] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null); // Track which item is being edited
-  const [editingType, setEditingType] = useState(null); // 'types' or 'causes'
   const router = useRouter();
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
@@ -97,7 +90,22 @@ export default function IllnessAndComplicationForm() {
     watch,
   } = useForm(
     { 
-      resolver: yupResolver(schema)
+      resolver: yupResolver(schema),
+      defaultValues: {
+        condition_name: "",
+        about: "",
+        diagnosis: "",
+        treating: "",
+        complications: "",
+        symptoms: "",
+        prevention: "",
+        specialist_to_contact: "",
+        contact_your_doctor: "",
+        more_information: "",
+        attribution: "",
+        types: [{ type_name: "", about_type: "" }],
+        causes: [{ cause_name: "", other_possible_causes: "" }],
+      }
     });
 
   // For dynamic Types
@@ -135,14 +143,11 @@ export default function IllnessAndComplicationForm() {
         contact_your_doctor: disease.contact_your_doctor || "",
         more_information: disease.more_information || "",
         attribution: disease.attribution || "",
-        types: disease.types || [{ type_name: "", about_type: "" }],
-        causes: disease.causes || [{ cause_name: "", other_possible_causes: "" }],
+        types: disease.types && disease.types.length > 0 ? disease.types : [{ type_name: "", about_type: "" }],
+        causes: disease.causes && disease.causes.length > 0 ? disease.causes : [{ cause_name: "", other_possible_causes: "" }],
       });
-    } else {
-      // For new forms, initialize with empty arrays (types and causes are now optional)
-      // Users can add them manually if needed
     }
-  }, [disease, appendType, appendCause, typeFields.length, causeFields.length]);
+  }, [disease, reset]);
 
   const onSubmit = async (formData) => {
     setFormSubmitted(true);
@@ -200,15 +205,13 @@ export default function IllnessAndComplicationForm() {
               contact_your_doctor: "",
               more_information: "",
               attribution: "",
-              types: [],
-              causes: [],
+              types: [{ type_name: "", about_type: "" }],
+              causes: [{ cause_name: "", other_possible_causes: "" }],
             });
             router.push("/categories/illness_and_complications/overview")
 
             setImageFile(null);
             setImageUrl("");
-            setNewTypes([]);
-            setNewCauses([]);
             setFormSubmitted(false);
           },
           (error) => {
@@ -240,79 +243,6 @@ export default function IllnessAndComplicationForm() {
     }
   };
 
-  const openModal = (type, editIndex = null) => {
-    setActiveModal(type);
-    setEditingIndex(editIndex);
-    setEditingType(type);
-    
-    // If editing, populate the modal with existing data
-    if (editIndex !== null) {
-      if (type === 'types') {
-        const existingType = typeFields[editIndex];
-        setNewTypes([existingType]);
-      } else if (type === 'causes') {
-        const existingCause = causeFields[editIndex];
-        setNewCauses([existingCause]);
-      }
-    }
-  };
-
-  const closeModal = () => {
-    setActiveModal(null);
-    setEditingIndex(null);
-    setEditingType(null);
-    setNewTypes([]);
-    setNewCauses([]);
-  };
-
-  const addItemsToForm = (items, type) => {
-    const validItems = items.filter((item) =>
-      Object.values(item).some((value) => value.trim() !== "")
-    );
-
-    if (type === "types") {
-      if (editingIndex !== null) {
-        // Update existing type
-        const updatedTypes = [...typeFields];
-        updatedTypes[editingIndex] = validItems[0];
-        // Remove the old item and add the updated one
-        removeType(editingIndex);
-        setTimeout(() => {
-          appendType(validItems[0]);
-        }, 0);
-      } else {
-        // Add new types
-        validItems.forEach((item) => appendType(item));
-      }
-      setNewTypes([]); // Clear the new items after adding them
-    } else if (type === "causes") {
-      if (editingIndex !== null) {
-        // Update existing cause
-        const updatedCauses = [...causeFields];
-        updatedCauses[editingIndex] = validItems[0];
-        // Remove the old item and add the updated one
-        removeCause(editingIndex);
-        setTimeout(() => {
-          appendCause(validItems[0]);
-        }, 0);
-      } else {
-        // Add new causes
-        validItems.forEach((item) => appendCause(item));
-      }
-      setNewCauses([]); // Clear the new items after adding them
-    }
-    closeModal();
-  };
-
-  const handleAddType = () => {
-    const newType = { type_name: "", about_type: "" };
-    setNewTypes([...newTypes, newType]); // Add new type to state
-  };
-
-  const handleAddCause = () => {
-    const newCause = { cause_name: "", other_possible_causes: "" };
-    setNewCauses([...newCauses, newCause]); // Add new cause to state
-  };
 
   return (
     <>
@@ -345,166 +275,128 @@ export default function IllnessAndComplicationForm() {
           )}
         />
 
-        <div>
-          <label className="block font-medium text-gray-700 dark:text-slate-200">Types</label>
+        <div className="md:col-span-2">
+          <label className="block font-medium text-gray-700 dark:text-slate-200 mb-3">Types</label>
+          {typeFields.map((field, index) => (
+            <div key={field.id} className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-slate-800">
+              <div className="flex justify-end items-end mb-3">
+                {/* <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Type {index + 1}</h4> */}
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeType(index)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove Type"
+                  >
+                    <Icon icon={"material-symbols:close"} width={20} height={20} />
+                  </button>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+                <Controller
+                  name={`types.${index}.type_name`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <TextinputNew
+                      {...field}
+                      label="Type Name"
+                      placeholder="Enter Type Name"
+                      error={errors.types?.[index]?.type_name}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`types.${index}.about_type`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <RichTextEditor
+                      name={`types.${index}.about_type`}
+                      label="About Type"
+                      placeholder="Enter information about this type"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={errors.types?.[index]?.about_type}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          ))}
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-black hover:text-green-500"
+            iconClass="text-base"
             text="Add Type"
             type="button"
-            onClick={() => openModal("types")}
-            className="py-0 px-2 mt-2 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-full"
+            onClick={() => appendType({ type_name: "", about_type: "" })}
+            className="py-2 px-4 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-lg"
           />
-          <div className="my-2 rounded">
-            {typeFields.length > 0 &&
-            typeFields.some((field) => field.type_name || field.about_type) ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse sm:text-sm text-xs">
-                  <thead>
-                    <tr>
-                      <th className="border ">Name</th>
-                      <th className="border">About</th>
-                      <th className="border">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {typeFields
-                      .filter(
-                        (item) =>
-                          item.type_name.trim() !== "" ||
-                          item.about_type.trim() !== ""
-                      )
-                      .map((item, index) => (
-                        <tr key={item.id}>
-                          <td className="border px-2 text-black">
-                            {item.type_name}
-                          </td>
-                          <td className="border px-2 text-black">
-                            <HtmlRenderer htmlContent={item.about_type} />
-                          </td>
-                          <td className="border px-2 text-center">
-                            <div className="flex justify-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => openModal("types", index)}
-                                className="text-green-500"
-                                aria-label="Edit"
-                              >
-                                <Icon
-                                  icon={"heroicons-outline:pencil-alt"}
-                                  width={16}
-                                  height={16}
-                                />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeType(index)}
-                                className="text-red-500"
-                                aria-label="Remove"
-                              >
-                                <Icon
-                                  icon={"carbon:close-filled"}
-                                  width={16}
-                                  height={16}
-                                />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="sm:text-sm text-xs">No types added yet.</p>
-            )}
-            {/* ✅ Type Array Error Message */}
-            {errors.types?.message && (
-              <p className="text-red-500 text-sm mt-1">{errors.types.message}</p>
-            )}
-          </div>
+          {errors.types?.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.types.message}</p>
+          )}
         </div>
 
-        <div>
-          <label className="block font-medium text-gray-700 dark:text-slate-200">Causes</label>
+        <div className="md:col-span-2">
+          <label className="block font-medium text-gray-700 dark:text-slate-200 mb-3">Causes</label>
+          {causeFields.map((field, index) => (
+            <div key={field.id} className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-slate-800">
+              <div className="flex justify-end items-end mb-3">
+                {/* <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Cause {index + 1}</h4> */}
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeCause(index)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove Cause"
+                  >
+                    <Icon icon={"material-symbols:close"} width={20} height={20} />
+                  </button>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+                <Controller
+                  name={`causes.${index}.cause_name`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <TextinputNew
+                      {...field}
+                      label="Cause Name"
+                      placeholder="Enter Cause Name"
+                      error={errors.causes?.[index]?.cause_name}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`causes.${index}.other_possible_causes`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <RichTextEditor
+                      name={`causes.${index}.other_possible_causes`}
+                      label="Other Possible Causes"
+                      placeholder="Enter other possible causes"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={errors.causes?.[index]?.other_possible_causes}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          ))}
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-black hover:text-green-500"
+            iconClass="text-base"
             text="Add Cause"
             type="button"
-            onClick={() => openModal("causes")}
-            className="py-0 px-2 mt-2 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-full"
+            onClick={() => appendCause({ cause_name: "", other_possible_causes: "" })}
+            className="py-2 px-4 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-lg"
           />
-          <div className="my-2 rounded ">
-            {causeFields.length > 0 &&
-            causeFields.some(
-              (field) => field.cause_name || field.other_possible_causes
-            ) ? (
-              <div className="overflow-x-auto  sm:text-sm text-xs">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border ">Name</th>
-                      <th className="border">Other Causes</th>
-                      <th className="border">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {causeFields
-                      .filter(
-                        (item) =>
-                          item.cause_name.trim() !== "" ||
-                          item.other_possible_causes.trim() !== ""
-                      )
-                      .map((item, index) => (
-                        <tr key={item.id}>
-                          <td className="border px-2 text-black">
-                            {item.cause_name}
-                          </td>
-                          <td className="border px-2 text-black">
-                            <HtmlRenderer htmlContent={item.other_possible_causes} />
-                          </td>
-                          <td className="border px-2 text-center">
-                            <div className="flex justify-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => openModal("causes", index)}
-                                className="text-green-500"
-                                aria-label="Edit"
-                              >
-                                <Icon
-                                  icon={"heroicons-outline:pencil-alt"}
-                                  width={16}
-                                  height={16}
-                                />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeCause(index)}
-                                className="text-red-500"
-                                aria-label="Remove"
-                              >
-                                <Icon
-                                  icon={"carbon:close-filled"}
-                                  width={16}
-                                  height={16}
-                                />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="sm:text-sm text-xs">No causes added yet.</p>
-            )}
-            {/* ✅ Cause Array Error Message */}
-            {errors.causes?.message && (
-              <p className="text-red-500 text-sm mt-1">{errors.causes.message}</p>
-            )}
-          </div>
+          {errors.causes?.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.causes.message}</p>
+          )}
         </div>
 
         <Controller
@@ -682,164 +574,6 @@ export default function IllnessAndComplicationForm() {
 
         <ToastContainer />
       </form>
-
-      {/* Types Modal */}
-      {activeModal === "types" && (
-        <Modal
-          activeModal={activeModal === "types"}
-          onClose={closeModal}
-          title={editingIndex !== null ? "Edit Type" : "Add Types"}
-          labelClass={"bg-[#56ce83]"}
-          footerContent={
-            <>
-              <button
-                onClick={() => {
-                  addItemsToForm(newTypes, "types");
-                  // setNewTypes([]); // Clear new types after adding
-                }}
-                className="btn btn-sm bg-green-500 text-white"
-              >
-                {editingIndex !== null ? "Update" : "Add"}
-              </button>
-              <button
-                onClick={closeModal}
-                className="btn btn-sm bg-gray-500 text-white"
-              >
-                Close
-              </button>
-            </>
-          }
-        >
-          {newTypes.map((type, index) => (
-            <div key={index} className="mb-4">
-              <TextinputNew
-                value={type.type_name}
-                onChange={(e) => {
-                  const updatedTypes = [...newTypes];
-                  updatedTypes[index] = {
-                    ...updatedTypes[index],
-                    type_name: e.target.value,
-                  };
-                  setNewTypes(updatedTypes);
-                }}
-                label={`Type Name ${index + 1}`}
-                placeholder="Type Name"
-              />
-              <RichTextEditor
-                value={type.about_type}
-                onChange={(content) => {
-                  const updatedTypes = [...newTypes];
-                  updatedTypes[index] = {
-                    ...updatedTypes[index],
-                    about_type: content,
-                  };
-                  setNewTypes(updatedTypes);
-                }}
-                label={`About ${index + 1}`}
-                placeholder="About this type..."
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const updatedTypes = newTypes.filter((_, i) => i !== index);
-                  setNewTypes(updatedTypes);
-                }}
-                className="text-red-500 mt-2"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          {editingIndex === null && (
-            <button
-              type="button"
-              onClick={handleAddType}
-              className="btn btn-sm bg-green-500 text-white"
-            >
-              Add Another Type
-            </button>
-          )}
-        </Modal>
-      )}
-
-      {/* Causes Modal */}
-      {activeModal === "causes" && (
-        <Modal
-          activeModal={activeModal === "causes"}
-          onClose={closeModal}
-          title={editingIndex !== null ? "Edit Cause" : "Add Causes"}
-          labelClass={"bg-[#56ce83]"}
-          footerContent={
-            <>
-              <button
-                onClick={() => {
-                  addItemsToForm(newCauses, "causes");
-                  setNewCauses([]); // Clear new causes after adding
-                }}
-                className="btn btn-sm bg-green-500 text-white"
-              >
-                {editingIndex !== null ? "Update" : "Add"}
-              </button>
-              <button
-                onClick={closeModal}
-                className="btn btn-sm bg-gray-500 text-white"
-              >
-                Close
-              </button>
-            </>
-          }
-        >
-          {newCauses.map((cause, index) => (
-            <div key={index} className="mb-4">
-              <TextinputNew
-                value={cause.cause_name}
-                onChange={(e) => {
-                  const updatedCauses = [...newCauses];
-                  updatedCauses[index] = {
-                    ...updatedCauses[index],
-                    cause_name: e.target.value,
-                  };
-                  setNewCauses(updatedCauses);
-                }}
-                label={`Cause Name ${index + 1}`}
-                placeholder="Cause Name"
-              />
-              <RichTextEditor
-                value={cause.other_possible_causes}
-                onChange={(content) => {
-                  const updatedCauses = [...newCauses];
-                  updatedCauses[index] = {
-                    ...updatedCauses[index],
-                    other_possible_causes: content,
-                  };
-                  setNewCauses(updatedCauses);
-                }}
-                label={`Other Possible Causes ${index + 1}`}
-                placeholder="Describe other possible causes..."
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const updatedCauses = newCauses.filter((_, i) => i !== index);
-                  setNewCauses(updatedCauses);
-                }}
-                className="text-red-500 mt-2"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          {editingIndex === null && (
-            <button
-              type="button"
-              onClick={handleAddCause}
-              className="btn btn-sm bg-green-500 text-white"
-            >
-              Add Another Cause
-            </button>
-          )}
-        </Modal>
-      )}
     </>
   );
 }
