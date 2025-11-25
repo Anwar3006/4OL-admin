@@ -215,6 +215,13 @@ const LoginForm = () => {
       <button className="btn bg-[#56ce84] text-white block w-full text-center">
         {loading ? "Signing..." : "Sign In"}
       </button>
+      <Link
+        href="/privacy-policy"
+        className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-transparent text-sm font-semibold text-[#56ce84] underline-offset-2 hover:underline"
+        target="_blank"
+      >
+        View Privacy Policy
+      </Link>
     </form>
   );
 };

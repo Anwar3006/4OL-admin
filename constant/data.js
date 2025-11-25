@@ -270,12 +270,23 @@ export const menuItems = [
     ],
   },
   {
+    title: "Privacy Policy",
+    isHide: false,
+    icon: "mdi:shield-account-outline",
+    child: [
+      {
+        childtitle: "Overview",
+        childlink: "privacy-policy/overview",
+      },
+    ],
+  },
+  {
     title: "Admins",
     isHide: false,
     icon: "heroicons-outline:lock-closed",
     link: "admin",
   },
-    {
+  {
     title: "Delete Account Request",
     icon: "line-md:account-delete",
     isHide: false,
