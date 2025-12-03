@@ -263,7 +263,7 @@ const HealthyLivingOverviewPage = () => {
                   <td className="px-6 py-4 text-sm align-top">
                     <button
                       onClick={() => handleViewDetails(article)}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left font-medium"
+                      className="text-secondary-800 dark:text-green-400 hover:text-secondary-600 dark:hover:text-green-300 hover:underline text-left font-medium"
                     >
                       {article.topic_name}
                     </button>
