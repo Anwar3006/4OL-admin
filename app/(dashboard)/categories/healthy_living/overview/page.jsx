@@ -24,8 +24,12 @@ const HealthyLivingOverviewPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const itemsPerPage = 10;
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredArticles, setFilteredArticles] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchArticles();
@@ -37,13 +41,57 @@ const HealthyLivingOverviewPage = () => {
       const data = await getAllHealthyLivingEntries();
       if (data) {
         setArticles(data);
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
       }
     } catch (error) {
       console.error("Error fetching healthy living articles:", error);
       toast.error("Failed to load articles");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredArticles([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = articles.filter((article) =>
+        article.headline?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredArticles(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, articles]);
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredArticles.length > 0
+      ? filteredArticles
+      : articles;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [articles, filteredArticles, searchQuery, itemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectArticle = (article) => {
+    setSearchQuery(article.headline);
+    setShowDropdown(false);
+    // Scroll to the article in the table
+    const articleIndex = articles.findIndex((a) => a.id === article.id);
+    if (articleIndex !== -1) {
+      const pageNumber = Math.floor(articleIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
     }
   };
 
@@ -74,6 +122,10 @@ const HealthyLivingOverviewPage = () => {
     router.push(`/categories/healthy_living/form?id=${item.id}`);
   };
 
+  const handleViewDetails = (item) => {
+    router.push(`/categories/healthy_living/details?id=${item.id}`);
+  };
+
   const handleView = (item) => {
     setViewDetails(item);
     setShowDetailsModal(true);
@@ -100,7 +152,10 @@ const HealthyLivingOverviewPage = () => {
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return articles.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredArticles.length > 0
+      ? filteredArticles
+      : articles;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const truncateText = (text, maxLength = 100) => {
@@ -126,15 +181,53 @@ const HealthyLivingOverviewPage = () => {
         className=" overflow-hidden relative"
         bodyClass="p-0"
         headerslot={
-          <>
-            {" "}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search Filter */}
+            <div className="relative" ref={searchRef}>
+              <div className="relative">
+                <Icon
+                  icon="heroicons:magnifying-glass"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  width="18"
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery && setShowDropdown(true)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                />
+              </div>
+              {/* Autocomplete Dropdown */}
+              {showDropdown && filteredArticles.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      onClick={() => handleSelectArticle(article)}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                    >
+                      {article.headline}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showDropdown && searchQuery && filteredArticles.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                    No results found
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               text="+ Add New Article"
-              className="btn-dark max-sm:text-xs font-normal btn-sm sm:mr-3 max-sm:mt-2"
+              className="btn-dark max-sm:text-xs font-normal btn-sm"
               iconClass="text-lg"
               onClick={() => router.push("/categories/healthy_living/form")}
             />
-          </>
+          </div>
         }
       >
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
@@ -167,8 +260,13 @@ const HealthyLivingOverviewPage = () => {
                   key={article.id}
                   className="hover:bg-gray-50 dark:hover:bg-slate-700"
                 >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
-                    {article.topic_name}
+                  <td className="px-6 py-4 text-sm align-top">
+                    <button
+                      onClick={() => handleViewDetails(article)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left font-medium"
+                    >
+                      {article.topic_name}
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px] align-top">
                     <HtmlRenderer htmlContent={article.about} maxLength={100} />
@@ -190,13 +288,6 @@ const HealthyLivingOverviewPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
                     <div className="flex justify-center gap-2">
-                      <Button
-                        icon="lets-icons:eye"
-                        iconClass="text-blue-500 text-lg"
-                        className="p-0 bg-transparent border-none"
-                        onClick={() => handleView(article)}
-                        tooltip="View Details"
-                      />
                       <Button
                         icon="heroicons-outline:pencil-alt"
                         iconClass="text-green-500 text-lg"
@@ -239,7 +330,21 @@ const HealthyLivingOverviewPage = () => {
           </table>
         </div>
         {totalPages > 0 && (
-          <div className="flex justify-end items-center m-4">
+          <div className="flex justify-between items-center m-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+            </div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

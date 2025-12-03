@@ -21,8 +21,12 @@ const SymptomsOverviewPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredSymptoms, setFilteredSymptoms] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchSymptoms();
@@ -34,13 +38,57 @@ const SymptomsOverviewPage = () => {
       const data = await getAllSymptoms();
       if (data) {
         setSymptoms(data);
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
       }
     } catch (error) {
       console.error("Error fetching symptoms:", error);
       toast.error("Failed to load symptoms");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredSymptoms([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = symptoms.filter((symptom) =>
+        symptom.symptom_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredSymptoms(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, symptoms]);
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredSymptoms.length > 0
+      ? filteredSymptoms
+      : symptoms;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [symptoms, filteredSymptoms, searchQuery, itemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectSymptom = (symptom) => {
+    setSearchQuery(symptom.symptom_name);
+    setShowDropdown(false);
+    // Scroll to the symptom in the table
+    const symptomIndex = symptoms.findIndex((s) => s.id === symptom.id);
+    if (symptomIndex !== -1) {
+      const pageNumber = Math.floor(symptomIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
     }
   };
 
@@ -72,6 +120,10 @@ const SymptomsOverviewPage = () => {
     router.push(`/categories/symptoms/form?id=${item.id}`);
   };
 
+  const handleViewDetails = (item) => {
+    router.push(`/categories/symptoms/details?id=${item.id}`);
+  };
+
   const handleView = (item) => {
     setViewDetails(item);
     setShowDetailsModal(true);
@@ -98,7 +150,10 @@ const SymptomsOverviewPage = () => {
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return symptoms.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredSymptoms.length > 0
+      ? filteredSymptoms
+      : symptoms;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const truncateText = (text, maxLength = 100) => {
@@ -144,12 +199,55 @@ const SymptomsOverviewPage = () => {
         title="Symptoms"
         className="overflow-hidden relative"
         bodyClass="p-0"
-        headerslot={<>  <Button
-          text="+ Add New Symptom"
-          className="btn-dark max-sm:text-xs font-normal btn-sm sm:mr-3 max-sm:mt-2"
-          iconClass="text-lg"
-          onClick={() => router.push("/categories/symptoms/form")}
-        /></>}
+        headerslot={
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search Filter */}
+            <div className="relative" ref={searchRef}>
+              <div className="relative">
+                <Icon
+                  icon="heroicons:magnifying-glass"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  width="18"
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery && setShowDropdown(true)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                />
+              </div>
+              {/* Autocomplete Dropdown */}
+              {showDropdown && filteredSymptoms.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredSymptoms.map((symptom) => (
+                    <div
+                      key={symptom.id}
+                      onClick={() => handleSelectSymptom(symptom)}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                    >
+                      {symptom.symptom_name}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showDropdown && searchQuery && filteredSymptoms.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                    No results found
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button
+              text="+ Add New Symptom"
+              className="btn-dark max-sm:text-xs font-normal btn-sm"
+              iconClass="text-lg"
+              onClick={() => router.push("/categories/symptoms/form")}
+            />
+          </div>
+        }
       >
        
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
@@ -182,8 +280,13 @@ const SymptomsOverviewPage = () => {
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((symptom) => (
                 <tr key={symptom.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200 align-top">
-                    {symptom.symptom_name}
+                  <td className="px-6 py-4 text-sm align-top">
+                    <button
+                      onClick={() => handleViewDetails(symptom)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left font-medium"
+                    >
+                      {symptom.symptom_name}
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
                     <HtmlRenderer 
@@ -214,13 +317,6 @@ const SymptomsOverviewPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
                     <div className="flex items-center justify-center gap-2">
-                      <Button
-                        icon="lets-icons:eye"
-                        iconClass="text-blue-500 text-lg"
-                        className="p-0 bg-transparent border-none"
-                        onClick={() => handleView(symptom)}
-                        tooltip="View Details"
-                      />
                       <Button
                         icon="heroicons-outline:pencil-alt"
                         iconClass="text-green-500 text-lg"
@@ -259,7 +355,21 @@ const SymptomsOverviewPage = () => {
           </table>
         </div>
         {totalPages > 0 && (
-          <div className="flex justify-end items-center m-4">
+          <div className="flex justify-between items-center m-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+            </div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

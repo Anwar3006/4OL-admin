@@ -21,8 +21,12 @@ const IllnessAndComplicationsPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredConditions, setFilteredConditions] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchConditions();
@@ -34,7 +38,6 @@ const IllnessAndComplicationsPage = () => {
       const data = await getAllDiseases();
       if (data) {
         setConditions(data);
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
       }
     } catch (error) {
       console.error("Error fetching conditions:", error);
@@ -43,6 +46,15 @@ const IllnessAndComplicationsPage = () => {
       setLoading(false);
     }
   };
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredConditions.length > 0
+      ? filteredConditions
+      : conditions;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [conditions, filteredConditions, searchQuery, itemsPerPage]);
 
   const scrollContainerRef = useRef(null);
 
@@ -78,6 +90,10 @@ const IllnessAndComplicationsPage = () => {
   router.push(`/categories/illness_and_complications/form?id=${item.id}`);
 };
 
+  const handleViewDetails = (item) => {
+    router.push(`/categories/illness_and_complications/details?id=${item.id}`);
+  };
+
   const handleView = (item) => {
     setViewDetails(item); // updates state
     setShowDetailsModal(true); // shows the modal
@@ -101,10 +117,49 @@ const IllnessAndComplicationsPage = () => {
     }
   };
 
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredConditions([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = conditions.filter((condition) =>
+        condition.condition_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredConditions(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, conditions]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectCondition = (condition) => {
+    setSearchQuery(condition.condition_name);
+    setShowDropdown(false);
+    // Scroll to the condition in the table
+    const conditionIndex = conditions.findIndex((c) => c.id === condition.id);
+    if (conditionIndex !== -1) {
+      const pageNumber = Math.floor(conditionIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return conditions.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredConditions.length > 0
+      ? filteredConditions
+      : conditions;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const truncateText = (text, maxLength = 100) => {
@@ -151,17 +206,55 @@ const IllnessAndComplicationsPage = () => {
         className="overflow-hidden relative"
         bodyClass="p-0"
         headerslot={
-          <>
-            {" "}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search Filter */}
+            <div className="relative" ref={searchRef}>
+              <div className="relative">
+                <Icon
+                  icon="heroicons:magnifying-glass"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  width="18"
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery && setShowDropdown(true)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                />
+              </div>
+              {/* Autocomplete Dropdown */}
+              {showDropdown && filteredConditions.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredConditions.map((condition) => (
+                    <div
+                      key={condition.id}
+                      onClick={() => handleSelectCondition(condition)}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                    >
+                      {condition.condition_name}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showDropdown && searchQuery && filteredConditions.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                    No results found
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               text="+ Add New Disease"
-              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+              className="btn-dark max-sm:text-xs font-normal btn-sm"
               iconClass="text-lg"
               onClick={() =>
                 router.push("/categories/illness_and_complications/form")
               }
             />
-          </>
+          </div>
         }
       >
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
@@ -200,8 +293,13 @@ const IllnessAndComplicationsPage = () => {
                   key={condition.id}
                   className="hover:bg-gray-50 dark:hover:bg-slate-700"
                 >
-                  <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.condition_name === '' ? 'text-center' : ''}`}>
-                    {condition.condition_name || "N/A"}
+                  <td className={`px-6 py-4 text-sm max-w-[150px] align-top ${condition.condition_name === '' ? 'text-center' : ''}`}>
+                    <button
+                      onClick={() => handleViewDetails(condition)}
+                      className="text-secondary-800 dark:text-green-400 hover:text-secondary-600 dark:hover:text-green-300 hover:underline text-left font-medium"
+                    >
+                      {condition.condition_name || "N/A"}
+                    </button>
                   </td>
                   <td className={`px-6 py-4 text-sm text-gray-500 max-w-[150px] dark:text-slate-200 align-top ${condition.about === '' ? 'text-center' : ''}`}>
                     <HtmlRenderer
@@ -238,13 +336,6 @@ const IllnessAndComplicationsPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
                     <div className="flex justify-center gap-2">
-                      <Button
-                        icon="lets-icons:eye"
-                        iconClass="text-blue-500 text-lg"
-                        className="p-0 bg-transparent border-none"
-                        onClick={() => handleView(condition)}
-                        tooltip="View Details"
-                      />
                       <Button
                         icon="heroicons-outline:pencil-alt"
                         iconClass="text-green-500 text-lg"
@@ -284,7 +375,21 @@ const IllnessAndComplicationsPage = () => {
           </table>
         </div>
         {totalPages > 0 && (
-          <div className="flex justify-end items-center m-4">
+          <div className="flex justify-between items-center m-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+            </div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

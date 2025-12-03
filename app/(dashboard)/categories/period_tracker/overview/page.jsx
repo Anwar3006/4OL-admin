@@ -28,11 +28,15 @@ const PeriodsTrackerPage = () => {
   const [showFertileWindow, setShowFertileWindow] = useState(false);
   const [showFlowTypes, setShowFlowTypes] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
-  const itemsPerPage = 30;
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchLogs();
@@ -45,13 +49,57 @@ const PeriodsTrackerPage = () => {
       if (data) {
         setLogs(data);
         console.log(JSON.stringify(data, null, 2));
-
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
       }
     } catch (error) {
       console.error("Error fetching logs:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredLogs([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = logs.filter((log) =>
+        log.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.period_start_date?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredLogs(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, logs]);
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredLogs.length > 0
+      ? filteredLogs
+      : logs;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [logs, filteredLogs, searchQuery, itemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectLog = (log) => {
+    setSearchQuery(log.user?.email || log.period_start_date);
+    setShowDropdown(false);
+    // Scroll to the log in the table
+    const logIndex = logs.findIndex((l) => l.id === log.id);
+    if (logIndex !== -1) {
+      const pageNumber = Math.floor(logIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
     }
   };
 
@@ -82,10 +130,17 @@ const PeriodsTrackerPage = () => {
     router.push(`/categories/period_tracker/create?item=${encodedItem}`);
   };
 
+  const handleViewDetails = (item) => {
+    router.push(`/categories/period_tracker/details?id=${item.id}`);
+  };
+
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return logs.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredLogs.length > 0
+      ? filteredLogs
+      : logs;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const deleteItem = async (id) => {
@@ -117,14 +172,54 @@ const PeriodsTrackerPage = () => {
           className=" overflow-hidden"
           bodyClass="p-0"
           headerslot={
-            <>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Search Filter */}
+              <div className="relative" ref={searchRef}>
+                <div className="relative">
+                  <Icon
+                    icon="heroicons:magnifying-glass"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    width="18"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search by email or date..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => searchQuery && setShowDropdown(true)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                  />
+                </div>
+                {/* Autocomplete Dropdown */}
+                {showDropdown && filteredLogs.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredLogs.slice(0, 10).map((log) => (
+                      <div
+                        key={log.id}
+                        onClick={() => handleSelectLog(log)}
+                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                      >
+                        <div>{log.user?.email || "Unknown User"}</div>
+                        <div className="text-xs text-gray-500">{log.period_start_date}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && searchQuery && filteredLogs.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                    <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                      No results found
+                    </div>
+                  </div>
+                )}
+              </div>
               <Button
                 text="Add Period Tracker"
                 icon="heroicons-outline:plus"
-                className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+                className="btn-dark max-sm:text-xs font-normal btn-sm"
                 onClick={() => router.push("/categories/period_tracker/create")}
               />
-            </>
+            </div>
           }
         >
           {/* <div className="absolute top-2 right-2 justify-end p-4">
@@ -187,7 +282,7 @@ const PeriodsTrackerPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
-                {logs.map((log) => (
+                {getCurrentPageData().map((log) => (
                   <tr key={log.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                       <div className="flex items-center">
@@ -217,8 +312,13 @@ const PeriodsTrackerPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.user_profiles?.email}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleViewDetails(log)}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left font-medium"
+                      >
+                        {log.user_profiles?.email}
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.phone_number}
@@ -693,7 +793,21 @@ const PeriodsTrackerPage = () => {
         </Modal>
       </div>
       {totalPages > 0 && (
-        <div className="flex justify-end items-center m-4">
+        <div className="flex justify-between items-center m-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+          </div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
