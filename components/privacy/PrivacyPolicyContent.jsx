@@ -36,7 +36,7 @@ const PrivacyPolicyContent = () => {
       >
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-center sm:text-left text-slate-900 dark:text-white">
-            4 Our Life - Privacy Policy--
+            4 Our Life - Privacy Policy
           </h1>
         </div>
 
