@@ -269,17 +269,17 @@ export const menuItems = [
       // },
     ],
   },
-  {
-    title: "Privacy Policy",
-    isHide: false,
-    icon: "mdi:shield-account-outline",
-    child: [
-      {
-        childtitle: "Overview",
-        childlink: "privacy-policy/overview",
-      },
-    ],
-  },
+  // {
+  //   title: "Privacy Policy",
+  //   isHide: false,
+  //   icon: "mdi:shield-account-outline",
+  //   child: [
+  //     {
+  //       childtitle: "Overview",
+  //       childlink: "privacy-policy/overview",
+  //     },
+  //   ],
+  // },
   {
     title: "Admins",
     isHide: false,

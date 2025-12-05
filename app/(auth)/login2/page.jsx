@@ -40,6 +40,13 @@ const Login2 = () => {
                 </div> */}
               </div>
               <div className="auth-footer text-center">
+                <Link
+                  href="/privacy-policy"
+                  className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-transparent text-sm font-semibold text-[#56ce84] underline-offset-2 hover:underline"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </Link>
                 Copyright 2024, 4-Our Life All Rights Reserved.
               </div>
             </div>
