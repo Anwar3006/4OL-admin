@@ -99,8 +99,7 @@ const LoginForm = () => {
         return;
       }
 
-      if (userData.is_deleted === true
-      ) {
+      if (userData.is_deleted === true) {
         toast.error("Your account has been deleted. Please contact support.", {
           position: "top-right",
           autoClose: 1500,
