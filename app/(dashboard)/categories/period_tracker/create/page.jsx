@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Select from "react-select";
 import Modal from "@/components/ui/Modal";
+import useDarkMode from "@/hooks/useDarkMode";
 import {
   getUsersNotInTrackerLogs,
   createPeriodTrackerLog,
@@ -15,6 +16,7 @@ import "react-calendar/dist/Calendar.css";
 import { useSearchParams } from "next/navigation";
 
 const PeriodTrackerForm = () => {
+  const [isDark] = useDarkMode();
   const searchParams = useSearchParams();
   const itemData = searchParams.get("item");
   const item = itemData ? JSON.parse(decodeURIComponent(itemData)) : null;
@@ -169,6 +171,25 @@ const PeriodTrackerForm = () => {
   };
 
   const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: isDark ? '#1e293b' : '#ffffff',
+      borderColor: state.isFocused 
+        ? (isDark ? '#60a5fa' : '#3b82f6')
+        : (isDark ? '#475569' : '#d1d5db'),
+      color: isDark ? '#e2e8f0' : '#374151',
+      '&:hover': {
+        borderColor: isDark ? '#60a5fa' : '#3b82f6',
+      },
+      boxShadow: state.isFocused 
+        ? (isDark ? '0 0 0 1px #60a5fa' : '0 0 0 1px #3b82f6')
+        : 'none',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: isDark ? '#1e293b' : '#ffffff',
+      border: isDark ? '1px solid #475569' : '1px solid #d1d5db',
+    }),
     option: (provided, state) => ({
       ...provided,
       display: "flex",
@@ -176,18 +197,25 @@ const PeriodTrackerForm = () => {
       backgroundColor: state.isSelected
         ? "#56ce84"
         : state.isFocused
-        ? "#f0f0f0"
-        : provided.backgroundColor,
+        ? (isDark ? '#374151' : '#f3f4f6')
+        : (isDark ? '#1e293b' : '#ffffff'),
       color: state.isSelected
-        ? "#FFF"
-        : state.isFocused
-        ? "#000"
-        : provided.color,
+        ? "#ffffff"
+        : (isDark ? '#e2e8f0' : '#374151'),
     }),
     singleValue: (provided) => ({
       ...provided,
       display: "flex",
       alignItems: "center",
+      color: isDark ? '#e2e8f0' : '#374151',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: isDark ? '#94a3b8' : '#9ca3af',
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: isDark ? '#e2e8f0' : '#374151',
     }),
   };
 
@@ -252,7 +280,7 @@ const PeriodTrackerForm = () => {
       >
         {/* Select User */}
         <div className="flex flex-col">
-          <label className="block font-medium text-gray-700">Select User</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Select User</label>
           <Select
             options={users}
             label={"Select a user"}
@@ -273,12 +301,12 @@ const PeriodTrackerForm = () => {
             isDisabled={item ? true : false}
           />
           {errors.selectedUser && (
-            <p className="text-red-500 text-xs mt-1">{errors.selectedUser}</p>
+            <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.selectedUser}</p>
           )}
         </div>
         {/* Cycle Length Dropdown */}
         <div className="flex flex-col">
-          <label className="block font-medium text-gray-700">Cycle Length</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Cycle Length</label>
           <Select
             className="bg-white dark:bg-slate-800"
             options={cycleOptions}
@@ -297,12 +325,12 @@ const PeriodTrackerForm = () => {
             }}
           />
           {errors.cycleLength && (
-            <p className="text-red-500 text-xs mt-1">{errors.cycleLength}</p>
+            <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.cycleLength}</p>
           )}
         </div>
         {/* Period Length Dropdown */}
         <div className="flex flex-col">
-          <label className="block font-medium text-gray-700">Period Length</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Period Length</label>
           <Select
             options={periodOptions}
             value={periodOptions.find((opt) => opt.value === periodLength)}
@@ -320,12 +348,12 @@ const PeriodTrackerForm = () => {
             }}
           />
           {errors.periodLength && (
-            <p className="text-red-500 text-xs mt-1">{errors.periodLength}</p>
+            <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.periodLength}</p>
           )}
         </div>
         {/* Consistency Dropdown */}
         <div className="flex flex-col">
-          <label className="block font-medium text-gray-700">Are periods consistent?</label>
+          <label className="block font-medium text-gray-700 dark:text-slate-200">Are periods consistent?</label>
           <Select
             options={consistencyOptions}
             value={consistencyOptions.find((opt) => opt.value === consistent)}
@@ -343,13 +371,13 @@ const PeriodTrackerForm = () => {
             }}
           />
           {errors.consistent && (
-            <p className="text-red-500 text-xs mt-1">{errors.consistent}</p>
+            <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.consistent}</p>
           )}
         </div>
         {/* Start Date Input */}
         <div className="flex gap-2">
           <div className="flex flex-col flex-1">
-            <label className="block font-medium text-gray-700">Period Start</label>
+            <label className="block font-medium text-gray-700 dark:text-slate-200">Period Start</label>
             <input
               type="date"
               value={startDate}
@@ -357,20 +385,20 @@ const PeriodTrackerForm = () => {
                 setStartDate(e.target.value);
                 setErrors((prev) => ({ ...prev, startDate: null }));
               }}
-              className={`p-2 border rounded ${
-                errors.startDate ? "border-red-500" : ""
+              className={`p-2 border rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-200 border-gray-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 ${
+                errors.startDate ? "border-red-500 dark:border-red-400" : ""
               }`}
             />
             {errors.startDate && (
-              <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>
+              <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.startDate}</p>
             )}
           </div>
           {/* Calculate Button */}
           <div className="flex flex-col flex-1">
-            <label className="block font-medium text-gray-700">Calculate Cycle</label>
+            <label className="block font-medium text-gray-700 dark:text-slate-200">Calculate Cycle</label>
             <button
               type="submit"
-              className="w-full md:w-full px-4 py-2 bg-[#56ce84] text-white rounded"
+              className="w-full md:w-full px-4 py-2 bg-[#56ce84] hover:bg-[#46b276] text-white rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[#56ce84] focus:ring-opacity-50"
             >
               Calculate
             </button>

@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
 import Loading from "@/components/Loading";
 import { toast } from "react-toastify";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function UserGroups() {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -161,9 +162,9 @@ export default function UserGroups() {
   }
 
   return (
-    <Card className="min-h-[80vh] bg-white mt-5" bodyClass="p-0">
+    <Card className="min-h-[70vh] mt-5" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-3 w-full">Notifications</h6>
+        <h6 className="md:mb-0 mb-3 w-full">User Group</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -180,8 +181,8 @@ export default function UserGroups() {
 
       <div className="overflow-x-auto  custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50 w-full">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800 w-full">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
               <th className="sm:px-6 px-2 sm:py-3 py-2">Title</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Description</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Region</th>
@@ -190,7 +191,15 @@ export default function UserGroups() {
               <th className="sm:px-6 px-2 sm:py-3 py-2 text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs capitalize">
+          <tbody className="bg-white dark:bg-slate-800 dark:text-slate-200 sm:text-sm divide-y divide-gray-200 text-xs capitalize">
+
+            {data.length === 0 && (
+              <tr>
+                <td colspan="6">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {data.map((item) => (
               <tr key={item.id} className="cursor-pointer">
                 <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">

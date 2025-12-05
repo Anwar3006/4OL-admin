@@ -9,6 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { supabase } from "@/app/utils/supabaseClient";
 import moment from "moment";
 import Checkbox from "@/components/ui/Checkbox";
+import { toast, ToastContainer } from "react-toastify";
 import { useSearchParams } from "next/navigation";
 
 const SendNotifications = () => {
@@ -153,7 +154,6 @@ const SendNotifications = () => {
     }
 
     const { data: users, error } = await query;
-    console.log("users", users);
 
     const response = await fetch("/api/send-notifications", {
       method: "POST",
@@ -195,10 +195,11 @@ const SendNotifications = () => {
       },
     ]);
 
+    toast.success("Notification sent successfully");
+
     if (error) {
       console.error("Error fetching users:", error);
-    } else {
-      console.log("Filtered Users:", users); // Debugging output
+    } else {// Debugging output
       setUser(users);
     }
   };
@@ -238,52 +239,53 @@ const SendNotifications = () => {
   return (
     <div>
       <form onSubmit={handleSubmit(handleSendNotification)}>
-        <Card title="Send Notification">
+        <ToastContainer />
+        <Card title="Send Notification" className="mt-5 ">
           <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
-            <div className="">
+            <div className="text-sm">
               <div>
                 <div className="lg:col-span-2 col-span-1">
-                  <label className="block text-md font-medium text-gray-700">
+                  <label className="block text-sm mb-2 font-medium text-gray-700 dark:text-slate-200">
                     Title
                   </label>
                   <input
                     type="text"
                     placeholder="Enter Your Title"
                     {...register("title")}
-                    className={`w-full p-2 border rounded-sm focus:ring-black-300 ${
+                    className={`w-full dark:bg-slate-800 p-2 text-sm border rounded-md focus:ring-black-300 ${
                       loading ? "border-gray-100" : "border-gray-300"
                     }`}
                     disabled={loading}
                   />
                   {errors.title && (
-                    <p className="text-red-500 text-sm mb-2">
+                    <p className="text-red-500 mt-1 text-sm mb-2">
                       *{errors?.title?.message}
                     </p>
                   )}
                 </div>
                 <div className="lg:col-span-2 col-span-1">
-                  <label className="block text-md font-medium text-gray-700 mt-2">
+                  <label className="block text-sm my-2 font-medium text-gray-700 dark:text-slate-200 mt-2">
                     Description
                   </label>
                   <textarea
                     type="text"
-                    placeholder="Enter Your description"
+                    placeholder="Enter Your Description"
                     {...register("description")}
                     rows={2}
-                    className={`w-full p-2 border rounded-sm focus:ring-black-300 resize-none ${
+                    className={`w-full p-2 border dark:bg-slate-800 rounded-md focus:ring-black-300 resize-none ${
                       loading ? "border-gray-100" : "border-gray-300"
                     }`}
                     disabled={loading}
                   />
                   {errors.description && (
-                    <p className="text-red-500 text-sm">
+                    <p className="text-red-500 mt-1 text-sm">
                       *{errors?.description?.message}
                     </p>
                   )}
                 </div>
               </div>
               <div>
-                <h4 className="text-lg my-4">Targeting Options</h4>
+                <h4 className="text-base my-4">Targeting Options</h4>
                 <Checkbox
                   activeClass="ring-black-500 bg-black-500"
                   label="Period tracker notifications enabled?"
@@ -291,13 +293,13 @@ const SendNotifications = () => {
                   {...register("isTrackerNotification")}
                   onChange={handleCheckboxChange}
                 />
-                <div className="flex flex-col">
+                <div className="flex flex-col my-2">
                   {/* Region Selection */}
-                  <span className="text-md font-bold">Select Region</span>
+                  <span className="text-sm mb-2">Select Region</span>
                   <select
                     {...register("region")}
                     onChange={handleSelectChange("region")}
-                    className="border rounded-sm px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={isTrackerNotification && loading}
                   >
                     <option value="">Select Region</option>
@@ -308,17 +310,17 @@ const SendNotifications = () => {
                     ))}
                   </select>
                   {errors.region && (
-                    <p className="text-red-500 text-sm mb-2">
+                    <p className="text-red-500 mt-1 text-sm mb-2">
                       *{errors.region.message}
                     </p>
                   )}
 
                   {/* Gender Selection */}
-                  <span className="text-md font-bold mt-2">Select Gender</span>
+                  <span className="text-sm my-2">Select Gender</span>
                   <select
                     {...register("sex")}
                     onChange={handleSelectChange("sex")}
-                    className="border rounded-sm px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Gender</option>
@@ -329,17 +331,17 @@ const SendNotifications = () => {
                     ))}
                   </select>
                   {errors.sex && (
-                    <p className="text-red-500 text-sm mb-2">
+                    <p className="text-red-500 mt-1 text-sm mb-2">
                       *{errors.sex.message}
                     </p>
                   )}
 
                   {/* Age Range Selection */}
-                  <span className="text-md font-bold mt-2">Select Age</span>
+                  <span className="text-sm my-2">Select Age</span>
                   <select
                     {...register("age")}
                     onChange={handleSelectChange("age")}
-                    className="border rounded-sm px-3 py-2 w-full"
+                    className="border dark:bg-slate-800 rounded-md px-3 py-2 w-full"
                     disabled={loading && isTrackerNotification}
                   >
                     <option value="">Select Age</option>
@@ -350,7 +352,7 @@ const SendNotifications = () => {
                     ))}
                   </select>
                   {errors.age && (
-                    <p className="text-red-500 text-sm">
+                    <p className="text-red-500 mt-1 text-sm">
                       *{errors.age.message}
                     </p>
                   )}
@@ -364,7 +366,7 @@ const SendNotifications = () => {
             ) : (
               <Button
                 text="Send Notification"
-                className="btn-dark"
+                className="btn-dark dark:bg-green-500"
                 type="submit"
                 disabled={loading}
               />

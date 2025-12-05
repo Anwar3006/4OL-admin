@@ -9,6 +9,7 @@ import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
 import Switch from "@/components/ui/Switch";
 import Loading from "@/app/loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function RolesAndPermissions() {
   const [data, setData] = useState([]);
@@ -23,22 +24,21 @@ export default function RolesAndPermissions() {
     const fetchData = async () => {
       try {
         const { data, error, count } = await supabase
-        .from("user_profiles")
-        .select("*", { count: "exact" })
-        .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
+          .from("user_profiles")
+          .select("*", { count: "exact" })
+          .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setTotalPages(Math.ceil(count / pageSize));
-      }
+        if (error) {
+          console.error("Error fetching data:", error);
+        } else {
+          setData(data);
+          setTotalPages(Math.ceil(count / pageSize));
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
-   
     };
 
     fetchData();
@@ -114,10 +114,7 @@ export default function RolesAndPermissions() {
   };
 
   return (
-    <Card className="min-h-[80vh] bg-white">
-      {loading && (
-        <Loading />
-      )}
+    <Card className="min-h-[70vh] ">
       <div className="flex max-lg:flex-col pb-6 items-center w-full">
         <h6 className="md:mb-0 mb-3 w-full">Roles & Permissions</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
@@ -136,8 +133,8 @@ export default function RolesAndPermissions() {
 
       <div className="overflow-x-auto  custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left sm:text-sm text-xs font-medium text-gray-500 dark:text-slate-200">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Role</th>
@@ -148,7 +145,15 @@ export default function RolesAndPermissions() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
+            {loading && <Loading />}
+            {filteredData.length === 0 && (
+              <tr>
+                <td colSpan="7" className="text-center py-10">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {filteredData.map((item) => (
               <tr
                 key={item.id}
@@ -157,34 +162,34 @@ export default function RolesAndPermissions() {
                 }`}
               >
                 {/* <div onClick={() => handleView(item.id)} className="cursor-pointer"> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap font-semibold text-secondary-800 dark:text-slate-200">
                   {item.first_name} <span>{item.last_name}</span>
                 </td>
-                <td className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap `}>
+                <td
+                  className={`sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200`}
+                >
                   {item.role === "Admin" ? "Admin" : " "}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap lowercase dark:text-slate-200">
                   {item.email || "Null"}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   {item.phone_number}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   {formatDate(item.created_at)}
                 </td>
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   <Switch
                     value={item.status === true} // Assuming 'enabled' means the user can log in
-                    onChange={() =>
-                      toggleStatus(item.id, item.status === true)
-                    }
+                    onChange={() => toggleStatus(item.id, item.status === true)}
                     activeClass="bg-green-500"
                     labelClass="-ml-2 mr-2 sm:text-sm text-xs text-gray-500"
                   />
                 </td>
 
                 {/* </div> */}
-                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
+                <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap dark:text-slate-200">
                   <div className="flex space-x-2">
                     <Button
                       icon="lets-icons:eye"

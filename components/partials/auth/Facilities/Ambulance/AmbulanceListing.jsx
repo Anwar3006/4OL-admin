@@ -6,6 +6,8 @@ import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function AmbulanceListing() {
   const [data, setData] = useState([]); // State to hold fetched data
@@ -14,32 +16,39 @@ export default function AmbulanceListing() {
   const [pageSize] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from Supabase on component mount and when page changes
   useEffect(() => {
     const fetchData = async () => {
-      const from = pageIndex * pageSize;
-      const to = from + pageSize - 1;
+      try {
+        setLoading(true);
+        const from = pageIndex * pageSize;
+        const to = from + pageSize - 1;
 
-      const {
-        data: fetchedData,
-        error,
-        count,
-      } = await supabase
-        .from("healthcare_profiles")
-        .select("*", { count: "exact" })
-        .range(from, to)
-        .eq("status", "Approved")
-        .eq("facility_type", "Ambulance");
+        const {
+          data: fetchedData,
+          error,
+          count,
+        } = await supabase
+          .from("healthcare_profiles")
+          .select("*", { count: "exact" })
+          .range(from, to)
+          .eq("status", "Approved")
+          .eq("facility_type", "Ambulance");
 
-      if (error) {
+        if (error) {
+          throw error;
+        }
+
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
+      } catch (error) {
         console.error("Error fetching data:", error);
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      setData(fetchedData || []);
-      setTotalPages(Math.ceil(count / pageSize));
-    };
+    }
 
     fetchData();
   }, [pageIndex, pageSize]);
@@ -88,9 +97,9 @@ export default function AmbulanceListing() {
   };
 
   return (
-    <Card className=" bg-white" bodyClass="p-0">
+    <Card className="" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-0 w-full">Ambulance</h6>
+        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">Ambulance</h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -107,8 +116,8 @@ export default function AmbulanceListing() {
 
       <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
               <th className="px-6 py-3">Type</th>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Region</th>
@@ -117,14 +126,14 @@ export default function AmbulanceListing() {
               <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 text-xs sm:text-sm">
             {filteredData.length === 0 && (
               <tr>
                 <td
                   colSpan="6"
-                  className="text-center py-10 text-base text-gray-500"
+                  className="text-center py-10 text-base text-gray-500 dark:text-gray-100"
                 >
-                  No Data Available
+                 <NoDataFound />
                 </td>
               </tr>
             )}
@@ -132,9 +141,9 @@ export default function AmbulanceListing() {
               <tr
                 key={item.id}
                 onClick={() => handleView(item.id)}
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800"
               >
-                <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 capitalize">
                   {item.facility_type}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500 capitalize">
@@ -184,12 +193,22 @@ export default function AmbulanceListing() {
                 </td>
               </tr>
             ))}
+
+            {loading && (
+              <tr>
+                <td colSpan="6" className="text-center py-10">
+                  <div className="text-center py-6 text-gray-500 dark:text-slate-200 min-h-[50vh] justify-items-center align-middle">
+                    <Loading />
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-end p-4 border-t bg-white z-10">
+      <div className="flex justify-end p-4 border-t bg-white dark:bg-slate-800 z-10">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Social from "@/components/partials/auth/social";
-import LoginForm from "@/components/partials/auth//login-form";
+import LoginForm from "@/components/partials/auth/login-form";
 import useDarkMode from "@/hooks/useDarkMode";
 
 const Login3 = () => {

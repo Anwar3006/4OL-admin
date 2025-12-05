@@ -83,8 +83,8 @@ const SendNotificationPage = () => {
   };
 
   return (
-    <div>
-      <Card title="Send Notification">
+    <div className="mt-5">
+      <Card title="Send Notification" className="mt-5">
         <div className="mb-2">
           {/* <p className="text-gray-400 text-sm">
             {" "}

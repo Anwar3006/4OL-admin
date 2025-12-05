@@ -1,5 +1,4 @@
 "use client";
-import Card from "@/components/period_tracker/Card";
 import Button from "@/components/ui/Button";
 import Accordion from "@/components/ui/Accordion";
 import getFaqs from "@/services/getFaqs";
@@ -8,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
 import Modal from "@/components/ui/Modal";
+import Card from "@/components/ui/Card";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 export default function FaqPage() {
   const [faqs, setFaqs] = useState([]);
@@ -138,31 +140,30 @@ export default function FaqPage() {
   return (
     <div className="">
       <ToastContainer />
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <Card
           title="FAQs"
-          className="bg-white dark:bg-slate-800 overflow-hidden min-h-[80vh]"
+          className=" overflow-hidden min-h-[70vh]"
           bodyClass=""
+          headerslot={
+            <>
+              <Button
+                text="Add new FAQ"
+                icon="heroicons-outline:plus"
+                className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
+                onClick={openAddModal}
+              />
+            </>
+          }
         >
-          <div className="absolute top-2 right-2 justify-end p-4">
-            <Button
-              text="Add new FAQ"
-              icon="heroicons-outline:plus"
-              className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
-              onClick={openAddModal}
-            />
-          </div>
-
-          <div className="mt-8">
+          <div className="p-5">
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#56ce84]"></div>
+                <Loading />
               </div>
             ) : faqs.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-slate-500">
-                  No FAQs found. Create your first one!
-                </p>
+                <NoDataFound />
               </div>
             ) : (
               faqs.map((faq) => (
@@ -172,6 +173,7 @@ export default function FaqPage() {
                   answer={faq.answer}
                   onEdit={() => handleEdit(faq)}
                   onDelete={() => handleDelete(faq)}
+                  questionClassName="text-sm dark:text-slate-200"
                 />
               ))
             )}
@@ -191,12 +193,12 @@ export default function FaqPage() {
           <>
             <Button
               text="Clear"
-              className="bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200"
+              className="bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
               onClick={handleClearForm}
             />
             <Button
               text={isEditing ? "Update FAQ" : "Add FAQ"}
-              className="bg-[#56ce84] text-white hover:bg-[#46b276]"
+              className="bg-[#56ce84] text-white hover:bg-[#46b276] dark:bg-[#56ce84] dark:text-white dark:hover:bg-[#46b276]"
               onClick={handleAddFaq}
             />
           </>
@@ -204,7 +206,7 @@ export default function FaqPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">
               Question
             </label>
             <textarea

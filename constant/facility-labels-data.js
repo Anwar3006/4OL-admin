@@ -42,3 +42,11 @@ export const reviewsFields = [
     { label: "Review", key: "review" },
     { label: "Created At", key: "created_at", format: (v) => formatDate(v) },
   ];
+
+export const userDetailsFields = [
+    { label: "Email", key: "email" },
+    { label: "Phone", key: "phone_number" },
+    { label: "Gender", key: "sex" },
+    { label: "Date of Birth", key: "dob" },
+    { label: "Created At", key: "created_at", format: (v) => formatDate(v) },
+]

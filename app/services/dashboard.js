@@ -205,35 +205,30 @@ export const fetchTotalUsers = async (
   loadCallback();
 
   try {
-    // Fetch the count of all users and count males and females
-    const { data, error } = await supabase.from("user_profiles").select("sex");
+    // Fetch all users except Super Admin
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, role");
+
+    console.log("Supabase user_profiles data:", data, error);
 
     if (error) {
       errorCallback(error);
       return;
     }
 
-    // Initialize counters for males and females
-    let males = 0;
-    let females = 0;
+    if (!Array.isArray(data)) {
+      errorCallback("Supabase returned non-array data");
+      return;
+    }
 
-    // Iterate through the data and count the males and females
-    data.forEach((user) => {
-      if (user.sex === "Male") {
-        males++;
-      } else if (user.sex === "Female") {
-        females++;
-      }
-    });
-
-    // Total users count is the sum of males and females
-    const totalUsers = males + females;
+    // Filter out Super Admin users
+    const filteredUsers = data.filter(user => user.role !== "Super Admin");
+    const totalUsers = filteredUsers.length;
 
     // Construct the result object
     const result = {
       totalUsers,
-      males,
-      females,
     };
 
     // Call the successCallback with the result object
@@ -242,6 +237,53 @@ export const fetchTotalUsers = async (
     errorCallback(err);
   }
 };
+
+// export const fetchTotalUsers = async (
+//   loadCallback,
+//   successCallback,
+//   errorCallback
+// ) => {
+//   loadCallback();
+
+//   try {
+//     // Fetch the count of all users and count males and females
+//     const { data, error } = await supabase.from("user_profiles").select("sex");
+//         console.log("Supabase user_profiles data:", data, error);
+
+//     if (error) {
+//       errorCallback(error);
+//       return;
+//     }
+
+//     // Initialize counters for males and females
+//     let males = 0;
+//     let females = 0;
+
+//     // Iterate through the data and count the males and females
+//     data.forEach((user) => {
+//       if (user.sex === "Male") {
+//         males++;
+//       } else if (user.sex === "Female") {
+//         females++;
+//       }
+//     });
+
+//     // Total users count is the sum of males and females
+//     const totalUsers = males + females;
+
+//     // Construct the result object
+//     const result = {
+//       totalUsers,
+//       males,
+//       females,
+//     };
+
+//     // Call the successCallback with the result object
+//     successCallback(result);
+//   } catch (err) {
+//     errorCallback(err);
+//   }
+// };
 
 const groupDataByDateAndGenderMAU = (data) => {
   // Initialize an empty object to store the grouped data
@@ -309,4 +351,896 @@ const groupDataByDateAndOS = (data) => {
   //     { date: '2024-01-03', male: 180, female: 160 },
   //     { date: '2024-01-04', male: 170, female: 150 },
   // ]
+};
+
+// New function to fetch total facilities count
+export const fetchTotalFacilities = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all healthcare facilities
+    const { data, error } = await supabase
+      .from("healthcare_profiles")
+      .select("id, status");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total facilities
+    const totalFacilities = data?.length || 0;
+
+    // Count approved and pending facilities
+    let approvedCount = 0;
+    let pendingCount = 0;
+
+    data.forEach((facility) => {
+      if (facility.status === "Approved") {
+        approvedCount++;
+      } else if (facility.status === "Pending") {
+        pendingCount++;
+      }
+    });
+
+    const result = {
+      totalFacilities,
+      approvedCount,
+      pendingCount,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total specialists count
+export const fetchTotalSpecialists = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all specialists from illness_and_conditions table
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, specialist_to_contact");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total specialists (conditions that have specialist_to_contact)
+    let totalSpecialists = 0;
+    let uniqueSpecialists = new Set();
+
+    data.forEach((condition) => {
+      if (condition.specialist_to_contact) {
+        totalSpecialists++;
+        uniqueSpecialists.add(condition.specialist_to_contact);
+      }
+    });
+
+    const result = {
+      totalSpecialists: uniqueSpecialists.size, // Count unique specialists
+      totalConditions: totalSpecialists, // Total conditions with specialists
+    };
+
+    successCallback(result);
+    console.log("fetchTotalSpecialists result", result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total facility visits count (placeholder since table doesn't exist)
+export const fetchTotalFacilityVisits = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Since facility_visits table doesn't exist, we'll return a placeholder
+    // You can replace this with actual logic when you have the table
+    const result = {
+      totalVisits: 0,
+      currentMonthVisits: 0,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total diseases and conditions count
+export const fetchTotalDiseasesAndConditions = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all diseases and conditions
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total diseases and conditions
+    const totalDiseasesAndConditions = data?.length || 0;
+
+    const result = {
+      totalDiseasesAndConditions,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total symptoms count
+export const fetchTotalSymptoms = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all symptoms
+    const { data, error } = await supabase
+      .from("symptoms")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total symptoms
+    const totalSymptoms = data?.length || 0;
+
+    const result = {
+      totalSymptoms,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total healthy living count
+export const fetchTotalHealthyLiving = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch the count of all healthy living articles
+    const { data, error } = await supabase
+      .from("healthy_living")
+      .select("id");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total healthy living articles
+    const totalHealthyLiving = data?.length || 0;
+
+    const result = {
+      totalHealthyLiving,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total online users count
+export const fetchTotalOnlineUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch users who have been active in the last 24 hours
+    const last24Hours = moment().subtract(24, "hours").valueOf();
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, last_activity, sex")
+      .gte("last_activity", last24Hours.toString());
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total online users by gender
+    let totalOnlineUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((user) => {
+      totalOnlineUsers++;
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
+      }
+    });
+
+    const result = {
+      totalOnlineUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total medication reminder users count
+export const fetchTotalMedicationReminderUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch users who have medication reminders from the medication_reminders table
+    const { data, error } = await supabase
+      .from("medication_reminders")
+      .select(`
+        id,
+        user_id,
+        user_profiles!inner(sex)
+      `);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count unique users who have medication reminders by gender
+    const uniqueUsers = new Set();
+    let totalMedicationReminderUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((reminder) => {
+      if (!uniqueUsers.has(reminder.user_id)) {
+        uniqueUsers.add(reminder.user_id);
+        totalMedicationReminderUsers++;
+        
+        if (reminder.user_profiles?.sex === "Male") {
+          males++;
+        } else if (reminder.user_profiles?.sex === "Female") {
+          females++;
+        }
+      }
+    });
+
+    const result = {
+      totalMedicationReminderUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch total period tracker users count
+export const fetchTotalPeriodTrackerUsers = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch total count of tracker logs
+    const { data, error } = await supabase
+      .from("tracker_logs")
+      .select("id", { count: "exact" });
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Get the total count of tracker logs
+    const totalPeriodTrackerUsers = data?.length || 0;
+
+    const result = {
+      totalPeriodTrackerUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// New function to fetch marketing breakdown by banner types from banners_ads table
+export const fetchTotalMarketing = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    // Fetch all banners with their types
+    const { data, error } = await supabase
+      .from("banners_ads")
+      .select("id, banner_type");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count banners by type
+    const bannerTypeCounts = {};
+    data.forEach((banner) => {
+      const type = banner.banner_type || "unknown";
+      bannerTypeCounts[type] = (bannerTypeCounts[type] || 0) + 1;
+    });
+
+    // Get counts for each banner type
+    const health = bannerTypeCounts["health"] || 0;
+    const ads = bannerTypeCounts["ads"] || 0;
+    const event = bannerTypeCounts["event"] || 0;
+    const news = bannerTypeCounts["news"] || 0;
+    const marketing = bannerTypeCounts["marketing"] || 0;
+
+    const result = {
+      health,
+      ads,
+      event,
+      news,
+      marketing,
+      totalMarketing: Object.values(bannerTypeCounts).reduce((sum, count) => sum + count, 0),
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Time-based filtering functions
+
+// Helper function to get date range based on period for bigint fields (Unix timestamp)
+const getDateRangeBigint = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").valueOf().toString(),
+        end: now.endOf("day").valueOf().toString(),
+      };
+  }
+};
+
+// Helper function to get date range based on period for timestamptz fields
+const getDateRangeTimestamptz = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").toISOString(),
+        end: now.endOf("day").toISOString(),
+      };
+  }
+};
+
+// Helper function to get date range based on period for text date fields
+const getDateRangeText = (period) => {
+  const now = moment();
+  
+  switch (period) {
+    case "weekly":
+      return {
+        start: now.clone().subtract(7, "days").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    case "monthly":
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    case "yearly":
+      return {
+        start: now.clone().subtract(1, "year").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+    default:
+      return {
+        start: now.clone().subtract(1, "month").startOf("day").format("YYYY-MM-DD"),
+        end: now.endOf("day").format("YYYY-MM-DD"),
+      };
+  }
+};
+
+// Fetch downloads count by time period
+export const fetchDownloadsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeText(period); // downloads.install_date is text
+    
+    const { data, error } = await supabase
+      .from("downloads")
+      .select("*")
+      .gte("install_date", start)
+      .lte("install_date", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const downloadsCount = data?.length || 0;
+    successCallback(downloadsCount);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch users count by time period (users created in the period)
+export const fetchUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // user_profiles.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("sex, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    let males = 0;
+    let females = 0;
+
+    data.forEach((user) => {
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
+      }
+    });
+
+    const totalUsers = males + females;
+
+    const result = {
+      totalUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch facilities count by time period (facilities created in the period)
+export const fetchFacilitiesCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeTimestamptz(period); // healthcare_profiles.created_at is timestamptz
+    
+    const { data, error } = await supabase
+      .from("healthcare_profiles")
+      .select("id, status, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalFacilities = data?.length || 0;
+    let approvedCount = 0;
+    let pendingCount = 0;
+
+    data.forEach((facility) => {
+      if (facility.status === "Approved") {
+        approvedCount++;
+      } else if (facility.status === "Pending") {
+        pendingCount++;
+      }
+    });
+
+    const result = {
+      totalFacilities,
+      approvedCount,
+      pendingCount,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch specialists count by time period (specialists added in the period)
+export const fetchSpecialistsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // illness_and_conditions.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, specialist_to_contact, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    let totalSpecialists = 0;
+    let uniqueSpecialists = new Set();
+
+    data.forEach((condition) => {
+      if (condition.specialist_to_contact) {
+        totalSpecialists++;
+        uniqueSpecialists.add(condition.specialist_to_contact);
+      }
+    });
+
+    const result = {
+      totalSpecialists: uniqueSpecialists.size,
+      totalConditions: totalSpecialists,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch diseases and conditions count by time period
+export const fetchDiseasesCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // illness_and_conditions.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("illness_and_conditions")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalDiseasesAndConditions = data?.length || 0;
+
+    const result = {
+      totalDiseasesAndConditions,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch symptoms count by time period
+export const fetchSymptomsCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // symptoms.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("symptoms")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalSymptoms = data?.length || 0;
+
+    const result = {
+      totalSymptoms,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch healthy living count by time period
+export const fetchHealthyLivingCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // healthy_living.created_at is bigint
+    
+    const { data, error } = await supabase
+      .from("healthy_living")
+      .select("id, created_at")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    const totalHealthyLiving = data?.length || 0;
+
+    const result = {
+      totalHealthyLiving,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch online users count by time period (users active in the period)
+export const fetchOnlineUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // user_profiles.last_activity is likely bigint
+    
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, last_activity, sex")
+      .gte("last_activity", start)
+      .lte("last_activity", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count total online users by gender
+    let totalOnlineUsers = 0;
+    let males = 0;
+    let females = 0;
+
+    data.forEach((user) => {
+      totalOnlineUsers++;
+      if (user.sex === "Male") {
+        males++;
+      } else if (user.sex === "Female") {
+        females++;
+      }
+    });
+
+    const result = {
+      totalOnlineUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch medication reminder users count by time period
+export const fetchMedicationReminderUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeTimestamptz(period); // medication_reminders.start_date is timestamptz
+    
+    const { data, error } = await supabase
+      .from("medication_reminders")
+      .select(`
+        id,
+        user_id,
+        start_date,
+        user_profiles!inner(sex)
+      `)
+      .gte("start_date", start)
+      .lte("start_date", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Count unique users who have medication reminders within the time period by gender
+    const uniqueUsers = new Set();
+    let totalMedicationReminderUsers = 0;
+    let males = 0;
+    let females = 0;
+    
+    data.forEach((reminder) => {
+      if (!uniqueUsers.has(reminder.user_id)) {
+        uniqueUsers.add(reminder.user_id);
+        totalMedicationReminderUsers++;
+        
+        if (reminder.user_profiles?.sex === "Male") {
+          males++;
+        } else if (reminder.user_profiles?.sex === "Female") {
+          females++;
+        }
+      }
+    });
+
+    const result = {
+      totalMedicationReminderUsers,
+      males,
+      females,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
+// Fetch period tracker users count by time period
+export const fetchPeriodTrackerUsersCountByPeriod = async (
+  period,
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+
+  try {
+    const { start, end } = getDateRangeBigint(period); // Assuming tracker_logs has created_at as bigint
+    
+    const { data, error } = await supabase
+      .from("tracker_logs")
+      .select("id", { count: "exact" })
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    // Get the total count of tracker logs within the time period
+    const totalPeriodTrackerUsers = data?.length || 0;
+
+    const result = {
+      totalPeriodTrackerUsers,
+    };
+
+    successCallback(result);
+  } catch (err) {
+    errorCallback(err);
+  }
 };

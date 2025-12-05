@@ -41,7 +41,7 @@ const Notifications = () => {
     );
   }
   return (
-    <Card className="min-h-[80vh] bg-white">
+    <Card className="min-h-[70vh] bg-white">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
         <h1 className="text-xl font-bold">Notification Details</h1>
         <Button

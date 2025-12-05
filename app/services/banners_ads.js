@@ -185,17 +185,28 @@ export const archiveItem = async (
 };
 
 export const getExistingAdsDuration = async () => {
-  const { data: adsData, error: adsError } = await supabase
-    .from("banners_ads")
-    .select("duration")
-    .limit(1);
+  try {
+    const { data: adsData, error: adsError } = await supabase
+      .from("banners_ads")
+      .select("duration")
+      .limit(1);
 
-  if (adsError) {
-    console.error("ERROR GETTING DURATION: ", adsError);
-    return;
+    if (adsError) {
+      console.error("ERROR GETTING DURATION: ", adsError);
+      return null;
+    }
+
+    // Check if adsData exists and has at least one item
+    if (!adsData || adsData.length === 0) {
+      console.log("No ads found in database");
+      return null;
+    }
+
+    return adsData[0].duration;
+  } catch (error) {
+    console.error("Error in getExistingAdsDuration:", error);
+    return null;
   }
-
-  return adsData[0].duration;
 };
 
 export const updateBannerAdsDuration = async (

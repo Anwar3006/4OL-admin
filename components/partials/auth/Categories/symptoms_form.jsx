@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import TextinputNew from "@/components/ui/TextinputNew";
-import TextareaNew from "@/components/ui/TextareaNew";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import { add_symptoms } from "@/app/services/symptoms";
 import { useSearchParams } from "next/navigation";
-import { updateSymptom } from "@/app/services/symptoms-service";
+import { getSymptomById, updateSymptom } from "@/app/services/symptoms-service";
 import handleSuccess from "@/utils/handleSuccess";
 import { useRouter } from "next/navigation";
 import Fileinput from "@/components/ui/Fileinput";
@@ -18,30 +17,54 @@ import * as yup from "yup";
 
 export default function SymptomsForm() {
   const [loading, setLoading] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'types' or 'causes'
-  const [newTypes, setNewTypes] = useState([]);
-  const [newCauses, setNewCauses] = useState([]);
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("symptom");
-  const data = JSON.parse(itemParam) || {};
-  const router = useRouter();
+  const id = searchParams.get("id");
+  const [symptoms, setSymptoms] = useState(null);
+    const router = useRouter();
   const [imageFile, setImageFile] = useState(null); // raw file
   const [imageUrl, setImageUrl] = useState("");
 
-  const schema = yup.object().shape({
+  // ✅ Helper function to validate rich text content
+  const validateRichTextContent = (value) => {
+    if (!value) return false;
+    // Remove HTML tags and check if there's actual text content
+    const textContent = value.replace(/<[^>]*>/g, '').trim();
+    return textContent.length > 0;
+  };
+    const schema = yup.object().shape({
     symptom_name: yup.string().required("Symptom name is required"),
-    about: yup.string().required("About is required"),
-    diagnosis: yup.string().required("Diagnosis is required"),
-    treating: yup.string().required("Treating is required"),
-    complications: yup.string().required("Complications is required"),
-    prevention: yup.string().required("Prevention is required"),
+    about: yup
+      .string()
+      .required("About is required")
+      .test("has-content", "About content is required", validateRichTextContent),
+    diagnosis: yup
+      .string()
+      .required("Diagnosis is required")
+      .test("has-content", "Diagnosis content is required", validateRichTextContent),
+    treating: yup
+      .string()
+      .required("Treating is required")
+      .test("has-content", "Treating content is required", validateRichTextContent),
+    complications: yup
+      .string()
+      .required("Complications is required")
+      .test("has-content", "Complications content is required", validateRichTextContent),
+    prevention: yup
+      .string()
+      .required("Prevention is required")
+      .test("has-content", "Prevention content is required", validateRichTextContent),
     specialist_to_contact: yup
       .string()
       .required("Specialist(s) to contact is required"),
     contact_your_doctor: yup
       .string()
-      .required("Contact your doctor is required"),
-    more_information: yup.string().required("More information is required"),
+      .required("Contact your doctor is required")
+      .test("has-content", "Contact your doctor content is required", validateRichTextContent),
+    more_information: yup
+      .string()
+      .required("More information is required")
+      .test("has-content", "More information content is required", validateRichTextContent),
     attribution: yup.string().required("Attribution is required"),
     types: yup
       .array()
@@ -74,6 +97,20 @@ export default function SymptomsForm() {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      symptom_name: "",
+      about: "",
+      diagnosis: "",
+      treating: "",
+      complications: "",
+      prevention: "",
+      specialist_to_contact: "",
+      contact_your_doctor: "",
+      more_information: "",
+      attribution: "",
+      types: [{ type_name: "", about_type: "" }],
+      causes: [{ cause_name: "", other_possible_causes: "" }],
+    }
   });
 
   // For dynamic Types
@@ -97,8 +134,67 @@ export default function SymptomsForm() {
   });
 
   useEffect(() => {
-    // Ensure at least one type and cause field exists
-  }, [activeModal]);
+    if (id) {
+      getSymptomById(id).then((data) => {
+        setSymptoms(data);
+      });
+    }
+  }, [id]);
+  
+  // Safe JSON parsing with error handling for rich text content with images
+  let data = {};
+  try {
+    if (itemParam) {
+      // Try to decode URL-encoded data first (better for complex content)
+      const decodedParam = decodeURIComponent(itemParam);
+      data = JSON.parse(decodedParam);
+    }
+  } catch (error) {
+    console.error("Error parsing symptom data:", error);
+    console.warn("Failed to parse symptom data - this might be due to embedded images in rich text content");
+    
+    // Try alternative parsing method
+    try {
+      if (itemParam) {
+        data = JSON.parse(itemParam);
+      }
+    } catch (secondError) {
+      console.error("Second parsing attempt failed:", secondError);
+      // Show user-friendly message and redirect to overview
+      if (typeof toast !== 'undefined') {
+        toast.error("Unable to load this entry for editing. This may be due to embedded images in the content. Please try creating a new entry or contact support.");
+      }
+      // Fallback to empty data to allow form to load
+      data = {};
+    }
+  }
+
+  useEffect(() => {
+  if (symptoms) {
+    reset({
+      symptom_name: symptoms.symptom_name || "",
+      about: symptoms.about || "",
+      diagnosis: symptoms.diagnosis || "",
+      treating: symptoms.treating || "",
+      complications: symptoms.complications || "",
+      prevention: symptoms.prevention || "",
+      specialist_to_contact: symptoms.specialist_to_contact || "",
+      contact_your_doctor: symptoms.contact_your_doctor || "",
+      more_information: symptoms.more_information || "",
+      attribution: symptoms.attribution || "",
+      types: symptoms.types && symptoms.types.length > 0 ? symptoms.types : [{ type_name: "", about_type: "" }],
+      causes: symptoms.causes && symptoms.causes.length > 0 ? symptoms.causes : [{ cause_name: "", other_possible_causes: "" }],
+    });
+
+    // ✅ handle image preview
+    if (symptoms.image_url) {
+      setImageUrl(symptoms.image_url); // if you stored publicUrl in DB
+      // or, if you stored only path, convert to public URL:
+      // const { data } = supabase.storage.from("symptoms").getPublicUrl(symptoms.image_url);
+      // setImageUrl(data.publicUrl);
+    }
+  }
+}, [symptoms, reset]);
 
   const onSubmit = async (formData) => {
     try {
@@ -113,12 +209,13 @@ export default function SymptomsForm() {
       const newData = {
         ...formData,
         list_type: listType,
-        image_url: imageUrl || data?.image_url || "",
+        image_url: imageUrl || symptoms?.image_url || "",
       };
 
-      if (data?.id) {
-        await updateSymptom(data?.id, newData);
+      if (symptoms?.id) {
+        await updateSymptom(symptoms?.id, newData);
         handleSuccess(router, "Updated Successfully");
+        router.push('/categories/symptoms/overview')
         reset();
       } else {
         setLoading(true);
@@ -130,6 +227,7 @@ export default function SymptomsForm() {
           (successData) => {
             setLoading(false);
             toast.success("Added Successfully");
+            router.push('/categories/symptoms/overview')
             reset({
               symptom_name: "",
               about: "",
@@ -141,14 +239,12 @@ export default function SymptomsForm() {
               contact_your_doctor: "",
               more_information: "",
               attribution: "",
-              types: [],
-              causes: [],
+              types: [{ type_name: "", about_type: "" }],
+              causes: [{ cause_name: "", other_possible_causes: "" }],
             });
 
             setImageFile(null);
             setImageUrl("");
-            setNewTypes([]);
-            setNewCauses([]);
           },
           (error) => {
             setLoading(false);
@@ -165,38 +261,6 @@ export default function SymptomsForm() {
     }
   };
 
-  const openModal = (type) => {
-    setActiveModal(type);
-  };
-
-  const closeModal = () => {
-    setActiveModal(null);
-  };
-
-  const addItemsToForm = (items, type) => {
-    const validItems = items.filter((item) =>
-      Object.values(item).some((value) => value.trim() !== "")
-    );
-
-    if (type === "types") {
-      validItems.forEach((item) => appendType(item));
-      setNewTypes([]); // Clear the new items after adding them
-    } else if (type === "causes") {
-      validItems.forEach((item) => appendCause(item));
-      setNewCauses([]); // Clear the new items after adding them
-    }
-    closeModal();
-  };
-
-  const handleAddType = () => {
-    const newType = { type_name: "", about_type: "" };
-    setNewTypes([...newTypes, newType]); // Add new type to state
-  };
-
-  const handleAddCause = () => {
-    const newCause = { cause_name: "", other_possible_causes: "" };
-    setNewCauses([...newCauses, newCause]); // Add new cause to state
-  };
 
   return (
     <>
@@ -208,222 +272,255 @@ export default function SymptomsForm() {
           name="symptom_name"
           label="Symptom Name"
           type="text"
-          placeholder=" "
+          placeholder="Enter Symptom Name"
           register={register}
           defaultValue={data?.symptom_name || ""}
           error={errors.symptom_name}
         />
-        <TextareaNew
+        <Controller
           name="about"
-          label="About"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.about || ""}
-          error={errors.about}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="about"
+              label="About"
+              placeholder="Enter About Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.about}
+            />
+          )}
         />
 
-        <div>
-          <label className="block font-medium text-gray-700">Types</label>
+        <div className="md:col-span-2">
+          <label className="block font-medium text-gray-700 dark:text-slate-200 mb-3">Types</label>
+          {typeFields.map((field, index) => (
+            <div key={field.id} className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-slate-800">
+              <div className="flex justify-end items-end mb-3">
+                {/* <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Type {index + 1}</h4> */}
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeType(index)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove Type"
+                  >
+                    <Icon icon={"material-symbols:close"} width={20} height={20} />
+                  </button>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+                <Controller
+                  name={`types.${index}.type_name`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <TextinputNew
+                      {...field}
+                      label="Type Name"
+                      placeholder="Enter Type Name"
+                      error={errors.types?.[index]?.type_name}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`types.${index}.about_type`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <RichTextEditor
+                      name={`types.${index}.about_type`}
+                      label="About Type"
+                      placeholder="Enter information about this type"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={errors.types?.[index]?.about_type}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          ))}
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-white"
+            iconClass="text-base"
             text="Add Type"
             type="button"
-            onClick={() => openModal("types")}
-            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
+            onClick={() => appendType({ type_name: "", about_type: "" })}
+            className="py-2 px-4 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-lg"
           />
-          <div className="my-2 rounded sm:text-sm text-xs">
-            {typeFields.length > 0 &&
-            typeFields.some((field) => field.type_name || field.about_type) ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border ">Name</th>
-                      <th className="border">About</th>
-                      <th className="border"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {typeFields
-                      .filter(
-                        (item) =>
-                          item.type_name.trim() !== "" ||
-                          item.about_type.trim() !== ""
-                      )
-                      .map((item, index) => (
-                        <tr key={item.id}>
-                          <td className="border p-2 text-black">
-                            {item.type_name}
-                          </td>
-                          <td className="border p-2 text-black">
-                            {item.about_type}
-                          </td>
-                          <td className="border p-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removeType(index)}
-                              className="text-red-500"
-                              aria-label="Remove"
-                            >
-                              <Icon
-                                icon={"carbon:close-filled"}
-                                width={20}
-                                height={20}
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="sm:text-sm text-xs">No types added yet.</p>
-            )}
-            {errors.types?.message && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.types.message}
-              </p>
-            )}
-          </div>
+          {errors.types?.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.types.message}</p>
+          )}
         </div>
 
-        <div>
-          <label className="block font-medium text-gray-700">Causes</label>
+        <div className="md:col-span-2">
+          <label className="block font-medium text-gray-700 dark:text-slate-200 mb-3">Causes</label>
+          {causeFields.map((field, index) => (
+            <div key={field.id} className="border border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-slate-800">
+              <div className="flex justify-end items-end mb-3">
+                {/* <h4 className="text-sm font-semibold text-gray-700 dark:text-slate-200">Cause {index + 1}</h4> */}
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeCause(index)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Remove Cause"
+                  >
+                    <Icon icon={"material-symbols:close"} width={20} height={20} />
+                  </button>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+                <Controller
+                  name={`causes.${index}.cause_name`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <TextinputNew
+                      {...field}
+                      label="Cause Name"
+                      placeholder="Enter Cause Name"
+                      error={errors.causes?.[index]?.cause_name}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`causes.${index}.other_possible_causes`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <RichTextEditor
+                      name={`causes.${index}.other_possible_causes`}
+                      label="Other Possible Causes"
+                      placeholder="Enter other possible causes"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={errors.causes?.[index]?.other_possible_causes}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          ))}
           <Button
             icon="heroicons-outline:plus-sm"
-            iconClass="text-base text-white"
+            iconClass="text-base"
             text="Add Cause"
             type="button"
-            onClick={() => openModal("causes")}
-            className="py-0 px-2 mt-2 border-none text-center font-normal bg-green-500 rounded-sm text-white"
+            onClick={() => appendCause({ cause_name: "", other_possible_causes: "" })}
+            className="py-2 px-4 text-center font-normal border-2 hover:border-green-500 hover:text-green-500 border-green-500 hover:bg-white bg-green-500 text-white rounded-lg"
           />
-          <div className="my-2 rounded  sm:text-sm text-xs">
-            {causeFields.length > 0 &&
-            causeFields.some(
-              (field) => field.cause_name || field.other_possible_causes
-            ) ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border ">Name</th>
-                      <th className="border">Other Causes</th>
-                      <th className="border"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {causeFields
-                      .filter(
-                        (item) =>
-                          item.cause_name.trim() !== "" ||
-                          item.other_possible_causes.trim() !== ""
-                      )
-                      .map((item, index) => (
-                        <tr key={item.id}>
-                          <td className="border p-2 text-black">
-                            {item.cause_name}
-                          </td>
-                          <td className="border p-2 text-black">
-                            {item.other_possible_causes}
-                          </td>
-                          <td className="border p-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => removeCause(index)}
-                              className="text-red-500"
-                              aria-label="Remove"
-                            >
-                              <Icon
-                                icon={"carbon:close-filled"}
-                                width={20}
-                                height={20}
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="sm:text-sm text-xs">No causes added yet.</p>
-            )}
-            {errors.causes?.message && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.causes.message}
-              </p>
-            )}
-          </div>
+          {errors.causes?.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.causes.message}</p>
+          )}
         </div>
 
-        <TextareaNew
+        <Controller
           name="diagnosis"
-          label="Diagnosis"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.diagnosis || ""}
-          error={errors.diagnosis}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="diagnosis"
+              label="Diagnosis"
+              placeholder="Enter Diagnosis Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.diagnosis}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="treating"
-          label="Treating"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.treating || ""}
-          error={errors.treating}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="treating"
+              label="Treating"
+              placeholder="Enter Treating Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.treating}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="complications"
-          label="Complications"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.complications || ""}
-          error={errors.complications}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="complications"
+              label="Complications"
+              placeholder="Enter Complications Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.complications}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="prevention"
-          label="Prevention"
-          type="text"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.prevention || ""}
-          error={errors.prevention}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="prevention"
+              label="Prevention"
+              placeholder="Enter Prevention Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.prevention}
+            />
+          )}
         />
         <TextinputNew
           name="specialist_to_contact"
           label="Specialist(s) to Contact"
           type="text"
-          placeholder=" "
+          placeholder="Enter Specialist(s) to Contact"
           register={register}
           defaultValue={data?.specialist_to_contact || ""}
           error={errors.specialist_to_contact}
         />
-        <TextareaNew
+        <Controller
           name="contact_your_doctor"
-          label="Contact your Doctor"
-          placeholder="Contact your Doctor or visit a health facility if"
-          register={register}
+          control={control}
           defaultValue={data?.contact_your_doctor || ""}
-          error={errors.contact_your_doctor}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="contact_your_doctor"
+              label="Contact your Doctor"
+              placeholder="Enter Contact your Doctor Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.contact_your_doctor}
+            />
+          )}
         />
-        <TextareaNew
+        <Controller
           name="more_information"
-          label="More Information"
-          placeholder=" "
-          register={register}
+          control={control}
           defaultValue={data?.more_information || ""}
-          error={errors.more_information}
+          render={({ field: { onChange, value } }) => (
+            <RichTextEditor
+              name="more_information"
+              label="More Information"
+              placeholder="Enter More Information"
+              value={value || ""}
+              onChange={onChange}
+              error={errors.more_information}
+            />
+          )}
         />
         <TextinputNew
           name="attribution"
           label="Attribution"
           type="text"
-          placeholder=" "
+          placeholder="Enter Attribution"
           register={register}
           defaultValue={data?.attribution || ""}
           error={errors.attribution}
@@ -451,9 +548,9 @@ export default function SymptomsForm() {
             className="my-2"
             accept="image/*"
           />
-          {imageUrl && (
+          {(imageUrl || symptoms?.image_url) && (
             <img
-              src={imageUrl}
+              src={imageUrl || symptoms?.image_url}
               alt="Preview"
               className="w-32 h-32 object-cover rounded mt-2 border"
             />
@@ -475,160 +572,6 @@ export default function SymptomsForm() {
 
         <ToastContainer />
       </form>
-
-      {/* Types Modal */}
-      {activeModal === "types" && (
-        <Modal
-          activeModal={activeModal === "types"}
-          onClose={closeModal}
-          title="Types"
-          labelClass={"bg-[#56ce83]"}
-          footerContent={
-            <>
-              <button
-                onClick={() => {
-                  addItemsToForm(newTypes, "types");
-                  // setNewTypes([]); // Clear new types after adding
-                }}
-                className="btn btn-sm bg-green-500 text-white"
-              >
-                Added
-              </button>
-              <button
-                onClick={closeModal}
-                className="btn btn-sm bg-gray-500 text-white"
-              >
-                Close
-              </button>
-            </>
-          }
-        >
-          {newTypes.map((type, index) => (
-            <div key={index} className="mb-4">
-              <TextinputNew
-                value={type.type_name}
-                onChange={(e) => {
-                  const updatedTypes = [...newTypes];
-                  updatedTypes[index] = {
-                    ...updatedTypes[index],
-                    type_name: e.target.value,
-                  };
-                  setNewTypes(updatedTypes);
-                }}
-                label={`Type Name ${index + 1}`}
-                placeholder="Type Name"
-              />
-              <TextareaNew
-                value={type.about_type}
-                onChange={(e) => {
-                  const updatedTypes = [...newTypes];
-                  updatedTypes[index] = {
-                    ...updatedTypes[index],
-                    about_type: e.target.value,
-                  };
-                  setNewTypes(updatedTypes);
-                }}
-                label={`About ${index + 1}`}
-                placeholder="About this type"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const updatedTypes = newTypes.filter((_, i) => i !== index);
-                  setNewTypes(updatedTypes);
-                }}
-                className="text-red-500 mt-2"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={handleAddType}
-            className="btn btn-sm bg-green-500 text-white"
-          >
-            Add Another Type
-          </button>
-        </Modal>
-      )}
-
-      {/* Causes Modal */}
-      {activeModal === "causes" && (
-        <Modal
-          activeModal={activeModal === "causes"}
-          onClose={closeModal}
-          title="Causes"
-          labelClass={"bg-[#56ce83]"}
-          footerContent={
-            <>
-              <button
-                onClick={() => {
-                  addItemsToForm(newCauses, "causes");
-                  setNewCauses([]); // Clear new causes after adding
-                }}
-                className="btn btn-sm bg-green-500 text-white"
-              >
-                Added
-              </button>
-              <button
-                onClick={closeModal}
-                className="btn btn-sm bg-gray-500 text-white"
-              >
-                Close
-              </button>
-            </>
-          }
-        >
-          {newCauses.map((cause, index) => (
-            <div key={index} className="mb-4">
-              <TextinputNew
-                value={cause.cause_name}
-                onChange={(e) => {
-                  const updatedCauses = [...newCauses];
-                  updatedCauses[index] = {
-                    ...updatedCauses[index],
-                    cause_name: e.target.value,
-                  };
-                  setNewCauses(updatedCauses);
-                }}
-                label={`Cause Name ${index + 1}`}
-                placeholder="Cause Name"
-              />
-              <TextareaNew
-                value={cause.other_possible_causes}
-                onChange={(e) => {
-                  const updatedCauses = [...newCauses];
-                  updatedCauses[index] = {
-                    ...updatedCauses[index],
-                    other_possible_causes: e.target.value,
-                  };
-                  setNewCauses(updatedCauses);
-                }}
-                label={`Other Possible Causes ${index + 1}`}
-                placeholder="Describe other possible causes"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const updatedCauses = newCauses.filter((_, i) => i !== index);
-                  setNewCauses(updatedCauses);
-                }}
-                className="text-red-500 mt-2"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={handleAddCause}
-            className="btn btn-sm bg-green-500 text-white"
-          >
-            Add Another Cause
-          </button>
-        </Modal>
-      )}
     </>
   );
 }

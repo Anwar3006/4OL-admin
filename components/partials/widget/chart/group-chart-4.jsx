@@ -1,33 +1,41 @@
 import React from "react";
 import Icon from "@/components/ui/Icon";
 
-const statistics = [
-  {
-    title: "Total Online Users",
-    count: "64",
-    bg: "bg-info-500",
-    text: "text-info-500",
-    percent: "25.67% ",
-    icon: "ri:empathize-line",
-  },
-  {
-    title: "Meds Reminder Users ",
-    count: "45",
-    bg: "bg-warning-500",
-    text: "text-warning-500",
-    percent: "8.67%",
-    icon: "hugeicons:reminder",
-  },
-  {
-    title: "Period Tracker Users",
-    count: "190",
-    bg: "bg-primary-500",
-    text: "text-primary-500",
-    percent: "1.67%  ",
-    icon: "carbon:storm-tracker",
-  },
-];
-const GroupChart4 = () => {
+const GroupChart4 = ({
+  totalOnlineUsers = 0,
+  totalMedicationReminderUsers = 0,
+  totalPeriodTrackerUsers = 0,
+  loadingOnlineUsers = false,
+  loadingMedicationReminderUsers = false,
+  loadingPeriodTrackerUsers = false
+}) => {
+  const statistics = [
+    {
+      title: "Total Online Users",
+      count: loadingOnlineUsers ? "..." : totalOnlineUsers.toString(),
+      bg: "bg-info-500",
+      text: "text-info-500",
+      percent: "25.67% ",
+      icon: "ri:empathize-line",
+    },
+    {
+      title: "Meds Reminder Users ",
+      count: loadingMedicationReminderUsers ? "..." : totalMedicationReminderUsers.toString(),
+      bg: "bg-warning-500",
+      text: "text-warning-500",
+      percent: "8.67%",
+      icon: "hugeicons:reminder",
+    },
+    {
+      title: "Period Tracker Users",
+      count: loadingPeriodTrackerUsers ? "..." : totalPeriodTrackerUsers.toString(),
+      bg: "bg-primary-500",
+      text: "text-primary-500",
+      percent: "1.67%  ",
+      icon: "carbon:storm-tracker",
+    },
+  ];
+
   return (
     <>
       {statistics.map((item, i) => (

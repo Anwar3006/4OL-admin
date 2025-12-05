@@ -51,7 +51,7 @@ const ViewReviews = () => {
   }
   return (
     <Card
-      className="min-h-[80vh] bg-white mt-5"
+      className="min-h-[70vh] bg-white mt-5"
       bodyClass="p-0"
       title={"Reviews Details"}
       headerslot={

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/app/utils/supabaseClient';
 import { toast } from 'react-toastify';
-import { LoadingComponent } from './page';
+// LoadingComponent is not exported from page.jsx, creating a simple loading component
+const LoadingComponent = () => (
+  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+);
 
 export default function TicketTable({ visible, closeModal, fetchTicks, fetchData, selectedTicket }) {
   const [status, setStatus] = useState('');

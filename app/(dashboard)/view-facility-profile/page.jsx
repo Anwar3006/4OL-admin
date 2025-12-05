@@ -48,7 +48,7 @@ export default function Page() {
 
   return (
     <Card
-      className="min-h-[80vh] bg-white mt-5"
+      className="min-h-[70vh] bg-white mt-5"
       title={"Facility Details"}
       headerslot={
         <>

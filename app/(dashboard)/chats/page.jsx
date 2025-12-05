@@ -14,6 +14,8 @@ import moment from "moment";
 import PaginationNew from "@/components/ui/PaginationNew";
 import TicketTable from "./TicketModal";
 import { toast } from "react-toastify";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function ChatPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -43,15 +45,15 @@ export default function ChatPage() {
       tickets: "Total Tickets",
       count: dataCount.totalTickets,
       icon: <FaTicketAlt />,
-      iconColor: "blue",
-      iconbgColor: "bg-blue-100",
+      iconColor: "purple",
+      iconbgColor: "bg-purple-100",
     },
     {
       tickets: "Pending Tickets",
       count: dataCount.pendingTickets,
       icon: <FaHourglassStart />,
-      iconColor: "Goldenrod",
-      iconbgColor: "bg-yellow-100",
+      iconColor: "orange",
+      iconbgColor: "bg-orange-100",
     },
     {
       tickets: "Closed Tickets",
@@ -249,31 +251,31 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="bg-white flex flex-col p-[1%] mt-5">
+    <div className="flex flex-col p-[1%] mt-5 bg-white dark:bg-slate-800">
       {/* Summary Data Section */}
       <div className="p-[1.3%] flex gap-[1%] w-full overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center items-center min-w-full">
-            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-full flex justify-center items-center">
+            <Loading />
           </div>
         ) : (
           TicketCards.map((label, index) => (
             <div
               key={index}
-              className="flex flex-row justify-start items-center px-[4%] py-[1.5%] bg-gray-100 rounded-lg w-[100%] hover:bg-gray-50"
+              className="flex flex-row max-sm:flex-col justify-start items-center px-[4%] py-[1.5%] bg-slate-100 dark:bg-slate-800 rounded-lg w-[100%] hover:bg-gray-50"
             >
               {/* Icon on the left */}
               <div
                 className={`flex justify-center items-center w-12 h-12 rounded-full ${label.iconbgColor}`}
               >
-                <span className="text-2xl" style={{ color: label.iconColor }}>
+                <span className="sm:text-2xl text-xl" style={{ color: label.iconColor }}>
                   {label.icon}
                 </span>
               </div>
               {/* Text Content */}
-              <div className="ml-[4%]">
-                <h2 className="text-xl font-medium">{label.count}</h2>
-                <p className="text-gray-500">{label.tickets}</p>
+              <div className="ml-[4%] max-sm:text-center">
+                <h2 className="sm:text-xl text-base sm:font-medium font-semibold">{label.count}</h2>
+                <p className="text-gray-500 dark:text-slate-200 max-sm:text-sm">{label.tickets}</p>
               </div>
             </div>
           ))
@@ -282,14 +284,16 @@ export default function ChatPage() {
       {/* Table Section */}
       <div className="w-full px-[1%] overflow-x-auto h-full">
         {loading ? (
-          <div className="justify-center items-center flex h-40">
-            <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <tr>
+            <td colSpan="9" className="text-center">
+              <Loading />
+            </td>
+          </tr>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full bg-white rounded-lg overflow-hidden border border-gray-200 divide-y divide-gray-200 min-w-max">
-              <thead className="bg-gray-50">
-                <tr className="text-center text-xs font-medium text-gray-500 uppercase">
+            <table className="w-full bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-gray-200 divide-y divide-gray-200 min-w-max">
+              <thead className="bg-gray-50 dark:bg-slate-800">
+                <tr className="text-center text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
                   <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap">ID</th>
                   <th className="sm:px-6 px-2 sm:py-3 py-2 whitespace-nowrap text-left">Request By</th>
                   <th className="sm:py-3 py-2 whitespace-nowrap text-left">Subject</th>
@@ -308,22 +312,22 @@ export default function ChatPage() {
                   <tr>
                     <td
                       colSpan="8"
-                      className="text-center py-6 text-base text-gray-500 min-h-[50vh]"
+                      className="text-center py-6 text-base text-gray-500 dark:text-slate-200 min-h-[50vh]"
                     >
-                      No Data Available
+                      <NoDataFound />
                     </td>
                   </tr>
                 )}
                 {data.map((ticket, index) => (
                   <tr
                     key={index}
-                    className="border-b hover:bg-gray-50 text-sm text-center"
+                    className="border-b hover:bg-gray-50 dark:hover:bg-slate-700 text-sm text-center"
                   >
-                    <td className="text-gray-900 px-3 py-[1%] whitespace-nowrap">
+                    <td className="text-gray-900 dark:text-slate-200 px-3 py-[1%] whitespace-nowrap">
                       #{ticket.id}
                     </td>
                     {/* Request By Column */}
-                    <td className="flex items-center text-left space-x-3 text-gray-500 py-[6%] pl-4">
+                    <td className="flex items-center text-left space-x-3 text-gray-500 dark:text-slate-200 py-[6%] pl-4">
                       <img
                         src={
                           ticket?.users?.avatar_url ||
@@ -336,35 +340,33 @@ export default function ChatPage() {
                         {ticket.user_name}
                       </span>
                     </td>
-                    <td className="text-gray-500 max-w-[120px] sm:max-w-none truncate text-left">
+                    <td className="text-gray-500 dark:text-slate-200 max-w-[120px] sm:max-w-none truncate text-left">
                       {ticket.subject}
                     </td>
                     {/* Message Column */}
-                    <td className="text-gray-500 max-w-[150px] sm:max-w-none text-left truncate overflow-hidden">
+                    <td className="text-gray-500 dark:text-slate-200 max-w-[150px] sm:max-w-none text-left truncate overflow-hidden">
                       {ticket.message.length > 30
                         ? `${ticket.message.slice(0, 30)}...`
                         : ticket.message}
                     </td>
                     <td>
                       <span
-                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${
-                          ticket.priority === "High"
+                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${ticket.priority === "High"
                             ? "text-red-500 font-bold bg-red-100"
                             : ticket.priority === "Medium"
-                            ? "text-yellow-500 font-bold bg-yellow-100"
-                            : "text-cyan-500 font-bold bg-cyan-100"
-                        }`}
+                              ? "text-yellow-500 font-bold bg-yellow-100"
+                              : "text-cyan-500 font-bold bg-cyan-100"
+                          }`}
                       >
                         {ticket.priority}
                       </span>
                     </td>
                     <td>
                       <span
-                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${
-                          ticket.status === "Open"
+                        className={`px-[10%] py-[6%] text-xs sm:text-sm rounded-full ${ticket.status === "Open"
                             ? "bg-green-100 text-green-500 font-bold"
-                            : "bg-gray-200 text-gray-700 font-bold"
-                        }`}
+                            : "bg-gray-200 text-gray-700 dark:text-slate-200 font-bold"
+                          }`}
                       >
                         {ticket.status}
                       </span>
@@ -372,13 +374,13 @@ export default function ChatPage() {
                     <td className="whitespace-nowrap">
                       {moment(ticket.created_at).format("DD/MM/YYYY")}
                     </td>
-                    <td className="text-gray-500 whitespace-nowrap">
+                    <td className="text-gray-500 dark:text-slate-200 whitespace-nowrap">
                       {moment(ticket.updated_at).format("DD/MM/YYYY")}
                     </td>
                     <td className="align-middle">
                       <div className="flex justify-center items-center h-full">
                         <button
-                          className="text-gray-400 hover:text-gray-700"
+                          className="text-gray-400 hover:text-gray-700 dark:text-slate-200"
                           onClick={(event) => handleOpenModal(event, ticket.id)}
                         >
                           <FaEllipsisH />
@@ -438,18 +440,16 @@ export default function ChatPage() {
             </h2>
             <div className="flex justify-between">
               <button
-                className={`px-[3%] py-[2%] ${
-                  loading ? "bg-gray-100" : "bg-gray-300"
-                } text-gray-700 rounded-md hover:bg-gray-400`}
+                className={`px-[3%] py-[2%] ${loading ? "bg-gray-100" : "bg-gray-300"
+                  } text-gray-700 rounded-md hover:bg-gray-400`}
                 onClick={toggleDeleteModal}
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
-                className={`px-[3%] py-[2%] ${
-                  loading ? "bg-white" : "bg-green-500"
-                } text-white rounded-md hover:bg-green-600`}
+                className={`px-[3%] py-[2%] ${loading ? "bg-white" : "bg-green-500"
+                  } text-white rounded-md hover:bg-green-600`}
                 onClick={handleDelete}
                 disabled={loading}
               >

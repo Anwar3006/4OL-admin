@@ -11,6 +11,9 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import HtmlRenderer from "@/components/ui/HtmlRenderer";
+import NoDataFound from "@/components/NoDataFound";
+import Loading from "@/components/Loading";
 
 const HealthyLivingOverviewPage = () => {
   const router = useRouter();
@@ -21,7 +24,12 @@ const HealthyLivingOverviewPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [viewDetails, setViewDetails] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const itemsPerPage = 10;
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredArticles, setFilteredArticles] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchArticles();
@@ -29,14 +37,61 @@ const HealthyLivingOverviewPage = () => {
 
   const fetchArticles = async () => {
     try {
+      setLoading(true);
       const data = await getAllHealthyLivingEntries();
       if (data) {
         setArticles(data);
-        setTotalPages(Math.ceil(data.length / itemsPerPage));
       }
     } catch (error) {
       console.error("Error fetching healthy living articles:", error);
       toast.error("Failed to load articles");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredArticles([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = articles.filter((article) =>
+        article.headline?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredArticles(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, articles]);
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredArticles.length > 0
+      ? filteredArticles
+      : articles;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [articles, filteredArticles, searchQuery, itemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectArticle = (article) => {
+    setSearchQuery(article.headline);
+    setShowDropdown(false);
+    // Scroll to the article in the table
+    const articleIndex = articles.findIndex((a) => a.id === article.id);
+    if (articleIndex !== -1) {
+      const pageNumber = Math.floor(articleIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
     }
   };
 
@@ -63,8 +118,12 @@ const HealthyLivingOverviewPage = () => {
   }, []);
 
   const handleEdit = (item) => {
-    const encodedItem = encodeURIComponent(JSON.stringify(item));
-    router.push(`/categories/healthy_living/form?healthyliving=${encodedItem}`);
+    // router.push(`/categories/healthy_living/form?healthyliving=${encodedItem}`);
+    router.push(`/categories/healthy_living/form?id=${item.id}`);
+  };
+
+  const handleViewDetails = (item) => {
+    router.push(`/categories/healthy_living/details?id=${item.id}`);
   };
 
   const handleView = (item) => {
@@ -93,7 +152,10 @@ const HealthyLivingOverviewPage = () => {
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return articles.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredArticles.length > 0
+      ? filteredArticles
+      : articles;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const truncateText = (text, maxLength = 100) => {
@@ -116,68 +178,116 @@ const HealthyLivingOverviewPage = () => {
     <div className="mt-5 relative">
       <Card
         title="Healthy Living Articles"
-        className="bg-white dark:bg-slate-800 overflow-hidden relative"
+        className=" overflow-hidden relative"
         bodyClass="p-0"
+        headerslot={
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search Filter */}
+            <div className="relative" ref={searchRef}>
+              <div className="relative">
+                <Icon
+                  icon="heroicons:magnifying-glass"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  width="18"
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery && setShowDropdown(true)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                />
+              </div>
+              {/* Autocomplete Dropdown */}
+              {showDropdown && filteredArticles.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      onClick={() => handleSelectArticle(article)}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                    >
+                      {article.headline}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showDropdown && searchQuery && filteredArticles.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                    No results found
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button
+              text="+ Add New Article"
+              className="btn-dark max-sm:text-xs font-normal btn-sm"
+              iconClass="text-lg"
+              onClick={() => router.push("/categories/healthy_living/form")}
+            />
+          </div>
+        }
       >
-        <div className="flex justify-end p-4 absolute top-2 right-2">
-          <Button
-            text="Add New Article"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
-            onClick={() => router.push("/categories/healthy_living/form")}
-          />
-        </div>
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
+            <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Topic Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   About
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   More Information
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Attribution
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">
+                <th className="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
               {getCurrentPageData().map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {article.topic_name}
+                <tr
+                  key={article.id}
+                  className="hover:bg-gray-50 dark:hover:bg-slate-700"
+                >
+                  <td className="px-6 py-4 text-sm align-top">
+                    <button
+                      onClick={() => handleViewDetails(article)}
+                      className="text-secondary-800 dark:text-green-400 hover:text-secondary-600 dark:hover:text-green-300 hover:underline text-left font-medium"
+                    >
+                      {article.topic_name}
+                    </button>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[250px] truncate">
-                    {truncateText(article.about)}
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[250px] align-top">
+                    <HtmlRenderer htmlContent={article.about} maxLength={100} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {article.category}
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
+                    <HtmlRenderer
+                      htmlContent={article.category}
+                      maxLength={80}
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">
-                    {truncateText(article.more_information)}
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[200px] align-top">
+                    <HtmlRenderer
+                      htmlContent={article.more_information}
+                      maxLength={100}
+                    />
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-200 max-w-[150px] truncate align-top">
                     {article.attribution}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        icon="lets-icons:eye"
-                        iconClass="text-blue-500 text-lg"
-                        className="p-0 bg-transparent border-none"
-                        onClick={() => handleView(article)}
-                        tooltip="View Details"
-                      />
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
+                    <div className="flex justify-center gap-2">
                       <Button
                         icon="heroicons-outline:pencil-alt"
                         iconClass="text-green-500 text-lg"
@@ -196,13 +306,23 @@ const HealthyLivingOverviewPage = () => {
                   </td>
                 </tr>
               ))}
+              {loading && (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
+                  >
+                    <Loading />
+                  </td>
+                </tr>
+              )}
               {articles.length === 0 && (
                 <tr>
                   <td
                     colSpan="6"
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-4 text-center text-gray-500 dark:text-slate-200"
                   >
-                    No healthy living articles found
+                    <NoDataFound />
                   </td>
                 </tr>
               )}
@@ -210,7 +330,21 @@ const HealthyLivingOverviewPage = () => {
           </table>
         </div>
         {totalPages > 0 && (
-          <div className="flex justify-end items-center m-4">
+          <div className="flex justify-between items-center m-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+            </div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -231,6 +365,7 @@ const HealthyLivingOverviewPage = () => {
         }}
         centered
         themeClass="bg-red-500"
+        className="sm:max-w-[70vw] max-w-[90vw]"
       >
         <div className="p-6">
           <div className="flex flex-col items-center gap-4">
@@ -315,10 +450,25 @@ const HealthyLivingOverviewPage = () => {
                   );
                 }
 
+                // Check if this field should be rendered as HTML
+                const richTextFields = [
+                  "about",
+                  "category",
+                  "contact_your_doctor",
+                  "more_information",
+                ];
+                const shouldRenderAsHtml = richTextFields.includes(key);
+
                 return (
                   <div key={key} className="flex">
                     <div className="w-1/3 text-gray-900">{label}</div>
-                    <p className="w-2/3">{value || "-"}</p>
+                    <div className="w-2/3">
+                      {shouldRenderAsHtml ? (
+                        <HtmlRenderer htmlContent={value || "-"} />
+                      ) : (
+                        <p>{value || "-"}</p>
+                      )}
+                    </div>
                   </div>
                 );
               })}

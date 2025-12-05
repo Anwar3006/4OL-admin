@@ -61,7 +61,7 @@ export const appChatSlice = createSlice({
         lastmessage: "Hey! there I'm available",
         lastmessageTime: "2:30 PM",
         unredmessage: Math.floor(Math.random() * 10),
-        avatar: "/assets/images/users/user-1.jpg",
+        avatar: "/assets/images/all-img/user.webp",
         status: "offline",
       },
     ],
@@ -85,14 +85,14 @@ export const appChatSlice = createSlice({
           },
           {
             content: "Hi, I am good, what about you?",
-            img: "/assets/images/users/user-1.jpg",
+            img: "/assets/images/all-img/user.webp",
             time: "10:01",
             sender: "me",
           },
 
           {
             content: "Thanks, It will be great.",
-            img: "/assets/images/users/user-1.jpg",
+            img: "/assets/images/all-img/user.webp",
             time: "10:03",
             sender: "me",
           },
@@ -111,14 +111,14 @@ export const appChatSlice = createSlice({
           },
           {
             content: "Hi, I am good, what about you?",
-            img: "/assets/images/users/user-1.jpg",
+            img: "/assets/images/all-img/user.webp",
             time: "10:01",
             sender: "me",
           },
 
           {
             content: "Thanks, It will be great.",
-            img: "/assets/images/users/user-1.jpg",
+            img: "/assets/images/all-img/user.webp",
             time: "10:03",
             sender: "me",
           },

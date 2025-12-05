@@ -54,7 +54,7 @@ const Profile = () => {
     <div className="flex items-center">
       <div className="flex-none capitalize text-slate-600 dark:text-white text-sm font-normal lg:flex-col max-lg:hidden whitespace-nowrap">
         <p className="text-[#56ce84] font-semibold text-left">{userData?.first_name}{" "}{userData?.last_name}</p>
-        <p className="text-xs text-slate-600 text-left">{userData?.role}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-200 text-left">{userData?.role}</p>
       </div>
       <div className="flex-1 flex items-center justify-center ltr:ml-[10px] rtl:mr-[10px]">
         <div className="h-8 w-8 rounded-full">

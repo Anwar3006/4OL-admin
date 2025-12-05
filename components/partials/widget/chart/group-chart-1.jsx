@@ -33,6 +33,12 @@ const shapeLine1 = {
     colors: ["#00EBFF"],
     tooltip: {
       theme: "light",
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        return '<div class="custom-tooltip">' +
+               '<div class="tooltip-title">Total Users</div>' +
+               '<div class="tooltip-value">' + (w.globals.series[seriesIndex][dataPointIndex] || 0) + '</div>' +
+               '</div>';
+      }
     },
     grid: {
       show: false,
@@ -100,6 +106,12 @@ const shapeLine2 = {
     colors: ["#FB8F65"],
     tooltip: {
       theme: "light",
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        return '<div class="custom-tooltip">' +
+               '<div class="tooltip-title">Total Facilities</div>' +
+               '<div class="tooltip-value">' + (w.globals.series[seriesIndex][dataPointIndex] || 0) + '</div>' +
+               '</div>';
+      }
     },
     grid: {
       show: false,
@@ -167,6 +179,12 @@ const shapeLine3 = {
     colors: ["#56ce84"],
     tooltip: {
       theme: "light",
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        return '<div class="custom-tooltip">' +
+               '<div class="tooltip-title">Total Downloads</div>' +
+               '<div class="tooltip-value">' + (w.globals.series[seriesIndex][dataPointIndex] || 0) + '</div>' +
+               '</div>';
+      }
     },
     grid: {
       show: false,
@@ -234,6 +252,12 @@ const shapeLine4 = {
     colors: ["#5743BE"],
     tooltip: {
       theme: "light",
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        return '<div class="custom-tooltip">' +
+               '<div class="tooltip-title">Total Facility Visits</div>' +
+               '<div class="tooltip-value">' + (w.globals.series[seriesIndex][dataPointIndex] || 0) + '</div>' +
+               '</div>';
+      }
     },
     grid: {
       show: false,
@@ -274,43 +298,60 @@ const shapeLine4 = {
 const GroupChart1 = ({
   totalDownloads,
   totalUsers,
+  totalFacilities,
+  totalSpecialists,
   loadingTotalDownloads,
   loadingTotalUsers,
+  loadingTotalFacilities,
+  loadingTotalSpecialists,
 }) => {
   const statistics = [
     {
       name: shapeLine3,
       title: "Total Downloads",
-      count: totalDownloads ? totalDownloads : "5,678",
+      count: totalDownloads ?? "0",
       bg: "bg-[#c7f2d7] dark:bg-slate-900	",
       loading: loadingTotalDownloads ? true : false,
     },
     {
       name: shapeLine1,
       title: "Total Users",
-      count: totalUsers ? totalUsers : "3,564",
+      count: totalUsers ?? "0",
       bg: "bg-[#E5F9FF] dark:bg-slate-900	",
       loading: loadingTotalUsers ? true : false,
     },
     {
       name: shapeLine2,
       title: "Total Facilities",
-      count: "564",
+      count: totalFacilities ?? "0",
       bg: "bg-[#FFEDE5] dark:bg-slate-900	",
+      loading: loadingTotalFacilities ? true : false,
     },
     {
       name: shapeLine3,
       title: "Total Specialists",
-      count: "+5.0%",
+      count: totalSpecialists ?? "0",
       bg: "bg-[#c7f2d7] dark:bg-slate-900	",
-    },
-    {
-      name: shapeLine4,
-      title: "Total Facility Visits",
-      count: "+5.0%",
-      bg: "bg-[#EAE5FF] dark:bg-slate-900	",
+      loading: loadingTotalSpecialists ? true : false,
     },
   ];
+
+  // Function to create chart options with custom tooltip
+  const createChartOptions = (chartConfig, title, count) => {
+    return {
+      ...chartConfig.options,
+      tooltip: {
+        ...chartConfig.options.tooltip,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          return '<div class=" bg-white dark:bg-slate-900 rounded-md shadow-md">' +
+                 '<div class="p-1 text-slate-900 bg-slate-200 dark:text-white text-sm font-medium">' + title + '</div>' +
+                 '<div class="p-1 text-slate-900 dark:text-white text-sm font-medium">' + count + '</div>' +
+                 '</div>';
+        }
+      }
+    };
+  };
+
   return (
     <>
       {statistics.map((item, i) => (
@@ -318,7 +359,7 @@ const GroupChart1 = ({
           <div className="flex items-center space-x-6 rtl:space-x-reverse flex-wrap justify-center">
             <div className="flex-none">
               <Chart
-                options={item.name.options}
+                options={createChartOptions(item.name, item.title, item.count)}
                 series={item.name.series}
                 type="area"
                 height={48}
@@ -330,7 +371,7 @@ const GroupChart1 = ({
                 {item.title}
               </div>
               <div className="text-slate-900 text-2xl dark:text-white font-medium">
-                {item?.loading ? "Loading..." : item.count}
+                {item?.loading ? "..." : item.count}
               </div>
             </div>
           </div>

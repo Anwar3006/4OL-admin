@@ -9,6 +9,8 @@ import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 export default function UsersListing() {
   const [data, setData] = useState([]);
@@ -17,19 +19,23 @@ export default function UsersListing() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error, count } = await supabase
-        .from("user_profiles")
-        .select("*", { count: "exact" })
-        .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
-
-      if (error) {
+      try {
+        setLoading(true);
+        const { data, error, count } = await supabase
+          .from("user_profiles")
+          .select("*", { count: "exact" })
+          .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
+          setData(data);
+          setTotalPages(Math.ceil(count / pageSize));
+        
+      } catch (error) {
         console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setTotalPages(Math.ceil(count / pageSize));
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -132,12 +138,12 @@ export default function UsersListing() {
 
   return (
     <>
-    <Card className="bg-white" bodyClass="p-0" title={"Users"}>
+    <Card className="" bodyClass="p-0 dark:bg-slate-800" title={"Users"}>
 
       <div className="overflow-x-auto custom-scrollbar relative -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
               {/* <div> */}
               <th className="sm:px-6 px-2 sm:py-3 py-2">Registration Date</th>
               <th className="sm:px-6 px-2 sm:py-3 py-2">Name</th>
@@ -150,7 +156,7 @@ export default function UsersListing() {
               <th className="sm:px-6 px-2 sm:py-3 py-2">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white sm:text-sm divide-y divide-gray-200 text-xs">
+          <tbody className="bg-white dark:bg-slate-800 sm:text-sm divide-y divide-gray-200 text-xs">
             {filteredData.map((item) => (
               <tr
                 // key={item.id} onClick={() => handleView(item.id)}
@@ -217,6 +223,28 @@ export default function UsersListing() {
                 </td>
               </tr>
             ))}
+
+            {loading && (
+              <tr>
+                <td
+                  colSpan="8"
+                  className="text-center py-10 text-base text-gray-500 dark:text-slate-200"
+                >
+                  <Loading />
+                </td>
+              </tr>
+            )}
+
+            {filteredData.length === 0 && (
+              <tr>
+                <td
+                  colSpan="8"
+                  className="text-center py-10 text-base text-gray-500 dark:text-slate-200"
+                >
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

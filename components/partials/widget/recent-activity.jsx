@@ -1,7 +1,7 @@
 const activity = [
   {
     id: 1,
-    img: "/assets/images/users/user-1.jpg",
+    img: "/assets/images/all-img/user.webp",
   },
   {
     id: 2,

@@ -81,7 +81,7 @@ export default function page() {
         <div className="lg-inner-column">
           <div className="right-column relative w-full">
             <div className=" w-full flex flex-col justify-center sm:p-5">
-              <Card className="min-h-[80vh] bg-white">
+              <Card className="min-h-[70vh] bg-white">
                 <div className="flex max-lg:flex-col pb-6 items-center w-full">
                   <h6 className="md:mb-0 mb-3 w-full">Electronic Records</h6>
                 </div>

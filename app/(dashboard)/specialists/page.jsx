@@ -129,7 +129,7 @@ const SpecialistPage = () => {
             <Button
               icon="heroicons-outline:plus-sm"
               text="Add New Specialist"
-              className="btn-dark font-normal btn-sm"
+              className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
               onClick={() => {
                 router.push("/send-notification");

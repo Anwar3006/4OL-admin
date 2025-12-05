@@ -8,6 +8,8 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Rating from "react-rating";
+import Loading from "@/app/loading";
+import NoDataFound from "@/components/NoDataFound";
 
 const Reviews = () => {
   const [ratings, setRatings] = useState([]);
@@ -109,14 +111,11 @@ const Reviews = () => {
     doc.save("Reviews.pdf");
   };
 
-  if (loading)
-    return (
-      <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
-    );
+  if (loading) return <Loading />;
 
   return (
     <Card
-      className="min-h-[80vh] bg-white mt-5"
+      className="min-h-[70vh]  mt-5"
       bodyClass="p-0"
       title="Reviews"
       headerslot={
@@ -137,8 +136,8 @@ const Reviews = () => {
     >
       <div className="overflow-x-auto custom-scrollbar">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr className="text-left  text-xs font-medium text-gray-500 uppercase">
+          <thead className="bg-gray-50 dark:bg-slate-800">
+            <tr className="text-left  text-xs font-medium text-gray-500 dark:text-slate-200 uppercase">
               <th className="px-6 py-3">Full Name</th>
               <th className="px-6 py-3">Facility name</th>
               <th className="px-6 py-3">Comments</th>
@@ -148,10 +147,17 @@ const Reviews = () => {
             </tr>
           </thead>
           <tbody>
+            {ratings.length === 0 && !loading && (
+              <tr>
+                <td colSpan="5" className="text-center py-10">
+                  <NoDataFound />
+                </td>
+              </tr>
+            )}
             {ratings.map((item) => (
               <tr
                 key={item.id}
-                className="cursor-pointer hover:bg-gray-50 border-b text-sm border-gray-100"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 border-b text-sm border-gray-100"
               >
                 <td className="px-6 py-3 capitalize">
                   {item.first_name || "N/A"} {item.last_name || "N/A"}

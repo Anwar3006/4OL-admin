@@ -16,6 +16,8 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Loading from "@/components/Loading";
+import NoDataFound from "@/components/NoDataFound";
 
 const PeriodsTrackerPage = () => {
   const router = useRouter();
@@ -26,22 +28,78 @@ const PeriodsTrackerPage = () => {
   const [showFertileWindow, setShowFertileWindow] = useState(false);
   const [showFlowTypes, setShowFlowTypes] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
-  const itemsPerPage = 30;
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const searchRef = useRef(null);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchLogs();
   }, [currentPage]);
 
   const fetchLogs = async () => {
-    const { data, error } = await getPeriodTrackerLogs();
-    if (data) {
-      setLogs(data);
-      console.log(JSON.stringify(data, null, 2));
+    try {
+      setLoading(true);
+      const { data, error } = await getPeriodTrackerLogs();
+      if (data) {
+        setLogs(data);
+        console.log(JSON.stringify(data, null, 2));
+      }
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      setTotalPages(Math.ceil(data.length / itemsPerPage));
+  // Handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredLogs([]);
+      setShowDropdown(false);
+    } else {
+      const filtered = logs.filter((log) =>
+        log.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.period_start_date?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredLogs(filtered);
+      setShowDropdown(true);
+    }
+  }, [searchQuery, logs]);
+
+  // Update total pages based on search results
+  useEffect(() => {
+    const dataToDisplay = searchQuery && filteredLogs.length > 0
+      ? filteredLogs
+      : logs;
+    setTotalPages(Math.ceil(dataToDisplay.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  }, [logs, filteredLogs, searchQuery, itemsPerPage]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectLog = (log) => {
+    setSearchQuery(log.user?.email || log.period_start_date);
+    setShowDropdown(false);
+    // Scroll to the log in the table
+    const logIndex = logs.findIndex((l) => l.id === log.id);
+    if (logIndex !== -1) {
+      const pageNumber = Math.floor(logIndex / itemsPerPage) + 1;
+      setCurrentPage(pageNumber);
     }
   };
 
@@ -66,599 +124,23 @@ const PeriodsTrackerPage = () => {
     };
   }, []);
 
-  const dataa = [
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-    {
-      id: 112,
-      created_at: 1739968222403,
-      goal: "track my cycle",
-      cycle_length: 22,
-      period_length: 3,
-      is_consistent: "yes",
-      period_start_date: "2025-03-16",
-      flow_types: [
-        {
-          date: "2025-03-16",
-          selectedFlow: "heavy",
-        },
-        {
-          date: "2025-03-17",
-          selectedFlow: "light",
-        },
-        {
-          date: "2025-03-18",
-          selectedFlow: "super heavy",
-        },
-      ],
-      next_reminder: "2025-04-10",
-      next_reminder_utc: "2025-04-10",
-      period_start_date_utc: "2025-03-16",
-      updated_at: 1742086085314,
-      updated_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      created_by: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      user_id: "707cc7d3-30a8-4ead-a495-f449a1881087",
-      is_created_by_admin_panel: false,
-      ovulation_date: "2025-03-02",
-      ovulation_date_utc: "2025-03-02",
-      fertile_window_dates: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      fertile_window_dates_utc: [
-        "2025-02-28",
-        "2025-03-01",
-        "2025-03-02",
-        "2025-03-03",
-        "2025-03-04",
-      ],
-      user_profiles: {
-        dob: "2025-02-21",
-        email: "test@gmail.com",
-        region: "Upper East",
-        last_name: "user",
-        avatar_url:
-          "https://bqdohqgwdqrpmzffmsva.supabase.co/storage/v1/object/public/avatar/6cec4106-a8c7-4829-89b6-6101921ea6d4.jpg",
-        first_name: "test",
-        phone_number: "123456789",
-        is_tracker_notifications_enabled: true,
-      },
-    },
-  ];
-
   // Update the handleEdit function in overview/page.jsx
   const handleEdit = (item) => {
     const encodedItem = encodeURIComponent(JSON.stringify(item));
     router.push(`/categories/period_tracker/create?item=${encodedItem}`);
   };
 
+  const handleViewDetails = (item) => {
+    router.push(`/categories/period_tracker/details?id=${item.id}`);
+  };
+
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return logs.slice(startIndex, endIndex);
+    const dataToDisplay = searchQuery && filteredLogs.length > 0
+      ? filteredLogs
+      : logs;
+    return dataToDisplay.slice(startIndex, endIndex);
   };
 
   const deleteItem = async (id) => {
@@ -684,75 +166,125 @@ const PeriodsTrackerPage = () => {
 
   return (
     <div className="">
-      <div className="mt-8 relative">
+      <div className="mt-5 relative">
         <Card
           title="Periods Tracker"
-          className="bg-white dark:bg-slate-800 overflow-hidden"
+          className=" overflow-hidden"
           bodyClass="p-0"
+          headerslot={
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Search Filter */}
+              <div className="relative" ref={searchRef}>
+                <div className="relative">
+                  <Icon
+                    icon="heroicons:magnifying-glass"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    width="18"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search by email or date..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => searchQuery && setShowDropdown(true)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200 w-64"
+                  />
+                </div>
+                {/* Autocomplete Dropdown */}
+                {showDropdown && filteredLogs.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredLogs.slice(0, 10).map((log) => (
+                      <div
+                        key={log.id}
+                        onClick={() => handleSelectLog(log)}
+                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer text-sm text-gray-900 dark:text-slate-200 border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                      >
+                        <div>{log.user?.email || "Unknown User"}</div>
+                        <div className="text-xs text-gray-500">{log.period_start_date}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && searchQuery && filteredLogs.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg">
+                    <div className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400">
+                      No results found
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Button
+                text="Add Period Tracker"
+                icon="heroicons-outline:plus"
+                className="btn-dark max-sm:text-xs font-normal btn-sm"
+                onClick={() => router.push("/categories/period_tracker/create")}
+              />
+            </div>
+          }
         >
-          <div className="absolute top-2 right-2 justify-end p-4">
+          {/* <div className="absolute top-2 right-2 justify-end p-4">
             <Button
               text="Add Period Tracker"
               icon="heroicons-outline:plus"
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
               onClick={() => router.push("/categories/period_tracker/create")}
             />
-          </div>
+          </div> */}
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto relative hidden-scrollbar"
           >
             <table className="min-w-full divide-y divide-gray-200 ">
-              <thead className="bg-gray-50 sticky top-0 z-10">
+              <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10 whitespace-nowrap">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Region
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Goal
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Cycle Length
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Period Length
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Consistent?
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Period Start
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Next Reminder
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Ovulation Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Fertile Window
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Flow Types
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {logs.map((log) => (
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
+                {getCurrentPageData().map((log) => (
                   <tr key={log.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
                           {log.user_profiles?.avatar_url ? (
@@ -780,37 +312,42 @@ const PeriodsTrackerPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {log.user_profiles?.email}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleViewDetails(log)}
+                        className="text-secondary-800 dark:text-green-400 hover:text-secondary-600 dark:hover:text-green-300 hover:underline text-left font-medium"
+                      >
+                        {log.user_profiles?.email}
+                      </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.phone_number}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.user_profiles?.region}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.goal}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.cycle_length} days
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.period_length} days
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {log.is_consistent}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.period_start_date).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.next_reminder).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
                       {moment(log.ovulation_date).format("MMM DD, YYYY")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
                       <Button
                         iconWidth={24}
                         text="Fertile Window"
@@ -823,7 +360,7 @@ const PeriodsTrackerPage = () => {
                         }}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
                       <Button
                         text="Flow Types"
                         icon="bi:droplet-fill"
@@ -859,6 +396,20 @@ const PeriodsTrackerPage = () => {
                     </td>
                   </tr>
                 ))}
+                {logs.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan="11" className="text-center py-4">
+                      <NoDataFound />
+                    </td>
+                  </tr>
+                )}
+                {loading && (
+                  <tr>
+                    <td colSpan="11" className="text-center py-4">
+                      <Loading />
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1242,7 +793,21 @@ const PeriodsTrackerPage = () => {
         </Modal>
       </div>
       {totalPages > 0 && (
-        <div className="flex justify-end items-center m-4">
+        <div className="flex justify-between items-center m-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700 dark:text-slate-300">Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="border border-gray-300 dark:border-slate-600 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-700 dark:text-slate-300">entries</span>
+          </div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

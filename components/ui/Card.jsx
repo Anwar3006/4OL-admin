@@ -7,21 +7,22 @@ const Card = ({
   title,
   subtitle,
   headerslot,
-  className = "custom-class  bg-white ",
+  className = "custom-class bg-white dark:bg-slate-800 ",
   bodyClass = "p-6",
   noborder,
   titleClass = "custom-class ",
   image,
-  imageClass
+  imageClass,
+  headerClass = "flex max-sm:flex-col sm:justify-between sm:items-center items-start"
 }) => {
   const [skin] = useSkin();
 
   return (
     <div
       className={`
-        card rounded-md  w-full dark:bg-slate-800   ${
+        card rounded-md  w-full bg-white dark:bg-slate-800   ${
           skin === "bordered"
-            ? " border w-full border-slate-200 dark:border-slate-700"
+            ? " border w-full border-slate-200 dark:border-slate-700 dark:bg-slate-700"
             : "shadow-base"
         }
    
@@ -34,7 +35,7 @@ const Card = ({
       </div>  
      )}
       {(title || subtitle) && (
-        <header className={`card-header ${noborder ? "no-border" : ""}`}>
+        <header className={`card-header ${headerClass} ${noborder ? "no-border" : ""}`}>
           <div>
             {title && <div className={`card-title ${titleClass}`}>{title}</div>}
             {subtitle && <div className="card-subtitle">{subtitle}</div>}

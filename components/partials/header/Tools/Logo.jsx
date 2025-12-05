@@ -26,7 +26,7 @@ const Logo = () => {
             <img
               src={
                 isDark
-                  ? "/assets/images/all-img/logo.png"
+                  ? "/assets/images/all-img/logo-green.png"
                   : "/assets/images/all-img/logo.png"
               }
               className="w-10"

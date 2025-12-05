@@ -44,7 +44,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   return (
     <div
-      className={`${className} fixed  top-0 bg-white dark:bg-slate-800 shadow-lg  h-full   w-[248px]`}
+      className={`${className} fixed  top-0 bg-white dark:bg-slate-800 shadow-lg  h-full  pb-20 w-[248px]`}
     >
       <div className="logo-segment flex justify-between items-center bg-white dark:bg-slate-800 z-[9] h-[85px]  px-4 ">
         <Link href="/">
@@ -78,7 +78,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
         }`}
       ></div>
       <SimpleBar
-        className="sidebar-menu px-4 h-[calc(100%-80px)]"
+        className="sidebar-menu px-2 h-[calc(100%-90px)]"
         scrollableNodeProps={{ ref: scrollableNodeRef }}
       >
         <Navmenu menus={menuItems} onLogout={handleLogoutAction}/>

@@ -4,38 +4,47 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 import { color } from "framer-motion";
 
-const BarChart4 = () => {
+const BarChart4 = ({ 
+  health = 0, 
+  ads = 0, 
+  event = 0, 
+  news = 0, 
+  marketing = 0, 
+  loading = false 
+}) => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
 
-  const adData = [44, 55, 57, 56, 61, 58, 63, 60, 66];
-  const newsData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
-  const healthTipsData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
-  const eventData = [76, 85, 101, 98, 87, 105, 91, 114, 94];
+  // Use actual banner type data
+  const healthCount = health || 0;
+  const adsCount = ads || 0;
+  const eventCount = event || 0;
+  const newsCount = news || 0;
+  const marketingCount = marketing || 0;
 
   const colors = ["#3388ff", "#e95e8d", "#0CE7FA", "#28C76F"];
 
   const series = [
     {
-      name: "Advertisement",
-      data: [adData.reduce((a, b) => a + b, 0)], // sum of all males data
+      name: "Health",
+      data: [healthCount], // Use actual health count
+    },
+    {
+      name: "Ads",
+      data: [adsCount], // Use actual ads count
+    },
+    {
+      name: "Event",
+      data: [eventCount], // Use actual event count
     },
     {
       name: "News",
-      data: [newsData.reduce((a, b) => a + b, 0)], // sum of all females data
+      data: [newsCount], // Use actual news count
     },
     {
-      name: "Health Tips",
-      data: [healthTipsData.reduce((a, b) => a + b, 0)], // sum of all females data
+      name: "Marketing",
+      data: [marketingCount], // Use actual marketing count
     },
-    {
-      name: "Events",
-      data: [eventData.reduce((a, b) => a + b, 0)], // sum of all females data
-    },
-    // {
-    //   name: "Total",
-    //   data: [totalData.reduce((a, b) => a + b, 0)], // total sum of all
-    // },
   ];
 
   const options = {
@@ -91,7 +100,7 @@ const BarChart4 = () => {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: ["Advertisement", "News", 'Healthy Tips', 'Events'], // only show categories, not months
+      categories: ["Health", "Ads", "Event", "News", "Marketing"], // show all banner type categories
       labels: {
         show: false, // hide the labels on x-axis
       },
@@ -125,9 +134,17 @@ const BarChart4 = () => {
     colors: colors,
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <div className="text-sm text-slate-500">Loading...</div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <Chart options={options} series={series} type="bar" height="200" />
+    <div className="w-full">
+      <Chart options={options} series={series} type="bar" height="200" width="100%" />
 
       {/* Background overlay */}
       {popupData && <div className="fixed top-0 left-0 bg-black bg-opacity-50 w-full z-[999]" />}

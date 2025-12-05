@@ -3,29 +3,17 @@ import { useState } from "react";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import useDarkMode from "@/hooks/useDarkMode";
 
-const BarChart3 = () => {
+const BarChart3 = ({ totalPeriodTrackerUsers = 0, loading = false }) => {
   const [isDark] = useDarkMode();
   const [popupData, setPopupData] = useState(null);
 
-  // Example age group data (these should represent the total number of users in each range)
-  const ageGroupData = {
-    "13-18": 120,
-    "19-24": 200,
-    "25-34": 350,
-    "35-46": 150,
-    "47-65+": 80,
-  };
-
-  // Calculate the total number of users across all age ranges
-  const totalUsers = Object.values(ageGroupData).reduce((a, b) => a + b, 0);
-
-  // Calculate the percentage of users in each age range
-  const percentageData = Object.values(ageGroupData).map((users) => (users / totalUsers) * 100);
+  // Use actual total period tracker users count (no fallback data)
+  const totalUsers = totalPeriodTrackerUsers || 0;
 
   const series = [
     {
-      name: "Users",
-      data: percentageData, // Use the percentage data here
+      name: "Period Tracker Users",
+      data: [totalUsers], // Use actual total period tracker users count
     },
   ];
 
@@ -55,18 +43,13 @@ const BarChart3 = () => {
     },
     xaxis: {
       title: {
-        text: "Age Ranges",
+        text: "Period Tracker Users",
       },
-      categories: Object.keys(ageGroupData), // Use the age range labels as x-axis categories
+      categories: ["Period Tracker Users"], // Show single category
     },
     yaxis: {
-      min: 0,
-      max: 100, // Set the max value to 100 for percentage scale
-      tickAmount: 5, // Set the number of ticks to control the gap (100 / 20 = 5, so 6 ticks)
-      labels: {
-        formatter: function (value) {
-          return `${value.toFixed(0)}%`; // Format Y-axis labels as percentage
-        },
+      title: {
+        text: "",
       },
     },
     fill: {
@@ -75,7 +58,7 @@ const BarChart3 = () => {
     tooltip: {
       y: {
         formatter: function (val) {
-          return `${val.toFixed(2)}%`; // Show percentage on hover
+          return val; // Show count on hover
         },
       },
     },
@@ -86,6 +69,14 @@ const BarChart3 = () => {
     },
     colors: ["#3388ff"], // Customize the bar color as needed
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <div className="text-sm text-slate-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div>

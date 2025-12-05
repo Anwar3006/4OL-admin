@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Card from "@/components/ui/Card";
 import ViewUserProfile from "@/components/partials/auth/Admin/viewUserProfile";
 
 export default function page() {

@@ -55,7 +55,7 @@ const Breadcrumbs = () => {
                 </span>
               </li>
             )}
-            <li className="capitalize text-slate-500 dark:text-slate-400">
+            <li className="capitalize text-slate-500 dark:text-slate-200">
               {locationName}
             </li>
           </ul>

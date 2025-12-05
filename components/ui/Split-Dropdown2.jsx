@@ -43,7 +43,7 @@ const SplitDropdown2 = ({
     <div className={`relative ${wrapperClass}`}>
       <Menu as="div" className="block w-full">
         <div className="split-btngroup flex">
-          <div className={`flex-1 cursor-pointer ${labelClass}`}>
+          <div className={`flex-1 cursor-pointer text-sm ${labelClass}`}>
             {label}
             {required && <span className="text-red-500 text-lg">*</span>}
           </div>

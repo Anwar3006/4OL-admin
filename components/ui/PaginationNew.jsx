@@ -19,7 +19,7 @@ const PaginationNew = ({
         className={`${
           pageNum === pageIndex
             ? "border-b-2 border-indigo-600 text-indigo-600"
-            : "text-slate-600"
+            : "text-slate-600 dark:text-gray-100"
         } text-sm px-2 py-1 transition-all duration-150`}
         onClick={() => gotoPage(pageNum)}
       >
@@ -40,7 +40,7 @@ const PaginationNew = ({
     // If there's a gap between first and middle
     if (startPage > 1) {
       buttons.push(
-        <li key="left-ellipsis" className="text-slate-500">
+        <li key="left-ellipsis" className="text-slate-500 dark:text-gray-100">
           ...
         </li>
       );
@@ -54,7 +54,7 @@ const PaginationNew = ({
     // If there's a gap between middle and last
     if (endPage < totalPages - 2) {
       buttons.push(
-        <li key="right-ellipsis" className="text-slate-500">
+        <li key="right-ellipsis" className="text-slate-500 dark:text-gray-100">
           ...
         </li>
       );
@@ -73,7 +73,7 @@ const PaginationNew = ({
       <ul className="flex items-center space-x-2 whitespace-nowrap rtl:space-x-reverse">
         <li>
           <button
-            className={`flex items-center space-x-1 ${
+            className={`flex items-center space-x-1 dark:text-slate-200 ${
               !canPreviousPage ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={() => previousPage()}
@@ -89,7 +89,7 @@ const PaginationNew = ({
 
         <li>
           <button
-            className={`flex items-center space-x-1 ${
+            className={`flex items-center space-x-1 dark:text-slate-200 ${
               !canNextPage ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={() => nextPage()}

@@ -2,28 +2,30 @@
 import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
-import ImageBlock1 from "@/components/partials/widget/block/image-block-1";
 import GroupChart1 from "@/components/partials/widget/chart/group-chart-1";
-import RevenueBarChart from "@/components/partials/widget/chart/revenue-bar-chart";
-import RadialsChart from "@/components/partials/widget/chart/radials";
-import SelectMonth from "@/components/partials/SelectMonth";
-import CompanyTable from "@/components/partials/table/company-table";
-import RecentActivity from "@/components/partials/widget/recent-activity";
-import RadarChart from "@/components/partials/widget/chart/radar-chart";
-import HomeBredCurbs from "@/components/partials/HomeBredCurbs";
-import LineChart from "@/components/partials/chart/chartjs/LineChart";
-import GroupChart2 from "@/components/partials/widget/chart/group-chart-2";
-import GroupChart3 from "@/components/partials/widget/chart/group-chart-3";
 import GroupChart4 from "@/components/partials/widget/chart/group-chart-4";
-import GroupChart5 from "@/components/partials/widget/chart/group-chart5";
 import ColumnChart from "@/components/partials/chart/appex-chart/HorizontalBar";
 import Pie from "@/components/partials/chart/appex-chart/Pie";
+import TimePeriodFilter from "@/components/partials/TimePeriodFilter";
 import {
   fetchAllDownloadsCount,
   fetchDAULast12Months,
   fetchDownloadsLast12Months,
   fetchMAULast12Months,
   fetchTotalUsers,
+  fetchTotalFacilities,
+  fetchTotalSpecialists,
+  fetchTotalFacilityVisits,
+  fetchTotalOnlineUsers,
+  fetchTotalMedicationReminderUsers,
+  fetchTotalPeriodTrackerUsers,
+  fetchDownloadsCountByPeriod,
+  fetchUsersCountByPeriod,
+  fetchFacilitiesCountByPeriod,
+  fetchSpecialistsCountByPeriod,
+  fetchOnlineUsersCountByPeriod,
+  fetchMedicationReminderUsersCountByPeriod,
+  fetchPeriodTrackerUsersCountByPeriod,
 } from "@/app/services/dashboard";
 import DauChart from "@/components/partials/chart/appex-chart/DauChart";
 
@@ -35,6 +37,7 @@ const MostSales = dynamic(
 );
 const TotalsDashboard = () => {
   const [filterMap, setFilterMap] = useState("usa");
+  const [selectedPeriod, setSelectedPeriod] = useState("weekly");
   const [loadingDau, setLoadingDau] = useState(false);
   const [dauData, setDauData] = useState(null);
   const [dauGrowthRate, setDauGrowthRate] = useState(null);
@@ -47,8 +50,211 @@ const TotalsDashboard = () => {
   const [totalDownloads, setTotalDownloads] = useState(null);
   const [loadingTotalUsers, setLoadingTotalUsers] = useState(false);
   const [totalUsers, setTotalUsers] = useState(null);
+  
+  // New state variables for facilities, specialists, and facility visits
+  const [loadingTotalFacilities, setLoadingTotalFacilities] = useState(false);
+  const [totalFacilities, setTotalFacilities] = useState(null);
+  const [loadingTotalSpecialists, setLoadingTotalSpecialists] = useState(false);
+  const [totalSpecialists, setTotalSpecialists] = useState(null);
+
+  // New state variables for GroupChart4 data
+  const [loadingTotalOnlineUsers, setLoadingTotalOnlineUsers] = useState(false);
+  const [totalOnlineUsers, setTotalOnlineUsers] = useState(null);
+  const [loadingTotalMedicationReminderUsers, setLoadingTotalMedicationReminderUsers] = useState(false);
+  const [totalMedicationReminderUsers, setTotalMedicationReminderUsers] = useState(null);
+  const [loadingTotalPeriodTrackerUsers, setLoadingTotalPeriodTrackerUsers] = useState(false);
+  const [totalPeriodTrackerUsers, setTotalPeriodTrackerUsers] = useState(null);
+
+  // Function to fetch data based on selected period
+  const fetchDataByPeriod = (period) => {
+    if (period === "all") {
+      // Fetch all-time data using original functions
+      fetchAllDownloadsCount(
+        () => setLoadingTotalDownloads(true),
+        (data) => {
+          setTotalDownloads(data);
+          setLoadingTotalDownloads(false);
+        },
+        (error) => {
+          console.log("Error fetching all downloads count", error);
+          setLoadingTotalDownloads(false);
+        }
+      );
+
+      fetchTotalUsers(
+        () => setLoadingTotalUsers(true),
+        (data) => {
+          setTotalUsers(data);
+          setLoadingTotalUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching all users count", error);
+          setLoadingTotalUsers(false);
+        }
+      );
+
+      fetchTotalFacilities(
+        () => setLoadingTotalFacilities(true),
+        (data) => {
+          setTotalFacilities(data);
+          setLoadingTotalFacilities(false);
+        },
+        (error) => {
+          console.log("Error fetching all facilities count", error);
+          setLoadingTotalFacilities(false);
+        }
+      );
+
+      fetchTotalSpecialists(
+        () => setLoadingTotalSpecialists(true),
+        (data) => {
+          setTotalSpecialists(data);
+          setLoadingTotalSpecialists(false);
+        },
+        (error) => {
+          console.log("Error fetching all specialists count", error);
+          setLoadingTotalSpecialists(false);
+        }
+      );
+
+      fetchTotalOnlineUsers(
+        () => setLoadingTotalOnlineUsers(true),
+        (data) => {
+          setTotalOnlineUsers(data);
+          setLoadingTotalOnlineUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching all online users count", error);
+          setLoadingTotalOnlineUsers(false);
+        }
+      );
+
+      fetchTotalMedicationReminderUsers(
+        () => setLoadingTotalMedicationReminderUsers(true),
+        (data) => {
+          setTotalMedicationReminderUsers(data);
+          setLoadingTotalMedicationReminderUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching all medication reminder users count", error);
+          setLoadingTotalMedicationReminderUsers(false);
+        }
+      );
+
+      fetchTotalPeriodTrackerUsers(
+        () => setLoadingTotalPeriodTrackerUsers(true),
+        (data) => {
+          setTotalPeriodTrackerUsers(data);
+          setLoadingTotalPeriodTrackerUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching all period tracker users count", error);
+          setLoadingTotalPeriodTrackerUsers(false);
+        }
+      );
+    } else {
+      // Fetch period-specific data
+      fetchDownloadsCountByPeriod(
+        period,
+        () => setLoadingTotalDownloads(true),
+        (data) => {
+          setTotalDownloads(data);
+          setLoadingTotalDownloads(false);
+        },
+        (error) => {
+          console.log("Error fetching downloads count by period", error);
+          setLoadingTotalDownloads(false);
+        }
+      );
+
+      fetchUsersCountByPeriod(
+        period,
+        () => setLoadingTotalUsers(true),
+        (data) => {
+          setTotalUsers(data);
+          setLoadingTotalUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching users count by period", error);
+          setLoadingTotalUsers(false);
+        }
+      );
+
+      fetchFacilitiesCountByPeriod(
+        period,
+        () => setLoadingTotalFacilities(true),
+        (data) => {
+          setTotalFacilities(data);
+          setLoadingTotalFacilities(false);
+        },
+        (error) => {
+          console.log("Error fetching facilities count by period", error);
+          setLoadingTotalFacilities(false);
+        }
+      );
+
+      fetchSpecialistsCountByPeriod(
+        period,
+        () => setLoadingTotalSpecialists(true),
+        (data) => {
+          setTotalSpecialists(data);
+          setLoadingTotalSpecialists(false);
+        },
+        (error) => {
+          console.log("Error fetching specialists count by period", error);
+          setLoadingTotalSpecialists(false);
+        }
+      );
+
+      fetchOnlineUsersCountByPeriod(
+        period,
+        () => setLoadingTotalOnlineUsers(true),
+        (data) => {
+          setTotalOnlineUsers(data);
+          setLoadingTotalOnlineUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching online users count by period", error);
+          setLoadingTotalOnlineUsers(false);
+        }
+      );
+
+      fetchMedicationReminderUsersCountByPeriod(
+        period,
+        () => setLoadingTotalMedicationReminderUsers(true),
+        (data) => {
+          setTotalMedicationReminderUsers(data);
+          setLoadingTotalMedicationReminderUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching medication reminder users count by period", error);
+          setLoadingTotalMedicationReminderUsers(false);
+        }
+      );
+
+      fetchPeriodTrackerUsersCountByPeriod(
+        period,
+        () => setLoadingTotalPeriodTrackerUsers(true),
+        (data) => {
+          setTotalPeriodTrackerUsers(data);
+          setLoadingTotalPeriodTrackerUsers(false);
+        },
+        (error) => {
+          console.log("Error fetching period tracker users count by period", error);
+          setLoadingTotalPeriodTrackerUsers(false);
+        }
+      );
+    }
+  };
+
+  // Handle period change
+  const handlePeriodChange = (period) => {
+    setSelectedPeriod(period);
+    fetchDataByPeriod(period);
+  };
 
   useEffect(() => {
+    // Fetch chart data (these don't change with period filter)
     fetchMAULast12Months(
       () => {
         setLoadingMau(true);
@@ -88,33 +294,15 @@ const TotalsDashboard = () => {
         setLoadingDownloads(false);
       }
     );
-    fetchAllDownloadsCount(
-      () => {
-        setLoadingTotalDownloads(true);
-      },
-      (successData) => {
-        setTotalDownloads(successData);
-        setLoadingTotalDownloads(false);
-      },
-      (error) => {
-        console.log("Error fetching Downloads count", error);
-        setLoadingTotalDownloads(false);
-      }
-    );
-    fetchTotalUsers(
-      () => {
-        setLoadingTotalUsers(true);
-      },
-      (successData) => {
-        setTotalUsers(successData);
-        setLoadingTotalUsers(false);
-      },
-      (error) => {
-        console.log("Error fetching users count", error);
-        setLoadingTotalUsers(false);
-      }
-    );
+
+    // Fetch initial data based on selected period
+    fetchDataByPeriod(selectedPeriod);
   }, []);
+
+  // Fetch data when period changes
+  useEffect(() => {
+    fetchDataByPeriod(selectedPeriod);
+  }, [selectedPeriod]);
 
   return (
     <div>
@@ -124,17 +312,38 @@ const TotalsDashboard = () => {
             <ImageBlock1 />
           </div> */}
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
-          <Card bodyClass="p-4">
-            <div className="grid md:grid-cols-5 col-span-1 gap-4">
+          <Card 
+            title="Dashboard Totals"
+            headerslot={
+              <TimePeriodFilter 
+                selectedPeriod={selectedPeriod}
+                onPeriodChange={handlePeriodChange}
+                className="ml-auto"
+              />
+            }
+            bodyClass="p-4"
+          >
+            <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1
                 totalDownloads={totalDownloads || 0}
                 totalUsers={totalUsers?.totalUsers || 0}
+                totalFacilities={totalFacilities?.totalFacilities || 0}
+                totalSpecialists={totalSpecialists?.totalSpecialists || 0}
                 loadingTotalDownloads={loadingTotalDownloads}
                 loadingTotalUsers={loadingTotalUsers}
+                loadingTotalFacilities={loadingTotalFacilities}
+                loadingTotalSpecialists={loadingTotalSpecialists}
               />
             </div>
             <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
-              <GroupChart4 />
+              <GroupChart4
+                totalOnlineUsers={totalOnlineUsers?.totalOnlineUsers || 0}
+                totalMedicationReminderUsers={totalMedicationReminderUsers?.totalMedicationReminderUsers || 0}
+                totalPeriodTrackerUsers={totalPeriodTrackerUsers?.totalPeriodTrackerUsers || 0}
+                loadingOnlineUsers={loadingTotalOnlineUsers}
+                loadingMedicationReminderUsers={loadingTotalMedicationReminderUsers}
+                loadingPeriodTrackerUsers={loadingTotalPeriodTrackerUsers}
+              />
             </div>
           </Card>
         </div>
@@ -167,7 +376,7 @@ const TotalsDashboard = () => {
       </div>
 
       {/* active users chart */}
-      <div className="grid grid-cols-12 gap-5 mt-8">
+      <div className="grid grid-cols-12 gap-5 mt-5">
         <div className="lg:col-span-6 col-span-12">
           <Card title={"Daily Active Users (DAU)"}>
             {/* <p className="text-right sm:text-sm text-xs text-blue-500">
