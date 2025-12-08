@@ -179,16 +179,18 @@ export const fetchAllDownloadsCount = async (
   loadCallback();
 
   try {
-    // Fetch the count of all records in the downloads table
-    const { data, error } = await supabase.from("downloads").select("*");
+    // Fetch the count of all records in the downloads table using exact count
+    const { count, error } = await supabase
+      .from("downloads")
+      .select("*", { count: "exact", head: true });
 
     if (error) {
       errorCallback(error);
       return;
     }
 
-    // The count of records is stored in the data.count property
-    const downloadsCount = data?.length || 0;
+    // The count of records
+    const downloadsCount = count || 0;
 
     // Call the successCallback with the count of downloads
     successCallback(downloadsCount);
@@ -362,35 +364,42 @@ export const fetchTotalFacilities = async (
   loadCallback();
 
   try {
-    // Fetch the count of all healthcare facilities
-    const { data, error } = await supabase
+    // Fetch total count
+    const { count: totalCount, error: totalError } = await supabase
       .from("healthcare_profiles")
-      .select("id, status");
+      .select("*", { count: "exact", head: true });
 
-    if (error) {
-      errorCallback(error);
+    if (totalError) {
+      errorCallback(totalError);
       return;
     }
 
-    // Count total facilities
-    const totalFacilities = data?.length || 0;
+    // Fetch approved count
+    const { count: approvedCount, error: approvedError } = await supabase
+      .from("healthcare_profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "Approved");
 
-    // Count approved and pending facilities
-    let approvedCount = 0;
-    let pendingCount = 0;
+    if (approvedError) {
+      errorCallback(approvedError);
+      return;
+    }
 
-    data.forEach((facility) => {
-      if (facility.status === "Approved") {
-        approvedCount++;
-      } else if (facility.status === "Pending") {
-        pendingCount++;
-      }
-    });
+    // Fetch pending count
+    const { count: pendingCount, error: pendingError } = await supabase
+      .from("healthcare_profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "Pending");
+
+    if (pendingError) {
+      errorCallback(pendingError);
+      return;
+    }
 
     const result = {
-      totalFacilities,
-      approvedCount,
-      pendingCount,
+      totalFacilities: totalCount || 0,
+      approvedCount: approvedCount || 0,
+      pendingCount: pendingCount || 0,
     };
 
     successCallback(result);
@@ -472,10 +481,10 @@ export const fetchTotalDiseasesAndConditions = async (
   loadCallback();
 
   try {
-    // Fetch the count of all diseases and conditions
-    const { data, error } = await supabase
+    // Fetch the count of all diseases and conditions using exact count
+    const { count, error } = await supabase
       .from("illness_and_conditions")
-      .select("id");
+      .select("*", { count: "exact", head: true });
 
     if (error) {
       errorCallback(error);
@@ -483,7 +492,7 @@ export const fetchTotalDiseasesAndConditions = async (
     }
 
     // Count total diseases and conditions
-    const totalDiseasesAndConditions = data?.length || 0;
+    const totalDiseasesAndConditions = count || 0;
 
     const result = {
       totalDiseasesAndConditions,
@@ -504,10 +513,10 @@ export const fetchTotalSymptoms = async (
   loadCallback();
 
   try {
-    // Fetch the count of all symptoms
-    const { data, error } = await supabase
+    // Fetch the count of all symptoms using exact count
+    const { count, error } = await supabase
       .from("symptoms")
-      .select("id");
+      .select("*", { count: "exact", head: true });
 
     if (error) {
       errorCallback(error);
@@ -515,7 +524,7 @@ export const fetchTotalSymptoms = async (
     }
 
     // Count total symptoms
-    const totalSymptoms = data?.length || 0;
+    const totalSymptoms = count || 0;
 
     const result = {
       totalSymptoms,
@@ -536,10 +545,10 @@ export const fetchTotalHealthyLiving = async (
   loadCallback();
 
   try {
-    // Fetch the count of all healthy living articles
-    const { data, error } = await supabase
+    // Fetch the count of all healthy living articles using exact count
+    const { count, error } = await supabase
       .from("healthy_living")
-      .select("id");
+      .select("*", { count: "exact", head: true });
 
     if (error) {
       errorCallback(error);
@@ -547,7 +556,7 @@ export const fetchTotalHealthyLiving = async (
     }
 
     // Count total healthy living articles
-    const totalHealthyLiving = data?.length || 0;
+    const totalHealthyLiving = count || 0;
 
     const result = {
       totalHealthyLiving,
@@ -670,10 +679,10 @@ export const fetchTotalPeriodTrackerUsers = async (
   loadCallback();
 
   try {
-    // Fetch total count of tracker logs
-    const { data, error } = await supabase
+    // Fetch total count of tracker logs using exact count
+    const { count, error } = await supabase
       .from("tracker_logs")
-      .select("id", { count: "exact" });
+      .select("*", { count: "exact", head: true });
 
     if (error) {
       errorCallback(error);
@@ -681,7 +690,7 @@ export const fetchTotalPeriodTrackerUsers = async (
     }
 
     // Get the total count of tracker logs
-    const totalPeriodTrackerUsers = data?.length || 0;
+    const totalPeriodTrackerUsers = count || 0;
 
     const result = {
       totalPeriodTrackerUsers,
@@ -839,9 +848,9 @@ export const fetchDownloadsCountByPeriod = async (
   try {
     const { start, end } = getDateRangeText(period); // downloads.install_date is text
     
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("downloads")
-      .select("*")
+      .select("*", { count: "exact", head: true })
       .gte("install_date", start)
       .lte("install_date", end);
 
@@ -850,7 +859,7 @@ export const fetchDownloadsCountByPeriod = async (
       return;
     }
 
-    const downloadsCount = data?.length || 0;
+    const downloadsCount = count || 0;
     successCallback(downloadsCount);
   } catch (err) {
     errorCallback(err);
@@ -917,33 +926,48 @@ export const fetchFacilitiesCountByPeriod = async (
   try {
     const { start, end } = getDateRangeTimestamptz(period); // healthcare_profiles.created_at is timestamptz
     
-    const { data, error } = await supabase
+    // Fetch total count
+    const { count: totalCount, error: totalError } = await supabase
       .from("healthcare_profiles")
-      .select("id, status, created_at")
+      .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
 
-    if (error) {
-      errorCallback(error);
+    if (totalError) {
+      errorCallback(totalError);
       return;
     }
 
-    const totalFacilities = data?.length || 0;
-    let approvedCount = 0;
-    let pendingCount = 0;
+    // Fetch approved count
+    const { count: approvedCount, error: approvedError } = await supabase
+      .from("healthcare_profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "Approved")
+      .gte("created_at", start)
+      .lte("created_at", end);
 
-    data.forEach((facility) => {
-      if (facility.status === "Approved") {
-        approvedCount++;
-      } else if (facility.status === "Pending") {
-        pendingCount++;
-      }
-    });
+    if (approvedError) {
+      errorCallback(approvedError);
+      return;
+    }
+
+    // Fetch pending count
+    const { count: pendingCount, error: pendingError } = await supabase
+      .from("healthcare_profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "Pending")
+      .gte("created_at", start)
+      .lte("created_at", end);
+
+    if (pendingError) {
+      errorCallback(pendingError);
+      return;
+    }
 
     const result = {
-      totalFacilities,
-      approvedCount,
-      pendingCount,
+      totalFacilities: totalCount || 0,
+      approvedCount: approvedCount || 0,
+      pendingCount: pendingCount || 0,
     };
 
     successCallback(result);
@@ -966,7 +990,7 @@ export const fetchSpecialistsCountByPeriod = async (
     
     const { data, error } = await supabase
       .from("illness_and_conditions")
-      .select("id, specialist_to_contact, created_at")
+      .select("id, created_at")
       .gte("created_at", start)
       .lte("created_at", end);
 
@@ -1008,9 +1032,9 @@ export const fetchDiseasesCountByPeriod = async (
   try {
     const { start, end } = getDateRangeBigint(period); // illness_and_conditions.created_at is bigint
     
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("illness_and_conditions")
-      .select("id, created_at")
+      .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
 
@@ -1019,7 +1043,7 @@ export const fetchDiseasesCountByPeriod = async (
       return;
     }
 
-    const totalDiseasesAndConditions = data?.length || 0;
+    const totalDiseasesAndConditions = count || 0;
 
     const result = {
       totalDiseasesAndConditions,
@@ -1043,9 +1067,9 @@ export const fetchSymptomsCountByPeriod = async (
   try {
     const { start, end } = getDateRangeBigint(period); // symptoms.created_at is bigint
     
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("symptoms")
-      .select("id, created_at")
+      .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
 
@@ -1054,7 +1078,7 @@ export const fetchSymptomsCountByPeriod = async (
       return;
     }
 
-    const totalSymptoms = data?.length || 0;
+    const totalSymptoms = count || 0;
 
     const result = {
       totalSymptoms,
@@ -1078,9 +1102,9 @@ export const fetchHealthyLivingCountByPeriod = async (
   try {
     const { start, end } = getDateRangeBigint(period); // healthy_living.created_at is bigint
     
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("healthy_living")
-      .select("id, created_at")
+      .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
 
@@ -1089,7 +1113,7 @@ export const fetchHealthyLivingCountByPeriod = async (
       return;
     }
 
-    const totalHealthyLiving = data?.length || 0;
+    const totalHealthyLiving = count || 0;
 
     const result = {
       totalHealthyLiving,
@@ -1221,9 +1245,9 @@ export const fetchPeriodTrackerUsersCountByPeriod = async (
   try {
     const { start, end } = getDateRangeBigint(period); // Assuming tracker_logs has created_at as bigint
     
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("tracker_logs")
-      .select("id", { count: "exact" })
+      .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
 
@@ -1233,7 +1257,7 @@ export const fetchPeriodTrackerUsersCountByPeriod = async (
     }
 
     // Get the total count of tracker logs within the time period
-    const totalPeriodTrackerUsers = data?.length || 0;
+    const totalPeriodTrackerUsers = count || 0;
 
     const result = {
       totalPeriodTrackerUsers,
