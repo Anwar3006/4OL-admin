@@ -67,7 +67,7 @@ const Submenu = ({ activeSubmenu, item, i, locationName, pendingReviews }) => {
                   } text-sm flex space-x-3 items-center transition-all duration-150`}
                 >
                   <s
-                    pan
+                    pan="true"
                     className={`${
                       locationName === subItem.childlink
                         ? "bg-slate-900 dark:bg-slate-300 ring-4 ring-opacity-[15%] ring-black-500 dark:ring-slate-300 dark:ring-opacity-20"

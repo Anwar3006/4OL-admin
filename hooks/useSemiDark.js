@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { handleSemiDarkMode } from "@/store/layoutReducer";
 import { useSelector, useDispatch } from "react-redux";
 

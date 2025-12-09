@@ -11,8 +11,8 @@ export const add_healthy_living = async (
 
   try {
     // Check if the user is authenticated using localStorage
-    const isAuthenticated = localStorage.getItem('isAuth') === 'true';
-    const userId = localStorage.getItem('user_id');
+    const isAuthenticated = localStorage.getItem("isAuth") === "true";
+    const userId = localStorage.getItem("user_id");
 
     if (!isAuthenticated || !userId) {
       console.error("User is not authenticated");
@@ -21,25 +21,28 @@ export const add_healthy_living = async (
     }
 
     // Proceed with inserting data into the healthcare_profiles table
+    const dataToInsert = {
+      // created_at: moment(Date.now()).valueOf(), // Convert date to timestamp //we let the database handle the timestamps
+      // updated_at: moment(Date.now()).valueOf(), // Convert date to timestamp
+      created_by: userId,
+      updated_by: userId,
+      is_created_by_admin_panel: true,
+      topic_name: user.topic_name,
+      list_type: user.list_type,
+      category: user.category,
+      about: user.about,
+
+      types: user.types, //array of objects, stored as jsonb in database
+
+      contact_your_doctor: user.contact_your_doctor,
+      more_information: user.more_information,
+      attribution: user.attribution,
+      image_url: user.image_url,
+    };
+    console.log("Data to insert: ", dataToInsert);
     const { data: insertData, error: healthcareProfileError } = await supabase
       .from("healthy_living")
-      .insert([
-        {
-          created_at: moment(new Date()).valueOf(), // Convert date to timestamp
-          updated_at: moment(new Date()).valueOf(), // Convert date to timestamp
-          created_by: userId,
-          updated_by: userId,
-          is_created_by_admin_panel: true,
-          topic_name: user.topic_name,
-          list_type: user.list_type,
-          category: user.category,
-          about: user.about,
-          contact_your_doctor: user.contact_your_doctor,
-          more_information: user.more_information,
-          attribution: user.attribution,
-          image_url: user.image_url,
-        },
-      ]);
+      .insert([dataToInsert]);
 
     if (healthcareProfileError) {
       errorCallback(healthcareProfileError);

@@ -1,4 +1,4 @@
-import { supabase } from '@/app/utils/supabaseClient';
+import { supabase } from "@/app/utils/supabaseClient";
 
 /**
  * Enhanced device information detection
@@ -9,20 +9,24 @@ const getEnhancedDeviceInfo = () => {
 
   const userAgent = navigator.userAgent;
   const platform = navigator.platform;
-  
+
   // Mobile detection
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  const isTablet = /iPad|Android(?=.*\bMobile\b)/i.test(userAgent) || 
-                   (screen.width >= 768 && screen.height >= 1024 && isMobile);
-  
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      userAgent
+    );
+  const isTablet =
+    /iPad|Android(?=.*\bMobile\b)/i.test(userAgent) ||
+    (screen.width >= 768 && screen.height >= 1024 && isMobile);
+
   // Android detection
   const androidMatch = userAgent.match(/Android\s+([\d.]+)/);
   const androidVersion = androidMatch ? androidMatch[1] : null;
-  
+
   // iOS detection
   const iosMatch = userAgent.match(/OS\s+([\d_]+)/);
-  const iosVersion = iosMatch ? iosMatch[1].replace(/_/g, '.') : null;
-  
+  const iosVersion = iosMatch ? iosMatch[1].replace(/_/g, ".") : null;
+
   // Device model detection
   let deviceModel = "Unknown";
   let manufacturer = "Unknown";
@@ -34,7 +38,7 @@ const getEnhancedDeviceInfo = () => {
   if (androidMatch) {
     systemName = "Android";
     systemVersion = androidVersion;
-    
+
     // Common Android device detection
     if (userAgent.includes("Pixel")) {
       const pixelMatch = userAgent.match(/Pixel\s+(\d+)/);
@@ -61,7 +65,7 @@ const getEnhancedDeviceInfo = () => {
   } else if (iosMatch) {
     systemName = "iOS";
     systemVersion = iosVersion;
-    
+
     if (userAgent.includes("iPhone")) {
       manufacturer = "Apple";
       deviceModel = "iPhone";
@@ -80,9 +84,13 @@ const getEnhancedDeviceInfo = () => {
     }
   } else {
     // Desktop detection
-    systemName = platform.includes("Win") ? "Windows" : 
-                 platform.includes("Mac") ? "macOS" : 
-                 platform.includes("Linux") ? "Linux" : "Unknown";
+    systemName = platform.includes("Win")
+      ? "Windows"
+      : platform.includes("Mac")
+        ? "macOS"
+        : platform.includes("Linux")
+          ? "Linux"
+          : "Unknown";
     systemVersion = "Desktop";
     manufacturer = "Desktop";
     deviceModel = "Desktop";
@@ -101,7 +109,7 @@ const getEnhancedDeviceInfo = () => {
     isMobile: isMobile,
     screenWidth: screen.width,
     screenHeight: screen.height,
-    pixelRatio: window.devicePixelRatio || 1
+    pixelRatio: window.devicePixelRatio || 1,
   };
 };
 
@@ -121,13 +129,24 @@ const getEnhancedDeviceInfo = () => {
 export const logActivity = async (activityData) => {
   try {
     const {
-      userId, userName, type, description,
-      reference = null, referenceId = null, ip = null, deviceInfo = null
+      userId,
+      userName,
+      type,
+      description,
+      reference = null,
+      referenceId = null,
+      ip = null,
+      deviceInfo = null,
     } = activityData;
 
     // Validate required fields
     if (!userId || !userName || !type || !description) {
-      console.warn("Missing required fields for activity logging:", { userId, userName, type, description });
+      console.warn("Missing required fields for activity logging:", {
+        userId,
+        userName,
+        type,
+        description,
+      });
       return false;
     }
 
@@ -143,15 +162,15 @@ export const logActivity = async (activityData) => {
         platform: navigator.platform,
         language: navigator.language,
         screenResolution: `${screen.width}x${screen.height}`,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       // Enhanced device detection
       const enhancedInfo = getEnhancedDeviceInfo();
-      
+
       deviceInfoData = {
         ...basicInfo,
-        ...enhancedInfo
+        ...enhancedInfo,
       };
     }
 
@@ -160,7 +179,7 @@ export const logActivity = async (activityData) => {
     if (!ipAddress && typeof window !== "undefined") {
       try {
         // Try to get IP from a public API (this is a simple approach)
-        const response = await fetch('https://api.ipify.org?format=json');
+        const response = await fetch("https://api.ipify.org?format=json");
         const data = await response.json();
         ipAddress = data.ip;
       } catch (error) {
@@ -169,36 +188,34 @@ export const logActivity = async (activityData) => {
       }
     }
 
-    const { data, error } = await supabase
-      .from("activity_logs")
-      .insert({
-        user_id: userId,
-        user_name: userName,
-        type: type,
-        description: description,
-        reference: reference,
-        reference_id: referenceId,
-        ip: ipAddress,
-        timestamp: timestamp,
-        device_info: deviceInfoData,
-        created_by: userId,
-        updated_by: userId,
-        is_created_by_admin_panel: true
-      });
+    const { data, error } = await supabase.from("activity_logs").insert({
+      user_id: userId,
+      user_name: userName,
+      type: type,
+      description: description,
+      reference: reference,
+      reference_id: referenceId,
+      ip: ipAddress,
+      timestamp: timestamp,
+      device_info: deviceInfoData,
+      created_by: userId,
+      updated_by: userId,
+      is_created_by_admin_panel: true,
+    });
 
     if (error) {
       console.error("Error logging activity:", error);
       return false;
     }
 
-    console.log("Activity logged successfully:", { 
-      type, 
-      description, 
-      userId, 
+    console.log("Activity logged successfully:", {
+      type,
+      description,
+      userId,
       userName,
       timestamp,
       ip: ipAddress,
-      deviceInfo: deviceInfoData
+      deviceInfo: deviceInfoData,
     });
     return true;
   } catch (error) {
@@ -222,7 +239,7 @@ export const logAuthActivity = async (userId, userName, action, ip = null) => {
     userName,
     type: "authentication",
     description: `User ${action}`,
-    ip
+    ip,
   });
 };
 
@@ -235,7 +252,13 @@ export const logAuthActivity = async (userId, userName, action, ip = null) => {
  * @param {string} [ip] - IP address
  * @returns {Promise<boolean>} - Success status
  */
-export const logFacilityActivity = async (userId, userName, action, facilityId = null, ip = null) => {
+export const logFacilityActivity = async (
+  userId,
+  userName,
+  action,
+  facilityId = null,
+  ip = null
+) => {
   return await logActivity({
     userId,
     userName,
@@ -243,7 +266,7 @@ export const logFacilityActivity = async (userId, userName, action, facilityId =
     description: `Facility ${action}`,
     reference: facilityId,
     referenceId: facilityId,
-    ip
+    ip,
   });
 };
 
@@ -256,7 +279,13 @@ export const logFacilityActivity = async (userId, userName, action, facilityId =
  * @param {string} [ip] - IP address
  * @returns {Promise<boolean>} - Success status
  */
-export const logDiseaseActivity = async (userId, userName, action, diseaseId = null, ip = null) => {
+export const logDiseaseActivity = async (
+  userId,
+  userName,
+  action,
+  diseaseId = null,
+  ip = null
+) => {
   return await logActivity({
     userId,
     userName,
@@ -264,7 +293,7 @@ export const logDiseaseActivity = async (userId, userName, action, diseaseId = n
     description: `Disease ${action}`,
     reference: diseaseId,
     referenceId: diseaseId,
-    ip
+    ip,
   });
 };
 
@@ -277,7 +306,13 @@ export const logDiseaseActivity = async (userId, userName, action, diseaseId = n
  * @param {string} [ip] - IP address
  * @returns {Promise<boolean>} - Success status
  */
-export const logSymptomActivity = async (userId, userName, action, symptomId = null, ip = null) => {
+export const logSymptomActivity = async (
+  userId,
+  userName,
+  action,
+  symptomId = null,
+  ip = null
+) => {
   return await logActivity({
     userId,
     userName,
@@ -285,7 +320,7 @@ export const logSymptomActivity = async (userId, userName, action, symptomId = n
     description: `Symptom ${action}`,
     reference: symptomId,
     referenceId: symptomId,
-    ip
+    ip,
   });
 };
 
@@ -298,7 +333,13 @@ export const logSymptomActivity = async (userId, userName, action, symptomId = n
  * @param {string} [ip] - IP address
  * @returns {Promise<boolean>} - Success status
  */
-export const logHealthyLivingActivity = async (userId, userName, action, articleId = null, ip = null) => {
+export const logHealthyLivingActivity = async (
+  userId,
+  userName,
+  action,
+  articleId = null,
+  ip = null
+) => {
   return await logActivity({
     userId,
     userName,
@@ -306,7 +347,7 @@ export const logHealthyLivingActivity = async (userId, userName, action, article
     description: `Healthy Living article ${action}`,
     reference: articleId,
     referenceId: articleId,
-    ip
+    ip,
   });
 };
 
@@ -319,7 +360,13 @@ export const logHealthyLivingActivity = async (userId, userName, action, article
  * @param {string} [ip] - IP address
  * @returns {Promise<boolean>} - Success status
  */
-export const logUserActivity = async (userId, userName, action, targetUserId = null, ip = null) => {
+export const logUserActivity = async (
+  userId,
+  userName,
+  action,
+  targetUserId = null,
+  ip = null
+) => {
   return await logActivity({
     userId,
     userName,
@@ -327,6 +374,6 @@ export const logUserActivity = async (userId, userName, action, targetUserId = n
     description: `User ${action}`,
     reference: targetUserId,
     referenceId: targetUserId,
-    ip
+    ip,
   });
 };

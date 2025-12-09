@@ -68,6 +68,8 @@ export const getTileContent = (date, confirmData) => {
 };
 
 const formatDate = (date) => moment(date).format("YYYY-MM-DD");
+
+// Next Period Date = Period Start Date + Cycle Length
 const calculateNextPeriodDate = (data) =>
   moment(data.period_start_date)
     .add(data.period_length - 1, "days")

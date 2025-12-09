@@ -84,6 +84,8 @@ const HealthyLivingDetails = () => {
             </div>
           )}
 
+          {/* TODO: Update View to include newly added Types.Type_Name and Types.About_Type */}
+
           {/* Category */}
           {article.category && (
             <div>
@@ -126,9 +128,9 @@ const HealthyLivingDetails = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-2">
                 Attribution
               </h3>
-              <p className="text-gray-700 dark:text-slate-300">
-                {article.attribution}
-              </p>
+              <div className="text-gray-700 dark:text-slate-300">
+                <HtmlRenderer htmlContent={article.attribution} />
+              </div>
             </div>
           )}
         </div>
@@ -138,4 +140,3 @@ const HealthyLivingDetails = () => {
 };
 
 export default HealthyLivingDetails;
-
