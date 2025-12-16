@@ -36,6 +36,10 @@ export const menuItems = [
     icon: "heroicons-outline:user",
     child: [
       {
+        childtitle: "Add Facility",
+        childlink: "/facilities/add-facility",
+      },
+      {
         childtitle: "Pending Reviews",
         childlink: "/facilities/pending-reviews",
       },

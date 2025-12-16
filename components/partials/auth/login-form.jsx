@@ -69,7 +69,7 @@ const LoginForm = () => {
         .eq("email", data.email)
         .in("role", ["Admin", "Super Admin"])
         .single();
-        console.log(userData)
+      console.log(userData);
 
       if (userError) {
         toast.error("Error fetching user data.", {
@@ -210,6 +210,20 @@ const LoginForm = () => {
         >
           Forgot Password?{" "}
         </Link>
+      </div>
+
+      <div className="flex items-center justify-center mt-3">
+        <div className="group w-fit">
+          <Link
+            href="/forgot-password2"
+            className="text-xs text-slate-800 dark:text-slate-400 leading-6 font-medium"
+          >
+            Don&apos;t have an account?{" "}
+            <span className="text-[#56ce84] font-bold group-hover:underline">
+              Sign Up
+            </span>
+          </Link>
+        </div>
       </div>
 
       <button className="btn bg-[#56ce84] text-white block w-full text-center">

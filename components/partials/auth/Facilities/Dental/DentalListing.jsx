@@ -25,7 +25,7 @@ export default function DentalListing() {
         setLoading(true);
         const from = pageIndex * pageSize;
         const to = from + pageSize - 1;
-  
+
         const {
           data: fetchedData,
           error,
@@ -36,8 +36,8 @@ export default function DentalListing() {
           .range(from, to)
           .eq("status", "Approved")
           .eq("facility_type", "Dental");
-          setData(fetchedData || []);
-          setTotalPages(Math.ceil(count / pageSize));
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -103,7 +103,7 @@ export default function DentalListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/dental/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>

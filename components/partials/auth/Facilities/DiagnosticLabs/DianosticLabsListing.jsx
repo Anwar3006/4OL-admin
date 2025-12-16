@@ -25,7 +25,7 @@ export default function DiagnosticLabsListing() {
         setLoading(true);
         const from = pageIndex * pageSize;
         const to = from + pageSize - 1;
-  
+
         const {
           data: fetchedData,
           error,
@@ -36,8 +36,8 @@ export default function DiagnosticLabsListing() {
           .range(from, to)
           .eq("status", "Approved")
           .eq("facility_type", "Diagnostic Lab");
-          setData(fetchedData || []);
-          setTotalPages(Math.ceil(count / pageSize));
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -93,7 +93,9 @@ export default function DiagnosticLabsListing() {
   return (
     <Card className="" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">Diagnostic Labs</h6>
+        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">
+          Diagnostic Labs
+        </h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -102,7 +104,7 @@ export default function DiagnosticLabsListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/diagnostic-labs/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>

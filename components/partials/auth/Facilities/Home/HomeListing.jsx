@@ -16,7 +16,7 @@ export default function HomeListing() {
   const [pageSize] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(0); // Total pages for pagination
   const router = useRouter();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   // Fetch data from Supabase on component mount and when page changes
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function HomeListing() {
         setLoading(true);
         const from = pageIndex * pageSize;
         const to = from + pageSize - 1;
-  
+
         const {
           data: fetchedData,
           error,
@@ -37,8 +37,8 @@ export default function HomeListing() {
           .eq("status", "Approved")
           .eq("facility_type", "Home");
 
-          setData(fetchedData || []);
-          setTotalPages(Math.ceil(count / pageSize));
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -103,7 +103,7 @@ export default function HomeListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/homes/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>

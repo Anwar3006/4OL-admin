@@ -48,7 +48,7 @@ export default function AmbulanceListing() {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchData();
   }, [pageIndex, pageSize]);
@@ -108,7 +108,7 @@ export default function AmbulanceListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/ambulance/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function AmbulanceListing() {
                   colSpan="6"
                   className="text-center py-10 text-base text-gray-500 dark:text-gray-100"
                 >
-                 <NoDataFound />
+                  <NoDataFound />
                 </td>
               </tr>
             )}

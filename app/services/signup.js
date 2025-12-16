@@ -14,10 +14,12 @@ export const signup = async (
     // Get creator's ID from localStorage
     const createdById = localStorage.getItem("user_id"); // Make sure you store this at login
 
-    const { data: signupData, error: signupError } = await supabase.auth.signUp({
-      email: user.email,
-      password: user.password,
-    });
+    const { data: signupData, error: signupError } = await supabase.auth.signUp(
+      {
+        email: user.email,
+        password: user.password,
+      }
+    );
 
     if (signupError) {
       errorCallback(signupError);
@@ -38,8 +40,8 @@ export const signup = async (
             ...updatedUser,
             id: userId,
             password: encryptedPassword,
-            created_at: new Date().getTime(), // timestamp
-            updated_at: new Date().getTime(), // timestamp
+            // created_at: new Date.n, // timestamp
+            // updated_at: new Date().getTime(), // timestamp
             created_by: createdById || userId, // fallback to self if no admin
             updated_by: createdById || userId, // fallback to self if no admin
             is_created_by_admin_panel: true,
@@ -55,7 +57,7 @@ export const signup = async (
       // Log the user creation activity
       try {
         let creatorName = "Unknown User";
-        
+
         // Get creator's full name from user_profiles table
         if (createdById) {
           const { data: creatorProfile, error: creatorError } = await supabase
@@ -65,13 +67,21 @@ export const signup = async (
             .single();
 
           if (!creatorError && creatorProfile) {
-            const fullName = `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim();
-            creatorName = fullName || localStorage.getItem("user_email") || "Unknown User";
+            const fullName =
+              `${creatorProfile.first_name || ""} ${creatorProfile.last_name || ""}`.trim();
+            creatorName =
+              fullName || localStorage.getItem("user_email") || "Unknown User";
           } else {
-            creatorName = typeof window !== "undefined" ? localStorage.getItem("user_email") || "Unknown User" : "Unknown User";
+            creatorName =
+              typeof window !== "undefined"
+                ? localStorage.getItem("user_email") || "Unknown User"
+                : "Unknown User";
           }
         } else {
-          creatorName = typeof window !== "undefined" ? localStorage.getItem("user_email") || "Unknown User" : "Unknown User";
+          creatorName =
+            typeof window !== "undefined"
+              ? localStorage.getItem("user_email") || "Unknown User"
+              : "Unknown User";
         }
 
         await logUserActivity(

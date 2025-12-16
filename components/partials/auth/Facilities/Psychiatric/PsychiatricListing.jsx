@@ -103,7 +103,7 @@ export default function PsychiatricListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("/facilities/psychiatric/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>

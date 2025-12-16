@@ -9,7 +9,7 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import NoDataFound from "@/components/NoDataFound";
 import Loading from "@/components/Loading";
 
-export default function PharmaciesListing() {
+export default function IBPListing() {
   const [data, setData] = useState([]); // State to hold fetched data
   const [globalFilter, setGlobalFilter] = useState(""); // Search filter
   const [pageIndex, setPageIndex] = useState(0); // Pagination index
@@ -35,7 +35,7 @@ export default function PharmaciesListing() {
           .select("*", { count: "exact" })
           .range(from, to)
           .eq("status", "Approved")
-          .eq("facility_type", "Pharmacy");
+          .eq("facility_type", "Hospital/ Clinic");
         setData(fetchedData || []);
         setTotalPages(Math.ceil(count / pageSize));
       } catch (error) {
@@ -82,6 +82,7 @@ export default function PharmaciesListing() {
     }
   };
 
+  // Edit a record
   const handleEdit = (id) => {
     router.push(`/edit-facility-profile-form?id=${id}`);
   };
@@ -92,11 +93,13 @@ export default function PharmaciesListing() {
 
   return (
     <Card className="" bodyClass="p-0">
-      <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">Pharmacies</h6>
-        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
+      <div className="flex max-lg:flex-col items-center w-full p-6">
+        <h6 className="md:mb-0 mb-3 w-full dark:text-gray-100">
+          Individual Business Provider
+        </h6>
+        <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-          <div className="flex ">
+          {/* <div className="flex ">
             <Button
               icon="heroicons-outline:plus-sm"
               text="Add Facility"
@@ -104,11 +107,11 @@ export default function PharmaciesListing() {
               iconClass="text-lg"
               onClick={() => router.push("/facilities/add-facility")}
             />
-          </div>
+          </div> No Button to Add IBP, it is added by Provider on the Mobile side*/}
         </div>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar relative -mt-4">
+      <div className="overflow-x-auto relative custom-scrollbar -mt-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 dark:bg-slate-800">
             <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
@@ -135,7 +138,7 @@ export default function PharmaciesListing() {
               <tr
                 key={item.id}
                 onClick={() => handleView(item.id)}
-                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800"
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 whitespace-nowrap"
               >
                 <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 capitalize">
                   {item.facility_type}
@@ -200,7 +203,7 @@ export default function PharmaciesListing() {
       </div>
 
       {/* Pagination */}
-      <div className="m-6 flex justify-end">
+      <div className="flex justify-end m-6">
         <PaginationNew
           canPreviousPage={canPreviousPage}
           canNextPage={canNextPage}

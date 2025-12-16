@@ -45,6 +45,7 @@ const schema = yup.object().shape({
   //   .of(yup.string())
   //   .min(1, "Select at least one Pharmacy Service")
   //   .required("Pharmacy Service is required"),
+  facility_type: yup.string().required("Facility Type is required"),
   facility_name: yup.string().required("Facility Name is required"),
   contact_num: yup.string().required("Contact Number is required"),
   gps_address: yup.string().required("GPS Address is required"),
@@ -77,7 +78,7 @@ const AddFacilityForm = () => {
   const [preview, setPreview] = useState(null);
   const [mediaType, setMediaType] = useState("");
   const pathname = usePathname();
-  const [facilityType, setFacilityType] = useState(null);
+  const [facilityType, setFacilityType] = useState("Hospital/Clinic");
 
   const ghanaRegions = districts_regions.data;
   const [selectedRegion, setSelectedRegion] = useState(ghanaRegions[6]);
@@ -88,27 +89,27 @@ const AddFacilityForm = () => {
 
   useEffect(() => {
     setSelectedDistrict(selectedRegion.districts[0].name);
-    console.log(JSON.stringify(selectedRegion, null, 2));
+    // console.log(JSON.stringify(selectedRegion, null, 2));
     const availableDistricts = selectedRegion.districts.map((district) => ({
       label: district.name,
     }));
     setAvailableDistricts(availableDistricts);
   }, [selectedRegion]);
 
-  useEffect(() => {
-    if (pathname === "/facilities/dental/create") setFacilityType("Dental");
-    else if (pathname === "/facilities/eye-care/create")
-      setFacilityType("Eye Care");
-    else if (pathname === "/facilities/osteopathy/create")
-      setFacilityType("Osteopathy");
-    else if (pathname === "/facilities/physiotherapy/create")
-      setFacilityType("Physiotherapy");
-    else if (pathname === "/facilities/prosthetics/create")
-      setFacilityType("Prosthetics");
-    else if (pathname === "/facilities/psychiatric/create")
-      setFacilityType("Psychiatric");
-    else setFacilityType(null);
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (pathname === "/facilities/dental/create") setFacilityType("Dental");
+  //   else if (pathname === "/facilities/eye-care/create")
+  //     setFacilityType("Eye Care");
+  //   else if (pathname === "/facilities/osteopathy/create")
+  //     setFacilityType("Osteopathy");
+  //   else if (pathname === "/facilities/physiotherapy/create")
+  //     setFacilityType("Physiotherapy");
+  //   else if (pathname === "/facilities/prosthetics/create")
+  //     setFacilityType("Prosthetics");
+  //   else if (pathname === "/facilities/psychiatric/create")
+  //     setFacilityType("Psychiatric");
+  //   else setFacilityType(null);
+  // }, [pathname]);
 
   const {
     register,
@@ -182,10 +183,10 @@ const AddFacilityForm = () => {
     // console.log("Device Info: ", JSON.stringify(value, null, 2));
   }, [deviceInfo.loaded]);
 
-  //   const selectedFacilityType = watch("facility_type") || [];
+  // const selectedFacilityType = watch("facility_type") || [];
   const selectedHospitalServices = watch("hospital_services") || [];
   const selectedHospitalAmenities = watch("hospital_amenities") || [];
-  const selectedPharmacyServices = watch("pharmacy_services") || [];
+  // const selectedPharmacyServices = watch("pharmacy_services") || [];
 
   const handleImageUpload = (e) => {
     const newFiles = Array.from(e.target.files || []);
@@ -225,13 +226,13 @@ const AddFacilityForm = () => {
     );
 
     // Check for errors
-    if (!mediaUrls || mediaUrls.length === 0) {
-      toast.error("No media files uploaded.");
-      return;
-    } else if (mediaUrls >= 6) {
-      toast.error("Maximum 6 files are allowed");
-      return;
-    }
+    // if (!mediaUrls || mediaUrls.length === 0) {
+    //   toast.error("No media files uploaded.");
+    //   return;
+    // } else if (mediaUrls >= 6) {
+    //   toast.error("Maximum 6 files are allowed");
+    //   return;
+    // }
 
     // Filter out any empty values in business hours
     const businessHours = Object.keys(user.business_hours || {}).reduce(
@@ -251,8 +252,6 @@ const AddFacilityForm = () => {
       business_hours: businessHours,
       mediaUrls,
     };
-
-    console.log("updated data", updatedUser);
 
     healthcareProfile(
       updatedUser,
@@ -295,7 +294,33 @@ const AddFacilityForm = () => {
       </div> */}
 
       <div>
-        <p className="font-semibold mb-5">Basic Information</p>
+        <div className="w-full mb-1">
+          <p className="font-semibold mb-5">Select the Type of Facility</p>
+          <SplitDropdown2
+            label="Select Facility Type"
+            value={facilityType}
+            onChange={(value) => setFacilityType(value)}
+            items={[
+              { label: "Hospital/Clinic" },
+              { label: "Herbal Hospital" },
+              { label: "Diagnostic Lab" },
+              { label: "Pharmacy" },
+              { label: "Dental Center" },
+              { label: "Retirement Home" },
+              { label: "Eye Care Center" },
+              { label: "Osteopathy" },
+              { label: "Physiotherapy" },
+              { label: "Prosthetics Center" },
+              { label: "Psychiatric Center" },
+            ]}
+            isMultiSelect={false}
+            wrapperClass="w-full md:w-1/2"
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="font-semibold my-5">Basic Information</p>
         <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
           <div>
             <Textinput
@@ -525,7 +550,7 @@ const AddFacilityForm = () => {
         </div>
       </div>
 
-      <div className="flex sm:grid-cols-2 grid-cols-1 sm:gap-4 w-full mt-2">
+      <div className="flex sm:grid-cols-2 grid-cols-1 gap-1 sm:gap-4 w-full mt-2">
         <div className="w-full">
           <p className="font-semibold my-5">Services</p>
           <SplitDropdown2
@@ -536,6 +561,7 @@ const AddFacilityForm = () => {
               ...HOSPITAL_SERVICES.map((service) => ({ label: service })),
             ]}
             isMultiSelect={true}
+            wrapperClass="w-full md:w-1/2"
           />
         </div>
 
@@ -549,6 +575,7 @@ const AddFacilityForm = () => {
               ...HOSPITAL_AMENITIES.map((amenity) => ({ label: amenity })),
             ]}
             isMultiSelect={true}
+            wrapperClass="w-full md:w-1/2"
           />
         </div>
 

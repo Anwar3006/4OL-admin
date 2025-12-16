@@ -25,7 +25,7 @@ export default function HerbalHospitalsListing() {
         setLoading(true);
         const from = pageIndex * pageSize;
         const to = from + pageSize - 1;
-  
+
         const {
           data: fetchedData,
           error,
@@ -36,14 +36,14 @@ export default function HerbalHospitalsListing() {
           .range(from, to)
           .eq("status", "Approved")
           .eq("facility_type", "Herbal Hospital");
-          setData(fetchedData || []);
-          setTotalPages(Math.ceil(count / pageSize));
+        setData(fetchedData || []);
+        setTotalPages(Math.ceil(count / pageSize));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
+      }
     };
-  }
 
     fetchData();
   }, [pageIndex, pageSize]);
@@ -93,7 +93,9 @@ export default function HerbalHospitalsListing() {
   return (
     <Card className="" bodyClass="p-0">
       <div className="flex max-lg:flex-col p-6 items-center w-full">
-        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">Herbal Hospitals</h6>
+        <h6 className="md:mb-0 mb-0 w-full dark:text-gray-100">
+          Herbal Hospitals
+        </h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
@@ -102,7 +104,7 @@ export default function HerbalHospitalsListing() {
               text="Add Facility"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
               iconClass="text-lg"
-              onClick={() => router.push("facilities/herbal-hospitals/create")}
+              onClick={() => router.push("/facilities/add-facility")}
             />
           </div>
         </div>
