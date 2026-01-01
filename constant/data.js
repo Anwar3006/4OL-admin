@@ -92,6 +92,14 @@ export const menuItems = [
         childtitle: "Psychiatric",
         childlink: "/facilities/psychiatric",
       },
+      {
+        childtitle: "IBP",
+        childlink: "/facilities/ibp",
+      },
+      {
+        childtitle: "Health School",
+        childlink: "/facilities/health-school",
+      },
     ],
   },
   // {

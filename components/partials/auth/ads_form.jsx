@@ -377,7 +377,7 @@ const AdsForm = () => {
                 )}
               </div>
             ))}
-            <p className="text-right text-gray-500 text-sm">{charCount}/30</p>
+            {/* <p className="text-right text-gray-500 text-sm">{charCount}/30</p> */}
             {headlines.length < 3 && (
               <button
                 type="button"
@@ -401,11 +401,11 @@ const AdsForm = () => {
               onChange={handleDescriptionChange}
               maxLength={90}
             />
-            <p className="text-right text-gray-500 text-sm">{charCount}/90</p>
+            {/* <p className="text-right text-gray-500 text-sm">{charCount}/90</p> */}
           </div>
 
           {/* Primary Text */}
-          <Textarea
+          {/* <Textarea
             className="mb-2 capitalize"
             label="Link"
             placeholder="Add hyperlinks if necessary..."
@@ -413,7 +413,7 @@ const AdsForm = () => {
             onChange={(e) => setPrimaryText(e.target.value)}
             name="primaryText"
             rows={1}
-          />
+          /> */}
 
           {/* Call to Action */}
           <div className="mb-2">

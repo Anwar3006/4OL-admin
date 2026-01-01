@@ -6,7 +6,7 @@ export const PERMISSION_ITEMS = [
   },
   {
     resource: "Facilities Management (Add, Edit, Delete, Approve)",
-    assignedPermission: "Add, Edit, Delete",
+    assignedPermission: "Add, Edit",
   },
   {
     resource: "Diseases Management (Add, Edit, Delete)",

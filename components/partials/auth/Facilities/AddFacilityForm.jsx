@@ -19,10 +19,12 @@ import Dropdown from "@/components/ui/Dropdown";
 import Icons from "@/components/ui/Icon";
 import { districts_regions } from "@/constant/ghana_regions_districts_coordinates";
 import useDeviceInfo from "@/hooks/useDeviceInfo";
-import useGhanaPostGPS from "@/hooks/useGhanaPostGPS";
+import useGhanaPost from "@/hooks/useGhanaPostGPS";
 import useGeolocation from "@/hooks/useLocation";
 import { ActivityIndicator } from "@/components/ui/ActivityIndicator";
 import { useRouter } from "next/navigation";
+import slugify from "slugify";
+import { nanoid } from "nanoid";
 
 const schema = yup.object().shape({
   // facility_type: yup
@@ -56,6 +58,8 @@ const schema = yup.object().shape({
   region: yup.string().required("Region is required"),
   country: yup.string().required("Country is required"),
   first_name: yup.string().required("First Name is required"),
+  username: yup.string().required("Username is required"),
+  password: yup.string().required("Password is required"),
   last_name: yup.string().required("Last Name is required"),
   person_contact_number: yup.string().required("Contact Number is required"),
   position: yup.string().required("Position is required"),
@@ -134,7 +138,7 @@ const AddFacilityForm = () => {
   // LOCATION, DEVICE, GHANA GPS
   const location = useGeolocation({ enableHighAccuracy: true });
   const deviceInfo = useDeviceInfo();
-  const { fetchGhanaPostAddress, addressData, error } = useGhanaPostGPS();
+  const { fetchGhanaPostAddress, addressData, error } = useGhanaPost();
   const [fetchingGPSLocation, setFetchingGPSLocation] = useState(false);
 
   useEffect(() => {
@@ -272,6 +276,28 @@ const AddFacilityForm = () => {
     );
   };
 
+  // 1. Watch the source fields
+  const facilityName = watch("facility_name");
+  const contactNum = watch("contact_num");
+
+  // 2. React to changes
+  useEffect(() => {
+    // Generate Username (Slug)
+    if (facilityName) {
+      setValue(
+        "username",
+        slugify(facilityName, { lower: true, strict: true })
+      );
+    }
+
+    // Generate Password (First 5 of phone + random chars)
+    // Logic: Only update password if we have a phone number and the field is currently empty
+    if (contactNum && contactNum.length >= 5) {
+      const generatedPass = `${contactNum.slice(0, 5)}${nanoid(4)}`;
+      setValue("password", generatedPass);
+    }
+  }, [facilityName, contactNum, setValue]);
+
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
       {/* <div className="mb-2">
@@ -376,6 +402,51 @@ const AddFacilityForm = () => {
             register={register}
             // No error handling for WhatsApp
           />
+        </div>
+      </div>
+      <div>
+        <p className="font-semibold my-5">Login Info(Auto Generated)</p>
+        <div className="grid sm:grid-cols-2 grid-cols-1 sm:gap-4">
+          <div>
+            <Textinput
+              name="username"
+              label="Username"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.username?.message}
+              readonly={true}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.first_name ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.first_name && (
+              <p className="text-red-500 text-xs mt-2">
+                {errors?.username?.message} *
+              </p>
+            )}
+          </div>
+          <div>
+            <Textinput
+              name="password"
+              label="Password"
+              type="text"
+              placeholder=" "
+              register={register}
+              error={errors.password?.message}
+              readonly={true}
+              required // Added required prop
+              className={`border p-2 ${
+                errors?.password ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors?.password && (
+              <p className="text-red-500 text-xs mt-2">
+                {errors?.password?.message} *
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import PaginationNew from "@/components/ui/PaginationNew";
 import NoDataFound from "@/components/NoDataFound";
 import Loading from "@/components/Loading";
 
-export default function IBPListing() {
+export default function HealthSchoolListing() {
   const [data, setData] = useState([]); // State to hold fetched data
   const [globalFilter, setGlobalFilter] = useState(""); // Search filter
   const [pageIndex, setPageIndex] = useState(0); // Pagination index
@@ -96,7 +96,7 @@ export default function IBPListing() {
     <Card className="" bodyClass="p-0">
       <div className="flex max-lg:flex-col items-center w-full p-6">
         <h6 className="md:mb-0 mb-3 w-full dark:text-gray-100">
-          Individual Business Provider
+          Health Schools
         </h6>
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-0 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />

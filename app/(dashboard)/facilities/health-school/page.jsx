@@ -3,15 +3,15 @@
 
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
-import IBPListing from "@/components/partials/auth/Facilities/IBP/IBPListing";
+import HealthSchoolListing from "@/components/partials/auth/Facilities/HealthSchool/HealthSchoolListing";
 
-const IBP = () => {
+const HealthSchoolPage = () => {
   const [isDark] = useDarkmode();
   return (
     <div className="mt-5 relative">
-      <IBPListing />
+      <HealthSchoolListing />
     </div>
   );
 };
 
-export default IBP;
+export default HealthSchoolPage;

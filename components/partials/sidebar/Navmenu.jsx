@@ -13,7 +13,7 @@ const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [pendingReviews, setPendingReviews] = useState(0);
-  const [userRole, setUserRole] = useState(null);  // state to store user role
+  const [userRole, setUserRole] = useState(null); // state to store user role
   const location = usePathname();
   const locationName = location.replace("/", "");
   const [mobileMenu, setMobileMenu] = useMobileMenu();
@@ -22,7 +22,7 @@ const Navmenu = ({ menus, onLogout }) => {
 
   // Function to fetch user role from Supabase
   const fetchUserRole = async () => {
-    const userId = localStorage.getItem("user_id");  // assuming user_id is stored in localStorage
+    const userId = localStorage.getItem("user_id"); // assuming user_id is stored in localStorage
     if (!userId) return;
 
     try {
@@ -49,31 +49,31 @@ const Navmenu = ({ menus, onLogout }) => {
         .from("healthcare_profiles") // Replace with your actual table name
         .select("*")
         .eq("status", "Pending"); // Adjust based on your schema
-  
+
       if (error) {
         console.error("Error fetching pending reviews:", error);
         return;
       }
-  
+
       setPendingReviews(data.length || 0);
     } catch (error) {
       console.error("Error fetching pending reviews:", error);
     }
   };
 
-    // Restrict Admin Panel Access
-    useEffect(() => {
-      if (locationName === "admin" && userRole !== "Super Admin") {
-        // Redirect unauthorized users to the analytics page
-        router.push("/analytics");
-      }
-    }, [locationName, userRole]);
+  // Restrict Admin Panel Access
+  useEffect(() => {
+    if (locationName === "admin" && userRole !== "Super Admin") {
+      // Redirect unauthorized users to the analytics page
+      router.push("/analytics");
+    }
+  }, [locationName, userRole]);
 
   // Fetch the data once on mount
   useEffect(() => {
     fetchPendingReviews();
-    fetchUserRole();  // Fetch role when the component mounts
-  }, []);  // Only run once when component mounts
+    fetchUserRole(); // Fetch role when the component mounts
+  }, []); // Only run once when component mounts
 
   const toggleSubmenu = (i) => {
     setActiveSubmenu(activeSubmenu === i ? null : i);
@@ -110,18 +110,21 @@ const Navmenu = ({ menus, onLogout }) => {
             return false; // Hide "Admins" menu if the role is not "Super Admin"
           }
 
-          if (item.title === "Delete Account Request" && userRole !== "Super Admin") {
+          if (
+            item.title === "Delete Account Request" &&
+            userRole !== "Super Admin"
+          ) {
             return false; // Hide "Delete Account Request" menu if the role is not "Super Admin"
           }
-  
+
           // if (item.title === "Facilities" && item.child) {
           //   // Filter "Pending Reviews" to only be visible for Super Admins
           //   item.child = item.child.filter(
           //     (child) =>
           //       !(child.childtitle === "Pending Reviews" && userRole !== "Super Admin")
           //   );
-          // }  
-  
+          // }
+
           return true;
         })
         .map((item, i) => (
@@ -142,12 +145,12 @@ const Navmenu = ({ menus, onLogout }) => {
                 {item.badge && <span className="menu-badge">{item.badge}</span>}
               </Link>
             )}
-  
+
             {/* Menu Label */}
             {item.isHeadr && !item.child && (
               <div className="menulabel">{item.title}</div>
             )}
-  
+
             {/* Submenu Parent */}
             {item.child && (
               <div
@@ -169,7 +172,7 @@ const Navmenu = ({ menus, onLogout }) => {
                 </div>
               </div>
             )}
-  
+
             <Submenu
               activeSubmenu={activeSubmenu}
               item={item}
@@ -190,7 +193,6 @@ const Navmenu = ({ menus, onLogout }) => {
       </li>
     </ul>
   );
-  
 };
 
 export default Navmenu;
