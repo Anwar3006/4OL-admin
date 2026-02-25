@@ -8,9 +8,9 @@ export const getMapMarkerDetails = async ({
   facilityType = null,
 }) => {
   let query = supabase
-    .from("healthcare_profiles")
+    .from("facility_profile")
     .select(
-      "id, status, facility_name, latitude, longitude, gps_address, facility_type, creator:user_profiles!healthcare_profiles_created_by_fkey(first_name, last_name), created_at, approved_at"
+      "id, status, facility_name, latitude, longitude, gps_address, facility_type, creator:user_profiles!facility_profile_created_by_fkey(first_name, last_name), created_at, approved_at"
     )
     .not("latitude", "is", null)
     .not("longitude", "is", null);
@@ -57,7 +57,7 @@ export const getMapMarkerDetails = async ({
 // You can also export other related functions here
 export const getAllRegions = async () => {
   const { data, error } = await supabase
-    .from("healthcare_profiles")
+    .from("facility_profile")
     .select("region, district")
     .not("region", "is", null);
 
@@ -124,7 +124,7 @@ export const getAllRegions = async () => {
 
 export const getFacilityTypes = async () => {
   const { data, error } = await supabase
-    .from("healthcare_profiles")
+    .from("facility_profile")
     .select("facility_type", { count: "exact", head: false });
 
   if (error) {

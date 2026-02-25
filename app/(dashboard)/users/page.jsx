@@ -1,17 +1,16 @@
 "use client";
 
 import React from "react";
-import useDarkmode from "@/hooks/useDarkMode";
-import Card from "@/components/ui/Card";
-import UsersListing from "@/components/partials/auth/Users/UsersListing";
+import UserSection from "./_components/UserSection";
+import { ViewUserDialog } from "./_components/view-user-dialog";
+import AddAdminDialog from "../admin/_components/add-admin-dialog";
 
-export default function page() {
-  const [isDark] = useDarkmode();
+export default function UsersPage() {
   return (
-    <>
-      <div className="relative mt-5">
-        <UsersListing />
-      </div>
-    </>
+    <div className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px]">
+      <UserSection />
+      <ViewUserDialog />
+      <AddAdminDialog />
+    </div>
   );
 }

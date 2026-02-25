@@ -31,11 +31,14 @@ const MobileMenu = ({ className = "custom-class" }) => {
   }, [scrollableNodeRef]);
 
      // Logout action handler
-     const handleLogoutAction = () => {
-      console.log("Logout button clicked"); 
-      router.push('/')
-      dispatch(handleLogout(false));
-   };
+  const handleLogoutAction = async () => {
+    try {
+      await dispatch(handleLogout()).unwrap();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+    router.push("/login");
+  };
 
   const [isSemiDark] = useSemiDark();
   // skin

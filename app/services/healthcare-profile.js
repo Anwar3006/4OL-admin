@@ -19,9 +19,9 @@ export const healthcareProfile = async (
       return;
     }
 
-    // Proceed with inserting data into the healthcare_profiles table
+    // Proceed with inserting data into the facility_profile table
     const { data: insertData, error: healthcareProfileError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .insert([
         {
           created_by: userId,

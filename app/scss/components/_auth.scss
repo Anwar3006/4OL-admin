@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 .loginwrapper {
   @apply flex w-full items-center overflow-hidden;
   min-height: 100vh;

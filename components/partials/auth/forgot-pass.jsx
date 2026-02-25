@@ -15,7 +15,11 @@ const schema = yup
 
 const ForgotPass = () => {
   const router = useRouter();
-  const { register, formState: { errors }, handleSubmit } = useForm({
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({
     resolver: yupResolver(schema),
   });
 
@@ -26,15 +30,22 @@ const ForgotPass = () => {
         email,
         () => console.log("Loading..."),
         () => {
-          localStorage.setItem('email', email); // Store email in localStorage
-          router.push('/verify-otp'); // Redirect to OTP verification page
+          toast.success(
+            "Password reset link sent. Check your email and follow the link."
+          );
+          router.push("/login2");
         },
-        (error) => console.error("Error:", error)
+        (error) => {
+          console.error("Error:", error);
+          toast.error(error?.message || "Failed to send reset link.");
+        }
       );
     } catch (err) {
       console.error("Unexpected error:", err);
+      toast.error("Failed to send reset link.");
     }
   };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Textinput
@@ -46,7 +57,7 @@ const ForgotPass = () => {
         error={errors.email}
       />
       <button className="btn bg-[#56ce84] text-white block w-full text-center">
-        Send OTP To Email
+        Send Reset Link
       </button>
     </form>
   );

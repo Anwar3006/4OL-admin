@@ -21,7 +21,7 @@ const ViewReviews = () => {
       const { data, error } = await supabase
         .from("facility_ratings")
         .select(
-          "id, comment, rating, user_profiles (first_name, last_name), healthcare_profiles (facility_name)"
+          "id, comment, rating, user_profiles (first_name, last_name), facility_profile (facility_name)"
         )
         .eq("id", id)
         .single();
@@ -81,7 +81,7 @@ const ViewReviews = () => {
             <div className="flex">
               <p className="w-1/3 text-gray-900">Facility Name</p>
               <p className="w-2/3">
-                {reviewData.healthcare_profiles.facility_name || "N/A"}
+                {reviewData.facility_profile.facility_name || "N/A"}
               </p>
             </div>
 

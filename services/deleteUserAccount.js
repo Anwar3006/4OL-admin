@@ -1,4 +1,5 @@
 import { supabase } from "@/app/utils/supabaseClient";
+import { authClient } from "@/lib/auth-client";
 
 /**
  * Delete a user account and all related data
@@ -9,26 +10,37 @@ import { supabase } from "@/app/utils/supabaseClient";
  */
 export const deleteUserAccount = async ({ email, password }) => {
   try {
-    // Step 1: Authenticate the user
-    const { data: authData, error: authError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const verifyResult = await authClient.verifyPassword({ password });
 
-    if (authError) {
+    if (verifyResult?.error || verifyResult?.data?.status !== true) {
       return {
         success: false,
         message: "Invalid credentials. Please verify your email and password.",
-        error: authError,
+        error: verifyResult?.error,
       };
     }
 
-    // Step 2: Get the user profile data
+    const sessionResult = await authClient.getSession();
+    const sessionUser = sessionResult?.data?.user;
+
+    if (!sessionUser) {
+      return {
+        success: false,
+        message: "Unable to resolve active auth session.",
+      };
+    }
+
+    if (sessionUser.email?.toLowerCase() !== email?.toLowerCase()) {
+      return {
+        success: false,
+        message: "Email does not match the currently signed-in account.",
+      };
+    }
+
     const { data: userData, error: userError } = await supabase
       .from("user_profiles")
       .select("id")
-      .eq("email", email)
+      .eq("id", sessionUser.id)
       .single();
 
     if (userError) {
@@ -39,7 +51,6 @@ export const deleteUserAccount = async ({ email, password }) => {
       };
     }
 
-    // Step 3: Call the RPC function to delete the user and all related data
     const { error: deleteError } = await supabase.rpc(
       "delete_user_and_related_data",
       { p_user_id: userData.id }
@@ -53,7 +64,6 @@ export const deleteUserAccount = async ({ email, password }) => {
       };
     }
 
-    // Success
     return {
       success: true,
       message: "Account successfully deleted",

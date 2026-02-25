@@ -22,7 +22,7 @@ export default function Page() {
       if (!id) return;
 
       const { data, error } = await supabase
-        .from("healthcare_profiles")
+        .from("facility_profile")
         .select("*")
         .eq("id", id)
         .single();

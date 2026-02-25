@@ -23,15 +23,17 @@ const Header = ({ className = "custom-class" }) => {
   const navbarTypeClass = () => {
     switch (navbarType) {
       case "floating":
-        return "floating  has-sticky-header";
+        return "floating has-sticky-header";
       case "sticky":
-        return "sticky top-0 z-[999]";
+        // REDUCED Z-INDEX FROM 999 TO 40
+        return "sticky top-0 z-40";
       case "static":
         return "static";
       case "hidden":
         return "hidden";
       default:
-        return "sticky top-0";
+        // ENSURED CONSISTENT LOWER Z-INDEX HERE AS WELL
+        return "sticky top-0 z-40";
     }
   };
   const [menuType] = useMenulayout();
@@ -63,6 +65,7 @@ const Header = ({ className = "custom-class" }) => {
                  ? "py-1"
                  : "md:py-6 py-3"
              }
+             
         `}
       >
         <div className="flex justify-between items-center h-full">

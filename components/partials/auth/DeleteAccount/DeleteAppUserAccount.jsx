@@ -8,6 +8,7 @@ import * as yup from "yup";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
+import { authClient } from "@/lib/auth-client";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import useDarkMode from "@/hooks/useDarkMode";
@@ -45,26 +46,29 @@ export default function DeleteAppUserAccount() {
   // Handle form submission
 const onSubmit = async (data) => {
   try {
-    // Step 1: Re-authenticate user
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: data.email,
+    const verifyResult = await authClient.verifyPassword({
       password: data.password,
     });
 
-    if (authError) {
+    if (verifyResult?.error || verifyResult?.data?.status !== true) {
       toast.error("Invalid Credentials. Please verify your credentials.");
       return;
     }
 
-    // Step 2: Get current user
-    const { data: userSession, error: userError } = await supabase.auth.getUser();
+    const sessionResult = await authClient.getSession();
+    const sessionUser = sessionResult?.data?.user;
 
-    if (userError || !userSession?.user) {
+    if (!sessionUser) {
       toast.error("Failed to fetch user info. Please try again.");
       return;
     }
 
-    const userId = userSession.user.id;
+    if (sessionUser.email?.toLowerCase() !== data.email?.toLowerCase()) {
+      toast.error("Email does not match the signed-in account.");
+      return;
+    }
+
+    const userId = sessionUser.id;
 
     // Step 3: Check if delete request is already submitted
     const { data: profile, error: profileError } = await supabase
@@ -196,13 +200,11 @@ const onSubmit = async (data) => {
   try {
     const { email, password } = getValues();
 
-    // Re-authenticate the user
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
+    const verifyResult = await authClient.verifyPassword({
       password,
     });
 
-    if (authError) {
+    if (verifyResult?.error || verifyResult?.data?.status !== true) {
       toast.error("Invalid credentials. Please verify your email and password.", {
         position: "top-right",
         autoClose: 3000,
@@ -211,15 +213,22 @@ const onSubmit = async (data) => {
       return;
     }
 
-    const { data: userSession, error: userError } = await supabase.auth.getUser();
+    const sessionResult = await authClient.getSession();
+    const sessionUser = sessionResult?.data?.user;
 
-    if (userError || !userSession?.user) {
+    if (!sessionUser) {
       toast.error("Failed to fetch user info. Please try again.");
       setLoading(false);
       return;
     }
 
-    const userId = userSession.user.id;
+    if (sessionUser.email?.toLowerCase() !== email?.toLowerCase()) {
+      toast.error("Email does not match the signed-in account.");
+      setLoading(false);
+      return;
+    }
+
+    const userId = sessionUser.id;
 
     // Update only the delete_account_request field
     const { error: updateError } = await supabase

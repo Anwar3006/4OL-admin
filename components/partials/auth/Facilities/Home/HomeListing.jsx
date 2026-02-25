@@ -31,7 +31,7 @@ export default function HomeListing() {
           error,
           count,
         } = await supabase
-          .from("healthcare_profiles")
+          .from("facility_profile")
           .select("*", { count: "exact" })
           .range(from, to)
           .eq("status", "Approved")
@@ -72,7 +72,7 @@ export default function HomeListing() {
   // Delete a specific record
   const handleDelete = async (id) => {
     const { error } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .update({ is_deleted: true })
       .eq("id", id);
 

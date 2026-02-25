@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 .has-sticky-header {
   @apply my-5 top-5 rounded-md sticky  z-[999];
   .app-header {

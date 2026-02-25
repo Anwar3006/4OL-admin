@@ -8,7 +8,7 @@ const Multilevel = ({ activeMultiMenu, j, subItem, locationName }) => {
       <ul className="space-y-[14px] pl-4">
         {subItem?.multi_menu?.map((item, i) => (
           <li key={i} className=" first:pt-[14px]">
-            <Link href={item.multiLink}>
+            <Link href={`/${item.multiLink}`}>
               <span
                 className={`${
                   locationName === item.multiLink

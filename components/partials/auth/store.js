@@ -3,8 +3,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import { supabase } from "@/app/utils/supabaseClient";
 import { logAuthActivity } from "@/utils/activityLogger";
+import { authClient } from "@/lib/auth-client";
 
-// Function to initialize authentication state from localStorage
 const initialIsAuth = () => {
   if (typeof window !== "undefined") {
     const item = window.localStorage.getItem("isAuth");
@@ -13,7 +13,6 @@ const initialIsAuth = () => {
   return false;
 };
 
-// Function to get initial permissions
 const initialPermissions = () => {
   if (typeof window !== "undefined") {
     const permissions = window.localStorage.getItem("user_permissions");
@@ -22,7 +21,6 @@ const initialPermissions = () => {
   return [];
 };
 
-// Function to get initial role
 const initialRole = () => {
   if (typeof window !== "undefined") {
     return window.localStorage.getItem("user_role") || "";
@@ -30,45 +28,40 @@ const initialRole = () => {
   return "";
 };
 
-// Async thunk for handling login
 export const handleLogin = createAsyncThunk(
   "auth/handleLogin",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
+      const result = await authClient.signIn.email({ email, password });
+      if (result.error) throw result.error;
 
-      const userId = data?.user?.id;
-      console.log(data);
+      const userId = result?.data?.user?.id;
 
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
-        window.localStorage.setItem("user_id", userId);
-        window.localStorage.setItem("user_email", data.user.email);
+        if (userId) window.localStorage.setItem("user_id", userId);
+        if (result?.data?.user?.email) {
+          window.localStorage.setItem("user_email", result.data.user.email);
+        }
       }
 
-      // Fetch user profile including permissions
       const { data: profileData, error: profileError } = await supabase
         .from("user_profiles")
-        .select("first_name, last_name, role, permissions")
-        .eq("id", userId)
+        .select("first_name, last_name, role")
+        .eq("user_id", userId)
         .single();
 
       let userName = "Unknown User";
       let userRole = "";
+      // permissions column does not exist in user_profiles — role-based access only
       let userPermissions = [];
 
       if (!profileError && profileData) {
         const fullName =
           `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim();
-        userName = fullName || data.user.email || "Unknown User";
+        userName = fullName || result?.data?.user?.email || "Unknown User";
         userRole = profileData.role || "";
-        userPermissions = profileData.permissions || [];
 
-        // Store role and permissions in localStorage
         if (typeof window !== "undefined") {
           window.localStorage.setItem("user_role", userRole);
           window.localStorage.setItem(
@@ -77,16 +70,13 @@ export const handleLogin = createAsyncThunk(
           );
         }
       } else {
-        userName = data.user.email || "Unknown User";
+        userName = result?.data?.user?.email || "Unknown User";
       }
 
-      // Log the login activity
       try {
         await logAuthActivity(userId, userName, "logged in");
-        console.log("Login activity logged successfully for user:", userName);
       } catch (logError) {
         console.error("Failed to log login activity:", logError);
-        // Don't fail login if logging fails
       }
 
       return {
@@ -111,25 +101,21 @@ export const handleLogin = createAsyncThunk(
   }
 );
 
-// Async thunk for handling logout
 export const handleLogout = createAsyncThunk(
   "auth/handleLogout",
   async (_, { rejectWithValue, getState }) => {
     try {
-      // Get current user info before logout
       const state = getState();
       const userId = state.auth.userId;
 
-      // Log the logout activity
       if (userId) {
         try {
           let userName = "Unknown User";
 
-          // Get user's full name from user_profiles table
           const { data: profileData, error: profileError } = await supabase
             .from("user_profiles")
             .select("first_name, last_name")
-            .eq("id", userId)
+            .eq("user_id", userId)
             .single();
 
           if (!profileError && profileData) {
@@ -145,17 +131,14 @@ export const handleLogout = createAsyncThunk(
           }
 
           await logAuthActivity(userId, userName, "logged out");
-          console.log(
-            "Logout activity logged successfully for user:",
-            userName
-          );
         } catch (logError) {
           console.error("Failed to log logout activity:", logError);
-          // Don't fail logout if logging fails
         }
       }
 
-      await supabase.auth.signOut();
+      const signOutResult = await authClient.signOut();
+      if (signOutResult?.error) throw signOutResult.error;
+
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("isAuth");
         window.localStorage.removeItem("user_id");
@@ -194,7 +177,6 @@ export const authSlice = createSlice({
       typeof window !== "undefined" ? localStorage.getItem("user_id") : null,
   },
   reducers: {
-    // Action to update permissions without re-login
     updatePermissions: (state, action) => {
       state.permissions = action.payload;
       if (typeof window !== "undefined") {
@@ -204,7 +186,6 @@ export const authSlice = createSlice({
         );
       }
     },
-    // Action to update role
     updateRole: (state, action) => {
       state.role = action.payload;
       if (typeof window !== "undefined") {

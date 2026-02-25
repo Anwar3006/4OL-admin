@@ -20,7 +20,7 @@ export const add_healthy_living = async (
       return;
     }
 
-    // Proceed with inserting data into the healthcare_profiles table
+    // Proceed with inserting data into the facility_profile table
     const dataToInsert = {
       // created_at: moment(Date.now()).valueOf(), // Convert date to timestamp //we let the database handle the timestamps
       // updated_at: moment(Date.now()).valueOf(), // Convert date to timestamp

@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 .progress {
   @apply bg-slate-900 dark:bg-slate-700 h-2;
   .progress-bar {

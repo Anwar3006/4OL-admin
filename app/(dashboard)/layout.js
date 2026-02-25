@@ -16,7 +16,7 @@ import MobileMenu from "@/components/partials/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import useMonoChrome from "@/hooks/useMonoChrome";
 import MobileFooter from "@/components/partials/footer/MobileFooter";
-import { useSelector } from "react-redux";
+import { authClient } from "@/lib/auth-client";
 import useRtl from "@/hooks/useRtl";
 import useDarkMode from "@/hooks/useDarkMode";
 import useSkin from "@/hooks/useSkin";
@@ -33,15 +33,25 @@ export default function RootLayout({ children }) {
   const [navbarType] = useNavbarType();
   const [isMonoChrome] = useMonoChrome();
   const router = useRouter();
-  const { isAuth } = useSelector((state) => state.auth);
+  const { data: session, isPending } = authClient.useSession();
+  const location = usePathname();
+
+  // content width
+  const [contentWidth] = useContentWidth();
+  const [menuType] = useMenulayout();
+  const [menuHidden] = useMenuHidden();
+  // mobile menu
+  const [mobileMenu, setMobileMenu] = useMobileMenu();
 
   useEffect(() => {
-    if (!isAuth) {
-      router.push("/");
+    if (!isPending && !session) {
+      router.push("/login");
     }
-    //darkMode;
-  }, [isAuth]);
-  const location = usePathname();
+  }, [session, isPending, router]);
+
+  // Prevent flash of protected content while session is loading or redirecting
+  if (isPending || !session) return null;
+
   // header switch class
   const switchHeaderClass = () => {
     if (menuType === "horizontal" || menuHidden) {
@@ -52,13 +62,6 @@ export default function RootLayout({ children }) {
       return "ltr:ml-[248px] rtl:mr-[248px]";
     }
   };
-
-  // content width
-  const [contentWidth] = useContentWidth();
-  const [menuType] = useMenulayout();
-  const [menuHidden] = useMenuHidden();
-  // mobile menu
-  const [mobileMenu, setMobileMenu] = useMobileMenu();
 
   return (
     <div
@@ -134,7 +137,7 @@ export default function RootLayout({ children }) {
           </div>
         </div>
       </div>
-      {width < breakpoints.md && <MobileFooter />}
+      {/* {width < breakpoints.md && <MobileFooter />} */}
       {width > breakpoints.md && (
         <Footer className={width > breakpoints.xl ? switchHeaderClass() : ""} />
       )}

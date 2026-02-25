@@ -1,6 +1,7 @@
 // app/services/login.js
-import { decryptPassword, encryptPassword } from "../utils/helpers";
+import { decryptPassword } from "../utils/helpers";
 import { supabase } from "../utils/supabaseClient";
+import { authClient } from "@/lib/auth-client";
 
 export const login = async (
   user,
@@ -20,6 +21,7 @@ export const login = async (
           .select("email")
           .eq("phone_number", `+${emailOrPhone}`)
           .single();
+
       if (phoneFetchError || !userProfileByPhone?.email) {
         console.error("Error fetching user by phone:", phoneFetchError);
         errorCallback(new Error("No user found with the given phone number."));
@@ -30,57 +32,47 @@ export const login = async (
 
     const decryptedPassword = decryptPassword(user.passcode);
 
-    const { data: signinData, error: signinError } =
-      await supabase.auth.signInWithPassword({
-        email: emailOrPhone,
-        password: decryptedPassword,
-      });
-    console.log("Signin data:", signinData);
-    if (signinError) {
-      console.error("Sign-in error:", signinError);
-      errorCallback(signinError);
+    const signInResult = await authClient.signIn.email({
+      email: emailOrPhone,
+      password: decryptedPassword,
+    });
+
+    if (signInResult.error) {
+      console.error("Sign-in error:", signInResult.error);
+      errorCallback(signInResult.error);
       return;
     }
 
-    // Await the session to get the result
-    const { data: session, error: sessionError } =
-      await supabase.auth.getSession();
-    if (sessionError) {
-      console.error("Error fetching session:", sessionError);
-      errorCallback(sessionError);
-      return;
-    }
-    console.log("Session:", session);
+    const sessionResult = await authClient.getSession();
+    const userId =
+      signInResult.data?.user?.id || sessionResult?.data?.user?.id || null;
 
-    const userId = signinData.user?.id;
-    if (userId) {
-      const { data: userProfile, error: fetchError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-      console.log("User profile:", userProfile);
-      if (fetchError) {
-        console.error("Error fetching user profile:", fetchError);
-        errorCallback(fetchError);
-        return;
-      }
-
-      // Store user data in localStorage
-      localStorage.setItem("user_id", userId);
-      localStorage.setItem("user_role", userProfile.role || "");
-      localStorage.setItem("user_email", userProfile.email || "");
-
-      // Store permissions in localStorage
-      const permissions = userProfile.permissions || [];
-      localStorage.setItem("user_permissions", JSON.stringify(permissions));
-
-      console.log("User permissions loaded:", permissions);
-
-      successCallback(userProfile);
-    } else {
+    if (!userId) {
       errorCallback(new Error("User ID is not available."));
+      return;
     }
+
+    const { data: userProfile, error: fetchError } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching user profile:", fetchError);
+      errorCallback(fetchError);
+      return;
+    }
+
+    localStorage.setItem("user_id", userId);
+    localStorage.setItem("user_role", userProfile.role || "");
+    localStorage.setItem("user_email", userProfile.email || "");
+
+    const permissions = userProfile.permissions || [];
+    localStorage.setItem("user_permissions", JSON.stringify(permissions));
+
+    console.log("User permissions loaded:", permissions);
+    successCallback(userProfile);
   } catch (err) {
     console.error("Unexpected error:", err);
     if (typeof errorCallback === "function") {
@@ -94,13 +86,13 @@ export const login = async (
 export const logout = async (loadCallback, successCallback, errorCallback) => {
   try {
     loadCallback();
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) {
-      errorCallback(signOutError);
+    const signOutResult = await authClient.signOut();
+
+    if (signOutResult?.error) {
+      errorCallback(signOutResult.error);
       return;
     }
 
-    // Clear all user data from localStorage
     localStorage.removeItem("user_id");
     localStorage.removeItem("user_role");
     localStorage.removeItem("user_email");
@@ -120,11 +112,14 @@ export const sendOtpToEmail = async (
 ) => {
   loadCallback();
   try {
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/reset-password`
+        : `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`;
+
+    const { data, error } = await authClient.requestPasswordReset({
       email,
-      options: {
-        shouldCreateUser: false,
-      },
+      redirectTo,
     });
 
     if (error) {
@@ -139,22 +134,16 @@ export const sendOtpToEmail = async (
 
 export const verifyOtpSentToEmail = async (email, otp) => {
   try {
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: "email",
-    });
-    if (error) {
-      throw error;
+    if (!otp) {
+      throw new Error("Reset token is required.");
     }
 
-    // Save token and email in localStorage
     localStorage.setItem("token", otp);
     localStorage.setItem("email", email);
 
-    return data;
+    return { status: true };
   } catch (err) {
-    console.error("OTP Verification Error:", err);
+    console.error("Token verification error:", err);
     throw err;
   }
 };
@@ -162,24 +151,35 @@ export const verifyOtpSentToEmail = async (email, otp) => {
 export const resetPassword = async (
   newPassword,
   successCallback,
-  errorCallback
+  errorCallback,
+  tokenInput
 ) => {
   try {
-    // No need to manually encrypt the password, just send the plain password
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword,
+    const tokenFromStorage =
+      typeof window !== "undefined" ? localStorage.getItem("token") : undefined;
+    const token = tokenInput || tokenFromStorage || undefined;
+
+    const { data, error } = await authClient.resetPassword({
+      newPassword,
+      token,
     });
 
     if (error) {
-      console.error("Password Update Failed:", error);
+      console.error("Password update failed:", error);
       errorCallback(error);
       return;
     }
 
-    console.log("Password Update Successful:", data);
+    console.log("Password update successful:", data);
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("email");
+    }
+
     successCallback();
   } catch (err) {
-    console.error("Unexpected Error During Password Reset:", err);
+    console.error("Unexpected error during password reset:", err);
     errorCallback(err);
   }
 };

@@ -194,7 +194,7 @@ const AddHerbalHospitalForm = () => {
     const mediaUrls = await uploadMediaFiles(
       "media",
       "add_facility",
-      "healthcare_profiles",
+      "facility_profile",
       mediaFiles
     );
 

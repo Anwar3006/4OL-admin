@@ -20,8 +20,6 @@ const Sidebar = () => {
     usePermissions();
   const [filteredMenuItems, setFilteredMenuItems] = useState([]);
 
-  console.log("Allowed Menu Items: ", getAllowedMenuItemsForUser());
-
   useEffect(() => {
     const handleScroll = () => {
       if (scrollableNodeRef.current.scrollTop > 0) {
@@ -50,24 +48,25 @@ const Sidebar = () => {
     // Get allowed menu items for the user
     const allowedItems = getAllowedMenuItemsForUser();
 
+    // If no permissions are configured (empty array), show all menu items.
+    // The permissions column does not exist in the DB yet — fall back to
+    // showing everything and rely on role-checks inside individual pages.
+    if (!allowedItems || allowedItems.length === 0) {
+      setFilteredMenuItems(menuItems);
+      return;
+    }
+
     // Filter menu items based on permissions
     const filtered = menuItems
       .filter((item) => {
-        // If no title, keep it (might be a header)
         if (!item.title) return true;
-
-        // Check if this menu item is in the allowed list
         return allowedItems.includes(item.title);
       })
       .map((item) => {
-        // If item has children, filter those too
         if (item.child && item.child.length > 0) {
           return {
             ...item,
-            child: item.child.filter((childItem) => {
-              // You can add more granular filtering here if needed
-              return true; // For now, if parent is allowed, show all children
-            }),
+            child: item.child.filter(() => true),
           };
         }
         return item;
@@ -81,10 +80,13 @@ const Sidebar = () => {
   const router = useRouter();
 
   // Logout action handler
-  const handleLogoutAction = () => {
-    console.log("Logout button clicked");
-    dispatch(handleLogout(false));
-    router.push("/");
+  const handleLogoutAction = async () => {
+    try {
+      await dispatch(handleLogout()).unwrap();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+    router.push("/login");
   };
 
   // semi dark option
@@ -104,6 +106,7 @@ const Sidebar = () => {
           ? "border-r border-slate-200 dark:border-slate-700"
           : "shadow-base"
       }
+      z-[40]
       `}
         onMouseEnter={() => {
           setMenuHover(true);

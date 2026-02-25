@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useRef, useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -8,7 +9,9 @@ import {
 } from "react-leaflet";
 
 const MarkerMap = () => {
+  const [mounted, setMounted] = useState(false);
   const position = [47.31322, -1.319482];
+  const mapKeyRef = useRef(`marker-map-${Math.random().toString(36).slice(2)}`);
   const circleRadius = 4500;
   const polygonCoords = [
     [47.2263299, -1.6222],
@@ -33,9 +36,18 @@ const MarkerMap = () => {
     [47.2263299, -1.6222],
   ];
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="w-full h-[300px] bg-slate-100 dark:bg-slate-700 animate-pulse rounded" />;
+  }
+
   return (
     <div className="w-full h-[300px]">
       <MapContainer
+        key={mapKeyRef.current}
         center={position}
         zoom={10}
         maxZoom={18}

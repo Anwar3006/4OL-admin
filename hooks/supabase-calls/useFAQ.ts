@@ -1,0 +1,234 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { TFAQInput, TFAQOutput } from "@/schemas/faq.schema";
+import { toast } from "sonner";
+
+// Query Keys
+export const FAQ_QUERY_KEYS = {
+  all: ["faqs"] as const,
+  categories: ["categories"] as const,
+  lists: () => [...FAQ_QUERY_KEYS.all, "list"] as const,
+  list: (page: number, limit: number) =>
+    [...FAQ_QUERY_KEYS.lists(), { page, limit }] as const,
+  details: () => [...FAQ_QUERY_KEYS.all, "detail"] as const,
+  detail: (id: string) => [...FAQ_QUERY_KEYS.details(), id] as const,
+};
+
+// Types
+interface PaginatedFAQsResponse {
+  faqs: TFAQOutput[];
+  meta: {
+    totalPages: number;
+    total: number;
+    currentPage: number;
+  };
+}
+
+interface UseFAQsParams {
+  page: number;
+  limit: number;
+}
+
+// ============= QUERY HOOKS =============
+
+/**
+ * Fetch paginated FAQs
+ */
+export const useFAQs = ({ page, limit }: UseFAQsParams) => {
+  return useQuery<PaginatedFAQsResponse, Error>({
+    queryKey: FAQ_QUERY_KEYS.list(page, limit),
+    queryFn: async () => {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      const {
+        data: faqs,
+        count,
+        error,
+      } = await supabase
+        .from("faqs")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw new Error(error.message);
+
+      const totalCount = count ?? 0;
+
+      return {
+        faqs: (faqs || []) as TFAQOutput[],
+        meta: {
+          totalPages: Math.ceil(totalCount / limit),
+          total: totalCount,
+          currentPage: page,
+        },
+      };
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+/**
+ * Fetch single FAQ by ID
+ */
+export const useFAQ = (id: string | null) => {
+  return useQuery<TFAQOutput, Error>({
+    queryKey: FAQ_QUERY_KEYS.detail(id!),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("faqs")
+        .select("*")
+        .eq("id", id!)
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as TFAQOutput;
+    },
+    enabled: !!id, // Only run query if id is provided
+  });
+};
+
+export const useFAQCategories = () => {
+  return useQuery<any, Error>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("faq_categories")
+        .select("*")
+        .order("name", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+};
+
+// ============= MUTATION HOOKS =============
+
+/**
+ * Create new FAQ
+ */
+export const useCreateFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<TFAQOutput, Error, TFAQInput>({
+    mutationFn: async (faqData) => {
+      const { data, error } = await supabase
+        .from("faqs")
+        .insert({
+          question: faqData.question,
+          answer: faqData.answer,
+          category_id: faqData.category_id,
+        })
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as TFAQOutput;
+    },
+    onSuccess: () => {
+      // Invalidate all FAQ queries to refetch data
+      queryClient.invalidateQueries({ queryKey: FAQ_QUERY_KEYS.all });
+      toast.success("FAQ created successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to create FAQ: ${error.message}`);
+    },
+  });
+};
+
+/**
+ * Update existing FAQ
+ */
+export const useUpdateFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    TFAQOutput,
+    Error,
+    { id: string; data: Partial<TFAQInput> }
+  >({
+    mutationFn: async ({ id, data: faqData }) => {
+      const { data, error } = await supabase
+        .from("faqs")
+        .update({
+          question: faqData.question,
+          answer: faqData.answer,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as TFAQOutput;
+    },
+    onSuccess: (data) => {
+      // Invalidate all FAQ queries
+      queryClient.invalidateQueries({ queryKey: FAQ_QUERY_KEYS.all });
+      // Update specific FAQ in cache
+      queryClient.setQueryData(FAQ_QUERY_KEYS.detail(data.id), data);
+      toast.success("FAQ updated successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to update FAQ: ${error.message}`);
+    },
+  });
+};
+
+/**
+ * Delete FAQ
+ */
+export const useDeleteFAQ = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from("faqs").delete().eq("id", id);
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      // Invalidate all FAQ queries to refetch data
+      queryClient.invalidateQueries({ queryKey: FAQ_QUERY_KEYS.all });
+      toast.success("FAQ deleted successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete FAQ: ${error.message}`);
+    },
+  });
+};
+
+export const useCreateFAQCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, any>({
+    mutationFn: async ({ name }: { name: string }) => {
+      const { data, error } = await supabase
+        .from("faq_categories")
+        .insert({ name })
+        .select("*")
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      // This forces the FAQ dropdown to refresh automatically
+      queryClient.invalidateQueries({ queryKey: FAQ_QUERY_KEYS.categories });
+    },
+  });
+};
+
+// ============= CONVENIENCE HOOK =============
+
+/**
+ * All-in-one FAQ operations hook
+ * Usage: const faq = useFAQOperations();
+ * Then: faq.create.mutate(data), faq.update.mutate({id, data}), etc.
+ */
+export const useFAQOperations = () => {
+  return {
+    create: useCreateFAQ(),
+    update: useUpdateFAQ(),
+    delete: useDeleteFAQ(),
+  };
+};

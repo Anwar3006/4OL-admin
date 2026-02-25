@@ -21,7 +21,7 @@ export const banners_ads = async (
       return;
     }
 
-    // Proceed with inserting data into the healthcare_profiles table
+    // Proceed with inserting data into the facility_profile table
     const { data: insertData, error: bannersAdsError } = await supabase
       .from("banners_ads")
       .insert([

@@ -78,7 +78,7 @@ const EditFacilityProfileForm = () => {
         try {
           // Fetch data from Supabase
           const { data, error } = await supabase
-            .from("healthcare_profiles")
+            .from("facility_profile")
             .select("*")
             .eq("id", id)
             .single();
@@ -114,7 +114,7 @@ const EditFacilityProfileForm = () => {
         avg_rating: rating,
       };
       const { error } = await supabase
-        .from("healthcare_profiles")
+        .from("facility_profile")
         .update(updateData)
         .eq("id", id);
 

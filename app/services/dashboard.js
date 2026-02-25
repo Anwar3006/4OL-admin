@@ -366,7 +366,7 @@ export const fetchTotalFacilities = async (
   try {
     // Fetch total count
     const { count: totalCount, error: totalError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true });
 
     if (totalError) {
@@ -376,7 +376,7 @@ export const fetchTotalFacilities = async (
 
     // Fetch approved count
     const { count: approvedCount, error: approvedError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true })
       .eq("status", "Approved");
 
@@ -387,7 +387,7 @@ export const fetchTotalFacilities = async (
 
     // Fetch pending count
     const { count: pendingCount, error: pendingError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true })
       .eq("status", "Pending");
 
@@ -582,7 +582,7 @@ export const fetchTotalOnlineUsers = async (
     
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("id, last_activity, sex")
+      .select("user_id, last_activity, sex")
       .gte("last_activity", last24Hours.toString());
 
     if (error) {
@@ -924,11 +924,11 @@ export const fetchFacilitiesCountByPeriod = async (
   loadCallback();
 
   try {
-    const { start, end } = getDateRangeTimestamptz(period); // healthcare_profiles.created_at is timestamptz
+    const { start, end } = getDateRangeTimestamptz(period); // facility_profile.created_at is timestamptz
     
     // Fetch total count
     const { count: totalCount, error: totalError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true })
       .gte("created_at", start)
       .lte("created_at", end);
@@ -940,7 +940,7 @@ export const fetchFacilitiesCountByPeriod = async (
 
     // Fetch approved count
     const { count: approvedCount, error: approvedError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true })
       .eq("status", "Approved")
       .gte("created_at", start)
@@ -953,7 +953,7 @@ export const fetchFacilitiesCountByPeriod = async (
 
     // Fetch pending count
     const { count: pendingCount, error: pendingError } = await supabase
-      .from("healthcare_profiles")
+      .from("facility_profile")
       .select("*", { count: "exact", head: true })
       .eq("status", "Pending")
       .gte("created_at", start)
@@ -1139,7 +1139,7 @@ export const fetchOnlineUsersCountByPeriod = async (
     
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("id, last_activity, sex")
+      .select("user_id, last_activity, sex")
       .gte("last_activity", start)
       .lte("last_activity", end);
 

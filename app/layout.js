@@ -7,12 +7,16 @@ import "leaflet/dist/leaflet.css";
 import "./scss/app.scss";
 import { Provider } from "react-redux";
 import store from "../store";
+import QueryProvider from "@/components/providers/QueryProvider";
+
 export default function RootLayout({ children }) {
   return (
     <>
       <html lang="en">
         <body className="font-inter  custom-tippy dashcode-app">
-          <Provider store={store}>{children}</Provider>
+          <QueryProvider>
+            <Provider store={store}>{children}</Provider>
+          </QueryProvider>
         </body>
       </html>
     </>

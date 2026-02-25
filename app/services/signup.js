@@ -1,6 +1,7 @@
 import { logUserActivity } from "@/utils/activityLogger";
 import { encryptPassword } from "../utils/helpers";
 import { supabase } from "../utils/supabaseClient";
+import { authClient } from "@/lib/auth-client";
 import moment from "moment";
 
 export const signup = async (
@@ -11,54 +12,51 @@ export const signup = async (
 ) => {
   loadCallback();
   try {
-    // Get creator's ID from localStorage
-    const createdById = localStorage.getItem("user_id"); // Make sure you store this at login
+    const createdById = localStorage.getItem("user_id");
 
-    const { data: signupData, error: signupError } = await supabase.auth.signUp(
-      {
-        email: user.email,
-        password: user.password,
-      }
-    );
+    const signupResult = await authClient.signUp.email({
+      email: user.email,
+      password: user.password,
+      name: `${user.first_name || ""} ${user.last_name || ""}`.trim(),
+    });
 
-    if (signupError) {
-      errorCallback(signupError);
+    if (signupResult.error) {
+      errorCallback(signupResult.error);
       return;
     }
 
-    const userId = signupData.user?.id;
+    const userId = signupResult.data?.user?.id;
     if (userId) {
       const encryptedPassword = encryptPassword(user.password);
       const updatedUser = { ...user };
       delete updatedUser["confirm_password"];
       delete updatedUser["password"];
 
-      const { error: updateError } = await supabase
-        .from("user_profiles")
-        .insert([
-          {
-            ...updatedUser,
-            id: userId,
-            password: encryptedPassword,
-            // created_at: new Date.n, // timestamp
-            // updated_at: new Date().getTime(), // timestamp
-            created_by: createdById || userId, // fallback to self if no admin
-            updated_by: createdById || userId, // fallback to self if no admin
-            is_created_by_admin_panel: true,
-            dob: moment(user.dob).format("YYYY-MM-DD"),
-          },
-        ]);
+      const { error: updateError } = await supabase.from("user_profiles").insert([
+        {
+          ...updatedUser,
+          id: userId,
+          password: encryptedPassword,
+          created_by: createdById || userId,
+          updated_by: createdById || userId,
+          is_created_by_admin_panel: true,
+          dob: moment(user.dob).format("YYYY-MM-DD"),
+        },
+      ]);
 
       if (updateError) {
+        try {
+          await authClient.deleteUser(userId);
+        } catch (rollbackError) {
+          console.error("Failed rolling back auth user:", rollbackError);
+        }
         errorCallback(updateError);
         return;
       }
 
-      // Log the user creation activity
       try {
         let creatorName = "Unknown User";
 
-        // Get creator's full name from user_profiles table
         if (createdById) {
           const { data: creatorProfile, error: creatorError } = await supabase
             .from("user_profiles")
@@ -85,18 +83,17 @@ export const signup = async (
         }
 
         await logUserActivity(
-          createdById || userId, // Creator's ID
-          creatorName, // Creator's full name
-          "created new user", // Action
-          userId, // Target user ID (the newly created user)
-          null // IP will be auto-detected
+          createdById || userId,
+          creatorName,
+          "created new user",
+          userId,
+          null
         );
       } catch (logError) {
         console.warn("Failed to log user creation activity:", logError);
-        // Don't fail the signup if logging fails
       }
 
-      successCallback(signupData);
+      successCallback(signupResult.data);
     } else {
       errorCallback(new Error("User ID is not available."));
     }

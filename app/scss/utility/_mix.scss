@@ -1,45 +1,47 @@
+@reference "tailwindcss";
+
 .social-link {
   @apply h-8 w-8 flex flex-col items-center justify-center border-black-500 dark:border-slate-700 border rounded-full text-slate-900 dark:text-slate-300 leading-[1] hover:bg-slate-900 dark:hover:bg-slate-700 hover:text-white transition duration-150;
 }
 
 .legend-ring {
   .apexcharts-legend-series:nth-child(1) .apexcharts-legend-marker {
-    @apply ring-4  ring-primary-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-primary-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(2) .apexcharts-legend-marker {
-    @apply ring-4  ring-info-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-info-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(3) .apexcharts-legend-marker {
-    @apply ring-4  ring-warning-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-warning-500/30 rtl:ml-4;
   }
 }
 .legend-ring2 {
   .apexcharts-legend-series:nth-child(1) .apexcharts-legend-marker {
-    @apply ring-4  ring-info-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-info-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(2) .apexcharts-legend-marker {
-    @apply ring-4  ring-warning-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-warning-500/30 rtl:ml-4;
   }
 }
 
 .legend-ring3 {
   .apexcharts-legend-series:nth-child(1) .apexcharts-legend-marker {
-    @apply ring-4  ring-success-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-success-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(2) .apexcharts-legend-marker {
-    @apply ring-4  ring-warning-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-warning-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(3) .apexcharts-legend-marker {
-    @apply ring-4  ring-secondary-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-secondary-500/30 rtl:ml-4;
   }
 }
 
 .legend-ring4 {
   .apexcharts-legend-series:nth-child(1) .apexcharts-legend-marker {
-    @apply ring-4  ring-primary-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-primary-500/30 rtl:ml-4;
   }
   .apexcharts-legend-series:nth-child(2) .apexcharts-legend-marker {
-    @apply ring-4  ring-warning-500 ring-opacity-30 rtl:ml-4;
+    @apply ring-4 ring-warning-500/30 rtl:ml-4;
   }
 }
 [dir="rtl"] .charts .apexcharts-legend-marker {
@@ -139,7 +141,6 @@
 }
 
 // icons pages
-
 .icon-lists {
   li {
     margin-right: 12px;
@@ -154,7 +155,7 @@
     @apply opacity-0 cursor-pointer;
   }
   .container-class {
-    @apply w-full h-[44px] bg-white dark:bg-slate-800 before:px-3  before:text-sm before:text-slate-900 rounded cursor-pointer;
+    @apply w-full h-[44px] bg-white dark:bg-slate-800 before:px-3 before:text-sm before:text-slate-900 rounded cursor-pointer;
     &:before {
       content: "Weekly";
       position: absolute;
@@ -183,7 +184,7 @@
     @apply opacity-0 cursor-pointer;
   }
   .container-class {
-    @apply w-full h-[44px] bg-white dark:bg-slate-800 before:px-3  before:text-sm before:text-slate-900 rounded cursor-pointer;
+    @apply w-full h-[44px] bg-white dark:bg-slate-800 before:px-3 before:text-sm before:text-slate-900 rounded cursor-pointer;
     &:before {
       content: "Select date";
       position: absolute;

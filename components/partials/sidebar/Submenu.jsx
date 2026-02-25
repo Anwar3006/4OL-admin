@@ -58,7 +58,7 @@ const Submenu = ({ activeSubmenu, item, i, locationName, pendingReviews }) => {
                 />
               </div>
             ) : (
-              <Link href={subItem.childlink}>
+              <Link href={`/${subItem.childlink}`}>
                 <span
                   className={`${
                     locationName === subItem.childlink

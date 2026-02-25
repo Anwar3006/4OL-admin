@@ -10,7 +10,7 @@ export const fetchFacilityRatings = async (from = 0, to = 13) => {
         first_name,
         last_name
       ),
-      healthcare_profiles (
+      facility_profile (
         facility_name
       )
     `,
@@ -30,7 +30,7 @@ export const fetchFacilityRatings = async (from = 0, to = 13) => {
     rating: item?.rating,
     first_name: item.user_profiles?.first_name,
     last_name: item.user_profiles?.last_name,
-    facility_name: item.healthcare_profiles?.facility_name,
+    facility_name: item.facility_profile?.facility_name,
   }));
 
   return { ratings: formattedData, count };

@@ -1,5 +1,7 @@
+@reference "tailwindcss";
+
 .sidebar-wrapper {
-  @apply fixed ltr:left-0 rtl:right-0 top-0   h-screen   z-[999];
+  @apply fixed ltr:left-0 rtl:right-0 top-0 h-screen z-[999];
   transition: width 0.2s cubic-bezier(0.39, 0.575, 0.565, 1);
   will-change: width;
 }
@@ -55,13 +57,13 @@
     @apply text-slate-800 dark:text-slate-300 text-xs font-semibold uppercase mb-4 mt-4;
   }
   > .menu-link {
-    @apply flex text-slate-600  font-medium dark:text-slate-300 text-sm capitalize  py-2 rounded-[4px] cursor-pointer;
+    @apply flex text-slate-600 font-medium dark:text-slate-300 text-sm capitalize py-2 rounded-[4px] cursor-pointer;
   }
   .menu-icon {
-    @apply icon-box inline-flex items-center text-slate-600 dark:text-slate-300 text-lg ltr:mr-3 rtl:ml-3;
+    @apply inline-flex items-center text-slate-600 dark:text-slate-300 text-lg ltr:mr-3 rtl:ml-3;
   }
 }
-// menu item has chilren
+// menu item has children
 .item-has-children {
   .menu-arrow {
     @apply h-5 w-5 text-base text-slate-300 bg-slate-100 dark:bg-[#334155] dark:text-slate-300 rounded-full flex justify-center items-center;
@@ -82,7 +84,7 @@
   }
   .single-sidebar-menu {
     .text-box {
-      @apply absolute  left-full ml-5 w-[180px] top-0 px-4 py-3 bg-white shadow-dropdown rounded-[4px] dark:bg-slate-800 z-[999] invisible opacity-0 transition-all duration-150;
+      @apply absolute left-full ml-5 w-[180px] top-0 px-4 py-3 bg-white shadow-dropdown rounded-[4px] dark:bg-slate-800 z-[999] invisible opacity-0 transition-all duration-150;
     }
     &:hover {
       .text-box {
@@ -113,14 +115,14 @@
 // active menu
 .item-has-children {
   .parent_active {
-    @apply bg-secondary-500 bg-opacity-20;
+    @apply bg-secondary-500/20;
     .icon-box,
     .menu-icon,
     .text-box {
       @apply text-slate-700 dark:text-slate-200;
     }
     .menu-arrow {
-      @apply bg-secondary-500 text-slate-600 text-opacity-70 bg-opacity-30 dark:text-white;
+      @apply bg-secondary-500/30 text-slate-600/70 dark:text-white;
     }
   }
 }
@@ -134,6 +136,6 @@
     }
   }
   .menu-badge {
-    @apply bg-slate-100  text-slate-900;
+    @apply bg-slate-100 text-slate-900;
   }
 }

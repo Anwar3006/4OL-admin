@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Modal from "@/components/ui/Modal";
 import { supabase } from "@/app/utils/supabaseClient";
+import { authClient } from "@/lib/auth-client";
 import Loading from "@/components/Loading";
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -215,24 +216,23 @@ const Profile = () => {
     const userId = localStorage.getItem("user_id");
 
     try {
-      // First verify current password
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: profileData.email,
+      const verifyResult = await authClient.verifyPassword({
         password: passwordData.current_password,
       });
 
-      if (signInError) {
+      if (verifyResult?.error || verifyResult?.data?.status !== true) {
         toast.error("Current password is incorrect");
         return;
       }
 
-      // Update password
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.new_password
+      const changeResult = await authClient.changePassword({
+        currentPassword: passwordData.current_password,
+        newPassword: passwordData.new_password,
+        revokeOtherSessions: false,
       });
 
-      if (error) {
-        console.error("Error updating password:", error);
+      if (changeResult?.error) {
+        console.error("Error updating password:", changeResult.error);
         toast.error("Failed to update password");
       } else {
         toast.success("Password updated successfully!");

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import world from "@/constant/world-map.json";
 import { VectorMap } from "@south-paw/react-vector-maps";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -8,28 +10,32 @@ import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import { supabase } from "@/app/utils/supabaseClient";
 import Submenu from "./Submenu";
+import { authClient } from "@/lib/auth-client";
+
+// Roles that can see the Admins and Delete Account Request menu items
+const SUPER_ADMIN_ROLES = ["super_admin", "Super Admin"];
 
 const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [pendingReviews, setPendingReviews] = useState(0);
-  const [userRole, setUserRole] = useState(null); // state to store user role
+  const [userRole, setUserRole] = useState(null);
   const location = usePathname();
   const locationName = location.replace("/", "");
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
 
-  // Function to fetch user role from Supabase
+  // Fetch user role from Supabase
   const fetchUserRole = async () => {
-    const userId = localStorage.getItem("user_id"); // assuming user_id is stored in localStorage
+    const sessionResult = await authClient.getSession();
+    const userId = sessionResult?.data?.user?.id;
     if (!userId) return;
 
     try {
       const { data, error } = await supabase
         .from("user_profiles")
         .select("role")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .single();
 
       if (error) {
@@ -46,9 +52,9 @@ const Navmenu = ({ menus, onLogout }) => {
   const fetchPendingReviews = async () => {
     try {
       const { data, error } = await supabase
-        .from("healthcare_profiles") // Replace with your actual table name
+        .from("facility_profile")
         .select("*")
-        .eq("status", "Pending"); // Adjust based on your schema
+        .eq("status", "pending"); // lowercase to match facility_status_enum
 
       if (error) {
         console.error("Error fetching pending reviews:", error);
@@ -63,17 +69,15 @@ const Navmenu = ({ menus, onLogout }) => {
 
   // Restrict Admin Panel Access
   useEffect(() => {
-    if (locationName === "admin" && userRole !== "Super Admin") {
-      // Redirect unauthorized users to the analytics page
+    if (locationName === "admin" && !SUPER_ADMIN_ROLES.includes(userRole)) {
       router.push("/analytics");
     }
   }, [locationName, userRole]);
 
-  // Fetch the data once on mount
   useEffect(() => {
     fetchPendingReviews();
-    fetchUserRole(); // Fetch role when the component mounts
-  }, []); // Only run once when component mounts
+    fetchUserRole();
+  }, []);
 
   const toggleSubmenu = (i) => {
     setActiveSubmenu(activeSubmenu === i ? null : i);
@@ -101,30 +105,16 @@ const Navmenu = ({ menus, onLogout }) => {
     }
   }, [router, location]);
 
+  const isSuperAdmin = userRole !== null && SUPER_ADMIN_ROLES.includes(userRole);
+
   return (
     <ul>
       {menus
         .filter((item) => {
-          // Conditionally filter out the Admin menu based on user role
-          if (item.title === "Admins" && userRole !== "Super Admin") {
-            return false; // Hide "Admins" menu if the role is not "Super Admin"
-          }
-
-          if (
-            item.title === "Delete Account Request" &&
-            userRole !== "Super Admin"
-          ) {
-            return false; // Hide "Delete Account Request" menu if the role is not "Super Admin"
-          }
-
-          // if (item.title === "Facilities" && item.child) {
-          //   // Filter "Pending Reviews" to only be visible for Super Admins
-          //   item.child = item.child.filter(
-          //     (child) =>
-          //       !(child.childtitle === "Pending Reviews" && userRole !== "Super Admin")
-          //   );
-          // }
-
+          // Hide "Admins" for non-super-admins
+          if (item.title === "Admins" && !isSuperAdmin) return false;
+          // Hide "Delete Account Request" for non-super-admins
+          if (item.title === "Delete Account Request" && !isSuperAdmin) return false;
           return true;
         })
         .map((item, i) => (
@@ -137,7 +127,7 @@ const Navmenu = ({ menus, onLogout }) => {
           >
             {/* Single menu with no children */}
             {!item.child && !item.isHeadr && item.title !== "Logout" && (
-              <Link className="menu-link" href={item.link}>
+              <Link className="menu-link" href={`/${item.link}`}>
                 <span className="menu-icon flex-grow-0">
                   <Icon icon={item.icon} />
                 </span>
@@ -182,6 +172,7 @@ const Navmenu = ({ menus, onLogout }) => {
             />
           </li>
         ))}
+
       {/* Logout Menu Item */}
       <li className="single-sidebar-menu">
         <div className="menu-link" onClick={onLogout}>

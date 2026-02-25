@@ -31,8 +31,8 @@ export default function HealthSchoolListing() {
           error,
           count,
         } = await supabase
-          // .from("ibp") //fetch from ibp table not healthcare_profiles
-          .from("healthcare_profiles")
+          // .from("ibp") //fetch from ibp table not facility_profile
+          .from("facility_profile")
           .select("*", { count: "exact" })
           .range(from, to)
           .eq("status", "Approved");
@@ -71,8 +71,8 @@ export default function HealthSchoolListing() {
   // Delete a specific record
   const handleDelete = async (id) => {
     const { error } = await supabase
-      // .from("healthcare_profiles") //fetch from ibp table not healthcare_profiles
-      .from("healthcare_profiles")
+      // .from("facility_profile") //fetch from ibp table not facility_profile
+      .from("facility_profile")
       .update({ is_deleted: true })
       .eq("id", id);
 
