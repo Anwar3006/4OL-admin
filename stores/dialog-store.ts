@@ -20,7 +20,9 @@ export type DialogTypes =
   | "add-faq"
   | "view-faq"
   | "gallery-modal"
-  | "view-medication-reminder";
+  | "view-medication-reminder"
+  | "add-chat"
+  | "view-chat";
 
 /**
  * Generic dialog configuration
@@ -383,6 +385,35 @@ export const useViewMediactionReminderDialog = () => {
     open: (entityId: string) =>
       openDialog("view-medication-reminder", { entityId }),
     close: () => closeDialog("view-medication-reminder"),
+  };
+};
+
+export const useAddChatDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-chat"));
+  const data = useDialogStore((state) => state.getDialogData("add-chat"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-chat", { data }),
+    close: () => closeDialog("add-chat"),
+  };
+};
+
+export const useViewChatDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-chat"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-chat"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-chat", { entityId }),
+    close: () => closeDialog("view-chat"),
   };
 };
 

@@ -2,19 +2,28 @@ import { supabase } from "../utils/supabaseClient"; // Adjust this import based 
 
 export const fetchFacilityRatings = async (from = 0, to = 13) => {
   const { data, error, count } = await supabase
-    .from("facility_ratings")
+    .from("facility_reviews")
     .select(
       `
-      id, comment, rating,
+      id, 
+      comment_text, 
+      rating,
+      is_published,
+      is_verified_visit,
+      helpful_count,
+      created_at,
       user_profiles (
+        user_id,
         first_name,
-        last_name
+        last_name,
+        email
       ),
       facility_profile (
+        id,
         facility_name
       )
     `,
-      { count: "exact" }
+      { count: "exact" },
     )
     .range(from, to);
 
@@ -23,14 +32,18 @@ export const fetchFacilityRatings = async (from = 0, to = 13) => {
     throw error;
   }
 
-  // Optional: format the result to simplify usage
+  // Format the result to match TFacilityReviewWithData schema
   const formattedData = data.map((item) => ({
-    id: item?.id,
-    comment: item?.comment,
-    rating: item?.rating,
-    first_name: item.user_profiles?.first_name,
-    last_name: item.user_profiles?.last_name,
-    facility_name: item.facility_profile?.facility_name,
+    ...item,
+    user_profiles: {
+      user_id: item.user_profiles?.user_id,
+      name: `${item.user_profiles?.first_name || ""} ${item.user_profiles?.last_name || ""}`.trim() || "Anonymous",
+      email: item.user_profiles?.email,
+    },
+    facility_profile: {
+      id: item.facility_profile?.id,
+      facility_name: item.facility_profile?.facility_name || "N/A",
+    },
   }));
 
   return { ratings: formattedData, count };

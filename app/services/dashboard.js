@@ -702,6 +702,26 @@ export const fetchTotalPeriodTrackerUsers = async (
   }
 };
 
+export const fetchDashboardOverviewStats = async (
+  loadCallback,
+  successCallback,
+  errorCallback
+) => {
+  loadCallback();
+  try {
+    const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
+
+    if (error) {
+      errorCallback(error);
+      return;
+    }
+
+    successCallback(data);
+  } catch (err) {
+    errorCallback(err);
+  }
+};
+
 // New function to fetch marketing breakdown by banner types from banners_ads table
 export const fetchTotalMarketing = async (
   loadCallback,

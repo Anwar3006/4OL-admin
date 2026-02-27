@@ -234,178 +234,174 @@ const PeriodsTrackerPage = () => {
             ref={scrollContainerRef}
             className="overflow-x-auto relative hidden-scrollbar"
           >
-            <table className="min-w-full divide-y divide-gray-200 ">
-              <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10 whitespace-nowrap">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
+            <table className="w-full bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700 min-w-max">
+              <thead className="bg-gray-50 dark:bg-slate-800">
+                <tr className="text-center text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap text-left">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap text-left">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap text-left">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap text-left">
                     Region
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap text-left">
                     Goal
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Cycle Length
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Cycle
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Period Length
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Period
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Consistent?
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Consistent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Period Start
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Start
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Next Reminder
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Reminder
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Ovulation Date
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Ovulation
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Fertile Window
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Fertile
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Flow Types
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Flow
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-slate-200 uppercase">
-                    Actions
+                  <th className="sm:px-6 px-4 sm:py-3 py-2 whitespace-nowrap">
+                    Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200">
-                {getCurrentPageData().map((log) => (
-                  <tr key={log.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-slate-200">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
+              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                {getCurrentPageData().length === 0 && !loading ? (
+                  <tr>
+                    <td
+                      colSpan="14"
+                      className="text-center py-20 text-base text-gray-500 dark:text-slate-300"
+                    >
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <NoDataFound />
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  getCurrentPageData().map((log) => (
+                    <tr
+                      key={log.id}
+                      className="border-b hover:bg-gray-50 dark:hover:bg-slate-700 text-sm text-center transition"
+                    >
+                      <td className="text-gray-900 dark:text-slate-200 px-3 py-3 whitespace-nowrap text-left">
+                        <div className="flex items-center space-x-3">
                           {log.user_profiles?.avatar_url ? (
-                            <Image
-                              className="h-10 w-10 rounded-full"
+                            <img
+                              className="w-8 h-8 rounded-full object-cover"
                               src={log.user_profiles.avatar_url}
                               alt=""
-                              width={40}
-                              height={40}
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center">
                               <Icon
                                 icon="heroicons:user"
-                                className="h-6 w-6 text-gray-500"
+                                className="w-4 h-4 text-gray-500 dark:text-slate-300"
                               />
                             </div>
                           )}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <span className="font-medium">
                             {log.user_profiles?.first_name}{" "}
                             {log.user_profiles?.last_name}
-                          </div>
+                          </span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleViewDetails(log)}
-                        className="text-secondary-800 dark:text-green-400 hover:text-secondary-600 dark:hover:text-green-300 hover:underline text-left font-medium"
-                      >
-                        {log.user_profiles?.email}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.user_profiles?.phone_number}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.user_profiles?.region}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.goal}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.cycle_length} days
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.period_length} days
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {log.is_consistent}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {moment(log.period_start_date).format("MMM DD, YYYY")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {moment(log.next_reminder).format("MMM DD, YYYY")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200">
-                      {moment(log.ovulation_date).format("MMM DD, YYYY")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
-                      <Button
-                        iconWidth={24}
-                        text="Fertile Window"
-                        icon="healthicons:sexual-reproductive-health"
-                        iconClass="text-white w-4 h-4 shrink-0"
-                        className="bg-[#9333ea] text-white rounded-md p-2 text-sm hover:bg-[#651da8] transition-colors w-full whitespace-nowrap flex items-center justify-center gap-2"
-                        onClick={() => {
-                          setSelectedLog(log);
-                          setShowFertileWindow(true);
-                        }}
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-slate-200">
-                      <Button
-                        text="Flow Types"
-                        icon="bi:droplet-fill"
-                        iconClass="text-white w-4 h-4 shrink-0"
-                        className="bg-[#dc2626] text-white rounded-md p-2 text-sm hover:bg-[#a91f1f] transition-colors w-full whitespace-nowrap flex items-center justify-center gap-2"
-                        onClick={() => {
-                          setSelectedLog(log);
-                          setShowFlowTypes(true);
-                        }}
-                      />
-                    </td>
-                    <td className="text-center gap-2">
-                      <div className="flex justify-center items-center gap-4">
-                        <Button
-                          icon="heroicons-outline:pencil-alt"
-                          iconClass="text-green-500 text-xl"
-                          className="p-0 bg-transparent border-none"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(log);
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap text-left">
+                        <button
+                          onClick={() => handleViewDetails(log)}
+                          className="hover:text-green-500 transition-colors"
+                        >
+                          {log.user_profiles?.email}
+                        </button>
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap text-left">
+                        {log.user_profiles?.phone_number}
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap text-left">
+                        {log.user_profiles?.region}
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap text-left">
+                        {log.goal}
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap">
+                        {log.cycle_length}d
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap">
+                        {log.period_length}d
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${log.is_consistent === 'Yes' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {log.is_consistent}
+                        </span>
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap">
+                        {moment(log.period_start_date).format("DD/MM/YY")}
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap uppercase">
+                        {moment(log.next_reminder).format("DD/MM/YY")}
+                      </td>
+                      <td className="text-gray-500 dark:text-slate-300 px-3 py-3 whitespace-nowrap uppercase">
+                        {moment(log.ovulation_date).format("DD/MM/YY")}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedLog(log);
+                            setShowFertileWindow(true);
                           }}
-                        />
-                        <Button
-                          icon="heroicons-outline:trash"
-                          iconClass="text-red-500 text-xl"
-                          className="p-0 bg-transparent border-none"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteModal(log);
+                          className="text-purple-500 hover:text-purple-700 transition"
+                        >
+                          <Icon icon="healthicons:sexual-reproductive-health" className="w-6 h-6 inline" />
+                        </button>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedLog(log);
+                            setShowFlowTypes(true);
                           }}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {logs.length === 0 && !loading && (
-                  <tr>
-                    <td colSpan="11" className="text-center py-4">
-                      <NoDataFound />
-                    </td>
-                  </tr>
+                          className="text-red-500 hover:text-red-700 transition"
+                        >
+                          <Icon icon="bi:droplet-fill" className="w-5 h-5 inline" />
+                        </button>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                        <div className="flex justify-center items-center gap-3">
+                          <button
+                            className="text-gray-400 hover:text-green-500 transition"
+                            onClick={() => handleEdit(log)}
+                          >
+                            <Icon icon="heroicons-outline:pencil-alt" className="w-5 h-5" />
+                          </button>
+                          <button
+                            className="text-gray-400 hover:text-red-500 transition"
+                            onClick={() => deleteModal(log)}
+                          >
+                            <Icon icon="heroicons-outline:trash" className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
                 {loading && (
                   <tr>
-                    <td colSpan="11" className="text-center py-4">
+                    <td colSpan="14" className="text-center py-20">
                       <Loading />
                     </td>
                   </tr>

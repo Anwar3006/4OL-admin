@@ -26,9 +26,9 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      <div className="bg-[#50AC52] relative hidden lg:block h-full">
+      <div className="bg-[#57CE83] relative hidden lg:block h-full">
         <img
-          src="/assets/images/all-img/AuthImage.png"
+          src="/assets/images/all-img/4 Our Life.png"
           alt="placeholder"
           className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
         />
