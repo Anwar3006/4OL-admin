@@ -14,7 +14,9 @@ import type {
 } from "lexical"
 import { $applyNodeReplacement, createEditor, DecoratorNode } from "lexical"
 
-const ImageComponent = React.lazy(() => import("../editor-ui/image-component"))
+const ImageComponent = React.lazy(
+  () => import("../editor-ui/image-component.js") as any,
+)
 
 export interface ImagePayload {
   altText: string

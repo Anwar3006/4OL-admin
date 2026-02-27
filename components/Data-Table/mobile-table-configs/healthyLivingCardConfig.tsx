@@ -11,7 +11,7 @@ import {
 import { MobileCardConfig } from "../mobile-card-types";
 
 import { Badge } from "@/components/ui/badge";
-import { THealthyLivingOutput } from "@4ol/db/schemas/healthyLiving.schema";
+import { THealthyLivingOutput } from "@/schemas/healthyLiving.schema";
 
 /**
  * Mobile card configuration for Condition entities

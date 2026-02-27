@@ -6,9 +6,9 @@ import Card from "@/components/ui/Card";
 import PaginationNew from "@/components/ui/PaginationNew";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
-import Button from "@/components/ui/Button";
+
 import moment from "moment";
-import * as XLSX from "xlsx"; // Import XLSX library
+// import * as XLSX from "xlsx"; // Import XLSX library
 import Icons from "@/components/ui/Icon";
 import NoDataFound from "@/components/NoDataFound";
 import Loading from "@/components/Loading";
@@ -28,7 +28,7 @@ export default function UserActivity({ user }) {
   // Function to fetch user names for activity logs
   const fetchUserNames = async (userIds) => {
     if (userIds.length === 0) return;
-    
+
     try {
       const { data: profiles, error } = await supabase
         .from("user_profiles")
@@ -37,11 +37,12 @@ export default function UserActivity({ user }) {
 
       if (!error && profiles) {
         const nameMap = {};
-        profiles.forEach(profile => {
-          const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+        profiles.forEach((profile) => {
+          const fullName =
+            `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
           nameMap[profile.id] = fullName || "Unknown User";
         });
-        setUserNames(prev => ({ ...prev, ...nameMap }));
+        setUserNames((prev) => ({ ...prev, ...nameMap }));
       }
     } catch (error) {
       console.error("Error fetching user names:", error);
@@ -55,10 +56,10 @@ export default function UserActivity({ user }) {
   const [userFilter, setUserFilter] = useState("");
   const [logTypeFilter, setLogTypeFilter] = useState("");
   const [fromDate, setFromDate] = useState(
-    moment().startOf("month").format("YYYY-MM-DD")
+    moment().startOf("month").format("YYYY-MM-DD"),
   );
   const [toDate, setToDate] = useState(
-    moment().endOf("month").format("YYYY-MM-DD")
+    moment().endOf("month").format("YYYY-MM-DD"),
   );
 
   useEffect(() => {
@@ -77,7 +78,10 @@ export default function UserActivity({ user }) {
         if (userFilter) query = query.ilike("user_name", `%${userFilter}%`);
         if (logTypeFilter) query = query.eq("type", logTypeFilter);
         if (fromDate) {
-          const startTimestamp = moment(fromDate).startOf("day").valueOf().toString();
+          const startTimestamp = moment(fromDate)
+            .startOf("day")
+            .valueOf()
+            .toString();
           query = query.gte("timestamp", startTimestamp);
         }
         if (toDate) {
@@ -93,10 +97,10 @@ export default function UserActivity({ user }) {
         } else {
           setData(data);
           setTotalPages(Math.ceil(count / pageSize));
-          
+
           // Fetch user names for the activity logs
           if (data && data.length > 0) {
-            const userIds = [...new Set(data.map(item => item.user_id))];
+            const userIds = [...new Set(data.map((item) => item.user_id))];
             await fetchUserNames(userIds);
           }
         }
@@ -137,7 +141,10 @@ export default function UserActivity({ user }) {
       if (userFilter) query = query.ilike("user_name", `%${userFilter}%`);
       if (logTypeFilter) query = query.eq("type", logTypeFilter);
       if (fromDate) {
-        const startTimestamp = moment(fromDate).startOf("day").valueOf().toString();
+        const startTimestamp = moment(fromDate)
+          .startOf("day")
+          .valueOf()
+          .toString();
         query = query.gte("timestamp", startTimestamp);
       }
       if (toDate) {
@@ -150,7 +157,7 @@ export default function UserActivity({ user }) {
       } else {
         // Fetch user names for all data before downloading
         if (allData && allData.length > 0) {
-          const userIds = [...new Set(allData.map(item => item.user_id))];
+          const userIds = [...new Set(allData.map((item) => item.user_id))];
           await fetchUserNames(userIds);
         }
         downloadExcel(allData);
@@ -163,7 +170,9 @@ export default function UserActivity({ user }) {
 
   const downloadExcel = (dataToDownload) => {
     const formattedData = dataToDownload.map((item) => ({
-      "Date & Time": item?.timestamp ? moment(parseInt(item.timestamp)).format("DD-MM-YYYY HH:mm:ss") : "--",
+      "Date & Time": item?.timestamp
+        ? moment(parseInt(item.timestamp)).format("DD-MM-YYYY HH:mm:ss")
+        : "--",
       "Log Type": item.type || "",
       "Done By": userNames[item.user_id] || item.user_name || "Unknown User",
       Description:
@@ -341,13 +350,19 @@ export default function UserActivity({ user }) {
                         {data?.map((item) => (
                           <tr className="capitalize" key={item.id}>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                              {item?.timestamp ? moment(parseInt(item.timestamp)).format("DD-MM-YYYY HH:mm:ss") : "--"}
+                              {item?.timestamp
+                                ? moment(parseInt(item.timestamp)).format(
+                                    "DD-MM-YYYY HH:mm:ss",
+                                  )
+                                : "--"}
                             </td>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                               {item.type}
                             </td>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                              {userNames[item.user_id] || item.user_name || "Unknown User"}{" "}
+                              {userNames[item.user_id] ||
+                                item.user_name ||
+                                "Unknown User"}{" "}
                             </td>
                             <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
                               {item.description}{" "}

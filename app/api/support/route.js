@@ -101,7 +101,7 @@ if (!process.env.RESEND_API_KEY) {
   console.error("RESEND_API_KEY is not configured in environment variables");
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
 
 export async function POST(req) {
   try {

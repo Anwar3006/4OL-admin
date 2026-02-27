@@ -3,7 +3,7 @@
 import { useState, useRef, type ChangeEvent } from "react";
 import { LexicalEditor } from "lexical";
 import { uploadImageToSupabase } from "@/components/editor/utils/upload-image";
-import { INSERT_IMAGE_COMMAND } from "../../images-plugin";
+import { INSERT_IMAGE_COMMAND } from "../../images-plugin.js";
 
 interface InsertImageDialogProps {
   activeEditor: LexicalEditor;

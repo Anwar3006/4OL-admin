@@ -1,8 +1,13 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldGroup, FieldSeparator } from "@/components/ui/field";
-// @ts-expect-error package exports typing issue in this repo
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldSeparator,
+} from "@/components/ui/field";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomInput from "@/components/CustomInput";
 import * as zod from "zod";
@@ -80,7 +85,10 @@ const RegisterForm = ({
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
         window.localStorage.setItem("user_id", authResult.data?.user?.id || "");
-        window.localStorage.setItem("user_email", authResult.data?.user?.email || "");
+        window.localStorage.setItem(
+          "user_email",
+          authResult.data?.user?.email || "",
+        );
         window.localStorage.setItem("user_role", data.role || "user");
       }
 
@@ -103,7 +111,9 @@ const RegisterForm = ({
         <FieldGroup>
           <div className="flex flex-col items-center gap-1 text-center">
             <h1 className="text-2xl font-bold">
-              {isInvited ? "Administrative Account Setup" : "Create your account"}
+              {isInvited
+                ? "Administrative Account Setup"
+                : "Create your account"}
             </h1>
             <p className="text-muted-foreground text-sm text-balance">
               Fill in the form below to create an account
@@ -203,7 +213,11 @@ const RegisterForm = ({
           </div>
 
           <Field>
-            <Button type="submit" className="py-5 bg-emerald-600" disabled={isSubmittingForm}>
+            <Button
+              type="submit"
+              className="py-5 bg-emerald-600"
+              disabled={isSubmittingForm}
+            >
               {isPending ? "Creating..." : "Register an Account"}
             </Button>
           </Field>

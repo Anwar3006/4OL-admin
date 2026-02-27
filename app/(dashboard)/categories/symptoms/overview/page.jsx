@@ -7,8 +7,8 @@ import {
   useAddConditionDialog,
   useViewConditionDialog,
 } from "@/stores/dialog-store";
-import AddSymptomDialog from "../../symptoms/_components/add-symptom-dialog";
-import ViewSymptomDialog from "../../symptoms/_components/view-symptom-dialog";
+import AddSymptomDialog from "@/app/(dashboard)/symptoms/_components/add-symptom-dialog";
+import ViewSymptomDialog from "@/app/(dashboard)/symptoms/_components/view-symptom-dialog";
 import { createPaginationHandlers } from "@/lib/utils";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { symptomsColumns } from "@/components/Data-Table/columns/symptomsColumns";

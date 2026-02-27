@@ -1,28 +1,49 @@
 import { MobileCardConfig } from "../mobile-card-types";
 import { TChatOutput } from "@/schemas/chat.schema";
+import { Badge } from "@/components/ui/badge";
 
 export const chatCardConfig: MobileCardConfig<TChatOutput> = {
-  title: (data) => `Ticket #${data.id}`,
-  subtitle: (data) => data.subject || "No Subject",
-  description: (data) => data.message || "No Message",
-  status: (data) => ({
-    label: data.status,
-    variant: data.status === "Open" ? "success" : "outline",
-  }),
-  metadata: (data) => [
+  header: {
+    title: (data) => `Ticket #${data.id}`,
+    subtitle: (data) => data.subject || "No Subject",
+    badge: (data) => (
+      <Badge
+        variant={data.status === "Open" ? "secondary" : "outline"}
+        className={data.status === "Open" ? "bg-emerald-100 text-emerald-700" : ""}
+      >
+        {data.status}
+      </Badge>
+    ),
+  },
+  fields: [
     {
-      label: "Requested By",
-      value: `${data.user_profiles?.first_name} ${data.user_profiles?.last_name}`,
+      id: "description",
+      label: "Message",
+      render: (data) => data.message || "No Message",
     },
     {
+      id: "requested_by",
+      label: "Requested By",
+      render: (data) =>
+        `${data.user_profiles?.first_name} ${data.user_profiles?.last_name}`,
+    },
+    {
+      id: "priority",
       label: "Priority",
-      value: data.priority,
-      variant:
-        data.priority === "High"
-          ? "destructive"
-          : data.priority === "Medium"
-          ? "warning"
-          : "secondary",
+      render: (data) => (
+        <Badge
+          variant={
+            data.priority === "High"
+              ? "destructive"
+              : data.priority === "Medium"
+              ? "default"
+              : "secondary"
+          }
+        >
+          {data.priority}
+        </Badge>
+      ),
     },
   ],
+  getId: (data) => String(data.id),
 };

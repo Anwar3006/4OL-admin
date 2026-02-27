@@ -10,8 +10,8 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { v4 as uuidv4 } from "uuid";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+// import ReactQuill from "react-quill";
+// import "react-quill/dist/quill.snow.css";
 
 const FormValidationSchema = yup
   .object({
@@ -117,7 +117,7 @@ const ComposeEmail = () => {
         isread: false,
         isspam: true,
         isdelate: false,
-      })
+      }),
     );
     data.title = "";
     data.assign = "";

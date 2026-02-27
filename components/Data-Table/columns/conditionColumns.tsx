@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { TConditionsOutput } from "@4ol/db/schemas/conditions.schema";
+import { TConditionsOutput } from "@/schemas/conditions.schema";
 import {
   useAddConditionDialog,
   useViewConditionDialog,

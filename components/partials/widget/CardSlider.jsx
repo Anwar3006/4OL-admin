@@ -1,5 +1,5 @@
 import { Swiper, SwiperSlide } from "swiper/react";
-import { EffectCards } from "swiper";
+// import { EffectCards } from "swiper";
 import "swiper/css";
 import "swiper/css/effect-cards";
 

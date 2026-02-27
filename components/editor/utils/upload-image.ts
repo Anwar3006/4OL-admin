@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/index";
+import { supabase } from "@/lib/supabase";
 
 export interface UploadImageResult {
   publicUrl: string;

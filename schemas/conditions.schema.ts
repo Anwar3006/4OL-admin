@@ -1,6 +1,4 @@
-import { createSelectSchema } from "drizzle-zod";
 import z from "zod";
-import { conditions } from "../models/conditions.model";
 import { SerializedEditorState } from "lexical";
 
 // Helper for Lexical Rich Text fields
@@ -8,7 +6,7 @@ const richTextSchema = z.any(); // Validates the JSONB structure from Lexical
 
 export const conditionsSchema = z.object({
   name: z.string().min(3, "Please enter a name for the condition"),
-  slug: z.string().optional(),
+  slug: z.string().default(""),
   specialist_to_contact: z.string().optional(),
   nhs_link: z.string(),
   image_url: z.string(),

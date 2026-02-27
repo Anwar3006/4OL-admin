@@ -1,4 +1,4 @@
-import { TFAQOutput } from "@4ol/db/schemas/faq.schema";
+import { TFAQOutput } from "@/schemas/faq.schema";
 import { MobileCardConfig } from "../mobile-card-types";
 import { format, formatDistanceToNow } from "date-fns";
 

@@ -22,7 +22,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 
-import { ComponentPickerOption } from "./picker/component-picker-option"
+import { ComponentPickerOption } from "./picker/component-picker-option.js"
 
 const LexicalTypeaheadMenuPlugin = dynamic(
   () =>

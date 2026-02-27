@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { TFAQOutput } from "@4ol/db/schemas/faq.schema";
+import { TFAQOutput } from "@/schemas/faq.schema";
 import { format } from "date-fns";
 
 export const faqColumns: ColumnDef<TFAQOutput>[] = [

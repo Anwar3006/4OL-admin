@@ -29,12 +29,12 @@ import {
 } from "@/hooks/supabase-calls/useSymptoms";
 
 // Step 1 Fields - To make sure we validate these fields before moving on to Step 2
-const STEP_1_FIELDS: (keyof TSymptomsInput)[] = [
+const STEP_1_FIELDS = [
   "name",
   "bodyParts",
   "categories",
   "about",
-];
+] as const;
 
 const AddSymptomDialog = () => {
   //has the same input fields as conditions so reuse the conditions dialog
@@ -55,7 +55,7 @@ const AddSymptomDialog = () => {
   const isLoadingForm = loadingParts && loadingCats;
   const isSubmitting = isPending || submittingEdit;
 
-  const form = useForm({
+  const form = useForm<TSymptomsInput>({
     resolver: zodResolver(symptomsSchema),
     defaultValues: {
       name: "",
@@ -68,9 +68,13 @@ const AddSymptomDialog = () => {
       prevention: EMPTY_LEXICAL_STATE,
       contact_your_doctor: EMPTY_LEXICAL_STATE,
       more_information: EMPTY_LEXICAL_STATE,
+      attribution: EMPTY_LEXICAL_STATE,
+      symptoms: EMPTY_LEXICAL_STATE,
       specialist_to_contact: "",
       nhs_link: "",
       image_url: "",
+      slug: "",
+      is_systemic: false,
       types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
       causes: [{ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE }],
     },
@@ -103,25 +107,29 @@ const AddSymptomDialog = () => {
           nhs_link: data.nhs_link ?? "",
         });
       } else {
-        form.reset({
-          name: "",
-          bodyParts: [],
-          categories: [],
-          about: EMPTY_LEXICAL_STATE,
-          diagnosis: EMPTY_LEXICAL_STATE,
-          treatment: EMPTY_LEXICAL_STATE,
-          complications: EMPTY_LEXICAL_STATE,
-          prevention: EMPTY_LEXICAL_STATE,
-          contact_your_doctor: EMPTY_LEXICAL_STATE,
-          more_information: EMPTY_LEXICAL_STATE,
-          specialist_to_contact: "",
-          nhs_link: "",
-          image_url: "",
-          types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
-          causes: [
-            { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
-          ],
-        });
+          form.reset({
+            name: "",
+            bodyParts: [],
+            categories: [],
+            about: EMPTY_LEXICAL_STATE,
+            diagnosis: EMPTY_LEXICAL_STATE,
+            treatment: EMPTY_LEXICAL_STATE,
+            complications: EMPTY_LEXICAL_STATE,
+            prevention: EMPTY_LEXICAL_STATE,
+            contact_your_doctor: EMPTY_LEXICAL_STATE,
+            more_information: EMPTY_LEXICAL_STATE,
+            attribution: EMPTY_LEXICAL_STATE,
+            symptoms: EMPTY_LEXICAL_STATE,
+            specialist_to_contact: "",
+            nhs_link: "",
+            image_url: "",
+            slug: "",
+            is_systemic: false,
+            types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
+            causes: [
+              { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
+            ],
+          });
       }
     }
   }, [isOpen, isEditMode, data, form]);
@@ -174,7 +182,7 @@ const AddSymptomDialog = () => {
   };
 
   const handleContinue = async () => {
-    const isValid = await form.trigger(STEP_1_FIELDS);
+    const isValid = await form.trigger(STEP_1_FIELDS as any);
     if (!isValid) {
       toast.error("Please complete all required fields");
       return;

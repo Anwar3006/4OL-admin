@@ -1,4 +1,4 @@
-import { UnauthorizedPage } from "../components/PermissionGuard.jsx";
+import { UnauthorizedPage } from "@/components/PermissionGuard";
 
 export default function Unauthorized() {
   return <UnauthorizedPage />;

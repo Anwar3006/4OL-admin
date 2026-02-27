@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useViewHealthyLivingDialog } from "@/stores/dialog-store";
-import { THealthyLivingOutput } from "@4ol/db/schemas/healthyLiving.schema";
+import { THealthyLivingOutput } from "@/schemas/healthyLiving.schema";
 
 export const healthyLivingColumns: ColumnDef<THealthyLivingOutput>[] = [
   {

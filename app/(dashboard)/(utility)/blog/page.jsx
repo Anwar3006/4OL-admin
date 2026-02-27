@@ -3,16 +3,14 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import Link from "next/link";
-import Sidebar from "@/components/partials/blog/Sidebar";
+// import Sidebar from "@/components/partials/blog/Sidebar";
 
 const BlogPage = () => {
   return (
     <div className="lg:flex flex-wrap blog-posts lg:space-x-5 space-y-5 lg:space-y-0 rtl:space-x-reverse">
       <div className="flex-none">
         <div className="lg:max-w-[360px]">
-          <Card>
-            <Sidebar />
-          </Card>
+          <Card>{/* <Sidebar /> */}</Card>
         </div>
       </div>
       <div className="flex-1">

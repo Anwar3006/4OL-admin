@@ -4,13 +4,13 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/scrollbar";
 import "swiper/css/effect-cards";
-import {
-  EffectFade,
-  Pagination,
-  Autoplay,
-  Navigation,
-  EffectCards,
-} from "swiper";
+// import {
+//   EffectFade,
+//   Pagination,
+//   Autoplay,
+//   Navigation,
+//   EffectCards,
+// } from "swiper";
 
 import "swiper/css";
 const Carousel = ({

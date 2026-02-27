@@ -1,8 +1,12 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldGroup, FieldSeparator } from "@/components/ui/field";
-// @ts-expect-error package exports typing issue in this repo
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldSeparator,
+} from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomInput from "@/components/CustomInput";
 import * as zod from "zod";
@@ -41,7 +45,10 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
         window.localStorage.setItem("user_id", authResult.data?.user?.id || "");
-        window.localStorage.setItem("user_email", authResult.data?.user?.email || "");
+        window.localStorage.setItem(
+          "user_email",
+          authResult.data?.user?.email || "",
+        );
       }
 
       toast.success("Log in successful!");
@@ -91,7 +98,11 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
           />
 
           <Field>
-            <Button type="submit" className="py-5 bg-emerald-600" disabled={loading}>
+            <Button
+              type="submit"
+              className="py-5 bg-emerald-600"
+              disabled={loading}
+            >
               {loading ? "Logging in..." : "Login to Account"}
             </Button>
           </Field>
