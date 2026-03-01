@@ -41,3 +41,5 @@ yarn-error.log*
 
 ToChange.md
 trying.js
+
+*.zip
