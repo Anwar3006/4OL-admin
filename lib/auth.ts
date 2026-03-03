@@ -96,6 +96,7 @@ export const auth = betterAuth({
 
   trustedOrigins: [
     "http://localhost:3000",
+    "https://office.4ourlife.com",
     process.env.NEXT_PUBLIC_APP_URL,
   ].filter(Boolean) as string[],
 
