@@ -49,7 +49,8 @@ const Profile = () => {
       icon: "heroicons-outline:login",
       action: async () => {
         try {
-          await dispatch(handleLogout()).unwrap();
+          // await dispatch(handleLogout()).unwrap();
+          await authClient.signOut();
         } catch (error) {
           console.error("Logout failed:", error);
         }
@@ -65,7 +66,7 @@ const Profile = () => {
           {userData?.first_name} {userData?.last_name}
         </p>
         <p className="text-xs text-slate-600 dark:text-slate-200 text-left">
-          {userData?.role}
+          {userData?.role.split("_")}
         </p>
       </div>
       <div className="flex-1 flex items-center justify-center ltr:ml-[10px] rtl:mr-[10px]">

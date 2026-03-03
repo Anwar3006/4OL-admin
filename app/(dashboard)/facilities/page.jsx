@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Hospital, Loader2, PlusCircleIcon, SquareArrowOutUpRight } from "lucide-react";
+import {
+  Hospital,
+  Loader2,
+  PlusCircleIcon,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import SectionHeader from "@/components/SectionHeader";
@@ -48,7 +53,7 @@ const FacilitiesPage = () => {
 
   const facilitiesPagination = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta?.totalPages),
-    [page, data?.meta?.totalPages]
+    [page, data?.meta?.totalPages],
   );
 
   const pagination = useMemo(
@@ -63,7 +68,7 @@ const FacilitiesPage = () => {
       canNextPage: page < (data?.meta?.totalPages || 1),
       canPreviousPage: page > 1,
     }),
-    [page, data, facilitiesPagination]
+    [page, data, facilitiesPagination],
   );
 
   const facilityTypes = useMemo(
@@ -71,11 +76,11 @@ const FacilitiesPage = () => {
       Object.entries(data?.typeCounts || {})
         .map(([value, count]) => ({ value, count }))
         .sort((a, b) => a.value.localeCompare(b.value)),
-    [data?.typeCounts]
+    [data?.typeCounts],
   );
 
   return (
-    <section className="mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-10 max-w-[2400px]">
+    <section className="mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-10 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <div className="mb-5">
         <SectionHeader
           title="Facilities"
@@ -146,7 +151,9 @@ const FacilitiesPage = () => {
           columns={facilityColumns}
           data={data?.facilities || []}
           cardConfig={facilityCardConfig}
-          onRowClick={(facility) => router.push(`/view-facility-profile?id=${facility.id}`)}
+          onRowClick={(facility) =>
+            router.push(`/view-facility-profile?id=${facility.id}`)
+          }
           pagination={pagination}
           isLoading={isFetching}
         />
@@ -163,7 +170,7 @@ const FacilityCard = ({ label, count, link, Icon }) => {
   return (
     <button
       onClick={() => router.push(link)}
-      className="group relative flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-green-200 hover:bg-green-50/50 hover:shadow-sm transition-all duration-300 ease-in-out text-left w-full"
+      className="group relative flex items-center gap-4 p-4 rounded-2xl border-2 border-emerald-600 bg-white hover:border-green-200 hover:bg-green-50/50 hover:shadow-sm transition-all duration-300 ease-in-out text-left w-full"
     >
       <div className="flex items-center justify-center shrink-0 size-14 rounded-xl bg-green-50 group-hover:bg-green-100 transition-colors duration-300">
         <Icon className="h-6 w-6 text-green-600 group-hover:text-green-700" />
@@ -171,7 +178,9 @@ const FacilityCard = ({ label, count, link, Icon }) => {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-sm text-gray-900 truncate">{label}</h3>
+          <h3 className="font-semibold text-sm text-gray-900 truncate">
+            {label}
+          </h3>
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-100 px-1.5 text-[10px] font-semibold text-green-700">
             {count}
           </span>
