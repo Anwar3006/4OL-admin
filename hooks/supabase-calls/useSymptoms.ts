@@ -86,10 +86,10 @@ export const useSymptoms = ({
         // We map the junction tables to simple arrays of IDs
         return {
           ...rest,
-          bodyParts: symptom_body_parts,
-          categories: symptom_categories,
+          bodyParts: symptom_body_parts?.map((b: any) => b.body_parts?.name) || [],
+          categories: symptom_categories?.map((c: any) => c.categories?.name) || [],
           causes: symptom_causes,
-          types: symptom_types,
+          types: symptom_types?.map((t: any) => t.type_name) || [],
         };
       });
 

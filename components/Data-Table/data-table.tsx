@@ -177,12 +177,12 @@ const DataTableComponent = <TData, TValue>({
           ref={scrollRef}
           className="rounded-lg border border-slate-200 overflow-x-auto scroll-smooth shadow-sm"
         >
-          <Table>
-            <TableHeader className="bg-gray-50/50 sticky top-0 z-2 xl:text-xl">
+          <Table className="min-w-full divide-y divide-gray-200">
+            <TableHeader className="bg-gray-50 dark:bg-slate-800">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="whitespace-nowrap">
+                    <TableHead key={header.id} className="px-6 py-3 whitespace-nowrap">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -194,15 +194,15 @@ const DataTableComponent = <TData, TValue>({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
+            <TableBody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 text-xs sm:text-sm">
               {table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 whitespace-nowrap"
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-4 px-6">
+                    <TableCell key={cell.id} className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 capitalize">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

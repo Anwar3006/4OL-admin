@@ -73,9 +73,7 @@ const AddMarketingDialog = () => {
     },
   });
 
-  const [step, setStep] = useState<1 | 2>(1);
   const [uploadSessionId] = useState(() => `campaign_${nanoid(12)}`);
-  const [hasUploadedImage, setHasUploadedImage] = useState(false);
   const [filePath] = useState(() => `marketing/${uploadSessionId}`);
   const selectedCta = form.watch("cta");
   const config = CTA_CONFIG[selectedCta as keyof typeof CTA_CONFIG];
@@ -86,7 +84,6 @@ const AddMarketingDialog = () => {
   const formValues = form.watch();
   const uploadedImagePath = formValues.imageUrl;
 
-  // Reset loading state when the image path changes (e.g., if the user goes back and uploads a new one)
   useEffect(() => {
     if (uploadedImagePath) {
       setIsImageLoading(true);
@@ -102,41 +99,24 @@ const AddMarketingDialog = () => {
   useEffect(() => {
     if (!addMarketingDialog.isOpen) {
       form.reset();
-      setStep(1);
     }
   }, [addMarketingDialog.isOpen, form]);
 
-  // Remove the problematic useEffect that was resetting links
-  // Instead, we initialized all possible link fields in defaultValues
-
-  const handleContinue = async () => {
-    const isValid = await form.trigger(STEP_1_FIELDS);
-    if (!isValid) {
-      console.log("Errors: ", form.formState.errors);
-      toast.error("Please complete all required fields");
-      return;
-    }
-    setStep(2);
-  };
-
   const handleSubmit = async (data: TMarketingProfileInput) => {
     try {
-      console.log("Marketing: ", data);
-
       if (addMarketingDialog.isEditMode && addMarketingDialog.data?.id) {
         await mutateAsyncEdit({
           id: addMarketingDialog.data.id,
           data,
         });
+      } else {
+        await mutateAsync(data);
       }
-
-      await mutateAsync(data);
       addMarketingDialog.close();
     } catch (error) {
       console.error("Error: ", error);
     } finally {
       form.reset();
-      setStep(1);
     }
   };
 
@@ -147,6 +127,8 @@ const AddMarketingDialog = () => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -221,291 +203,229 @@ const AddMarketingDialog = () => {
       open={addMarketingDialog.isOpen}
       onOpenChange={addMarketingDialog.close}
     >
-      <DialogContent className="max-w-5xl! max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-2 md:px-6">
+      <DialogContent className="max-w-7xl! max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-6">
         <DialogHeader>
-          <DialogTitle>Create new Campaign</DialogTitle>
+          <DialogTitle>
+            {addMarketingDialog.isEditMode ? "Edit Campaign" : "Create new Campaign"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(
-              (data) => {
-                handleSubmit(data);
-              },
+              (data) => handleSubmit(data),
               (errors) => {
                 toast.error("Please fix the form errors");
                 console.log("Errors: ", errors);
               },
             )}
-            className="space-y-6"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
           >
-            {step === 1 && (
-              <>
-                {/* Campaign Details */}
-                <h3 className="font-semibold mb-2 underline text-center">
-                  Campaign Details
-                </h3>
+            {/* Left Column: Form */}
+            <div className="space-y-6">
+              <h3 className="font-semibold text-lg border-b pb-2">Campaign Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomSelect
+                  name="marketingType"
+                  label="Marketing Type"
+                  options={MARKETING_TYPE_OPTIONS}
+                  control={form.control}
+                />
+                <CustomInput
+                  type="text"
+                  name="organization"
+                  control={form.control}
+                  label="Organization"
+                  placeholder="Enter organization"
+                />
+              </div>
 
-                {/*  Marketing Type and Organization */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomSelect
-                    name="marketingType"
-                    label="Marketing Type"
-                    options={MARKETING_TYPE_OPTIONS}
-                    control={form.control}
-                  />
-                  <CustomInput
-                    type="text"
-                    name="organization"
-                    control={form.control}
-                    label="Organization"
-                    readOnly={false}
-                    placeholder="Enter the organization for the campaign"
-                    className="text-sm md:text-base"
-                  />
-                </div>
+              <CustomInput
+                type="textarea"
+                name="headline"
+                control={form.control}
+                label="Headline"
+                placeholder="Enter headline"
+              />
+              
+              <CustomInput
+                type="textarea"
+                name="description"
+                control={form.control}
+                label="Campaign Content"
+                placeholder="Enter content"
+              />
 
-                {/*  Headline and Description */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomInput
-                    type="textarea"
-                    name="headline"
-                    control={form.control}
-                    label="Headline"
-                    readOnly={false}
-                    placeholder="Enter the headline for the campaign"
-                    className="text-sm md:text-base"
-                  />
-                  <CustomInput
-                    type="textarea"
-                    name="description"
-                    control={form.control}
-                    label="Campaign Content"
-                    readOnly={false}
-                    placeholder="Enter the content for the campaign"
-                    className="text-sm md:text-base"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomDatePicker
+                  name="startDate"
+                  control={form.control}
+                  label="Start Date & Time"
+                  enableFutureDates={true}
+                  showTimePicker={true}
+                />
+                <CustomDatePicker
+                  name="endDate"
+                  control={form.control}
+                  label="End Date & Time"
+                  enableFutureDates={true}
+                  showTimePicker={true}
+                />
+              </div>
 
-                {/* Start and End Date */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomDatePicker
-                    name="startDate"
-                    control={form.control}
-                    label="Start Date(When to start the campaign)"
-                    className="text-sm md:text-base"
-                    enableFutureDates={true}
-                  />
-                  <CustomDatePicker
-                    name="endDate"
-                    control={form.control}
-                    label="End Date(When it ends)"
-                    className="text-sm md:text-base"
-                    enableFutureDates={true}
-                  />
-                </div>
+              <div>
+                <Label className="mb-1">Campaign Media</Label>
+                <ImageDropZone
+                  filePath={filePath}
+                  text="Drop an image/video"
+                  onFilesChange={(urls) => {
+                    form.setValue("imageUrl", urls.filter(Boolean)[0]);
+                  }}
+                />
+              </div>
 
-                {/* Media Upload */}
-                <div className="grid grid-cols-1">
-                  <Label className="mb-1">Campaign Media</Label>
-                  <ImageDropZone
-                    filePath={filePath}
-                    text="Drop an image/video to go along with the campaign"
-                    onFilesChange={(urls) => {
-                      form.setValue("imageUrl", urls.filter(Boolean)[0]);
-                      if (urls.filter(Boolean)[0]) {
-                        setHasUploadedImage(true);
-                      }
-                    }}
-                  />
-                </div>
+              <div className="space-y-4">
+                <CustomSelect
+                  name="cta"
+                  label="Call to Action"
+                  control={form.control}
+                  options={MARKETING_CTA_OPTIONS}
+                />
 
-                {/* CTA & Links */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex col-span-2 justify-center w-full">
-                    <CustomSelect
-                      name="cta"
-                      label="Call to Action"
-                      control={form.control}
-                      options={MARKETING_CTA_OPTIONS}
-                      className="text-sm md:text-base"
-                      formItemClassName="w-1/2"
-                    />
-                  </div>
-
-                  {config && (
-                    <>
-                      {config.type === "single" ? (
-                        <div className="flex col-span-2 justify-center w-full">
+                {config && (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                    {config.type === "single" ? (
+                      <CustomInput
+                        type="text"
+                        name="links.primary"
+                        control={form.control}
+                        label={config.label}
+                        placeholder={config.placeholder}
+                      />
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {config.fields.map((fieldLabel) => (
                           <CustomInput
+                            key={fieldLabel}
                             type="text"
-                            name="links.primary"
+                            name={`links.${fieldLabel.toLowerCase()}`}
                             control={form.control}
-                            label={config.label}
-                            readOnly={false}
-                            placeholder={config.placeholder}
-                            className="text-sm md:text-base"
-                            formItemClassName="w-1/2"
+                            label={fieldLabel}
+                            placeholder={`Enter ${fieldLabel}`}
                           />
-                        </div>
-                      ) : (
-                        <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {config.fields.map((fieldLabel) => (
-                            <CustomInput
-                              key={fieldLabel}
-                              type="text"
-                              name={`links.${fieldLabel.toLowerCase()}`}
-                              readOnly={false}
-                              control={form.control}
-                              label={fieldLabel}
-                              placeholder={`Enter ${fieldLabel}`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue to Preview
-                  </Button>
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  type="submit"
+                  disabled={isPending || isPendingEdit}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {isPending || isPendingEdit 
+                    ? (addMarketingDialog.isEditMode ? "Updating..." : "Creating...") 
+                    : (addMarketingDialog.isEditMode ? "Update Campaign" : "Create Campaign")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addMarketingDialog.close}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={addMarketingDialog.close}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {step === 2 && (
-              <section className="w-full space-y-6">
-                <h3 className="font-semibold text-center text-lg">
-                  Campaign Preview
-                </h3>
-
-                <Card className="w-full p-6 space-y-4 max-w-2xl mx-auto">
-                  {/* Organization Badge */}
-                  {formValues.organization && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">
-                        {formValues.organization}
-                      </span>
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {formValues.marketingType}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex flex-row-reverse gap-3 items-center">
-                    {/* Image Preview */}
-                    {/* Image Preview Area */}
-                    {/* Image Preview Area */}
-                    <div className="w-full aspect-video rounded-lg overflow-hidden bg-gray-100 relative shadow-inner">
-                      {uploadedImagePath ? (
-                        <>
-                          {/* Shimmering Skeleton Loader - Visible while isImageLoading is true */}
-                          {isImageLoading && (
-                            <div className="absolute inset-0 z-10 animate-pulse bg-gray-200 flex flex-col items-center justify-center">
-                              <div className="w-10 h-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-2" />
-                              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">
-                                Loading Media...
-                              </p>
-                            </div>
+            {/* Right Column: Preview */}
+            <div className="lg:sticky lg:top-0 space-y-6">
+              <h3 className="font-semibold text-lg border-b pb-2">Live Preview</h3>
+              <Card className="p-6 space-y-4 border-2 border-emerald-100 shadow-md">
+                {formValues.organization && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">
+                      {formValues.organization}
+                    </span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
+                      {formValues.marketingType}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="space-y-4">
+                  <div className="w-full aspect-video rounded-lg overflow-hidden bg-gray-100 relative shadow-inner">
+                    {uploadedImagePath ? (
+                      <>
+                        {isImageLoading && (
+                          <div className="absolute inset-0 z-10 animate-pulse bg-gray-200 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin" />
+                          </div>
+                        )}
+                        <img
+                          src={imageUrl}
+                          alt="Campaign media"
+                          className={cn(
+                            "w-full h-full object-cover transition-opacity duration-500",
+                            isImageLoading ? "opacity-0" : "opacity-100",
                           )}
-
-                          {/* Actual Image */}
-                          <img
-                            src={imageUrl}
-                            alt="Campaign media"
-                            className={cn(
-                              "w-full h-full object-cover transition-all duration-500",
-                              isImageLoading
-                                ? "opacity-0 scale-95"
-                                : "opacity-100 scale-100",
-                            )}
-                            onLoad={() => setIsImageLoading(false)}
-                            onError={() => {
-                              setIsImageLoading(false);
-                              toast.error("Failed to load campaign image");
-                            }}
-                          />
-                        </>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200">
-                          <ImageIcon className="w-10 h-10 text-gray-300 mb-2" />
-                          <p className="text-xs text-muted-foreground">
-                            No media uploaded
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Headline */}
-                    <div className="flex items-center flex-col gap-2">
-                      {formValues.headline && (
-                        <h2 className="text-2xl font-bold text-gray-900">
-                          {formValues.headline}
-                        </h2>
-                      )}
-
-                      {/* Description */}
-                      {formValues.description && (
-                        <p className="text-gray-700 leading-relaxed">
-                          {formValues.description.slice(0, 100) + "..."}
-                        </p>
-                      )}
-                    </div>
+                          onLoad={() => setIsImageLoading(false)}
+                        />
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200">
+                        <ImageIcon className="w-10 h-10 text-gray-300 mb-2" />
+                        <p className="text-sm text-muted-foreground font-medium">No media uploaded</p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Campaign Duration */}
+                  <div className="space-y-2">
+                    {formValues.headline ? (
+                      <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                        {formValues.headline}
+                      </h2>
+                    ) : (
+                      <div className="h-6 w-3/4 bg-gray-100 rounded animate-pulse" />
+                    )}
+
+                    {formValues.description ? (
+                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                        {formValues.description}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="h-4 w-full bg-gray-50 rounded animate-pulse" />
+                        <div className="h-4 w-5/6 bg-gray-50 rounded animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+
                   {(formValues.startDate || formValues.endDate) && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
                       <Calendar className="w-4 h-4" />
                       <span>
-                        {formValues.startDate &&
-                          formatDate(formValues.startDate)}
-                        {formValues.startDate && formValues.endDate && " - "}
-                        {formValues.endDate && formatDate(formValues.endDate)}
+                        {formValues.startDate ? formatDate(formValues.startDate) : "Start Date"} 
+                        {" — "}
+                        {formValues.endDate ? formatDate(formValues.endDate) : "End Date"}
                       </span>
                     </div>
                   )}
 
-                  {/* CTA Button(s) */}
-                  {selectedCta && (
-                    <div className="pt-4 border-t">{renderCTAButton()}</div>
-                  )}
-                </Card>
-
-                {/* Navigation Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                    className="w-full"
-                  >
-                    Back to Edit
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full md:col-span-2 bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    {isPending ? "Creating..." : "Create Campaign"}
-                  </Button>
+                  {selectedCta && renderCTAButton()}
                 </div>
-              </section>
-            )}
+              </Card>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-700">
+                <p className="font-semibold mb-1 flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Real-time Preview
+                </p>
+                This is how your campaign will appear to users in the app. Updates occur instantly as you type.
+              </div>
+            </div>
           </form>
         </Form>
       </DialogContent>

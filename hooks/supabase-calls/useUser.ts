@@ -99,9 +99,16 @@ export const useUsers = (params: Pagination) => {
       console.log("Hooksss: ", data, count);
 
       const statsQuery = supabase.from("user_profiles").select("status");
-      const { data: statsData } = admin
-        ? await statsQuery.in("role", ["admin", "super_admin", "registrar"])
-        : await statsQuery.eq("role", "user");
+      if (admin) {
+        statsQuery.in("role", ["admin", "super_admin", "registrar"]);
+      } else {
+        statsQuery.eq("role", "user");
+        if (params.userType) {
+          statsQuery.eq("user_type", params.userType);
+        }
+      }
+
+      const { data: statsData } = await statsQuery;
 
       const analytics = (statsData || []).reduce(
         (acc, curr) => {

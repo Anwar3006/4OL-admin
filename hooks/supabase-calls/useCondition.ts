@@ -82,10 +82,10 @@ export const useConditions = ({
           return {
             ...rest,
             causes: condition_causes,
-            bodyParts: condition_body_parts,
-            categories: condition_categories,
-            types: condition_types,
-          } as unknown as TConditionsOutput;
+            bodyParts: condition_body_parts?.map((b: any) => b.body_parts?.name) || [],
+            categories: condition_categories?.map((c: any) => c.categories?.name) || [],
+            types: condition_types?.map((t: any) => t.type_name) || [],
+          };
         });
         return {
           conditions: newData,
