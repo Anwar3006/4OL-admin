@@ -67,7 +67,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40 flex-wrap gap-1">
         {row.original.bodyParts?.length > 0 ? (
-          row.original.bodyParts.map((part) => (
+          row.original.bodyParts.map((part: any) => (
             <Badge key={part} variant="outline" className="text-[10px] py-0 px-1.5 h-5">
               {part}
             </Badge>
