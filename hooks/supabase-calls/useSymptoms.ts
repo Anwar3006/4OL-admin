@@ -185,7 +185,7 @@ export const useSymptomStats = () => {
   return useQuery({
     queryKey: SYMPTOMS_QUERY_KEYS.stats(),
     queryFn: async () => {
-      const [categoriesResults, bodyPartsRpc, systemicResults] =
+      const [categoriesResults, bodyPartsRpc, systemicResults, totalSymptomsResult] =
         await Promise.all([
           // Total active categories used by symptoms
           supabase
@@ -200,6 +200,11 @@ export const useSymptomStats = () => {
             .from("symptoms")
             .select("is_systemic", { count: "exact" })
             .eq("is_systemic", true),
+
+          // Total symptoms (absolute)
+          supabase
+            .from("symptoms")
+            .select("id", { count: "exact", head: true }),
         ]);
 
       if (categoriesResults.error) throw categoriesResults.error;
@@ -209,6 +214,7 @@ export const useSymptomStats = () => {
         totalCategories: categoriesResults.count ?? 0,
         bodyPartDistribution: bodyPartsRpc.data,
         systemicCount: systemicResults.count ?? 0,
+        totalSymptoms: totalSymptomsResult.count ?? 0,
         lastUpdated: new Date().toISOString(),
       };
     },

@@ -30,10 +30,10 @@ const SectionHeader = ({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
       <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl 2xl:text-4xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           {title}
         </h1>
-        <p className="text-sm 2xl:text-xl text-muted-foreground mt-1">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1">{description}</p>
       </div>
 
       {hasButton && (

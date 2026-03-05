@@ -175,7 +175,7 @@ const DataTableComponent = <TData, TValue>({
 
         <div
           ref={scrollRef}
-          className="rounded-md border overflow-x-auto scroll-smooth"
+          className="rounded-lg border border-slate-200 overflow-x-auto scroll-smooth shadow-sm"
         >
           <Table>
             <TableHeader className="bg-gray-50/50 sticky top-0 z-2 xl:text-xl">
@@ -202,7 +202,7 @@ const DataTableComponent = <TData, TValue>({
                   onClick={() => handleRowClick(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-4 px-6">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

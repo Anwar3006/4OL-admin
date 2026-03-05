@@ -5,9 +5,11 @@ const GroupChart4 = ({
   totalOnlineUsers = 0,
   totalMedicationReminderUsers = 0,
   totalPeriodTrackerUsers = 0,
+  totalWorkoutReminderUsers = 0,
   loadingOnlineUsers = false,
   loadingMedicationReminderUsers = false,
-  loadingPeriodTrackerUsers = false
+  loadingPeriodTrackerUsers = false,
+  loadingWorkoutReminderUsers = false,
 }) => {
   const statistics = [
     {
@@ -33,6 +35,14 @@ const GroupChart4 = ({
       text: "text-primary-500",
       percent: "1.67%  ",
       icon: "carbon:storm-tracker",
+    },
+    {
+      title: "Workout Reminders",
+      count: loadingWorkoutReminderUsers ? "..." : totalWorkoutReminderUsers.toString(),
+      bg: "bg-success-500",
+      text: "text-success-500",
+      percent: "5.67%",
+      icon: "mdi:hand-back-right",
     },
   ];
 

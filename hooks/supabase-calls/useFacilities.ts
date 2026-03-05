@@ -88,6 +88,7 @@ export const useFacilityProfiles = (params: Pagination) => {
           },
           analytics: aggregateStats(statsData),
           typeCounts: aggregateTypeCounts(statsData),
+          totalRegistered: statsData?.length || 0,
         };
       }
 
@@ -111,6 +112,7 @@ export const useFacilityProfiles = (params: Pagination) => {
         },
         analytics: aggregateStats(statsResponse.data),
         typeCounts: aggregateTypeCounts(statsResponse.data),
+        totalRegistered: statsResponse.data?.length || 0,
       };
     },
   });

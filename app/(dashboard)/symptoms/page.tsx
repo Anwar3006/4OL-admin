@@ -84,8 +84,8 @@ const SymptomsPage = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <ConditionsStats
           label="Total Record Symptoms"
-          value={data?.meta?.total || 0}
-          isLoading={isLoading}
+          value={stats?.totalSymptoms || 0}
+          isLoading={isStatsLoading}
         />
         <ConditionsStats
           label="Total Condition Categories"

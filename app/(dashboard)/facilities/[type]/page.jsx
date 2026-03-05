@@ -12,6 +12,8 @@ import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-conf
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
 import { Button } from "@/components/ui/button";
+import { useAddFacilityDialog } from "@/stores/dialog-store";
+import AddFacilityDialog from "../_components/add-facility-dialog";
 
 const formatFacilityType = (rawType = "") =>
   rawType
@@ -30,6 +32,7 @@ const FacilityTypePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const facilityCardConfig = useFacilityCardConfig();
+  const addFacility = useAddFacilityDialog();
 
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -90,8 +93,10 @@ const FacilityTypePage = () => {
       <SectionHeader
         title={formatFacilityType(decodedType)}
         Icon={PlusCircleIcon}
-        description=""
-        hasButton={false}
+        description={`Manage ${formatFacilityType(decodedType)} facilities`}
+        hasButton={true}
+        buttonLabel="Add Facility"
+        onButtonClick={() => addFacility.open()}
       />
 
       {isLoading ? (
@@ -103,7 +108,7 @@ const FacilityTypePage = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatsCard
             label="Total Registered"
-            value={data?.meta?.total || 0}
+            value={data?.totalRegistered || 0}
             onClick={() => handleStatusChange(null)}
             active={!currentStatus}
           />
@@ -146,6 +151,8 @@ const FacilityTypePage = () => {
         pagination={pagination}
         isLoading={isFetching}
       />
+
+      <AddFacilityDialog />
     </section>
   );
 };

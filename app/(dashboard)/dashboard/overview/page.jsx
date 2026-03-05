@@ -41,7 +41,7 @@ const TotalsDashboard = () => {
     <div>
       <div className="grid grid-cols-12 gap-5 mb-5">
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
-          <Card title="Dashboard Totals" bodyClass="p-4">
+          <Card title="Dashboard Totals" bodyClass="p-4" titleClass="text-2xl font-bold">
             <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1
                 totalDownloads={live.total_downloads}
@@ -54,14 +54,16 @@ const TotalsDashboard = () => {
                 loadingTotalSpecialists={false}
               />
             </div>
-            <div className="grid md:grid-cols-3 col-span-1 gap-4 pt-4">
+            <div className="grid md:grid-cols-4 col-span-1 gap-4 pt-4">
               <GroupChart4
                 totalOnlineUsers={live.total_online_users}
                 totalMedicationReminderUsers={live.total_medication_reminder_users}
                 totalPeriodTrackerUsers={live.total_period_tracker_users}
+                totalWorkoutReminderUsers={live.total_workout_reminder_users || 0}
                 loadingOnlineUsers={false}
                 loadingMedicationReminderUsers={false}
                 loadingPeriodTrackerUsers={false}
+                loadingWorkoutReminderUsers={false}
               />
             </div>
           </Card>
@@ -69,15 +71,15 @@ const TotalsDashboard = () => {
       </div>
       <div className="grid grid-cols-12 gap-5">
         <div className="lg:col-span-8 col-span-12">
-          <Card title={"Monthly Downloads"}>
+          <Card title={"Monthly Downloads"} className="h-full">
             <div className="legend-ring">
               <ColumnChart data={download_trends} type={"downloads"} />
             </div>
           </Card>
         </div>
 
-        <div className="lg:col-span-4 col-span-12 flex flex-col bg-white shadow-base rounded-lg">
-          <Card title="Total Users">
+        <div className="lg:col-span-4 col-span-12 flex flex-col bg-white shadow-base rounded-lg h-full">
+          <Card title="Total Users" className="h-full">
             <div className="flex-grow">
               <Pie totalUsers={{ males: live.males_count, females: live.females_count }} />
             </div>

@@ -61,44 +61,55 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     },
   },
   {
+    accessorKey: "bodyParts",
+    header: () => (
+      <div className="font-semibold hidden lg:table-cell">Bodypart/s</div>
+    ),
+    cell: ({ row }) => (
+      <div className="hidden lg:table-cell min-w-40 flex-wrap gap-1">
+        {row.original.bodyParts?.length > 0 ? (
+          row.original.bodyParts.map((part) => (
+            <Badge key={part} variant="outline" className="text-[10px] py-0 px-1.5 h-5">
+              {part}
+            </Badge>
+          ))
+        ) : (
+          <span className="text-muted-foreground/30">—</span>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "categories",
+    header: () => (
+      <div className="font-semibold hidden lg:table-cell">Categories</div>
+    ),
+    cell: ({ row }) => (
+      <div className="hidden lg:table-cell min-w-40 flex-wrap gap-1">
+        {row.original.categories?.length > 0 ? (
+          row.original.categories.map((cat) => (
+            <Badge key={cat} variant="secondary" className="text-[10px] py-0 px-1.5 h-5">
+              {cat}
+            </Badge>
+          ))
+        ) : (
+          <span className="text-muted-foreground/30">—</span>
+        )}
+      </div>
+    ),
+  },
+  {
     accessorKey: "specialist",
     header: () => (
       <div className="font-semibold hidden md:table-cell">Specialist</div>
     ),
     cell: ({ row }) => (
       <div className="hidden md:table-cell min-w-37.5">
-        <Badge variant="secondary" className="font-medium">
+        <Badge variant="secondary" className="font-medium bg-emerald-50 text-emerald-700 border-emerald-100">
           {row.original.specialist || "General"}
         </Badge>
       </div>
     ),
-  },
-  {
-    accessorKey: "nhsLink",
-    header: () => (
-      <div className="font-semibold hidden lg:table-cell text-center">
-        Reference
-      </div>
-    ),
-    cell: ({ row }) => {
-      const link = row.original.nhs_link;
-      return (
-        <div className="hidden lg:flex justify-center min-w-25">
-          {link ? (
-            <a
-              href={link}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-500 hover:text-blue-700 transition-colors"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          ) : (
-            <span className="text-muted-foreground/30">—</span>
-          )}
-        </div>
-      );
-    },
   },
   {
     accessorKey: "updatedAt",

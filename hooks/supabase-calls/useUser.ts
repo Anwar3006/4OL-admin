@@ -12,6 +12,7 @@ interface Pagination {
   page?: number;
   search?: string;
   status?: string;
+  userType?: string;
   admin: boolean;
 }
 
@@ -70,6 +71,11 @@ export const useUsers = (params: Pagination) => {
         query = query.in("role", ["admin", "super_admin", "registrar"]);
       } else {
         query = query.eq("role", "user");
+      }
+      
+      // 2.5 User Type Filter
+      if (params.userType) {
+        query = query.eq("user_type", params.userType);
       }
 
       // 3. Status Filter

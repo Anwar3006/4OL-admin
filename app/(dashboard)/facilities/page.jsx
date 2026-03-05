@@ -16,6 +16,8 @@ import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns
 import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-configs/facilityCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
+import { useAddFacilityDialog } from "@/stores/dialog-store";
+import AddFacilityDialog from "./_components/add-facility-dialog";
 
 const formatFacilityType = (rawType = "") =>
   rawType
@@ -29,6 +31,7 @@ const formatFacilityType = (rawType = "") =>
 
 const FacilitiesPage = () => {
   const facilityCardConfig = useFacilityCardConfig();
+  const addFacility = useAddFacilityDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -84,9 +87,11 @@ const FacilitiesPage = () => {
       <div className="mb-5">
         <SectionHeader
           title="Facilities"
-          description=""
+          description="Manage all healthcare facilities"
           Icon={PlusCircleIcon}
-          hasButton={false}
+          hasButton={true}
+          buttonLabel="Add Facility"
+          onButtonClick={() => addFacility.open()}
         />
 
         {isLoading ? (
@@ -98,7 +103,7 @@ const FacilitiesPage = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatsCard
               label="Total Registered"
-              value={data?.meta?.total || 0}
+              value={data?.totalRegistered || 0}
               onClick={() => handleStatusChange(null)}
               active={!currentStatus}
             />
@@ -158,6 +163,8 @@ const FacilitiesPage = () => {
           isLoading={isFetching}
         />
       )}
+
+      <AddFacilityDialog />
     </section>
   );
 };
