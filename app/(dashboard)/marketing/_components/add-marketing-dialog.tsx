@@ -132,6 +132,7 @@ const AddMarketingDialog = () => {
     });
   };
 
+  //remove this
   const renderCTAButton = () => {
     if (!selectedCta || !config) return null;
 
@@ -237,6 +238,7 @@ const AddMarketingDialog = () => {
                   control={form.control}
                   label="Organization"
                   placeholder="Enter organization"
+                  readOnly={false}
                 />
               </div>
 
@@ -246,6 +248,7 @@ const AddMarketingDialog = () => {
                 control={form.control}
                 label="Headline"
                 placeholder="Enter headline"
+                readOnly={false}
               />
               
               <CustomInput
@@ -254,6 +257,7 @@ const AddMarketingDialog = () => {
                 control={form.control}
                 label="Campaign Content"
                 placeholder="Enter content"
+                readOnly={false}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -301,6 +305,7 @@ const AddMarketingDialog = () => {
                         control={form.control}
                         label={config.label}
                         placeholder={config.placeholder}
+                        readOnly={false}
                       />
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -312,6 +317,7 @@ const AddMarketingDialog = () => {
                             control={form.control}
                             label={fieldLabel}
                             placeholder={`Enter ${fieldLabel}`}
+                            readOnly={false}
                           />
                         ))}
                       </div>
@@ -343,88 +349,89 @@ const AddMarketingDialog = () => {
             {/* Right Column: Preview */}
             <div className="lg:sticky lg:top-0 space-y-6">
               <h3 className="font-semibold text-lg border-b pb-2">Live Preview</h3>
-              <Card className="p-6 space-y-4 border-2 border-emerald-100 shadow-md">
-                {formValues.organization && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">
-                      {formValues.organization}
-                    </span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
-                      {formValues.marketingType}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="space-y-4">
-                  <div className="w-full aspect-video rounded-lg overflow-hidden bg-gray-100 relative shadow-inner">
-                    {uploadedImagePath ? (
-                      <>
-                        {isImageLoading && (
-                          <div className="absolute inset-0 z-10 animate-pulse bg-gray-200 flex items-center justify-center">
-                            <div className="w-10 h-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin" />
-                          </div>
-                        )}
-                        <img
-                          src={imageUrl}
-                          alt="Campaign media"
-                          className={cn(
-                            "w-full h-full object-cover transition-opacity duration-500",
-                            isImageLoading ? "opacity-0" : "opacity-100",
-                          )}
-                          onLoad={() => setIsImageLoading(false)}
-                        />
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200">
-                        <ImageIcon className="w-10 h-10 text-gray-300 mb-2" />
-                        <p className="text-sm text-muted-foreground font-medium">No media uploaded</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    {formValues.headline ? (
-                      <h2 className="text-xl font-bold text-gray-900 leading-tight">
-                        {formValues.headline}
+              <Card className="p-0 border-none shadow-xl overflow-hidden rounded-lg">
+                <div className="bg-[#56ce84] text-white p-6 grid grid-cols-2 gap-6 min-h-[300px]">
+                  {/* Left side: Content */}
+                  <div className="flex flex-col justify-center space-y-4 text-left">
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-serif font-medium leading-tight">
+                        {formValues.headline || "Headline"}
                       </h2>
-                    ) : (
-                      <div className="h-6 w-3/4 bg-gray-100 rounded animate-pulse" />
-                    )}
-
-                    {formValues.description ? (
-                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-                        {formValues.description}
+                      <p className="text-sm tracking-wide opacity-90 line-clamp-4">
+                        {formValues.description || "Your campaign description will appear here..."}
                       </p>
+                    </div>
+
+                    {selectedCta ? (
+                      <div>
+                        <span className="inline-block bg-white text-black px-4 py-2 rounded text-sm font-medium shadow-sm">
+                          {MARKETING_CTA_OPTIONS.find(opt => opt.value === selectedCta)?.label || "Call to Action"}
+                        </span>
+                      </div>
                     ) : (
-                      <div className="space-y-2">
-                        <div className="h-4 w-full bg-gray-50 rounded animate-pulse" />
-                        <div className="h-4 w-5/6 bg-gray-50 rounded animate-pulse" />
+                      <div className="h-10 w-32 bg-white/20 rounded animate-pulse" />
+                    )}
+                    
+                    {formValues.organization && (
+                      <div className="pt-2 border-t border-white/20">
+                        <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">
+                          {formValues.organization} • {formValues.marketingType}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {(formValues.startDate || formValues.endDate) && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {formValues.startDate ? formatDate(formValues.startDate) : "Start Date"} 
-                        {" — "}
-                        {formValues.endDate ? formatDate(formValues.endDate) : "End Date"}
-                      </span>
+                  {/* Right side: Media */}
+                  <div className="flex items-center justify-center">
+                    <div className="w-full aspect-square rounded shadow-lg overflow-hidden bg-white/10 relative">
+                      {uploadedImagePath ? (
+                        <>
+                          {isImageLoading && (
+                            <div className="absolute inset-0 z-10 animate-pulse bg-white/5 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                            </div>
+                          )}
+                          <img
+                            src={imageUrl}
+                            alt="Campaign preview"
+                            className={cn(
+                              "w-full h-full object-cover transition-opacity duration-500",
+                              isImageLoading ? "opacity-0" : "opacity-100",
+                            )}
+                            onLoad={() => setIsImageLoading(false)}
+                          />
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-white/20">
+                          <ImageIcon className="w-10 h-10 opacity-30 mb-2" />
+                          <p className="text-[10px] opacity-40 font-medium uppercase tracking-tighter">No Media</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  {selectedCta && renderCTAButton()}
+                  </div>
                 </div>
               </Card>
-              
-              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-700">
+
+              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm text-emerald-800">
                 <p className="font-semibold mb-1 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
                   Real-time Preview
                 </p>
-                This is how your campaign will appear to users in the app. Updates occur instantly as you type.
+                <p className="opacity-80">
+                  This reflects how the campaign will appear to users in the mobile app.
+                </p>
               </div>
+
+              {(formValues.startDate || formValues.endDate) && (
+                <div className="flex items-center gap-3 text-xs bg-gray-50 p-3 rounded-md border border-gray-100">
+                  <Calendar className="w-4 h-4 text-emerald-600" />
+                  <span className="text-gray-600 font-medium">
+                    Schedule: {formValues.startDate ? formatDate(formValues.startDate) : "TBD"} 
+                    <span className="mx-2 text-gray-300">|</span>
+                    {formValues.endDate ? formatDate(formValues.endDate) : "TBD"}
+                  </span>
+                </div>
+              )}
             </div>
           </form>
         </Form>

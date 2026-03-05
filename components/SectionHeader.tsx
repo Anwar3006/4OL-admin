@@ -30,7 +30,7 @@ const SectionHeader = ({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="card-title">
           {title}
         </h1>
         <p className="text-xs text-muted-foreground mt-1">{description}</p>

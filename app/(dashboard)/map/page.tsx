@@ -84,7 +84,7 @@ const MapPage = () => {
   ]);
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-4 lg:pt-2 max-w-[2400px] h-[calc(100dvh-5.5rem)] flex flex-col overflow-hidden">
+    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-4 lg:pt-2 max-w-[2400px] h-[calc(100dvh-5.5rem)] flex flex-col overflow-hidden bg-white shadow-sm mt-2 rounded-lg">
       <div className="flex justify-between items-center mb-4">
         <SectionHeader
           title="Map View"
@@ -139,7 +139,7 @@ const MapPage = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 h-[800px]">
         <GoogleMapContainer
           filters={{
             region: selectedRegion,

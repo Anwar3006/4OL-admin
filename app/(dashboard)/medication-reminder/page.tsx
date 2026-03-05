@@ -47,7 +47,7 @@ const MedicationReminderPage = () => {
   );
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px]">
+    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <SectionHeader
         title={"Medication Reminders"}
         Icon={PlusCircleIcon}
@@ -56,7 +56,7 @@ const MedicationReminderPage = () => {
       />
 
       {/* StatsCards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <ConditionsStats
           label="Total Reminders"
           value={data?.meta?.total || 0}

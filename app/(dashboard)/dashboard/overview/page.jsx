@@ -41,7 +41,7 @@ const TotalsDashboard = () => {
     <div>
       <div className="grid grid-cols-12 gap-5 mb-5">
         <div className="2xl:col-span-12 lg:col-span-12 col-span-12">
-          <Card title="Dashboard Totals" bodyClass="p-4" titleClass="text-2xl font-bold">
+          <Card title="Dashboard Totals" bodyClass="p-4">
             <div className="grid md:grid-cols-4 col-span-1 gap-4">
               <GroupChart1
                 totalDownloads={live.total_downloads}

@@ -85,7 +85,7 @@ export function ViewMarketingDialog() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
-      <SheetContent className="w-full sm:max-w-2xl p-0 flex flex-col h-full">
+      <SheetContent className="w-full sm:max-w-2xl xl:max-w-2/3 p-0 flex flex-col h-full">
         <SheetHeader>
           <VisuallyHidden.Root>
             <SheetTitle>Campaign Details for {campaign?.headline}</SheetTitle>
