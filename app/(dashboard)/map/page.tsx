@@ -20,24 +20,25 @@ const MapPage = () => {
   const router = useRouter();
 
   // Initialize state from URL
-  const [selectedRegion, setSelectedRegion] = useState(
-    searchParams.get("region") || "",
-  );
-  const [selectedDistrict, setSelectedDistrict] = useState(
-    searchParams.get("district") || "",
-  );
-  const [selectedFacilityType, setSelectedFacilityType] = useState(
-    searchParams.get("facilityType") || "",
-  );
-  const [selectedStatus, setSelectedStatus] = useState(
-    searchParams.get("status") || "",
-  );
-  const [selectedFootprint, setSelectedFootprint] = useState(
-    searchParams.get("footprint") || "",
-  );
-  const [showBusinessPins, setShowBusinessPins] = useState(
-    searchParams.get("businessPins") !== "false",
-  );
+// Initialize states with null instead of empty strings for better type compatibility
+const [selectedRegion, setSelectedRegion] = useState<string | null>(
+  searchParams.get("region")
+);
+const [selectedDistrict, setSelectedDistrict] = useState<string | null>(
+  searchParams.get("district")
+);
+const [selectedFacilityType, setSelectedFacilityType] = useState<string | null>(
+  searchParams.get("facilityType")
+);
+const [selectedStatus, setSelectedStatus] = useState<string | null>(
+  searchParams.get("status")
+);
+const [selectedFootprint, setSelectedFootprint] = useState<string | null>(
+  searchParams.get("footprint")
+);
+const [showBusinessPins, setShowBusinessPins] = useState<boolean>(
+  searchParams.get("businessPins") !== "false"
+);
 
   // Get available regions from the JSON keys
   const regions = useMemo(() => Object.keys(locationData), []);
@@ -52,7 +53,7 @@ const MapPage = () => {
   useEffect(() => {
     if (selectedRegion) {
       // If the current district isn't in the new region's list, reset it
-      if (!availableDistricts.includes(selectedDistrict)) {
+      if (!availableDistricts.includes(selectedDistrict as string)) {
         setSelectedDistrict("");
       }
     } else {

@@ -40,7 +40,7 @@ import {
   useRejectFacility,
 } from "@/hooks/supabase-calls/useFacilities";
 
-import { TFacilityProfileOutput } from "@4ol/db/schemas/facility-profile.schema";
+import { TFacilityProfileOutput } from "@/schemas/facility-profile.schema";
 import { WhatsAppIcon } from "@/public/assets/images/icon/whatsapp";
 import { useMemo } from "react";
 import { authClient } from "@/lib/auth-client";

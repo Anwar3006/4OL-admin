@@ -6,10 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { Path, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   TFacilityProfileInput,
+  TFacilityProfileOutput,
   facilityProfileSchema,
 } from "@/schemas/facility-profile.schema";
 import {
@@ -54,13 +55,18 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { OfferingsSection } from "./offerings-section";
 
 // Step 1 Fields - To make sure we validate these fields before moving on to Step 2
-const STEP_1_FIELDS: (keyof TFacilityProfileInput)[] = [
+// Using type helper to ensure path validity
+type FacilityFormValues = TFacilityProfileInput & { sameForWeekdays: boolean };
+
+const STEP_1_FIELDS: Array<Path<FacilityFormValues>> = [
   "facility_type",
   "facility_name",
   "contact_number",
   "email",
   "gps_address",
   "area",
+  "latitude",
+  "longitude",
   "district",
   "region",
   "amenities",
@@ -71,7 +77,8 @@ const STEP_1_FIELDS: (keyof TFacilityProfileInput)[] = [
 ];
 
 const AddFacilityDialog = () => {
-  const { isOpen, data, isEditMode, close } = useAddFacilityDialog();
+  const { isOpen, data: rawData, isEditMode, close } = useAddFacilityDialog();
+  const data = rawData as TFacilityProfileOutput;
   const { data: session } = authClient.useSession();
   // Progress Step Management
   const [step, setStep] = useState<1 | 2>(1);
@@ -107,9 +114,9 @@ const AddFacilityDialog = () => {
   const isLoadingLocation = coordinatesLoading || addressLoading;
   ////////////
 
-  const form = useForm({
+  const form = useForm<FacilityFormValues>({
     resolver: zodResolver(
-      facilityProfileSchema.safeExtend({
+      facilityProfileSchema.extend({
         sameForWeekdays: z.boolean().default(false),
       }),
     ),
@@ -141,6 +148,8 @@ const AddFacilityDialog = () => {
       accepts_nhis: false,
       wellness_subtype: "",
       offerings: [],
+      latitude: 0,
+      longitude: 0,
     },
   });
 
@@ -174,12 +183,11 @@ const AddFacilityDialog = () => {
     if (isOpen && isEditMode && data) {
       form.reset({
         ...form.getValues(),
-        ...data,
-        business_hours: data.business_hours || DEFAULT_BUSINESS_HOURS,
-        sameForWeekdays: false, // Explicitly reset this view-only field
+        ...(data as any), // Fallback for complex object spread
         keywords: Array.isArray(data.keywords)
-          ? data.keywords.join(" ")
+          ? data.keywords.join(", ")
           : data.keywords || "",
+        sameForWeekdays: false,
       });
 
       // Populate existing images state
@@ -217,7 +225,10 @@ const AddFacilityDialog = () => {
         amenities: [],
         business_hours: DEFAULT_BUSINESS_HOURS,
         sameForWeekdays: false,
+        offerings: [],
         keywords: "",
+        latitude: 0,
+        longitude: 0,
       });
 
       // Also reset image management state
@@ -346,7 +357,7 @@ const AddFacilityDialog = () => {
 
   // --- Submission Logic ---
   const handleSubmit = async (
-    values: TFacilityProfileInput & { sameForWeekdays: boolean },
+    values: FacilityFormValues,
   ) => {
     setSubmitting(true);
     const { sameForWeekdays, ...profileData } = values;
@@ -367,7 +378,7 @@ const AddFacilityDialog = () => {
 
       const payload = {
         ...profileData,
-        facility_type: finalFacilityType,
+        facility_type: finalFacilityType as any, // Cast to any because the string formatting is dynamic
         featured_image_url: featuredImage || finalImageUrls[0],
         adminId: session?.user?.id ?? "",
       };
