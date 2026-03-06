@@ -10,6 +10,15 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
+interface FilterDropdownProps {
+  label: string;
+  value: string | null;
+  options: string[];
+  onChange: (value: string | null) => void;
+  placeholder?: string;
+  optionLabels?: Record<string, string>;
+}
+
 const FilterDropdown = ({
   label,
   value,
@@ -17,7 +26,7 @@ const FilterDropdown = ({
   onChange,
   placeholder = "All",
   optionLabels = {},
-}) => {
+}: FilterDropdownProps) => {
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-sm font-semibold text-gray-700">{label}</Label>

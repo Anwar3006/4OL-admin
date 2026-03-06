@@ -6,6 +6,8 @@ import {
 } from "@/schemas/facility-profile.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { normalizeLocationName } from "@/lib/utils";
+import { FACILITY_TYPE_ENUM } from "@/types/formInput";
 
 interface PaginatedResponse {
   data: TFacilityProfileInput[];
@@ -146,6 +148,7 @@ export const useGetFacilitiesMapData = ({
   maxLat,
   zoom,
   enabled,
+  filters = {},
 }: {
   minLng: number;
   minLat: number;
@@ -153,6 +156,12 @@ export const useGetFacilitiesMapData = ({
   maxLat: number;
   zoom: number;
   enabled: boolean;
+  filters?: {
+    region?: string;
+    district?: string;
+    facilityType?: string;
+    status?: string;
+  };
 }) => {
   return useQuery<any, Error>({
     queryKey: [
@@ -162,8 +171,10 @@ export const useGetFacilitiesMapData = ({
       maxLng,
       maxLat,
       Math.round(zoom),
+      filters,
     ],
     queryFn: async () => {
+      // 1. Fetch data from RPC as usual
       const { data, error } = await supabase.rpc("get_facilities_map", {
         minlng: minLng,
         minlat: minLat,
@@ -173,7 +184,49 @@ export const useGetFacilitiesMapData = ({
       });
 
       if (error) throw error;
-      return data; // This is a perfectly formatted GeoJSON object
+
+      // 2. Client-side filtering for Region, District, Type, Status
+      // This is necessary because the RPC might not handle these specific filters yet
+      if (data && data.features) {
+        let filteredFeatures = data.features;
+
+        if (filters.region) {
+          const normRegion = normalizeLocationName(filters.region);
+          filteredFeatures = filteredFeatures.filter((f: any) => {
+            const featRegion = normalizeLocationName(f.properties.region || f.properties.region_name || "");
+            return featRegion.includes(normRegion);
+          });
+        }
+
+        if (filters.district) {
+          const normDistrict = normalizeLocationName(filters.district);
+          filteredFeatures = filteredFeatures.filter((f: any) => {
+            const featDistrict = normalizeLocationName(f.properties.district || f.properties.district_name || "");
+            return featDistrict.includes(normDistrict);
+          });
+        }
+
+        if (filters.facilityType) {
+          filteredFeatures = filteredFeatures.filter((f: any) => {
+            const type = f.properties.facility_type?.toLowerCase() || "";
+            // If filtering for wellness_center, match anything starting with wellness
+            if (filters.facilityType === "wellness_center") {
+              return type.startsWith("wellness");
+            }
+            return type === filters.facilityType?.toLowerCase();
+          });
+        }
+
+        if (filters.status) {
+          filteredFeatures = filteredFeatures.filter((f: any) => 
+            f.properties.status === filters.status?.toLowerCase()
+          );
+        }
+
+        return { ...data, features: filteredFeatures };
+      }
+
+      return data;
     },
     enabled: enabled,
     placeholderData: (prev: any) => prev,
@@ -196,6 +249,7 @@ export const getTopRatedFacilities = async () => {
     },
   });
 };
+
 
 //=================== Mutation Hooks ================
 export const useCreateFacilityProfile = () => {
@@ -490,15 +544,24 @@ const aggregateStats = (rawStats: any[] | null) => {
 };
 
 const aggregateTypeCounts = (rawStats: any[] | null) => {
-  if (!rawStats) return {};
+  // Initialize counts for all known types to 0
+  const counts: Record<string, number> = {};
+  FACILITY_TYPE_ENUM.forEach((type) => {
+    counts[type] = 0;
+  });
 
-  return rawStats.reduce(
-    (acc, item) => {
-      const type = item?.facility_type?.trim();
-      if (!type) return acc;
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  if (!rawStats) return counts;
+
+  return rawStats.reduce((acc, item) => {
+    let type = item?.facility_type?.trim().toLowerCase();
+
+    // Consolidate wellness-related categories using prefix
+    if (type && type.startsWith("wellness")) {
+      type = "wellness_center";
+    }
+
+    if (!type || !FACILITY_TYPE_ENUM.includes(type as any)) return acc;
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, counts);
 };

@@ -6,7 +6,7 @@ import { MessageSquareQuote } from "lucide-react";
 import React, { useState, useMemo, useCallback } from "react";
 
 import { DataTable } from "@/components/Data-Table/data-table";
-import ConditionsStats from "../diseases_&_conditions/_components/ConditionStats";
+import ConditionsStats from "../../diseases_&_conditions/_components/ConditionStats";
 import { useChats, useDeleteChat, useChatStats } from "@/hooks/supabase-calls/useChat";
 import { useAddChatDialog } from "@/stores/dialog-store";
 import AddChatDialog from "./_components/add-chat-dialog";

@@ -139,3 +139,17 @@ export const getColorForId = (id: string): string => {
   const index = Math.abs(hash) % highContrastColors.length;
   return highContrastColors[index];
 };
+
+/**
+ * Normalizes location names for fuzzy matching.
+ * Handles common variations in Ghana region and district names.
+ */
+export const normalizeLocationName = (name: string): string => {
+  if (!name) return "";
+  return name
+    .toLowerCase()
+    .replace(/\bregion\b/g, "") // Remove "region"
+    .replace(/[^\w\s]/g, "") // Remove punctuation
+    .replace(/\s+/g, " ") // Normalize spaces
+    .trim();
+};

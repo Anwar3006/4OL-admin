@@ -41,6 +41,12 @@ export const menuItems = [
     link: "diseases_&_conditions",
   },
   {
+    title: "Human Anatomy",
+    isHide: false,
+    icon: "mdi:human",
+    link: "human-anatomy",
+  },
+  {
     title: "Symptoms",
     isHide: false,
     icon: "mdi:bacteria",
@@ -50,7 +56,32 @@ export const menuItems = [
     title: "Healthy Living",
     isHide: false,
     icon: "ion:book",
-    link: "healthy_living",
+    child: [
+      {
+        childtitle: "Information",
+        childlink: "healthy_living/information",
+      },
+      {
+        childtitle: "Workouts",
+        childlink: "healthy_living/workouts",
+      },
+      {
+        childtitle: "Plans",
+        childlink: "healthy_living/plans",
+      },
+      {
+        childtitle: "Users",
+        childlink: "healthy_living/users",
+      },
+      {
+        childtitle: "Schedule",
+        childlink: "healthy_living/schedule",
+      },
+      {
+        childtitle: "Trainers",
+        childlink: "healthy_living/trainers",
+      },
+    ],
   },
   {
     title: "Period Tracker",
@@ -83,10 +114,25 @@ export const menuItems = [
     link: "marketing",
   },
   {
+    title: "Transactions",
+    isHide: false,
+    icon: "fluent-mdl2:reading-mode",
+    link: "transactions",
+  },
+  {
     title: "Chats",
     isHide: false,
     icon: "lets-icons:chat",
-    link: "chats",
+    child: [
+      {
+        childtitle: "Main Chat",
+        childlink: "chats/main-chat",
+      },
+      {
+        childtitle: "Support",
+        childlink: "chats/support",
+      },
+    ],
   },
   {
     title: "FAQ",

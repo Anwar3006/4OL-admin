@@ -74,20 +74,22 @@ const FacilitiesPage = () => {
     [page, data, facilitiesPagination],
   );
 
-  const facilityTypes = useMemo(
-    () =>
-      Object.entries(data?.typeCounts || {})
-        .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => a.value.localeCompare(b.value)),
-    [data?.typeCounts],
-  );
+  const facilityTypes = useMemo(() => {
+    const counts = data?.typeCounts || {};
+    
+    // We want to show ALL types from the ENUM, even if count is 0
+    // We also want to format them for display
+    return Object.entries(counts)
+      .map(([value, count]) => ({ value, count: count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [data?.typeCounts]);
 
   return (
     <section className="mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-10 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <div className="mb-5">
         <SectionHeader
-          title="Facilities"
-          description="Manage all healthcare facilities"
+          title="Facilities Overview"
+          description="Manage and monitor all healthcare facility types"
           Icon={PlusCircleIcon}
           hasButton={true}
           buttonLabel="Add Facility"

@@ -7,9 +7,9 @@ import type {
 import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { headers } from "next/headers";
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
 const createAdminInvite = async (input: TAdminInviteSchema) => {
   try {
@@ -81,16 +81,18 @@ export async function inviteAdminAction(email: string, role: string) {
       </div>
     `;
 
-    const result = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "4OurLife <onboarding@resend.dev>",
+    const msg = {
       to: email,
+      from: process.env.SENDGRID_FROM_EMAIL || "life@4ourlife.com",
       subject: "Invitation to join 4 Our Life",
       html,
-    });
+    };
+
+    await sgMail.send(msg);
 
     return {
       data: {
-        id: result.data?.id || token,
+        id: token,
       },
       error: null,
     };

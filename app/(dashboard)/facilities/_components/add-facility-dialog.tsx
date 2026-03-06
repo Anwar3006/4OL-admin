@@ -45,6 +45,7 @@ import {
   useCreateFacilityProfile,
   useUpdateFacilityProfile,
 } from "@/hooks/supabase-calls/useFacilities";
+import { notifyFacilityRegistration } from "@/actions/share-facility-login";
 
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -434,6 +435,21 @@ const AddFacilityDialog = () => {
           phoneNumber: payload.contact_number,
           ownerNumber: payload.whatsapp_number || payload.person_contact_number,
         });
+
+        // Send WhatsApp/SMS notifications via Twilio
+        try {
+          await notifyFacilityRegistration({
+            facilityWhatsapp: payload.whatsapp_number || payload.contact_number,
+            facilityPhone: payload.contact_number,
+            ownerPhone: payload.person_contact_number,
+            facilityName: payload.facility_name,
+          });
+        } catch (notifyError) {
+          console.error("Notification Error:", notifyError);
+          // We don't want to block the user experience if notifications fail
+          toast.warning("Facility registered, but notification delivery failed.");
+        }
+
         setFacilityModal(true);
         // }
       }

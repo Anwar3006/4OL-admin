@@ -4,10 +4,13 @@ import SectionHeader from "@/components/SectionHeader";
 import { Map } from "lucide-react";
 import React, { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 import GoogleMapContainer from "./_components/GoogleMapContainer";
 import FilterDropdown from "./_components/FilterDropdown";
 import BusinessPinsToggle from "./_components/BusinessPinsToggle";
+
+import { FACILITY_TYPE_OPTIONS } from "@/types/formInput";
 
 // Import the JSON data
 import locationData from "@/constant/ghana-locations.json";
@@ -57,8 +60,12 @@ const MapPage = () => {
     }
   }, [selectedRegion, availableDistricts, selectedDistrict]);
 
-  const facilityTypes = ["Hospital", "Clinic", "Pharmacy", "Wellness Center"];
-  const statuses = ["Approved", "Pending"];
+  const facilityTypes = useMemo(() => FACILITY_TYPE_OPTIONS.map(opt => ({
+    label: opt.label,
+    value: opt.value
+  })), []);
+
+  const statuses = ["Active", "Pending", "Inactive", "Rejected"];
   const footprints = ["Small", "Medium", "Large"];
 
   // Sync state to URL
@@ -84,7 +91,8 @@ const MapPage = () => {
   ]);
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-4 lg:pt-2 max-w-[2400px] h-[calc(100dvh-5.5rem)] flex flex-col overflow-hidden bg-white shadow-sm mt-2 rounded-lg">
+    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-4 lg:pt-2 max-w-[2400px] h-fit flex flex-col overflow-hidden bg-white shadow-sm mt-2 rounded-lg">
+      <div className="flex-shrink-0">
       <div className="flex justify-between items-center mb-4">
         <SectionHeader
           title="Map View"
@@ -113,7 +121,11 @@ const MapPage = () => {
         <FilterDropdown
           label="Facility Type"
           value={selectedFacilityType}
-          options={facilityTypes}
+          options={facilityTypes.map(ft => ft.value)}
+          optionLabels={facilityTypes.reduce((acc, ft) => {
+            acc[ft.value] = ft.label;
+            return acc;
+          }, {} as Record<string, string>)}
           onChange={setSelectedFacilityType}
         />
 
@@ -131,15 +143,32 @@ const MapPage = () => {
           onChange={setSelectedFootprint}
         />
 
-        <div className="w-fit flex items-end">
-          <BusinessPinsToggle
+        <div className="w-fit flex items-end gap-3 font-semibold">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSelectedRegion("");
+              setSelectedDistrict("");
+              setSelectedFacilityType("");
+              setSelectedStatus("");
+              setSelectedFootprint("");
+              setShowBusinessPins(true);
+              router.push("/map");
+            }}
+            className="h-[46px] border-2 border-slate-200 hover:border-red-400 hover:text-red-600 transition-all px-6 rounded-lg bg-white"
+          >
+            Clear Filters
+          </Button>
+
+          {/* <BusinessPinsToggle
             enabled={showBusinessPins}
             onToggle={setShowBusinessPins}
-          />
+          /> */}
         </div>
       </div>
+      </div>
 
-      <div className="flex-1 h-[800px]">
+      <div className="flex-1 min-h-0 w-full relative xl:h-[600px] xl:flex-none">
         <GoogleMapContainer
           filters={{
             region: selectedRegion,

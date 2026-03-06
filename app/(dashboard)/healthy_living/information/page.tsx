@@ -2,7 +2,7 @@
 import SectionHeader from "@/components/SectionHeader";
 import { PlusCircleIcon } from "lucide-react";
 import React, { useState, useCallback, useMemo } from "react";
-import ConditionsStats from "../diseases_&_conditions/_components/ConditionStats";
+import ConditionsStats from "@/components/dashboard/ConditionStats"; 
 import { DataTable } from "@/components/Data-Table/data-table";
 
 import { createPaginationHandlers } from "@/lib/utils";
@@ -12,9 +12,9 @@ import {
 } from "@/stores/dialog-store";
 import { healthyLivingColumns } from "@/components/Data-Table/columns/healthyLivingColumns";
 import { healthyLivingCardConfig } from "@/components/Data-Table/mobile-table-configs/healthyLivingCardConfig";
-import AddHealthyLivingDialog from "./_components/add-healthyLiving-dialog";
+import AddHealthyLivingDialog from "../_components/add-healthyLiving-dialog";
 import { useHealthyLivings } from "@/hooks/supabase-calls/useHealthyLiving";
-import ViewHealthyLivingDialog from "./_components/view-healthyLiving-dialog";
+import ViewHealthyLivingDialog from "../_components/view-healthyLiving-dialog";
 
 const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();

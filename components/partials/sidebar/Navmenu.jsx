@@ -9,8 +9,8 @@ import { toggleActiveChat } from "@/components/partials/app/chat/store";
 import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import { supabase } from "@/app/utils/supabaseClient";
+import { usePermissionContext } from "@/stores/permission-context";
 import Submenu from "./Submenu";
-import { authClient } from "@/lib/auth-client";
 
 // Roles that can see the Admins and Delete Account Request menu items
 const SUPER_ADMIN_ROLES = ["super_admin", "Super Admin"];
@@ -19,65 +19,12 @@ const Navmenu = ({ menus, onLogout }) => {
   const router = useRouter();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [pendingReviews, setPendingReviews] = useState(0);
-  const [userRole, setUserRole] = useState(null);
+  const { userRole } = usePermissionContext();
   const location = usePathname();
   const locationName = location.replace("/", "");
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   const dispatch = useDispatch();
 
-  // Fetch user role from Supabase
-  const fetchUserRole = async () => {
-    const sessionResult = await authClient.getSession();
-    const userId = sessionResult?.data?.user?.id;
-    if (!userId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("role")
-        .eq("user_id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching user role:", error);
-      } else {
-        setUserRole(data?.role);
-        localStorage.setItem("user_role", data?.role);
-      }
-    } catch (error) {
-      console.error("Error fetching user role:", error);
-    }
-  };
-
-  const fetchPendingReviews = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("facility_profile")
-        .select("*")
-        .eq("status", "pending"); // lowercase to match facility_status_enum
-
-      if (error) {
-        console.error("Error fetching pending reviews:", error);
-        return;
-      }
-
-      setPendingReviews(data.length || 0);
-    } catch (error) {
-      console.error("Error fetching pending reviews:", error);
-    }
-  };
-
-  // Restrict Admin Panel Access
-  useEffect(() => {
-    if (locationName === "admin" && !SUPER_ADMIN_ROLES.includes(userRole)) {
-      router.push("/analytics");
-    }
-  }, [locationName, userRole]);
-
-  useEffect(() => {
-    fetchPendingReviews();
-    fetchUserRole();
-  }, []);
 
   const toggleSubmenu = (i) => {
     setActiveSubmenu(activeSubmenu === i ? null : i);

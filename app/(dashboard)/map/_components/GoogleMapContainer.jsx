@@ -32,6 +32,7 @@ const GoogleMapContainer = ({ filters }) => {
     maxLat: bounds?.[3] ?? 0,
     zoom: Math.round(zoom),
     enabled: !!bounds,
+    filters: filters,
   });
 
   const onLoad = useCallback(function callback(currentMap) {
@@ -184,7 +185,7 @@ const GoogleMapContainer = ({ filters }) => {
   }, [data, geojson]);
 
   return isLoaded ? (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border bg-slate-50 shadow-inner">
+    <div className="h-full w-full overflow-hidden rounded-xl border bg-slate-50 shadow-inner">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
