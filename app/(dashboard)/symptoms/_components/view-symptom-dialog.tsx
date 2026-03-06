@@ -60,7 +60,7 @@ const ViewSymptomDialog = () => {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
+      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
         {isLoading && (
           <div className="p-6">
             <ConditionSkeleton />

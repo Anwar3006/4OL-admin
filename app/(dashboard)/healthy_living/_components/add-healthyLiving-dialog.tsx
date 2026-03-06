@@ -176,7 +176,7 @@ const AddHealthyLivingDialog = () => {
           >
             {step === 1 && (
               <>
-                <h3 className="font-semibold mb-2 underline text-center">
+                <h3 className="card-title mb-2 underline text-center">
                   Details
                 </h3>
 
@@ -287,7 +287,7 @@ const AddHealthyLivingDialog = () => {
             {step === 2 && (
               <>
                 {/* ---------------- STEP 2 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Symptom Details (2/3)
                 </h3>
 
@@ -337,7 +337,7 @@ const AddHealthyLivingDialog = () => {
             {step === 3 && (
               <>
                 {/* ---------------- STEP 3 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Detail (3/3)
                 </h3>
 

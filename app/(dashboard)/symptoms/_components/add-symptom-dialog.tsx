@@ -232,7 +232,7 @@ const AddSymptomDialog = () => {
             )}
             {step === 1 && (
               <>
-                <h3 className="font-semibold mb-2 underline text-center">
+                <h3 className="card-title mb-2 underline text-center">
                   Symptom Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,7 +343,7 @@ const AddSymptomDialog = () => {
             {step === 2 && (
               <>
                 {/* ---------------- STEP 2 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Symptom Details (2/5)
                 </h3>
 
@@ -443,7 +443,7 @@ const AddSymptomDialog = () => {
             {step === 3 && (
               <>
                 {/* ---------------- STEP 3 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Symptom Details (3/5)
                 </h3>
 
@@ -494,7 +494,7 @@ const AddSymptomDialog = () => {
             {step === 4 && (
               <>
                 {/* ---------------- STEP 4 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Symptom Details (4/5)
                 </h3>
 
@@ -544,7 +544,7 @@ const AddSymptomDialog = () => {
             {step === 5 && (
               <>
                 {/* ---------------- STEP 5 ---------------- */}
-                <h3 className="font-semibold mb-4 underline text-center">
+                <h3 className="card-title mb-4 underline text-center">
                   Symptom Details (5/5)
                 </h3>
 

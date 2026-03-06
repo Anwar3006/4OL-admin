@@ -69,7 +69,7 @@ export function ViewConditionDialog() {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-2xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
+      <SheetContent className="w-full sm:max-w-2xl xl:max-w-4xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
         {isLoading ? (
           <div className="flex items-center justify-center h-full p-12">
             <ConditionSkeleton />

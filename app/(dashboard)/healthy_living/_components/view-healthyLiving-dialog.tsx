@@ -37,7 +37,6 @@ import {
   useHealthyLiving,
 } from "@/hooks/supabase-calls/useHealthyLiving";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { getPublicImageUrl } from "@/lib/utils";
 
 interface Props {
@@ -70,7 +69,7 @@ const ViewHealthyLivingDialog = () => {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-3xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
+      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
         {!isLoading && data ? (
           <>
             {/* 1. Impactful Header Section */}
@@ -90,7 +89,7 @@ const ViewHealthyLivingDialog = () => {
                     <Sparkles className="h-3.5 w-3.5 mr-1" /> Wellness &
                     Lifestyle
                   </Badge>
-                  <SheetTitle className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 leading-tight">
+                  <SheetTitle className="card-title font-black tracking-tight text-slate-900 leading-tight">
                     {data.name}
                   </SheetTitle>
                 </div>
@@ -248,7 +247,7 @@ const ContentSection = ({ icon: Icon, title, content, color }: any) => (
   <section className="space-y-3">
     <div className="flex items-center gap-2">
       <Icon className={`h-5 w-5 ${color}`} />
-      <h3 className="font-bold text-slate-800 tracking-tight">{title}</h3>
+      <h3 className="card-title font-semibold text-slate-800 tracking-tight">{title}</h3>
     </div>
     <div className="text-slate-600 leading-relaxed text-sm md:text-base pl-7">
       <LexicalRenderer initialState={content} />
