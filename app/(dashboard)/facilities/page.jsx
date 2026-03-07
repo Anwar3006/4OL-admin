@@ -104,7 +104,7 @@ const FacilitiesPage = () => {
             Loading Facilities...
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <StatsCard
               label="Total Registered"
               value={data?.totalRegistered || 0}

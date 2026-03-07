@@ -329,8 +329,8 @@ const GroupChart1 = ({
     },
     {
       name: shapeLine3,
-      title: "Total Specialists",
-      count: totalSpecialists ?? "0",
+      title: "Total IBPs",
+      count: totalSpecialists ?? "0", //totalIBPs
       bg: "bg-[#c7f2d7] dark:bg-slate-900	",
       loading: loadingTotalSpecialists ? true : false,
     },
