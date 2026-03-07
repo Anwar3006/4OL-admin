@@ -140,7 +140,7 @@ export default function UserSection() {
 
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold mb-4 text-emerald-700 bg-emerald-50 w-fit px-3 py-1 rounded-md">Customers</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-700 bg-emerald-50 w-fit px-3 py-1 rounded-md">Users</h2>
           <DataTable
             columns={userColumns}
             data={customerData?.users || []}
@@ -152,7 +152,7 @@ export default function UserSection() {
         </div>
 
         <div className="pt-6 border-t border-slate-100">
-          <h2 className="text-lg font-semibold mb-4 text-blue-700 bg-blue-50 w-fit px-3 py-1 rounded-md">Business Providers</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-700 bg-blue-50 w-fit px-3 py-1 rounded-md">Businesses</h2>
           <DataTable
             columns={userColumns}
             data={providerData?.users || []}

@@ -31,7 +31,7 @@ const formatLastActivity = (value: any) => {
   return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
-export const userColumns: ColumnDef<TUserProfile>[] = [
+export const adminColumns: ColumnDef<TUserProfile>[] = [
   {
     accessorKey: "name",
     header: () => <div className="font-semibold">Name</div>,
@@ -72,30 +72,6 @@ export const userColumns: ColumnDef<TUserProfile>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "role",
-  //   header: () => (
-  //     <div className="font-semibold hidden xl:table-cell">Role</div>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <div className="hidden xl:table-cell min-w-30">
-  //       <span className="text-sm capitalize">{(row.original as any).position || row.original.role}</span>
-  //     </div>
-  //   ),
-  // },
-/*
-  {
-    accessorKey: "sex",
-    header: () => (
-      <div className="font-semibold hidden xl:table-cell">Sex</div>
-    ),
-    cell: ({ row }) => (
-      <div className="hidden xl:table-cell min-w-20">
-        <span className="text-sm capitalize">{row.original.sex || "N/A"}</span>
-      </div>
-    ),
-  },
-*/
   {
     accessorKey: "created_at",
     header: () => (
@@ -125,19 +101,6 @@ export const userColumns: ColumnDef<TUserProfile>[] = [
       <div className="min-w-25">{StatusMap[row.original.status] || row.original.status}</div>
     ),
   },
-/*
-  {
-    accessorKey: "userType",
-    header: () => (
-      <div className="font-semibold hidden 2xl:table-cell">Type</div>
-    ),
-    cell: ({ row }) => (
-      <div className="hidden 2xl:table-cell min-w-25">
-        <span className="text-sm">{row.original.user_type}</span>
-      </div>
-    ),
-  },
-*/
   {
     id: "actions",
     header: () => <div className="sr-only">Actions</div>,
@@ -160,13 +123,13 @@ export const userColumns: ColumnDef<TUserProfile>[] = [
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(user.user_id)}
               >
-                Copy User ID
+                Copy Admin ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>View Details</DropdownMenuItem>
-              <DropdownMenuItem>Edit User</DropdownMenuItem>
+              <DropdownMenuItem>Edit Admin</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">Suspend User</DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600">Remove Admin</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

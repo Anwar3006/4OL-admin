@@ -63,7 +63,7 @@ const DiseasesAndConditionsPage = () => {
       <SectionHeader
         title="Diseases & Conditions"
         Icon={PlusCircleIcon}
-        description="Manage the diseases and conditions"
+        // description="Manage the diseases and conditions"
         hasButton
         buttonLabel="Add Condition"
         onButtonClick={() => addConditions.open()}

@@ -23,11 +23,8 @@ export const healthyLivingColumns: ColumnDef<THealthyLivingOutput>[] = [
         <div className="flex items-center gap-3 min-w-50">
           <Activity className="h-4 w-4" />
           <div className="flex flex-col">
-            <span className="font-bold text-sm leading-none">
+            <span className="font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               {row.original.name}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono mt-1 uppercase tracking-tighter">
-              {row.original.slug}
             </span>
           </div>
         </div>

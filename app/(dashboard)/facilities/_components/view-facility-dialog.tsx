@@ -132,7 +132,7 @@ export function FacilityViewDialog() {
         open={viewDialog.isOpen}
         onOpenChange={(open) => !open && viewDialog.close()}
       >
-        <SheetContent className="w-full sm:max-w-2xl xl:max-w-4xl p-0 flex flex-col overflow-x-hidden overflow-y-scroll border-l shadow-2xl">
+        <SheetContent className="w-full sm:max-w-2xl xl:max-w-2/3 p-0 flex flex-col overflow-x-hidden overflow-y-scroll border-l shadow-2xl">
           <SheetHeader>
             <VisuallyHidden.Root>
               <SheetTitle>

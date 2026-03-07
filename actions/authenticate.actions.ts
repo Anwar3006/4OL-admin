@@ -8,6 +8,9 @@ import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { headers } from "next/headers";
 import sgMail from "@sendgrid/mail";
+import { render } from "@react-email/render";
+import InviteAdminEmail from "@/components/emails/invite-admin";
+import * as React from "react";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
@@ -67,19 +70,12 @@ export async function inviteAdminAction(email: string, role: string) {
 
     const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invite?token=${token}`;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-        <h2>Invitation to join 4 Our Life</h2>
-        <p>Hello,</p>
-        <p>You have been invited to join the 4 Our Life admin dashboard.</p>
-        <p>
-          <a href="${inviteLink}" target="_blank" rel="noopener noreferrer">
-            Accept Invitation
-          </a>
-        </p>
-        <p>This link expires in 7 days.</p>
-      </div>
-    `;
+    const html = await render(
+      React.createElement(InviteAdminEmail, {
+        email,
+        inviteLink,
+      })
+    );
 
     const msg = {
       to: email,

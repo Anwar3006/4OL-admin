@@ -49,11 +49,8 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
             )}
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-sm leading-none">
+            <span className="font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               {row.original.name}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono mt-1 uppercase tracking-tighter">
-              {row.original.slug}
             </span>
           </div>
         </div>
@@ -66,13 +63,11 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
       <div className="font-semibold hidden lg:table-cell">Bodypart/s</div>
     ),
     cell: ({ row }) => (
-      <div className="hidden lg:table-cell min-w-40 flex-wrap gap-1">
+      <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          row.original.bodyParts.map((part) => (
-            <Badge key={part} variant="outline" className="text-[10px] py-0 px-1.5 h-5">
-              {part}
-            </Badge>
-          ))
+          <Badge variant="outline" className="text-[10px] py-1 px-2.5 h-auto rounded-md font-medium">
+            {row.original.bodyParts.join(", ")}
+          </Badge>
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}
@@ -85,13 +80,11 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
       <div className="font-semibold hidden lg:table-cell">Categories</div>
     ),
     cell: ({ row }) => (
-      <div className="hidden lg:table-cell min-w-40 flex-wrap gap-1">
+      <div className="hidden lg:table-cell min-w-40">
         {row.original.categories?.length > 0 ? (
-          row.original.categories.map((cat) => (
-            <Badge key={cat} variant="secondary" className="text-[10px] py-0 px-1.5 h-5">
-              {cat}
-            </Badge>
-          ))
+          <Badge variant="secondary" className="text-[10px] py-1 px-2.5 h-auto rounded-md font-medium">
+            {row.original.categories.join(", ")}
+          </Badge>
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}

@@ -12,8 +12,9 @@ import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-conf
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
 import { Button } from "@/components/ui/button";
-import { useAddFacilityDialog } from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
 import AddFacilityDialog from "../_components/add-facility-dialog";
+import { FacilityViewDialog } from "../_components/view-facility-dialog";
 
 const formatFacilityType = (rawType = "") =>
   rawType
@@ -33,6 +34,7 @@ const FacilityTypePage = () => {
   const searchParams = useSearchParams();
   const facilityCardConfig = useFacilityCardConfig();
   const addFacility = useAddFacilityDialog();
+  const viewFacility = useViewFacilityDialog();
 
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -75,8 +77,8 @@ const FacilityTypePage = () => {
   );
 
   const onRowClick = useCallback(
-    (facility) => router.push(`/view-facility-profile?id=${facility.id}`),
-    [router]
+    (facility) => viewFacility.open(facility.id),
+    [viewFacility]
   );
 
   return (
@@ -153,6 +155,7 @@ const FacilityTypePage = () => {
       />
 
       <AddFacilityDialog />
+      <FacilityViewDialog />
     </section>
   );
 };

@@ -11,7 +11,7 @@ import {
   TableSkeleton,
 } from "@/components/Data-Table/helpers";
 import SectionHeader from "@/components/SectionHeader";
-import { userColumns } from "@/components/Data-Table/columns/userColumns";
+import { adminColumns } from "@/components/Data-Table/columns/adminColumns";
 import { userCardConfig } from "@/components/Data-Table/mobile-table-configs/userCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -94,7 +94,7 @@ export default function AdminSection() {
       </div>
 
       <DataTable
-        columns={userColumns}
+        columns={adminColumns}
         data={data?.users || []}
         cardConfig={userCardConfig}
         isLoading={isFetching}

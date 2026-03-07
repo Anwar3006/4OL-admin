@@ -16,8 +16,9 @@ import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns
 import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-configs/facilityCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
-import { useAddFacilityDialog } from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
 import AddFacilityDialog from "./_components/add-facility-dialog";
+import { FacilityViewDialog } from "./_components/view-facility-dialog";
 
 const formatFacilityType = (rawType = "") =>
   rawType
@@ -32,6 +33,7 @@ const formatFacilityType = (rawType = "") =>
 const FacilitiesPage = () => {
   const facilityCardConfig = useFacilityCardConfig();
   const addFacility = useAddFacilityDialog();
+  const viewFacility = useViewFacilityDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -159,7 +161,7 @@ const FacilitiesPage = () => {
           data={data?.facilities || []}
           cardConfig={facilityCardConfig}
           onRowClick={(facility) =>
-            router.push(`/view-facility-profile?id=${facility.id}`)
+            viewFacility.open(facility.id)
           }
           pagination={pagination}
           isLoading={isFetching}
@@ -167,6 +169,7 @@ const FacilitiesPage = () => {
       )}
 
       <AddFacilityDialog />
+      <FacilityViewDialog />
     </section>
   );
 };
@@ -187,20 +190,11 @@ const FacilityCard = ({ label, count, link, Icon }) => {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-sm text-gray-900 truncate">
+          <h3 className="font-bold text-lg text-gray-900 truncate">
             {label}
           </h3>
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-100 px-1.5 text-[10px] font-semibold text-green-700">
             {count}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-gray-500">
-          <SquareArrowOutUpRight
-            size={14}
-            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          />
-          <span className="text-[10px] uppercase tracking-wider font-medium truncate">
-            View {label}
           </span>
         </div>
       </div>
