@@ -157,6 +157,7 @@ export const useGetFacilitiesMapData = ({
   zoom: number;
   enabled: boolean;
   filters?: {
+    facilityName?: string;
     region?: string;
     district?: string;
     facilityType?: string;
@@ -174,58 +175,32 @@ export const useGetFacilitiesMapData = ({
       filters,
     ],
     queryFn: async () => {
-      // 1. Fetch data from RPC as usual
+      console.log("Filters: ", filters);
+      const normalizedFilters = {
+        ...filters,
+        region: filters.region
+          ? normalizeLocationName(filters.region)
+          : null,
+        // district: filters.district
+        //   ? normalizeLocationName(filters.district)
+        //   : null,
+      };
+      console.log("Normalized Filters: ", normalizedFilters);
       const { data, error } = await supabase.rpc("get_facilities_map", {
         minlng: minLng,
         minlat: minLat,
         maxlng: maxLng,
         maxlat: maxLat,
         zoom_level: Math.round(zoom),
+        // Server-side filters — the updated RPC accepts these as optional params
+        p_facility_name: normalizedFilters.facilityName  || null,
+        p_region:        normalizedFilters.region        || null,
+        p_district:      normalizedFilters.district      || null,
+        p_facility_type: normalizedFilters.facilityType  || null,
+        p_status:        normalizedFilters.status        || "active",
       });
 
       if (error) throw error;
-
-      // 2. Client-side filtering for Region, District, Type, Status
-      // This is necessary because the RPC might not handle these specific filters yet
-      if (data && data.features) {
-        let filteredFeatures = data.features;
-
-        if (filters.region) {
-          const normRegion = normalizeLocationName(filters.region);
-          filteredFeatures = filteredFeatures.filter((f: any) => {
-            const featRegion = normalizeLocationName(f.properties.region || f.properties.region_name || "");
-            return featRegion.includes(normRegion);
-          });
-        }
-
-        if (filters.district) {
-          const normDistrict = normalizeLocationName(filters.district);
-          filteredFeatures = filteredFeatures.filter((f: any) => {
-            const featDistrict = normalizeLocationName(f.properties.district || f.properties.district_name || "");
-            return featDistrict.includes(normDistrict);
-          });
-        }
-
-        if (filters.facilityType) {
-          filteredFeatures = filteredFeatures.filter((f: any) => {
-            const type = f.properties.facility_type?.toLowerCase() || "";
-            // If filtering for wellness_center, match anything starting with wellness
-            if (filters.facilityType === "wellness_center") {
-              return type.startsWith("wellness");
-            }
-            return type === filters.facilityType?.toLowerCase();
-          });
-        }
-
-        if (filters.status) {
-          filteredFeatures = filteredFeatures.filter((f: any) => 
-            f.properties.status === filters.status?.toLowerCase()
-          );
-        }
-
-        return { ...data, features: filteredFeatures };
-      }
-
       return data;
     },
     enabled: enabled,

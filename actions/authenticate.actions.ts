@@ -68,7 +68,12 @@ export async function inviteAdminAction(email: string, role: string) {
       expires_at: expiresAt,
     });
 
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invite?token=${token}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+      throw new Error("NEXT_PUBLIC_APP_URL is not set. Cannot generate invite link.");
+    }
+
+    const inviteLink = `${appUrl}/accept-invite?token=${token}`;
 
     const html = await render(
       React.createElement(InviteAdminEmail, {

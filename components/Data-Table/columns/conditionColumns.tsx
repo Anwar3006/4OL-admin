@@ -65,7 +65,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          <Badge variant="outline" className="font-semibold text-[10px] py-1 px-2.5 h-auto rounded-md">
+          <Badge variant="outline" className="font-medium text-[12px] py-1 px-2.5 h-auto rounded-md">
             {row.original.bodyParts.join(", ")}
           </Badge>
         ) : (
@@ -82,7 +82,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.categories?.length > 0 ? (
-          <Badge variant="secondary" className="font-semibold text-[10px] py-1 px-2.5 h-auto rounded-md">
+          <Badge variant="secondary" className="font-medium text-[12px] py-1 px-2.5 h-auto rounded-md">
             {row.original.categories.join(", ")}
           </Badge>
         ) : (

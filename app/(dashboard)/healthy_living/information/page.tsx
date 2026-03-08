@@ -24,6 +24,8 @@ const HealthyLivingPage = () => {
 
   const { data, isLoading } = useHealthyLivings({ page, limit });
 
+  console.log("Data: ", data)
+
   const paginationHandler = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta.totalPages),
     [page, data?.meta.totalPages],

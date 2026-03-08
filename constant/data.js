@@ -16,6 +16,12 @@ export const menuItems = [
       },
     ],
   },
+    {
+    title: "Transactions",
+    isHide: false,
+    icon: "fluent-mdl2:reading-mode",
+    link: "transactions",
+  },
   {
     title: "Admins",
     isHide: false,
@@ -112,12 +118,6 @@ export const menuItems = [
     isHide: false,
     icon: "hugeicons:marketing",
     link: "marketing",
-  },
-  {
-    title: "Transactions",
-    isHide: false,
-    icon: "fluent-mdl2:reading-mode",
-    link: "transactions",
   },
   {
     title: "Chats",

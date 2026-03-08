@@ -50,8 +50,9 @@ export const useHealthyLivings = ({
         count,
         error,
       } = await supabase
-        .from("healthy_living")
+        .from("healthy_living_info_view")
         .select("*", { count: "exact" })
+        .order("display_order", { ascending: true })
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -60,7 +61,7 @@ export const useHealthyLivings = ({
       const totalCount = count ?? 0;
 
       return {
-        healthyLivings: (healthyLivings || []) as THealthyLivingOutput[],
+        healthyLivings: (healthyLivings || []) as unknown as THealthyLivingOutput[],
         meta: {
           totalPages: Math.ceil(totalCount / limit),
           total: totalCount,
@@ -80,14 +81,13 @@ export const useHealthyLiving = (id: string | null) => {
     queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(id!),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("healthy_living")
+        .from("healthy_living_info")
         .select(
           `
           *,
-          healthy_living_types (
-            id,
-            type_name,
-            about_type
+          children:healthy_living_info(
+            *,
+            children:healthy_living_info(*)
           )
         `,
         )
@@ -95,13 +95,18 @@ export const useHealthyLiving = (id: string | null) => {
         .single();
 
       if (error) throw new Error(error.message);
-      const transformPayload = {
-        ...data,
-        types: data?.healthy_living_types,
-        healthy_living_types: undefined,
-      } as THealthyLivingOutput;
-      console.log("Trans:  ", transformPayload);
-      return transformPayload;
+
+      // content_sections is stored as a JSON string in the DB — parse it back to an array
+      const normalize = (record: any): any => ({
+        ...record,
+        content_sections:
+          typeof record.content_sections === "string"
+            ? JSON.parse(record.content_sections)
+            : (record.content_sections ?? []),
+        children: (record.children ?? []).map(normalize),
+      });
+
+      return normalize(data) as unknown as THealthyLivingOutput;
     },
     enabled: !!id,
   });
@@ -110,8 +115,38 @@ export const useHealthyLiving = (id: string | null) => {
 // ============= MUTATION HOOKS =============
 
 /**
- * Create new healthy living item
- * Note: This handles the transaction for main item + types
+ * Recursive function to insert a tree of healthy living items
+ */
+const insertHealthyLivingTree = async (
+  input: any,
+) => {
+  if (input.tree) {
+    // Tree insert
+    const { data: node, error } = await supabase.rpc("insert_healthy_living_info_tree", {
+      p_node: input.tree,
+      p_parent_id: input.parent_id || null,
+    });
+    if (error) throw new Error(error.message);
+    return node;
+  }
+
+  // Single node insert
+  const { data: node, error } = await supabase.rpc("insert_healthy_living_info", {
+    p_name: input.name,
+    p_slug: input.slug,
+    p_description: input.description || null,
+    p_content_sections: JSON.stringify(input.content_sections || []),
+    p_parent_id: input.parent_id || null,
+    p_image_url: input.image_url || null,
+    p_attribution: JSON.stringify(input.attribution || {}),
+  }).single();
+
+  if (error) throw new Error(error.message);
+  return node;
+};
+
+/**
+ * Create new healthy living item (with hierarchy)
  */
 export const useCreateHealthyLiving = () => {
   const queryClient = useQueryClient();
@@ -119,60 +154,20 @@ export const useCreateHealthyLiving = () => {
   return useMutation<
     THealthyLivingOutput,
     Error,
-    THealthyLivingInput & { slug: string }
+    any
   >({
     mutationFn: async (input) => {
-      // Start a transaction-like operation
-      // 1. Insert main healthy living record
-      const { data: healthyLiving, error: mainError } = await supabase
-        .from("healthy_living")
-        .insert({
-          name: input.name,
-          slug: input.slug,
-          about: input.about,
-          category: input.category,
-          image_url: input.image_url,
-          contact_your_doctor: input.contact_your_doctor,
-          more_information: input.more_information,
-          attribution: input.attribution,
-        })
-        .select()
-        .single();
-
-      if (mainError) throw new Error(mainError.message);
-
-      // 2. Insert related types if provided
-      if (input.types && input.types.length > 0) {
-        const typesData = input.types.map((type) => ({
-          healthy_living_id: healthyLiving.id,
-          type_name: type.type_name,
-          about_type: type.about_type,
-        }));
-
-        const { error: typesError } = await supabase
-          .from("healthy_living_types")
-          .insert(typesData);
-
-        if (typesError) {
-          // Rollback: delete the main record
-          await supabase
-            .from("healthy_living")
-            .delete()
-            .eq("id", healthyLiving.id);
-          throw new Error(typesError.message);
-        }
-      }
-
-      return healthyLiving as THealthyLivingOutput;
+      const node = await insertHealthyLivingTree(input);
+      return node as unknown as THealthyLivingOutput;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: HEALTHY_LIVING_QUERY_KEYS.all,
       });
-      toast.success("Healthy living item created successfully!");
+      toast.success("Saved successfully!");
     },
     onError: (error) => {
-      toast.error(`Failed to create: ${error.message}`);
+      toast.error(`Failed to save: ${error.message}`);
     },
   });
 };
@@ -186,61 +181,32 @@ export const useUpdateHealthyLiving = () => {
   return useMutation<
     THealthyLivingOutput,
     Error,
-    { id: string; data: Partial<THealthyLivingInput> }
+    { id: string; data: any }
   >({
     mutationFn: async ({ id, data: input }) => {
-      // 1. Update main record
-      const { data: healthyLiving, error: mainError } = await supabase
-        .from("healthy_living")
-        .update({
-          name: input.name,
-          about: input.about,
-          category: input.category,
-          image_url: input.image_url,
-          contact_your_doctor: input.contact_your_doctor,
-          more_information: input.more_information,
-          attribution: input.attribution,
-        })
-        .eq("id", id)
-        .select()
-        .single();
+      const { data: healthyLiving, error } = await supabase.rpc("update_healthy_living_info", {
+        p_id: id,
+        p_name: input.name,
+        p_slug: input.slug,
+        p_description: input.description || null,
+        p_content_sections: JSON.stringify(input.content_sections || []),
+        p_parent_id: input.parent_id || null,
+        p_image_url: input.image_url || null,
+        p_attribution: JSON.stringify(input.attribution || {}),
+      }).single();
 
-      if (mainError) throw new Error(mainError.message);
+      if (error) throw new Error(error.message);
 
-      // 2. Update types if provided
-      if (input.types) {
-        // Delete existing types
-        const { error: deleteError } = await supabase
-          .from("healthy_living_types")
-          .delete()
-          .eq("healthy_living_id", id);
-
-        if (deleteError) throw new Error(deleteError.message);
-
-        // Insert new types
-        if (input.types.length > 0) {
-          const typesData = input.types.map((type) => ({
-            healthy_living_id: id,
-            type_name: type.type_name,
-            about_type: type.about_type,
-          }));
-
-          const { error: insertError } = await supabase
-            .from("healthy_living_types")
-            .insert(typesData);
-
-          if (insertError) throw new Error(insertError.message);
-        }
-      }
-
-      return healthyLiving as THealthyLivingOutput;
+      return healthyLiving as unknown as THealthyLivingOutput;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(data.id),
       });
-      // queryClient.setQueryData(HEALTHY_LIVING_QUERY_KEYS.detail(data.id), data);
-      toast.success("Healthy living item updated successfully!");
+      queryClient.invalidateQueries({
+        queryKey: HEALTHY_LIVING_QUERY_KEYS.all,
+      });
+      toast.success("Updated successfully!");
     },
     onError: (error) => {
       toast.error(`Failed to update: ${error.message}`);
@@ -256,12 +222,7 @@ export const useDeleteHealthyLiving = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      // Supabase will handle cascade delete of related types if configured
-      const { error } = await supabase
-        .from("healthy_living")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await supabase.rpc("delete_healthy_living_info", { p_id: id });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {

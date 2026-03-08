@@ -2,27 +2,49 @@ import z from "zod";
 
 const richTextSchema = z.any();
 
-export const healthyLivingSchema = z.object({
-  name: z.string().min(3, "Please enter a name"),
-  about: richTextSchema,
-  types: z.array(
-    z.object({
-      type_name: z.string(),
-      about_type: richTextSchema,
-    }),
-  ),
-  category: richTextSchema,
-  contact_your_doctor: richTextSchema,
-  more_information: richTextSchema,
-  attribution: richTextSchema,
-  image_url: z.string(),
-});
+export const healthyLivingSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    id: z.string().optional(),
+    name: z.string().min(3, "Please enter a name"),
+    slug: z.string().optional(),
+    description: z.string().optional().nullable(),
+    content_sections: z
+      .array(
+        z.object({
+          sub_name: z.string().min(1, "Section name is required"),
+          sub_content: richTextSchema,
+        })
+      )
+      .optional()
+      .default([]),
+    parent_id: z.string().uuid().optional().nullable(),
+    image_url: z.string().optional().nullable(),
+    attribution: richTextSchema.optional().nullable(),
+  })
+);
 
 export type THealthyLivingInput = z.infer<typeof healthyLivingSchema>;
 
-const healthyLivingSchemaOutput = healthyLivingSchema.extend({
+export const healthyLivingSchemaOutput: z.ZodType<any> = z.object({
   id: z.string(),
-  created_at: z.date(),
+  created_at: z.string().or(z.date()),
   slug: z.string(),
+  name: z.string(),
+  description: z.string().optional().nullable(),
+  content_sections: z
+    .array(
+      z.object({
+        sub_name: z.string(),
+        sub_content: z.any(),
+      })
+    )
+    .optional()
+    .default([]),
+  parent_id: z.string().uuid().optional().nullable(),
+  image_url: z.string().optional().nullable(),
+  attribution: richTextSchema.optional().nullable(),
+  children: z.array(z.lazy(() => healthyLivingSchemaOutput)).optional(),
+  parent_path: z.string().nullable().optional(), // computed by the healthy_living_info VIEW
 });
+
 export type THealthyLivingOutput = z.infer<typeof healthyLivingSchemaOutput>;

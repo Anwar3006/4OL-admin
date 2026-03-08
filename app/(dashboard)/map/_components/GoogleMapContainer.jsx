@@ -35,6 +35,8 @@ const GoogleMapContainer = ({ filters }) => {
     filters: filters,
   });
 
+  console.log("GeoJSON: ", geojson);
+
   const onLoad = useCallback(function callback(currentMap) {
     setMap(currentMap);
   }, []);

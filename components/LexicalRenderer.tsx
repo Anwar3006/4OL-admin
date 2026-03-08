@@ -21,8 +21,19 @@ export function LexicalRenderer({
 
     if (initialState) {
       try {
-        const stateString = JSON.stringify(initialState);
-        setEditorState(stateString);
+        // Validate the state has a root with at least one child before passing
+        // to Lexical — an empty root causes "editor state is empty" crash.
+        const hasContent =
+          typeof initialState === "object" &&
+          initialState !== null &&
+          Array.isArray((initialState as any)?.root?.children) &&
+          (initialState as any).root.children.length > 0;
+
+        if (hasContent) {
+          setEditorState(JSON.stringify(initialState));
+        } else {
+          setEditorState(null);
+        }
       } catch (error) {
         console.error("Error serializing editor state:", error);
         setEditorState(null);
