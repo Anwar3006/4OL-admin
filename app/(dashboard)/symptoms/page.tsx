@@ -52,7 +52,7 @@ const SymptomsPage = () => {
   // which would otherwise cause the memoized `DataTable` to re-render unnecessarily.
   const onRowClick = useCallback(
     (condition: any) => viewSymptom.open(condition.id),
-    [viewSymptom],
+    [viewSymptom.open],
   );
 
   const paginationConfig = useMemo(

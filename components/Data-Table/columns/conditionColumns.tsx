@@ -35,7 +35,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
       const isSystemic = row.original.is_systemic;
       return (
         <div className="flex items-center gap-3 min-w-50">
-          <div
+          {/* <div
             className={`p-2 rounded-lg ${
               isSystemic
                 ? "bg-indigo-50 text-indigo-600"
@@ -47,7 +47,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
             ) : (
               <Activity className="h-4 w-4" />
             )}
-          </div>
+          </div> */}
           <div className="flex flex-col">
             <span className="font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               {row.original.name}

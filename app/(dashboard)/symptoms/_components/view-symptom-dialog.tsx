@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -284,7 +285,7 @@ function ContentSection({ icon: Icon, title, content, color }: any) {
     </div>
   );
 }
-export default ViewSymptomDialog;
+export default memo(ViewSymptomDialog);
 
 function MetaItem({
   icon: Icon,

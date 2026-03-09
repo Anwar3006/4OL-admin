@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -132,7 +132,7 @@ const AddSymptomDialog = () => {
           });
       }
     }
-  }, [isOpen, isEditMode, data, form]);
+  }, [isOpen, isEditMode, data, form, bodyParts, categories]);
 
   const name = form.watch("name") ?? "";
   const filename = `${name.replaceAll(/\s+/g, "")}-${nanoid(8)}`;
@@ -598,4 +598,4 @@ const AddSymptomDialog = () => {
   );
 };
 
-export default AddSymptomDialog;
+export default memo(AddSymptomDialog);

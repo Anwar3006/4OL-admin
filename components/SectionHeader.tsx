@@ -3,10 +3,11 @@ import React, {
   ForwardRefExoticComponent,
   JSX,
   RefAttributes,
+  useTransition,
   useState,
 } from "react";
 import { Button } from "./ui/button";
-import { LucideProps } from "lucide-react";
+import { Loader2, LucideProps } from "lucide-react";
 
 type SectionHeaderProps = {
   title: string;
@@ -27,6 +28,16 @@ const SectionHeader = ({
   hasButton = true,
   onButtonClick,
 }: SectionHeaderProps) => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleButtonClick = () => {
+    if (onButtonClick) {
+      startTransition(() => {
+        onButtonClick();
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
       <div>
@@ -40,9 +51,10 @@ const SectionHeader = ({
         <Button
           type="button"
           className="text-xs sm:text-sm xl:text-base flex items-center gap-2 w-full sm:w-auto"
-          onClick={onButtonClick}
+          onClick={handleButtonClick}
+          disabled={isPending}
         >
-          <Icon size={16} />
+          {isPending ? <Loader2 className="animate-spin" size={16} /> : <Icon size={16} />}
           {buttonLabel}
         </Button>
       )}

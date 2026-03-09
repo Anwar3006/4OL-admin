@@ -255,8 +255,8 @@ export const useViewUserDialog = () => {
 export const useAddConditionDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-condition"));
-  const data = useDialogStore((state) => state.getDialogData("add-condition"));
+  const isOpen = useDialogStore((state) => !!state.dialogs["add-condition"]?.isOpen);
+  const data = useDialogStore((state) => state.dialogs["add-condition"]?.data);
 
   return {
     isOpen,
@@ -273,11 +273,9 @@ export const useAddConditionDialog = () => {
 export const useViewConditionDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) =>
-    state.isDialogOpen("view-condition"),
-  );
+  const isOpen = useDialogStore((state) => !!state.dialogs["view-condition"]?.isOpen);
   const entityId = useDialogStore((state) =>
-    state.getEntityId("view-condition"),
+    state.dialogs["view-condition"]?.entityId,
   );
 
   return {

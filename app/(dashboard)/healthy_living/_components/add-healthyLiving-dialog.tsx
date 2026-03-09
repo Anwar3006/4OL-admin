@@ -189,9 +189,9 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
           >
             {node._expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </button>
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {/* <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {depthLabel}
-          </span>
+          </span> */}
           {node.name && (
             <span className="text-sm font-medium text-foreground truncate max-w-48">
               — {node.name}
@@ -245,9 +245,6 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
                   Rich-text sections shown on the detail page of this item
                 </p>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={addSection}>
-                <Plus size={12} className="mr-1" /> Add Section
-              </Button>
             </div>
 
             {node.content_sections.map((section, i) => (
@@ -280,9 +277,15 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
 
             {node.content_sections.length === 0 && (
               <p className="text-center py-3 text-xs text-muted-foreground border-dashed border rounded">
-                No sections yet. Add one if this item has detail content.
+                No content yet. Add one if this item has detail content.
               </p>
             )}
+
+            <div className="flex items-center justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={addSection}>
+                <Plus size={12} className="mr-1" /> Add Content
+              </Button>
+            </div>
           </div>
 
           {/* Image */}
@@ -330,11 +333,12 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
             type="button"
             variant="ghost"
             size="sm"
-            className="w-full border border-dashed text-muted-foreground hover:text-foreground hover:border-solid"
+            className="w-1/5 border border-dashed text-muted-foreground hover:text-foreground hover:border-solid"
             onClick={() => onAddChild(node._localId)}
           >
             <Plus size={13} className="mr-1" />
-            Add child to "{node.name || depthLabel}"
+            {/* Add child to "{node.name || depthLabel}" */}
+            Add Topic
           </Button>
         </div>
       )}
@@ -465,7 +469,7 @@ const AddHealthyLivingDialog = () => {
               ? `Edit — ${data?.name || "Healthy Living"}`
               : "Add Healthy Living"}
           </DialogTitle>
-          {!isEditMode && (
+          {/* {!isEditMode && (
             <p className="text-xs text-muted-foreground mt-1">
               Build the full topic tree here. Add children and grandchildren before saving —
               everything is inserted in one go.{" "}
@@ -473,7 +477,7 @@ const AddHealthyLivingDialog = () => {
                 {totalNodes} node{totalNodes !== 1 ? "s" : ""} ready to save.
               </span>
             </p>
-          )}
+          )} */}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">

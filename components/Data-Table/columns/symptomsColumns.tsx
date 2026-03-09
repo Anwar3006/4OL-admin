@@ -34,7 +34,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
       const isSystemic = row.original.is_systemic;
       return (
         <div className="flex items-center gap-3 min-w-50">
-          <div
+          {/* <div
             className={`p-2 rounded-lg ${
               isSystemic
                 ? "bg-indigo-50 text-indigo-600"
@@ -46,7 +46,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
             ) : (
               <Activity className="h-4 w-4" />
             )}
-          </div>
+          </div> */}
           <div className="flex flex-col">
             <span className="font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               {row.original.name}
@@ -64,7 +64,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          <Badge variant="outline" className="text-[10px] py-1 px-2.5 h-auto rounded-md font-medium">
+          <Badge variant="outline" className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium">
             {row.original.bodyParts.join(", ")}
           </Badge>
         ) : (
@@ -81,7 +81,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {(row.original as any).categories?.length > 0 ? (
-          <Badge variant="secondary" className="text-[10px] py-1 px-2.5 h-auto rounded-md font-medium">
+          <Badge variant="secondary" className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium">
             {(row.original as any).categories.join(", ")}
           </Badge>
         ) : (

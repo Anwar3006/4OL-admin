@@ -1,4 +1,5 @@
 "use client";
+import React, { memo, useMemo } from "react";
 
 import { Control } from "react-hook-form";
 import { SerializedEditorState } from "lexical";
@@ -20,13 +21,19 @@ interface RichTextEditorProps {
   onChange?: (value: any) => void;
 }
 
-export function RichTextEditor({
+function RichTextEditorComponent({
   control,
   name,
   label,
   defaultValue,
   onChange,
 }: RichTextEditorProps) {
+  const editorSerializedState = useMemo(() => {
+    const safeValue = control && name ? undefined : defaultValue || EMPTY_LEXICAL_STATE;
+    if (safeValue === undefined) return undefined;
+    return typeof safeValue === "string" ? JSON.parse(safeValue) : safeValue;
+  }, [defaultValue]);
+
   if (control && name) {
     return (
       <FormField
@@ -34,17 +41,17 @@ export function RichTextEditor({
         name={name}
         render={({ field }) => {
           const safeValue = field.value || EMPTY_LEXICAL_STATE;
+          const editorState = useMemo(() => {
+            return typeof safeValue === "string" ? JSON.parse(safeValue) : safeValue;
+          }, [safeValue]);
+
           return (
             <FormItem className="flex flex-col gap-2">
               {label && <FormLabel>{label}</FormLabel>}
               <FormControl>
                 <div className="relative overflow-hidden rounded-md border border-input bg-background shadow-sm focus-within:ring-1 focus-within:ring-ring">
                   <Editor
-                    editorSerializedState={
-                      typeof safeValue === "string"
-                        ? JSON.parse(safeValue)
-                        : safeValue
-                    }
+                    editorSerializedState={editorState}
                     onSerializedChange={(value) => field.onChange(value)}
                   />
                 </div>
@@ -57,19 +64,17 @@ export function RichTextEditor({
     );
   }
 
-  const safeValue = defaultValue || EMPTY_LEXICAL_STATE;
-
   return (
     <FormItem className="flex flex-col gap-2">
       {label && <FormLabel>{label}</FormLabel>}
       <div className="relative overflow-hidden rounded-md border border-input bg-background shadow-sm focus-within:ring-1 focus-within:ring-ring">
         <Editor
-          editorSerializedState={
-            typeof safeValue === "string" ? JSON.parse(safeValue) : safeValue
-          }
+          editorSerializedState={editorSerializedState}
           onSerializedChange={onChange}
         />
       </div>
     </FormItem>
   );
 }
+
+export const RichTextEditor = memo(RichTextEditorComponent);
