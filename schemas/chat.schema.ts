@@ -11,14 +11,16 @@ export const chatSchema = z.object({
   is_deleted: z.boolean().default(false),
   created_at: z.string(),
   updated_at: z.string(),
-  user_profiles: z.object({
-    first_name: z.string().nullable(),
-    last_name: z.string().nullable(),
-    email: z.string().nullable(),
-    avatar_url: z.string().nullable(),
-    phone_number: z.string().nullable(),
-    region: z.string().nullable(),
-  }).nullable().optional(),
+  user_profiles: z
+    .object({
+      first_name: z.string().nullable(),
+      last_name: z.string().nullable(),
+      // avatar_url: z.string().nullable(),
+      phone_number: z.string().nullable(),
+      // region: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
 });
 
 export type TChatOutput = z.infer<typeof chatSchema>;

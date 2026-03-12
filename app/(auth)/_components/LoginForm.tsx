@@ -5,7 +5,6 @@ import {
   Field,
   FieldDescription,
   FieldGroup,
-  FieldSeparator,
 } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomInput from "@/components/CustomInput";
@@ -106,13 +105,11 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
               {loading ? "Logging in..." : "Login to Account"}
             </Button>
           </Field>
-          <FieldSeparator>Or continue with</FieldSeparator>
+
+          {/* Registration is invite-only — no public sign-up link shown */}
           <Field>
-            <FieldDescription className="px-6 text-center">
-              Don&apos;t have an account?{" "}
-              <a href="/register" className="text-emerald-600">
-                Sign Up
-              </a>
+            <FieldDescription className="px-6 text-center text-muted-foreground text-sm">
+              Access is by invitation only. Check your email for an invite link.
             </FieldDescription>
           </Field>
         </FieldGroup>

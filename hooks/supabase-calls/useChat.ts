@@ -47,17 +47,17 @@ export const useChats = ({ page, limit }: UseChatsParams) => {
         error,
       } = await supabase
         .from("chat_support")
-        .select(`
+        .select(
+          `
           *,
           user_profiles:requested_by (
             first_name,
             last_name,
-            email,
-            avatar_url,
-            phone_number,
-            region
+            phone_number
           )
-        `, { count: "exact" })
+        `,
+          { count: "exact" },
+        )
         .eq("is_deleted", false)
         .order("created_at", { ascending: false })
         .range(from, to);
@@ -94,9 +94,10 @@ export const useChatStats = () => {
 
       return {
         total: data.length,
-        open: data.filter(d => d.status === "Open" && !d.is_deleted).length,
-        closed: data.filter(d => d.status === "Closed" && !d.is_deleted).length,
-        deleted: data.filter(d => d.is_deleted).length,
+        open: data.filter((d) => d.status === "Open" && !d.is_deleted).length,
+        closed: data.filter((d) => d.status === "Closed" && !d.is_deleted)
+          .length,
+        deleted: data.filter((d) => d.is_deleted).length,
       };
     },
   });
@@ -110,11 +111,7 @@ export const useChatStats = () => {
 export const useUpdateChat = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    TChatOutput,
-    Error,
-    { id: number; data: TChatInput }
-  >({
+  return useMutation<TChatOutput, Error, { id: number; data: TChatInput }>({
     mutationFn: async ({ id, data: chatData }) => {
       const { data, error } = await supabase
         .from("chat_support")

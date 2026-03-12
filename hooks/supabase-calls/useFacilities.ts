@@ -58,8 +58,8 @@ export const useFacilityProfiles = (params: Pagination) => {
         .from("facility_profile")
         .select("*", { count: "exact" });
 
-      // 2. We ALWAYS need stats for the analytics cards
-      // Note: We don't filter stats by search/status because cards show GLOBAL totals
+      // We ALWAYS need stats for the analytics cards.
+      // Note: We don't filter stats by search/status because cards show GLOBAL totals.
       const statsQuery = supabase
         .from("facility_profile")
         .select("status, facility_type", { count: "exact" });
@@ -73,12 +73,20 @@ export const useFacilityProfiles = (params: Pagination) => {
         query.eq("status", status);
       }
       if (type) {
-        query.eq("facility_type", type);
-        statsQuery.eq("facility_type", type);
+        // "wellness_center" is a consolidated display label for all wellness/* variants
+        // in the DB (e.g. wellness_spa, wellness_gym, wellness_center, etc.).
+        // Use a prefix filter so we match every row that starts with "wellness".
+        if (type === "wellness_center") {
+          query.ilike("facility_type", "wellness%");
+          statsQuery.ilike("facility_type", "wellness%");
+        } else {
+          query.eq("facility_type", type);
+          statsQuery.eq("facility_type", type);
+        }
       }
 
       if (includeStatsOnly) {
-        const { data: statsData, count: totalCount, error } = await statsQuery; // Must add count option here
+        const { data: statsData, count: totalCount, error } = await statsQuery;
 
         if (error) throw error;
 
@@ -384,12 +392,10 @@ export const useApproveFacility = () => {
       let finalFeaturedUrl = featured_image_url;
       if (featured_image_url?.includes("temporary")) {
         finalFeaturedUrl = `facilities/approved/${id}/${featured_image_url.split("/").at(-1)}`;
-        // Ensure the file is actually moved (it might already be moved via media_urls loop, 
-        // but calling it again ensures safety if it's NOT in media_urls for some reason)
         try {
           await moveFile(featured_image_url, finalFeaturedUrl);
         } catch (e) {
-          console.log("Featured image move note:", e); // Often fails if already moved, which is fine
+          console.log("Featured image move note:", e);
         }
       }
 
@@ -450,7 +456,6 @@ export const useRejectFacility = () => {
       let finalFeaturedUrl = featured_image_url;
       if (featured_image_url?.includes("temporary")) {
         finalFeaturedUrl = `facilities/rejected/${id}/${featured_image_url.split("/").at(-1)}`;
-        // Ensure file move
         try {
           await moveFile(featured_image_url, finalFeaturedUrl);
         } catch (e) {
@@ -471,7 +476,7 @@ export const useRejectFacility = () => {
           p_facility_id: id,
           p_new_status: "rejected",
           p_media_urls: newFilePaths,
-          featured_image_url: finalFeaturedUrl, // Passed featured_image_url to rejection RPC as well
+          featured_image_url: finalFeaturedUrl,
         },
       });
 
@@ -507,7 +512,7 @@ export const useDeleteFacility = () => {
   });
 };
 
-///// ========== Helper Function
+///// ========== Helper Functions
 const aggregateStats = (rawStats: any[] | null) => {
   if (!rawStats) return { active: 0, inactive: 0, pending: 0, rejected: 0 };
   return {

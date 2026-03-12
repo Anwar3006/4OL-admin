@@ -5,12 +5,12 @@ const LoginPage = () => {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10 h-[98vh] overflow-y-scroll">
         <div className="flex justify-center gap-2 md:justify-start items-end">
-          <a href="/register" className="flex items-center gap-2 ">
+          <a href="/login" className="flex items-center gap-2">
             <div className="p-2 text-primary-foreground flex size-full items-center justify-center rounded-xl shadow-sm border border-muted">
               <img
                 src="/assets/images/all-img/logo.png"
                 alt="Logo"
-                className="w-10 rounded-md "
+                className="w-10 rounded-md"
               />
             </div>
           </a>
