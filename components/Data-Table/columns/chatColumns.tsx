@@ -17,14 +17,6 @@ export const chatColumns: ColumnDef<TChatOutput>[] = [
     header: "Requested By",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <img
-          src={
-            row.original.user_profiles?.avatar_url ||
-            "/assets/images/chat/chat-4.png"
-          }
-          alt="Avatar"
-          className="w-8 h-8 rounded-full object-cover"
-        />
         <div className="flex flex-col">
           <span className="font-medium text-sm leading-none">
             {row.original.user_profiles?.first_name}{" "}
