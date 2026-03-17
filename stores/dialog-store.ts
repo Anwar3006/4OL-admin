@@ -11,6 +11,10 @@ export type DialogTypes =
   | "view-facility"
   | "add-marketing"
   | "view-marketing"
+  | "add-subscription"
+  | "view-subscription"
+  | "add-discount"
+  | "view-discount"
   | "add-admin"
   | "view-admin"
   | "add-condition"
@@ -22,7 +26,9 @@ export type DialogTypes =
   | "gallery-modal"
   | "view-medication-reminder"
   | "add-chat"
-  | "view-chat";
+  | "view-chat"
+  | "assign-admin"
+  | "view-conversation";
 
 /**
  * Generic dialog configuration
@@ -255,7 +261,9 @@ export const useViewUserDialog = () => {
 export const useAddConditionDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => !!state.dialogs["add-condition"]?.isOpen);
+  const isOpen = useDialogStore(
+    (state) => !!state.dialogs["add-condition"]?.isOpen,
+  );
   const data = useDialogStore((state) => state.dialogs["add-condition"]?.data);
 
   return {
@@ -273,9 +281,11 @@ export const useAddConditionDialog = () => {
 export const useViewConditionDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => !!state.dialogs["view-condition"]?.isOpen);
-  const entityId = useDialogStore((state) =>
-    state.dialogs["view-condition"]?.entityId,
+  const isOpen = useDialogStore(
+    (state) => !!state.dialogs["view-condition"]?.isOpen,
+  );
+  const entityId = useDialogStore(
+    (state) => state.dialogs["view-condition"]?.entityId,
   );
 
   return {
@@ -412,6 +422,119 @@ export const useViewChatDialog = () => {
     entityId,
     open: (entityId: string) => openDialog("view-chat", { entityId }),
     close: () => closeDialog("view-chat"),
+  };
+};
+
+/**
+ * Hook for Add/Edit Subscription Dialog
+ */
+export const useAddSubscriptionDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-subscription"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-subscription"),
+  );
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-subscription", { data }),
+    close: () => closeDialog("add-subscription"),
+  };
+};
+
+/**
+ * Hook for View Subscription Dialog
+ */
+export const useViewSubscriptionDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-subscription"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-subscription"),
+  );
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-subscription", { entityId }),
+    close: () => closeDialog("view-subscription"),
+  };
+};
+
+/**
+ * Hook for Add/Edit Discount Dialog
+ */
+export const useAddDiscountDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-discount"));
+  const data = useDialogStore((state) => state.getDialogData("add-discount"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-discount", { data }),
+    close: () => closeDialog("add-discount"),
+  };
+};
+
+/**
+ * Hook for View Discount Dialog
+ */
+export const useViewDiscountDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-discount"));
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-discount"),
+  );
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-discount", { entityId }),
+    close: () => closeDialog("view-discount"),
+  };
+};
+
+
+export const useAssignAdminDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("assign-admin"));
+  const entityId = useDialogStore((state) => state.getEntityId("assign-admin"));
+  const data = useDialogStore((state) => state.getDialogData("assign-admin"));
+
+  return {
+    isOpen,
+    entityId,
+    data,
+    open: (entityId: string, data?: any) => openDialog("assign-admin", { entityId, data }),
+    close: () => closeDialog("assign-admin"),
+  };
+};
+
+export const useViewConversationDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-conversation"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-conversation"));
+  const data = useDialogStore((state) => state.getDialogData("view-conversation"));
+
+  return {
+    isOpen,
+    entityId,
+    data,
+    open: (entityId: string, data?: any) => openDialog("view-conversation", { entityId, data }),
+    close: () => closeDialog("view-conversation"),
   };
 };
 

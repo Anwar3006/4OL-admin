@@ -16,7 +16,7 @@ export const menuItems = [
       },
     ],
   },
-    {
+  {
     title: "Transactions",
     isHide: false,
     icon: "fluent-mdl2:reading-mode",
@@ -39,6 +39,16 @@ export const menuItems = [
     isHide: false,
     icon: "heroicons-outline:user",
     link: "facilities",
+    child: [
+      {
+        childtitle: "Top Rated",
+        childlink: "facilities/top-rated",
+      },
+      {
+        childtitle: "Featured",
+        childlink: "facilities/featured",
+      },
+    ],
   },
   {
     title: "Diseases & Conditions",
@@ -118,6 +128,16 @@ export const menuItems = [
     isHide: false,
     icon: "hugeicons:marketing",
     link: "marketing",
+    child: [
+      {
+        childtitle: "Subscriptions",
+        childlink: "marketing/subscriptions",
+      },
+      {
+        childtitle: "Discounts",
+        childlink: "marketing/discounts",
+      },
+    ],
   },
   {
     title: "Chats",

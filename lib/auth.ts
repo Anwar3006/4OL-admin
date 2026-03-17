@@ -37,12 +37,12 @@ export const auth = betterAuth({
     },
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ user, newEmail, url }) => {
-        console.log(
-          `Email change verification for ${user.email} to ${newEmail}`,
-        );
-        console.log(`Verification URL: ${url}`);
-      },
+      // sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+      //   console.log(
+      //     `Email change verification for ${user.email} to ${newEmail}`,
+      //   );
+      //   console.log(`Verification URL: ${url}`);
+      // },
     },
     // Map Better Auth camelCase fields → snake_case DB columns
     fields: {
