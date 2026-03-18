@@ -13,6 +13,8 @@ import {
 import { StatusMap } from "@/constants/users.const";
 import type { TUserProfile } from "@/schemas/user-profile.schema";
 
+import { useDialogStore } from "@/stores/dialog-store";
+
 const formatDate = (value: any) => {
   if (!value) return "N/A";
   const date = new Date(value);
@@ -128,6 +130,14 @@ export const adminColumns: ColumnDef<TUserProfile>[] = [
               <DropdownMenuSeparator />
               <DropdownMenuItem>View Details</DropdownMenuItem>
               <DropdownMenuItem>Edit Admin</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  useDialogStore.getState().openDialog("make-group-leader", { entityId: user.user_id, data: user });
+                }}
+              >
+                Make Group Leader
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600">Remove Admin</DropdownMenuItem>
             </DropdownMenuContent>

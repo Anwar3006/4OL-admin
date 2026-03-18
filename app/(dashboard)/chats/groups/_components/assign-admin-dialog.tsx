@@ -40,6 +40,7 @@ const AssignAdminDialog = () => {
     defaultValues: {
       conversation_id: entityId || "",
       user_id: "",
+      role: "admin",
     },
   });
 
@@ -52,7 +53,7 @@ const AssignAdminDialog = () => {
 
   const onSubmit = (values: TAssignAdminInput) => {
     // Validate selected user's role before attempting to assign.
-    const allowedRoles = ["super_admin", "admin"];
+    const allowedRoles = ["super_admin", "admin", "group_leader"];
     const selected = adminData?.users?.find(
       (u: any) => u.user_id === values.user_id,
     );
@@ -125,6 +126,7 @@ const AssignAdminDialog = () => {
                   >
                     Cancel
                   </Button>
+
                   <Button
                     type="submit"
                     disabled={

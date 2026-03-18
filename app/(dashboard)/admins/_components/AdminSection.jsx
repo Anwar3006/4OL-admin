@@ -16,11 +16,12 @@ import { userCardConfig } from "@/components/Data-Table/mobile-table-configs/use
 import { createPaginationHandlers } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
-import { useAddAdminDialog, useViewUserDialog } from "@/stores/dialog-store";
+import { useAddAdminDialog, useViewUserDialog, useMakeGroupLeaderDialog } from "@/stores/dialog-store";
 
 export default function AdminSection() {
   const addAdminDialog = useAddAdminDialog();
   const viewDialog = useViewUserDialog();
+  const makeLeaderDialog = useMakeGroupLeaderDialog();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);

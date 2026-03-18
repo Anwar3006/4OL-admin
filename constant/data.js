@@ -105,7 +105,7 @@ export const menuItems = [
         childtitle: "Trainers",
         childlink: "healthy_living/trainers",
       },
-    ]
+    ],
   },
   {
     title: "Period Tracker",
@@ -153,7 +153,7 @@ export const menuItems = [
     icon: "lets-icons:chat",
     child: [
       {
-        childtitle: "Main Chat",
+        childtitle: "Groups",
         childlink: "chats/groups",
       },
       {

@@ -28,6 +28,7 @@ export type DialogTypes =
   | "add-chat"
   | "view-chat"
   | "assign-admin"
+  | "make-group-leader"
   | "view-conversation"
   | "add-trainer"
   | "view-trainer"
@@ -509,6 +510,22 @@ export const useViewDiscountDialog = () => {
   };
 };
 
+
+export const useMakeGroupLeaderDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("make-group-leader"));
+  const entityId = useDialogStore((state) => state.getEntityId("make-group-leader"));
+  const data = useDialogStore((state) => state.getDialogData("make-group-leader"));
+
+  return {
+    isOpen,
+    entityId,
+    data,
+    open: (userId: string, data?: any) => openDialog("make-group-leader", { entityId: userId, data }),
+    close: () => closeDialog("make-group-leader"),
+  };
+};
 
 export const useAssignAdminDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);

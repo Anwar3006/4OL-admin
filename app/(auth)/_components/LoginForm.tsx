@@ -41,6 +41,17 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         return;
       }
 
+      // Role Check: Only Allow admins or group leaders to the admin panel
+      const user = authResult.data?.user;
+      const role = user?.role;
+      const isAllowed = role === "super_admin" || role === "admin" || role === "group_leader";
+
+      if (!isAllowed) {
+        await authClient.signOut();
+        toast.error("Unauthorized! You don't have access to the admin panel.");
+        return;
+      }
+
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
         window.localStorage.setItem("user_id", authResult.data?.user?.id || "");

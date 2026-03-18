@@ -14,18 +14,22 @@ export const conversationSchema = z.object({
   last_message_preview: z.string().nullable(),
   last_message_sender: z.string().uuid().nullable(),
   member_count: z.number().optional(),
-  user_profiles: z.object({
-    first_name: z.string().nullable(),
-    last_name: z.string().nullable(),
-    phone_number: z.string().nullable(),
-  }).nullable().optional(),
+  user_profiles: z
+    .object({
+      first_name: z.string().nullable(),
+      last_name: z.string().nullable(),
+      phone_number: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
 });
 
 export type TConversationOutput = z.infer<typeof conversationSchema>;
 
 export const assignAdminSchema = z.object({
-  conversation_id: z.string().uuid(),
+  conversation_id: z.string(),
   user_id: z.string(),
+  role: z.enum(["super_admin", "admin", "group_leader"]),
 });
 
 export type TAssignAdminInput = z.infer<typeof assignAdminSchema>;

@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import Header from "@/components/partials/header";
 import Sidebar from "@/components/partials/sidebar";
-import Settings from "@/components/partials/settings";
+
 import useWidth from "@/hooks/useWidth";
 import useSidebar from "@/hooks/useSidebar";
 import useContentWidth from "@/hooks/useContentWidth";
@@ -14,7 +14,7 @@ import useMenuHidden from "@/hooks/useMenuHidden";
 import Footer from "@/components/partials/footer";
 import MobileMenu from "@/components/partials/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
-import useMonoChrome from "@/hooks/useMonoChrome";
+
 import { authClient } from "@/lib/auth-client";
 import useRtl from "@/hooks/useRtl";
 import useDarkMode from "@/hooks/useDarkMode";
@@ -23,6 +23,8 @@ import Loading from "@/components/Loading";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import useNavbarType from "@/hooks/useNavbarType";
 import { motion } from "framer-motion";
+import PromoteToLeaderDialog from "@/app/(dashboard)/users/_components/PromoteToLeaderDialog";
+import AssignAdminDialog from "@/app/(dashboard)/chats/groups/_components/assign-admin-dialog";
 
 export default function DashboardWrapper({ children }) {
   const { width, breakpoints } = useWidth();
@@ -90,7 +92,7 @@ export default function DashboardWrapper({ children }) {
           onClick={() => setMobileMenu(false)}
         ></div>
       )}
-      <Settings />
+
       <div
         className={`content-wrapper transition-all duration-150 ${
           width > 1280 ? switchHeaderClass() : ""
@@ -129,6 +131,8 @@ export default function DashboardWrapper({ children }) {
       {width > breakpoints.md && (
         <Footer className={width > breakpoints.xl ? switchHeaderClass() : ""} />
       )}
+      <PromoteToLeaderDialog />
+      <AssignAdminDialog />
     </div>
   );
 }
