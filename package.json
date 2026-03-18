@@ -18,7 +18,7 @@
     "@fullcalendar/react": "^6.1.4",
     "@fullcalendar/timegrid": "^6.1.4",
     "@headlessui/react": "^1.7.13",
-    "@hookform/resolvers": "^2.9.11",
+    "@hookform/resolvers": "^3.10.0",
     "@iconify/react": "^4.1.0",
     "@lexical/code": "^0.39.0",
     "@lexical/file": "^0.39.0",

@@ -222,7 +222,7 @@ const RegisterForm = ({
             </Button>
           </Field>
 
-          <FieldSeparator>Or continue with</FieldSeparator>
+          {/* <FieldSeparator>Or continue with</FieldSeparator>
 
           <Field>
             <FieldDescription className="px-6 text-center">
@@ -231,7 +231,7 @@ const RegisterForm = ({
                 Sign in
               </a>
             </FieldDescription>
-          </Field>
+          </Field> */}
         </FieldGroup>
       </form>
     </Form>

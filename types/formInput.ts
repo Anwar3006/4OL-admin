@@ -354,6 +354,24 @@ export const FACILITY_REQUIREMENTS = {
       "Nurse Practitioner",
     ],
   },
+  personal_trainer: {
+    amenities: [
+      "Home Visits",
+      "Online Coaching",
+      "Personal Gym Access",
+      "Nutrition Consultation Room",
+      "Credit/Debit card accepted",
+    ],
+    services: [
+      "Body Building",
+      "Nutrition Planning",
+      "Strength Growth",
+      "Weight Loss",
+      "Yoga & Flexibility",
+      "Cardio Training",
+      "Sports Specific Training",
+    ],
+  },
   wellness_center: {
     amenities: [
       "Fitness & Cardio machines",
@@ -411,6 +429,7 @@ export const FACILITY_TYPE_ENUM = [
   "ibp",
   "health_school",
   "wellness_center",
+  "personal_trainer",
 ] as const;
 
 export const GHANA_REGIONS_ENUM = [

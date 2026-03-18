@@ -74,11 +74,11 @@ export default function AcceptInvitePage() {
         </div>
       </div>
 
-      <div className="bg-green-200 relative hidden lg:block h-full">
+      <div className="bg-[#57CE83] relative hidden lg:block h-full">
         <img
-          src="/placeholder.svg"
+          src="/assets/images/all-img/4 Our Life.png"
           alt="placeholder"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-contain dark:brightness-[0.2] dark:grayscale"
         />
       </div>
     </div>

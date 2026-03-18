@@ -28,7 +28,11 @@ export type DialogTypes =
   | "add-chat"
   | "view-chat"
   | "assign-admin"
-  | "view-conversation";
+  | "view-conversation"
+  | "add-trainer"
+  | "view-trainer"
+  | "add-challenge"
+  | "view-challenge";
 
 /**
  * Generic dialog configuration
@@ -565,4 +569,62 @@ export const useOpenDialogCount = () => {
   return useDialogStore(
     (state) => Object.values(state.dialogs).filter((d) => d.isOpen).length,
   );
+};
+
+export const useAddTrainerDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-trainer"));
+  const data = useDialogStore((state) => state.getDialogData("add-trainer"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-trainer", { data }),
+    close: () => closeDialog("add-trainer"),
+  };
+};
+
+export const useViewTrainerDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-trainer"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-trainer"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-trainer", { entityId }),
+    close: () => closeDialog("view-trainer"),
+  };
+};
+
+export const useAddChallengeDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-challenge"));
+  const data = useDialogStore((state) => state.getDialogData("add-challenge"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-challenge", { data }),
+    close: () => closeDialog("add-challenge"),
+  };
+};
+
+export const useViewChallengeDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-challenge"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-challenge"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-challenge", { entityId }),
+    close: () => closeDialog("view-challenge"),
+  };
 };

@@ -41,6 +41,10 @@ export const menuItems = [
     link: "facilities",
     child: [
       {
+        childtitle: "All Facilities",
+        childlink: "facilities",
+      },
+      {
         childtitle: "Top Rated",
         childlink: "facilities/top-rated",
       },
@@ -86,6 +90,10 @@ export const menuItems = [
         childlink: "healthy_living/plans",
       },
       {
+        childtitle: "Challenges",
+        childlink: "healthy_living/challenges",
+      },
+      {
         childtitle: "Users",
         childlink: "healthy_living/users",
       },
@@ -97,7 +105,7 @@ export const menuItems = [
         childtitle: "Trainers",
         childlink: "healthy_living/trainers",
       },
-    ],
+    ]
   },
   {
     title: "Period Tracker",
@@ -146,7 +154,7 @@ export const menuItems = [
     child: [
       {
         childtitle: "Main Chat",
-        childlink: "chats/main-chat",
+        childlink: "chats/groups",
       },
       {
         childtitle: "Support",

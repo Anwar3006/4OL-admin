@@ -1,25 +1,25 @@
 "use client";
 import SectionHeader from "@/components/SectionHeader";
-import { Dumbbell, PlusCircleIcon } from "lucide-react";
+import { Trophy } from "lucide-react";
 import React, { useState, useCallback, useMemo } from "react";
 import ConditionsStats from "@/components/dashboard/ConditionStats";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { createPaginationHandlers } from "@/lib/utils";
 import {
-  useAddTrainerDialog,
-  useViewTrainerDialog,
+  useAddChallengeDialog,
+  useViewChallengeDialog,
 } from "@/stores/dialog-store";
-import { trainerColumns } from "@/components/Data-Table/columns/trainerColumns";
-import { useTrainers } from "@/hooks/supabase-calls/useTrainer";
-import AddTrainerDialog from "../_components/add-trainer-dialog";
-import ViewTrainerDialog from "../_components/view-trainer-dialog";
+import { challengeColumns } from "@/components/Data-Table/columns/challengeColumns";
+import { useChallenges } from "@/hooks/supabase-calls/useChallenge";
+import AddChallengeDialog from "../_components/add-challenge-dialog";
+import ViewChallengeDialog from "../_components/view-challenge-dialog";
 
-const TrainersPage = () => {
-  const addTrainer = useAddTrainerDialog();
-  const viewTrainer = useViewTrainerDialog();
+const ChallengesPage = () => {
+  const addChallenge = useAddChallengeDialog();
+  const viewChallenge = useViewChallengeDialog();
   const [page, setPage] = useState(1);
   const limit = 10;
-  const { data, isLoading } = useTrainers({ page, limit });
+  const { data, isLoading } = useChallenges({ page, limit });
 
   const paginationHandler = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta.totalPages),
@@ -27,8 +27,8 @@ const TrainersPage = () => {
   );
 
   const onRowClick = useCallback(
-    (data: any) => viewTrainer.open(data.id),
-    [viewTrainer],
+    (data: any) => viewChallenge.open(data.id),
+    [viewChallenge],
   );
 
   const pagination = useMemo(
@@ -49,30 +49,30 @@ const TrainersPage = () => {
   return (
     <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <SectionHeader
-        title="Trainers"
-        Icon={Dumbbell}
-        description="Manage healthy living trainers"
+        title="Challenges"
+        Icon={Trophy}
+        description="Manage healthy living challenges"
         hasButton
-        buttonLabel="Add Trainer"
-        onButtonClick={() => addTrainer.open()}
+        buttonLabel="Create Challenge"
+        onButtonClick={() => addChallenge.open()}
       />
       <div className="grid grid-cols-2 gap-4 mb-6">
         <ConditionsStats
-          label="Total Trainers"
+          label="Total Challenges"
           value={data?.meta?.total || 0}
           isLoading={isLoading}
         />
       </div>
       <DataTable
-        columns={trainerColumns}
-        data={data?.trainers || []}
+        columns={challengeColumns}
+        data={data?.challenges || []}
         onRowClick={onRowClick}
         pagination={pagination}
         isLoading={isLoading}
       />
-      <AddTrainerDialog />
-      <ViewTrainerDialog />
+      <AddChallengeDialog />
+      <ViewChallengeDialog />
     </section>
   );
 };
-export default TrainersPage;
+export default ChallengesPage;

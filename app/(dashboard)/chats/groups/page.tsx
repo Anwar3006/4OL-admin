@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import SectionHeader from '@/components/SectionHeader';
-import { MessageCircle } from 'lucide-react';
-import React, { useState, useMemo, useCallback } from 'react';
-import { createPaginationHandlers } from '@/lib/utils';
-import { DataTable } from '@/components/Data-Table/data-table';
-import { useConversations } from '@/hooks/supabase-calls/useConversation';
-import { useViewConversationDialog } from '@/stores/dialog-store';
-import ViewConversationDialog from './_components/view-conversation-dialog';
-import AssignAdminDialog from './_components/assign-admin-dialog';
-import { conversationColumns } from '@/components/Data-Table/columns/conversationColumns';
-import { conversationCardConfig } from '@/components/Data-Table/mobile-table-configs/conversationCardConfig';
+import SectionHeader from "@/components/SectionHeader";
+import { MessageCircle } from "lucide-react";
+import React, { useState, useMemo, useCallback } from "react";
+import { createPaginationHandlers } from "@/lib/utils";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { useConversations } from "@/hooks/supabase-calls/useConversation";
+import { useViewConversationDialog } from "@/stores/dialog-store";
+import ViewConversationDialog from "./_components/view-conversation-dialog";
+import AssignAdminDialog from "./_components/assign-admin-dialog";
+import { conversationColumns } from "@/components/Data-Table/columns/conversationColumns";
+import { conversationCardConfig } from "@/components/Data-Table/mobile-table-configs/conversationCardConfig";
 
 const MainChatPage = () => {
   const viewConversation = useViewConversationDialog();
@@ -24,7 +24,10 @@ const MainChatPage = () => {
     [page, data?.meta.totalPages],
   );
 
-  const onRowClick = useCallback((data: any) => viewConversation.open(data.id, data), [viewConversation]);
+  const onRowClick = useCallback(
+    (data: any) => viewConversation.open(data.id, data),
+    [viewConversation],
+  );
 
   const pagination = useMemo(
     () => ({
@@ -44,7 +47,7 @@ const MainChatPage = () => {
   return (
     <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <SectionHeader
-        title="Main Chat"
+        title="Chat Groups"
         Icon={MessageCircle}
         description="Community conversations and group management"
       />

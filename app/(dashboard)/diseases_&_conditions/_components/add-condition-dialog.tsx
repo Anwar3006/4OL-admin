@@ -210,11 +210,28 @@ const AddConditionDialog = () => {
   };
 
   const handleContinue = async () => {
-    const isValid = await form.trigger(STEP_1_FIELDS);
-    if (!isValid) {
-      toast.error("Please complete all required fields");
-      return;
+    // WORKAROUND: form.trigger crashes due to @hookform/resolvers/zod version mismatch with Zod 4.x
+    // We manually validate Step 1 fields using the schema directly.
+    const values = form.getValues();
+    const result = conditionsSchema.safeParse(values);
+
+    if (!result.success) {
+      const step1Issues = result.error.issues.filter((issue) =>
+        STEP_1_FIELDS.includes(issue.path[0] as any),
+      );
+
+      if (step1Issues.length > 0) {
+        step1Issues.forEach((issue) => {
+          form.setError(issue.path[0] as any, {
+            message: issue.message,
+            type: issue.code,
+          });
+        });
+        toast.error("Please complete all required fields");
+        return;
+      }
     }
+
     setStep((prev) => prev + 1);
   };
 
