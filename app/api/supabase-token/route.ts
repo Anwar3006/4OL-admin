@@ -15,9 +15,16 @@ import { headers } from "next/headers";
  */
 export async function POST(req: NextRequest) {
   // 1. Validate BetterAuth session from incoming request headers
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({
+    headers: req.headers,
+  });
 
   if (!session?.user?.id) {
+    // Log this to see what headers are actually arriving in Vercel logs
+    console.log(
+      "[auth-debug] No session found. Headers:",
+      Object.fromEntries(req.headers),
+    );
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
