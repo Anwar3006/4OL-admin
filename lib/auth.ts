@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins";
+import { admin, bearer } from "better-auth/plugins";
 import { Pool } from "pg";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -100,7 +100,7 @@ export const auth = betterAuth({
     process.env.NEXT_PUBLIC_APP_URL,
   ].filter(Boolean) as string[],
 
-  plugins: [nextCookies(), admin()],
+  plugins: [nextCookies(), admin(), bearer()],
 });
 
 export type Session = typeof auth.$Infer.Session;

@@ -14,17 +14,28 @@ import { headers } from "next/headers";
  *   SUPABASE_JWT_SECRET   – found in Supabase Dashboard → Settings → API → JWT Secret
  */
 export async function POST(req: NextRequest) {
-  // 1. Validate BetterAuth session from incoming request headers
+  // 1. Manually extract the token from the Authorization header
+  // since mobile doesn't use cookies.
+  const authHeader = req.headers.get("authorization");
+  const reqToken = authHeader?.split(" "); // Get the 'XYZ' from 'Bearer XYZ'
+
+  if (!reqToken) {
+    return NextResponse.json({ error: "No token provided" }, { status: 401 });
+  }
+
+  // 2. Validate using the token directly
+  // BetterAuth's getSession is designed for cookies;
+  // With the 'bearer' plugin enabled, auth.api.getSession will now recognize
+  // the Authorization header automatically.
   const session = await auth.api.getSession({
     headers: req.headers,
   });
 
   if (!session?.user?.id) {
-    // Log this to see what headers are actually arriving in Vercel logs
-    console.log(
-      "[auth-debug] No session found. Headers:",
-      Object.fromEntries(req.headers),
-    );
+    console.log("[supabase-token] No valid session found. Headers:", {
+      auth: authHeader ? "Present" : "Missing",
+      session: session ? "Found but invalid" : "Null",
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
