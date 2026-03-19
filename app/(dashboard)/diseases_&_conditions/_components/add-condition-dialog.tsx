@@ -21,6 +21,7 @@ import { useAddConditionDialog } from "@/stores/dialog-store";
 import {
   conditionsSchema,
   TConditionsInput,
+  TConditionsOutput,
 } from "@/schemas/conditions.schema";
 import { TreeMultiSelectForm } from "@/components/TreeMultiSelect";
 import { RichTextEditor } from "@/components/RichTextInput";
@@ -77,7 +78,7 @@ const AddConditionDialog = () => {
       more_information: EMPTY_LEXICAL_STATE,
       attribution: EMPTY_LEXICAL_STATE,
       is_systemic: false,
-      specialist_to_contact: "",
+      specialist: "",
       nhs_link: "",
       image_url: "",
       types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
@@ -111,6 +112,7 @@ const AddConditionDialog = () => {
           causes: condition.causes,
           nhs_link: condition.nhs_link ?? "",
           image_url: condition.image_url ?? "",
+          specialist: condition.specialist ?? "",
         });
       } else {
           form.reset({
@@ -128,7 +130,7 @@ const AddConditionDialog = () => {
             more_information: EMPTY_LEXICAL_STATE,
             attribution: EMPTY_LEXICAL_STATE,
             is_systemic: false,
-            specialist_to_contact: "",
+            specialist: "",
             nhs_link: "",
             image_url: "",
             types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
@@ -179,15 +181,12 @@ const AddConditionDialog = () => {
         const editPayload = {
           ...payload,
           id: condition.id,
-          specialist: data.specialist_to_contact ?? "",
+          specialist: payload.specialist ?? null,
           created_at: condition.created_at,
           updated_at: condition.updated_at,
           categories: data.categories,
           bodyParts: data.bodyParts,
-          // image_url: data?.image_url,
-          // imagesToDelete: data.imagesToDelete,
-          // newlyUploadedFiles: data.newlyUploadedFiles
-        };
+        } as TConditionsOutput;
         await mutateAsyncEdit(editPayload);
       } else {
         await mutateAsync(payload);
@@ -305,12 +304,22 @@ const AddConditionDialog = () => {
 
                   <CustomInput
                     type="text"
-                    name="specialist_to_contact"
+                    name="specialist"
                     control={form.control}
                     label="Specialists To Contact(Comma-Separated)"
                     readOnly={false}
                   />
                 </div>
+
+
+              <div className="grid grid-cols-1 space-y-8">
+
+                <RichTextEditor
+                    label="About Condition"
+                    control={form.control}
+                    name="about"
+                    />
+                    </div>
 
                 {/* Type and About Type */}
                 <div className="space-y-4 p-4 border rounded-lg">
@@ -363,6 +372,7 @@ const AddConditionDialog = () => {
                   ))}
                 </div>
 
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Button
                     type="button"
@@ -392,7 +402,32 @@ const AddConditionDialog = () => {
                   Condition Details (2/5)
                 </h3>
 
-                {/* Type and About Type */}
+                                {/* Symptoms */}
+                <div className="grid grid-cols-1 gap-4">
+                                    {/* Symptoms */}
+                  <RichTextEditor
+                    label="Symptoms"
+                    control={form.control}
+                    name="symptoms"
+                  />             
+
+
+                                   {/* Complications */}
+                  <RichTextEditor
+                    label="Condition Complications"
+                    control={form.control}
+                    name="complications"
+                  /> 
+
+                  {/* Diagnosis */}
+                  <RichTextEditor
+                    label="Condition Diagnosis"
+                    control={form.control}
+                    name="diagnosis"
+                  />
+                </div>
+
+                {/* Causes */}
                 <div className="space-y-4 p-4 border rounded-lg">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">Condition Causes</h3>
@@ -448,22 +483,6 @@ const AddConditionDialog = () => {
                   ))}
                 </div>
 
-                {/* About */}
-                <div className="grid grid-cols-1 gap-4">
-                  <RichTextEditor
-                    label="About Condition"
-                    control={form.control}
-                    name="about"
-                  />
-
-                  {/* Diagnosis */}
-                  <RichTextEditor
-                    label="Condition Diagnosis"
-                    control={form.control}
-                    name="diagnosis"
-                  />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
                   <Button
                     type="button"
@@ -493,20 +512,13 @@ const AddConditionDialog = () => {
                 </h3>
 
                 <div className="grid grid-cols-1 space-y-8">
-                  {/* Complications */}
+ 
+                  {/* Treatment */}
                   <RichTextEditor
-                    label="Condition Complications"
+                    label="Treatment"
                     control={form.control}
-                    name="complications"
+                    name="treatment"
                   />
-
-                  {/* Symptoms */}
-                  <RichTextEditor
-                    label="Symptoms"
-                    control={form.control}
-                    name="symptoms"
-                  />
-
                   {/* Prevention */}
                   <RichTextEditor
                     label="Prevention"
@@ -514,11 +526,11 @@ const AddConditionDialog = () => {
                     name="prevention"
                   />
 
-                  {/* Treatment */}
+                  {/* More Information */}
                   <RichTextEditor
-                    label="Treatment"
+                    label="More Information"
                     control={form.control}
-                    name="treatment"
+                    name="more_information"
                   />
                 </div>
 
@@ -556,13 +568,6 @@ const AddConditionDialog = () => {
                     label="Contact Your Doctor"
                     control={form.control}
                     name="contact_your_doctor"
-                  />
-
-                  {/* More Information */}
-                  <RichTextEditor
-                    label="More Information"
-                    control={form.control}
-                    name="more_information"
                   />
 
                   {/* Attribution */}

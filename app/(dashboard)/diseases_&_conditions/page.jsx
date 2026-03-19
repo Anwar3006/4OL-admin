@@ -43,6 +43,7 @@ const DiseasesAndConditionsPage = () => {
     [viewConditions],
   );
 
+  console.log("Stats: ", stats)
   const pagination = useMemo(
     () => ({
       currentPage: page,
@@ -73,8 +74,8 @@ const DiseasesAndConditionsPage = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-start">
         <ConditionsStats
           label="Total Registered"
-          value={stats?.totalConditions || 0}
-          isLoading={isStatsLoading}
+          value={allConditions?.meta?.total || 0}
+          isLoading={isConditionsLoading}
         />
         <ConditionsStats
           label="Total Categories"

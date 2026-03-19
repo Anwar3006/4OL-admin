@@ -35,21 +35,8 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
       const isSystemic = row.original.is_systemic;
       return (
         <div className="flex items-center gap-3 min-w-50">
-          {/* <div
-            className={`p-2 rounded-lg ${
-              isSystemic
-                ? "bg-indigo-50 text-indigo-600"
-                : "bg-slate-50 text-slate-600"
-            }`}
-          >
-            {isSystemic ? (
-              <Globe className="h-4 w-4" />
-            ) : (
-              <Activity className="h-4 w-4" />
-            )}
-          </div> */}
           <div className="flex flex-col">
-            <span className="font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+            <span className="font-bold text-sm text-green-600">
               {row.original.name}
             </span>
           </div>
@@ -65,14 +52,12 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          <Badge variant="outline" className="font-medium text-[12px] py-1 px-2.5 h-auto rounded-md">
-            {row.original.bodyParts.join(", ")}
-          </Badge>
+          row.original.bodyParts.join(", ")
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}
       </div>
-    ),
+    )
   },
   {
     accessorKey: "categories",
@@ -82,9 +67,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.categories?.length > 0 ? (
-          <Badge variant="secondary" className="font-medium text-[12px] py-1 px-2.5 h-auto rounded-md">
-            {row.original.categories.join(", ")}
-          </Badge>
+          row.original.categories.join(", ")
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}
@@ -98,9 +81,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     ),
     cell: ({ row }) => (
       <div className="hidden md:table-cell min-w-37.5">
-        <Badge variant="secondary" className="font-medium bg-emerald-50 text-emerald-700 border-emerald-100">
-          {row.original.specialist || "General"}
-        </Badge>
+        {row.original.specialist || "General"}
       </div>
     ),
   },
@@ -130,19 +111,6 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
         e.stopPropagation(); // This is the magic line
         action();
       };
-
-      // const conditionToEdit = {
-
-      //             ...condition,
-      //             // Rehydrate the visual selection for the tree components
-      //             bodyParts: rehydrateHierarchy(condition.bodyParts, bodyParts),
-      //             categories: rehydrateHierarchy(condition.categories, categories),
-      //             types: condition.types,
-      //             causes: condition.causes,
-      //             nhs_link: condition.nhs_link ?? "",
-      //             image_url: condition.image_url ?? "",
-
-      // }
 
       return (
         <div className="text-right">
