@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 /**
  * GET /api/chat/messages?conversation_id=XYZ
- * 
+ *
  * Fetches message history for a conversation.
  */
 export async function GET(req: NextRequest) {
@@ -21,37 +21,43 @@ export async function GET(req: NextRequest) {
   const id = searchParams.get("id");
 
   if (!conversation_id && !id) {
-    return NextResponse.json({ error: "conversation_id or id is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "conversation_id or id is required" },
+      { status: 400 },
+    );
   }
 
   try {
     const admin = getSupabaseAdmin();
 
-    // 1. Verify participation? 
+    // 1. Verify participation?
     // (Assuming for now if they have the ID they can read, but better to check conversation_participants)
-    
+
     const baseQuery = admin
       .from("messages")
-      .select(`
+      .select(
+        `
         *,
         sender:sender_id (
           first_name,
-          last_name,
-          avatar_url
+          last_name
         )
-      `)
+      `,
+      )
       .eq("is_deleted", false);
 
     if (id) {
       const { data, error } = await baseQuery.eq("id", id).single();
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json(data);
     } else {
       const { data, error } = await baseQuery
         .eq("conversation_id", conversation_id)
         .order("created_at", { ascending: false })
         .limit(50);
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
       return NextResponse.json(data);
     }
   } catch (err: any) {
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/chat/messages
- * 
+ *
  * Sends a chat message.
  */
 export async function POST(req: NextRequest) {
@@ -74,10 +80,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { conversation_id, content, message_type, attachment_url, reply_to_id } = await req.json();
+    const {
+      conversation_id,
+      content,
+      message_type,
+      attachment_url,
+      reply_to_id,
+    } = await req.json();
 
     if (!conversation_id) {
-      return NextResponse.json({ error: "conversation_id is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "conversation_id is required" },
+        { status: 400 },
+      );
     }
 
     const admin = getSupabaseAdmin();
@@ -110,7 +125,7 @@ export async function POST(req: NextRequest) {
 
 /**
  * DELETE /api/chat/messages
- * 
+ *
  * Soft-deletes a chat message.
  */
 export async function DELETE(req: NextRequest) {
@@ -126,7 +141,10 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json();
 
     if (!id) {
-      return NextResponse.json({ error: "Message ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Message ID is required" },
+        { status: 400 },
+      );
     }
 
     const admin = getSupabaseAdmin();

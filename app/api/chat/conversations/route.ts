@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 /**
  * GET /api/chat/conversations
- * 
+ *
  * Fetches the conversation list for the authenticated user.
  */
 export async function GET(req: NextRequest) {
@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await admin
       .from("conversation_members")
-      .select(`
+      .select(
+        `
         unread_count,
         is_archived,
         conversations!conversation_id (
@@ -35,16 +36,19 @@ export async function GET(req: NextRequest) {
             user_id,
             user_profiles:user_id (
               first_name,
-              last_name,
-              avatar_url
+              last_name
             )
           )
         )
-      `)
+      `,
+      )
       .eq("user_id", session.user.id)
       .is("left_at", null)
       .eq("is_archived", false)
-      .order("last_message_at", { referencedTable: "conversations", ascending: false });
+      .order("last_message_at", {
+        referencedTable: "conversations",
+        ascending: false,
+      });
 
     if (error) {
       console.error("[chat/conversations] Supabase error:", error.message);

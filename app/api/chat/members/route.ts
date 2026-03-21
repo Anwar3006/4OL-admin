@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 /**
  * GET /api/chat/members?conversation_id=XYZ
- * 
+ *
  * Fetches members of a conversation.
  */
 export async function GET(req: NextRequest) {
@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
   const conversation_id = searchParams.get("conversation_id");
 
   if (!conversation_id) {
-    return NextResponse.json({ error: "conversation_id is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "conversation_id is required" },
+      { status: 400 },
+    );
   }
 
   try {
@@ -28,17 +31,18 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await admin
       .from("conversation_members")
-      .select(`
+      .select(
+        `
         user_id,
         role,
         joined_at,
         user_profiles:user_id (
           first_name,
           last_name,
-          avatar_url,
           role
         )
-      `)
+      `,
+      )
       .eq("conversation_id", conversation_id)
       .is("left_at", null);
 
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/chat/members
- * 
+ *
  * Joins a conversation.
  */
 export async function POST(req: NextRequest) {
@@ -91,7 +95,11 @@ export async function POST(req: NextRequest) {
           .eq("conversation_id", conversation_id)
           .eq("user_id", session.user.id);
 
-        if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+        if (updateError)
+          return NextResponse.json(
+            { error: updateError.message },
+            { status: 500 },
+          );
         return NextResponse.json({ success: true, reJoined: true });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -105,7 +113,7 @@ export async function POST(req: NextRequest) {
 
 /**
  * PATCH /api/chat/members
- * 
+ *
  * Leaves or removes a member from a conversation.
  */
 export async function PATCH(req: NextRequest) {
