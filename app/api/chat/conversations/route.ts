@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
           last_message_preview,
           members:conversation_members (
             user_id,
+            role,
             user_profiles:user_id (
               first_name,
               last_name
@@ -55,7 +56,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    // Filter out conversations that don't have a leader or admin
+    const filteredData = (data || []).filter((item: any) => {
+      const conv = item.conversations;
+      if (!conv) return false;
+      const members = conv.members || [];
+      return members.some((m: any) => m.role === "group_leader" || m.role === "admin" || m.role === "owner");
+    });
+
+    return NextResponse.json(filteredData);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
