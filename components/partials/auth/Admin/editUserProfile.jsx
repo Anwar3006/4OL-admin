@@ -2,14 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import Textinput from "@/components/ui/Textinput";
 import SplitDropdown2 from "@/components/ui/Split-Dropdown2";
-import { supabase } from "@/app/utils/supabaseClient";
 import Loading from "@/components/Loading";
-
+import { getProfileById, updateProfileById } from "@/actions/user.actions";
 
 const EditUserProfile = () => {
   const [loading, setLoading] = useState(false);
@@ -35,32 +32,27 @@ const EditUserProfile = () => {
     if (id) {
       const fetchUserData = async () => {
         try {
-          // Fetch data from Supabase
-          const { data, error } = await supabase
-            .from("user_profiles")
-            .select("*")
-            .eq("id", id)
-            .single();
+          const { data, error } = await getProfileById(id);
   
-          if (error) throw error;
+          if (error) throw new Error(error);
   
           setUserData(data);
           console.log("Fetched data:", data);
   
           // Format dob to just YYYY-MM-DD
-          const formattedDob = new Date(data.dob).toISOString().split("T")[0]; // Ensure the date is in YYYY-MM-DD format
+          const formattedDob = data.dob ? new Date(data.dob).toISOString().split("T")[0] : "";
+          
           // Populate form with existing data
           Object.keys(data).forEach((key) => {
             if (key === 'dob') {
-              setValue(key, formattedDob); // Special handling for dob field
+              setValue(key, formattedDob);
             } else {
               setValue(key, data[key]);
             }
-            console.log(`Setting ${key} to ${data[key]}`);
           });
         } catch (error) {
           console.error("Error fetching data:", error);
-          toast.error("Failed to fetch data");
+          toast.error("Failed to fetch data: " + error.message);
         }
       };
   
@@ -70,23 +62,18 @@ const EditUserProfile = () => {
   
 
   const onSubmit = async (formData) => {
-    debugger;
     setLoading(true);
   
     try {
-      // Perform update action
-      const { error } = await supabase
-        .from("user_profiles")
-        .update(formData)
-        .eq("id", id);
+      const { error } = await updateProfileById(id, formData);
   
-      if (error) throw error;
+      if (error) throw new Error(error);
   
       toast.success("Data updated successfully");
       router.push("/admin");
     } catch (error) {
       console.error("Error updating data:", error);
-      toast.error("Failed to update data");
+      toast.error("Failed to update data: " + error.message);
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,5 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/utils/supabaseClient";
 import GlobalFilter from "@/components/partials/table/GlobalFilter";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -11,6 +9,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Loading from "@/components/Loading";
 import NoDataFound from "@/components/NoDataFound";
+import { getAllProfiles } from "@/actions/user.actions";
 
 export default function UsersListing() {
   const [data, setData] = useState([]);
@@ -25,13 +24,14 @@ export default function UsersListing() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data, error, count } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact" })
-          .range(pageIndex * pageSize, (pageIndex + 1) * pageSize - 1);
+        const { data, count, error } = await getAllProfiles(pageIndex, pageSize);
+        
+        if (error) {
+          console.error("Error fetching data:", error);
+        } else {
           setData(data);
           setTotalPages(Math.ceil(count / pageSize));
-        
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

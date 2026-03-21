@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { SignJWT } from "jose";
-import { headers } from "next/headers";
 
 /**
  * POST /api/supabase-token
@@ -48,23 +47,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 2. Sign a Supabase-compatible JWT
+  // 3. Sign a Supabase-compatible JWT
   //    - sub  : must match the user_id stored in user_profiles
   //    - role : "authenticated" tells Supabase to apply RLS authenticated policies
   //    - aud  : "authenticated" (required by Supabase)
   //    - exp  : 1 hour — mobile app should re-fetch before expiry
-  const secret = new TextEncoder().encode(jwtSecret);
+  try {
+    const secret = new TextEncoder().encode(jwtSecret);
 
-  const token = await new SignJWT({
-    sub: session.user.id,
-    role: "authenticated",
-    email: session.user.email,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setAudience("authenticated")
-    .setIssuedAt()
-    .setExpirationTime("1h")
-    .sign(secret);
+    const token = await new SignJWT({
+      sub: session.user.id,
+      role: "authenticated",
+      email: session.user.email,
+    })
+      // typ:"JWT" is required — PostgREST rejects tokens without it.
+      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setAudience("authenticated")
+      .setIssuedAt()
+      .setExpirationTime("1h")
+      .sign(secret);
 
-  return NextResponse.json({ token, expiresIn: 3600 });
+    return NextResponse.json({ token, expiresIn: 3600 });
+  } catch (err: any) {
+    console.error("[supabase-token] Signing error:", err.message);
+    return NextResponse.json(
+      { error: "Internal Server Error", message: err.message },
+      { status: 500 },
+    );
+  }
 }

@@ -1,37 +1,21 @@
 import React, { useEffect, useState } from "react";
 import Dropdown from "@/components/ui/Dropdown";
 import Icon from "@/components/ui/Icon";
-import { useDispatch } from "react-redux";
-import { handleLogout } from "@/components/partials/auth/store";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/utils/supabaseClient";
 import { authClient } from "@/lib/auth-client";
+import { getUserProfile } from "@/actions/user.actions";
 
 const Profile = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
   const [userData, setUserData] = useState();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      const sessionResult = await authClient.getSession();
-      const userId = sessionResult?.data?.user?.id;
-      if (!userId) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("user_id", userId)
-          .single();
-
-        if (error) {
-          console.error("Error fetching user role:", error);
-        } else {
-          setUserData(data);
-        }
-      } catch (error) {
+      const { data, error } = await getUserProfile();
+      if (error) {
         console.error("Error fetching user role:", error);
+      } else {
+        setUserData(data);
       }
     };
 

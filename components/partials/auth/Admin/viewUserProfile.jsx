@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
-import { supabase } from "@/app/utils/supabaseClient";
 import Loading from "@/components/Loading";
 import moment from "moment";
 import { useSearchParams } from "next/navigation";
@@ -12,6 +11,7 @@ import Button from "@/components/ui/Button";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
 import { decryptPassword } from "@/app/utils/helpers";
+import { getProfileById } from "@/actions/user.actions";
 
 const ViewUserProfile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -25,15 +25,13 @@ const ViewUserProfile = () => {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      if (!id) return;
       try {
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("id", id)
-          .single();
+        const { data, error } = await getProfileById(id);
 
         if (error) {
           console.error("Error fetching user profile:", error);
+          toast.error("Failed to fetch profile: " + error);
         } else {
           setProfileData(data);
         }
@@ -43,7 +41,7 @@ const ViewUserProfile = () => {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [id]);
 
   if (!profileData) {
     return (

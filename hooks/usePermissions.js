@@ -1,8 +1,8 @@
 // hooks/usePermissions.js
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/app/utils/supabaseClient";
 import { authClient } from "@/lib/auth-client";
+import { getUserProfile } from "@/actions/user.actions";
 import {
   isRouteAllowed,
   canPerformAction,
@@ -50,11 +50,7 @@ export const usePermissions = () => {
       }
 
       if (userId) {
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("role")
-          .eq("user_id", userId)
-          .single();
+        const { data, error } = await getUserProfile();
 
         if (!error && data) {
           // permissions column does not exist in user_profiles — role-based access only
