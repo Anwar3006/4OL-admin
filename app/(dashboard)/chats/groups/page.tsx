@@ -50,6 +50,7 @@ const MainChatPage = () => {
         title="Chat Groups"
         Icon={MessageCircle}
         description="Community conversations and group management"
+        hasButton={false}
       />
 
       <div className="mt-6">

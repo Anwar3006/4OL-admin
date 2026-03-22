@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, memo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import CustomInput from "@/components/CustomInput";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
-import { cn, getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
+import { getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
 import ImageDropZone from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddConditionDialog } from "@/stores/dialog-store";
@@ -28,21 +28,9 @@ import {
   useUpdateSymptom,
 } from "@/hooks/supabase-calls/useSymptoms";
 
-// Step 1 Fields - To make sure we validate these fields before moving on to Step 2
-const STEP_1_FIELDS = [
-  "name",
-  "bodyParts",
-  "categories",
-  "about",
-] as const;
-
 const AddSymptomDialog = () => {
-  //has the same input fields as conditions so reuse the conditions dialog
   const { isOpen, data, isEditMode, close } = useAddConditionDialog();
-  // Progress Step Management
-  const [step, setStep] = useState<number>(1);
 
-  //Supabase Hooks Invocation
   const { data: bodyParts = [], isLoading: loadingParts } =
     useBodyPartsForSymptoms();
   const { data: categories = [], isLoading: loadingCats } =
@@ -93,43 +81,38 @@ const AddSymptomDialog = () => {
     name: "causes",
   });
 
-  console.log("Data: ", data);
-  // PREVENT LAG: Use a clean reset when the dialog opens/closes
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && data) {
         form.reset({
           ...data,
-          // Rehydrate the visual selection for the tree components
           bodyParts: rehydrateHierarchy(data.bodyParts, bodyParts),
           categories: rehydrateHierarchy(data.categories, categories),
           image_url: data.image_url ?? "",
           nhs_link: data.nhs_link ?? "",
         });
       } else {
-          form.reset({
-            name: "",
-            bodyParts: [],
-            categories: [],
-            about: EMPTY_LEXICAL_STATE,
-            diagnosis: EMPTY_LEXICAL_STATE,
-            treatment: EMPTY_LEXICAL_STATE,
-            complications: EMPTY_LEXICAL_STATE,
-            prevention: EMPTY_LEXICAL_STATE,
-            contact_your_doctor: EMPTY_LEXICAL_STATE,
-            more_information: EMPTY_LEXICAL_STATE,
-            attribution: EMPTY_LEXICAL_STATE,
-            symptoms: EMPTY_LEXICAL_STATE,
-            specialist_to_contact: "",
-            nhs_link: "",
-            image_url: "",
-            slug: "",
-            is_systemic: false,
-            types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
-            causes: [
-              { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
-            ],
-          });
+        form.reset({
+          name: "",
+          bodyParts: [],
+          categories: [],
+          about: EMPTY_LEXICAL_STATE,
+          diagnosis: EMPTY_LEXICAL_STATE,
+          treatment: EMPTY_LEXICAL_STATE,
+          complications: EMPTY_LEXICAL_STATE,
+          prevention: EMPTY_LEXICAL_STATE,
+          contact_your_doctor: EMPTY_LEXICAL_STATE,
+          more_information: EMPTY_LEXICAL_STATE,
+          attribution: EMPTY_LEXICAL_STATE,
+          symptoms: EMPTY_LEXICAL_STATE,
+          specialist_to_contact: "",
+          nhs_link: "",
+          image_url: "",
+          slug: "",
+          is_systemic: false,
+          types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
+          causes: [{ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE }],
+        });
       }
     }
   }, [isOpen, isEditMode, data, form, bodyParts, categories]);
@@ -138,23 +121,11 @@ const AddSymptomDialog = () => {
   const filename = `${name.replaceAll(/\s+/g, "")}-${nanoid(8)}`;
   const filePath = `symptoms/${filename}`;
 
-  const handleDialogClose = () => {
-    setStep(1);
-    close();
-  };
   const handleSubmit = async (formdata: TSymptomsInput) => {
     try {
-      const optimizedBodyPartIds = getDeepestNodes(
-        formdata.bodyParts,
-        bodyParts,
-      );
-      const optimizedCategoryIds = getDeepestNodes(
-        formdata.categories,
-        categories,
-      );
-      const slug = slugify(formdata.name, {
-        lower: true,
-      });
+      const optimizedBodyPartIds = getDeepestNodes(formdata.bodyParts, bodyParts);
+      const optimizedCategoryIds = getDeepestNodes(formdata.categories, categories);
+      const slug = slugify(formdata.name, { lower: true });
       const payload = {
         ...formdata,
         bodyParts: optimizedBodyPartIds,
@@ -162,79 +133,48 @@ const AddSymptomDialog = () => {
         slug,
       };
 
-      console.log("Payload: ", payload);
-
       if (isEditMode) {
-        await mutateAsyncEdit({
-          id: data.id,
-          payload: payload,
-        });
+        await mutateAsyncEdit({ id: data.id, payload });
+        toast.success("Symptom updated successfully!");
       } else {
         await mutateAsync(payload);
+        toast.success("Symptom registered successfully!");
       }
     } catch (error) {
       console.error("Registration Error: ", error);
+      toast.error("Registration failed: " + (error as Error).message);
     } finally {
       form.reset();
-      setStep(1);
       close();
     }
   };
 
-  const handleContinue = async () => {
-    const isValid = await form.trigger(STEP_1_FIELDS as any);
-    if (!isValid) {
-      toast.error("Please complete all required fields");
-      return;
-    }
-    setStep((prev) => prev + 1);
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-w-5xl! max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5! px-2 md:px-6">
-        {/* Step Tracker */}
-        <div className="flex justify-center gap-2 mb-4 w-full pr-4">
-          {[1, 2, 3, 4, 5].map((index) => (
-            <div
-              key={index}
-              className={cn(
-                "h-2 w-1/5 rounded",
-                index <= step ? "bg-primary" : "bg-muted",
-              )}
-            />
-          ))}
-        </div>
-
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? `Edit Symptom` : `Register New Symptom`}
+            {isEditMode ? "Edit Symptom" : "Register New Symptom"}
           </DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(
-              (data) => {
-                handleSubmit(data);
-              },
-              (errors) => {
-                toast.error("Errors: " + errors);
-                console.log("Errors: ", errors);
-              },
-            )}
-            className="space-y-6"
-          >
-            {isLoadingForm && (
-              <div className="flex items-center w-full h-full justify-center">
-                Loading Form...
-              </div>
-            )}
-            {step === 1 && (
-              <>
-                <h3 className="card-title mb-2 underline text-center">
-                  Symptom Details
-                </h3>
+        {isLoadingForm ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="animate-spin mr-2" />
+            Loading form...
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                console.error("Validation errors:", errors);
+                toast.error("Please fill in all required fields.");
+              })}
+              className="space-y-8"
+            >
+              {/* ── Basic Details ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">Basic Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomInput
                     type="text"
@@ -243,356 +183,222 @@ const AddSymptomDialog = () => {
                     label="Symptom Name"
                     readOnly={false}
                   />
-
-                  <TreeMultiSelectForm
-                    label="Select Associated Body Part/s"
-                    name="bodyParts"
-                    control={form.control}
-                    rawParts={bodyParts}
-                  />
-
-                  <TreeMultiSelectForm
-                    label="Select Associated Category/s"
-                    name="categories"
-                    control={form.control}
-                    rawParts={categories}
-                  />
-
                   <CustomInput
                     type="text"
                     name="specialist_to_contact"
                     control={form.control}
-                    label="Specialists To Contact(Comma-Separated)"
+                    label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
+                  <TreeMultiSelectForm
+                    label="Associated Body Part/s"
+                    name="bodyParts"
+                    control={form.control}
+                    rawParts={bodyParts}
+                  />
+                  <TreeMultiSelectForm
+                    label="Associated Category/s"
+                    name="categories"
+                    control={form.control}
+                    rawParts={categories}
+                  />
                 </div>
+              </section>
 
-                {/* Type and About Type */}
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Symptom Types</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-100"
-                      onClick={() => append({ type_name: "", about_type: "" })}
-                    >
-                      Add Type
-                    </Button>
+              {/* ── Types ── */}
+              <section className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h3 className="text-base font-semibold">Symptom Types</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50"
+                    onClick={() => append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })}
+                  >
+                    + Add Type
+                  </Button>
+                </div>
+                {fields.map((field, index) => (
+                  <div key={field.id} className="relative space-y-3 rounded-lg border p-4">
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-3 -right-3 h-6 w-6 rounded-full p-0"
+                        onClick={() => remove(index)}
+                      >
+                        ×
+                      </Button>
+                    )}
+                    <CustomInput
+                      type="text"
+                      name={`types.${index}.type_name`}
+                      control={form.control}
+                      label="Type Name"
+                      readOnly={false}
+                    />
+                    <RichTextEditor
+                      name={`types.${index}.about_type`}
+                      control={form.control}
+                      label="About Type"
+                    />
                   </div>
+                ))}
+              </section>
 
-                  {fields.map((field, index) => (
-                    <div key={field.id} className=" space-y-4 relative mb-2">
-                      <div className="grid grid-cols-1 gap-4 relative">
-                        {/* Type Name Input */}
-                        <CustomInput
-                          type="text"
-                          name={`types.${index}.type_name`} // Important: include index
-                          control={form.control}
-                          label="Type Name"
-                          readOnly={false}
-                        />
-
-                        {/* About Type Input (RichText logic usually goes here) */}
-                        <RichTextEditor
-                          name={`types.${index}.about_type`}
-                          control={form.control}
-                          label="About Type"
-                        />
-                      </div>
-
-                      {/* Remove Button */}
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={() => remove(index)}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* ── Causes ── */}
+              <section className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h3 className="text-base font-semibold">Causes</h3>
                   <Button
                     type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50"
+                    onClick={() =>
+                      causesAppend({ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE })
+                    }
                   >
-                    Continue
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={close}
-                  >
-                    Cancel
+                    + Add Cause
                   </Button>
                 </div>
-              </>
-            )}
-
-            {/* Types and About Types, About, Diagnosis */}
-            {step === 2 && (
-              <>
-                {/* ---------------- STEP 2 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Symptom Details (2/5)
-                </h3>
-
-                {/* Type and About Type */}
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Symptom Causes</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-100"
-                      onClick={() =>
-                        causesAppend({
-                          cause_name: "",
-                          other_possible_causes: "",
-                        })
-                      }
-                    >
-                      Add Cause
-                    </Button>
+                {causesFields.map((field, index) => (
+                  <div key={field.id} className="relative space-y-3 rounded-lg border p-4">
+                    {causesFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-3 -right-3 h-6 w-6 rounded-full p-0"
+                        onClick={() => causesRemove(index)}
+                      >
+                        ×
+                      </Button>
+                    )}
+                    <CustomInput
+                      type="text"
+                      name={`causes.${index}.cause_name`}
+                      control={form.control}
+                      label="Cause Name"
+                      readOnly={false}
+                    />
+                    <RichTextEditor
+                      name={`causes.${index}.other_possible_causes`}
+                      control={form.control}
+                      label="Other Possible Causes"
+                    />
                   </div>
+                ))}
+              </section>
 
-                  {causesFields.map((field, index) => (
-                    <div key={field.id} className=" space-y-4 relative mb-2">
-                      <div className="grid grid-cols-1 gap-4 relative">
-                        {/* Causes Input */}
-                        <CustomInput
-                          type="text"
-                          name={`causes.${index}.cause_name`}
-                          control={form.control}
-                          label="Cause Name"
-                          readOnly={false}
-                        />
+              {/* ── About ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">About</h3>
+                <RichTextEditor
+                  label="About Symptom"
+                  control={form.control}
+                  name="about"
+                />
+              </section>
 
-                        {/* About Type Input (RichText logic usually goes here) */}
-                        <RichTextEditor
-                          name={`causes.${index}.other_possible_causes`}
-                          control={form.control}
-                          label="Other Possible Causes"
-                        />
-                      </div>
+              {/* ── Diagnosis & Complications ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">Diagnosis & Complications</h3>
+                <RichTextEditor
+                  label="Diagnosis"
+                  control={form.control}
+                  name="diagnosis"
+                />
+                <RichTextEditor
+                  label="Complications"
+                  control={form.control}
+                  name="complications"
+                />
+              </section>
 
-                      {/* Remove Button */}
-                      {causesFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={() => causesRemove(index)}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              {/* ── Treatment & Prevention ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">Treatment & Prevention</h3>
+                <RichTextEditor
+                  label="Treatment"
+                  control={form.control}
+                  name="treatment"
+                />
+                <RichTextEditor
+                  label="Prevention"
+                  control={form.control}
+                  name="prevention"
+                />
+              </section>
 
-                {/* About */}
-                <div className="grid grid-cols-1 gap-4">
-                  <RichTextEditor
-                    label="About Symptom"
-                    control={form.control}
-                    name="about"
-                  />
+              {/* ── Additional Information ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">Additional Information</h3>
+                <RichTextEditor
+                  label="Contact Your Doctor"
+                  control={form.control}
+                  name="contact_your_doctor"
+                />
+                <RichTextEditor
+                  label="More Information"
+                  control={form.control}
+                  name="more_information"
+                />
+                <RichTextEditor
+                  label="Attribution"
+                  control={form.control}
+                  name="attribution"
+                />
+              </section>
 
-                  {/* Diagnosis */}
-                  <RichTextEditor
-                    label="Symptom Diagnosis"
-                    control={form.control}
-                    name="diagnosis"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Complications - Prevention - Treatment */}
-            {step === 3 && (
-              <>
-                {/* ---------------- STEP 3 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Symptom Details (3/5)
-                </h3>
-
-                <div className="grid grid-cols-1 space-y-8">
-                  {/* Complications */}
-                  <RichTextEditor
-                    label="Symptom Complications"
-                    control={form.control}
-                    name="complications"
-                  />
-
-                  {/* Prevention */}
-                  <RichTextEditor
-                    label="Prevention"
-                    control={form.control}
-                    name="prevention"
-                  />
-
-                  {/* Treatment */}
-                  <RichTextEditor
-                    label="Treatment"
-                    control={form.control}
-                    name="treatment"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(2)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Contact your Doctor - More Information - Attribution */}
-            {step === 4 && (
-              <>
-                {/* ---------------- STEP 4 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Symptom Details (4/5)
-                </h3>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {/* Contact Your Doctor */}
-                  <RichTextEditor
-                    label="Contact Your Doctor"
-                    control={form.control}
-                    name="contact_your_doctor"
-                  />
-
-                  {/* More Information */}
-                  <RichTextEditor
-                    label="More Information"
-                    control={form.control}
-                    name="more_information"
-                  />
-
-                  {/* Attribution */}
-                  <RichTextEditor
-                    label="Attribution"
-                    control={form.control}
-                    name="attribution"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(3)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Media - NHS Link */}
-            {step === 5 && (
-              <>
-                {/* ---------------- STEP 5 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Symptom Details (5/5)
-                </h3>
-
+              {/* ── Media & Links ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">Media & Links</h3>
                 <CustomInput
                   control={form.control}
                   name="nhs_link"
-                  label="NHS Link for this Symptom"
+                  label="NHS Link"
                   type="text"
                   readOnly={false}
                 />
-
                 <ImageDropZone
                   filePath={filePath}
-                  text="Drop media for the Symptom"
-                  onFilesChange={(url) =>
-                    url.map((u) => form.setValue("image_url", u))
-                  }
-                  initialFiles={[]}
+                  text="Drop symptom image here"
+                  onFilesChange={(url) => url.map((u) => form.setValue("image_url", u))}
+                  initialFiles={[form.watch("image_url")]}
                 />
+              </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(4)}
-                    disabled={isSubmitting}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    className="md:col-span-2 bg-emerald-600"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : isEditMode ? (
-                      "Update Symptom"
-                    ) : (
-                      "Register Symptom"
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-          </form>
-        </Form>
+              {/* ── Actions ── */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={close}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : isEditMode ? (
+                    "Update Symptom"
+                  ) : (
+                    "Register Symptom"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

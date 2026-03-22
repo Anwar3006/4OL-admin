@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import CustomInput from "@/components/CustomInput";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { cn, getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
+import { getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
 import ImageDropZone from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddConditionDialog } from "@/stores/dialog-store";
@@ -35,9 +35,6 @@ import {
   useUpdateCondition,
 } from "@/hooks/supabase-calls/useCondition";
 
-// Step 1 Fields - To make sure we validate these fields before moving on to Step 2
-const STEP_1_FIELDS = ["name", "bodyParts", "categories", "about"] as const;
-
 const AddConditionDialog = () => {
   const {
     isOpen,
@@ -45,10 +42,7 @@ const AddConditionDialog = () => {
     isEditMode,
     close,
   } = useAddConditionDialog();
-  // Progress Step Management
-  const [step, setStep] = useState<number>(1);
 
-  //Supabase Invocations
   const { data: bodyParts = [], isLoading: loadingParts } =
     useBodyPartsForSymptoms();
   const { data: categories = [], isLoading: loadingCats } =
@@ -99,13 +93,11 @@ const AddConditionDialog = () => {
     name: "causes",
   });
 
-  // PREVENT LAG: Use a clean reset when the dialog opens/closes
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && condition) {
         form.reset({
           ...condition,
-          // Rehydrate the visual selection for the tree components
           bodyParts: rehydrateHierarchy(condition.bodyParts, bodyParts),
           categories: rehydrateHierarchy(condition.categories, categories),
           types: condition.types,
@@ -115,29 +107,29 @@ const AddConditionDialog = () => {
           specialist: condition.specialist ?? "",
         });
       } else {
-          form.reset({
-            name: "",
-            slug: "",
-            bodyParts: [],
-            categories: [],
-            about: EMPTY_LEXICAL_STATE,
-            diagnosis: EMPTY_LEXICAL_STATE,
-            treatment: EMPTY_LEXICAL_STATE,
-            complications: EMPTY_LEXICAL_STATE,
-            symptoms: EMPTY_LEXICAL_STATE,
-            prevention: EMPTY_LEXICAL_STATE,
-            contact_your_doctor: EMPTY_LEXICAL_STATE,
-            more_information: EMPTY_LEXICAL_STATE,
-            attribution: EMPTY_LEXICAL_STATE,
-            is_systemic: false,
-            specialist: "",
-            nhs_link: "",
-            image_url: "",
-            types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
-            causes: [
-              { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
-            ],
-          });
+        form.reset({
+          name: "",
+          slug: "",
+          bodyParts: [],
+          categories: [],
+          about: EMPTY_LEXICAL_STATE,
+          diagnosis: EMPTY_LEXICAL_STATE,
+          treatment: EMPTY_LEXICAL_STATE,
+          complications: EMPTY_LEXICAL_STATE,
+          symptoms: EMPTY_LEXICAL_STATE,
+          prevention: EMPTY_LEXICAL_STATE,
+          contact_your_doctor: EMPTY_LEXICAL_STATE,
+          more_information: EMPTY_LEXICAL_STATE,
+          attribution: EMPTY_LEXICAL_STATE,
+          is_systemic: false,
+          specialist: "",
+          nhs_link: "",
+          image_url: "",
+          types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
+          causes: [
+            { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
+          ],
+        });
       }
     }
   }, [isOpen, isEditMode, condition, form]);
@@ -146,17 +138,11 @@ const AddConditionDialog = () => {
   const filename = `${name.replace(/\s+/g, "").toLowerCase()}-${nanoid(8)}`;
   const filePath = `conditions/${filename}`;
 
-  const handleDialogClose = () => {
-    setStep(1);
-    close();
-  };
   const handleSubmit = async (data: TConditionsInput) => {
     try {
       const optimizedBodyPartIds = getDeepestNodes(data.bodyParts, bodyParts);
       const optimizedCategoryIds = getDeepestNodes(data.categories, categories);
-      const slug = slugify(data.name, {
-        lower: true,
-      });
+      const slug = slugify(data.name, { lower: true });
       const payload = {
         ...data,
         bodyPartIds: optimizedBodyPartIds,
@@ -175,8 +161,7 @@ const AddConditionDialog = () => {
             ? JSON.parse(data.attribution)
             : data.attribution,
       };
-      console.log("Payload: ", payload);
-      let result: any;
+
       if (isEditMode) {
         const editPayload = {
           ...payload,
@@ -188,98 +173,48 @@ const AddConditionDialog = () => {
           bodyParts: data.bodyParts,
         } as TConditionsOutput;
         await mutateAsyncEdit(editPayload);
+        toast.success("Condition updated successfully!");
       } else {
         await mutateAsync(payload);
-      }
-
-      if (result) {
-        toast.success(
-          isEditMode
-            ? "Condition updated successfully!"
-            : "Condition registered successfully!",
-        );
+        toast.success("Condition registered successfully!");
       }
     } catch (error) {
       console.error("Registration Error: ", error);
-      toast.error("Registration failed! : " + (error as Error).message);
+      toast.error("Registration failed: " + (error as Error).message);
     } finally {
-      setStep(1);
       close();
     }
   };
 
-  const handleContinue = async () => {
-    // WORKAROUND: form.trigger crashes due to @hookform/resolvers/zod version mismatch with Zod 4.x
-    // We manually validate Step 1 fields using the schema directly.
-    const values = form.getValues();
-    const result = conditionsSchema.safeParse(values);
-
-    if (!result.success) {
-      const step1Issues = result.error.issues.filter((issue) =>
-        STEP_1_FIELDS.includes(issue.path[0] as any),
-      );
-
-      if (step1Issues.length > 0) {
-        step1Issues.forEach((issue) => {
-          form.setError(issue.path[0] as any, {
-            message: issue.message,
-            type: issue.code,
-          });
-        });
-        toast.error("Please complete all required fields");
-        return;
-      }
-    }
-
-    setStep((prev) => prev + 1);
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5! px-2 md:px-6">
-        {/* Step Tracker */}
-        <div className="flex justify-center gap-2 mb-4 w-full pr-4">
-          {[1, 2, 3, 4, 5].map((index) => (
-            <div
-              key={index}
-              className={cn(
-                "h-2 w-1/5 rounded",
-                index <= step ? "bg-primary" : "bg-muted",
-              )}
-            />
-          ))}
-        </div>
-
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? `Edit Condition` : `Register New Condition`}
+            {isEditMode ? "Edit Condition" : "Register New Condition"}
           </DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(
-              (data) => {
-                handleSubmit(data);
-                console.log("Daaaa: ", data);
-              },
-              (errors) => {
-                toast.error("Errors: " + errors);
-                console.log("Errors: ", errors);
-              },
-            )}
-            className="space-y-6"
-          >
-            {isLoadingForm && (
-              <div className="flex items-center w-full h-full justify-center">
-                Loading Form...
-              </div>
-            )}
-            {step === 1 && (
-              <>
-                <h3 className="card-title mb-2 underline text-center">
-                  Condition Details
+
+        {isLoadingForm ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="animate-spin mr-2" />
+            Loading form...
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                console.error("Validation errors:", errors);
+                toast.error("Please fill in all required fields.");
+              })}
+              className="space-y-8 grid grid-cols-1 gap-4 items-start"
+            >
+              {/* ── Basic Details ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Basic Details
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomInput
                     type="text"
                     name="name"
@@ -287,372 +222,255 @@ const AddConditionDialog = () => {
                     label="Condition Name"
                     readOnly={false}
                   />
-
-                  <TreeMultiSelectForm
-                    label="Select Associated Body Part/s"
-                    name="bodyParts"
-                    control={form.control}
-                    rawParts={bodyParts}
-                  />
-
-                  <TreeMultiSelectForm
-                    label="Select Associated Category/s"
-                    name="categories"
-                    control={form.control}
-                    rawParts={categories}
-                  />
-
                   <CustomInput
                     type="text"
                     name="specialist"
                     control={form.control}
-                    label="Specialists To Contact(Comma-Separated)"
+                    label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
+                  <TreeMultiSelectForm
+                    label="Associated Body Part/s"
+                    name="bodyParts"
+                    control={form.control}
+                    rawParts={bodyParts}
+                  />
+                  <TreeMultiSelectForm
+                    label="Associated Category/s"
+                    name="categories"
+                    control={form.control}
+                    rawParts={categories}
+                  />
                 </div>
+              </section>
 
-
-              <div className="grid grid-cols-1 space-y-8">
-
+              {/* ── About ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">About</h3>
                 <RichTextEditor
-                    label="About Condition"
-                    control={form.control}
-                    name="about"
+                  label="About Condition"
+                  control={form.control}
+                  name="about"
+                />
+              </section>
+
+              {/* ── Types ── */}
+              <section className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h3 className="text-base font-semibold">Condition Types</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50"
+                    onClick={() =>
+                      append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })
+                    }
+                  >
+                    + Add Type
+                  </Button>
+                </div>
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="relative space-y-3 rounded-lg border p-4"
+                  >
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-3 -right-3 h-6 w-6 rounded-full p-0"
+                        onClick={() => remove(index)}
+                      >
+                        ×
+                      </Button>
+                    )}
+                    <CustomInput
+                      type="text"
+                      name={`types.${index}.type_name`}
+                      control={form.control}
+                      label="Type Name"
+                      readOnly={false}
                     />
-                    </div>
-
-                {/* Type and About Type */}
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Condition Types</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-100"
-                      onClick={() => append({ type_name: "", about_type: "" })}
-                    >
-                      Add Type
-                    </Button>
+                    <RichTextEditor
+                      name={`types.${index}.about_type`}
+                      control={form.control}
+                      label="About Type"
+                    />
                   </div>
+                ))}
+              </section>
 
-                  {fields.map((field, index) => (
-                    <div key={field.id} className=" space-y-4 relative mb-2">
-                      <div className="grid grid-cols-1 gap-4 relative">
-                        {/* Type Name Input */}
-                        <CustomInput
-                          type="text"
-                          name={`types.${index}.type_name`} // Important: include index
-                          control={form.control}
-                          label="Type Name"
-                          readOnly={false}
-                        />
-
-                        {/* About Type Input (RichText logic usually goes here) */}
-                        <RichTextEditor
-                          name={`types.${index}.about_type`}
-                          control={form.control}
-                          label="About Type"
-                        />
-                      </div>
-
-                      {/* Remove Button */}
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={() => remove(index)}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={close}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Types and About Types, About, Diagnosis */}
-            {step === 2 && (
-              <>
-                {/* ---------------- STEP 2 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Condition Details (2/5)
+              {/* ── Symptoms ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Symptoms
                 </h3>
+                <RichTextEditor
+                  label="Symptoms"
+                  control={form.control}
+                  name="symptoms"
+                />
+              </section>
 
-                                {/* Symptoms */}
-                <div className="grid grid-cols-1 gap-4">
-                                    {/* Symptoms */}
-                  <RichTextEditor
-                    label="Symptoms"
-                    control={form.control}
-                    name="symptoms"
-                  />             
+              {/* ── Complications & Diagnosis ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Complications & Diagnosis
+                </h3>
+                <RichTextEditor
+                  label="Complications"
+                  control={form.control}
+                  name="complications"
+                />
+                <RichTextEditor
+                  label="Diagnosis"
+                  control={form.control}
+                  name="diagnosis"
+                />
+              </section>
 
-
-                                   {/* Complications */}
-                  <RichTextEditor
-                    label="Condition Complications"
-                    control={form.control}
-                    name="complications"
-                  /> 
-
-                  {/* Diagnosis */}
-                  <RichTextEditor
-                    label="Condition Diagnosis"
-                    control={form.control}
-                    name="diagnosis"
-                  />
+              {/* ── Causes ── */}
+              <section className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-1">
+                  <h3 className="text-base font-semibold">Causes</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-green-50"
+                    onClick={() =>
+                      causesAppend({
+                        cause_name: "",
+                        other_possible_causes: EMPTY_LEXICAL_STATE,
+                      })
+                    }
+                  >
+                    + Add Cause
+                  </Button>
                 </div>
-
-                {/* Causes */}
-                <div className="space-y-4 p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Condition Causes</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-100"
-                      onClick={() =>
-                        causesAppend({
-                          cause_name: "",
-                          other_possible_causes: "",
-                        })
-                      }
-                    >
-                      Add Cause
-                    </Button>
+                {causesFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="relative space-y-3 rounded-lg border p-4"
+                  >
+                    {causesFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-3 -right-3 h-6 w-6 rounded-full p-0"
+                        onClick={() => causesRemove(index)}
+                      >
+                        ×
+                      </Button>
+                    )}
+                    <CustomInput
+                      type="text"
+                      name={`causes.${index}.cause_name`}
+                      control={form.control}
+                      label="Cause Name"
+                      readOnly={false}
+                    />
+                    <RichTextEditor
+                      name={`causes.${index}.other_possible_causes`}
+                      control={form.control}
+                      label="Other Possible Causes"
+                    />
                   </div>
+                ))}
+              </section>
 
-                  {causesFields.map((field, index) => (
-                    <div key={field.id} className=" space-y-4 relative mb-2">
-                      <div className="grid grid-cols-1 gap-4 relative">
-                        {/* Causes Input */}
-                        <CustomInput
-                          type="text"
-                          name={`causes.${index}.cause_name`}
-                          control={form.control}
-                          label="Cause Name"
-                          readOnly={false}
-                        />
-
-                        {/* About Type Input (RichText logic usually goes here) */}
-                        <RichTextEditor
-                          name={`causes.${index}.other_possible_causes`}
-                          control={form.control}
-                          label="Other Possible Causes"
-                        />
-                      </div>
-
-                      {/* Remove Button */}
-                      {causesFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={() => causesRemove(index)}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Complications - Symptoms - Prevention - Treatment */}
-            {step === 3 && (
-              <>
-                {/* ---------------- STEP 3 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Condition Details (3/5)
+              {/* ── Treatment & Prevention ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Treatment & Prevention
                 </h3>
+                <RichTextEditor
+                  label="Treatment"
+                  control={form.control}
+                  name="treatment"
+                />
+                <RichTextEditor
+                  label="Prevention"
+                  control={form.control}
+                  name="prevention"
+                />
+              </section>
 
-                <div className="grid grid-cols-1 space-y-8">
- 
-                  {/* Treatment */}
-                  <RichTextEditor
-                    label="Treatment"
-                    control={form.control}
-                    name="treatment"
-                  />
-                  {/* Prevention */}
-                  <RichTextEditor
-                    label="Prevention"
-                    control={form.control}
-                    name="prevention"
-                  />
-
-                  {/* More Information */}
-                  <RichTextEditor
-                    label="More Information"
-                    control={form.control}
-                    name="more_information"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(2)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Contact your Doctor - More Information - Attribution */}
-            {step === 4 && (
-              <>
-                {/* ---------------- STEP 4 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Condition Details (4/5)
+              {/* ── Additional Information ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Additional Information
                 </h3>
+                <RichTextEditor
+                  label="More Information"
+                  control={form.control}
+                  name="more_information"
+                />
+                <RichTextEditor
+                  label="Contact Your Doctor"
+                  control={form.control}
+                  name="contact_your_doctor"
+                />
+                <RichTextEditor
+                  label="Attribution"
+                  control={form.control}
+                  name="attribution"
+                />
+              </section>
 
-                <div className="grid grid-cols-1 gap-4">
-                  {/* Contact Your Doctor */}
-                  <RichTextEditor
-                    label="Contact Your Doctor"
-                    control={form.control}
-                    name="contact_your_doctor"
-                  />
-
-                  {/* Attribution */}
-                  <RichTextEditor
-                    label="Attribution"
-                    control={form.control}
-                    name="attribution"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(3)}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* Media - NHS Link */}
-            {step === 5 && (
-              <>
-                {/* ---------------- STEP 5 ---------------- */}
-                <h3 className="card-title mb-4 underline text-center">
-                  Condition Details (5/5)
+              {/* ── Media & Links ── */}
+              <section className="space-y-4">
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Media & Links
                 </h3>
-
                 <CustomInput
                   control={form.control}
                   name="nhs_link"
-                  label="NHS Link for this Condition"
+                  label="NHS Link"
                   type="text"
                   readOnly={false}
                 />
-
-             
-
-                {/* Contact Your Doctor */}
                 <ImageDropZone
                   filePath={filePath}
-                  text="Drop media for the Condition"
+                  text="Drop condition image here"
                   onFilesChange={(url) =>
                     url.map((u) => form.setValue("image_url", u))
                   }
                   initialFiles={[form.watch("image_url")]}
                 />
+              </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(4)}
-                    disabled={isSubmitting}
-                  >
-                    Back
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    className="md:col-span-2 bg-emerald-600"
-                    disabled={isSubmitting}
-                  >
-                    {isPending ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : isEditMode ? (
-                      "Update Condition"
-                    ) : (
-                      "Register Condition"
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-          </form>
-        </Form>
+              {/* ── Actions ── */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={close}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : isEditMode ? (
+                    "Update Condition"
+                  ) : (
+                    "Register Condition"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -56,6 +56,7 @@ export function FontSizeToolbarPlugin() {
   return (
     <ButtonGroup>
       <Button
+        type="button"
         variant="outline"
         size="sm"
         className="!size-8"
@@ -74,6 +75,7 @@ export function FontSizeToolbarPlugin() {
         max={MAX_FONT_SIZE}
       />
       <Button
+        type="button"
         variant="outline"
         size="sm"
         className="!size-8"
