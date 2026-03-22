@@ -105,7 +105,7 @@ import { TWEET } from "@/components/editor/transformers/markdown-tweet-transform
 import { Separator } from "@/components/ui/separator";
 
 const placeholder = "Enter details...";
-const maxLength = 5000;
+const maxLength = 10000;
 
 export function Plugins({}) {
   const [floatingAnchorElem, setFloatingAnchorElem] =
