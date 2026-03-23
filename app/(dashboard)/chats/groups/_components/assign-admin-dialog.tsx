@@ -40,16 +40,22 @@ const AssignAdminDialog = () => {
     defaultValues: {
       conversation_id: entityId || "",
       user_id: "",
+      facility_id: "",
       role: "admin",
     },
   });
 
-  // Update form when entityId changes
+  // Update form when entityId changes or conversation data is available
   React.useEffect(() => {
     if (entityId) {
       form.setValue("conversation_id", entityId);
     }
-  }, [entityId, form]);
+    if (conversation?.facility_id) {
+      form.setValue("facility_id", conversation.facility_id);
+    } else {
+      form.setValue("facility_id", "");
+    }
+  }, [entityId, conversation, form]);
 
   const onSubmit = (values: TAssignAdminInput) => {
     // Validate selected user's role before attempting to assign.

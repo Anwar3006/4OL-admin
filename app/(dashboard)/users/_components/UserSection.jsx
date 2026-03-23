@@ -42,7 +42,9 @@ export default function AdminSection() {
     userType: "customer"
   });
 
-  // Business Providers Query
+  // Business Providers Query — includes "both" user type since they have
+  // an active business profile. The server action maps "business" → IN
+  // ("business_provider", "both") so both sets appear in this table.
   const { 
     data: providerData, 
     isLoading: isProviderLoading, 
@@ -53,7 +55,7 @@ export default function AdminSection() {
     limit,
     search: debouncedSearch,
     admin: false,
-    userType: "business_provider"
+    userType: "business"
   });
 
   const customerPaginationHandlers = useMemo(

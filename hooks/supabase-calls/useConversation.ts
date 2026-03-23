@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { TConversationOutput } from "@/schemas/conversation.schema";
 import { toast } from "sonner";
+import { assignAdminWithRulesAction } from "@/actions/conversation.actions";
 
 export const CONVERSATION_QUERY_KEYS = {
   all: ["conversations"] as const,
@@ -39,7 +40,8 @@ export const useConversations = ({
             last_name,
             phone_number
           ),
-          conversation_members (count)
+          conversation_members (count),
+          facility_conversations (facility_id)
           `,
           { count: "exact" },
         )
@@ -55,6 +57,7 @@ export const useConversations = ({
         conversations: (conversations || []).map((c: any) => ({
           ...c,
           member_count: c.conversation_members?.[0]?.count ?? 0,
+          facility_id: c.facility_conversations?.[0]?.facility_id || null,
         })) as TConversationOutput[],
         meta: {
           totalPages: Math.ceil(totalCount / limit),
@@ -73,29 +76,24 @@ export const useAssignAdmin = () => {
     mutationFn: async ({
       conversation_id,
       user_id,
+      facility_id,
       role,
     }: {
       conversation_id: string;
       user_id: string;
+      facility_id: string;
       role: string;
     }) => {
-      // Update last_message_at to ensure it shows up in conversation list
-      await supabase
-        .from("conversations")
-        .update({
-          last_message_at: new Date().toISOString(),
-          last_message_preview: "System: Rules of Conduct updated",
-        })
-        .eq("id", conversation_id);
-
-      // Insert Rules of Conduct as a system message
-      await supabase.from("messages").insert({
+      // Single atomic RPC — updates conversations, inserts the system message,
+      // and assigns the admin in conversation_members, all in one Postgres
+      // transaction via the server action.
+      const { error } = await assignAdminWithRulesAction(
         conversation_id,
-        sender_id: user_id, // The assigned admin/leader
-        content:
-          "RULES OF CONDUCT:\n1. Be respectful to all members.\n2. No spam or self-promotion.\n3. Keep discussions relevant to health.\n4. Protect your privacy and others'.",
-        message_type: "system",
-      });
+        user_id,
+        facility_id,
+        role,
+      );
+      if (error) throw new Error(error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CONVERSATION_QUERY_KEYS.all });
@@ -106,6 +104,7 @@ export const useAssignAdmin = () => {
     },
   });
 };
+
 export const useMakeGroupLeader = () => {
   const queryClient = useQueryClient();
 

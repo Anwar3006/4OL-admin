@@ -4,23 +4,20 @@ import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontal
 import { ScissorsIcon } from "lucide-react"
 
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
-import { SelectItem } from "@/components/ui/select"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 export function InsertHorizontalRule() {
   const { activeEditor } = useToolbarContext()
 
   return (
-    <SelectItem
-      value="horizontal-rule"
-      onPointerUp={() =>
+    <DropdownMenuItem
+      onSelect={() =>
         activeEditor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)
       }
-      className=""
+      className="cursor-pointer"
     >
-      <div className="flex items-center gap-1">
-        <ScissorsIcon className="size-4" />
-        <span>Horizontal Rule</span>
-      </div>
-    </SelectItem>
+      <ScissorsIcon className="mr-2 h-4 w-4" />
+      <span>Horizontal Rule</span>
+    </DropdownMenuItem>
   )
 }

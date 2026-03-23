@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getPresignedUploadUrl } from "@/actions/media-storage.actions";
 
 export interface UploadImageResult {
   publicUrl: string;
@@ -6,40 +6,57 @@ export interface UploadImageResult {
 }
 
 /**
- * Uploads an image file to Supabase storage
+ * Uploads an image file to Supabase storage using a presigned URL
+ * This bypasses client-side RLS by using a server action with an admin client
  * @param file - The image file to upload
- * @param bucket - The storage bucket name (default: 'media' or your main bucket)
+ * @param bucket - The storage bucket name (optional, uses env default)
  * @param path - The path within the bucket (default: 'richTextImages')
  * @returns Object with publicUrl or error
  */
 export async function uploadImageToSupabase(
   file: File,
-  bucket: string,
+  bucket?: string,
   path: string = "richTextImages",
 ): Promise<UploadImageResult> {
   try {
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+    
     // Generate unique filename
     const fileExt = file.name.split(".").pop();
     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
 
-    // Construct full path: /richTextImages/filename.extension
+    // Construct full path
     const fullPath = path ? `${path}/${fileName}` : fileName;
 
-    // Upload to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(fullPath, file);
+    // Step 1: Get presigned URL from server action
+    const result = await getPresignedUploadUrl(fullPath);
 
-    if (uploadError) {
-      throw uploadError;
+    if (!result.success) {
+      throw new Error(result.error);
     }
 
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(bucketName).getPublicUrl(fullPath);
+    const { signedUrl } = result.data!;
+
+    // Step 2: Upload to the signed URL using PUT
+    const response = await fetch(signedUrl, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": file.type,
+        "x-upsert": "true",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed with status ${response.status}: ${errorText}`);
+    }
+
+    // Step 3: Construct the public URL
+    // We assume the bucket is public or we construct the standard Supabase public URL
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${fullPath}`;
 
     return { publicUrl };
   } catch (error) {
@@ -53,11 +70,6 @@ export async function uploadImageToSupabase(
 
 /**
  * Uploads a blob/base64 image to Supabase storage
- * @param blob - The image blob to upload
- * @param filename - Original filename (used to get extension)
- * @param bucket - The storage bucket name (default: 'media' or your main bucket)
- * @param path - The path within the bucket (default: 'richTextImages')
- * @returns Object with publicUrl or error
  */
 export async function uploadBlobToSupabase(
   blob: Blob,
@@ -66,29 +78,9 @@ export async function uploadBlobToSupabase(
   path: string = "richTextImages",
 ): Promise<UploadImageResult> {
   try {
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || bucket;
-    // Generate unique filename
-    const fileExt = filename.split(".").pop() || "png";
-    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-
-    // Construct full path: /richTextImages/filename.extension
-    const fullPath = path ? `${path}/${fileName}` : fileName;
-
-    // Upload to Supabase storage
-    const { error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(fullPath, blob);
-
-    if (uploadError) {
-      throw uploadError;
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(bucket).getPublicUrl(fullPath);
-
-    return { publicUrl };
+    // Convert blob to File if needed or just use blob
+    const file = new File([blob], filename, { type: blob.type });
+    return await uploadImageToSupabase(file, bucket, path);
   } catch (error) {
     console.error("Blob upload failed:", error);
     return {
@@ -97,3 +89,4 @@ export async function uploadBlobToSupabase(
     };
   }
 }
+

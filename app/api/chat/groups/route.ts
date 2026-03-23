@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, description, memberIds, avatar_url } = await req.json();
+    const { name, description, memberIds, avatar_url, facilityId } = await req.json();
 
     const admin = getSupabaseAdmin();
 
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       p_created_by: session.user.id,
       p_member_ids: memberIds || [],
       p_avatar_url: avatar_url || null,
+      p_facility_id: facilityId || null,
     });
 
     if (error) {

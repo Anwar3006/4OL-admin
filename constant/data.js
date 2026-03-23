@@ -138,6 +138,14 @@ export const menuItems = [
     link: "marketing",
     child: [
       {
+        childtitle: "Overview",
+        childlink: "marketing/overview",
+      },
+      {
+        childtitle: "Campaigns",
+        childlink: "marketing",
+      },
+      {
         childtitle: "Subscriptions",
         childlink: "marketing/subscriptions",
       },

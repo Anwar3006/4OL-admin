@@ -50,11 +50,12 @@ export function InsertImageDialog({
       reader.readAsDataURL(file);
 
       // Upload to Supabase Storage
-      // const result = await uploadImageToSupabase(file);
+      // Default bucket from env or "bucket4ol", path "richTextImages"
+      const result = await uploadImageToSupabase(file, "bucket4ol", "richTextImages");
 
-      // if (result.error) throw result.error;
+      if (result.error) throw result.error;
 
-      // setImageUrl(result.publicUrl);
+      setImageUrl(result.publicUrl);
       setAltText(file.name.replace(/\.[^/.]+$/, ""));
     } catch (err) {
       console.error("Upload failed:", err);
@@ -93,7 +94,6 @@ export function InsertImageDialog({
     activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, {
       src: imageUrl,
       altText: altText || "Image",
-      // If your ImageNode supports captions, include it here
       caption: caption || undefined,
     });
 
@@ -106,7 +106,6 @@ export function InsertImageDialog({
     setError(null);
   };
 
-  // --- The Actual Return ---
   return (
     <div className="w-full max-w-lg p-1">
       {/* Mode Toggle */}
@@ -216,3 +215,4 @@ export function InsertImageDialog({
     </div>
   );
 }
+

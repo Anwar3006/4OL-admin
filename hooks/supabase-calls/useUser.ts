@@ -1,4 +1,6 @@
+import { getUsers } from "@/actions/user.actions";
 import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type {
   TAdminInviteSchema,
   TUserProfile,
@@ -47,88 +49,18 @@ export const useUsers = (params: Pagination) => {
     queryFn: async () => {
       const limit = params.limit || 10;
       const page = params.page || 1;
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
       const admin = params.admin || false;
 
       // 1. Build the Base Query with Join
       // We join 'users' table (via Better Auth) using foreign key 'user_id'
-      let query = supabase.from("user_profiles").select(
-        `
-          *,
-          user:user (
-            id,
-            name,
-            email,
-            created_at
-          )
-        `,
-        { count: "exact" },
-      );
-
-      // 2. Role Condition
-      if (admin) {
-        query = query.in("role", ["admin", "super_admin", "registrar"]);
-      } else {
-        query = query.eq("role", "user");
-      }
-      
-      // 2.5 User Type Filter
-      if (params.userType) {
-        query = query.eq("user_type", params.userType);
-      }
-
-      // 3. Status Filter
-      if (params.status) {
-        query = query.eq("status", params.status);
-      }
-
-      // 4. Search Filter (ILike across multiple columns)
-      if (params.search) {
-        query = query.or(
-          `first_name.ilike.%${params.search}%,last_name.ilike.%${params.search}%,phone_number.ilike.%${params.search}%`,
-        );
-      }
-
-      const { data, count, error } = await query
-        .range(from, to)
-        .order("created_at", { ascending: false });
-
-      if (error) throw new Error(error.message);
-
-      console.log("Hooksss: ", data, count);
-
-      const statsQuery = supabase.from("user_profiles").select("status");
-      if (admin) {
-        statsQuery.in("role", ["admin", "super_admin", "registrar"]);
-      } else {
-        statsQuery.eq("role", "user");
-        if (params.userType) {
-          statsQuery.eq("user_type", params.userType);
-        }
-      }
-
-      const { data: statsData } = await statsQuery;
-
-      const analytics = (statsData || []).reduce(
-        (acc, curr) => {
-          if (curr.status in acc) acc[curr.status as keyof typeof acc]++;
-          return acc;
-        },
-        { active: 0, pending: 0, inactive: 0, suspended: 0 },
-      );
-
-      const userData = data?.map((user) => ({ ...user, ...user.user }));
-
-      return {
-        users: userData as any[],
-        meta: {
-          total: count || 0,
-          totalPages: Math.ceil((count || 0) / limit),
-          currentPage: page,
-        },
-        analytics,
-      };
+      return await getUsers({
+        page,
+        limit,
+        admin,
+        status: params.status,
+        search: params.search,
+        userType: params.userType,
+      });
     },
     enabled: true,
   });

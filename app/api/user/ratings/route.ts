@@ -40,3 +40,33 @@ export async function PATCH(req: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const facilityId = searchParams.get("facilityId");
+  const userId = searchParams.get("userId");
+
+  if (!facilityId) {
+    return NextResponse.json({ error: "facilityId is required" }, { status: 400 });
+  }
+
+  const admin = getSupabaseAdmin();
+  let query = admin
+    .from("facility_ratings")
+    .select("*, user_profiles(id, first_name, last_name, avatar_url)")
+    .eq("facility_id", facilityId)
+    .order("created_at", { ascending: false });
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("[ratings] GET error:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ data });
+}

@@ -12,8 +12,9 @@ export const conversationSchema = z.object({
   updated_at: z.string(),
   last_message_at: z.string().nullable(),
   last_message_preview: z.string().nullable(),
-  last_message_sender: z.string().uuid().nullable(),
+  last_message_sender: z.string().uuid().nullable().optional(),
   member_count: z.number().optional(),
+  facility_id: z.string().uuid().nullable().optional(),
   user_profiles: z
     .object({
       first_name: z.string().nullable(),
@@ -29,6 +30,7 @@ export type TConversationOutput = z.infer<typeof conversationSchema>;
 export const assignAdminSchema = z.object({
   conversation_id: z.string(),
   user_id: z.string(),
+  facility_id: z.string(),
   role: z.enum(["super_admin", "admin", "group_leader"]),
 });
 

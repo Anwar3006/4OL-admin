@@ -4,23 +4,20 @@ import { INSERT_EMBED_COMMAND } from "@lexical/react/LexicalAutoEmbedPlugin"
 
 import { useToolbarContext } from "@/components/editor/context/toolbar-context"
 import { EmbedConfigs } from "@/components/editor/plugins/embeds/auto-embed-plugin"
-import { SelectItem } from "@/components/ui/select"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 export function InsertEmbeds() {
   const { activeEditor } = useToolbarContext()
   return EmbedConfigs.map((embedConfig) => (
-    <SelectItem
+    <DropdownMenuItem
       key={embedConfig.type}
-      value={embedConfig.type}
-      onPointerUp={() => {
+      onSelect={() => {
         activeEditor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type)
       }}
-      className=""
+      className="cursor-pointer"
     >
-      <div className="flex items-center gap-1">
-        {embedConfig.icon}
-        <span>{embedConfig.contentName}</span>
-      </div>
-    </SelectItem>
+      <span className="mr-2">{embedConfig.icon}</span>
+      <span>{embedConfig.contentName}</span>
+    </DropdownMenuItem>
   ))
 }

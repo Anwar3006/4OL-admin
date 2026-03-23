@@ -3,6 +3,35 @@ import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 /**
+ * GET /api/user/profile
+ *
+ * Fetches the authenticated user's profile.
+ */
+export async function GET(req: NextRequest) {
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data, error } = await admin
+    .from("user_profiles")
+    .select("*, user:user(email)")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[user-profile] Supabase error:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Flatten the user email for consistency with the expected frontend structure
+  const profile = data ? { ...data, email: data.user?.email, user: null } : null;
+
+  return NextResponse.json(profile);
+}
+
+/**
  * PATCH /api/user/profile
  *
  * Updates the authenticated user's profile fields.

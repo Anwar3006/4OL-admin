@@ -37,14 +37,24 @@ export const userColumns: ColumnDef<TUserProfile>[] = [
   {
     accessorKey: "name",
     header: () => <div className="font-semibold">Name</div>,
-    cell: ({ row }) => (
-      <div className="flex flex-col min-w-37.5">
-        <div className="font-medium text-sm">{row.original.name}</div>
-        <div className="text-xs text-muted-foreground md:hidden truncate">
-          {row.original.email}
+    cell: ({ row }) => {
+      // `name` comes from the BetterAuth join; fall back to first_name + last_name
+      // from user_profiles in case BetterAuth stored name as null.
+      const displayName =
+        (row.original as any).name ||
+        [(row.original as any).first_name, (row.original as any).last_name]
+          .filter(Boolean)
+          .join(" ") ||
+        "—";
+      return (
+        <div className="flex flex-col min-w-37.5">
+          <div className="font-medium text-sm">{displayName}</div>
+          <div className="text-xs text-muted-foreground md:hidden truncate">
+            {row.original.email}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     accessorKey: "email",

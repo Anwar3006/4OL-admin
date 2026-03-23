@@ -19,52 +19,29 @@ export async function GET(req: NextRequest) {
   try {
     const admin = getSupabaseAdmin();
 
-    const { data, error } = await admin
-      .from("conversation_members")
-      .select(
-        `
-        unread_count,
-        is_archived,
-        conversations!conversation_id (
-          id,
-          type,
-          name,
-          avatar_url,
-          last_message_at,
-          last_message_preview,
-          members:conversation_members (
-            user_id,
-            role,
-            user_profiles:user_id (
-              first_name,
-              last_name
-            )
-          )
-        )
-      `,
-      )
-      .eq("user_id", session.user.id)
-      .is("left_at", null)
-      .eq("is_archived", false)
-      .order("last_message_at", {
-        referencedTable: "conversations",
-        ascending: false,
-      });
+    const { data, error } = await admin.rpc("get_conversations", {
+      p_user_id: session.user.id,
+      p_limit: 10, // Prefetch only the first 10
+    });
 
     if (error) {
       console.error("[chat/conversations] Supabase error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Filter out conversations that don't have a leader or admin
-    const filteredData = (data || []).filter((item: any) => {
-      const conv = item.conversations;
-      if (!conv) return false;
-      const members = conv.members || [];
-      return members.some((m: any) => m.role === "group_leader" || m.role === "admin" || m.role === "owner");
-    });
+    console.log("Conversations: ", JSON.stringify(data, null, 2));
 
-    return NextResponse.json(filteredData);
+    // Filter out conversations that don't have a leader or admin
+    // const filteredData = (data || []).filter((item: any) => {
+    //   const conv = item.conversations;
+    //   if (!conv) return false;
+    //   const members = conv.members || [];
+    //   return members.some(
+    //     (m: any) => m.role === "group_leader" || m.role === "admin",
+    //   );
+    // });
+
+    return NextResponse.json(data || []);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

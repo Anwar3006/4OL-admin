@@ -1,13 +1,12 @@
 "use client";
+
+import React, { useState, useCallback, useMemo } from "react";
+import { PlusSquare, Search } from "lucide-react";
 import { StatsCard, TableSkeleton } from "@/components/Data-Table/helpers";
 import SectionHeader from "@/components/SectionHeader";
 import { Input } from "@/components/ui/input";
-import { PlusSquare, Search } from "lucide-react";
-import React, { useState, useCallback, useMemo } from "react";
 import { createPaginationHandlers } from "@/lib/utils";
-
 import { DataTable } from "@/components/Data-Table/data-table";
-
 import {
   useAddMarketingDialog,
   useViewMarketingDialog,
@@ -18,7 +17,11 @@ import { marketingColumns } from "@/components/Data-Table/columns/marketingColum
 import { ViewMarketingDialog } from "./_components/view-marketing-dialog";
 import { marketingCardConfig } from "@/components/Data-Table/mobile-table-configs/marketingCardConfig";
 
+// Import Overview content components
+import Activity from "@/components/partials/auth/Marketing_Overview/activity";
+
 const MarketingPage = () => {
+  const [activeTab, setActiveTab] = useState("campaigns"); // "overview" or "campaigns"
   const addMarket = useAddMarketingDialog();
   const viewMarket = useViewMarketingDialog();
 
@@ -48,9 +51,6 @@ const MarketingPage = () => {
     setAdsPage(1); // Reset to first page
   };
 
-  // ⚡ Bolt Optimization: Memoize props for the `DataTable` component.
-  // `useCallback` and `useMemo` prevent these props from being recreated on every render,
-  // which would otherwise cause the memoized `DataTable` to re-render unnecessarily.
   const onRowClick = useCallback(
     (campaign: any) => viewMarket.open(campaign.id),
     [viewMarket],
@@ -72,6 +72,7 @@ const MarketingPage = () => {
   );
 
   const fetchingAds = false;
+
   return (
     <div className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
       <section>
@@ -79,88 +80,120 @@ const MarketingPage = () => {
           title="Marketing & Advertising"
           description="Manage your marketing and advertising campaigns."
           Icon={PlusSquare}
-          hasButton
+          hasButton={activeTab === "campaigns"}
           buttonLabel="Add Campaign"
           onButtonClick={() => addMarket.open()}
         />
 
-        {fetchingAds ? (
-          <TableSkeleton />
+        {/* Custom Tabs */}
+        <div className="flex border-b border-gray-200 mb-6 mt-4">
+          <button
+            className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
+              activeTab === "overview"
+                ? "border-b-2 border-emerald-500 text-emerald-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("overview")}
+          >
+            Overview
+          </button>
+          <button
+            className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
+              activeTab === "campaigns"
+                ? "border-b-2 border-emerald-500 text-emerald-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("campaigns")}
+          >
+            Campaigns
+          </button>
+        </div>
+
+        {activeTab === "overview" ? (
+          <div className="mt-4">
+            <Activity />
+          </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by headline or organization"
-                  className="pl-9 w-full"
-                  value={adsSearch}
-                  onChange={(e) => {
-                    setAdsSearch(e.target.value);
-                    setAdsPage(1);
-                  }}
+            {fetchingAds ? (
+              <TableSkeleton />
+            ) : (
+              <>
+                <div className="flex flex-col sm:row gap-3 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by headline or organization"
+                      className="pl-9 w-full"
+                      value={adsSearch}
+                      onChange={(e) => {
+                        setAdsSearch(e.target.value);
+                        setAdsPage(1);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+                  <StatsCard
+                    label="Total Campaigns"
+                    value={
+                      (adsData?.analytics?.draft || 0) +
+                      (adsData?.analytics?.scheduled || 0) +
+                      (adsData?.analytics?.live || 0) +
+                      (adsData?.analytics?.paused || 0) +
+                      (adsData?.analytics?.ended || 0)
+                    }
+                    onClick={() => handleStatusChange(undefined)}
+                    active={selectedStatus === undefined}
+                  />
+                  <StatsCard
+                    label="Draft"
+                    value={adsData?.analytics?.draft || 0}
+                    variant="neutral"
+                    onClick={() => handleStatusChange("draft")}
+                    active={selectedStatus === "draft"}
+                  />
+                  <StatsCard
+                    label="Scheduled"
+                    value={adsData?.analytics?.scheduled || 0}
+                    variant="info"
+                    onClick={() => handleStatusChange("scheduled")}
+                    active={selectedStatus === "scheduled"}
+                  />
+                  <StatsCard
+                    label="Live"
+                    value={adsData?.analytics?.live || 0}
+                    variant="success"
+                    onClick={() => handleStatusChange("live")}
+                    active={selectedStatus === "live"}
+                  />
+                  <StatsCard
+                    label="Paused"
+                    value={adsData?.analytics?.paused || 0}
+                    variant="warning"
+                    onClick={() => handleStatusChange("paused")}
+                    active={selectedStatus === "paused"}
+                  />
+                  <StatsCard
+                    label="Ended"
+                    value={adsData?.analytics?.ended || 0}
+                    variant="red"
+                    onClick={() => handleStatusChange("ended")}
+                    active={selectedStatus === "ended"}
+                  />
+                </div>
+
+                <DataTable
+                  columns={marketingColumns}
+                  data={adsData?.data || []}
+                  cardConfig={marketingCardConfig}
+                  onRowClick={onRowClick}
+                  pagination={pagination}
+                  isLoading={isLoading}
                 />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-              <StatsCard
-                label="Total Campaigns"
-                value={
-                  (adsData?.analytics?.draft || 0) +
-                  (adsData?.analytics?.scheduled || 0) +
-                  (adsData?.analytics?.live || 0) +
-                  (adsData?.analytics?.paused || 0) +
-                  (adsData?.analytics?.ended || 0)
-                }
-                onClick={() => handleStatusChange(undefined)}
-                active={selectedStatus === undefined}
-              />
-              <StatsCard
-                label="Draft"
-                value={adsData?.analytics?.draft || 0}
-                variant="neutral"
-                onClick={() => handleStatusChange("draft")}
-                active={selectedStatus === "draft"}
-              />
-              <StatsCard
-                label="Scheduled"
-                value={adsData?.analytics?.scheduled || 0}
-                variant="info"
-                onClick={() => handleStatusChange("scheduled")}
-                active={selectedStatus === "scheduled"}
-              />
-              <StatsCard
-                label="Live"
-                value={adsData?.analytics?.live || 0}
-                variant="success"
-                onClick={() => handleStatusChange("live")}
-                active={selectedStatus === "live"}
-              />
-              <StatsCard
-                label="Paused"
-                value={adsData?.analytics?.paused || 0}
-                variant="warning"
-                onClick={() => handleStatusChange("paused")}
-                active={selectedStatus === "paused"}
-              />
-              <StatsCard
-                label="Ended"
-                value={adsData?.analytics?.ended || 0}
-                variant="red"
-                onClick={() => handleStatusChange("ended")}
-                active={selectedStatus === "ended"}
-              />
-            </div>
-
-            <DataTable
-              columns={marketingColumns}
-              data={adsData?.data || []}
-              cardConfig={marketingCardConfig}
-              onRowClick={onRowClick}
-              pagination={pagination}
-              isLoading={isLoading}
-            />
+              </>
+            )}
           </>
         )}
 
