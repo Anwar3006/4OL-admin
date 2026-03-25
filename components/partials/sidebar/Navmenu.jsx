@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Collapse } from "react-collapse";
 import Icon from "@/components/ui/Icon";
 import { toggleActiveChat } from "@/components/partials/app/chat/store";
 import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
-import { supabase } from "@/app/utils/supabaseClient";
 import { usePermissionContext } from "@/stores/permission-context";
 import Submenu from "./Submenu";
 
@@ -25,7 +23,6 @@ const Navmenu = ({ menus, onLogout }) => {
   const [mobileMenu, setMobileMenu] = useMobileMenu();
   const dispatch = useDispatch();
 
-
   const toggleSubmenu = (i) => {
     setActiveSubmenu(activeSubmenu === i ? null : i);
   };
@@ -38,7 +35,7 @@ const Navmenu = ({ menus, onLogout }) => {
         submenuIndex = null;
       } else {
         const ciIndex = item.child.findIndex(
-          (ci) => ci.childlink === locationName
+          (ci) => ci.childlink === locationName,
         );
         if (ciIndex !== -1) {
           submenuIndex = i;
@@ -52,7 +49,8 @@ const Navmenu = ({ menus, onLogout }) => {
     }
   }, [router, location]);
 
-  const isSuperAdmin = userRole !== null && SUPER_ADMIN_ROLES.includes(userRole);
+  const isSuperAdmin =
+    userRole !== null && SUPER_ADMIN_ROLES.includes(userRole);
 
   return (
     <ul>
@@ -61,7 +59,8 @@ const Navmenu = ({ menus, onLogout }) => {
           // Hide "Admins" for non-super-admins
           if (item.title === "Admins" && !isSuperAdmin) return false;
           // Hide "Delete Account Request" for non-super-admins
-          if (item.title === "Delete Account Request" && !isSuperAdmin) return false;
+          if (item.title === "Delete Account Request" && !isSuperAdmin)
+            return false;
           return true;
         })
         .map((item, i) => (

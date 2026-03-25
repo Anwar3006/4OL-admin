@@ -137,10 +137,10 @@ export const menuItems = [
     icon: "hugeicons:marketing",
     link: "marketing",
     child: [
-      {
-        childtitle: "Overview",
-        childlink: "marketing/overview",
-      },
+      // {
+      //   childtitle: "Overview",
+      //   childlink: "marketing/overview",
+      // },
       {
         childtitle: "Campaigns",
         childlink: "marketing",

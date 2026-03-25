@@ -37,24 +37,42 @@ export default function DeleteUserAccountListing() {
       const to = from + pageSize - 1;
   
       const {
-        data: fetchedData,
+        data: fetchedRequests,
         error,
         count,
       } = await supabase
-        .from("user_profiles")
+        .from("delete_account_requests")
         .select("*", { count: "exact" })
-        .eq("delete_account_request", true)
-        .eq("is_deleted", false)
-        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .range(from, to);
   
       if (error) {
         console.error("Error fetching data:", error);
         return;
       }
-  
-      setData(fetchedData || []);
-      setTotalPages(Math.ceil(count / pageSize));
+
+      if (fetchedRequests && fetchedRequests.length > 0) {
+        const userIds = fetchedRequests.map(r => r.user_id);
+        const { data: profiles } = await supabase
+          .from("user_profiles")
+          .select("user_id, first_name, last_name, phone_number, sex")
+          .in("user_id", userIds);
+        
+        const mergedData = fetchedRequests.map(req => {
+            const profile = profiles?.find(p => p.user_id === req.user_id) || {};
+            return {
+                ...req,
+                first_name: profile.first_name || "Unknown",
+                last_name: profile.last_name || "Unknown",
+                phone_number: profile.phone_number || "N/A",
+                sex: profile.sex || "N/A"
+            };
+        });
+        setData(mergedData);
+      } else {
+        setData([]);
+      }
+      setTotalPages(Math.ceil((count || 0) / pageSize));
       
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -79,16 +97,8 @@ export default function DeleteUserAccountListing() {
       );
     })
     .sort((a, b) => {
-      if (
-        a.delete_account_request === "true" &&
-        b.delete_account_request !== "true"
-      )
-        return -1;
-      if (
-        a.delete_account_request !== "true" &&
-        b.delete_account_request === "true"
-      )
-        return 1;
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
       return 0;
     });
 
@@ -105,15 +115,28 @@ export default function DeleteUserAccountListing() {
     router.push(`users/view?id=${id}&from=delete-request-account`);
   };
 
-  const handleDeleteAccountStatusChange = async (newStatus, user) => {
+  const handleDeleteAccountStatusChange = async (newStatus, reqData) => {
     if (newStatus === "Approved") {
-      const { error } = await supabase
+      // Approve Request
+      const { error: reqError } = await supabase
+        .from("delete_account_requests")
+        .update({ status: "approved" })
+        .eq("id", reqData.id);
+
+      // Ban user in BetterAuth (update user table)
+      const { error: banError } = await supabase
+        .from("user")
+        .update({ banned: true })
+        .eq("id", reqData.user_id);
+
+      // Update user_profiles logically
+      await supabase
         .from("user_profiles")
         .update({ is_deleted: true })
-        .eq("id", user.id);
+        .eq("user_id", reqData.user_id);
 
-      if (error) {
-        console.error("Failed to update user deletion status:", error);
+      if (reqError || banError) {
+        console.error("Failed to update user deletion status:", reqError || banError);
         toast.error("Failed to update deletion status");
         return;
       }
@@ -121,13 +144,13 @@ export default function DeleteUserAccountListing() {
       // Update state locally
       setData((prevData) =>
         prevData.map((item) =>
-          item.id === user.id
-            ? { ...item, is_deleted: true, delete_account_request: false }
+          item.id === reqData.id
+            ? { ...item, status: "approved" }
             : item
         )
       );
 
-      toast.success("User Delete Account Request Approved");
+      toast.success("User Delete Account Request Approved and Access Revoked!");
       fetchData(); // Refresh data after update
     }
   };
@@ -193,7 +216,7 @@ export default function DeleteUserAccountListing() {
                       <CustomDropdown
                         options={["Pending", "Approved"]}
                         selectedValue={
-                          item.delete_account_request === true
+                          item.status === "pending"
                             ? "Pending"
                             : "Approved"
                         }
@@ -204,12 +227,12 @@ export default function DeleteUserAccountListing() {
                     ) : (
                       <span
                         className={`text-center ${
-                          item.delete_account_request === true
-                            ? "text-green-500 text-center"
-                            : "text-yellow-500 text-center"
+                          item.status === "pending"
+                            ? "text-yellow-500 text-center"
+                            : "text-green-500 text-center"
                         }`}
                       >
-                        {item.delete_account_request === true
+                        {item.status === "pending"
                             ? "Pending"
                             : "Approved"}
                       </span>
