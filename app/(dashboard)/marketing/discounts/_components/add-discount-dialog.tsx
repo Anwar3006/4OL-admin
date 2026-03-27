@@ -52,9 +52,9 @@ const AddDiscountDialog = () => {
       discountValue: 0,
       discountType: "percentage",
       code: "",
-      maxUses: undefined,
+      maxUses: 0,
       validFrom: new Date().toISOString().split("T")[0],
-      validUntil: undefined,
+      validUntil: "",
       isActive: true,
       appliesTo: "all",
       applicableItems: [],
@@ -72,7 +72,10 @@ const AddDiscountDialog = () => {
     }
   }, [isEditMode, editData, form]);
 
+  
+
   const onSubmit = async (values: TMarketingDiscountInput) => {
+    console.log("Form - ", values)
     try {
       if (isEditMode && editData?.id) {
         await updateDiscount.mutateAsync({
@@ -173,6 +176,7 @@ const AddDiscountDialog = () => {
               label="Max Uses (Optional)"
               type="number"
               placeholder="Leave empty for unlimited"
+              readOnly={false}
             />
 
             {/* Valid From */}
@@ -182,6 +186,8 @@ const AddDiscountDialog = () => {
                 control={form.control}
                 name="validFrom"
                 label=""
+                showTimePicker={true}
+                enableFutureDates={true}
               />
             </div>
 
@@ -192,6 +198,8 @@ const AddDiscountDialog = () => {
                 control={form.control}
                 name="validUntil"
                 label=""
+                showTimePicker={true}
+                enableFutureDates={true}
               />
             </div>
 

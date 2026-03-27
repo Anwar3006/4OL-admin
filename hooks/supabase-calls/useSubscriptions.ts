@@ -15,6 +15,22 @@ interface PaginatedResponse {
   };
 }
 
+type MarketingSubscriptionRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  tier_type: string;
+  price: number;
+  period: TMarketingSubscriptionOutput["period"];
+  billing_cycle: TMarketingSubscriptionOutput["billingCycle"];
+  privileges: TMarketingSubscriptionOutput["privileges"] | null;
+  tier_limit: number | null;
+  is_active: boolean | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type SubscriptionPaginationInput = {
   page: number;
   limit: number;
@@ -31,6 +47,38 @@ export const MARKETING_SUBSCRIPTION_QUERY_KEYS = {
   detail: (id: string) =>
     [...MARKETING_SUBSCRIPTION_QUERY_KEYS.details(), id] as const,
 };
+
+const mapSubscriptionRow = (
+  row: MarketingSubscriptionRow,
+): TMarketingSubscriptionOutput => ({
+  id: row.id,
+  name: row.name,
+  description: row.description ?? "",
+  tierType: row.tier_type,
+  price: Number(row.price ?? 0),
+  period: row.period,
+  billingCycle: row.billing_cycle,
+  privileges: row.privileges ?? [],
+  tierLimit: row.tier_limit ?? 0,
+  isActive: row.is_active ?? true,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+  createdBy: row.created_by,
+});
+
+const buildSubscriptionPayload = (
+  data: Partial<TMarketingSubscriptionInput>,
+) => ({
+  name: data.name,
+  description: data.description,
+  tier_type: data.tierType,
+  price: data.price,
+  period: data.period,
+  billing_cycle: data.billingCycle,
+  privileges: data.privileges,
+  tier_limit: data.tierLimit,
+  is_active: data.isActive,
+});
 
 export const useMarketingSubscriptions = ({
   page,
@@ -72,7 +120,9 @@ export const useMarketingSubscriptions = ({
       const totalCount = result.count ?? 0;
 
       return {
-        data: result.data as TMarketingSubscriptionOutput[],
+        data: ((result.data || []) as MarketingSubscriptionRow[]).map(
+          mapSubscriptionRow,
+        ),
         meta: {
           totalPages: Math.ceil(totalCount / limit),
           total: totalCount,
@@ -100,7 +150,7 @@ export const useMarketingSubscription = ({
         .single();
 
       if (error) throw new Error(error.message);
-      return data as TMarketingSubscriptionOutput;
+      return mapSubscriptionRow(data as MarketingSubscriptionRow);
     },
     enabled: enabled,
   });
@@ -117,24 +167,17 @@ export const useCreateMarketingSubscription = () => {
     TMarketingSubscriptionInput
   >({
     mutationFn: async (data: TMarketingSubscriptionInput) => {
-      const inputData = {
-        ...data,
-        billing_cycle: data.billingCycle,
-        max_users: data.maxUsers,
-        is_active: data.isActive,
-      };
-
       const { data: result, error } = await supabase
         .from("marketing_subscriptions")
-        .insert(inputData)
+        .insert(buildSubscriptionPayload(data))
         .select()
         .single();
 
       if (error) throw new Error(error.message);
-      return result as TMarketingSubscriptionOutput;
+      return mapSubscriptionRow(result as MarketingSubscriptionRow);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
       });
       toast.success("Subscription created successfully!");
@@ -154,27 +197,25 @@ export const useUpdateMarketingSubscription = () => {
     { id: string; data: Partial<TMarketingSubscriptionInput> }
   >({
     mutationFn: async ({ id, data: input }) => {
-      const inputData = {
-        ...input,
-        billing_cycle: input.billingCycle,
-        max_users: input.maxUsers,
-        is_active: input.isActive,
-      };
-
       const { data: result, error } = await supabase
         .from("marketing_subscriptions")
-        .update(inputData)
+        .update(buildSubscriptionPayload(input))
         .eq("id", id)
         .select()
         .single();
 
       if (error) throw new Error(error.message);
-      return result as TMarketingSubscriptionOutput;
+      return mapSubscriptionRow(result as MarketingSubscriptionRow);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
-      });
+    onSuccess: async (result) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.detail(result.id),
+        }),
+      ]);
       toast.success("Subscription updated successfully!");
     },
     onError: (error) => {
@@ -195,10 +236,15 @@ export const useDeleteMarketingSubscription = () => {
 
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
-      });
+    onSuccess: async (_, id) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
+        }),
+        queryClient.removeQueries({
+          queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.detail(id),
+        }),
+      ]);
       toast.success("Subscription deleted successfully!");
     },
     onError: (error) => {

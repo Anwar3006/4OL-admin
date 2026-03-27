@@ -1,115 +1,106 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Hospital, Loader2, Star } from "lucide-react";
-
+import React, { useMemo, useState, useCallback } from "react";
+import { Star, Loader2, Search } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
-import { StatsCard } from "@/components/Data-Table/helpers";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns";
+import { featuredFacilityColumns } from "@/components/Data-Table/columns/featuredFacilityColumns";
 import { createPaginationHandlers } from "@/lib/utils";
+import { useFeaturedFacilities } from "@/hooks/supabase-calls/useFacilities";
+import { useFacilityToggleDialog } from "@/stores/dialog-store";
+import FacilityToggleModal from "../_components/facility-toggle-modal";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const FeaturedFacilitiesPage = () => {
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const limit = 10;
 
-  // Mock data - replace with actual hook when backend is ready
-  const mockData = {
-    data: [],
-    meta: { totalPages: 1, total: 0 },
-    totalRegistered: 0,
-    analytics: {
-      active: 0,
-      pending: 0,
-      inactive: 0,
-      rejected: 0,
-    },
-    typeCounts: {},
+  const toggleDialog = useFacilityToggleDialog();
+
+  const { data, isLoading } = useFeaturedFacilities({ page, limit, search });
+
+  const handleSearch = () => {
+    setPage(1);
+    setSearch(searchInput.trim());
   };
 
-  const isLoading = false;
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   const facilitiesPagination = useMemo(
-    () => createPaginationHandlers(page, setPage, mockData?.meta?.totalPages),
-    [page, mockData?.meta?.totalPages],
+    () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
+    [page, data?.meta?.totalPages],
   );
 
   const pagination = useMemo(
     () => ({
       currentPage: page,
-      totalPages: mockData?.meta?.totalPages || 1,
-      totalItems: mockData?.meta?.total || 0,
+      totalPages: data?.meta?.totalPages || 1,
+      totalItems: data?.meta?.total || 0,
       pageSize: limit,
       onPageChange: facilitiesPagination.goTo,
       onNextPage: facilitiesPagination.next,
       onPreviousPage: facilitiesPagination.previous,
-      canNextPage: page < (mockData?.meta?.totalPages || 1),
+      canNextPage: page < (data?.meta?.totalPages || 1),
       canPreviousPage: page > 1,
     }),
-    [page, mockData, facilitiesPagination],
+    [page, data, facilitiesPagination],
+  );
+
+  const handleRowClick = useCallback(
+    (row) => {
+      toggleDialog.open(row);
+    },
+    [toggleDialog],
   );
 
   return (
-    <section className="mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-10 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
-      <div className="mb-5">
-        <SectionHeader
-          title="Featured Facilities"
-          description="View featured and promoted healthcare facilities"
-          Icon={Star}
-          hasButton={false}
-        />
+    <section className="mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
+      <SectionHeader
+        title="Featured Facilities"
+        description="Manage featured and promoted healthcare facilities"
+        Icon={Star}
+        hasButton={false}
+      />
 
-        {isLoading ? (
-          <div className="w-full h-30 flex items-center justify-center gap-2">
-            <Loader2 size={24} className="animate-spin" />
-            Loading Facilities...
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <StatsCard
-              label="Total Featured"
-              value={mockData?.totalRegistered || 0}
-              onClick={() => {}}
-              active={true}
-            />
-            <StatsCard
-              label="Active"
-              value={mockData?.analytics?.active || 0}
-              variant="success"
-              onClick={() => {}}
-              active={false}
-            />
-            <StatsCard
-              label="Pending"
-              value={mockData?.analytics?.pending || 0}
-              variant="warning"
-              onClick={() => {}}
-              active={false}
-            />
-            <StatsCard
-              label="Inactive"
-              value={mockData?.analytics?.inactive || 0}
-              variant="neutral"
-              onClick={() => {}}
-              active={false}
-            />
-            <StatsCard
-              label="Rejected"
-              value={mockData?.analytics?.rejected || 0}
-              variant="red"
-              onClick={() => {}}
-              active={false}
-            />
-          </div>
-        )}
-
-        <DataTable
-          columns={facilityColumns}
-          data={mockData?.data || []}
-          pagination={pagination}
-          isLoading={isLoading}
+      {/* Search */}
+      <div className="flex items-center gap-2 max-w-md">
+        <Input
+          placeholder="Search by name or region..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="h-9"
         />
+        <Button size="sm" onClick={handleSearch} className="gap-1.5 shrink-0">
+          <Search className="h-4 w-4" />
+          Search
+        </Button>
       </div>
+
+      {/* Stats bar */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Star className="h-4 w-4 text-amber-500" />
+        <span>
+          <strong className="text-foreground">{data?.meta?.total ?? 0}</strong>{" "}
+          featured {data?.meta?.total === 1 ? "facility" : "facilities"}
+          {search && ` matching "${search}"`}
+        </span>
+      </div>
+
+      <DataTable
+        columns={featuredFacilityColumns}
+        data={data?.facilities || []}
+        pagination={pagination}
+        isLoading={isLoading}
+        onRowClick={handleRowClick}
+      />
+
+      <FacilityToggleModal />
     </section>
   );
 };

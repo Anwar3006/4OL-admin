@@ -217,18 +217,138 @@ export const useGetFacilitiesMapData = ({
   });
 };
 
-//TODO: Test this hook
-export const getTopRatedFacilities = async () => {
-  return useQuery<TFacilityProfileOutput[], Error>({
-    queryKey: FACILITY_PROFILE_QUERY_KEYS.all,
+type FeaturedTopRatedParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
+export const FEATURED_QUERY_KEYS = {
+  all: ["featured-facilities"] as const,
+  lists: () => [...FEATURED_QUERY_KEYS.all, "list"] as const,
+  list: (params: FeaturedTopRatedParams) =>
+    [...FEATURED_QUERY_KEYS.lists(), { ...params }] as const,
+};
+
+export const TOP_RATED_QUERY_KEYS = {
+  all: ["top-rated-facilities"] as const,
+  lists: () => [...TOP_RATED_QUERY_KEYS.all, "list"] as const,
+  list: (params: FeaturedTopRatedParams) =>
+    [...TOP_RATED_QUERY_KEYS.lists(), { ...params }] as const,
+};
+
+export const useFeaturedFacilities = (params: FeaturedTopRatedParams) => {
+  const { page = 1, limit = 10, search } = params;
+  return useQuery<any, Error>({
+    queryKey: FEATURED_QUERY_KEYS.list(params),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      let query = supabase
         .from("facility_profile")
-        .select("*")
-        .gte("rating", 4)
-        .order("avg_rating", { ascending: false });
-      if (error) throw new Error(error.message);
-      return data;
+        .select("*", { count: "exact" })
+        .eq("is_featured", true);
+
+      if (search) {
+        query = query.or(
+          `facility_name.ilike.%${search}%,region.ilike.%${search}%`,
+        );
+      }
+
+      const { data, count, error } = await query
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      const total = count ?? 0;
+      return {
+        facilities: data,
+        meta: {
+          total,
+          totalPages: Math.ceil(total / limit),
+          currentPage: page,
+        },
+      };
+    },
+  });
+};
+
+export const useTopRatedFacilities = (params: FeaturedTopRatedParams) => {
+  const { page = 1, limit = 10, search } = params;
+  return useQuery<any, Error>({
+    queryKey: TOP_RATED_QUERY_KEYS.list(params),
+    queryFn: async () => {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      let query = supabase
+        .from("facility_profile")
+        .select("*", { count: "exact" })
+        .eq("is_top_rated", true);
+
+      if (search) {
+        query = query.or(
+          `facility_name.ilike.%${search}%,region.ilike.%${search}%`,
+        );
+      }
+
+      const { data, count, error } = await query
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      const total = count ?? 0;
+      return {
+        facilities: data,
+        meta: {
+          total,
+          totalPages: Math.ceil(total / limit),
+          currentPage: page,
+        },
+      };
+    },
+  });
+};
+
+export const useToggleFacilityFeatured = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+      const { error } = await supabase
+        .from("facility_profile")
+        .update({ is_featured: value })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FEATURED_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
+      toast.success("Featured status updated!");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update: ${error.message}`);
+    },
+  });
+};
+
+export const useToggleFacilityTopRated = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+      const { error } = await supabase
+        .from("facility_profile")
+        .update({ is_top_rated: value })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TOP_RATED_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
+      toast.success("Top Rated status updated!");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update: ${error.message}`);
     },
   });
 };

@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { TChallengeInput, TChallengeOutput } from '@/schemas/challenge.schema';
 
+const CHALLENGE_TABLE = 'healthy_living_challenge';
+
 export const CHALLENGE_QUERY_KEYS = {
   all: ['challenges'] as const,
   lists: () => [...CHALLENGE_QUERY_KEYS.all, 'list'] as const,
@@ -18,7 +20,7 @@ export const useChallenges = ({ page, limit }: { page: number; limit: number }) 
       const from = (page - 1) * limit;
       const to = from + limit - 1;
       const { data, count, error } = await supabase
-        .from('challenges')
+        .from(CHALLENGE_TABLE)
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -35,7 +37,7 @@ export const useChallenge = (id: string | null) => {
   return useQuery({
     queryKey: CHALLENGE_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const { data, error } = await supabase.from('challenges').select('*').eq('id', id!).single();
+      const { data, error } = await supabase.from(CHALLENGE_TABLE).select('*').eq('id', id!).single();
       if (error) throw new Error(error.message);
       return data as TChallengeOutput;
     },
@@ -47,12 +49,12 @@ export const useCreateChallenge = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: TChallengeInput) => {
-      const { data: result, error } = await supabase.from('challenges').insert(data).select().single();
+      const { data: result, error } = await supabase.from(CHALLENGE_TABLE).insert(data).select().single();
       if (error) throw new Error(error.message);
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
       toast.success('Challenge created successfully!');
     },
   });
@@ -61,12 +63,15 @@ export const useUpdateChallenge = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TChallengeInput }) => {
-      const { data: result, error } = await supabase.from('challenges').update(data).eq('id', id).select().single();
+      const { data: result, error } = await supabase.from(CHALLENGE_TABLE).update(data).eq('id', id).select().single();
       if (error) throw new Error(error.message);
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
+    onSuccess: async (result) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all }),
+        queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.detail(result.id) }),
+      ]);
       toast.success('Challenge updated successfully!');
     },
   });
@@ -76,12 +81,15 @@ export const useDeleteChallenge = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('challenges').delete().eq('id', id);
+      const { error } = await supabase.from(CHALLENGE_TABLE).delete().eq('id', id);
       if (error) throw new Error(error.message);
       return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
+    onSuccess: async (_, id) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all }),
+        queryClient.removeQueries({ queryKey: CHALLENGE_QUERY_KEYS.detail(id) }),
+      ]);
       toast.success('Challenge deleted successfully!');
     },
   });

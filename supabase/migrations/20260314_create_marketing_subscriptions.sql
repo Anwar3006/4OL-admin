@@ -1,14 +1,40 @@
 -- Marketing Subscriptions Table
+CREATE TYPE public.subscription_privilege AS ENUM (
+    'business_analytics',
+    'performance_analytics',
+    'popup_notification',
+    'top_rated_placement',
+    'featured_placement',
+    'ad_discount_10',
+    'ad_discount_25',
+    'ad_discount_30',
+    'ad_discount_40',
+    'ad_discount_50',
+    'ad_flyer_discount_10',
+    'advanced_analytics',
+    'priority_support'
+);
+
 CREATE TABLE IF NOT EXISTS public.marketing_subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
     description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    billing_cycle TEXT DEFAULT 'monthly' CHECK (billing_cycle IN ('monthly', 'quarterly', 'yearly', 'one-time')),
-    features JSONB DEFAULT '[]'::jsonb,
-    max_users INTEGER,
+    tier_type TEXT NOT NULL, -- Renamed from 'type' to avoid reserved keyword confusion
+    price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    
+    -- Using the constraints you defined
+    period TEXT DEFAULT 'free' 
+        CHECK (period IN ('free', '3days', '7days', '0.5month', '1month', '3months', '6months', '12months', 'Lifetime')),
+    
+    billing_cycle TEXT DEFAULT 'one-time' 
+        CHECK (billing_cycle IN ('monthly', 'yearly', 'one-time')),
+    
+    -- The New Enum Array column
+    privileges public.subscription_privilege[] DEFAULT '{}'::public.subscription_privilege[],
+    
+    tier_limit INTEGER DEFAULT 0, -- Added from your screenshot (Tier Limit)
     is_active BOOLEAN DEFAULT TRUE,
-    created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_by TEXT REFERENCES public.user_profiles(user_id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

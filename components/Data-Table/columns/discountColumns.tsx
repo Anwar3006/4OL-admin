@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export interface DiscountType {
   id: string;
   name: string;
-  value: number;
+  discount_value: number;
   type: "percentage" | "fixed" | "bogo";
   code: string;
   usage: string;
@@ -33,8 +33,8 @@ export const discountColumns: ColumnDef<DiscountType>[] = [
       <div className="hidden md:table-cell min-w-24">
         <div className="text-sm">
           {row.original.type === "percentage"
-            ? `${row.original.value}%`
-            : `$${row.original.value}`}
+            ? `${row.original.discount_value}%`
+            : `$${row.original.discount_value}`}
         </div>
       </div>
     ),

@@ -26,8 +26,9 @@ ALTER TABLE public.marketing_discounts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can manage discounts" ON public.marketing_discounts
     FOR ALL USING (
         EXISTS (
-            SELECT 1 FROM public.admin_profiles 
+            SELECT 1 FROM public.user_profiles 
             WHERE user_id = auth.uid()
+            AND role IN ('admin', 'super_admin')
         )
     );
 

@@ -21,7 +21,6 @@ import { marketingCardConfig } from "@/components/Data-Table/mobile-table-config
 import Activity from "@/components/partials/auth/Marketing_Overview/activity";
 
 const MarketingPage = () => {
-  const [activeTab, setActiveTab] = useState("campaigns"); // "overview" or "campaigns"
   const addMarket = useAddMarketingDialog();
   const viewMarket = useViewMarketingDialog();
 
@@ -80,39 +79,13 @@ const MarketingPage = () => {
           title="Marketing & Advertising"
           description="Manage your marketing and advertising campaigns."
           Icon={PlusSquare}
-          hasButton={activeTab === "campaigns"}
+          hasButton={true}
           buttonLabel="Add Campaign"
           onButtonClick={() => addMarket.open()}
         />
 
-        {/* Custom Tabs */}
-        <div className="flex border-b border-gray-200 mb-6 mt-4">
-          <button
-            className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
-              activeTab === "overview"
-                ? "border-b-2 border-emerald-500 text-emerald-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("overview")}
-          >
-            Overview
-          </button>
-          <button
-            className={`px-6 py-2 text-sm font-medium transition-colors duration-200 ${
-              activeTab === "campaigns"
-                ? "border-b-2 border-emerald-500 text-emerald-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-            onClick={() => setActiveTab("campaigns")}
-          >
-            Campaigns
-          </button>
-        </div>
-
-        {activeTab === "overview" ? (
-          <div className="mt-4">
-            <Activity />
-          </div>
+        {fetchingAds ? (
+          <TableSkeleton />
         ) : (
           <>
             {fetchingAds ? (

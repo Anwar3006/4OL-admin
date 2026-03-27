@@ -113,17 +113,32 @@ export const useCreateMarketingDiscount = () => {
 
   return useMutation<TMarketingDiscountOutput, Error, TMarketingDiscountInput>({
     mutationFn: async (data: TMarketingDiscountInput) => {
-      const inputData = {
-        ...data,
-        discount_value: data.discountValue,
-        discount_type: data.discountType,
-        max_uses: data.maxUses,
-        valid_from: data.validFrom,
-        valid_until: data.validUntil,
-        is_active: data.isActive,
-        applies_to: data.appliesTo,
-        applicable_items: data.applicableItems,
-      };
+      const {
+    discountValue,
+    discountType,
+    maxUses,
+    validFrom,
+    validUntil,
+    isActive,
+    appliesTo,
+    applicableItems,
+    ...rest
+  } = data;
+
+  // 3. Assemble the final object using only the keys Postgres expects
+  const inputData = {
+    ...rest, // This includes name, description, code
+    discount_value: discountValue,
+    discount_type: discountType,
+    max_uses: maxUses,
+    valid_from: validFrom,
+    valid_until: validUntil,
+    is_active: isActive,
+    applies_to: appliesTo,
+    applicable_items: applicableItems,
+  };
+
+      console.log("Input: ", inputData)
 
       const { data: result, error } = await supabase
         .from("marketing_discounts")
@@ -134,8 +149,8 @@ export const useCreateMarketingDiscount = () => {
       if (error) throw new Error(error.message);
       return result as TMarketingDiscountOutput;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: MARKETING_DISCOUNT_QUERY_KEYS.all,
       });
       toast.success("Discount created successfully!");
@@ -177,10 +192,15 @@ export const useUpdateMarketingDiscount = () => {
       if (error) throw new Error(error.message);
       return result as TMarketingDiscountOutput;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: MARKETING_DISCOUNT_QUERY_KEYS.all,
-      });
+    onSuccess: async (result) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_DISCOUNT_QUERY_KEYS.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_DISCOUNT_QUERY_KEYS.detail(result.id),
+        }),
+      ]);
       toast.success("Discount updated successfully!");
     },
     onError: (error) => {
@@ -201,10 +221,15 @@ export const useDeleteMarketingDiscount = () => {
 
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: MARKETING_DISCOUNT_QUERY_KEYS.all,
-      });
+    onSuccess: async (_, id) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: MARKETING_DISCOUNT_QUERY_KEYS.all,
+        }),
+        queryClient.removeQueries({
+          queryKey: MARKETING_DISCOUNT_QUERY_KEYS.detail(id),
+        }),
+      ]);
       toast.success("Discount deleted successfully!");
     },
     onError: (error) => {

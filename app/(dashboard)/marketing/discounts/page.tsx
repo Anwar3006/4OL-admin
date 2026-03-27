@@ -16,6 +16,7 @@ import {
 } from "@/stores/dialog-store";
 import AddDiscountDialog from "./_components/add-discount-dialog";
 import ViewDiscountDialog from "./_components/view-discount-dialog";
+import { useMarketingDiscounts } from "@/hooks/supabase-calls/useDiscounts";
 
 const DiscountsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,31 +28,63 @@ const DiscountsPage = () => {
 
   const viewDiscount = useViewDiscountDialog();
   const addDiscount = useAddDiscountDialog();
+  const { data, isLoading } = useMarketingDiscounts({
+    page,
+    limit,
+    search: searchTerm || undefined,
+    activeOnly: selectedStatus === "active",
+  });
 
-  // Mock data - replace with actual hook when backend is ready
-  const mockData = {
-    data: [
-      {
-        id: "1",
-        name: "5%",
-        value: 5,
-        type: "percentage" as const,
-        code: "Ad5",
-        usage: "15/500",
-        createdAt: "2024-01-15",
-      },
-    ] as DiscountType[],
-    meta: { totalPages: 1, total: 1 },
-    analytics: {
-      totalDiscounts: 1,
-      activeDiscounts: 1,
-      expiredDiscounts: 0,
-      usage: "15/500",
-      totalAmount: "GHS4,300",
-    },
-  };
+  const tableData = useMemo<DiscountType[]>(() => {
+    const discounts = data?.data || [];
+    const now = Date.now();
 
-  const isLoading = false;
+    const filteredDiscounts = discounts.filter((discount) => {
+      if (selectedStatus === "active") return discount.isActive;
+      if (selectedStatus === "expired") {
+        return !!discount.validUntil && new Date(discount.validUntil).getTime() < now;
+      }
+      return true;
+    });
+
+    return filteredDiscounts.map((discount: any) => ({
+      id: discount.id,
+      name: discount.name,
+      discount_value: discount.discount_value,
+      type: discount.discount_type,
+      code: discount.code,
+      usage: discount.max_uses
+        ? `${discount.current_uses || 0}/${discount.max_uses}`
+        : `${discount.current_uses || 0}`,
+      createdAt: discount.createdAt,
+      updatedAt: discount.updatedAt,
+    }));
+  }, [data, selectedStatus]);
+
+  const analytics = useMemo(() => {
+    const now = Date.now();
+    const discounts = data?.data || [];
+
+    const totalUsage = discounts.reduce(
+      (sum, discount) => sum + (discount.currentUses || 0),
+      0,
+    );
+
+    const totalAmount = discounts.reduce((sum, discount) => {
+      return sum + (discount.discountValue || 0) * (discount.currentUses || 0);
+    }, 0);
+
+    return {
+      totalDiscounts: data?.meta?.total || 0,
+      activeDiscounts: discounts.filter((discount) => discount.isActive).length,
+      expiredDiscounts: discounts.filter(
+        (discount) =>
+          !!discount.validUntil && new Date(discount.validUntil).getTime() < now,
+      ).length,
+      totalUsage,
+      totalAmount,
+    };
+  }, [data]);
 
   const onRowClick = useCallback(
     (condition: any) => viewDiscount.open(condition.id),
@@ -60,29 +93,31 @@ const DiscountsPage = () => {
 
   const pagination = useMemo(
     () =>
-      createPaginationHandlers(page, setPage, mockData?.meta?.totalPages || 1),
-    [page],
+      createPaginationHandlers(page, setPage, data?.meta?.totalPages || 1),
+    [page, data?.meta?.totalPages],
   );
 
   const paginationConfig = useMemo(
     () => ({
       currentPage: page,
-      totalPages: mockData?.meta?.totalPages || 1,
-      totalItems: mockData?.meta?.total || 0,
+      totalPages: data?.meta?.totalPages || 1,
+      totalItems: data?.meta?.total || 0,
       pageSize: limit,
       onPageChange: pagination.goTo,
       onNextPage: pagination.next,
       onPreviousPage: pagination.previous,
-      canNextPage: page < (mockData?.meta?.totalPages || 1),
+      canNextPage: page < (data?.meta?.totalPages || 1),
       canPreviousPage: page > 1,
     }),
-    [page, mockData, pagination],
+    [page, data, pagination],
   );
 
   const handleStatusChange = (status: string | undefined) => {
     setSelectedStatus(status);
     setPage(1);
   };
+
+  console.log("Discount: ", data?.data)
 
   return (
     <div className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
@@ -117,32 +152,28 @@ const DiscountsPage = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <StatsCard
-                label="Active Discounts"
-                value={mockData?.analytics?.activeDiscounts || 0}
+                label="Total Discounts"
+                value={analytics.totalDiscounts}
                 onClick={() => handleStatusChange(undefined)}
                 active={selectedStatus === undefined}
               />
               <StatsCard
                 label="Total Usage"
-                value={
-                  mockData?.analytics?.usage
-                    ? Number(mockData.analytics.usage.split("/")[0])
-                    : 0
-                }
+                value={analytics.totalUsage}
                 variant="success"
                 onClick={() => handleStatusChange("active")}
                 active={selectedStatus === "active"}
               />
               <StatsCard
                 label="Amount Discounted"
-                value={Number(mockData?.analytics?.totalAmount) || 0}
+                value={analytics.totalAmount}
                 variant="info"
-                onClick={() => handleStatusChange("pending")}
-                active={selectedStatus === "pending"}
+                onClick={() => handleStatusChange(undefined)}
+                active={false}
               />
               <StatsCard
                 label="Expired"
-                value={mockData?.analytics?.expiredDiscounts || 0}
+                value={analytics.expiredDiscounts}
                 variant="neutral"
                 onClick={() => handleStatusChange("expired")}
                 active={selectedStatus === "expired"}
@@ -151,7 +182,7 @@ const DiscountsPage = () => {
 
             <DataTable
               columns={discountColumns}
-              data={mockData?.data || []}
+              data={tableData}
               onRowClick={onRowClick}
               pagination={paginationConfig}
               isLoading={isLoading}

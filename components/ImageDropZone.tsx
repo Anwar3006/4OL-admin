@@ -13,6 +13,7 @@ import {
   AlertCircle,
   UploadCloud,
   Camera,
+  Film,
 } from "lucide-react";
 import {
   useGetPresignedUploadUrl,
@@ -25,6 +26,8 @@ type ImageDropZoneProps = {
   filePath: string;
   onFilesChange?: (keys: string[]) => void;
   initialFiles?: string[];
+  mediaType?: "image" | "video";
+  maxFiles?: number;
 };
 
 interface FileState {
@@ -43,6 +46,8 @@ const ImageDropZone = ({
   onFilesChange,
   filePath,
   initialFiles,
+  mediaType = "image",
+  maxFiles = 6,
 }: ImageDropZoneProps) => {
   const [files, setFiles] = useState<FileState[]>([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -84,10 +89,10 @@ const ImageDropZone = ({
 
       // 1. Setup Compression Options
       const options = {
-        maxSizeMB: 1, // Aim for ~1MB max
-        maxWidthOrHeight: 1920, // High-def but reasonable for web/mobile
-        useWebWorker: true, // Keeps the UI responsive
-        initialQuality: 0.8, // 80% quality is usually indistinguishable from 100%
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        initialQuality: 0.8,
       };
 
       // Add file to state immediately so the UI shows a "Compressing..." state
@@ -253,11 +258,11 @@ const ImageDropZone = ({
       );
 
       if (tooManyFiles) {
-        toast.error("Too many files! You can upload 5-6 images maximum.");
+        toast.error(`Too many files. Maximum allowed is ${maxFiles}.`);
         return;
       }
       if (fileTooLarge) {
-        toast.error("File too large! Maximum size is 6MB per image.");
+        toast.error("File too large. Maximum size is 50MB.");
         return;
       }
       toast.error(`Upload failed: ${fileRejections[0].errors[0].message}`);
@@ -272,12 +277,10 @@ const ImageDropZone = ({
   } = useDropzone({
     onDrop,
     onDropRejected,
-    maxFiles: 6,
+    maxFiles,
     minSize: 5,
-    maxSize: 1024 * 1024 * 6, // 6MB
-    accept: {
-      "image/*": [],
-    },
+    maxSize: 1024 * 1024 * 50,
+    accept: mediaType === "video" ? { "video/*": [] } : { "image/*": [] },
     noClick: true,
   });
 
@@ -300,14 +303,16 @@ const ImageDropZone = ({
         {...getRootProps()}
       >
         <CardContent className="flex flex-col items-center justify-center w-full space-y-4">
-          <div className="p-4 bg-primary/10 rounded-full text-primary">
-            <UploadCloud size={32} />
+            <div className="p-4 bg-primary/10 rounded-full text-primary">
+            {mediaType === "video" ? <Film size={32} /> : <UploadCloud size={32} />}
           </div>
 
           <div className="space-y-1">
             <p className="text-sm font-semibold">{text}</p>
             <p className="text-xs text-muted-foreground">
-              Supports: JPG, PNG, WEBP (Max 6MB)
+              {mediaType === "video"
+                ? "Supports: MP4, MOV, WEBM (Max 50MB)"
+                : "Supports: JPG, PNG, WEBP (Max 50MB)"}
             </p>
           </div>
 
@@ -316,8 +321,8 @@ const ImageDropZone = ({
           {/* Hidden input specifically for triggering Camera on Mobile */}
           <input
             type="file"
-            accept="image/*"
-            capture="environment" // Forces back camera on mobile
+            accept={mediaType === "video" ? "video/*" : "image/*"}
+            capture={mediaType === "image" ? "environment" : undefined}
             className="hidden"
             ref={cameraInputRef}
             onChange={handleCameraCapture}
@@ -334,19 +339,23 @@ const ImageDropZone = ({
               Choose Files
             </Button>
 
-            <Button
-              type="button"
-              onClick={() => cameraInputRef.current?.click()} // Triggers camera
-              className="rounded-xl gap-2 shadow-lg"
-            >
-              <Camera size={16} />
-              Take Photo
-            </Button>
+            {mediaType === "image" && (
+              <Button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="rounded-xl gap-2 shadow-lg"
+              >
+                <Camera size={16} />
+                Take Photo
+              </Button>
+            )}
           </div>
 
           {isDragActive && (
             <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] rounded-2xl flex items-center justify-center border-2 border-primary">
-              <p className="font-bold text-primary">Drop images here</p>
+              <p className="font-bold text-primary">
+                {mediaType === "video" ? "Drop videos here" : "Drop images here"}
+              </p>
             </div>
           )}
         </CardContent>
@@ -356,11 +365,19 @@ const ImageDropZone = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {files.map((file) => (
           <div key={file.id} className="relative group">
-            <img
-              src={file.objectUrl}
-              alt={file.file.name}
-              className="rounded-xl w-full h-48 object-cover"
-            />
+            {mediaType === "video" ? (
+              <video
+                src={file.objectUrl}
+                className="rounded-xl w-full h-48 object-cover"
+                controls
+              />
+            ) : (
+              <img
+                src={file.objectUrl}
+                alt={file.file.name}
+                className="rounded-xl w-full h-48 object-cover"
+              />
+            )}
 
             {/* Upload Progress Overlay */}
             {file.uploading && (

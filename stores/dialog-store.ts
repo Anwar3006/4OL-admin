@@ -33,7 +33,9 @@ export type DialogTypes =
   | "add-trainer"
   | "view-trainer"
   | "add-challenge"
-  | "view-challenge";
+  | "view-challenge"
+  | "facility-toggle"
+  | "add-workout";
 
 /**
  * Generic dialog configuration
@@ -643,5 +645,34 @@ export const useViewChallengeDialog = () => {
     entityId,
     open: (entityId: string) => openDialog("view-challenge", { entityId }),
     close: () => closeDialog("view-challenge"),
+  };
+};
+
+export const useFacilityToggleDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("facility-toggle"));
+  const data = useDialogStore((state) => state.getDialogData("facility-toggle"));
+
+  return {
+    isOpen,
+    data,
+    open: (data: any) => openDialog("facility-toggle", { data }),
+    close: () => closeDialog("facility-toggle"),
+  };
+};
+
+export const useAddWorkoutDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-workout"));
+  const data = useDialogStore((state) => state.getDialogData("add-workout"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-workout", { data }),
+    close: () => closeDialog("add-workout"),
   };
 };
