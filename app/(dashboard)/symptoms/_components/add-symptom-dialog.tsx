@@ -123,9 +123,9 @@ const AddSymptomDialog = () => {
 
   const handleSubmit = async (formdata: TSymptomsInput) => {
     try {
-      const optimizedBodyPartIds = getDeepestNodes(formdata.bodyParts, bodyParts);
-      const optimizedCategoryIds = getDeepestNodes(formdata.categories, categories);
-      const slug = slugify(formdata.name, { lower: true });
+      const optimizedBodyPartIds = getDeepestNodes(formdata.bodyParts || [], bodyParts);
+      const optimizedCategoryIds = getDeepestNodes(formdata.categories || [], categories);
+      const slug = slugify(formdata.name || "", { lower: true });
       const payload = {
         ...formdata,
         bodyParts: optimizedBodyPartIds,
@@ -367,7 +367,7 @@ const AddSymptomDialog = () => {
                   filePath={filePath}
                   text="Drop symptom image here"
                   onFilesChange={(url) => url.map((u) => form.setValue("image_url", u))}
-                  initialFiles={[form.watch("image_url")]}
+                  initialFiles={[form.watch("image_url") as string]}
                 />
               </section>
 

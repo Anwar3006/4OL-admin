@@ -225,7 +225,7 @@ export const useCreateCondition = () => {
       if (error) {
         await supabase.storage
           .from("conditions")
-          .remove(new Array(input.image_url));
+          .remove(new Array(input.image_url as string));
 
         throw new Error(error.message);
       }

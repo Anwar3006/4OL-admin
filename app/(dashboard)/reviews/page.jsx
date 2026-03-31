@@ -5,7 +5,6 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { Search, Filter } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { fetchFacilityRatings } from "@/app/services/fetchFacilityRatings";
 import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";

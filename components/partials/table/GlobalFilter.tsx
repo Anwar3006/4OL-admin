@@ -15,11 +15,14 @@ const GlobalFilter = ({ filter, setFilter, placeholder = "🔍︎ Search..." }: 
   };
   return (
     <div>
-      <Textinput
-        value={value || ""}
-        onChange={onChange}
-        placeholder={placeholder}
-      />
+                    {/* @ts-ignore: Textinput is a .jsx component and incorrectly infers optional props as required */}
+                    <Textinput
+                      label=""
+                      type="text"
+                      value={value}
+                      onChange={onChange}
+                      placeholder={placeholder}
+                    />
     </div>
   );
 };
