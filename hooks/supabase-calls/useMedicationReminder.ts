@@ -16,21 +16,19 @@ export const useMedicationReminders = ({
   isEnabled,
 }: Pagination) => {
   return useQuery<any, Error>({
-    queryKey: ["medication-reminders"],
+    queryKey: ["medication-reminders", { limit, page, search, isEnabled }],
     queryFn: async () => {
-      const query = supabase.from("medication_reminders").select("*");
+      let query = supabase.from("medication_reminders").select("*");
 
       const from = (page - 1) * limit;
       const to = limit + from - 1;
 
       if (search && search.trim() !== "") {
-        query.or(`
-            medication_name.ilike.%${search}%
-        `);
+        query = query.or(`medication_name.ilike.%${search}%`);
       }
 
       if (isEnabled) {
-        query.eq("is_enabled", isEnabled);
+        query = query.eq("is_enabled", isEnabled);
       }
 
       const [medicationsResult, { count }] = await Promise.all([

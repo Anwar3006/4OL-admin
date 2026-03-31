@@ -5,12 +5,12 @@ import { SerializedEditorState } from "lexical";
 const richTextSchema = z.any(); // Validates the JSONB structure from Lexical
 
 export const conditionsSchema = z.object({
-  name: z.string().min(3, "Please enter a name for the condition"),
+  name: z.string().optional().or(z.literal("")),
   slug: z.string().default(""),
   specialist: z.string().nullish(),
-  nhs_link: z.string(),
-  image_url: z.string(),
-  is_systemic: z.boolean().default(false),
+  nhs_link: z.string().optional().or(z.literal("")),
+  image_url: z.string().optional().or(z.literal("")),
+  is_systemic: z.boolean().default(false).optional(),
 
   // 2. Rich Text Fields (JSONB)
   about: richTextSchema,
@@ -25,14 +25,14 @@ export const conditionsSchema = z.object({
 
   // 3. Relational Links (Many-to-Many)
   // We expect an array of IDs from the Multi-Select UI
-  categories: z.array(z.string()).min(1, "Select at least one category"),
-  bodyParts: z.array(z.string()).min(1, "Select at least one body part"),
+  categories: z.array(z.string()).default([]),
+  bodyParts: z.array(z.string()).default([]),
 
   // 4. Nested Entities (One-to-Many)
   types: z
     .array(
       z.object({
-        type_name: z.string().min(1, "Type name is required"),
+        type_name: z.string().optional().or(z.literal("")),
         about_type: richTextSchema,
       }),
     )
@@ -41,7 +41,7 @@ export const conditionsSchema = z.object({
   causes: z
     .array(
       z.object({
-        cause_name: z.string().min(1, "Cause name is required"),
+        cause_name: z.string().optional().or(z.literal("")),
         other_possible_causes: richTextSchema,
       }),
     )

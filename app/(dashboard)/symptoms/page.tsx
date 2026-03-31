@@ -2,6 +2,8 @@
 import SectionHeader from "@/components/SectionHeader";
 import { PlusCircleIcon } from "lucide-react";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { Search, Filter } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import ConditionsStats from "../diseases_&_conditions/_components/ConditionStats";
 import {
   useAddConditionDialog,
@@ -16,6 +18,8 @@ import {
   useSymptoms,
   useSymptomStats,
 } from "@/hooks/supabase-calls/useSymptoms";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const SymptomsPage = () => {
   const addSymptom = useAddConditionDialog();
@@ -23,12 +27,20 @@ const SymptomsPage = () => {
 
   const limit = 10;
   const [page, setPage] = useState<number>(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [bodyPart, setBodyPart] = useState<string | null>();
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   //============== Supabase hook invocation
   const { data, isLoading } = useSymptoms({
     limit,
     page,
+    search: debouncedSearch,
   });
 
   const { data: stats, isLoading: isStatsLoading } = useSymptomStats();
@@ -80,6 +92,25 @@ const SymptomsPage = () => {
         buttonLabel="Add Symptom"
         onButtonClick={() => addSymptom.open()}
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search symptoms..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <ConditionsStats

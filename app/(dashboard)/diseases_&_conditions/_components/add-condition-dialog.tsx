@@ -142,7 +142,7 @@ const AddConditionDialog = () => {
     try {
       const optimizedBodyPartIds = getDeepestNodes(data.bodyParts, bodyParts);
       const optimizedCategoryIds = getDeepestNodes(data.categories, categories);
-      const slug = slugify(data.name, { lower: true });
+      const slug = slugify(data.name as string, { lower: true });
       const payload = {
         ...data,
         bodyPartIds: optimizedBodyPartIds,
@@ -439,7 +439,7 @@ const AddConditionDialog = () => {
                   onFilesChange={(url) =>
                     url.map((u) => form.setValue("image_url", u))
                   }
-                  initialFiles={[form.watch("image_url")]}
+                  initialFiles={[form.watch("image_url")!]}
                 />
               </section>
 

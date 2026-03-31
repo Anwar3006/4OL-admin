@@ -5,13 +5,13 @@ const richTextSchema = z.any();
 export const healthyLivingSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     id: z.string().optional(),
-    name: z.string().min(3, "Please enter a name"),
+    name: z.string().optional().or(z.literal("")),
     slug: z.string().optional(),
     description: z.string().optional().nullable(),
     content_sections: z
       .array(
         z.object({
-          sub_name: z.string().min(1, "Section name is required"),
+          sub_name: z.string().optional().or(z.literal("")),
           sub_content: richTextSchema,
         })
       )

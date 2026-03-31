@@ -2,6 +2,10 @@
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { Search, Filter } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { fetchFacilityRatings } from "@/app/services/fetchFacilityRatings";
 import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
@@ -17,6 +21,8 @@ const Reviews = () => {
   const [pageIndex, setPageIndex] = useState(1); // DataTable uses 1-based index
   const [pageSize] = useState(13); // Items per page
   const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const router = useRouter();
 
   const fetchRatings = useCallback(async () => {
@@ -24,7 +30,7 @@ const Reviews = () => {
     try {
       const from = (pageIndex - 1) * pageSize;
       const to = from + pageSize - 1;
-      const { ratings, count } = await fetchFacilityRatings(from, to);
+      const { ratings, count } = await fetchFacilityRatings(from, to, debouncedSearch);
       setRatings(ratings || []);
       setTotalCount(count || 0);
     } catch (error) {
@@ -32,7 +38,12 @@ const Reviews = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize]);
+  }, [pageIndex, pageSize, debouncedSearch]);
+
+  const onSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPageIndex(1);
+  };
 
   useEffect(() => {
     fetchRatings();
@@ -132,6 +143,22 @@ const Reviews = () => {
         />
       }
     >
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by comments or facility..."
+            className="pl-9"
+            value={search}
+            onChange={onSearchChange}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </div>
+
       <DataTable
         columns={reviewColumns}
         data={ratings}

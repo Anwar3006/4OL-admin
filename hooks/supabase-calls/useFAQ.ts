@@ -8,8 +8,8 @@ export const FAQ_QUERY_KEYS = {
   all: ["faqs"] as const,
   categories: ["categories"] as const,
   lists: () => [...FAQ_QUERY_KEYS.all, "list"] as const,
-  list: (page: number, limit: number) =>
-    [...FAQ_QUERY_KEYS.lists(), { page, limit }] as const,
+  list: (page: number, limit: number, search?: string) =>
+    [...FAQ_QUERY_KEYS.lists(), { page, limit, search }] as const,
   details: () => [...FAQ_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...FAQ_QUERY_KEYS.details(), id] as const,
 };
@@ -27,6 +27,7 @@ interface PaginatedFAQsResponse {
 interface UseFAQsParams {
   page: number;
   limit: number;
+  search?: string;
 }
 
 // ============= QUERY HOOKS =============
@@ -34,20 +35,26 @@ interface UseFAQsParams {
 /**
  * Fetch paginated FAQs
  */
-export const useFAQs = ({ page, limit }: UseFAQsParams) => {
+export const useFAQs = ({ page, limit, search }: UseFAQsParams) => {
   return useQuery<PaginatedFAQsResponse, Error>({
-    queryKey: FAQ_QUERY_KEYS.list(page, limit),
+    queryKey: FAQ_QUERY_KEYS.list(page, limit, search),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
+
+      let query = supabase
+        .from("faqs")
+        .select("*", { count: "exact" });
+
+      if (search) {
+        query = query.or(`question.ilike.%${search}%,answer.ilike.%${search}%`);
+      }
 
       const {
         data: faqs,
         count,
         error,
-      } = await supabase
-        .from("faqs")
-        .select("*", { count: "exact" })
+      } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 

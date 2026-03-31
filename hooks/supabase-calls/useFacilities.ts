@@ -8,6 +8,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { normalizeLocationName } from "@/lib/utils";
 import { FACILITY_TYPE_ENUM } from "@/types/formInput";
+import {
+  adminChangeFacilityStatus,
+  adminDeleteFacilityAction,
+  adminDeleteFacilityOfferings,
+  adminInsertFacilityOfferings,
+  adminRegisterFacilityWithProfile,
+  adminToggleFacilityFeatured,
+  adminToggleFacilityTopRated,
+  adminUpdateFacilityProfile,
+} from "@/actions/facility-admin.actions";
 
 interface PaginatedResponse {
   data: TFacilityProfileInput[];
@@ -315,11 +325,7 @@ export const useToggleFacilityFeatured = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
-      const { error } = await supabase
-        .from("facility_profile")
-        .update({ is_featured: value })
-        .eq("id", id);
-      if (error) throw error;
+      await adminToggleFacilityFeatured(id, value);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FEATURED_QUERY_KEYS.all });
@@ -336,11 +342,7 @@ export const useToggleFacilityTopRated = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
-      const { error } = await supabase
-        .from("facility_profile")
-        .update({ is_top_rated: value })
-        .eq("id", id);
-      if (error) throw error;
+      await adminToggleFacilityTopRated(id, value);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TOP_RATED_QUERY_KEYS.all });
@@ -373,34 +375,27 @@ export const useCreateFacilityProfile = () => {
             : data.keywords,
       };
 
-      const { data: facility, error } = await supabase.rpc(
-        "register_facility_with_profile",
-        {
-          p_admin_id: data.adminId,
-          p_owner_id: data.ownerId,
-          p_first_name: data.first_name,
-          p_last_name: data.last_name,
-          p_phone_number: data.person_contact_number,
-          p_facility_data: { ...payload },
-        },
-      );
-
-      if (error) {
-        console.error("Supabase RPC Error:", error);
-        throw new Error(error.message);
-      }
+      const facility = await adminRegisterFacilityWithProfile({
+        p_admin_id: data.adminId,
+        p_owner_id: data.ownerId,
+        p_first_name: data.first_name,
+        p_last_name: data.last_name,
+        p_phone_number: data.person_contact_number,
+        p_facility_data: { ...payload },
+      });
 
       // Save Offerings if any
       if (payload.offerings?.length) {
-        const { error: offeringError } = await supabase
-          .from("facility_offerings")
-          .insert(
+        try {
+          await adminInsertFacilityOfferings(
             payload.offerings.map((o: any) => ({
               ...o,
               facility_id: facility.id,
-            })),
+            }))
           );
-        if (offeringError) console.error("Offerings error:", offeringError);
+        } catch (offeringError) {
+          console.error("Offerings error:", offeringError);
+        }
       }
 
       return facility;
@@ -447,29 +442,28 @@ export const useUpdateFacilityProfile = () => {
       ];
 
       // RPC Call: Finalize DB + Audit Log
-      const { error } = await supabase.rpc("admin_update_facility_profile", {
+      await adminUpdateFacilityProfile({
         p_admin_id: updatePayload.adminId,
         p_facility_id: id,
         p_payload: updatePayload,
         p_final_media_urls: finalMediaUrls,
       });
 
-      if (error) throw error;
-
       // Update Offerings: Delete and Re-insert
       if (updatePayload.offerings) {
-        await supabase.from("facility_offerings").delete().eq("facility_id", id);
+        await adminDeleteFacilityOfferings(id);
 
         if (updatePayload.offerings.length > 0) {
-          const { error: offeringError } = await supabase
-            .from("facility_offerings")
-            .insert(
+          try {
+            await adminInsertFacilityOfferings(
               updatePayload.offerings.map((o: any) => ({
                 ...o,
                 facility_id: id,
-              })),
+              }))
             );
-          if (offeringError) console.error("Offerings error:", offeringError);
+          } catch (offeringError) {
+            console.error("Offerings error:", offeringError);
+          }
         }
       }
     },
@@ -526,7 +520,7 @@ export const useApproveFacility = () => {
       });
 
       // RPC Call
-      const { error } = await supabase.rpc("admin_change_facility_status", {
+      await adminChangeFacilityStatus({
         p_admin_id: adminId,
         payload: {
           p_facility_id: id,
@@ -535,8 +529,6 @@ export const useApproveFacility = () => {
           featured_image_url: finalFeaturedUrl,
         },
       });
-
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -590,7 +582,7 @@ export const useRejectFacility = () => {
       });
 
       // RPC Call
-      const { error } = await supabase.rpc("admin_change_facility_status", {
+      await adminChangeFacilityStatus({
         p_admin_id: adminId,
         payload: {
           p_facility_id: id,
@@ -599,8 +591,6 @@ export const useRejectFacility = () => {
           featured_image_url: finalFeaturedUrl,
         },
       });
-
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -617,11 +607,10 @@ export const useDeleteFacility = () => {
 
   return useMutation({
     mutationFn: async ({ adminId, id }: { adminId: string; id: string }) => {
-      const { error } = await supabase.rpc("admin_delete_facility", {
+      await adminDeleteFacilityAction({
         p_admin_id: adminId,
         p_facility_id: id,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

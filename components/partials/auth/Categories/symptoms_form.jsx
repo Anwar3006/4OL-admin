@@ -33,88 +33,32 @@ export default function SymptomsForm() {
     return textContent.length > 0;
   };
   const schema = yup.object().shape({
-    symptom_name: yup.string().required("Symptom name is required"),
-    about: yup
-      .string()
-      .required("About is required")
-      .test(
-        "has-content",
-        "About content is required",
-        validateRichTextContent
-      ),
-    diagnosis: yup
-      .string()
-      .required("Diagnosis is required")
-      .test(
-        "has-content",
-        "Diagnosis content is required",
-        validateRichTextContent
-      ),
-    treating: yup
-      .string()
-      .required("Treating is required")
-      .test(
-        "has-content",
-        "Treating content is required",
-        validateRichTextContent
-      ),
-    complications: yup
-      .string()
-      .required("Complications is required")
-      .test(
-        "has-content",
-        "Complications content is required",
-        validateRichTextContent
-      ),
-    prevention: yup
-      .string()
-      .required("Prevention is required")
-      .test(
-        "has-content",
-        "Prevention content is required",
-        validateRichTextContent
-      ),
-    specialist_to_contact: yup
-      .string()
-      .required("Specialist(s) to contact is required"),
-    contact_your_doctor: yup
-      .string()
-      .required("Contact your doctor is required")
-      .test(
-        "has-content",
-        "Contact your doctor content is required",
-        validateRichTextContent
-      ),
-    more_information: yup
-      .string()
-      .required("More information is required")
-      .test(
-        "has-content",
-        "More information content is required",
-        validateRichTextContent
-      ),
-    attribution: yup.string().required("Attribution is required"),
+    symptom_name: yup.string().nullable(),
+    about: yup.string().nullable(),
+    diagnosis: yup.string().nullable(),
+    treating: yup.string().nullable(),
+    complications: yup.string().nullable(),
+    prevention: yup.string().nullable(),
+    specialist_to_contact: yup.string().nullable(),
+    contact_your_doctor: yup.string().nullable(),
+    more_information: yup.string().nullable(),
+    attribution: yup.string().nullable(),
     types: yup
       .array()
       .of(
         yup.object().shape({
-          type_name: yup.string().required("Type name is required"),
-          about_type: yup.string().required("About this type is required"),
+          type_name: yup.string().nullable(),
+          about_type: yup.string().nullable(),
         })
-      )
-      .min(1, "At least one type is required"),
-
+      ),
     causes: yup
       .array()
       .of(
         yup.object().shape({
-          cause_name: yup.string().required("Cause name is required"),
-          other_possible_causes: yup
-            .string()
-            .required("Other causes are required"),
+          cause_name: yup.string().nullable(),
+          other_possible_causes: yup.string().nullable(),
         })
-      )
-      .min(1, "At least one cause is required"),
+      ),
   });
 
   const {

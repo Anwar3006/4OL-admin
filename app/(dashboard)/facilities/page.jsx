@@ -6,8 +6,11 @@ import {
   Loader2,
   PlusCircleIcon,
   SquareArrowOutUpRight,
+  Search,
+  Filter,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 
 import SectionHeader from "@/components/SectionHeader";
 import { StatsCard } from "@/components/Data-Table/helpers";
@@ -16,9 +19,14 @@ import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns
 import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-configs/facilityCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
-import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
+import {
+  useAddFacilityDialog,
+  useViewFacilityDialog,
+} from "@/stores/dialog-store";
 import AddFacilityDialog from "./_components/add-facility-dialog";
 import { FacilityViewDialog } from "./_components/view-facility-dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const formatFacilityType = (rawType = "") =>
   rawType
@@ -38,12 +46,20 @@ const FacilitiesPage = () => {
   const searchParams = useSearchParams();
 
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
   const currentStatus = searchParams.get("status");
+
+  // Reset page when search or status changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, currentStatus]);
 
   const { data, isLoading, isFetching } = useFacilityProfiles({
     limit,
     page,
+    search: debouncedSearch,
     includeStatsOnly: currentStatus === null,
     status: currentStatus || undefined,
   });
@@ -78,7 +94,7 @@ const FacilitiesPage = () => {
 
   const facilityTypes = useMemo(() => {
     const counts = data?.typeCounts || {};
-    
+
     // We want to show ALL types from the ENUM, even if count is 0
     // We also want to format them for display
     return Object.entries(counts)
@@ -97,6 +113,25 @@ const FacilitiesPage = () => {
           buttonLabel="Add Facility"
           onButtonClick={() => addFacility.open()}
         />
+
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search facilities..."
+              className="pl-9"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+        </div>
 
         {isLoading ? (
           <div className="w-full h-30 flex items-center justify-center gap-2">
@@ -160,9 +195,7 @@ const FacilitiesPage = () => {
           columns={facilityColumns}
           data={data?.facilities || []}
           cardConfig={facilityCardConfig}
-          onRowClick={(facility) =>
-            viewFacility.open(facility.id)
-          }
+          onRowClick={(facility) => viewFacility.open(facility.id)}
           pagination={pagination}
           isLoading={isFetching}
         />
@@ -190,9 +223,7 @@ const FacilityCard = ({ label, count, link, Icon }) => {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-bold text-lg text-gray-900 truncate">
-            {label}
-          </h3>
+          <h3 className="font-bold text-lg text-gray-900 truncate">{label}</h3>
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-green-100 px-1.5 text-[10px] font-semibold text-green-700">
             {count}
           </span>

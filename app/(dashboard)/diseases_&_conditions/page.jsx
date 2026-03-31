@@ -6,8 +6,11 @@ import {
   useAddConditionDialog,
   useViewConditionDialog,
 } from "@/stores/dialog-store";
-import { PlusCircleIcon } from "lucide-react";
-import React, { useState, useCallback, useMemo } from "react";
+import { PlusCircleIcon, Search, Filter } from "lucide-react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import AddConditionDialog from "./_components/add-condition-dialog";
 import { conditionColumns } from "@/components/Data-Table/columns/conditionColumns";
 import { conditionCardConfig } from "@/components/Data-Table/mobile-table-configs/conditionCardConfig";
@@ -22,19 +25,29 @@ const DiseasesAndConditionsPage = () => {
   const addConditions = useAddConditionDialog();
   const viewConditions = useViewConditionDialog();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
 
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   // Paginated table data
-  const { data: allConditions, isLoading: isConditionsLoading } = useConditions({
-    params: { limit, page, search: "" },
-    enabled: true,
-  });
+  const { data: allConditions, isLoading: isConditionsLoading } = useConditions(
+    {
+      params: { limit, page, search: debouncedSearch },
+      enabled: true,
+    },
+  );
 
   // Stats for analytics cards
   const { data: stats, isLoading: isStatsLoading } = useConditionStats(true);
 
   const conditionsPagination = useMemo(
-    () => createPaginationHandlers(page, setPage, allConditions?.meta?.totalPages),
+    () =>
+      createPaginationHandlers(page, setPage, allConditions?.meta?.totalPages),
     [page, allConditions?.meta?.totalPages],
   );
 
@@ -43,7 +56,7 @@ const DiseasesAndConditionsPage = () => {
     [viewConditions],
   );
 
-  console.log("Stats: ", stats)
+  console.log("Stats: ", stats);
   const pagination = useMemo(
     () => ({
       currentPage: page,
@@ -69,6 +82,25 @@ const DiseasesAndConditionsPage = () => {
         buttonLabel="Add Condition"
         onButtonClick={() => addConditions.open()}
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search conditions..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </div>
 
       {/* Analytics Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-start">

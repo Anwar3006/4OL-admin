@@ -12,8 +12,8 @@ import {
 export const HEALTHY_LIVING_QUERY_KEYS = {
   all: ["healthy-living"] as const,
   lists: () => [...HEALTHY_LIVING_QUERY_KEYS.all, "list"] as const,
-  list: (page: number, limit: number) =>
-    [...HEALTHY_LIVING_QUERY_KEYS.lists(), { page, limit }] as const,
+  list: (page: number, limit: number, search?: string) =>
+    [...HEALTHY_LIVING_QUERY_KEYS.lists(), { page, limit, search }] as const,
   details: () => [...HEALTHY_LIVING_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...HEALTHY_LIVING_QUERY_KEYS.details(), id] as const,
 };
@@ -35,23 +35,31 @@ interface PaginatedResponse {
 export const useHealthyLivings = ({
   page,
   limit,
+  search,
 }: {
   page: number;
   limit: number;
+  search?: string;
 }) => {
   return useQuery<PaginatedResponse, Error>({
-    queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit),
+    queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit, search),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
+
+      let query = supabase
+        .from("healthy_living_info_view")
+        .select("*", { count: "exact" });
+
+      if (search) {
+        query = query.ilike("name", `%${search}%`);
+      }
 
       const {
         data: healthyLivings,
         count,
         error,
-      } = await supabase
-        .from("healthy_living_info_view")
-        .select("*", { count: "exact" })
+      } = await query
         .order("display_order", { ascending: true })
         .order("created_at", { ascending: false })
         .range(from, to);

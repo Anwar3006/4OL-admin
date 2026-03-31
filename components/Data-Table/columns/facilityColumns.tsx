@@ -2,7 +2,9 @@
 import { StatusMap } from "@/constants/facility.const";
 import { toUppercaseFirstLetter } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Edit, FileText, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
 
 type FacilityRow = {
   id: string;
@@ -82,5 +84,52 @@ export const facilityColumns: ColumnDef<FacilityRow>[] = [
     cell: ({ row }) => (
       <div className="min-w-25">{StatusMap[row.original.status]}</div>
     ),
+  },
+  {
+    id: "actions",
+    header: () => <div className="sr-only">Actions</div>,
+    cell: ({ row }) => {
+      const facility = row.original;
+      const { open: openView } = useViewFacilityDialog();
+      const { open: openEdit } = useAddFacilityDialog();
+
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(facility.id);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(facility);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
   },
 ];

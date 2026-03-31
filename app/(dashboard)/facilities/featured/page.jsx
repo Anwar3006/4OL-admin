@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
-import { Star, Loader2, Search } from "lucide-react";
+import { Star, Loader2, Search, Filter } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import SectionHeader from "@/components/SectionHeader";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { featuredFacilityColumns } from "@/components/Data-Table/columns/featuredFacilityColumns";
@@ -14,22 +15,18 @@ import { Button } from "@/components/ui/button";
 
 const FeaturedFacilitiesPage = () => {
   const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
 
   const toggleDialog = useFacilityToggleDialog();
 
-  const { data, isLoading } = useFeaturedFacilities({ page, limit, search });
+  const { data, isLoading } = useFeaturedFacilities({ page, limit, search: debouncedSearch });
 
-  const handleSearch = () => {
+  // Reset page when search changes
+  React.useEffect(() => {
     setPage(1);
-    setSearch(searchInput.trim());
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
-  };
+  }, [debouncedSearch]);
 
   const facilitiesPagination = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
@@ -67,18 +64,22 @@ const FeaturedFacilitiesPage = () => {
         hasButton={false}
       />
 
-      {/* Search */}
-      <div className="flex items-center gap-2 max-w-md">
-        <Input
-          placeholder="Search by name or region..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="h-9"
-        />
-        <Button size="sm" onClick={handleSearch} className="gap-1.5 shrink-0">
-          <Search className="h-4 w-4" />
-          Search
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or region..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
         </Button>
       </div>
 
@@ -88,7 +89,7 @@ const FeaturedFacilitiesPage = () => {
         <span>
           <strong className="text-foreground">{data?.meta?.total ?? 0}</strong>{" "}
           featured {data?.meta?.total === 1 ? "facility" : "facilities"}
-          {search && ` matching "${search}"`}
+          {debouncedSearch && ` matching "${debouncedSearch}"`}
         </span>
       </div>
 

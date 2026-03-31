@@ -21,7 +21,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           {/* Avatar Section */}
           <div className="relative">
             <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-              <AvatarImage src={user.image || undefined} alt={user.name} />
+              <AvatarImage src={user?.image || undefined} alt={user.name} />
               <AvatarFallback className="text-4xl font-bold bg-zinc-800 text-white">
                 {user.name ? user.name.charAt(0).toUpperCase() : "U"}
               </AvatarFallback>

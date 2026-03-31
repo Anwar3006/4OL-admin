@@ -25,49 +25,18 @@ const validateRichTextContent = (value) => {
 
 // ✅ Yup validation schema
 const schema = yup.object().shape({
-  topic_name: yup.string().required("Topic name is required"),
-  about: yup
-    .string()
-    .required("About is required")
-    .test("has-content", "About content is required", validateRichTextContent),
+  topic_name: yup.string().nullable(),
+  about: yup.string().nullable(),
   types: yup.array().of(
     yup.object().shape({
-      type_name: yup.string().required("Type name is required"),
-      about_type: yup
-        .string()
-        .required("About type is required")
-        .test(
-          "has-content",
-          "About type content is required",
-          validateRichTextContent
-        ),
+      type_name: yup.string(),
+      about_type: yup.string(),
     })
   ),
-  category: yup
-    .string()
-    .required("Category is required")
-    .test(
-      "has-content",
-      "Category content is required",
-      validateRichTextContent
-    ),
-  contact_your_doctor: yup
-    .string()
-    .required("Contact your doctor is required")
-    .test(
-      "has-content",
-      "Contact your doctor content is required",
-      validateRichTextContent
-    ),
-  more_information: yup
-    .string()
-    .required("More information is required")
-    .test(
-      "has-content",
-      "More information content is required",
-      validateRichTextContent
-    ),
-  attribution: yup.string().required("Attribution is required"),
+  category: yup.string().nullable(),
+  contact_your_doctor: yup.string().nullable(),
+  more_information: yup.string().nullable(),
+  attribution: yup.string().nullable(),
 });
 
 // ✅ Field configuration array - split into top and bottom sections for ordered visual rendering

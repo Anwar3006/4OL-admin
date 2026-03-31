@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
-import { Activity, Search } from "lucide-react";
+import { Activity, Search, Filter } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import SectionHeader from "@/components/SectionHeader";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { createWorkoutColumns } from "@/components/Data-Table/columns/workoutColumns";
@@ -15,22 +16,18 @@ import { TWorkoutOutput } from "@/schemas/workout.schema";
 
 const WorkoutsPage = () => {
   const [page, setPage] = useState(1);
-  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
 
   const workoutDialog = useAddWorkoutDialog();
-  const { data, isLoading } = useWorkouts({ page, limit, search });
+  const { data, isLoading } = useWorkouts({ page, limit, search: debouncedSearch });
   const { mutate: deleteWorkout } = useDeleteWorkout();
 
-  const handleSearch = () => {
+  // Reset page when search changes
+  React.useEffect(() => {
     setPage(1);
-    setSearch(searchInput.trim());
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSearch();
-  };
+  }, [debouncedSearch]);
 
   const paginationHandlers = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
@@ -86,18 +83,22 @@ const WorkoutsPage = () => {
         onButtonClick={() => workoutDialog.open()}
       />
 
-      {/* Search */}
-      <div className="px-4 lg:px-0 mt-4 flex items-center gap-2 max-w-md">
-        <Input
-          placeholder="Search by exercise name..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="h-9"
-        />
-        <Button size="sm" onClick={handleSearch} className="gap-1.5 shrink-0">
-          <Search className="h-4 w-4" />
-          Search
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 px-4 lg:px-0 mt-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by exercise name..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
         </Button>
       </div>
 

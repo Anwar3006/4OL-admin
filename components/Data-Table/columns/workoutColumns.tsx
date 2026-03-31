@@ -86,28 +86,28 @@ export const createWorkoutColumns = ({
     id: "actions",
     header: () => <div className="font-semibold text-right">Actions</div>,
     cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-end gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
           onClick={(e) => {
             e.stopPropagation();
             onEdit(row.original);
           }}
         >
-          <Pencil className="h-3.5 w-3.5" />
+          <Pencil className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+          className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(row.original.id!);
           }}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     ),

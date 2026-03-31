@@ -1,4 +1,4 @@
-import { getUsers } from "@/actions/user.actions";
+import { getUsers, getUserProfile } from "@/actions/user.actions";
 import { supabase } from "@/lib/supabase";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type {
@@ -72,28 +72,12 @@ export const useUser = ({ id, enabled }: { id: string; enabled: boolean }) => {
     // Only run the query if an ID actually exists
     enabled: enabled,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select(
-          `
-          *,
-          user:user (
-            id,
-            name,
-            email,
-            image,
-            email_verified
-          )
-        `,
-        )
-        .eq("user_id", id) // Use user_id if that's your FK to Better Auth
-        .single();
+      const { data, error } = await getUserProfile();
 
-      if (error) throw new Error(error.message);
+      if (error) throw new Error(error);
       if (!data) throw new Error("User not found");
 
-      // Flatten the join so the UI gets a consistent object
-      return { ...data, ...data.user } as TUserProfile;
+      return data as TUserProfile;
     },
   });
 };

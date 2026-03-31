@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil } from "lucide-react";
+import { FileText, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -47,24 +47,35 @@ export const healthyLivingColumns: ColumnDef<THealthyLivingOutput>[] = [
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
             onClick={(e) => {
               e.stopPropagation();
               openView(row.original.id);
             }}
           >
-            <Eye className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
             onClick={(e) => {
               e.stopPropagation();
               openEdit(row.original);
             }}
           >
-            <Pencil className="h-4 w-4" />
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       );

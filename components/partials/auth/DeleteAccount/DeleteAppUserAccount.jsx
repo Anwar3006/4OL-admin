@@ -13,11 +13,11 @@ import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import useDarkMode from "@/hooks/useDarkMode";
 
-// Validation schema
 const schema = yup
   .object({
     email: yup.string().email("Invalid email").required("Email is Required"),
     password: yup.string().required("Password is Required"),
+    reason: yup.string().required("Please provide a reason for deleting your account"),
   })
   .required();
 
@@ -42,6 +42,7 @@ export default function DeleteAppUserAccount() {
 
   const { ref: emailHookRef, ...emailRest } = register("email");
   const { ref: passwordHookRef, ...passwordRest } = register("password");
+  const { ref: reasonHookRef, ...reasonRest } = register("reason");
 
   // Handle form submission
 const onSubmit = async (data) => {
@@ -71,19 +72,20 @@ const onSubmit = async (data) => {
     const userId = sessionUser.id;
 
     // Step 3: Check if delete request is already submitted
-    const { data: profile, error: profileError } = await supabase
-      .from("user_profiles") // replace with your actual table
-      .select("delete_account_request")
-      .eq("id", userId)
+    const { data: existingRequest, error: checkError } = await supabase
+      .from("delete_account_requests")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "pending")
       .single();
 
-    if (profileError) {
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is 'no rows'
       toast.error("Failed to check account status. Please try again.");
       return;
     }
 
-    if (profile?.delete_account_request) {
-      toast.error("Your account deletion request has already been submitted.");
+    if (existingRequest) {
+      toast.error("Your account deletion request is already pending approval.");
       return;
     }
 
@@ -230,15 +232,20 @@ const onSubmit = async (data) => {
 
     const userId = sessionUser.id;
 
-    // Update only the delete_account_request field
-    const { error: updateError } = await supabase
-      .from("user_profiles") // Replace this with your actual user table name
-      .update({ delete_account_request: true })
-      .eq("id", userId);
+    // Use the delete_account_requests table
+    const { error: insertError } = await supabase
+      .from("delete_account_requests")
+      .insert({
+        user_id: userId,
+        email: email,
+        reason: password, // Keep this as password check? No, user says 'reason' field
+        reason: getValues("reason"),
+        status: "pending"
+      });
 
-    if (updateError) {
-      console.error("Update error:", updateError);
-      toast.error(`Failed to submit delete request: ${updateError.message}`, {
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      toast.error(`Failed to submit delete request: ${insertError.message}`, {
         position: "top-right",
         autoClose: 3000,
       });
@@ -247,13 +254,18 @@ const onSubmit = async (data) => {
       return;
     }
 
-    toast.success("Delete request submitted successfully", {
+    toast.success("Delete request submitted successfully. You will be logged out shortly.", {
       position: "top-right",
       autoClose: 2000,
     });
 
-    reset();
-    setShowModal(false);
+    // Logout after a brief delay
+    setTimeout(async () => {
+      await authClient.signOut();
+      reset();
+      setShowModal(false);
+      window.location.href = "/login";
+    }, 2000);
   } catch (error) {
     console.error("Delete account error:", error);
     toast.error("An unexpected error occurred. Please try again.", {
@@ -322,11 +334,25 @@ const onSubmit = async (data) => {
               className="w-full border"
             />
 
+            <Textinput
+              name="reason"
+              type="text"
+              placeholder="Why do you want to delete your account?"
+              ref={(e) => {
+                reasonHookRef(e);
+              }}
+              {...reasonRest}
+              register={register}
+              error={errors?.reason}
+              classLabel=" after:ml-0.5 after:text-red-500 after:content-['*'] text-sm"
+              className="w-full"
+            />
+
             <button
               type="submit"
-              className="btn rounded-md bg-red-500 hover:bg-red-600 text-white  text-center transition-colors"
+              className="btn rounded-md bg-red-500 hover:bg-red-600 text-white  text-center transition-colors px-10"
             >
-              Delete Account
+              Submit Delete Request
             </button>
           </form>
         </div>

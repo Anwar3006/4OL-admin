@@ -39,14 +39,14 @@ export const useConditions = ({
   enabled: boolean;
 }) => {
   return useQuery<any, Error>({
-    queryKey: CONDITIONS_QUERY_KEYS.all,
+    queryKey: CONDITIONS_QUERY_KEYS.list(params),
     queryFn: async () => {
       try {
         const { limit, page, search } = params;
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
-        const query = supabase.from("conditions").select(
+        let query = supabase.from("conditions").select(
           `
           *,
           condition_types (type_name, about_type),
@@ -62,7 +62,7 @@ export const useConditions = ({
         );
 
         if (search) {
-          query.or(`name.ilike.%${search}%`);
+          query = query.or(`name.ilike.%${search}%`);
         }
 
         const { data, count, error } = await query.range(from, to);
@@ -82,8 +82,10 @@ export const useConditions = ({
           return {
             ...rest,
             causes: condition_causes,
-            bodyParts: condition_body_parts?.map((b: any) => b.body_parts?.name) || [],
-            categories: condition_categories?.map((c: any) => c.categories?.name) || [],
+            bodyParts:
+              condition_body_parts?.map((b: any) => b.body_parts?.name) || [],
+            categories:
+              condition_categories?.map((c: any) => c.categories?.name) || [],
             types: condition_types?.map((t: any) => t.type_name) || [],
           };
         });

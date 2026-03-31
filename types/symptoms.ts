@@ -4,11 +4,11 @@ import z from "zod";
 export type SerializedEditorState = any;
 
 export const symptomSchema = z.object({
-  name: z.string().min(3, "Please enter a name for the condition"),
+  name: z.string().optional().or(z.literal("")),
   slug: z.string().optional(),
   specialist_to_contact: z.string().optional(),
-  nhs_link: z.string(),
-  image_url: z.string(),
+  nhs_link: z.string().optional().or(z.literal("")),
+  image_url: z.string().optional().or(z.literal("")),
   is_systemic: z.boolean().default(false),
   about: z.any(),
   diagnosis: z.any(),
@@ -19,8 +19,8 @@ export const symptomSchema = z.object({
   contact_your_doctor: z.any(),
   more_information: z.any(),
   attribution: z.any(),
-  categories: z.array(z.string()).min(1),
-  bodyParts: z.array(z.string()).min(1),
+  categories: z.array(z.string()).default([]).optional(),
+  bodyParts: z.array(z.string()).default([]).optional(),
   types: z.array(z.any()).default([]),
   causes: z.array(z.any()).default([]),
 });

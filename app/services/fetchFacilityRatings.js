@@ -1,7 +1,7 @@
 import { supabase } from "../utils/supabaseClient"; // Adjust this import based on your setup
 
-export const fetchFacilityRatings = async (from = 0, to = 13) => {
-  const { data, error, count } = await supabase
+export const fetchFacilityRatings = async (from = 0, to = 13, search = "") => {
+  let query = supabase
     .from("facility_reviews")
     .select(
       `
@@ -24,8 +24,13 @@ export const fetchFacilityRatings = async (from = 0, to = 13) => {
       )
     `,
       { count: "exact" },
-    )
-    .range(from, to);
+    );
+
+  if (search) {
+    query = query.or(`comment_text.ilike.%${search}%,facility_profile.facility_name.ilike.%${search}%`);
+  }
+
+  const { data, error, count } = await query.range(from, to);
 
   if (error) {
     console.error("Error fetching facility ratings:", error.message);

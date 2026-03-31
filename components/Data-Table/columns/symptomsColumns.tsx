@@ -121,48 +121,43 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     cell: ({ row }) => {
       const condition = row.original;
       const { open: openView } = useViewConditionDialog();
-      const { open: openEdit, data } = useAddConditionDialog();
+      const { open: openEdit } = useAddConditionDialog();
 
       return (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>Management</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  openView(condition.id);
-                }}
-              >
-                <FileText className="mr-2 h-4 w-4" /> View Full Details
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  openEdit(condition);
-                }}
-              >
-                <Edit className="mr-2 h-4 w-4" /> Edit Content
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(condition.id)}
-              >
-                Copy Condition ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Record
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(condition.id);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(condition);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete logic here if available
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       );
     },

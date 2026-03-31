@@ -52,7 +52,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          row.original.bodyParts.join(", ")
+          row.original.bodyParts.length > 2 ?  `${row.original.bodyParts.slice(0, 2).join(", ")} + ${row.original.bodyParts.length - 2} more`: row.original.bodyParts.join(", ")
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}
@@ -67,7 +67,7 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.categories?.length > 0 ? (
-          row.original.categories.join(", ")
+          row.original.categories.length > 2 ?  `${row.original.categories.slice(0, 2).join(", ")} + ${row.original.categories.length - 2} more`: row.original.categories.join(", ")
         ) : (
           <span className="text-muted-foreground/30">—</span>
         )}
@@ -105,52 +105,41 @@ export const conditionColumns: ColumnDef<TConditionsOutput>[] = [
       const { open: openView } = useViewConditionDialog();
       const { open: openEdit } = useAddConditionDialog();
 
-      // Helper to handle actions safely
-      const handleAction = (e: React.MouseEvent, action: () => void) => {
-        e.preventDefault();
-        e.stopPropagation(); // This is the magic line
-        action();
-      };
-
       return (
-        <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>Management</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={(e) => handleAction(e, () => openView(condition.id))}
-              >
-                <FileText className="mr-2 h-4 w-4" /> View Full Details
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => handleAction(e, () => openEdit(condition))}
-              >
-                <Edit className="mr-2 h-4 w-4" /> Edit Content
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(condition.id);
-                }}
-              >
-                Copy Condition ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Record
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(condition.id);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(condition);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       );
     },

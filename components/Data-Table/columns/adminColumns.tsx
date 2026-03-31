@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Mail, Phone } from "lucide-react";
+import { MoreHorizontal, Mail, Phone, Edit, FileText, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 import { StatusMap } from "@/constants/users.const";
 import type { TUserProfile } from "@/schemas/user-profile.schema";
 
-import { useDialogStore } from "@/stores/dialog-store";
+import { useDialogStore, useViewUserDialog, useAddAdminDialog, useMakeGroupLeaderDialog } from "@/stores/dialog-store";
 
 const formatDate = (value: any) => {
   if (!value) return "N/A";
@@ -108,40 +108,57 @@ export const adminColumns: ColumnDef<TUserProfile>[] = [
     header: () => <div className="sr-only">Actions</div>,
     cell: ({ row }) => {
       const user = row.original;
+      const { open: openView } = useViewUserDialog();
+      const { open: openEdit } = useAddAdminDialog();
+      const { open: openMakeLeader } = useMakeGroupLeaderDialog();
+
       return (
-        <div className="min-w-12.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0 hover:bg-muted"
-                aria-label="Open actions menu"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(user.user_id)}
-              >
-                Copy Admin ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View Details</DropdownMenuItem>
-              <DropdownMenuItem>Edit Admin</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  useDialogStore.getState().openDialog("make-group-leader", { entityId: user.user_id, data: user });
-                }}
-              >
-                Make Group Leader
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">Remove Admin</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(user.user_id);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(user);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-amber-600 hover:bg-amber-50"
+            title="Make Group Leader"
+            onClick={(e) => {
+              e.stopPropagation();
+              openMakeLeader(user.user_id, user);
+            }}
+          >
+            <UserPlus className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       );
     },

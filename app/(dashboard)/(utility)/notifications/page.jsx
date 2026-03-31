@@ -1,9 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { Edit, FileText, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
 import GlobalFilter from "@/components/partials/table/GlobalFilter";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import CustomButton from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import PaginationNew from "@/components/ui/PaginationNew";
@@ -103,7 +105,7 @@ export default function Notifications() {
         <div className="lg:space-x-3 sm:items-center justify-end flex max-sm:flex-col max-sm:justify-start max-lg:justify-between w-full max-lg:mt-5 rtl:space-x-reverse">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           <div className="flex ">
-            <Button
+            <CustomButton
               icon="ic:outline-notification-add"
               text="Push Notification"
               className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
@@ -176,16 +178,40 @@ export default function Notifications() {
                     {item.created_at ? formatDate(item.created_at) : 'Unknown'}
                   </td>
                   <td className="sm:px-6 px-2 sm:py-4 py-2 whitespace-nowrap">
-                    <div className="flex justify-center items-center space-x-2">
+                    <div className="flex justify-center items-center gap-2">
                       <Button
-                        icon="heroicons-outline:trash"
-                        iconClass="text-base text-red-500 dark:text-slate-200"
-                        className="p-0 bg-transparent border-none text-center"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleView(item.id);
+                        }}
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(item.id);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(item.id);
                         }}
-                      />
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

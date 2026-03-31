@@ -12,7 +12,12 @@ import {
   Beaker,
   Calendar,
   AlertCircle,
+  Edit,
+  FileText,
+  Trash2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -188,36 +193,76 @@ export const medicationColumns: ColumnDef<TMedicationReminder>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-2xl transition-all duration-300 text-slate-400 border border-slate-100 shadow-sm">
-              <Activity className="w-4 h-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-slate-900 text-white text-[11px] font-medium border-none p-5 rounded-[24px] shadow-2xl max-w-[300px]">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-blue-400 font-black uppercase text-[9px] tracking-[0.2em]">
-                <ShieldCheck className="w-4 h-4" />
-                Data Integrity Verified
-              </div>
-              <p className="leading-relaxed text-slate-300">
-                This asset follows established pharmacopeia standards.
-                Initialized via medical oversight on
-                <span className="text-white font-bold ml-1">
-                  {format(new Date(row.original.start_date), "PP")}
-                </span>
-                .
-              </p>
-              <div className="pt-2 flex items-center gap-2 text-amber-400 text-[9px] font-black uppercase">
-                <AlertCircle className="w-3 h-3" />
-                Review Interactions
-              </div>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    ),
+    cell: ({ row }) => {
+      const medication = row.original;
+      const { open: openView } = useViewMediactionReminderDialog();
+
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(medication.id);
+            }}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // openEdit(medication);
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle delete
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-2xl transition-all duration-300 text-slate-400 border border-slate-100 shadow-sm cursor-help">
+                  <Activity className="w-4 h-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="bg-slate-900 text-white text-[11px] font-medium border-none p-5 rounded-[24px] shadow-2xl max-w-[300px]">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-blue-400 font-black uppercase text-[9px] tracking-[0.2em]">
+                    <ShieldCheck className="w-4 h-4" />
+                    Data Integrity Verified
+                  </div>
+                  <p className="leading-relaxed text-slate-300">
+                    This asset follows established pharmacopeia standards.
+                    Initialized via medical oversight on
+                    <span className="text-white font-bold ml-1">
+                      {format(new Date(row.original.start_date), "PP")}
+                    </span>
+                    .
+                  </p>
+                  <div className="pt-2 flex items-center gap-2 text-amber-400 text-[9px] font-black uppercase">
+                    <AlertCircle className="w-3 h-3" />
+                    Review Interactions
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      );
+    },
   },
 ];

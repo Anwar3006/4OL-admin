@@ -1,18 +1,29 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
-import { ArrowLeft, Loader2, PlusCircleIcon } from "lucide-react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  Loader2,
+  PlusCircleIcon,
+  Search,
+  Filter,
+} from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import SectionHeader from "@/components/SectionHeader";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { StatsCard } from "@/components/Data-Table/helpers";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns";
 import { useFacilityCardConfig } from "@/components/Data-Table/mobile-table-configs/facilityCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
-import { Button } from "@/components/ui/button";
-import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
+import { useDebounce } from "@/hooks/use-debounce";
+import {
+  useAddFacilityDialog,
+  useViewFacilityDialog,
+} from "@/stores/dialog-store";
 import AddFacilityDialog from "../_components/add-facility-dialog";
 import { FacilityViewDialog } from "../_components/view-facility-dialog";
 
@@ -37,13 +48,20 @@ const FacilityTypePage = () => {
   const viewFacility = useViewFacilityDialog();
 
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
   const currentStatus = searchParams.get("status");
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, currentStatus]);
 
   const { data, isLoading, isFetching } = useFacilityProfiles({
     limit,
     page,
     type: decodedType,
+    search: debouncedSearch,
     includeStatsOnly: false,
     status: currentStatus || undefined,
   });
@@ -58,7 +76,7 @@ const FacilityTypePage = () => {
 
   const facilitiesPagination = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta?.totalPages),
-    [page, data?.meta?.totalPages]
+    [page, data?.meta?.totalPages],
   );
 
   const pagination = useMemo(
@@ -73,12 +91,12 @@ const FacilityTypePage = () => {
       canNextPage: page < (data?.meta?.totalPages || 1),
       canPreviousPage: page > 1,
     }),
-    [page, data, facilitiesPagination]
+    [page, data, facilitiesPagination],
   );
 
   const onRowClick = useCallback(
     (facility) => viewFacility.open(facility.id),
-    [viewFacility]
+    [viewFacility],
   );
 
   return (
@@ -100,6 +118,25 @@ const FacilityTypePage = () => {
         buttonLabel="Add Facility"
         onButtonClick={() => addFacility.open()}
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search facilities..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </div>
 
       {isLoading ? (
         <div className="w-full h-30 flex items-center justify-center gap-2">

@@ -6,20 +6,26 @@ import { TTrainerInput, TTrainerOutput } from '@/schemas/trainer.schema';
 export const TRAINER_QUERY_KEYS = {
   all: ['trainers'] as const,
   lists: () => [...TRAINER_QUERY_KEYS.all, 'list'] as const,
-  list: (page: number, limit: number) => [...TRAINER_QUERY_KEYS.lists(), { page, limit }] as const,
+  list: (page: number, limit: number, search?: string) => [...TRAINER_QUERY_KEYS.lists(), { page, limit, search }] as const,
   details: () => [...TRAINER_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...TRAINER_QUERY_KEYS.details(), id] as const,
 };
 
-export const useTrainers = ({ page, limit }: { page: number; limit: number }) => {
+export const useTrainers = ({ page, limit, search }: { page: number; limit: number; search?: string }) => {
   return useQuery({
-    queryKey: TRAINER_QUERY_KEYS.list(page, limit),
+    queryKey: TRAINER_QUERY_KEYS.list(page, limit, search),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
-      const { data, count, error } = await supabase
+      let query = supabase
         .from('trainers')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact' });
+
+      if (search) {
+        query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,specialization.ilike.%${search}%`);
+      }
+
+      const { data, count, error } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
       if (error) throw new Error(error.message);

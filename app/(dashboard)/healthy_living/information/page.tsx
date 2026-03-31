@@ -1,8 +1,11 @@
 "use client";
 import SectionHeader from "@/components/SectionHeader";
-import { PlusCircleIcon } from "lucide-react";
-import React, { useState, useCallback, useMemo } from "react";
-import ConditionsStats from "@/components/dashboard/ConditionStats"; 
+import { PlusCircleIcon, Search, Filter } from "lucide-react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import ConditionsStats from "@/components/dashboard/ConditionStats";
 import { DataTable } from "@/components/Data-Table/data-table";
 
 import { createPaginationHandlers } from "@/lib/utils";
@@ -20,11 +23,22 @@ const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();
   const viewHealthyLiving = useViewHealthyLivingDialog();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
 
-  const { data, isLoading } = useHealthyLivings({ page, limit });
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
-  console.log("Data: ", data)
+  const { data, isLoading } = useHealthyLivings({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
+
+  console.log("Data: ", data);
 
   const paginationHandler = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta.totalPages),
@@ -60,6 +74,25 @@ const HealthyLivingPage = () => {
         buttonLabel="Add Notes"
         onButtonClick={() => addHealthLiving.open()}
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search healthy living..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <Button variant="outline">
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
+      </div>
 
       {/* StatsCards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
