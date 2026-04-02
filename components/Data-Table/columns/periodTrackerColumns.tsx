@@ -23,7 +23,7 @@ export type TPeriodTrackerLog = {
     email: string;
     phone_number: string;
     region: string;
-    avatar_url: string;
+    image: string;
   };
 };
 
@@ -35,10 +35,10 @@ export const periodTrackerColumns: ColumnDef<TPeriodTrackerLog>[] = [
       const user = row.original.user_profiles;
       return (
         <div className="flex items-center space-x-3">
-          {user?.avatar_url ? (
+          {user?.image ? (
             <img
               className="w-8 h-8 rounded-full object-cover"
-              src={user.avatar_url}
+              src={user.image}
               alt=""
             />
           ) : (
@@ -96,7 +96,8 @@ export const periodTrackerColumns: ColumnDef<TPeriodTrackerLog>[] = [
   {
     accessorKey: "period_start_date",
     header: "Start",
-    cell: ({ row }) => moment(row.original.period_start_date).format("DD/MM/YY"),
+    cell: ({ row }) =>
+      moment(row.original.period_start_date).format("DD/MM/YY"),
   },
   {
     id: "fertile_window",
@@ -111,7 +112,10 @@ export const periodTrackerColumns: ColumnDef<TPeriodTrackerLog>[] = [
           }}
           className="text-purple-500 hover:text-purple-700 transition"
         >
-          <Icon icon="healthicons:sexual-reproductive-health" className="w-6 h-6 inline" />
+          <Icon
+            icon="healthicons:sexual-reproductive-health"
+            className="w-6 h-6 inline"
+          />
         </button>
       );
     },

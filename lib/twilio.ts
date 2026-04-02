@@ -62,14 +62,25 @@ export async function sendWhatsApp(to: string, message: string) {
 
 export async function sendSMS(to: string, message: string) {
   try {
+    const fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+    
+    if (!fromPhoneNumber) {
+      console.warn("TWILIO_PHONE_NUMBER is not set in environment variables. Falling back to TWILIO_WHATSAPP_NUMBER for SMS.");
+    }
+
     const response = await client.messages.create({
-      from: process.env.TWILIO_WHATSAPP_NUMBER,
+      from: fromPhoneNumber || process.env.TWILIO_WHATSAPP_NUMBER,
       to: to,
       body: message,
     });
     return { success: true, sid: response.sid };
-  } catch (error) {
-    console.error("SMS Error:", error);
+  } catch (error: any) {
+    console.error("SMS Error Details:", {
+      status: error.status,
+      code: error.code,
+      message: error.message,
+      moreInfo: error.moreInfo
+    });
     return { success: false, error };
   }
 }

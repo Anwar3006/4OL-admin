@@ -17,21 +17,22 @@ export async function PATCH(req: NextRequest) {
   const { facilityId, rating, comment } = body || {};
 
   if (!facilityId || rating === undefined) {
-    return NextResponse.json({ error: "facilityId and rating are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "facilityId and rating are required" },
+      { status: 400 },
+    );
   }
 
   const admin = getSupabaseAdmin();
-  const { error } = await admin
-    .from("facility_ratings")
-    .upsert(
-      {
-        facility_id: facilityId,
-        user_id: session.user.id,
-        rating,
-        comment,
-      },
-      { onConflict: "user_id,facility_id" }
-    );
+  const { error } = await admin.from("facility_ratings").upsert(
+    {
+      facility_id: facilityId,
+      user_id: session.user.id,
+      rating,
+      comment,
+    },
+    { onConflict: "user_id,facility_id" },
+  );
 
   if (error) {
     console.error("[ratings] Supabase error:", error.message);
@@ -47,13 +48,16 @@ export async function GET(req: NextRequest) {
   const userId = searchParams.get("userId");
 
   if (!facilityId) {
-    return NextResponse.json({ error: "facilityId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "facilityId is required" },
+      { status: 400 },
+    );
   }
 
   const admin = getSupabaseAdmin();
   let query = admin
     .from("facility_ratings")
-    .select("*, user_profiles(id, first_name, last_name, avatar_url)")
+    .select("*, user_profiles(id, first_name, last_name)")
     .eq("facility_id", facilityId)
     .order("created_at", { ascending: false });
 

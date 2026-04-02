@@ -170,7 +170,7 @@ const AddSymptomDialog = () => {
                 console.error("Validation errors:", errors);
                 toast.error("Please fill in all required fields.");
               })}
-              className="space-y-8"
+              className="space-y-8 grid grid-cols-1 gap-4 items-start"
             >
               {/* ── Basic Details ── */}
               <section className="space-y-4">

@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ToastContainer } from "react-toastify";
+// import { ToastContainer } from "react-toastify";
 import Header from "@/components/partials/header";
 import Sidebar from "@/components/partials/sidebar";
 
@@ -73,7 +73,7 @@ export default function DashboardWrapper({ children }) {
       ${navbarType === "floating" ? "has-floating" : ""}
       `}
     >
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <Header className={width > breakpoints.xl ? switchHeaderClass() : ""} />
       {menuType === "vertical" && width > breakpoints.xl && !menuHidden && (
         <Sidebar />
