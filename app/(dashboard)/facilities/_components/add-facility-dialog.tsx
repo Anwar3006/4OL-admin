@@ -37,7 +37,7 @@ import {
 import z from "zod";
 import { MultiSelect } from "@/components/MultiSelect";
 import { cn } from "@/lib/utils";
-import ImageDropZone from "@/components/ImageDropZone";
+import ImageDropZone, { isMediaVideo } from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddFacilityDialog } from "@/stores/dialog-store";
 import { authClient } from "@/lib/auth-client";
@@ -964,11 +964,21 @@ const AddFacilityDialog = () => {
                                 : "border-white shadow-sm",
                             )}
                           >
-                            <img
-                              src={img.url}
-                              alt="Gallery item"
-                              className="object-cover w-full h-full"
-                            />
+                            {isMediaVideo(img.path) ? (
+                              <video
+                                src={img.url}
+                                className="object-cover w-full h-full"
+                                muted
+                                autoPlay
+                                loop
+                              />
+                            ) : (
+                              <img
+                                src={img.url}
+                                alt="Gallery item"
+                                className="object-cover w-full h-full"
+                              />
+                            )}
 
                             {/* Overlay Controls */}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">

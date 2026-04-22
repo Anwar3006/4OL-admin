@@ -6,8 +6,10 @@ import {
   useReactTable,
   SortingState,
   getSortedRowModel,
+  getPaginationRowModel,
 } from "@tanstack/react-table";
-import { useState, memo } from "react";
+import { useState, memo, useMemo } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -63,19 +65,49 @@ const DataTableComponent = <TData, TValue>({
   route,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = useState({});
   const isMobile = useIsMobile();
   const { scrollRef, showLeftShadow, showRightShadow } = useScrollShadow();
 
+  const finalColumns = useMemo(() => {
+    const selectColumn: ColumnDef<any> = {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+          onClick={(e) => e.stopPropagation()} // Prevent row click
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    };
+    return [selectColumn, ...columns];
+  }, [columns]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: finalColumns,
+    state: {
+      sorting,
+      rowSelection,
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
-    manualPagination: true, // ✅ Important: Tell table we handle pagination
-    state: {
-      sorting,
-    },
+    manualPagination: true,
   });
 
   const handleRowClick = (row: TData) => {

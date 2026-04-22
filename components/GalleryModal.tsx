@@ -11,6 +11,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useGalleryModal } from "@/stores/dialog-store";
+import { isMediaVideo } from "./ImageDropZone";
 import { Loader2, X } from "lucide-react";
 
 export function GalleryModal() {
@@ -47,11 +48,19 @@ export function GalleryModal() {
             {/* Left Side: Fixed Preview Area */}
             <div className="flex-[3] relative bg-black flex items-center justify-center p-4 overflow-hidden">
               {selectedImage ? (
-                <img
-                  src={getImageUrl(selectedImage)}
-                  alt="Preview"
-                  className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-500"
-                />
+                isMediaVideo(selectedImage) ? (
+                  <video
+                    src={getImageUrl(selectedImage)}
+                    controls
+                    className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-500"
+                  />
+                ) : (
+                  <img
+                    src={getImageUrl(selectedImage)}
+                    alt="Preview"
+                    className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-500"
+                  />
+                )
               ) : (
                 <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
               )}
@@ -81,12 +90,20 @@ export function GalleryModal() {
                       )}
                     >
                       <AspectRatio ratio={4 / 3}>
-                        <img
-                          src={getImageUrl(img)}
-                          alt={`Gallery image ${i + 1}`}
-                          className="object-cover w-full h-full"
-                          loading="lazy"
-                        />
+                        {isMediaVideo(img) ? (
+                          <video
+                            src={getImageUrl(img)}
+                            className="object-cover w-full h-full"
+                            muted
+                          />
+                        ) : (
+                          <img
+                            src={getImageUrl(img)}
+                            alt={`Gallery image ${i + 1}`}
+                            className="object-cover w-full h-full"
+                            loading="lazy"
+                          />
+                        )}
                       </AspectRatio>
                       {selectedImage === img && (
                         <div className="absolute inset-0 bg-emerald-500/10" />

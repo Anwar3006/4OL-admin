@@ -7,6 +7,15 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,11 +35,14 @@ import {
 } from "lucide-react";
 import { MarketingStatusMap } from "@/constants/marketing.const";
 import { useViewMarketingDialog } from "@/stores/dialog-store";
+import { isMediaVideo } from "@/components/ImageDropZone";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   useMarketingProfile,
   useUpdateMarketingProfile,
+  useDeleteMarketingProfile,
 } from "@/hooks/supabase-calls/useMarketing";
+import { useAddMarketingDialog } from "@/stores/dialog-store";
 
 export function ViewMarketingDialog() {
   const { isOpen, entityId, close } = useViewMarketingDialog();
@@ -41,6 +53,9 @@ export function ViewMarketingDialog() {
   });
 
   const { mutateAsync: updateCampaign } = useUpdateMarketingProfile();
+  const { mutateAsync: deleteCampaign } = useDeleteMarketingProfile();
+  const { open: openAddMarketing } = useAddMarketingDialog();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const getImageUrl = (img: string) =>
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${img}`;
@@ -83,8 +98,26 @@ export function ViewMarketingDialog() {
     }
   };
 
+  const handleEdit = () => {
+    if (!campaign) return;
+    openAddMarketing(campaign);
+    close();
+  };
+
+  const handleDelete = async () => {
+    if (!campaign) return;
+    try {
+      await deleteCampaign({ id: campaign.id, imageUrl: campaign.imageUrl });
+      setIsDeleteDialogOpen(false);
+      close();
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
+    <>
+      <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
       <SheetContent className="w-full sm:max-w-2xl xl:max-w-2/3 p-0 flex flex-col h-full">
         <SheetHeader>
           <VisuallyHidden.Root>
@@ -133,7 +166,8 @@ export function ViewMarketingDialog() {
                 <div className="grid grid-cols-3 sm:flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 text-xs md:text-sm h-9 md:h-10"
+                    className="flex-1 text-xs md:text-sm h-9 md:h-10 hover:cursor-pointer"
+                    onClick={handleEdit}
                   >
                     <Edit className="h-4 w-4 mr-1.5 md:mr-2" />
                     Edit
@@ -168,9 +202,10 @@ export function ViewMarketingDialog() {
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="h-9 w-9 md:h-10 md:w-10 shrink-0"
+                    className="h-9 w-9 md:h-10 md:w-10 shrink-0 hover:cursor-pointer"
+                    onClick={() => setIsDeleteDialogOpen(true)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 stroke-white" />
                   </Button>
                 </div>
 
@@ -178,11 +213,19 @@ export function ViewMarketingDialog() {
                 <Card className="overflow-hidden border-none bg-muted/30 shadow-none">
                   {campaign.imageUrl.length > 0 ? (
                     <div className="relative aspect-video w-full bg-black/5">
-                      <img
-                        src={getImageUrl(campaign.imageUrl)}
-                        alt={campaign.headline}
-                        className="w-full h-full object-cover transition-opacity duration-300"
-                      />
+                      {isMediaVideo(campaign.imageUrl) ? (
+                        <video
+                          src={getImageUrl(campaign.imageUrl)}
+                          controls
+                          className="w-full h-full object-cover transition-opacity duration-300"
+                        />
+                      ) : (
+                        <img
+                          src={getImageUrl(campaign.imageUrl)}
+                          alt={campaign.headline}
+                          className="w-full h-full object-cover transition-opacity duration-300"
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className="aspect-video flex flex-col items-center justify-center bg-muted">
@@ -281,6 +324,37 @@ export function ViewMarketingDialog() {
         )}
       </SheetContent>
     </Sheet>
+
+    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              Delete Campaign
+            </DialogTitle>
+            <DialogDescription className="py-3">
+              Are you sure you want to delete <span className="font-semibold text-black">"{campaign?.headline}"</span>? This action will permanently remove the campaign and its media from our records and storage.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="flex-1 sm:flex-none hover:cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              className="flex-1 sm:flex-none hover:cursor-pointer text-white"
+            >
+              Delete Campaign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

@@ -81,31 +81,44 @@ export const menuItems = [
         childtitle: "Information",
         childlink: "healthy_living/information",
       },
+    ],
+  },
+  {
+    title: "Fitness",
+    isHide: false,
+    icon: "mdi:dumbbell",
+    child: [
       {
         childtitle: "Workouts",
-        childlink: "healthy_living/workouts",
+        childlink: "fitness/workouts",
       },
       {
         childtitle: "Plans",
-        childlink: "healthy_living/plans",
+        childlink: "fitness/plans",
       },
       {
         childtitle: "Challenges",
-        childlink: "healthy_living/challenges",
+        childlink: "fitness/challenges",
       },
       {
         childtitle: "Users",
-        childlink: "healthy_living/users",
+        childlink: "fitness/users",
       },
       {
         childtitle: "Schedule",
-        childlink: "healthy_living/schedule",
+        childlink: "fitness/schedule",
       },
       {
         childtitle: "Trainers",
-        childlink: "healthy_living/trainers",
+        childlink: "fitness/trainers",
       },
     ],
+  },
+  {
+    title: "Referrals",
+    isHide: false,
+    icon: "mdi:account-arrow-right-outline",
+    link: "referrals",
   },
   {
     title: "Period Tracker",

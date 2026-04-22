@@ -33,14 +33,15 @@ const AddSymptomDialog = () => {
 
   const { data: bodyParts = [], isLoading: loadingParts } =
     useBodyPartsForSymptoms();
-  const { data: categories = [], isLoading: loadingCats } =
-    useCategoriesForSymptoms();
+  // const { data: categories = [], isLoading: loadingCats } =
+  //   useCategoriesForSymptoms();
 
   const { mutateAsync, isPending } = useCreateSymptom();
   const { mutateAsync: mutateAsyncEdit, isPending: submittingEdit } =
     useUpdateSymptom();
 
-  const isLoadingForm = loadingParts && loadingCats;
+  // const isLoadingForm = loadingParts && loadingCats;
+  const isLoadingForm = loadingParts;
   const isSubmitting = isPending || submittingEdit;
 
   const form = useForm<TSymptomsInput>({
@@ -87,7 +88,7 @@ const AddSymptomDialog = () => {
         form.reset({
           ...data,
           bodyParts: rehydrateHierarchy(data.bodyParts, bodyParts),
-          categories: rehydrateHierarchy(data.categories, categories),
+          // categories: rehydrateHierarchy(data.categories, categories),
           image_url: data.image_url ?? "",
           nhs_link: data.nhs_link ?? "",
         });
@@ -111,11 +112,13 @@ const AddSymptomDialog = () => {
           slug: "",
           is_systemic: false,
           types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
-          causes: [{ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE }],
+          causes: [
+            { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
+          ],
         });
       }
     }
-  }, [isOpen, isEditMode, data, form, bodyParts, categories]);
+  }, [isOpen, isEditMode, data, form, bodyParts]);
 
   const name = form.watch("name") ?? "";
   const filename = `${name.replaceAll(/\s+/g, "")}-${nanoid(8)}`;
@@ -123,13 +126,16 @@ const AddSymptomDialog = () => {
 
   const handleSubmit = async (formdata: TSymptomsInput) => {
     try {
-      const optimizedBodyPartIds = getDeepestNodes(formdata.bodyParts || [], bodyParts);
-      const optimizedCategoryIds = getDeepestNodes(formdata.categories || [], categories);
+      const optimizedBodyPartIds = getDeepestNodes(
+        formdata.bodyParts || [],
+        bodyParts,
+      );
+      // const optimizedCategoryIds = getDeepestNodes(formdata.categories || [], categories);
       const slug = slugify(formdata.name || "", { lower: true });
       const payload = {
         ...formdata,
         bodyParts: optimizedBodyPartIds,
-        categories: optimizedCategoryIds,
+        // categories: optimizedCategoryIds,
         slug,
       };
 
@@ -174,7 +180,9 @@ const AddSymptomDialog = () => {
             >
               {/* ── Basic Details ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">Basic Details</h3>
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Basic Details
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomInput
                     type="text"
@@ -196,12 +204,12 @@ const AddSymptomDialog = () => {
                     control={form.control}
                     rawParts={bodyParts}
                   />
-                  <TreeMultiSelectForm
+                  {/* <TreeMultiSelectForm
                     label="Associated Category/s"
                     name="categories"
                     control={form.control}
                     rawParts={categories}
-                  />
+                  /> */}
                 </div>
               </section>
 
@@ -214,13 +222,18 @@ const AddSymptomDialog = () => {
                     variant="outline"
                     size="sm"
                     className="bg-green-50"
-                    onClick={() => append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })}
+                    onClick={() =>
+                      append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })
+                    }
                   >
                     + Add Type
                   </Button>
                 </div>
                 {fields.map((field, index) => (
-                  <div key={field.id} className="relative space-y-3 rounded-lg border p-4">
+                  <div
+                    key={field.id}
+                    className="relative space-y-3 rounded-lg border p-4"
+                  >
                     {fields.length > 1 && (
                       <Button
                         type="button"
@@ -258,14 +271,20 @@ const AddSymptomDialog = () => {
                     size="sm"
                     className="bg-green-50"
                     onClick={() =>
-                      causesAppend({ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE })
+                      causesAppend({
+                        cause_name: "",
+                        other_possible_causes: EMPTY_LEXICAL_STATE,
+                      })
                     }
                   >
                     + Add Cause
                   </Button>
                 </div>
                 {causesFields.map((field, index) => (
-                  <div key={field.id} className="relative space-y-3 rounded-lg border p-4">
+                  <div
+                    key={field.id}
+                    className="relative space-y-3 rounded-lg border p-4"
+                  >
                     {causesFields.length > 1 && (
                       <Button
                         type="button"
@@ -305,7 +324,9 @@ const AddSymptomDialog = () => {
 
               {/* ── Diagnosis & Complications ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">Diagnosis & Complications</h3>
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Diagnosis & Complications
+                </h3>
                 <RichTextEditor
                   label="Diagnosis"
                   control={form.control}
@@ -320,7 +341,9 @@ const AddSymptomDialog = () => {
 
               {/* ── Treatment & Prevention ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">Treatment & Prevention</h3>
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Treatment & Prevention
+                </h3>
                 <RichTextEditor
                   label="Treatment"
                   control={form.control}
@@ -335,7 +358,9 @@ const AddSymptomDialog = () => {
 
               {/* ── Additional Information ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">Additional Information</h3>
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Additional Information
+                </h3>
                 <RichTextEditor
                   label="Contact Your Doctor"
                   control={form.control}
@@ -355,7 +380,9 @@ const AddSymptomDialog = () => {
 
               {/* ── Media & Links ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">Media & Links</h3>
+                <h3 className="text-base font-semibold border-b pb-1">
+                  Media & Links
+                </h3>
                 <CustomInput
                   control={form.control}
                   name="nhs_link"
@@ -366,7 +393,9 @@ const AddSymptomDialog = () => {
                 <ImageDropZone
                   filePath={filePath}
                   text="Drop symptom image here"
-                  onFilesChange={(url) => url.map((u) => form.setValue("image_url", u))}
+                  onFilesChange={(url) =>
+                    url.map((u) => form.setValue("image_url", u))
+                  }
                   initialFiles={[form.watch("image_url") as string]}
                 />
               </section>

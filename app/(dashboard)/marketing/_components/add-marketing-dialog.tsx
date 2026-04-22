@@ -9,7 +9,7 @@ import {
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import {
   TMarketingProfileInput,
@@ -25,7 +25,7 @@ import {
 import CustomInput from "@/components/CustomInput";
 import { Textarea } from "@/components/ui/textarea";
 import CustomDatePicker from "@/components/CustomDatePicker";
-import ImageDropZone from "@/components/ImageDropZone";
+import ImageDropZone, { isMediaVideo } from "@/components/ImageDropZone";
 import { Label } from "@/components/ui/label";
 import { nanoid } from "nanoid";
 
@@ -90,6 +90,10 @@ const AddMarketingDialog = () => {
     }
   }, [uploadedImagePath]);
 
+  const initialFiles = useMemo(() => 
+    uploadedImagePath ? [uploadedImagePath] : [], 
+  [uploadedImagePath]);
+
   const { mutateAsync, isPending } = useCreateMarketingProfile();
   const { mutateAsync: mutateAsyncEdit, isPending: isPendingEdit } =
     useUpdateMarketingProfile();
@@ -97,20 +101,75 @@ const AddMarketingDialog = () => {
   const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${uploadedImagePath}`;
 
   useEffect(() => {
-    if (!addMarketingDialog.isOpen) {
-      form.reset();
-    }
-  }, [addMarketingDialog.isOpen, form]);
+    if (addMarketingDialog.isOpen) {
+      if (addMarketingDialog.isEditMode && addMarketingDialog.data) {
+        const campaign = addMarketingDialog.data;
+        
+        // Reconstruct links object from array if needed
+        let linksObj = campaign.links;
+        if (Array.isArray(campaign.links)) {
+          // If it's an array, we try to map them back loosely as we don't have keys
+          // But it's better to just use what we have in order
+          linksObj = {
+            primary: campaign.links[0] || "",
+            website: campaign.links[1] || "",
+            phone: campaign.links[2] || "",
+            email: campaign.links[3] || "",
+            whatsapp: campaign.links[4] || "",
+          };
+        }
 
-  const handleSubmit = async (data: TMarketingProfileInput) => {
+        form.reset({
+          marketingType: campaign.marketingType,
+          headline: campaign.headline,
+          description: campaign.description,
+          imageUrl: campaign.imageUrl,
+          organization: campaign.organization,
+          cta: campaign.cta,
+          links: linksObj || {
+            primary: "",
+            website: "",
+            phone: "",
+            email: "",
+            whatsapp: "",
+          },
+          startDate: campaign.startDate,
+          endDate: campaign.endDate,
+        });
+      }
+    } else {
+      form.reset({
+        marketingType: "ads",
+        headline: "",
+        description: "",
+        imageUrl: "",
+        organization: "",
+        cta: "",
+        links: {
+          primary: "",
+          website: "",
+          phone: "",
+          email: "",
+          whatsapp: "",
+        },
+        startDate: "",
+        endDate: "",
+      });
+    }
+  }, [addMarketingDialog.isOpen, addMarketingDialog.isEditMode, addMarketingDialog.data, form]);
+
+  const handleSubmit = async (data: TMarketingProfileInput, status?: any) => {
     try {
+      // If status is provided, override the default
+      const payload = status ? { ...data, status } : data;
+
       if (addMarketingDialog.isEditMode && addMarketingDialog.data?.id) {
         await mutateAsyncEdit({
           id: addMarketingDialog.data.id,
-          data,
+          data: payload,
         });
       } else {
-        await mutateAsync(data);
+        await mutateAsync(payload as any); // Type cast to allow status
       }
       addMarketingDialog.close();
     } catch (error) {
@@ -212,13 +271,6 @@ const AddMarketingDialog = () => {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(
-              (data) => handleSubmit(data),
-              (errors) => {
-                toast.error("Please fix the form errors");
-                console.log("Errors: ", errors);
-              },
-            )}
             className="grid grid-cols-1 lg:grid-cols-2 gap-8"
           >
             {/* Left Column: Form */}
@@ -282,8 +334,9 @@ const AddMarketingDialog = () => {
                 <ImageDropZone
                   filePath={filePath}
                   text="Drop an image/video"
+                  initialFiles={initialFiles}
                   onFilesChange={(urls) => {
-                    form.setValue("imageUrl", urls.filter(Boolean)[0]);
+                    form.setValue("imageUrl", urls.filter(Boolean)[0] || "");
                   }}
                 />
               </div>
@@ -326,20 +379,31 @@ const AddMarketingDialog = () => {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
                 <Button
-                  type="submit"
+                  type="button"
                   disabled={isPending || isPendingEdit}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  onClick={form.handleSubmit((data) => handleSubmit(data, "draft"))}
+                  variant="outline"
+                  className="flex-1"
                 >
-                  {isPending || isPendingEdit 
-                    ? (addMarketingDialog.isEditMode ? "Updating..." : "Creating...") 
-                    : (addMarketingDialog.isEditMode ? "Update Campaign" : "Create Campaign")}
+                  {isPending || isPendingEdit ? "Saving..." : "Save as Draft"}
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  disabled={isPending || isPendingEdit}
+                  onClick={form.handleSubmit((data) => handleSubmit(data, "scheduled"))}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {isPending || isPendingEdit 
+                    ? (addMarketingDialog.isEditMode ? "Scheduling..." : "Scheduling...") 
+                    : "Schedule Campaign"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
                   onClick={addMarketingDialog.close}
+                  className="sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -391,15 +455,30 @@ const AddMarketingDialog = () => {
                               <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                             </div>
                           )}
-                          <img
-                            src={imageUrl}
-                            alt="Campaign preview"
-                            className={cn(
-                              "w-full h-full object-cover transition-opacity duration-500",
-                              isImageLoading ? "opacity-0" : "opacity-100",
-                            )}
-                            onLoad={() => setIsImageLoading(false)}
-                          />
+                          {isMediaVideo(uploadedImagePath) ? (
+                            <video
+                              src={imageUrl}
+                              controls={false}
+                              autoPlay
+                              loop
+                              muted
+                              className={cn(
+                                "w-full h-full object-cover transition-opacity duration-500",
+                                isImageLoading ? "opacity-0" : "opacity-100",
+                              )}
+                              onLoadedData={() => setIsImageLoading(false)}
+                            />
+                          ) : (
+                            <img
+                              src={imageUrl}
+                              alt="Campaign preview"
+                              className={cn(
+                                "w-full h-full object-cover transition-opacity duration-500",
+                                isImageLoading ? "opacity-0" : "opacity-100",
+                              )}
+                              onLoad={() => setIsImageLoading(false)}
+                            />
+                          )}
                         </>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-white/20">

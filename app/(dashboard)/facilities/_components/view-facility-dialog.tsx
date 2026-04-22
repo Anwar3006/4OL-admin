@@ -32,6 +32,7 @@ import {
   useViewFacilityDialog,
 } from "@/stores/dialog-store";
 import BusinessHoursDisplay from "@/app/(dashboard)/facilities/_components/business-hours-display";
+import { isMediaVideo } from "@/components/ImageDropZone";
 import { Button } from "@/components/ui/button";
 import { toUppercaseFirstLetter } from "@/lib/utils";
 import {
@@ -176,12 +177,24 @@ export function FacilityViewDialog() {
                             ratio={16 / 9}
                             className="overflow-hidden rounded-l-lg"
                           >
-                            <img
-                              src={getImageUrl(
-                                facilityData?.media_urls[0] ?? "",
-                              )}
-                              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                            />
+                            {isMediaVideo(facilityData?.media_urls[0]) ? (
+                              <video
+                                src={getImageUrl(
+                                  facilityData?.media_urls[0] ?? "",
+                                )}
+                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                                muted
+                                autoPlay
+                                loop
+                              />
+                            ) : (
+                              <img
+                                src={getImageUrl(
+                                  facilityData?.media_urls[0] ?? "",
+                                )}
+                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                              />
+                            )}
                           </AspectRatio>
                         </div>
                         {/* Thumbnails */}
@@ -194,10 +207,20 @@ export function FacilityViewDialog() {
                                 ratio={4 / 3}
                                 className="overflow-hidden rounded-tr-lg"
                               >
-                                <img
-                                  src={img}
-                                  className="object-cover w-full h-full"
-                                />
+                                {isMediaVideo(img) ? (
+                                  <video
+                                    src={img}
+                                    className="object-cover w-full h-full"
+                                    muted
+                                    autoPlay
+                                    loop
+                                  />
+                                ) : (
+                                  <img
+                                    src={img}
+                                    className="object-cover w-full h-full"
+                                  />
+                                )}
                               </AspectRatio>
                             ))}
 

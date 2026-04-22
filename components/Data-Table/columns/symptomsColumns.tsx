@@ -64,7 +64,10 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     cell: ({ row }) => (
       <div className="hidden lg:table-cell min-w-40">
         {row.original.bodyParts?.length > 0 ? (
-          <Badge variant="outline" className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium">
+          <Badge
+            variant="outline"
+            className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium"
+          >
             {row.original.bodyParts.join(", ")}
           </Badge>
         ) : (
@@ -73,23 +76,23 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
       </div>
     ),
   },
-  {
-    accessorKey: "categories",
-    header: () => (
-      <div className="font-semibold hidden lg:table-cell">Categories</div>
-    ),
-    cell: ({ row }) => (
-      <div className="hidden lg:table-cell min-w-40">
-        {(row.original as any).categories?.length > 0 ? (
-          <Badge variant="secondary" className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium">
-            {(row.original as any).categories.join(", ")}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground/30">—</span>
-        )}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "categories",
+  //   header: () => (
+  //     <div className="font-semibold hidden lg:table-cell">Categories</div>
+  //   ),
+  //   cell: ({ row }) => (
+  //     <div className="hidden lg:table-cell min-w-40">
+  //       {(row.original as any).categories?.length > 0 ? (
+  //         <Badge variant="secondary" className="text-[12px] py-1 px-2.5 h-auto rounded-md font-medium">
+  //           {(row.original as any).categories.join(", ")}
+  //         </Badge>
+  //       ) : (
+  //         <span className="text-muted-foreground/30">—</span>
+  //       )}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: "specialist",
     header: () => (
@@ -97,7 +100,10 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
     ),
     cell: ({ row }) => (
       <div className="hidden md:table-cell min-w-37.5">
-        <Badge variant="secondary" className="font-medium bg-emerald-50 text-emerald-700 border-emerald-100">
+        <Badge
+          variant="secondary"
+          className="font-medium bg-emerald-50 text-emerald-700 border-emerald-100"
+        >
           {row.original.specialist || "General"}
         </Badge>
       </div>

@@ -208,8 +208,20 @@ export const useUpdateMarketingProfile = () => {
 export const useDeleteMarketingProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
-    mutationFn: async (id) => {
+  return useMutation<void, Error, { id: string; imageUrl: string }>({
+    mutationFn: async ({ id, imageUrl }) => {
+      // 1. Delete from Storage
+      if (imageUrl) {
+        const { error: storageError } = await supabase.storage
+          .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!)
+          .remove([imageUrl]);
+
+        if (storageError) {
+          console.warn("Storage deletion failed:", storageError);
+        }
+      }
+
+      // 2. Delete from DB
       const { error } = await supabase
         .from("marketing_profile")
         .delete()
@@ -221,7 +233,7 @@ export const useDeleteMarketingProfile = () => {
       queryClient.invalidateQueries({
         queryKey: MARKETING_PROFILE_QUERY_KEYS.all,
       });
-      toast.success("Marketing profile deleted successfully!");
+      toast.success("Marketing profile and media deleted successfully!");
     },
     onError: (error) => {
       toast.error(`Failed to delete marketing profile: ${error.message}`);
