@@ -2,19 +2,74 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { FitnessWorkoutPlan } from "@/types/fitness";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-/**
- * POST /api/fitness/generate
- *
- * Orchestrates the fitness workout generation flow:
- * 1. Verifies the user session via BetterAuth (supports Bearer tokens from mobile).
- * 2. Persists/Upserts the user's raw selections into `fitness_onboarding_selections`.
- * 3. Checks the cache (`fitness_generated_workouts`) for an existing plan with the same `selection_hash`.
- * 4. If not found, calls Gemini 1.5 Flash to generate a plan based on the selections.
- * 5. Saves the new workout to the cache and returns it.
- */
+// 1. Define the JSON schema for the SDK (Guarantees valid output)
+const workoutSchema = {
+  description: "Personalized fitness workout plan",
+  type: SchemaType.OBJECT,
+  properties: {
+    title: { type: SchemaType.STRING },
+    summary: { type: SchemaType.STRING },
+    duration_weeks: { type: SchemaType.NUMBER },
+    days_per_week: { type: SchemaType.NUMBER },
+    weekly_schedule: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          week: { type: SchemaType.NUMBER },
+          days: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                day: { type: SchemaType.STRING },
+                session_type: { type: SchemaType.STRING },
+                duration_minutes: { type: SchemaType.NUMBER },
+                exercises: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      name: { type: SchemaType.STRING },
+                      sets: { type: SchemaType.NUMBER },
+                      reps: { type: SchemaType.STRING },
+                      rest_seconds: { type: SchemaType.NUMBER },
+                      description: { type: SchemaType.STRING },
+                      muscles_targeted: { 
+                        type: SchemaType.ARRAY, 
+                        items: { type: SchemaType.STRING } 
+                      },
+                    },
+                    required: ["name", "description", "muscles_targeted"],
+                  },
+                },
+              },
+              required: ["day", "session_type", "exercises"],
+            },
+          },
+        },
+        required: ["week", "days"],
+      },
+    },
+  },
+  required: ["title", "summary", "weekly_schedule"],
+};
+
+function calculateAge(birthday: string | null): number | null {
+  if (!birthday) return null;
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 export async function POST(req: NextRequest) {
-  // BetterAuth session validation
   const session = await auth.api.getSession({ headers: req.headers });
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,43 +79,45 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
   if (!body || !body.selections || !body.selection_hash) {
-    return NextResponse.json(
-      { error: "Missing selections or selection_hash in request body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing selections or hash" }, { status: 400 });
   }
 
   const { selections, selection_hash } = body;
   const admin = getSupabaseAdmin();
 
-  // 1. Persistence: Save/Upsert selections into fitness_onboarding_selections
-  // This marks the user as "onboarded" or updates their existing selections.
-  const { error: upsertError } = await admin
-    .from("fitness_onboarding_selections")
-    .upsert(
-      {
-        user_id: userId,
-        ...selections,
-        selection_hash,
-      },
-      { onConflict: "user_id" },
-    );
+  // 1. Fetch User Profile for Gender and Age
+  const { data: profile } = await admin
+    .from("user_profiles")
+    .select("gender, birthday")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const userAge = calculateAge(profile?.birthday);
+  const userGender = profile?.gender;
+
+  // Enrich selections for persistence (optional, but requested to remove from onboarding)
+  // We'll exclude gender from the fitness_onboarding_selections table upsert 
+  // because the column doesn't exist yet, as per user's error report.
+  // We'll only upsert what's in the table.
+  
+  const { gender, age, ...persistentSelections } = selections;
+
+  // Persistence & Cache Check
+  const { error: upsertError } = await admin.from("fitness_onboarding_selections").upsert({
+    user_id: userId,
+    ...persistentSelections,
+    selection_hash,
+  }, { onConflict: "user_id" });
 
   if (upsertError) {
     console.error("[fitness-generate] Persistence error:", upsertError.message);
-    // We continue even if persistence fails, but log the error.
   }
 
-  // 2. Cache Check: Query fitness_generated_workouts for the selection_hash
-  const { data: cachedWorkout, error: cacheError } = await admin
+  const { data: cachedWorkout } = await admin
     .from("fitness_generated_workouts")
     .select("workout_plan")
     .eq("selection_hash", selection_hash)
     .maybeSingle();
-
-  if (cacheError) {
-    console.error("[fitness-generate] Cache query error:", cacheError.message);
-  }
 
   if (cachedWorkout?.workout_plan) {
     return NextResponse.json({
@@ -70,145 +127,73 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // 3. AI Generation (Conditional): Call Gemini if no cached workout exists
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) {
-    console.error(
-      "[fitness-generate] GEMINI_API_KEY is missing in environment variables.",
-    );
-    return NextResponse.json(
-      { error: "Server configuration error: Gemini API key missing" },
-      { status: 500 },
-    );
-  }
+  // 2. Initialize Gemini SDK
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  
+  // Use gemini-1.5-flash specifically
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: workoutSchema as any, // Forces AI to follow your interface
+    },
+  });
 
-  const systemPrompt = `
-You are an expert fitness coach. Generate a personalized workout plan in JSON format.
-The output MUST strictly match the FitnessWorkoutPlan interface.
-Return ONLY the raw JSON object. No markdown, no backticks, no explanations.
+  const fullProfile = {
+    ...selections,
+    gender: userGender || selections.gender,
+    age: userAge || selections.age,
+  };
 
-Interface:
-export interface FitnessExercise {
-  name: string;
-  sets?: number;
-  reps?: string;     // e.g., "8-12", "30 seconds", "To failure"
-  rest_seconds?: number;
-  description: string;
-  muscles_targeted: string[];
-}
-
-export interface FitnessDay {
-  day: string;           // "Monday" ... "Sunday"
-  session_type: string;  // e.g., "Strength", "HIIT", "Rest", "Cardio"
-  duration_minutes: number;
-  exercises: FitnessExercise[];
-}
-
-export interface FitnessWeek {
-  week: number;
-  days: FitnessDay[];
-}
-
-export interface FitnessWorkoutPlan {
-  title: string;
-  summary: string;
-  duration_weeks: number;
-  days_per_week: number;
-  weekly_schedule: FitnessWeek[];
-}
-`;
+  // workout_duration is MINUTES per session (20, 30, 45, 60, 90), NOT weeks.
+  // The plan always covers 2 weeks of programming.
+  const sessionMinutes = selections.workout_duration ?? 45;
+  const daysPerWeek = selections.workout_frequency ?? 3;
 
   const userPrompt = `
-User Profile:
-${JSON.stringify(selections, null, 2)}
+Generate a 2-week personalized fitness workout plan with the following constraints:
 
-Generate a ${selections.days_per_week} day per week plan for ${selections.workout_duration || 4} weeks (return week 1 as a template if duration is long, but strictly follow duration_weeks).
-Focus areas: ${selections.focus_areas?.join(", ")}.
-Equipment: ${selections.equipment?.join(", ")}.
-Goal: ${selections.goal}.
-Experience Level: ${selections.level}.
-`;
+- Primary Goal: ${selections.fitness_goal?.replace(/_/g, ' ')}
+- Fitness Level: ${selections.fitness_level}
+- Training Frequency: ${daysPerWeek} days per week
+- Session Duration: ${sessionMinutes} minutes per session
+- Equipment Available: ${selections.equipment?.join(', ') || 'bodyweight only'}
+- Focus Areas: ${selections.focus_areas?.join(', ') || 'full body'}
+${fullProfile.gender ? `- Gender: ${fullProfile.gender}` : ''}
+${fullProfile.age ? `- Age: ${fullProfile.age} years` : ''}
+${selections.weight_kg ? `- Weight: ${selections.weight_kg} kg` : ''}
+${selections.height_cm ? `- Height: ${selections.height_cm} cm` : ''}
+
+IMPORTANT RULES:
+1. Return exactly 2 weeks. Week 2 must show progression (more reps/sets/load) over Week 1.
+2. Each week must contain ALL 7 days. Rest days get session_type: "Rest", duration_minutes: 0, exercises: [].
+3. Active training days must have approximately ${Math.round(sessionMinutes / 8)} exercises to fill the ${sessionMinutes}-minute session.
+4. EQUIPMENT CONSTRAINT IS ABSOLUTE. If equipment is bodyweight_only, use zero weighted exercises.
+5. Every exercise needs: sets (number), reps (string like "10-12" or "30 seconds"), rest_seconds (integer), a 1-2 sentence description with form cues, and muscles_targeted (array).
+6. Match difficulty strictly to the ${selections.fitness_level} fitness level.
+7. The title must be specific and motivating (e.g. "8-Week Lean Body Blueprint", not just "Workout Plan").
+  `.trim();
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: systemPrompt + " " + userPrompt }],
-            },
-          ],
-          generationConfig: {
-            response_mime_type: "application/json",
-          },
-        }),
-      },
-    );
+    const result = await model.generateContent(userPrompt);
+    const response = result.response;
+    const workoutPlan = JSON.parse(response.text()) as FitnessWorkoutPlan;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(
-        "[fitness-generate] Gemini API error:",
-        JSON.stringify(errorData),
-      );
-      return NextResponse.json(
-        { error: "Failed to generate workout plan from AI" },
-        { status: 500 },
-      );
-    }
+    // 3. Save to Cache
+    await admin.from("fitness_generated_workouts").insert({
+      selection_hash,
+      workout_plan: workoutPlan,
+      generated_by: "gemini-1.5-flash-sdk",
+    });
 
-    const result = await response.json();
-    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!generatedText) {
-      throw new Error("Gemini returned an empty response");
-    }
-
-    let workoutPlan: FitnessWorkoutPlan;
-    try {
-      workoutPlan = JSON.parse(generatedText);
-    } catch (parseError) {
-      console.error(
-        "[fitness-generate] JSON Parse Error. Raw Text:",
-        generatedText,
-      );
-      return NextResponse.json(
-        { error: "AI returned invalid JSON structure" },
-        { status: 500 },
-      );
-    }
-
-    // 4. Save the generated workout to the cache
-    const { error: insertError } = await admin
-      .from("fitness_generated_workouts")
-      .insert({
-        selection_hash,
-        workout_plan: workoutPlan,
-        generated_by: "gemini-1.5-flash",
-      });
-
-    if (insertError) {
-      console.error(
-        "[fitness-generate] Error caching workout plan:",
-        insertError.message,
-      );
-    }
-
-    // 5. Return the response
     return NextResponse.json({
       workout_plan: workoutPlan,
       selection_hash,
       cached: false,
     });
+
   } catch (error: any) {
-    console.error("[fitness-generate] Unexpected error:", error.message);
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 },
-    );
+    console.error("[fitness-generate] Gemini SDK error:", error);
+    return NextResponse.json({ error: "AI Generation failed" }, { status: 500 });
   }
 }

@@ -17,6 +17,7 @@
     "@fullcalendar/list": "^6.1.4",
     "@fullcalendar/react": "^6.1.4",
     "@fullcalendar/timegrid": "^6.1.4",
+    "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^1.7.13",
     "@hookform/resolvers": "^3.10.0",
     "@iconify/react": "^4.1.0",
