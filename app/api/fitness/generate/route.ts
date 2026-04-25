@@ -32,6 +32,7 @@ const workoutSchema = {
                   items: {
                     type: SchemaType.OBJECT,
                     properties: {
+                      id: { type: SchemaType.STRING },
                       name: { type: SchemaType.STRING },
                       sets: { type: SchemaType.NUMBER },
                       reps: { type: SchemaType.STRING },
@@ -41,8 +42,13 @@ const workoutSchema = {
                         type: SchemaType.ARRAY,
                         items: { type: SchemaType.STRING },
                       },
+                      video_url: { type: SchemaType.STRING },
+                      thumbnail_urls: {
+                        type: SchemaType.ARRAY,
+                        items: { type: SchemaType.STRING },
+                      },
                     },
-                    required: ["name", "description", "muscles_targeted"],
+                    required: ["id", "name", "description", "muscles_targeted"],
                   },
                 },
               },
@@ -55,6 +61,30 @@ const workoutSchema = {
     },
   },
   required: ["title", "summary", "weekly_schedule"],
+};
+
+const BODY_PARTS = [
+  "Arm", "Back", "Biceps", "Chest", "Chest and Triceps", "Glutes", 
+  "Hamstring", "Legs", "Quadriceps", "Rectus Abdominus Muscle", "Shoulder", "Triceps"
+];
+
+const bodyPartMap: Record<string, string[]> = {
+  fullBody: BODY_PARTS,
+  upperBody: ["Arm", "Back", "Biceps", "Chest", "Chest and Triceps", "Shoulder", "Triceps"],
+  lowerBody: ["Glutes", "Hamstring", "Legs", "Quadriceps"],
+  core: ["Rectus Abdominus Muscle"],
+  cardio: [] 
+};
+
+const equipmentMap: Record<string, string[]> = {
+  bodyweight_only: ["No Equipment", "Yoga/ Exercise Mat"],
+  dumbbells: ["Dumbbell", "No Equipment", "Yoga/ Exercise Mat"],
+  resistance_bands: ["Resistance Band", "No Equipment", "Yoga/ Exercise Mat"],
+  full_gym: [
+    "No Equipment", "Barbell", "Dumbbell", "Kettlebell", "Gym Machine Workout", 
+    "Resistance Band", "Treadmill", "Exercise Bike", "Yoga/ Exercise Mat", 
+    "Skipping Ropes", "Exercise Balls", "Weight Bench", "Pull up bar"
+  ]
 };
 
 function calculateAge(birthday: string | null): number | null {
@@ -147,6 +177,51 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 3. Fetch Relevant Workouts from Database
+  const allowedBodyParts = selections.focus_areas?.flatMap((area: string) => bodyPartMap[area] || []) || [];
+  const allowedEquipment = selections.equipment?.flatMap((eq: string) => equipmentMap[eq] || []) || equipmentMap.bodyweight_only;
+
+  // Distinct values
+  const uniqueBodyParts = [...new Set(allowedBodyParts)];
+  const uniqueEquipment = [...new Set(allowedEquipment)];
+
+  let workoutQuery = admin
+    .from("workouts")
+    .select("id, exercise_name, primary_body_part, secondary_body_part, equipment_type, video_url, thumbnail_urls, how_to")
+    .eq("is_active", true);
+
+  if (uniqueEquipment.length > 0) {
+    workoutQuery = workoutQuery.in("equipment_type", uniqueEquipment);
+  }
+  
+  if (uniqueBodyParts.length > 0 && !selections.focus_areas?.includes("fullBody")) {
+    workoutQuery = workoutQuery.or(`primary_body_part.in.(${uniqueBodyParts.join(",")}),secondary_body_part.in.(${uniqueBodyParts.join(",")})`);
+  }
+
+  const { data: dbWorkouts, error: dbError } = await workoutQuery;
+
+  if (dbError) {
+    console.error("[fitness-generate] DB Fetch error:", dbError.message);
+  }
+
+  if (!dbWorkouts || dbWorkouts.length === 0) {
+    return NextResponse.json({
+      workout_plan: null,
+      message: "No workouts match your current preferences. Try adjusting your focus areas or equipment.",
+    });
+  }
+
+  // Format database workouts for the prompt
+  const availableWorkoutsContext = dbWorkouts.map(w => ({
+    id: w.id,
+    name: w.exercise_name,
+    muscles_targeted: [w.primary_body_part, w.secondary_body_part].filter(Boolean),
+    equipment: w.equipment_type,
+    video_url: w.video_url,
+    thumbnail_urls: w.thumbnail_urls,
+    how_to: w.how_to
+  }));
+
   const genAI = new GoogleGenerativeAI(geminiApiKey);
 
   const model = genAI.getGenerativeModel({
@@ -169,8 +244,12 @@ export async function POST(req: NextRequest) {
   const daysPerWeek = selections.workout_frequency ?? 3;
 
   const userPrompt = `
-Generate a 2-week personalized fitness workout plan with the following constraints:
+Generate a 2-week personalized fitness workout plan using ONLY the provided exercises from our library.
 
+LIBRARY OF AVAILABLE EXERCISES:
+${JSON.stringify(availableWorkoutsContext)}
+
+USER PROFILE & CONSTRAINTS:
 - Primary Goal: ${selections.fitness_goal?.replace(/_/g, " ")}
 - Fitness Level: ${selections.fitness_level}
 - Training Frequency: ${daysPerWeek} days per week
@@ -183,19 +262,41 @@ ${selections.weight_kg ? `- Weight: ${selections.weight_kg} kg` : ""}
 ${selections.height_cm ? `- Height: ${selections.height_cm} cm` : ""}
 
 IMPORTANT RULES:
-1. Return exactly 2 weeks. Week 2 must show progression (more reps/sets/load) over Week 1.
-2. Each week must contain ALL 7 days. Rest days get session_type: "Rest", duration_minutes: 0, exercises: [].
-3. Active training days must have approximately ${Math.round(sessionMinutes / 8)} exercises to fill the ${sessionMinutes}-minute session.
-4. EQUIPMENT CONSTRAINT IS ABSOLUTE. If equipment is bodyweight_only, use zero weighted exercises.
-5. Every exercise needs: sets (number), reps (string like "10-12" or "30 seconds"), rest_seconds (integer), a 1-2 sentence description with form cues, and muscles_targeted (array).
-6. Match difficulty strictly to the ${selections.fitness_level} fitness level.
-7. The title must be specific and motivating (e.g. "8-Week Lean Body Blueprint", not just "Workout Plan").
+1. MANDATORY: You must select exercises EXCLUSIVELY from the LIBRARY list provided above. Use their "id", "name", "video_url", and "thumbnail_urls" exactly.
+2. Return exactly 2 weeks. Week 2 should show slight progression (volume/intensity) over Week 1.
+3. Each week must contain ALL 7 days. Rest days get session_type: "Rest", duration_minutes: 0, exercises: [].
+4. Active training days must have approximately ${Math.round(sessionMinutes / 8)} exercises from the library.
+5. Match the difficulty and selection to the user's ${selections.fitness_level} level and ${selections.fitness_goal} goal.
+6. For each exercise, provide: sets (number), reps (string like "10-12" or "30 seconds"), rest_seconds (integer), and a 1-2 sentence description (use the "how_to" info if available).
+7. If only one workout in the library fits a specific need, use it. If multiple fit, choose the best matching one.
+8. If the library is too small to fill the plan, repeat exercises across different days but ensure variety within a session.
   `.trim();
 
   try {
     const result = await model.generateContent(userPrompt);
     const response = result.response;
     const workoutPlan = JSON.parse(response.text()) as FitnessWorkoutPlan;
+    
+    // 3. Hydrate exercises with full data from DB
+    const workoutMap = new Map(dbWorkouts.map(w => [w.id, w]));
+    workoutPlan.weekly_schedule.forEach(week => {
+      week.days.forEach(day => {
+        day.exercises = day.exercises.map(ex => {
+          const dbEx = workoutMap.get(ex.id || "");
+          if (dbEx) {
+            return {
+              ...ex,
+              name: dbEx.exercise_name, // Ensure canonical name
+              video_url: dbEx.video_url,
+              thumbnail_urls: dbEx.thumbnail_urls,
+              how_to: dbEx.how_to,
+              muscles_targeted: [dbEx.primary_body_part, dbEx.secondary_body_part].filter(Boolean),
+            };
+          }
+          return ex;
+        });
+      });
+    });
 
     // 3. Save to Cache
     await admin.from("fitness_generated_workouts").insert({

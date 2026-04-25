@@ -1,10 +1,14 @@
 export interface FitnessExercise {
+  id?: string;
   name: string;
   sets?: number;
   reps?: string;     // "8-12" | "30 seconds" | "To failure"
   rest_seconds?: number;
   description: string;
   muscles_targeted: string[];
+  video_url?: string | null;
+  thumbnail_urls?: string[];
+  how_to?: any;
 }
 
 export interface FitnessDay {
