@@ -37,9 +37,9 @@ const workoutSchema = {
                       reps: { type: SchemaType.STRING },
                       rest_seconds: { type: SchemaType.NUMBER },
                       description: { type: SchemaType.STRING },
-                      muscles_targeted: { 
-                        type: SchemaType.ARRAY, 
-                        items: { type: SchemaType.STRING } 
+                      muscles_targeted: {
+                        type: SchemaType.ARRAY,
+                        items: { type: SchemaType.STRING },
                       },
                     },
                     required: ["name", "description", "muscles_targeted"],
@@ -79,7 +79,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
   if (!body || !body.selections || !body.selection_hash) {
-    return NextResponse.json({ error: "Missing selections or hash" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing selections or hash" },
+      { status: 400 },
+    );
   }
 
   const { selections, selection_hash } = body;
@@ -96,18 +99,23 @@ export async function POST(req: NextRequest) {
   const userGender = profile?.gender;
 
   // Enrich selections for persistence (optional, but requested to remove from onboarding)
-  // We'll exclude gender from the fitness_onboarding_selections table upsert 
+  // We'll exclude gender from the fitness_onboarding_selections table upsert
   // because the column doesn't exist yet, as per user's error report.
   // We'll only upsert what's in the table.
-  
+
   const { gender, age, ...persistentSelections } = selections;
 
   // Persistence & Cache Check
-  const { error: upsertError } = await admin.from("fitness_onboarding_selections").upsert({
-    user_id: userId,
-    ...persistentSelections,
-    selection_hash,
-  }, { onConflict: "user_id" });
+  const { error: upsertError } = await admin
+    .from("fitness_onboarding_selections")
+    .upsert(
+      {
+        user_id: userId,
+        ...persistentSelections,
+        selection_hash,
+      },
+      { onConflict: "user_id" },
+    );
 
   if (upsertError) {
     console.error("[fitness-generate] Persistence error:", upsertError.message);
@@ -128,14 +136,24 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Initialize Gemini SDK
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-  
-  // Use gemini-1.5-flash specifically
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  // Pull model from env, fallback to flash if not provided
+  const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || "gemini-1.5-flash";
+
+  if (!geminiApiKey) {
+    return NextResponse.json(
+      { error: "Gemini API key missing" },
+      { status: 500 },
+    );
+  }
+
+  const genAI = new GoogleGenerativeAI(geminiApiKey);
+
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: modelName,
     generationConfig: {
       responseMimeType: "application/json",
-      responseSchema: workoutSchema as any, // Forces AI to follow your interface
+      responseSchema: workoutSchema as any,
     },
   });
 
@@ -153,16 +171,16 @@ export async function POST(req: NextRequest) {
   const userPrompt = `
 Generate a 2-week personalized fitness workout plan with the following constraints:
 
-- Primary Goal: ${selections.fitness_goal?.replace(/_/g, ' ')}
+- Primary Goal: ${selections.fitness_goal?.replace(/_/g, " ")}
 - Fitness Level: ${selections.fitness_level}
 - Training Frequency: ${daysPerWeek} days per week
 - Session Duration: ${sessionMinutes} minutes per session
-- Equipment Available: ${selections.equipment?.join(', ') || 'bodyweight only'}
-- Focus Areas: ${selections.focus_areas?.join(', ') || 'full body'}
-${fullProfile.gender ? `- Gender: ${fullProfile.gender}` : ''}
-${fullProfile.age ? `- Age: ${fullProfile.age} years` : ''}
-${selections.weight_kg ? `- Weight: ${selections.weight_kg} kg` : ''}
-${selections.height_cm ? `- Height: ${selections.height_cm} cm` : ''}
+- Equipment Available: ${selections.equipment?.join(", ") || "bodyweight only"}
+- Focus Areas: ${selections.focus_areas?.join(", ") || "full body"}
+${fullProfile.gender ? `- Gender: ${fullProfile.gender}` : ""}
+${fullProfile.age ? `- Age: ${fullProfile.age} years` : ""}
+${selections.weight_kg ? `- Weight: ${selections.weight_kg} kg` : ""}
+${selections.height_cm ? `- Height: ${selections.height_cm} cm` : ""}
 
 IMPORTANT RULES:
 1. Return exactly 2 weeks. Week 2 must show progression (more reps/sets/load) over Week 1.
@@ -191,9 +209,11 @@ IMPORTANT RULES:
       selection_hash,
       cached: false,
     });
-
   } catch (error: any) {
     console.error("[fitness-generate] Gemini SDK error:", error);
-    return NextResponse.json({ error: "AI Generation failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "AI Generation failed" },
+      { status: 500 },
+    );
   }
 }
