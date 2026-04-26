@@ -8,20 +8,26 @@ export const client = new Twilio(
 
 export async function initiateWhatsAppHandshake(
   to: string,
-  contentSid: string,
-  contentVariables: string,
+  contentSid: string | undefined,
+  contentVariables: Record<string, string>,
   email: string,
   gpsAddress: string,
 ) {
   try {
+    const templateSid = contentSid || process.env.TWILIO_CONTENT_TEMPLATE_SID;
+    
+    if (!templateSid) {
+      throw new Error("TWILIO_CONTENT_TEMPLATE_SID is not set and no SID provided.");
+    }
+
     const response = await client.messages.create({
       from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
       to: `whatsapp:${to}`,
-      contentSid: contentSid,
-      contentVariables: contentVariables,
+      contentSid: templateSid,
+      contentVariables: JSON.stringify(contentVariables),
     });
 
-    //store to, email, gpsAddress, response.sid in DB, needed by webhook to send credentials when user
+    // store to, email, gpsAddress, response.sid in DB, needed by webhook to send credentials when user
     await supabaseAdmin.from("twilio_whatsapp_handshakes").insert({
       id: to,
       email: email,

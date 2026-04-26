@@ -454,6 +454,8 @@ const AddFacilityDialog = () => {
             facilityPhone: payload.contact_number,
             ownerPhone: payload.person_contact_number,
             facilityName: payload.facility_name,
+            email: payload.owner_email,
+            gpsAddress: payload.gps_address,
           });
         } catch (notifyError) {
           console.error("Notification Error:", notifyError);
