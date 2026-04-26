@@ -18,7 +18,7 @@ const center = {
 const GoogleMapContainer = ({ filters }) => {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "",
   });
 
   const [map, setMap] = useState(null);
