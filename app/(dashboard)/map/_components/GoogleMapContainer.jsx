@@ -15,10 +15,11 @@ const center = {
   lng: -0.187,
 };
 
+
 const GoogleMapContainer = ({ filters }) => {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
   const [map, setMap] = useState(null);
@@ -35,7 +36,6 @@ const GoogleMapContainer = ({ filters }) => {
     filters: filters,
   });
 
-  console.log("GeoJSON: ", geojson);
 
   const onLoad = useCallback(function callback(currentMap) {
     setMap(currentMap);
@@ -54,6 +54,47 @@ const GoogleMapContainer = ({ filters }) => {
       setZoom(map.getZoom());
     }
   };
+
+  useEffect(() => {
+    if (!map || !window.google) return;
+
+    const hasRegionOrDistrict = filters?.region || filters?.district;
+
+    if (hasRegionOrDistrict) {
+      const locationToSearch = filters?.district
+        ? `${filters.district}, ${filters.region || ""}, Ghana`
+        : `${filters.region}, Ghana`;
+
+      const timeoutId = setTimeout(() => {
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address: locationToSearch }, (results, status) => {
+          if (status === "OK" && results && results[0]) {
+            if (results[0].geometry.viewport) {
+              map.fitBounds(results[0].geometry.viewport);
+            } else {
+              map.panTo(results[0].geometry.location);
+              map.setZoom(12);
+            }
+          } else {
+            console.error("Geocode was not successful for the following reason: " + status);
+          }
+        });
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // If we cleared all filters OR we only have facilityType/status
+      // We zoom out to show Ghana
+      const timeoutId = setTimeout(() => {
+        // Center of Ghana
+        const ghanaCenter = { lat: 7.9465, lng: -1.0232 };
+        map.panTo(ghanaCenter);
+        map.setZoom(7); // Zoom level 7 usually covers the country
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [filters?.region, filters?.district, filters?.facilityType, filters?.status, map]);
 
   const [data, setData] = useState(null);
   const { data: trails } = useRegistrarTrails(1);
@@ -221,16 +262,25 @@ const GoogleMapContainer = ({ filters }) => {
                 };
               }
 
+              const statusColors = {
+                active: "#10b981", // emerald-500
+                pending: "#f59e0b", // amber-500
+                inactive: "#6b7280", // gray-500
+                rejected: "#ef4444", // red-500
+              };
+              const status = feature.getProperty("status");
+              const fillColor = statusColors[status?.toLowerCase()] || "#10b981";
+
               return {
                 icon: {
                   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
-                  fillColor: "#10b981",
+                  fillColor: fillColor,
                   fillOpacity: 1,
                   strokeWeight: 1.5,
                   strokeColor: "#ffffff",
                   scale: 1.5,
-                  anchor: new google.maps.Point(12, 22),
-                  labelOrigin: new google.maps.Point(12, 9),
+                  anchor: new window.google.maps.Point(12, 22),
+                  labelOrigin: new window.google.maps.Point(12, 9),
                 },
                 visible: feature.getProperty("type") !== "breadcrumb",
               };

@@ -8,6 +8,7 @@ import ColumnChart from "@/components/partials/chart/appex-chart/HorizontalBar";
 import Pie from "@/components/partials/chart/appex-chart/Pie";
 import { fetchDashboardOverviewStats } from "@/app/services/dashboard";
 import DauChart from "@/components/partials/chart/appex-chart/DauChart";
+import { AlertCircle } from "lucide-react";
 
 const TotalsDashboard = () => {
   const [loading, setLoading] = useState(true);

@@ -66,7 +66,7 @@ const [showBusinessPins, setShowBusinessPins] = useState<boolean>(
     value: opt.value
   })), []);
 
-  const statuses = ["Active", "Pending", "Inactive", "Rejected"];
+  const statuses = ["active", "pending", "inactive", "rejected"];
   const footprints = ["Small", "Medium", "Large"];
 
   // Sync state to URL
@@ -134,6 +134,10 @@ const [showBusinessPins, setShowBusinessPins] = useState<boolean>(
           label="Status"
           value={selectedStatus}
           options={statuses}
+          optionLabels={statuses.reduce((acc, status) => {
+            acc[status] = status.charAt(0).toUpperCase() + status.slice(1);
+            return acc;
+          }, {} as Record<string, string>)}
           onChange={setSelectedStatus}
         />
 

@@ -138,7 +138,7 @@ const ViewMedicationReminderDialog = () => {
                     </span>
                   </div>
                   <p className="text-xl font-semibold text-slate-900">
-                    Every {data.interval_hours}h
+                    Every {data.interval}h
                   </p>
                 </div>
               </div>
