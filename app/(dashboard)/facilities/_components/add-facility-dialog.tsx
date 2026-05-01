@@ -53,6 +53,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { OfferingsSection } from "./offerings-section";
+import { formatPhoneNumber } from "@/lib/twilio";
 
 // Step 1 Fields - To make sure we validate these fields before moving on to Step 2
 // Using type helper to ensure path validity
@@ -450,9 +451,9 @@ const AddFacilityDialog = () => {
         // Send WhatsApp/SMS notifications via Twilio
         try {
           await notifyFacilityRegistration({
-            facilityWhatsapp: payload.whatsapp_number || payload.contact_number,
-            facilityPhone: payload.contact_number,
-            ownerPhone: payload.person_contact_number,
+            facilityWhatsapp: formatPhoneNumber(payload.whatsapp_number || payload.contact_number),
+            facilityPhone: formatPhoneNumber(payload.contact_number),
+            ownerPhone: formatPhoneNumber(payload.person_contact_number),
             facilityName: payload.facility_name,
             email: payload.owner_email,
             gpsAddress: payload.gps_address,

@@ -17,8 +17,10 @@ export async function initiateWhatsAppHandshake(
     const templateSid = contentSid || process.env.TWILIO_CONTENT_TEMPLATE_SID;
     
     if (!templateSid) {
-      throw new Error("TWILIO_CONTENT_TEMPLATE_SID is not set and no SID provided.");
+      throw new Error("TWILIO_CONTENT_TEMPLATE_SID is not set.");
     }
+
+    console.log("Sending to: ", `whatsapp:${to}`);
 
     const response = await client.messages.create({
       from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
@@ -27,24 +29,40 @@ export async function initiateWhatsAppHandshake(
       contentVariables: JSON.stringify(contentVariables),
     });
 
-    // store to, email, gpsAddress, response.sid in DB, needed by webhook to send credentials when user
-    await supabaseAdmin.from("twilio_whatsapp_handshakes").insert({
-      id: to,
-      email: email,
-      gps_address: gpsAddress,
-      message_sid: response.sid,
-      status: "handshake_sent",
-    });
+    // CRITICAL CHECK: Ensure the message didn't fail immediately
+    // Valid initial statuses: 'queued', 'scheduled', 'sending', 'sent'
+    const failedStatuses = ['failed', 'undelivered'];
+    
+    if (failedStatuses.includes(response.status)) {
+      throw new Error(`Twilio rejected message immediately with status: ${response.status}`);
+    }
+
+    // Only store in DB if the message is at least 'queued'
+    const { error: dbError } = await supabaseAdmin
+      .from("twilio_whatsapp_handshakes")
+      .insert({
+        id: to,
+        email: email,
+        gps_address: gpsAddress,
+        message_sid: response.sid,
+        status: "handshake_sent",
+      });
+
+    if (dbError) throw dbError;
+
     return { success: true, sid: response.sid };
   } catch (error: any) {
-    // Error 63003: "Channel user is not registered on WhatsApp"
-    // Error 63007: "Twilio Sandbox limit" or other channel specific errors
     console.error(
       `WhatsApp attempt failed for ${to}:`,
-      error.code,
-      error.message,
+      error.code || 'NO_CODE',
+      error.message
     );
-    return { success: false, code: error.code, message: error.message };
+    
+    return { 
+      success: false, 
+      code: error.code, 
+      message: error.message 
+    };
   }
 }
 
@@ -98,13 +116,17 @@ export async function checkWhatsAppAvailability(
   phone: string,
 ): Promise<boolean> {
   try {
-    // Note: Twilio Lookup v2 is best for this
-    const lookup = await client.lookups.v2.phoneNumbers(phone).fetch({
-      fields: "line_type_intelligence",
-    });
-    return lookup.lineTypeIntelligence?.type === "mobile";
+    const lookup = await client.lookups.v2
+      .phoneNumbers(phone)
+      .fetch({
+        fields: 'whatsapp',
+      }) as any; // Cast to any to access the unmapped 'whatsapp' property
+
+    // Now TypeScript won't complain about the property access
+    return lookup.whatsapp?.registered ?? false;
   } catch (e) {
-    return false; // Default to false if check fails
+    console.error("WhatsApp Lookup Error:", e);
+    return false; 
   }
 }
 
@@ -162,3 +184,23 @@ export async function checkVerificationCode(
     };
   }
 }
+
+export const formatPhoneNumber = (contact: string): string => {
+  // Remove any spaces or special characters
+  const cleanContact = contact.replace(/\s/g, '');
+  
+  // If it starts with +, return as is
+  if (cleanContact.startsWith("+")) return cleanContact;
+  
+  // If it starts with 0, replace with +233
+  if (cleanContact.startsWith("0")) {
+    return "+233" + cleanContact.substring(1);
+  }
+  
+  // If it's a valid Ghanaian number without prefix (10 digits starting with 2, 5, or 9)
+  if (cleanContact.length === 9 && /^[259]/.test(cleanContact)) {
+    return "+233" + cleanContact;
+  }
+  
+  return cleanContact;
+};
