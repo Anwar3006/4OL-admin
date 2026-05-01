@@ -451,9 +451,9 @@ const AddFacilityDialog = () => {
         // Send WhatsApp/SMS notifications via Twilio
         try {
           await notifyFacilityRegistration({
-            facilityWhatsapp: formatPhoneNumber(payload.whatsapp_number || payload.contact_number),
-            facilityPhone: formatPhoneNumber(payload.contact_number),
-            ownerPhone: formatPhoneNumber(payload.person_contact_number),
+            facilityWhatsapp: payload.whatsapp_number || payload.contact_number,
+            facilityPhone: payload.contact_number,
+            ownerPhone: payload.person_contact_number,
             facilityName: payload.facility_name,
             email: payload.owner_email,
             gpsAddress: payload.gps_address,

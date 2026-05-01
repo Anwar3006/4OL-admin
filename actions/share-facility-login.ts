@@ -4,6 +4,7 @@ import {
   initiateWhatsAppHandshake,
   sendSMS,
   checkWhatsAppAvailability,
+  formatPhoneNumber,
 } from "@/lib/twilio";
 
 export async function notifyFacilityRegistration(formData: {
@@ -14,14 +15,10 @@ export async function notifyFacilityRegistration(formData: {
   email: string;
   gpsAddress: string;
 }) {
-  const {
-    facilityWhatsapp,
-    facilityPhone,
-    ownerPhone,
-    facilityName,
-    email,
-    gpsAddress,
-  } = formData;
+  const facilityWhatsapp = formatPhoneNumber(formData.facilityWhatsapp);
+  const facilityPhone = formatPhoneNumber(formData.facilityPhone);
+  const ownerPhone = formatPhoneNumber(formData.ownerPhone);
+  const { facilityName, email, gpsAddress } = formData;
 
   const handshakeVariables = { "1": facilityName };
 
