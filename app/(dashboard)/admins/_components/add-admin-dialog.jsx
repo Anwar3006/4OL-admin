@@ -33,14 +33,16 @@ const AddAdminDialog = () => {
       const result = await inviteAdminAction(data.email, data.role);
       if (!result.error) {
         toast.success("Invitation sent to " + data.email);
+        addAdminDialog.close();
+        form.reset();
       } else {
+        // This will handle "An invite has already been sent to this email."
+        // and other errors returned by the server action.
         toast.error(result.error);
       }
     } catch (error) {
       toast.error("Error: " + error.message);
     } finally {
-      addAdminDialog.close();
-      form.reset();
       setIsSubmitting(false);
     }
   };
