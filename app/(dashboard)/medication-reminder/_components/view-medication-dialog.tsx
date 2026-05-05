@@ -32,11 +32,11 @@ import {
 } from "@/hooks/supabase-calls/useMedicationReminder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
-import { authClient } from "@/lib/auth-client";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 const ViewMedicationReminderDialog = () => {
   const { isOpen, close, entityId } = useViewMediactionReminderDialog();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSupabaseSession();
   const adminId = session?.user?.id || "";
 
   const { data, isLoading } = useMedicationReminder(entityId!);

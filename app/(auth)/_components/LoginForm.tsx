@@ -13,7 +13,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
-import { authClient } from "@/lib/auth-client";
+// import { authClient } from "@/lib/auth-client"; // Removed BetterAuth client
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"; // Use Supabase client for browser
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -31,34 +32,48 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
   const handleSubmit = async (data: zod.infer<typeof userLoginSchema>) => {
     try {
       setLoading(true);
-      const authResult = await authClient.signIn.email({
+      const supabase = getSupabaseBrowserClient();
+      const { data: authData, error: supabaseError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
-      if (authResult.error) {
-        form.setError("root", { message: authResult.error.message });
+      if (supabaseError) {
+        form.setError("root", { message: supabaseError.message });
         return;
       }
 
       // Role Check: Only Allow admins or group leaders to the admin panel
-      const user = authResult.data?.user;
-      const role = user?.role;
+      // Fetch user profile to get the role, as auth.users.role is for internal Supabase roles.
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('user_id', authData.user?.id || '')
+        .single();
+
+      if (profileError || !userProfile) {
+        toast.error("Failed to fetch user role.");
+        await supabase.auth.signOut(); // Sign out if role cannot be fetched
+        return;
+      }
+      
+      const role = userProfile.role;
       const isAllowed = role === "super_admin" || role === "admin" || role === "group_leader";
 
       if (!isAllowed) {
-        await authClient.signOut();
+        await supabase.auth.signOut(); // Sign out unauthorized users
         toast.error("Unauthorized! You don't have access to the admin panel.");
         return;
       }
 
       if (typeof window !== "undefined") {
         window.localStorage.setItem("isAuth", JSON.stringify(true));
-        window.localStorage.setItem("user_id", authResult.data?.user?.id || "");
+        window.localStorage.setItem("user_id", authData.user?.id || "");
         window.localStorage.setItem(
           "user_email",
-          authResult.data?.user?.email || "",
+          authData.user?.email || "",
         );
+        window.localStorage.setItem("user_role", role || "user");
       }
 
       toast.success("Log in successful!");

@@ -85,7 +85,7 @@ const AssignAdminDialog = () => {
   const [invalidUserLabel, setInvalidUserLabel] = React.useState("");
 
   const adminOptions =
-    adminData?.users.map((user) => ({
+    adminData?.users?.map((user) => ({
       value: user.user_id,
       label: `${user.first_name} ${user.last_name} (${user.role})`,
     })) || [];

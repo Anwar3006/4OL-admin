@@ -1,35 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-/**
- * POST /api/user/active
- * 
- * Updates the user's last_active timestamp.
- */
+async function getRequestUser(req: NextRequest) {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
+  if (!token) return null;
+  const admin = getSupabaseAdmin();
+  const { data: { user }, error } = await admin.auth.getUser(token);
+  if (error || !user?.id) return null;
+  return user;
+}
+
+/** POST /api/user/active — updates last_active timestamp */
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: req.headers,
-  });
+  const user = await getRequestUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const admin = getSupabaseAdmin();
+  const { error } = await admin
+    .from("user_profiles")
+    .update({ last_active: new Date().toISOString() })
+    .eq("user_id", user.id);
 
-  try {
-    const admin = getSupabaseAdmin();
-
-    const { error } = await admin
-      .from("user_profiles")
-      .update({ last_active: new Date().toISOString() })
-      .eq("user_id", session.user.id);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }

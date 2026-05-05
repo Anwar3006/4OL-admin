@@ -22,11 +22,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Loader2, User, Mail, Pencil, X, Check } from "lucide-react";
-import {
-  TUserProfile,
-} from "@/schemas/user-profile.schema";
+import { TUserProfile } from "@/schemas/user-profile.schema";
 import { useUpdateProfile } from "@/hooks/supabase-calls/useUser";
 import { cn } from "@/lib/utils";
 
@@ -80,14 +78,20 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
         return;
       }
 
+      const supabase = getSupabaseBrowserClient();
+
       if (hasNameChanged) {
         const payload = {
           ...user,
           first_name: values.first_name,
           last_name: values.last_name,
         };
-        await authClient.updateUser({
-          name: `${values.first_name} ${values.last_name}`,
+        // Update user metadata with name
+        await supabase.auth.updateUser({
+          data: {
+            first_name: values.first_name,
+            last_name: values.last_name,
+          },
         });
         await mutateAsync({
           id: user.user_id,
@@ -96,9 +100,8 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
       }
 
       if (hasEmailChanged) {
-        await authClient.changeEmail({
-          newEmail: values.email,
-          callbackURL: window.location.origin + "/profile",
+        await supabase.auth.updateUser({
+          email: values.email,
         });
         toast.success("Verification email sent to new address");
       }

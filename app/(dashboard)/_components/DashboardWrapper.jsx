@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 // import { ToastContainer } from "react-toastify";
 import Header from "@/components/partials/header";
@@ -15,7 +15,7 @@ import Footer from "@/components/partials/footer";
 import MobileMenu from "@/components/partials/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
 
-import { authClient } from "@/lib/auth-client";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import useRtl from "@/hooks/useRtl";
 import useDarkMode from "@/hooks/useDarkMode";
 import useSkin from "@/hooks/useSkin";
@@ -34,7 +34,6 @@ export default function DashboardWrapper({ children }) {
   const [skin] = useSkin();
   const [navbarType] = useNavbarType();
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
   const location = usePathname();
 
   // content width
@@ -43,6 +42,37 @@ export default function DashboardWrapper({ children }) {
   const [menuHidden] = useMenuHidden();
   // mobile menu
   const [mobileMenu, setMobileMenu] = useMobileMenu();
+
+  // Supabase Auth session state
+  const [session, setSession] = useState(null);
+  const [isPending, setIsPending] = useState(true);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    // Check current session
+    const checkSession = async () => {
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setIsPending(false);
+    };
+
+    checkSession();
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
+      setSession(newSession);
+      setIsPending(false);
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isPending && !session) {

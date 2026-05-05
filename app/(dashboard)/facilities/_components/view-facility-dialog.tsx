@@ -44,7 +44,7 @@ import {
 import { TFacilityProfileOutput } from "@/schemas/facility-profile.schema";
 import { WhatsAppIcon } from "@/public/assets/images/icon/whatsapp";
 import { useMemo } from "react";
-import { authClient } from "@/lib/auth-client";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { FacilityRatingSection } from "./facility-rating";
 import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
 import { GalleryModal } from "@/components/GalleryModal";
@@ -54,7 +54,7 @@ export function FacilityViewDialog() {
   const addDialog = useAddFacilityDialog();
   const viewGallery = useGalleryModal();
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSupabaseSession();
 
   const { data: facilityData, isLoading: isFacilityLoading } =
     useFacilityProfile({

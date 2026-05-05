@@ -4,7 +4,7 @@ import { ProfileHeader } from "./_components/profile-header";
 import { EditProfileForm } from "./_components/edit-profile-form";
 import { ChangePasswordForm } from "./_components/change-password-form";
 import { AccountSecurity } from "./_components/account-security";
-import { authClient } from "@/lib/auth-client";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,9 +12,17 @@ import { AlertCircle } from "lucide-react";
 import { useUser } from "@/hooks/supabase-calls/useUser";
 
 export default function ProfilePage() {
-  const { data: session, isPending, error: sessionError } = authClient.useSession();
+  const {
+    data: session,
+    isPending,
+    error: sessionError,
+  } = useSupabaseSession();
 
-  const { data: user, isLoading: isUserLoading, error: userError } = useUser({
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    error: userError,
+  } = useUser({
     id: session?.user.id as string,
     enabled: !!session?.user.id,
   });

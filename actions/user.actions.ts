@@ -1,24 +1,35 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { headers } from "next/headers";
 
+// ── shared helper ─────────────────────────────────────────────────────────────
 /**
- * Fetch the current user's profile using the admin client.
- * Bypasses RLS — secure because it validates the BetterAuth session first.
+ * Returns the authenticated user from the Supabase cookie session.
+ * Used by all server actions in this file.
  */
-export async function getUserProfile() {
-  const session = await auth.api.getSession({ headers: await headers() });
+async function getSessionUser() {
+  const supabase = await getSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user?.id) return null;
+  return user;
+}
 
-  if (!session?.user?.id) return { data: null, error: "Unauthorized" };
+// ── getUserProfile ────────────────────────────────────────────────────────────
+export async function getUserProfile() {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: "Unauthorized" };
 
   try {
-    const adminClient = getSupabaseAdmin();
-    const { data, error } = await adminClient
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin
       .from("user_profiles")
       .select("*")
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (error) {
@@ -32,28 +43,25 @@ export async function getUserProfile() {
   }
 }
 
-/**
- * Fetch a specific user's profile by ID.
- * Restricted to Admins / Super Admins.
- */
+// ── getProfileById ────────────────────────────────────────────────────────────
 export async function getProfileById(targetId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) return { data: null, error: "Unauthorized" };
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: "Unauthorized" };
 
-  const adminClient = getSupabaseAdmin();
+  const admin = getSupabaseAdmin();
 
-  const { data: callerProfile, error: callerError } = await adminClient
+  const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
     .select("role")
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .single();
 
-  if (callerError || !["Super Admin", "Admin"].includes(callerProfile?.role)) {
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
     return { data: null, error: "Unauthorized: Admin access required" };
   }
 
   try {
-    const { data, error } = await adminClient
+    const { data, error } = await admin
       .from("user_profiles")
       .select("*")
       .eq("id", targetId)
@@ -70,23 +78,20 @@ export async function getProfileById(targetId: string) {
   }
 }
 
-/**
- * Update a specific user's profile.
- * Restricted to Admins / Super Admins.
- */
+// ── updateProfileById ─────────────────────────────────────────────────────────
 export async function updateProfileById(id: string, formData: any) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const user = await getSessionUser();
+  if (!user) return { error: "Unauthorized" };
 
-  const adminClient = getSupabaseAdmin();
+  const admin = getSupabaseAdmin();
 
-  const { data: callerProfile, error: callerError } = await adminClient
+  const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
     .select("role")
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .single();
 
-  if (callerError || !["Super Admin", "Admin"].includes(callerProfile?.role)) {
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
     return { error: "Unauthorized: Admin access required" };
   }
 
@@ -99,7 +104,7 @@ export async function updateProfileById(id: string, formData: any) {
   } = formData;
 
   try {
-    const { error } = await adminClient
+    const { error } = await admin
       .from("user_profiles")
       .update(updateData)
       .eq("id", id);
@@ -115,23 +120,20 @@ export async function updateProfileById(id: string, formData: any) {
   }
 }
 
-/**
- * Fetch all user profiles with pagination.
- * Restricted to Admins / Super Admins.
- */
+// ── getAllProfiles ─────────────────────────────────────────────────────────────
 export async function getAllProfiles(pageIndex: number, pageSize: number) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) return { data: [], count: 0, error: "Unauthorized" };
+  const user = await getSessionUser();
+  if (!user) return { data: [], count: 0, error: "Unauthorized" };
 
-  const adminClient = getSupabaseAdmin();
+  const admin = getSupabaseAdmin();
 
-  const { data: callerProfile, error: callerError } = await adminClient
+  const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
     .select("role")
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .single();
 
-  if (callerError || !["Super Admin", "Admin"].includes(callerProfile?.role)) {
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
     return { data: [], count: 0, error: "Unauthorized: Admin access required" };
   }
 
@@ -139,7 +141,7 @@ export async function getAllProfiles(pageIndex: number, pageSize: number) {
     const from = pageIndex * pageSize;
     const to = from + pageSize - 1;
 
-    const { data, error, count } = await adminClient
+    const { data, error, count } = await admin
       .from("user_profiles")
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
@@ -156,79 +158,45 @@ export async function getAllProfiles(pageIndex: number, pageSize: number) {
   }
 }
 
-/**
- * Fetch paginated users for the dashboard.
- *
- * params.admin = true  → fetch staff accounts (admin / super_admin / registrar)
- * params.admin = false → fetch app users (role = "user"), optionally filtered
- *                        by user_type ("customer" | "business_provider" | "both")
- *
- * The "business_provider" table in UserSection also includes "both" users
- * because they have an active business profile.
- */
+// ── getUsers ──────────────────────────────────────────────────────────────────
 export async function getUsers(params: {
   page: number;
   limit: number;
   admin?: boolean;
   status?: string;
   search?: string;
-  /**
-   * "customer"           → users who are purely consumers
-   * "business_provider"  → IBP accounts only
-   * "both"               → accounts with both profiles
-   * "business"           → convenience alias: returns business_provider + both
-   * undefined            → no user_type filter (returns all matching role)
-   */
   userType?: string;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user?.id) {
-    return { data: [], count: 0, error: "Unauthorized" };
-  }
+  const user = await getSessionUser();
+  if (!user) return { data: [], count: 0, error: "Unauthorized" };
 
-  // ── Rename to adminClient to avoid shadowing params.admin ────────────────
-  const adminClient = getSupabaseAdmin();
-
+  const admin = getSupabaseAdmin();
   const from = (params.page - 1) * params.limit;
-  const to   = from + params.limit - 1;
+  const to = from + params.limit - 1;
   const isAdminQuery = params.admin === true;
 
   // ── Main data query ───────────────────────────────────────────────────────
-  // Join the BetterAuth `user` table to get name + email.
-  let query = adminClient.from("user_profiles").select(
-    `
-      *,
-      user:user (
-        id,
-        name,
-        email,
-        created_at
-      )
-    `,
+  let query = admin.from("user_profiles").select(
+    "*",
     { count: "exact" },
   );
 
-  // Role filter
   if (isAdminQuery) {
     query = query.in("role", ["admin", "super_admin", "registrar"]);
   } else {
     query = query.eq("role", "user");
   }
 
-  // User-type filter
-  // "business" is a convenience alias: includes business_provider + both users
   if (params.userType === "business") {
     query = query.in("user_type", ["business_provider", "both"]);
   } else if (params.userType) {
     query = query.eq("user_type", params.userType);
   }
 
-  // Status filter
   if (params.status) {
     query = query.eq("status", params.status);
   }
 
-  // Search filter
   if (params.search) {
     query = query.or(
       `first_name.ilike.%${params.search}%,last_name.ilike.%${params.search}%,phone_number.ilike.%${params.search}%`,
@@ -241,11 +209,8 @@ export async function getUsers(params: {
 
   if (error) throw new Error(error.message);
 
-  // ── Stats query (total counts by status for the same filter set) ──────────
-  // Must reassign each chained call — Supabase JS v2 returns a new builder.
-  let statsQuery = adminClient
-    .from("user_profiles")
-    .select("status");
+  // ── Stats query ───────────────────────────────────────────────────────────
+  let statsQuery = admin.from("user_profiles").select("status");
 
   if (isAdminQuery) {
     statsQuery = statsQuery.in("role", ["admin", "super_admin", "registrar"]);
@@ -269,31 +234,37 @@ export async function getUsers(params: {
     { active: 0, pending: 0, inactive: 0, suspended: 0 },
   );
 
-  // Flatten the BetterAuth user join onto the profile row so consumers get
-  // a single object with both profile fields (first_name, phone_number, …)
-  // and auth fields (name, email).
-  const userData = (data || []).map((row) => {
-    const authUser = row.user ?? {};
-    return {
-      ...row,
-      ...authUser,
-      // Build a display name: prefer BetterAuth's `name` field, fall back to
-      // concatenating first_name + last_name from user_profiles.
-      name:
-        authUser.name ||
-        [row.first_name, row.last_name].filter(Boolean).join(" ") ||
-        "—",
-      // Ensure email is always present at the top level
-      email: authUser.email ?? row.email ?? "",
-    };
-  });
+  // Flatten profile + email into a single object for consumers
+  const userData = await Promise.all(
+    (data || []).map(async (row) => {
+      const profile = row as any;
+      let email = profile.email || "";
+
+      if (!email && profile.user_id) {
+        try {
+          const authRes = await admin.auth.admin.getUserById(profile.user_id);
+          if (authRes.data?.user?.email) {
+            email = authRes.data.user.email;
+          }
+        } catch (e) {
+          // ignore error and leave email blank
+        }
+      }
+
+      return {
+        ...profile,
+        email,
+        name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—",
+      };
+    })
+  );
 
   return {
     users: userData as any[],
     meta: {
-      total:        count || 0,
-      totalPages:   Math.ceil((count || 0) / params.limit),
-      currentPage:  params.page,
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / params.limit),
+      currentPage: params.page,
     },
     analytics,
   } as any;

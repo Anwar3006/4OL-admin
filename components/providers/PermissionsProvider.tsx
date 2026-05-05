@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { PermissionProviderClient } from "@/stores/permission-context";
-import { headers } from "next/headers";
 import { ReactNode } from "react";
 
 export const PermissionsProvider = async ({
@@ -9,11 +8,14 @@ export const PermissionsProvider = async ({
 }: {
   children: ReactNode;
 }) => {
-  const betterAuthUserSession = await auth.api.getSession({
-    headers: await headers(),
-  });
+  // Read the session from cookies — set by middleware on every request.
+  const supabase = await getSupabaseServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (!betterAuthUserSession?.user) {
+  if (userError || !user?.id) {
     return (
       <PermissionProviderClient userRole={null}>
         {children}
@@ -27,13 +29,13 @@ export const PermissionsProvider = async ({
     const { data, error } = await admin
       .from("user_profiles")
       .select("role")
-      .eq("user_id", betterAuthUserSession.user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (error) throw error;
     userInfo = data;
   } catch (error) {
-    console.error("Auth server-side error:", error);
+    console.error("[PermissionsProvider] Failed to fetch role:", error);
     return (
       <PermissionProviderClient userRole={null}>
         {children}

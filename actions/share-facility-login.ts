@@ -3,7 +3,6 @@
 import {
   initiateWhatsAppHandshake,
   sendSMS,
-  checkWhatsAppAvailability,
   formatPhoneNumber,
 } from "@/lib/twilio";
 
@@ -23,43 +22,34 @@ export async function notifyFacilityRegistration(formData: {
   const handshakeVariables = { "1": facilityName };
 
   // 1. Try Facility WhatsApp
-  const isFacilityOnWA_One = await checkWhatsAppAvailability(facilityWhatsapp);
-  if (isFacilityOnWA_One) {
-    const res = await initiateWhatsAppHandshake(
-      facilityWhatsapp,
-      undefined,
-      handshakeVariables,
-      email,
-      gpsAddress,
-    );
-    if (res.success) return { channel: "whatsapp", recipient: "facility" };
-  }
+  const res1 = await initiateWhatsAppHandshake(
+    facilityWhatsapp,
+    undefined,
+    handshakeVariables,
+    email,
+    gpsAddress,
+  );
+  if (res1.success) return { channel: "whatsapp", recipient: "facility" };
 
   // 2. Try Facility Phone WhatsApp
-  const isFacilityOnWA_Two = await checkWhatsAppAvailability(facilityPhone);
-  if (isFacilityOnWA_Two) {
-    const res = await initiateWhatsAppHandshake(
-      facilityPhone,
-      undefined,
-      handshakeVariables,
-      email,
-      gpsAddress,
-    );
-    if (res.success) return { channel: "whatsapp", recipient: "facility" };
-  }
+  const res2 = await initiateWhatsAppHandshake(
+    facilityPhone,
+    undefined,
+    handshakeVariables,
+    email,
+    gpsAddress,
+  );
+  if (res2.success) return { channel: "whatsapp", recipient: "facility" };
 
   // 3. Try Owner WhatsApp
-  const isOwnerOnWA = await checkWhatsAppAvailability(ownerPhone);
-  if (isOwnerOnWA) {
-    const res = await initiateWhatsAppHandshake(
-      ownerPhone,
-      undefined,
-      handshakeVariables,
-      email,
-      gpsAddress,
-    );
-    if (res.success) return { channel: "whatsapp", recipient: "owner" };
-  }
+  const res3 = await initiateWhatsAppHandshake(
+    ownerPhone,
+    undefined,
+    handshakeVariables,
+    email,
+    gpsAddress,
+  );
+  if (res3.success) return { channel: "whatsapp", recipient: "owner" };
 
   // 4. Final Fallback: Owner SMS
   const message = `Success! ${facilityName} is now registered on 4 Our Life. Please check your email for the admin portal invite.`;

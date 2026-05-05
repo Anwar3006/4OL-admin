@@ -30,9 +30,7 @@ import {
   Loader2,
   MapPinHouse,
   Star,
-  Trash,
   Trash2,
-  X,
 } from "lucide-react";
 import z from "zod";
 import { MultiSelect } from "@/components/MultiSelect";
@@ -40,23 +38,21 @@ import { cn } from "@/lib/utils";
 import ImageDropZone, { isMediaVideo } from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddFacilityDialog } from "@/stores/dialog-store";
-import { authClient } from "@/lib/auth-client";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import FacilityCredentialsModal from "./facility-credentials-modal";
 import {
   useCreateFacilityProfile,
   useUpdateFacilityProfile,
 } from "@/hooks/supabase-calls/useFacilities";
 import { notifyFacilityRegistration } from "@/actions/share-facility-login";
+import { createFacilityOwnerAccount } from "@/actions/facility-owner.actions";
 
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { OfferingsSection } from "./offerings-section";
-import { formatPhoneNumber } from "@/lib/twilio";
 
-// Step 1 Fields - To make sure we validate these fields before moving on to Step 2
-// Using type helper to ensure path validity
 type FacilityFormValues = TFacilityProfileInput & { sameForWeekdays: boolean };
 
 const STEP_1_FIELDS: Array<Path<FacilityFormValues>> = [
@@ -80,8 +76,8 @@ const STEP_1_FIELDS: Array<Path<FacilityFormValues>> = [
 const AddFacilityDialog = () => {
   const { isOpen, data: rawData, isEditMode, close } = useAddFacilityDialog();
   const data = rawData as TFacilityProfileOutput;
-  const { data: session } = authClient.useSession();
-  // Progress Step Management
+  const { data: session } = useSupabaseSession();
+
   const [step, setStep] = useState<1 | 2>(1);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [facilityModal, setFacilityModal] = useState<boolean>(false);
@@ -93,7 +89,6 @@ const AddFacilityDialog = () => {
     ownerNumber: string;
   } | null>(null);
 
-  // New state for advanced image management in edit mode
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [newlyUploadedFiles, setNewlyUploadedFiles] = useState<string[]>([]);
@@ -103,17 +98,14 @@ const AddFacilityDialog = () => {
   const [uploadSessionId] = useState(() => `pending_${nanoid(12)}`);
   const filePath = `facilities/temporary/${uploadSessionId}`;
 
-  // Hooks to fetch location and Ghana Post Address
   const {
     getLocationCoordinates,
     coordinates,
     loading: coordinatesLoading,
     error: geolocationError,
-    // permissionState,
   } = useGeolocation();
   const { fetchGhanaPostAddress, loading: addressLoading } = useGhanaPostGPS();
   const isLoadingLocation = coordinatesLoading || addressLoading;
-  ////////////
 
   const form = useForm<FacilityFormValues>({
     resolver: zodResolver(
@@ -154,53 +146,25 @@ const AddFacilityDialog = () => {
     },
   });
 
-  // --- Effects ---
-  // 1. Auto-fetch location on Mobile when Dialog opens
-  // useEffect(() => {
-  //   if (isOpen && isMobileScreen) {
-  //     // We only auto-fetch if we don't already have location data
-  //     // (e.g., in Edit Mode, we might want to keep the existing data)
-  //     const hasLocation = form.getValues("gps_address");
-
-  //     if (!hasLocation) {
-  //       // Check if we already have location permissions
-  //       // If not, we might want to wait for the user to see the "Detecting" UI
-  //       const timer = setTimeout(() => {
-  //         if (!form.getValues("gps_address")) {
-  //           getLocationCoordinates();
-  //         }
-  //       }, 500); // Small delay to ensure the modal animation is finished
-  //       toast.info(
-  //         "Auto-detecting your location..." +
-  //           " Please allow location access if prompted.",
-  //       );
-  //       return () => clearTimeout(timer);
-  //     }
-  //   }
-  // }, [isOpen, isMobileScreen]);
-
-  // When the dialog opens for editing, wait for data to be available, then reset the form.
+  // Edit mode: populate form from existing data
   useEffect(() => {
     if (isOpen && isEditMode && data) {
       form.reset({
         ...form.getValues(),
-        ...(data as any), // Fallback for complex object spread
+        ...(data as any),
         keywords: Array.isArray(data.keywords)
           ? data.keywords.join(", ")
           : data.keywords || "",
         sameForWeekdays: false,
       });
-
-      // Populate existing images state
       setExistingImages(data.media_urls || []);
-      // Clear deletion and new upload lists on open
       setImagesToDelete([]);
       setNewlyUploadedFiles([]);
       setFeaturedImage(data.featured_image_url);
     }
   }, [isOpen, isEditMode, data, form.reset]);
 
-  // When the dialog opens for creating, reset to default values.
+  // Create mode: reset to defaults
   useEffect(() => {
     if (isOpen && !isEditMode) {
       form.reset({
@@ -231,56 +195,32 @@ const AddFacilityDialog = () => {
         latitude: 0,
         longitude: 0,
       });
-
-      // Also reset image management state
       setExistingImages([]);
       setImagesToDelete([]);
       setNewlyUploadedFiles([]);
     }
   }, [isOpen, isEditMode, form.reset]);
 
-  // 2. Fetch address only when coordinates are acquired
+  // Auto-populate address from GPS coordinates
   useEffect(() => {
     if (coordinates?.latitude && coordinates?.longitude) {
       fetchGhanaPostAddress(coordinates.latitude, coordinates.longitude)
         .then((res) => {
           if (res?.found && res?.data?.Table?.length > 0) {
             const location = res.data.Table[0];
-
-            // console.log("Lo ", location);
-            // Use { shouldValidate: true } to ensure Zod picks up the changes
-            form.setValue("gps_address", location.GPSName, {
-              shouldValidate: true,
-            });
-
-            form.setValue(
-              "street",
-              location.Street === "[UNKNOWN]" ? location.Area : location.Street,
-              { shouldValidate: true },
-            );
-            form.setValue("post_code", location.PostCode, {
-              shouldValidate: true,
-            });
+            form.setValue("gps_address", location.GPSName, { shouldValidate: true });
+            form.setValue("street", location.Street === "[UNKNOWN]" ? location.Area : location.Street, { shouldValidate: true });
+            form.setValue("post_code", location.PostCode, { shouldValidate: true });
             form.setValue("area", location.Area, { shouldValidate: true });
-            form.setValue("district", location.District, {
-              shouldValidate: true,
-            });
-
-            // Ensure casing matches your Enums
+            form.setValue("district", location.District, { shouldValidate: true });
             if (location.Region) {
-              form.setValue(
-                "region",
-                location.Region.toLowerCase() as TFacilityProfileInput["region"],
-                { shouldValidate: true },
-              );
+              form.setValue("region", location.Region.toLowerCase() as TFacilityProfileInput["region"], { shouldValidate: true });
             }
-
             form.setValue("latitude", coordinates.latitude);
             form.setValue("longitude", coordinates.longitude);
             toast.success("Location auto-populated!");
           }
         })
-
         .catch((err) => {
           console.error("Ghana Post Error:", err);
           toast.error("Could not resolve GPS address");
@@ -288,34 +228,16 @@ const AddFacilityDialog = () => {
     }
   }, [coordinates, form.setValue]);
 
-  // When editing, initialize the featured image from data
   useEffect(() => {
     if (isOpen && isEditMode && data) {
       setFeaturedImage(data.featured_image_url || data.media_urls?.[0] || null);
     }
   }, [isOpen, isEditMode, data]);
-  /////////////////////
 
-  // --- Helpers ---
-  // Watch facility type to automatically populate amenities and services
-  const selectedType = form.watch(
-    "facility_type",
-  ) as keyof typeof FACILITY_REQUIREMENTS;
-  const availableAmenities = useMemo(
-    () => FACILITY_REQUIREMENTS[selectedType]?.amenities || [],
-    [selectedType],
-  );
-  const availableServices = useMemo(
-    () => FACILITY_REQUIREMENTS[selectedType]?.services || [],
-    [selectedType],
-  );
+  const selectedType = form.watch("facility_type") as keyof typeof FACILITY_REQUIREMENTS;
+  const availableAmenities = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.amenities || [], [selectedType]);
+  const availableServices = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.services || [], [selectedType]);
 
-  // console.log(
-  //   "Selected: ",
-  //   selectedType,
-  //   availableAmenities,
-  //   availableServices,
-  // );
   const handleContinue = async () => {
     const isValid = await form.trigger(STEP_1_FIELDS);
     if (!isValid) {
@@ -327,8 +249,6 @@ const AddFacilityDialog = () => {
 
   const handleFilesChange = useCallback(
     (urls: string[]) => {
-      // Use setTimeout to defer the state update to the next tick
-      // This prevents updating parent state during child render
       setTimeout(() => {
         if (isEditMode) {
           setNewlyUploadedFiles(urls);
@@ -337,16 +257,14 @@ const AddFacilityDialog = () => {
         }
       }, 0);
     },
-    [form],
+    [form, isEditMode],
   );
 
   const handleDialogClose = () => {
     setStep(1);
     close();
   };
-  //////////////////
 
-  // Handlers for image management
   const handleDeleteExistingImage = (imagePath: string) => {
     setExistingImages((prev) => prev.filter((p) => p !== imagePath));
     setImagesToDelete((prev) => [...prev, imagePath]);
@@ -356,10 +274,7 @@ const AddFacilityDialog = () => {
   const facilityMutation = useCreateFacilityProfile();
   const facilityUpdateMutation = useUpdateFacilityProfile();
 
-  // --- Submission Logic ---
-  const handleSubmit = async (
-    values: FacilityFormValues,
-  ) => {
+  const handleSubmit = async (values: FacilityFormValues) => {
     setSubmitting(true);
     const { sameForWeekdays, ...profileData } = values;
 
@@ -368,30 +283,24 @@ const AddFacilityDialog = () => {
         ? [...existingImages, ...newlyUploadedFiles]
         : profileData.media_urls;
 
-      // Formatted facility type for Wellness
       let finalFacilityType: any = profileData.facility_type;
-      if (
-        profileData.facility_type === "wellness_center" &&
-        values.wellness_subtype
-      ) {
+      if (profileData.facility_type === "wellness_center" && values.wellness_subtype) {
         finalFacilityType = `wellness(${values.wellness_subtype})`;
       }
 
       const payload = {
         ...profileData,
-        facility_type: finalFacilityType as any, // Cast to any because the string formatting is dynamic
+        facility_type: finalFacilityType as any,
         featured_image_url: featuredImage || finalImageUrls[0],
         adminId: session?.user?.id ?? "",
       };
 
-      // SCENARIO 1: EDIT MODE
+      // ── EDIT MODE ─────────────────────────────────────────────────────────
       if (isEditMode) {
-        const finalImageUrls = [...existingImages, ...newlyUploadedFiles];
         await facilityUpdateMutation.mutateAsync({
           id: data.id,
           ...payload,
-
-          media_urls: finalImageUrls,
+          media_urls: [...existingImages, ...newlyUploadedFiles],
           imagesToDelete,
           newlyUploadedFiles,
         });
@@ -401,32 +310,22 @@ const AddFacilityDialog = () => {
         return;
       }
 
-      // SCENARIO 2: CREATE MODE
-      let ownerId: string | null = null;
-      let isNewUser = false;
+      // ── CREATE MODE ───────────────────────────────────────────────────────
+      // The temporary password is the GPS address (as per original logic).
+      // The owner is forced to change it on first login.
+      const temporaryPassword = payload.gps_address;
 
-      const newAuthUser = await authClient.admin.createUser({
-        name: `${payload.first_name} ${payload.last_name}`,
-        email: payload.owner_email,
-        password: payload.gps_address,
-      });
-
-      if (newAuthUser.data?.user) {
-        ownerId = newAuthUser.data.user.id;
-        isNewUser = true;
-      } else {
-        const existingUser = await authClient.admin.listUsers({
-          query: {
-            limit: 1,
-            searchField: "email",
-            searchValue: payload.owner_email.trim().toLowerCase(),
-          },
+      const { userId: ownerId, isNewUser, error: accountError } =
+        await createFacilityOwnerAccount({
+          email: payload.owner_email,
+          temporaryPassword,
+          firstName: payload.first_name,
+          lastName: payload.last_name,
+          phoneNumber: payload.person_contact_number,
         });
-        ownerId = existingUser.data?.users[0]?.id || null;
-      }
 
-      if (!ownerId)
-        throw new Error("Could not assign an owner to this facility.");
+      if (accountError) throw new Error(accountError);
+      if (!ownerId) throw new Error("Could not assign an owner to this facility.");
 
       const result = await facilityMutation.mutateAsync({
         ...payload,
@@ -439,16 +338,14 @@ const AddFacilityDialog = () => {
         setStep(1);
         close();
 
-        // if (isNewUser) {
         setCredentials({
           email: payload.owner_email,
-          password: payload.gps_address,
+          password: temporaryPassword,
           facilityName: payload.facility_name,
           phoneNumber: payload.contact_number,
           ownerNumber: payload.whatsapp_number || payload.person_contact_number,
         });
 
-        // Send WhatsApp/SMS notifications via Twilio
         try {
           await notifyFacilityRegistration({
             facilityWhatsapp: payload.whatsapp_number || payload.contact_number,
@@ -460,19 +357,16 @@ const AddFacilityDialog = () => {
           });
         } catch (notifyError) {
           console.error("Notification Error:", notifyError);
-          // We don't want to block the user experience if notifications fail
           toast.warning("Facility registered, but notification delivery failed.");
         }
 
         setFacilityModal(true);
-        // }
       }
     } catch (error: any) {
       console.error("Error: ", error.message);
       toast.error(error.message || "Operation failed");
     } finally {
       setSubmitting(false);
-      console.log("Statsssss: ", credentials, facilityModal);
     }
   };
 
@@ -481,7 +375,6 @@ const AddFacilityDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-      {/* Dialog after successful registration of facility */}
       {credentials && (
         <FacilityCredentialsModal
           isOpen={facilityModal}
@@ -492,62 +385,41 @@ const AddFacilityDialog = () => {
           data={credentials}
         />
       )}
-      <DialogContent className=" h-full md:h-auto md:max-h-[90vh] overflow-y-auto pt-14! pb-10! px-4 md:px-6">
+      <DialogContent className="h-full md:h-auto md:max-h-[90vh] overflow-y-auto pt-14! pb-10! px-4 md:px-6">
         <div className="flex justify-center gap-2 mb-4 w-full pr-4">
-          <div
-            className={cn(
-              "h-2 w-1/2 rounded",
-              step >= 1 ? "bg-primary" : "bg-muted",
-            )}
-          />
-          <div
-            className={cn(
-              "h-2 w-1/2 rounded",
-              step >= 2 ? "bg-primary" : "bg-muted",
-            )}
-          />
+          <div className={cn("h-2 w-1/2 rounded", step >= 1 ? "bg-primary" : "bg-muted")} />
+          <div className={cn("h-2 w-1/2 rounded", step >= 2 ? "bg-primary" : "bg-muted")} />
         </div>
         <DialogHeader>
           <DialogTitle className="card-title">
-            {isEditMode ? `Edit Facility` : `Register New Facility`}
+            {isEditMode ? "Edit Facility" : "Register New Facility"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(
-              (data) => {
-                handleSubmit(data);
-              },
+              (data) => handleSubmit(data),
               (errors) => {
-                // 1. Get all field names that have errors
                 const errorFields = Object.keys(errors);
-
-                // 2. Format a user-friendly message
                 if (errorFields.length > 0) {
-                  // Get the labels for the first 2 errors to give specific context
                   const errorMessages = errorFields
                     .slice(0, 2)
-                    .map((field) => field.replace(/_/g, " ")) // 'facility_name' -> 'facility name'
+                    .map((field) => field.replace(/_/g, " "))
                     .join(", ");
-
                   const message =
                     errorFields.length > 2
                       ? `Please check ${errorMessages} and ${errorFields.length - 2} other fields.`
                       : `Please correct the following: ${errorMessages}.`;
-
                   toast.error("Form Validation Failed", {
                     description: message,
-                    // This explicitly overrides the global config for this specific toast
                     classNames: {
-                      toast:
-                        "group-[.toaster]:border-destructive group-[.toaster]:bg-red-50/50",
+                      toast: "group-[.toaster]:border-destructive group-[.toaster]:bg-red-50/50",
                       title: "font-black text-destructive",
                       description: "text-slate-900 font-medium leading-relaxed",
                     },
                     duration: 5000,
                   });
                 }
-
                 console.log("Validation Errors:", errors);
               },
             )}
@@ -555,9 +427,7 @@ const AddFacilityDialog = () => {
           >
             {step === 1 && (
               <>
-                <h3 className="card-title mb-2 underline text-center">
-                  Facility Details
-                </h3>
+                <h3 className="card-title mb-2 underline text-center">Facility Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomSelect
                     name="facility_type"
@@ -566,7 +436,6 @@ const AddFacilityDialog = () => {
                     label="Facility Type"
                     className="w-full!"
                   />
-
                   {form.watch("facility_type") === "wellness_center" ? (
                     <CustomSelect
                       name="wellness_subtype"
@@ -582,46 +451,27 @@ const AddFacilityDialog = () => {
                       className="w-full!"
                     />
                   ) : (
-                    <CustomInput
-                      type="text"
-                      name="facility_name"
-                      control={form.control}
-                      label="Facility Name"
-                      readOnly={false}
-                    />
+                    <CustomInput type="text" name="facility_name" control={form.control} label="Facility Name" readOnly={false} />
                   )}
                 </div>
 
                 {form.watch("facility_type") === "wellness_center" && (
                   <div className="animate-in slide-in-from-top-2 duration-300">
-                    <CustomInput
-                      type="text"
-                      name="facility_name"
-                      control={form.control}
-                      label="Facility Name"
-                      readOnly={false}
-                    />
+                    <CustomInput type="text" name="facility_name" control={form.control} label="Facility Name" readOnly={false} />
                   </div>
                 )}
 
-                {/* NEW FIELDS: NHIS and Ownership */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="flex items-center justify-between space-x-2">
                     <div className="space-y-0.5">
                       <label className="text-sm font-bold">Accepts NHIS</label>
-                      <p className="text-xs text-muted-foreground">
-                        Is this facility under the National Health Insurance
-                        Scheme?
-                      </p>
+                      <p className="text-xs text-muted-foreground">Is this facility under the National Health Insurance Scheme?</p>
                     </div>
                     <Switch
                       checked={form.watch("accepts_nhis")}
-                      onCheckedChange={(val) =>
-                        form.setValue("accepts_nhis", val)
-                      }
+                      onCheckedChange={(val) => form.setValue("accepts_nhis", val)}
                     />
                   </div>
-
                   <CustomSelect
                     name="ownership"
                     label="Facility Ownership"
@@ -634,233 +484,89 @@ const AddFacilityDialog = () => {
                   />
                 </div>
 
-                {/* Facility Contact */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <CustomInput
-                    type="text"
-                    name="contact_number"
-                    control={form.control}
-                    label="Facility Contact Number"
-                    readOnly={false}
-                  />
-
-                  <CustomInput
-                    type="text"
-                    name="whatsapp_number"
-                    control={form.control}
-                    label="Whatsapp Number"
-                    readOnly={false}
-                  />
-
-                  <CustomInput
-                    type="email"
-                    name="email"
-                    control={form.control}
-                    label="Facility Email Address"
-                    readOnly={false}
-                  />
+                  <CustomInput type="text" name="contact_number" control={form.control} label="Facility Contact Number" readOnly={false} />
+                  <CustomInput type="text" name="whatsapp_number" control={form.control} label="Whatsapp Number" readOnly={false} />
+                  <CustomInput type="email" name="email" control={form.control} label="Facility Email Address" readOnly={false} />
                 </div>
 
-                <h3 className="card-title mb-2 underline text-center">
-                  Location Details (Auto-Populated)
-                </h3>
+                <h3 className="card-title mb-2 underline text-center">Location Details (Auto-Populated)</h3>
 
                 {(() => {
-                  // 1. Show a message if permission is denied
-                  // if (permissionState === "denied") {
-                  //   return (
-                  //     <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl bg-red-50/50">
-                  //       <MapPinHouse className="h-8 w-8 text-destructive/40 mb-3" />
-                  //       <p className="text-sm text-destructive mb-4 text-center">
-                  //         Location access has been denied. Please enable it in
-                  //         your browser settings to use this feature.
-                  //       </p>
-                  //       {geolocationError && (
-                  //         <p className="text-xs text-red-500 mb-4">
-                  //           {geolocationError}
-                  //         </p>
-                  //       )}
-                  //     </div>
-                  //   );
-                  // }
-
-                  // 1. Show Loader if we are currently fetching
                   if (isLoadingLocation) {
                     return (
                       <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl bg-muted/20">
                         <Loader2 className="h-10 w-10 animate-spin text-primary mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                          Accessing GPS & Resolving Address...
-                        </p>
+                        <p className="text-sm text-muted-foreground">Accessing GPS & Resolving Address...</p>
                       </div>
                     );
                   }
-
-                  // 2. Show the Data Form if we have a GPS address
                   if (form.watch("gps_address")) {
                     return (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-bottom-2 duration-700">
-                        <CustomInput
-                          type="text"
-                          name="gps_address"
-                          control={form.control}
-                          label="GPS Address"
-                          readOnly={false}
-                        />
-                        <CustomInput
-                          type="text"
-                          name="street"
-                          control={form.control}
-                          label="Street Name"
-                          readOnly={false}
-                        />
-                        <CustomInput
-                          type="text"
-                          name="post_code"
-                          control={form.control}
-                          label="Post Code"
-                          readOnly={false}
-                        />
-                        <CustomInput
-                          type="text"
-                          name="area"
-                          control={form.control}
-                          label="Area"
-                          readOnly={false}
-                        />
-                        <CustomInput
-                          type="text"
-                          name="district"
-                          control={form.control}
-                          label="District"
-                          readOnly={false}
-                        />
-                        <CustomInput
-                          type="text"
-                          name="region"
-                          control={form.control}
-                          label="Region"
-                          readOnly
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="text-xs bg-zinc-600 text-white"
-                          onClick={() => getLocationCoordinates()}
-                        >
+                        <CustomInput type="text" name="gps_address" control={form.control} label="GPS Address" readOnly={false} />
+                        <CustomInput type="text" name="street" control={form.control} label="Street Name" readOnly={false} />
+                        <CustomInput type="text" name="post_code" control={form.control} label="Post Code" readOnly={false} />
+                        <CustomInput type="text" name="area" control={form.control} label="Area" readOnly={false} />
+                        <CustomInput type="text" name="district" control={form.control} label="District" readOnly={false} />
+                        <CustomInput type="text" name="region" control={form.control} label="Region" readOnly />
+                        <Button type="button" variant="outline" size="sm" className="text-xs bg-zinc-600 text-white" onClick={() => getLocationCoordinates()}>
                           Incorrect? Re-detect Location
                         </Button>
                       </div>
                     );
                   }
-
-                  // Show manual button only for Desktop if data hasn't been fetched yet
-                  // if (!isMobileScreen) {
                   return (
                     <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl bg-primary/5">
                       <MapPinHouse className="h-8 w-8 text-primary/40 mb-3" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => getLocationCoordinates()}
-                      >
+                      <Button type="button" variant="outline" onClick={() => getLocationCoordinates()}>
                         Detect My Location
                       </Button>
                     </div>
                   );
-                  // }
-
-                  // return null;
                 })()}
 
-                {/* Facility Amenities and Services */}
-                <h3 className="card-title mb-2 underline text-center">
-                  Services and Specialties
-                </h3>
+                <h3 className="card-title mb-2 underline text-center">Services and Specialties</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <div className="col-span-2 md:col-span-1">
                     <MultiSelect
                       name="amenities"
                       label="Facility Amenities"
-                      placeholder={
-                        selectedType
-                          ? "Select Amenities..."
-                          : "Please select a facility type first"
-                      }
+                      placeholder={selectedType ? "Select Amenities..." : "Please select a facility type first"}
                       options={availableAmenities}
                       selected={form.watch("amenities")}
                       onChange={(value) => form.setValue("amenities", value)}
                     />
                   </div>
-
                   <div className="col-span-2 md:col-span-1">
                     <MultiSelect
                       name="services"
                       label="Facility Services"
-                      placeholder={
-                        selectedType
-                          ? "Select Services..."
-                          : "Please select a facility type first"
-                      }
+                      placeholder={selectedType ? "Select Services..." : "Please select a facility type first"}
                       options={availableServices}
                       selected={form.watch("services")}
                       onChange={(value) => form.setValue("services", value)}
                     />
                   </div>
-
                   <div className="col-span-2">
                     <CustomInput
                       type="text"
                       name="keywords"
                       control={form.control}
-                      label="Keywords(Comma Separated)"
+                      label="Keywords (Comma Separated)"
                       placeholder="Keyword #1, Keyword #2, Keyword #3"
                       readOnly={false}
                     />
-                    {/* TODO: A button to click for AI to autofill the keywords based on already entered data */}
                   </div>
                 </div>
 
-                <h3 className="card-title mb-2 underline text-center">
-                  Manager Details
-                </h3>
+                <h3 className="card-title mb-2 underline text-center">Manager Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <CustomInput
-                    type="text"
-                    name="first_name"
-                    control={form.control}
-                    label="Facility Owner First Name"
-                    readOnly={false}
-                  />
-                  <CustomInput
-                    type="text"
-                    name="last_name"
-                    control={form.control}
-                    label="Facility Owner Last Name"
-                    readOnly={false}
-                  />
-                  <CustomInput
-                    type="email"
-                    name="owner_email"
-                    control={form.control}
-                    label="Facility Owner Email"
-                    readOnly={false}
-                  />
-                  <CustomInput
-                    type="text"
-                    name="person_contact_number"
-                    control={form.control}
-                    label="Facility Owner Contact Number"
-                    readOnly={false}
-                  />
-                  <CustomInput
-                    type="text"
-                    name="position"
-                    control={form.control}
-                    label="Facility Owner Position"
-                    readOnly={false}
-                  />
+                  <CustomInput type="text" name="first_name" control={form.control} label="Facility Owner First Name" readOnly={false} />
+                  <CustomInput type="text" name="last_name" control={form.control} label="Facility Owner Last Name" readOnly={false} />
+                  <CustomInput type="email" name="owner_email" control={form.control} label="Facility Owner Email" readOnly={false} />
+                  <CustomInput type="text" name="person_contact_number" control={form.control} label="Facility Owner Contact Number" readOnly={false} />
+                  <CustomInput type="text" name="position" control={form.control} label="Facility Owner Position" readOnly={false} />
                 </div>
 
                 <OfferingsSection />
@@ -871,22 +577,8 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    className="w-full bg-emerald-600"
-                    onClick={handleContinue}
-                  >
-                    Continue
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={close}
-                  >
-                    Cancel
-                  </Button>
+                  <Button type="button" className="w-full bg-emerald-600" onClick={handleContinue}>Continue</Button>
+                  <Button type="button" variant="ghost" className="w-full" onClick={close}>Cancel</Button>
                 </div>
               </>
             )}
@@ -896,127 +588,66 @@ const AddFacilityDialog = () => {
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="card-title text-slate-900">
-                        Facility Gallery
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Select the star icon to set the featured thumbnail
-                      </p>
+                      <h3 className="card-title text-slate-900">Facility Gallery</h3>
+                      <p className="text-xs text-muted-foreground">Select the star icon to set the featured thumbnail</p>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-white border-emerald-200 text-emerald-700"
-                    >
+                    <Badge variant="outline" className="bg-white border-emerald-200 text-emerald-700">
                       {isEditMode ? "Manage Mode" : "Initial Upload"}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {(() => {
-                      const createModeImages = form
-                        .watch("media_urls")
-                        .map((path) => ({
-                          path,
-                          url: getImageUrl(path),
-                          isExisting: false,
-                        }));
-                      // Unified list: Existing images + Newly uploaded ones
+                      const createModeImages = form.watch("media_urls").map((path) => ({ path, url: getImageUrl(path), isExisting: false }));
                       const gallery = [
-                        ...newlyUploadedFiles.map((path) => ({
-                          path,
-                          url: getImageUrl(path),
-                          isExisting: false,
-                        })),
-                        ...existingImages.map((path) => ({
-                          path,
-                          url: getImageUrl(path),
-                          isExisting: true,
-                        })),
-                        // Add this for Create Mode support
+                        ...newlyUploadedFiles.map((path) => ({ path, url: getImageUrl(path), isExisting: false })),
+                        ...existingImages.map((path) => ({ path, url: getImageUrl(path), isExisting: true })),
                         ...(!isEditMode ? createModeImages : []),
                       ];
-
-                      // 2. Check if BOTH arrays are empty
-                      const hasNoImages =
-                        newlyUploadedFiles.length === 0 &&
-                        existingImages.length === 0 &&
-                        createModeImages.length === 0;
+                      const hasNoImages = newlyUploadedFiles.length === 0 && existingImages.length === 0 && createModeImages.length === 0;
 
                       if (hasNoImages) {
                         return (
                           <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-white/50">
                             <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
-                            <p className="text-sm text-slate-400">
-                              No images yet
-                            </p>
+                            <p className="text-sm text-slate-400">No images yet</p>
                           </div>
                         );
                       }
 
-                      // 3. Render the gallery if images exist
                       return gallery.map((img) => {
                         const isFeatured = featuredImage === img.path;
-
                         return (
                           <div
                             key={img.path}
                             className={cn(
                               "relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all group",
-                              isFeatured
-                                ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/10"
-                                : "border-white shadow-sm",
+                              isFeatured ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/10" : "border-white shadow-sm",
                             )}
                           >
                             {isMediaVideo(img.path) ? (
-                              <video
-                                src={img.url}
-                                className="object-cover w-full h-full"
-                                muted
-                                autoPlay
-                                loop
-                              />
+                              <video src={img.url} className="object-cover w-full h-full" muted autoPlay loop />
                             ) : (
-                              <img
-                                src={img.url}
-                                alt="Gallery item"
-                                className="object-cover w-full h-full"
-                              />
+                              <img src={img.url} alt="Gallery item" className="object-cover w-full h-full" />
                             )}
-
-                            {/* Overlay Controls */}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => setFeaturedImage(img.path)} // Sets the storage path
-                                className={cn(
-                                  "p-2 rounded-full transition-all hover:scale-110",
-                                  isFeatured
-                                    ? "bg-emerald-500 text-white"
-                                    : "bg-white text-slate-600",
-                                )}
+                                onClick={() => setFeaturedImage(img.path)}
+                                className={cn("p-2 rounded-full transition-all hover:scale-110", isFeatured ? "bg-emerald-500 text-white" : "bg-white text-slate-600")}
                               >
-                                <Star
-                                  size={16}
-                                  fill={isFeatured ? "currentColor" : "none"}
-                                />
+                                <Star size={16} fill={isFeatured ? "currentColor" : "none"} />
                               </button>
-
                               <button
                                 type="button"
                                 onClick={() => {
                                   if (img.isExisting) {
                                     handleDeleteExistingImage(img.path);
                                   } else {
-                                    // Logic to remove from newlyUploadedFiles
-                                    const updated = newlyUploadedFiles.filter(
-                                      (p) => p !== img.path,
-                                    );
+                                    const updated = newlyUploadedFiles.filter((p) => p !== img.path);
                                     setNewlyUploadedFiles(updated);
-                                    // Update form if not in edit mode
-                                    if (!isEditMode)
-                                      form.setValue("media_urls", updated);
+                                    if (!isEditMode) form.setValue("media_urls", updated);
                                   }
-                                  // Clear featured if the deleted image was the featured one
                                   if (isFeatured) setFeaturedImage(null);
                                 }}
                                 className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all hover:scale-110"
@@ -1024,7 +655,6 @@ const AddFacilityDialog = () => {
                                 <Trash2 size={16} />
                               </button>
                             </div>
-
                             {isFeatured && (
                               <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
                                 Featured
@@ -1038,34 +668,19 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold">
-                    {isEditMode ? "Add More Photos" : "Upload Photos"}
-                  </Label>
+                  <Label className="text-slate-700 font-semibold">{isEditMode ? "Add More Photos" : "Upload Photos"}</Label>
                   <ImageDropZone
                     text="Upload clear photos of your facility (front view, interior, signage, opposite)"
                     filePath={filePath}
-                    initialFiles={
-                      isEditMode ? newlyUploadedFiles : form.watch("media_urls")
-                    }
+                    initialFiles={isEditMode ? newlyUploadedFiles : form.watch("media_urls")}
                     onFilesChange={handleFilesChange}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </Button>
 
-                  <Button
-                    type="submit"
-                    className="md:col-span-2 bg-emerald-600"
-                  >
-                    {submitting && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
+                  <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
+                  <Button type="submit" className="md:col-span-2 bg-emerald-600">
+                    {submitting && <Loader2 size={16} className="animate-spin mr-2" />}
                     {isEditMode ? "Update Facility" : "Register Facility"}
                   </Button>
                 </div>

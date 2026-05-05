@@ -1,13 +1,14 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import Dropdown from "@/components/ui/Dropdown";
 import Icon from "@/components/ui/Icon";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { getUserProfile } from "@/actions/user.actions";
 
 const Profile = () => {
   const router = useRouter();
-  const [userData, setUserData] = useState();
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -22,6 +23,22 @@ const Profile = () => {
     fetchUserRole();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase.auth.signOut();
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("isAuth");
+        window.localStorage.removeItem("user_id");
+        window.localStorage.removeItem("user_email");
+        window.localStorage.removeItem("user_role");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+    router.push("/login");
+  };
+
   const ProfileMenu = [
     {
       label: "Profile",
@@ -31,17 +48,18 @@ const Profile = () => {
     {
       label: "Logout",
       icon: "heroicons-outline:login",
-      action: async () => {
-        try {
-          // await dispatch(handleLogout()).unwrap();
-          await authClient.signOut();
-        } catch (error) {
-          console.error("Logout failed:", error);
-        }
-        router.push("/login");
-      },
+      action: handleLogout,
     },
   ];
+
+  // Format role for display: "super_admin" → "Super Admin"
+  const formatRole = (role) => {
+    if (!role) return "";
+    return role
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   const ProfileLabel = () => (
     <div className="flex items-center">
@@ -50,7 +68,7 @@ const Profile = () => {
           {userData?.first_name} {userData?.last_name}
         </p>
         <p className="text-xs text-slate-600 dark:text-slate-200 text-left">
-          {userData?.role.split("_")}
+          {formatRole(userData?.role)}
         </p>
       </div>
       <div className="flex-1 flex items-center justify-center ltr:ml-[10px] rtl:mr-[10px]">
