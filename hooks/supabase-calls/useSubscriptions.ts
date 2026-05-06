@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   TMarketingSubscriptionInput,
   TMarketingSubscriptionOutput,
@@ -97,6 +97,7 @@ export const useMarketingSubscriptions = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       let query = supabase
         .from("marketing_subscriptions")
         .select("*", { count: "exact" });
@@ -143,6 +144,7 @@ export const useMarketingSubscription = ({
   return useQuery<TMarketingSubscriptionOutput, Error>({
     queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.detail(id),
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("marketing_subscriptions")
         .select("*")
@@ -167,6 +169,7 @@ export const useCreateMarketingSubscription = () => {
     TMarketingSubscriptionInput
   >({
     mutationFn: async (data: TMarketingSubscriptionInput) => {
+      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("marketing_subscriptions")
         .insert(buildSubscriptionPayload(data))
@@ -197,6 +200,7 @@ export const useUpdateMarketingSubscription = () => {
     { id: string; data: Partial<TMarketingSubscriptionInput> }
   >({
     mutationFn: async ({ id, data: input }) => {
+      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("marketing_subscriptions")
         .update(buildSubscriptionPayload(input))
@@ -229,6 +233,7 @@ export const useDeleteMarketingSubscription = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
+      const supabase = await getSupabaseClient();
       const { error } = await supabase
         .from("marketing_subscriptions")
         .delete()

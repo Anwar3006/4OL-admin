@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { TConversationOutput } from "@/schemas/conversation.schema";
 import { toast } from "sonner";
 import { assignAdminWithRulesAction } from "@/actions/conversation.actions";
@@ -26,6 +26,7 @@ export const useConversations = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       const {
         data: conversations,
         count,
@@ -117,6 +118,7 @@ export const useMakeGroupLeader = () => {
       user_id: string;
     }) => {
       // Call the RPC
+      const supabase = await getSupabaseClient();
       const { error } = await supabase.rpc("fn_make_group_leader", {
         p_conversation_id: conversation_id,
         p_user_id: user_id,

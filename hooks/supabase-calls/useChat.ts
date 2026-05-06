@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { TChatInput, TChatOutput } from "@/schemas/chat.schema";
 import { toast } from "sonner";
 
@@ -41,6 +41,7 @@ export const useChats = ({ page, limit }: UseChatsParams) => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       const {
         data: chats,
         count,
@@ -86,6 +87,7 @@ export const useChatStats = () => {
   return useQuery({
     queryKey: CHAT_QUERY_KEYS.stats(),
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("chat_support")
         .select("status, is_deleted");
@@ -113,6 +115,7 @@ export const useUpdateChat = () => {
 
   return useMutation<TChatOutput, Error, { id: number; data: TChatInput }>({
     mutationFn: async ({ id, data: chatData }) => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("chat_support")
         .update({
@@ -144,6 +147,7 @@ export const useDeleteChat = () => {
 
   return useMutation<void, Error, number>({
     mutationFn: async (id) => {
+      const supabase = await getSupabaseClient();
       const { error } = await supabase
         .from("chat_support")
         .update({

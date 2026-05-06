@@ -1,8 +1,5 @@
-import { supabase } from "@/lib/supabase";
-import {
-  TSymptomsInput,
-  TSymptomsOutput,
-} from "@/types/symptoms";
+import { getSupabaseClient } from "@/lib/supabase";
+import { TSymptomsInput, TSymptomsOutput } from "@/types/symptoms";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
@@ -49,6 +46,7 @@ export const useSymptoms = ({
       const to = from + limit - 1;
 
       // Select symptoms with their linked categories and body parts
+      const supabase = await getSupabaseClient();
       let query = supabase.from("symptoms").select(
         `
           *,
@@ -86,8 +84,10 @@ export const useSymptoms = ({
         // We map the junction tables to simple arrays of IDs
         return {
           ...rest,
-          bodyParts: symptom_body_parts?.map((b: any) => b.body_parts?.name) || [],
-          categories: symptom_categories?.map((c: any) => c.categories?.name) || [],
+          bodyParts:
+            symptom_body_parts?.map((b: any) => b.body_parts?.name) || [],
+          categories:
+            symptom_categories?.map((c: any) => c.categories?.name) || [],
           causes: symptom_causes,
           types: symptom_types?.map((t: any) => t.type_name) || [],
         };
@@ -109,6 +109,7 @@ export const useSymptom = (id: string) => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.detail(id),
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("symptoms")
         .select(
@@ -157,7 +158,7 @@ export const useBodyPartsForSymptoms = () => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.bodyparts,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (await getSupabaseClient())
         .from("body_parts")
         .select("*")
         .order("name", { ascending: true });
@@ -171,7 +172,7 @@ export const useCategoriesForSymptoms = () => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.categories,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (await getSupabaseClient())
         .from("categories")
         .select("*")
         .order("name", { ascending: true });
@@ -185,27 +186,31 @@ export const useSymptomStats = () => {
   return useQuery({
     queryKey: SYMPTOMS_QUERY_KEYS.stats(),
     queryFn: async () => {
-      const [categoriesResults, bodyPartsRpc, systemicResults, totalSymptomsResult] =
-        await Promise.all([
-          // Total active categories used by symptoms
-          supabase
-            .from("categories")
-            .select("id", { count: "exact", head: true }),
+      const [
+        categoriesResults,
+        bodyPartsRpc,
+        systemicResults,
+        totalSymptomsResult,
+      ] = await Promise.all([
+        // Total active categories used by symptoms
+        (await getSupabaseClient())
+          .from("categories")
+          .select("id", { count: "exact", head: true }),
 
-          // Your custom spatial/ltree RPC
-          supabase.rpc("get_body_part_stats"),
+        // Your custom spatial/ltree RPC
+        (await getSupabaseClient()).rpc("get_body_part_stats"),
 
-          // Systemic vs Localized breakdown
-          supabase
-            .from("symptoms")
-            .select("is_systemic", { count: "exact" })
-            .eq("is_systemic", true),
+        // Systemic vs Localized breakdown
+        (await getSupabaseClient())
+          .from("symptoms")
+          .select("is_systemic", { count: "exact" })
+          .eq("is_systemic", true),
 
-          // Total symptoms (absolute)
-          supabase
-            .from("symptoms")
-            .select("id", { count: "exact", head: true }),
-        ]);
+        // Total symptoms (absolute)
+        (await getSupabaseClient())
+          .from("symptoms")
+          .select("id", { count: "exact", head: true }),
+      ]);
 
       if (categoriesResults.error) throw categoriesResults.error;
       if (bodyPartsRpc.error) throw bodyPartsRpc.error;
@@ -229,6 +234,7 @@ export const useCreateSymptom = () => {
 
   return useMutation<any, Error, TSymptomsInput>({
     mutationFn: async (data) => {
+      const supabase = await getSupabaseClient();
       const { data: symptomId, error } = await supabase.rpc(
         "register_symptom_complex",
         {
@@ -274,6 +280,7 @@ export const useUpdateSymptom = () => {
 
   return useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: any }) => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase.rpc("update_symptom_complex", {
         s_id: id,
         s_payload: payload,
@@ -305,6 +312,7 @@ export const useDeleteSymptom = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (symptomId: string) => {
+      const supabase = await getSupabaseClient();
       // 1. Fetch the symptom to get the image path
       const { data: symptom } = await supabase
         .from("symptoms")

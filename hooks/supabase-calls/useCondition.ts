@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   TConditionsInput,
   TConditionsOutput,
@@ -41,12 +41,13 @@ export const useConditions = ({
   return useQuery<any, Error>({
     queryKey: CONDITIONS_QUERY_KEYS.list(params),
     queryFn: async () => {
+      const client = await getSupabaseClient();
       try {
         const { limit, page, search } = params;
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
-        let query = supabase.from("conditions").select(
+        let query = client.from("conditions").select(
           `
           *,
           condition_types (type_name, about_type),
@@ -115,7 +116,8 @@ export const useCondition = ({
   return useQuery<TConditionsOutput, Error>({
     queryKey: CONDITIONS_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const client = await getSupabaseClient();
+      const { data, error } = await client
         .from("conditions")
         .select(
           `
@@ -159,14 +161,15 @@ export const useConditionStats = (enabled: boolean) => {
   return useQuery({
     queryKey: ["conditions-stats"],
     queryFn: async () => {
+      const client = await getSupabaseClient();
       // 1. Get Total Categories Count
-      const { count: totalCategories } = await supabase
+      const { count: totalCategories } = await client
         .from("categories")
         .select("*", { count: "exact", head: true });
 
       // 2. Fetch all junction data for global analytics
       // Note: For very large datasets, move this logic to a Postgres View
-      const { data: analyticsData, error } = await supabase.from("conditions")
+      const { data: analyticsData, error } = await client.from("conditions")
         .select(`
           condition_categories (categories (name)),
           condition_body_parts (body_parts (name))
@@ -208,10 +211,11 @@ export const useCreateCondition = () => {
 
   return useMutation<string, Error, TConditionsInput>({
     mutationFn: async (input) => {
+      const client = await getSupabaseClient();
       const { bodyParts, categories, types, causes, ...c_payload } = input;
 
       console.log("c_payload: ", c_payload);
-      const { data: conditionId, error } = await supabase.rpc(
+      const { data: conditionId, error } = await client.rpc(
         "insert_condition",
         {
           c_payload: c_payload,
@@ -223,6 +227,7 @@ export const useCreateCondition = () => {
       );
 
       if (error) {
+        const supabase = await getSupabaseClient();
         await supabase.storage
           .from("conditions")
           .remove(new Array(input.image_url as string));
@@ -248,9 +253,10 @@ export const useUpdateCondition = () => {
 
   return useMutation<string, Error, TConditionsOutput>({
     mutationFn: async (input) => {
+      const client = await getSupabaseClient();
       const { bodyParts, categories, types, causes, ...c_payload } = input;
 
-      const { data: conditionId, error } = await supabase.rpc(
+      const { data: conditionId, error } = await client.rpc(
         "update_condition",
         {
           c_id: input.id,
@@ -288,16 +294,17 @@ export const useDeleteCondition = () => {
       id: string;
       imagePath: string[];
     }) => {
+      const client = await getSupabaseClient();
       await Promise.all([
-        supabase.from("conditions").delete().eq("id", id),
+        client.from("conditions").delete().eq("id", id),
 
-        supabase.from("condition_body_parts").delete().eq("condition_id", id),
-        supabase.from("condition_categories").delete().eq("condition_id", id),
+        client.from("condition_body_parts").delete().eq("condition_id", id),
+        client.from("condition_categories").delete().eq("condition_id", id),
 
-        supabase.from("condition_causes").delete().eq("condition_id", id),
-        supabase.from("condition_types").delete().eq("condition_id", id),
+        client.from("condition_causes").delete().eq("condition_id", id),
+        client.from("condition_types").delete().eq("condition_id", id),
 
-        supabase.storage.from("conditions").remove(imagePath),
+        client.storage.from("conditions").remove(imagePath),
       ]);
     },
     onSuccess: () => {

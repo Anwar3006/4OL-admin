@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // Import your types from the schema
@@ -47,7 +47,7 @@ export const useHealthyLivings = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      let query = supabase
+      let query = (await getSupabaseClient())
         .from("healthy_living_info_view")
         .select("*", { count: "exact" });
 
@@ -69,7 +69,8 @@ export const useHealthyLivings = ({
       const totalCount = count ?? 0;
 
       return {
-        healthyLivings: (healthyLivings || []) as unknown as THealthyLivingOutput[],
+        healthyLivings: (healthyLivings ||
+          []) as unknown as THealthyLivingOutput[],
         meta: {
           totalPages: Math.ceil(totalCount / limit),
           total: totalCount,
@@ -88,7 +89,9 @@ export const useHealthyLiving = (id: string | null) => {
   return useQuery<THealthyLivingOutput, Error>({
     queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (
+        await getSupabaseClient()
+      )
         .from("healthy_living_info")
         .select(
           `
@@ -125,12 +128,12 @@ export const useHealthyLiving = (id: string | null) => {
 /**
  * Recursive function to insert a tree of healthy living items
  */
-const insertHealthyLivingTree = async (
-  input: any,
-) => {
+const insertHealthyLivingTree = async (input: any) => {
   if (input.tree) {
     // Tree insert
-    const { data: node, error } = await supabase.rpc("insert_healthy_living_info_tree", {
+    const { data: node, error } = await (
+      await getSupabaseClient()
+    ).rpc("insert_healthy_living_info_tree", {
       p_node: input.tree,
       p_parent_id: input.parent_id || null,
     });
@@ -139,15 +142,19 @@ const insertHealthyLivingTree = async (
   }
 
   // Single node insert
-  const { data: node, error } = await supabase.rpc("insert_healthy_living_info", {
-    p_name: input.name,
-    p_slug: input.slug,
-    p_description: input.description || null,
-    p_content_sections: JSON.stringify(input.content_sections || []),
-    p_parent_id: input.parent_id || null,
-    p_image_url: input.image_url || null,
-    p_attribution: JSON.stringify(input.attribution || {}),
-  }).single();
+  const { data: node, error } = await (
+    await getSupabaseClient()
+  )
+    .rpc("insert_healthy_living_info", {
+      p_name: input.name,
+      p_slug: input.slug,
+      p_description: input.description || null,
+      p_content_sections: JSON.stringify(input.content_sections || []),
+      p_parent_id: input.parent_id || null,
+      p_image_url: input.image_url || null,
+      p_attribution: JSON.stringify(input.attribution || {}),
+    })
+    .single();
 
   if (error) throw new Error(error.message);
   return node;
@@ -159,11 +166,7 @@ const insertHealthyLivingTree = async (
 export const useCreateHealthyLiving = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    THealthyLivingOutput,
-    Error,
-    any
-  >({
+  return useMutation<THealthyLivingOutput, Error, any>({
     mutationFn: async (input) => {
       const node = await insertHealthyLivingTree(input);
       return node as unknown as THealthyLivingOutput;
@@ -186,22 +189,22 @@ export const useCreateHealthyLiving = () => {
 export const useUpdateHealthyLiving = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    THealthyLivingOutput,
-    Error,
-    { id: string; data: any }
-  >({
+  return useMutation<THealthyLivingOutput, Error, { id: string; data: any }>({
     mutationFn: async ({ id, data: input }) => {
-      const { data: healthyLiving, error } = await supabase.rpc("update_healthy_living_info", {
-        p_id: id,
-        p_name: input.name,
-        p_slug: input.slug,
-        p_description: input.description || null,
-        p_content_sections: JSON.stringify(input.content_sections || []),
-        p_parent_id: input.parent_id || null,
-        p_image_url: input.image_url || null,
-        p_attribution: JSON.stringify(input.attribution || {}),
-      }).single();
+      const { data: healthyLiving, error } = await (
+        await getSupabaseClient()
+      )
+        .rpc("update_healthy_living_info", {
+          p_id: id,
+          p_name: input.name,
+          p_slug: input.slug,
+          p_description: input.description || null,
+          p_content_sections: JSON.stringify(input.content_sections || []),
+          p_parent_id: input.parent_id || null,
+          p_image_url: input.image_url || null,
+          p_attribution: JSON.stringify(input.attribution || {}),
+        })
+        .single();
 
       if (error) throw new Error(error.message);
 
@@ -230,7 +233,9 @@ export const useDeleteHealthyLiving = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const { error } = await supabase.rpc("delete_healthy_living_info", { p_id: id });
+      const { error } = await (
+        await getSupabaseClient()
+      ).rpc("delete_healthy_living_info", { p_id: id });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {

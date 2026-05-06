@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,8 +37,12 @@ export interface DeleteAccountRequestsResult {
 export const DELETE_REQUEST_KEYS = {
   all: ["delete-account-requests"] as const,
   lists: () => [...DELETE_REQUEST_KEYS.all, "list"] as const,
-  list: (params: { page: number; limit: number; search?: string; status?: string }) =>
-    [...DELETE_REQUEST_KEYS.lists(), { ...params }] as const,
+  list: (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string;
+  }) => [...DELETE_REQUEST_KEYS.lists(), { ...params }] as const,
 };
 
 // ─── Fetch hook ───────────────────────────────────────────────────────────────
@@ -60,6 +64,7 @@ export const useDeleteAccountRequests = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       // Base query — always order pending first, then by created_at desc
       let query = supabase
         .from("delete_account_requests")
@@ -80,7 +85,10 @@ export const useDeleteAccountRequests = ({
       const total = count ?? 0;
 
       if (requests.length === 0) {
-        return { requests: [], meta: { total: 0, totalPages: 0, currentPage: page } };
+        return {
+          requests: [],
+          meta: { total: 0, totalPages: 0, currentPage: page },
+        };
       }
 
       // ── Join user_profiles ──────────────────────────────────────────────
@@ -94,9 +102,7 @@ export const useDeleteAccountRequests = ({
         console.warn("Could not fetch user profiles:", profileError.message);
       }
 
-      const profileMap = new Map(
-        (profiles ?? []).map((p) => [p.user_id, p])
-      );
+      const profileMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
 
       const enriched: DeleteAccountRequest[] = requests.map((req) => {
         const profile = profileMap.get(req.user_id);
@@ -153,7 +159,12 @@ export const useUpdateDeleteRequestStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ requestId, userId, newStatus }: UpdateStatusPayload) => {
+    mutationFn: async ({
+      requestId,
+      userId,
+      newStatus,
+    }: UpdateStatusPayload) => {
+      const supabase = await getSupabaseClient();
       // 1. Update request status
       const { error: reqError } = await supabase
         .from("delete_account_requests")
@@ -164,13 +175,18 @@ export const useUpdateDeleteRequestStatus = () => {
 
       // 2. If approving: ban user in BetterAuth + soft-delete profile
       if (newStatus === "approved") {
-        const [{ error: banError }, { error: profileError }] = await Promise.all([
-          supabase.from("user").update({ banned: true }).eq("id", userId),
-          supabase.from("user_profiles").update({ is_deleted: true }).eq("user_id", userId),
-        ]);
+        const [{ error: banError }, { error: profileError }] =
+          await Promise.all([
+            supabase.from("user").update({ banned: true }).eq("id", userId),
+            supabase
+              .from("user_profiles")
+              .update({ is_deleted: true })
+              .eq("user_id", userId),
+          ]);
 
         if (banError) console.warn("Could not ban user:", banError.message);
-        if (profileError) console.warn("Could not soft-delete profile:", profileError.message);
+        if (profileError)
+          console.warn("Could not soft-delete profile:", profileError.message);
       }
 
       return { requestId, userId, newStatus };
@@ -181,8 +197,8 @@ export const useUpdateDeleteRequestStatus = () => {
         newStatus === "approved"
           ? "Request approved — user access revoked."
           : newStatus === "rejected"
-          ? "Request rejected."
-          : "Status updated.";
+            ? "Request rejected."
+            : "Status updated.";
       toast.success(msg);
     },
     onError: (err: Error) => {

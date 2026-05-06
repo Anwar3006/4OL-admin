@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   TMarketingProfileInput,
   TMarketingProfileOutput,
@@ -55,13 +55,14 @@ export const useMarketingProfiles = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       let query = supabase
         .from("marketing_profile")
         .select("*", { count: "exact" });
 
       if (search) {
         query = query.or(
-          `headline.ilike.%${search}%,description.ilike.%${search}%,organization.ilike.%${search}%`
+          `headline.ilike.%${search}%,description.ilike.%${search}%,organization.ilike.%${search}%`,
         );
       }
 
@@ -112,7 +113,7 @@ export const useMarketingProfile = ({
   return useQuery<TMarketingProfileOutput, Error>({
     queryKey: MARKETING_PROFILE_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (await getSupabaseClient())
         .from("marketing_profile")
         .select("*")
         .eq("id", id)
@@ -133,7 +134,7 @@ export const useCreateMarketingProfile = () => {
   return useMutation<TMarketingProfileOutput, Error, TMarketingProfileInput>({
     mutationFn: async (data: TMarketingProfileInput) => {
       const linksArray: string[] = Object.values(data.links).filter(
-        (link): link is string => typeof link === "string" && link.length > 0
+        (link): link is string => typeof link === "string" && link.length > 0,
       );
 
       const inputData = {
@@ -141,7 +142,7 @@ export const useCreateMarketingProfile = () => {
         links: linksArray,
       };
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (await getSupabaseClient())
         .from("marketing_profile")
         .insert(inputData)
         .select()
@@ -183,7 +184,7 @@ export const useUpdateMarketingProfile = () => {
         };
       }
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (await getSupabaseClient())
         .from("marketing_profile")
         .update(inputData)
         .eq("id", id)
@@ -210,6 +211,7 @@ export const useDeleteMarketingProfile = () => {
 
   return useMutation<void, Error, { id: string; imageUrl: string }>({
     mutationFn: async ({ id, imageUrl }) => {
+      const supabase = await getSupabaseClient();
       // 1. Delete from Storage
       if (imageUrl) {
         const { error: storageError } = await supabase.storage
@@ -222,7 +224,7 @@ export const useDeleteMarketingProfile = () => {
       }
 
       // 2. Delete from DB
-      const { error } = await supabase
+      const { error } = await (await getSupabaseClient())
         .from("marketing_profile")
         .delete()
         .eq("id", id);

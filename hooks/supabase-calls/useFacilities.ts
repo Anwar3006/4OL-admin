@@ -1,5 +1,5 @@
 import { deleteFiles, moveFile } from "@/actions/media-storage.actions";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   TFacilityProfileInput,
   TFacilityProfileOutput,
@@ -64,6 +64,7 @@ export const useFacilityProfiles = (params: Pagination) => {
       const from = ((page || 1) - 1) * (limit || 10);
       const to = from + (limit || 10) - 1;
 
+      const supabase = await getSupabaseClient();
       const query = supabase
         .from("facility_profile")
         .select("*", { count: "exact" });
@@ -148,6 +149,7 @@ export const useFacilityProfile = ({
   return useQuery({
     queryKey: FACILITY_PROFILE_QUERY_KEYS.detail(id),
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const result = await supabase
         .from("facility_profile")
         .select("*")
@@ -194,6 +196,7 @@ export const useGetFacilitiesMapData = ({
     ],
     queryFn: async () => {
       console.log("Filters: ", filters);
+      const supabase = await getSupabaseClient();
       const normalizedFilters = {
         ...filters,
         region: filters.region
@@ -255,6 +258,7 @@ export const useFeaturedFacilities = (params: FeaturedTopRatedParams) => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       let query = supabase
         .from("facility_profile")
         .select("*", { count: "exact" })
@@ -292,6 +296,7 @@ export const useTopRatedFacilities = (params: FeaturedTopRatedParams) => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       let query = supabase
         .from("facility_profile")
         .select("*", { count: "exact" })

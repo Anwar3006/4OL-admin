@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   TMarketingDiscountInput,
   TMarketingDiscountOutput,
@@ -49,6 +49,7 @@ export const useMarketingDiscounts = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      const supabase = await getSupabaseClient();
       let query = supabase
         .from("marketing_discounts")
         .select("*", { count: "exact" });
@@ -93,6 +94,7 @@ export const useMarketingDiscount = ({
   return useQuery<TMarketingDiscountOutput, Error>({
     queryKey: MARKETING_DISCOUNT_QUERY_KEYS.detail(id),
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("marketing_discounts")
         .select("*")
@@ -139,7 +141,7 @@ export const useCreateMarketingDiscount = () => {
   };
 
       console.log("Input: ", inputData)
-
+      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("marketing_discounts")
         .insert(inputData)
@@ -181,6 +183,7 @@ export const useUpdateMarketingDiscount = () => {
         applies_to: input.appliesTo,
         applicable_items: input.applicableItems,
       };
+      const supabase = await getSupabaseClient();
 
       const { data: result, error } = await supabase
         .from("marketing_discounts")
@@ -214,6 +217,7 @@ export const useDeleteMarketingDiscount = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
+      const supabase = await getSupabaseClient();
       const { error } = await supabase
         .from("marketing_discounts")
         .delete()

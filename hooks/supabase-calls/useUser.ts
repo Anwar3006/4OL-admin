@@ -1,5 +1,5 @@
 import { getUsers, getUserProfile } from "@/actions/user.actions";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type {
   TAdminInviteSchema,
@@ -86,6 +86,7 @@ export const useGetInvitedAdmin = ({ token }: { token: string }) => {
   return useQuery<any, Error>({
     queryKey: USER_QUERY_KEYS.invites,
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("user_invites")
         .select()
@@ -101,6 +102,7 @@ export const useRegistrarTrails = (daysBack: number = 1) => {
   return useQuery({
     queryKey: ["registrar_trails", daysBack],
     queryFn: async () => {
+      const supabase = await getSupabaseClient();
       const { data, error } = await supabase.rpc("get_registrar_trails", {
         days_back: daysBack,
       });
@@ -116,6 +118,7 @@ export const useCreateUserProfile = () => {
 
   return useMutation<TUserProfileRegistrationInput, Error, any>({
     mutationFn: async (data: TUserProfileRegistrationInput) => {
+      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("user_profiles")
         .insert({
@@ -139,7 +142,7 @@ export const useCreateUserProfile = () => {
       });
       toast.success("User profile created successfully!");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Failed to create user profile: ${error.message}`);
     },
   });
@@ -150,6 +153,7 @@ export const useUpdateProfile = () => {
 
   return useMutation<TUserProfileRegistrationInput, Error, any>({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("user_profiles")
         .update({
