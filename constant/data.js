@@ -196,6 +196,12 @@ export const menuItems = [
     link: "notifications",
   },
   {
+    title: "Onboarding Requests",
+    icon: "carbon:user-verification",
+    isHide: false,
+    link: "onboarding-requests",
+  },
+  {
     title: "Delete Account Request",
     icon: "line-md:account-delete",
     isHide: false,

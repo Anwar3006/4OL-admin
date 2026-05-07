@@ -63,7 +63,7 @@ export async function createFacilityOwnerAccount(payload: {
       .from("user_profiles")
       .update({
         requires_password_change: true,
-        user_type: "business_provider",
+        user_type: "facility_owner",
       })
       .eq("user_id", newUser.user.id);
 
