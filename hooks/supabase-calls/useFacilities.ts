@@ -374,10 +374,6 @@ export const useCreateFacilityProfile = () => {
     ) => {
       const payload = {
         ...data,
-        keywords:
-          typeof data.keywords === "string"
-            ? data.keywords.split(",")
-            : data.keywords,
       };
 
       const facility = await adminRegisterFacilityWithProfile({

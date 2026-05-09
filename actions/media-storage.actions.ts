@@ -1,8 +1,7 @@
 "use server";
 
-import { auth } from "@/lib/auth";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase/indexAdmin";
-import { headers } from "next/headers";
 
 /**
  * Get presigned upload URL from Supabase Storage
@@ -11,18 +10,20 @@ import { headers } from "next/headers";
 export async function getPresignedUploadUrl(filePath: string) {
   try {
     // Verify user is authenticated
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
+    if (!user) {
       return {
         success: false,
         error: "Unauthorized: You must be logged in to upload files",
       };
     }
 
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
     // Create signed upload URL using admin client (bypasses RLS)
     const { data, error } = await supabaseAdmin.storage
@@ -65,11 +66,12 @@ export async function uploadToSignedUrl(
 ) {
   try {
     // Verify user is authenticated
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
+    if (!user) {
       return {
         success: false,
         error: "Unauthorized: You must be logged in to upload files",
@@ -98,18 +100,20 @@ export async function uploadToSignedUrl(
 export async function deleteFile(filePath: string) {
   try {
     // Verify user is authenticated
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user) {
+    if (!user) {
       return {
         success: false,
         error: "Unauthorized: You must be logged in to delete files",
       };
     }
 
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
     // Delete file using admin client (bypasses RLS)
     const { error } = await supabaseAdmin.storage
@@ -144,23 +148,24 @@ export async function deleteFile(filePath: string) {
 export async function deleteFiles(filePaths: string[]) {
   try {
     // Verify user is authenticated
-    // const session = await authClient.getSession({
-    //   fetchOptions: {
-    //     headers: await headers(),
-    //   },
-    // });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    // if (!session?.data?.user) {
-    //   return {
-    //     success: false,
-    //     error: "Unauthorized: You must be logged in to delete files",
-    //   };
-    // }
+    if (!user) {
+      return {
+        success: false,
+        error: "Unauthorized: You must be logged in to delete files",
+      };
+    }
+
     if (!filePaths || filePaths.length === 0) {
       return { success: true, message: "No files to delete." };
     }
 
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
     // Delete files using admin client
     const { error } = await supabaseAdmin.storage
@@ -195,20 +200,20 @@ export async function deleteFiles(filePaths: string[]) {
 export async function getSignedUrl(filePath: string, expiresIn = 3600) {
   try {
     // Verify user is authenticated
-    // const session = await authClient.getSession({
-    //   fetchOptions: {
-    //     headers: await headers(),
-    //   },
-    // });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    // if (!session?.data?.user) {
-    //   return {
-    //     success: false,
-    //     error: "Unauthorized: You must be logged in to access files",
-    //   };
-    // }
+    if (!user) {
+      return {
+        success: false,
+        error: "Unauthorized: You must be logged in to access files",
+      };
+    }
 
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
     const { data, error } = await supabaseAdmin.storage
       .from(bucketName)
@@ -241,20 +246,20 @@ export async function getSignedUrl(filePath: string, expiresIn = 3600) {
 export async function moveFile(filePath: string, newFolder: string) {
   try {
     // Verify user is authenticated
-    // const session = await authClient.getSession({
-    //   fetchOptions: {
-    //     headers: await headers(),
-    //   },
-    // });
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    // if (!session?.data?.user) {
-    //   return {
-    //     success: false,
-    //     error: "Unauthorized: You must be logged in to move files",
-    //   };
-    // }
+    if (!user) {
+      return {
+        success: false,
+        error: "Unauthorized: You must be logged in to move files",
+      };
+    }
 
-    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
+    const bucketName =
+      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
     const { data, error } = await supabaseAdmin.storage
       .from(bucketName)

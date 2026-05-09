@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import z from "zod";
 import { MultiSelect } from "@/components/MultiSelect";
-import { cn } from "@/lib/utils";
+import { cn, getPublicImageUrl } from "@/lib/utils";
 import ImageDropZone, { isMediaVideo } from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddFacilityDialog } from "@/stores/dialog-store";
@@ -235,6 +235,8 @@ const AddFacilityDialog = () => {
   }, [isOpen, isEditMode, data]);
 
   const selectedType = form.watch("facility_type") as keyof typeof FACILITY_REQUIREMENTS;
+  const mediaUrls = form.watch("media_urls");
+
   const availableAmenities = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.amenities || [], [selectedType]);
   const availableServices = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.services || [], [selectedType]);
 
@@ -249,16 +251,45 @@ const AddFacilityDialog = () => {
 
   const handleFilesChange = useCallback(
     (urls: string[]) => {
-      setTimeout(() => {
-        if (isEditMode) {
-          setNewlyUploadedFiles(urls);
-        } else {
-          form.setValue("media_urls", urls, { shouldValidate: true });
-        }
-      }, 0);
+      if (isEditMode) {
+        setNewlyUploadedFiles(urls);
+      } else {
+        form.setValue("media_urls", urls, { shouldValidate: true, shouldDirty: true });
+      }
     },
     [form, isEditMode],
   );
+
+  const gallery = useMemo(() => {
+    const createModeImages = (mediaUrls || []).map((path) => ({
+      path,
+      url: getPublicImageUrl(path),
+      isExisting: false,
+    }));
+
+    if (isEditMode) {
+      return [
+        ...newlyUploadedFiles.map((path) => ({
+          path,
+          url: getPublicImageUrl(path),
+          isExisting: false,
+        })),
+        ...existingImages.map((path) => ({
+          path,
+          url: getPublicImageUrl(path),
+          isExisting: true,
+        })),
+      ];
+    }
+
+    return createModeImages;
+  }, [isEditMode, mediaUrls, newlyUploadedFiles, existingImages]);
+
+  useEffect(() => {
+    if (gallery.length > 0 && !featuredImage) {
+      setFeaturedImage(gallery[0].path);
+    }
+  }, [gallery, featuredImage]);
 
   const handleDialogClose = () => {
     setStep(1);
@@ -370,8 +401,6 @@ const AddFacilityDialog = () => {
     }
   };
 
-  const getImageUrl = (img: string) =>
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${img}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
@@ -598,13 +627,7 @@ const AddFacilityDialog = () => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {(() => {
-                      const createModeImages = form.watch("media_urls").map((path) => ({ path, url: getImageUrl(path), isExisting: false }));
-                      const gallery = [
-                        ...newlyUploadedFiles.map((path) => ({ path, url: getImageUrl(path), isExisting: false })),
-                        ...existingImages.map((path) => ({ path, url: getImageUrl(path), isExisting: true })),
-                        ...(!isEditMode ? createModeImages : []),
-                      ];
-                      const hasNoImages = newlyUploadedFiles.length === 0 && existingImages.length === 0 && createModeImages.length === 0;
+                      const hasNoImages = gallery.length === 0;
 
                       if (hasNoImages) {
                         return (
@@ -646,7 +669,10 @@ const AddFacilityDialog = () => {
                                   } else {
                                     const updated = newlyUploadedFiles.filter((p) => p !== img.path);
                                     setNewlyUploadedFiles(updated);
-                                    if (!isEditMode) form.setValue("media_urls", updated);
+                                    if (!isEditMode) {
+                                      const updatedMediaUrls = (mediaUrls || []).filter((p) => p !== img.path);
+                                      form.setValue("media_urls", updatedMediaUrls);
+                                    }
                                   }
                                   if (isFeatured) setFeaturedImage(null);
                                 }}
@@ -672,7 +698,7 @@ const AddFacilityDialog = () => {
                   <ImageDropZone
                     text="Upload clear photos of your facility (front view, interior, signage, opposite)"
                     filePath={filePath}
-                    initialFiles={isEditMode ? newlyUploadedFiles : form.watch("media_urls")}
+                    initialFiles={isEditMode ? newlyUploadedFiles : mediaUrls}
                     onFilesChange={handleFilesChange}
                   />
                 </div>

@@ -9,6 +9,8 @@ import { Provider } from "react-redux";
 import store from "../store";
 import QueryProvider from "@/components/providers/QueryProvider";
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({ children }) {
   return (
     <>
@@ -17,6 +19,7 @@ export default function RootLayout({ children }) {
           <QueryProvider>
             <Provider store={store}>{children}</Provider>
           </QueryProvider>
+          <Toaster />
         </body>
       </html>
     </>
