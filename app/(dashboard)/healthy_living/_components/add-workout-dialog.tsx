@@ -18,6 +18,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,7 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dumbbell, Loader2, Star } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Dumbbell, Loader2, Star, Tag } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
 import { RichTextEditor } from "@/components/RichTextInput";
 import {
@@ -35,12 +37,16 @@ import {
   TWorkoutInput,
   BODY_PARTS,
   EQUIPMENT_TYPES,
+  DIFFICULTY_LEVELS,
+  WORKOUT_STATUS,
 } from "@/schemas/workout.schema";
 import { useAddWorkoutDialog } from "@/stores/dialog-store";
 import {
   useCreateWorkout,
   useUpdateWorkout,
 } from "@/hooks/supabase-calls/useWorkout";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 // ── Star Rating Component ────────────────────────────────────────────────────
 const StarRating = ({
@@ -92,6 +98,8 @@ const AddWorkoutDialog = () => {
   const { mutate: createWorkout, isPending: isCreating } = useCreateWorkout();
   const { mutate: updateWorkout, isPending: isUpdating } = useUpdateWorkout();
 
+  const [tagInput, setTagInput] = useState("");
+
   const isPending = isCreating || isUpdating;
 
   const defaultValues: TWorkoutInput = {
@@ -100,9 +108,15 @@ const AddWorkoutDialog = () => {
     secondary_body_part: null,
     equipment_type: "No Equipment",
     intensity: null,
+    difficulty_level: "beginner",
+    status: "published",
+    duration_minutes: 10,
+    calories_burned: 0,
     video_url: "",
     thumbnail_urls: [],
     how_to: "",
+    tags: [],
+    is_premium: false,
     is_active: true,
   };
 
@@ -117,6 +131,7 @@ const AddWorkoutDialog = () => {
         ...data,
         video_url: data.video_url ?? "",
         how_to: data.how_to ?? "",
+        tags: data.tags ?? [],
       });
     } else if (isOpen) {
       form.reset(defaultValues);
@@ -129,6 +144,20 @@ const AddWorkoutDialog = () => {
     } else {
       createWorkout(values, { onSuccess: close });
     }
+  };
+
+  const addTag = () => {
+    if (!tagInput.trim()) return;
+    const currentTags = form.getValues("tags") || [];
+    if (!currentTags.includes(tagInput.trim())) {
+      form.setValue("tags", [...currentTags, tagInput.trim()]);
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    const currentTags = form.getValues("tags") || [];
+    form.setValue("tags", currentTags.filter(t => t !== tagToRemove));
   };
 
   return (
@@ -147,23 +176,50 @@ const AddWorkoutDialog = () => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="p-6 space-y-6"
             >
-              {/* Exercise Name */}
-              <FormField
-                control={form.control}
-                name="exercise_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Exercise Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. Barbell Curl"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Exercise Name & Status */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="exercise_name"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Exercise Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. Barbell Curl"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {WORKOUT_STATUS.map((s) => (
+                            <SelectItem key={s} value={s} className="capitalize">
+                              {s}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* Body Parts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -181,7 +237,7 @@ const AddWorkoutDialog = () => {
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full min-w-[240px]">
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select primary body part" />
                           </SelectTrigger>
                         </FormControl>
@@ -211,7 +267,7 @@ const AddWorkoutDialog = () => {
                         value={field.value ?? "none"}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full min-w-[240px]">
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select secondary body part" />
                           </SelectTrigger>
                         </FormControl>
@@ -230,7 +286,7 @@ const AddWorkoutDialog = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="equipment_type"
@@ -241,7 +297,7 @@ const AddWorkoutDialog = () => {
                       </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="w-full min-w-[240px]">
+                          <SelectTrigger>
                             <SelectValue placeholder="Select equipment" />
                           </SelectTrigger>
                         </FormControl>
@@ -249,6 +305,31 @@ const AddWorkoutDialog = () => {
                           {EQUIPMENT_TYPES.map((eq) => (
                             <SelectItem key={eq} value={eq}>
                               {eq}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="difficulty_level"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Difficulty</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {DIFFICULTY_LEVELS.map((level) => (
+                            <SelectItem key={level} value={level} className="capitalize">
+                              {level}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -274,6 +355,79 @@ const AddWorkoutDialog = () => {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="duration_minutes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duration (mins)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="calories_burned"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Est. Calories</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_premium"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-6">
+                      <div className="space-y-0.5">
+                        <FormLabel>Premium</FormLabel>
+                        <FormDescription>Gated for pro users</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Tags */}
+              <div className="space-y-3">
+                <FormLabel>Tags</FormLabel>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Add tags..." 
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  />
+                  <Button type="button" variant="outline" onClick={addTag}>Add</Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {form.watch("tags")?.map(tag => (
+                    <Badge key={tag} variant="secondary" className="gap-1 pl-2.5">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
               {/* Video Upload */}
@@ -337,7 +491,7 @@ const AddWorkoutDialog = () => {
                   {isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isEditMode ? "Save & Continue" : "Save & Continue"}
+                  {isEditMode ? "Update Workout" : "Create Workout"}
                 </Button>
               </DialogFooter>
             </form>

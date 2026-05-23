@@ -1,13 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Star, Pencil, Trash2, ShieldCheck, Clock, Zap } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck, Clock, ListChecks, Target, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TWorkoutOutput } from "@/schemas/workout.schema";
+import { TWorkoutPlanOutput } from "@/schemas/workout-plan.schema";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface WorkoutColumnsProps {
-  onEdit: (row: TWorkoutOutput) => void;
+interface WorkoutPlanColumnsProps {
+  onEdit: (row: TWorkoutPlanOutput) => void;
   onDelete: (id: string) => void;
 }
 
@@ -24,35 +24,32 @@ const difficultyColor: Record<string, string> = {
   expert: "bg-rose-50 text-rose-700 border-rose-100",
 };
 
-export const createWorkoutColumns = ({
+export const createWorkoutPlanColumns = ({
   onEdit,
   onDelete,
-}: WorkoutColumnsProps): ColumnDef<TWorkoutOutput>[] => [
+}: WorkoutPlanColumnsProps): ColumnDef<TWorkoutPlanOutput>[] => [
   {
-    accessorKey: "exercise_name",
-    header: () => <div className="font-semibold">Exercise Name</div>,
+    accessorKey: "title",
+    header: () => <div className="font-semibold">Plan Details</div>,
     cell: ({ row }) => (
       <div className="flex flex-col min-w-48">
         <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900">{row.original.exercise_name}</span>
-            {row.original.is_premium && (
-                <Badge className="bg-amber-500 hover:bg-amber-600 border-none px-1.5 h-4 text-[9px] uppercase font-black text-white gap-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5" /> PRO
+            <span className="font-bold text-slate-900">{row.original.title}</span>
+            {row.original.is_featured && (
+                <Badge className="bg-indigo-500 hover:bg-indigo-600 border-none px-1.5 h-4 text-[9px] uppercase font-black text-white gap-0.5">
+                    <Star className="w-2.5 h-2.5 fill-current" /> FEATURED
                 </Badge>
             )}
         </div>
-        <div className="flex items-center gap-2 mt-1">
-             <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                {row.original.primary_body_part}
-            </span>
-            {row.original.secondary_body_part && (
-                <>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-[10px] text-slate-400 uppercase font-medium">
-                        {row.original.secondary_body_part}
-                    </span>
-                </>
-            )}
+        <div className="flex flex-wrap gap-1 mt-1">
+             {row.original.target_body_parts?.slice(0, 2).map(part => (
+                 <span key={part} className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                    {part}
+                </span>
+             ))}
+             {row.original.target_body_parts?.length > 2 && (
+                 <span className="text-[10px] text-slate-400 font-bold">+{row.original.target_body_parts.length - 2}</span>
+             )}
         </div>
       </div>
     ),
@@ -69,6 +66,22 @@ export const createWorkoutColumns = ({
     ),
   },
   {
+    accessorKey: "structure",
+    header: () => <div className="font-semibold">Structure</div>,
+    cell: ({ row }) => (
+      <div className="space-y-1 min-w-32">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            {row.original.duration_weeks} weeks
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <ListChecks className="w-3.5 h-3.5 text-slate-400" />
+            {row.original.workouts_per_week} workouts / week
+        </div>
+      </div>
+    ),
+  },
+  {
     accessorKey: "difficulty_level",
     header: () => <div className="font-semibold text-center">Level</div>,
     cell: ({ row }) => (
@@ -80,43 +93,17 @@ export const createWorkoutColumns = ({
     ),
   },
   {
-    accessorKey: "metrics",
-    header: () => <div className="font-semibold">Metrics</div>,
+    accessorKey: "stats",
+    header: () => <div className="font-semibold text-center">Popularity</div>,
     cell: ({ row }) => (
-      <div className="space-y-1 min-w-32">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            {row.original.duration_minutes} mins
+        <div className="text-center space-y-1">
+            <div className="text-xs font-bold text-slate-900">{row.original.total_completions} completions</div>
+            <div className="flex items-center justify-center gap-1 text-[10px] text-slate-400">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                {row.original.average_rating.toFixed(1)} ({row.original.rating_count})
+            </div>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            {row.original.calories_burned} kcal
-        </div>
-      </div>
     ),
-  },
-  {
-    accessorKey: "intensity",
-    header: () => (
-      <div className="font-semibold hidden sm:table-cell">Intensity</div>
-    ),
-    cell: ({ row }) => {
-      const level = row.original.intensity ?? 0;
-      return (
-        <div className="hidden sm:flex items-center gap-0.5 min-w-24">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`h-3.5 w-3.5 ${
-                i < level
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-gray-200 fill-gray-200"
-              }`}
-            />
-          ))}
-        </div>
-      );
-    },
   },
   {
     id: "actions",

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { TWorkoutInput, TWorkoutOutput } from "@/schemas/workout.schema";
 
@@ -29,7 +29,6 @@ export const useWorkouts = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
       let query = supabase
         .from("workouts")
         .select("*", { count: "exact" })
@@ -61,7 +60,6 @@ export const useWorkout = (id: string | null) => {
   return useQuery({
     queryKey: WORKOUT_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
         .from("workouts")
         .select("*")
@@ -82,7 +80,6 @@ export const useCreateWorkout = () => {
     mutationFn: async (data: TWorkoutInput) => {
       const payload = { ...data };
       delete payload.id;
-      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("workouts")
         .insert(payload)
@@ -107,7 +104,6 @@ export const useUpdateWorkout = () => {
     mutationFn: async ({ id, data }: { id: string; data: TWorkoutInput }) => {
       const payload = { ...data };
       delete payload.id;
-      const supabase = await getSupabaseClient();
       const { data: result, error } = await supabase
         .from("workouts")
         .update(payload)
@@ -131,7 +127,6 @@ export const useDeleteWorkout = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const supabase = await getSupabaseClient();
       const { error } = await supabase.from("workouts").delete().eq("id", id);
       if (error) throw new Error(error.message);
       return id;

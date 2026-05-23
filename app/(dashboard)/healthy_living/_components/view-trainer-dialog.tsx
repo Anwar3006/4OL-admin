@@ -14,10 +14,11 @@ import { useTrainer } from '@/hooks/supabase-calls/useTrainer';
 import { Phone, Mail, MessageSquare, Award, CheckCircle, User, Activity } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+
 const ViewTrainerDialog = () => {
   const { isOpen, close, entityId } = useViewTrainerDialog();
   const { open: openAdd } = useAddTrainerDialog();
-  const { data, isLoading } = useTrainer(entityId!);
+  const { data, isLoading } = useTrainer(entityId!) ;
 
   const statusColors = {
     active: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -37,17 +38,17 @@ const ViewTrainerDialog = () => {
             <SheetHeader className="space-y-4">
               <div className="flex items-start justify-between">
                 <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-                  <AvatarImage src={data.image_url || ''} className="object-cover" />
+                  <AvatarImage src={(data as any).image_url || ''} className="object-cover" />
                   <AvatarFallback className="bg-slate-100 text-2xl font-bold text-slate-400">
                     <User className="h-10 w-10" />
                   </AvatarFallback>
                 </Avatar>
-                <Badge className={`${statusColors[data.status as keyof typeof statusColors]} capitalize px-3 py-1`}>
+                <Badge className={`${statusColors[(data as any).status as keyof typeof statusColors]} capitalize px-3 py-1`}>
                   {data.status}
                 </Badge>
               </div>
               <SheetTitle className='text-3xl font-extrabold text-slate-900 leading-tight'>
-                {data.name}
+                {(data as any).name}
               </SheetTitle>
             </SheetHeader>
 
@@ -58,7 +59,7 @@ const ViewTrainerDialog = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phone</span>
-                  <span className="text-sm font-semibold text-slate-700">{data.phone}</span>
+                  <span className="text-sm font-semibold text-slate-700">{(data as any).phone}</span>
                 </div>
               </div>
 
@@ -68,18 +69,18 @@ const ViewTrainerDialog = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email</span>
-                  <span className="text-sm font-semibold text-slate-700 truncate max-w-[150px]">{data.email}</span>
+                  <span className="text-sm font-semibold text-slate-700 truncate max-w-[150px]">{(data as any).email}</span>
                 </div>
               </div>
 
-              {data.whatsapp && (
+              {(data as any).whatsapp && (
                 <div className='flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-colors hover:bg-slate-100'>
                   <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
                     <MessageSquare className='h-5 w-5 text-emerald-500' />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WhatsApp</span>
-                    <span className="text-sm font-semibold text-slate-700">{data.whatsapp}</span>
+                    <span className="text-sm font-semibold text-slate-700">{(data as any).whatsapp}</span>
                   </div>
                 </div>
               )}
@@ -90,7 +91,7 @@ const ViewTrainerDialog = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Specialization</span>
-                  <span className="text-sm font-semibold text-slate-700">{data.specialization}</span>
+                  <span className="text-sm font-semibold text-slate-700">{(data as any).specialization}</span>
                 </div>
               </div>
             </div>
@@ -101,7 +102,7 @@ const ViewTrainerDialog = () => {
                 Offered Services
               </h4>
               <div className='flex flex-wrap gap-2'>
-                {data.services.map((s, i) => (
+                {(data as any).services.map((s: string, i: number) => (
                   <Badge key={i} variant='secondary' className="bg-white border text-xs font-medium px-3 py-1">
                     {s}
                   </Badge>

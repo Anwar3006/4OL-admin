@@ -1,23 +1,41 @@
 import z from "zod";
 
+export const TRAINER_STATUS = ["pending", "active", "suspended", "rejected"] as const;
+
 export const trainerSchema = z.object({
   id: z.string().uuid().optional(),
-  name: z.string().min(3, "Please enter a name"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  whatsapp: z.string().optional().nullable(),
-  email: z.string().email("Please enter a valid email"),
-  specialization: z.string().min(3, "Please enter specialization"),
-  services: z.array(z.string()).min(1, "Please select at least one service"),
-  image_url: z.string().optional().nullable(),
-  status: z.enum(["active", "pending", "inactive"]).default("pending"),
+  user_id: z.string().uuid("Please select a user"),
+  bio: z.string().min(10, "Bio must be at least 10 characters").optional().nullable(),
+  certifications: z.array(z.string()).default([]),
+  specialties: z.array(z.string()).default([]),
+  years_experience: z.number().int().min(0).default(0),
+  is_verified: z.boolean().default(false),
+  status: z.enum(TRAINER_STATUS).default("pending"),
+  profile_video_url: z.string().url().optional().nullable(),
+  social_links: z.record(z.string(), z.string()).default({}),
+  availability_schedule: z.any().default({}),
 });
 
 export type TTrainerInput = z.infer<typeof trainerSchema>;
 
 export const trainerSchemaOutput = trainerSchema.extend({
   id: z.string(),
+  rating_average: z.number().default(0),
+  rating_count: z.number().int().default(0),
+  total_sessions: z.number().int().default(0),
+  total_clients: z.number().int().default(0),
+  verified_by: z.string().uuid().optional().nullable(),
+  verified_at: z.string().or(z.date()).optional().nullable(),
   created_at: z.string().or(z.date()),
-  last_activity: z.string().or(z.date()).optional().nullable(),
+  updated_at: z.string().or(z.date()),
+  
+  // Joined fields
+  user_profiles: z.object({
+    first_name: z.string(),
+    last_name: z.string(),
+    email: z.string(),
+    avatar_url: z.string().optional().nullable(),
+  }).optional(),
 });
 
 export type TTrainerOutput = z.infer<typeof trainerSchemaOutput>;

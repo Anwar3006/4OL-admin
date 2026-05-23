@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { TTrainerInput, TTrainerOutput } from "@/schemas/trainer.schema";
 
 export const TRAINER_QUERY_KEYS = {
-  all: ["trainers"] as const,
+  all: ["fitness_trainers"] as const,
   lists: () => [...TRAINER_QUERY_KEYS.all, "list"] as const,
-  list: (page: number, limit: number, search?: string) =>
-    [...TRAINER_QUERY_KEYS.lists(), { page, limit, search }] as const,
+  list: (params: { page: number; limit: number; search?: string }) =>
+    [...TRAINER_QUERY_KEYS.lists(), { ...params }] as const,
   details: () => [...TRAINER_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...TRAINER_QUERY_KEYS.details(), id] as const,
 };
@@ -22,28 +22,30 @@ export const useTrainers = ({
   search?: string;
 }) => {
   return useQuery({
-    queryKey: TRAINER_QUERY_KEYS.list(page, limit, search),
+    queryKey: TRAINER_QUERY_KEYS.list({ page, limit, search }),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
-      const supabase = await getSupabaseClient();
-      let query = supabase.from("trainers").select("*", { count: "exact" });
+
+      let query = supabase
+        .from("fitness_trainers")
+        .select("*, user_profiles(first_name, last_name, email, avatar_url)", { count: "exact" })
+        .order("created_at", { ascending: false });
 
       if (search) {
-        query = query.or(
-          `first_name.ilike.%${search}%,last_name.ilike.%${search}%,specialization.ilike.%${search}%`,
-        );
+        // Search by user profile fields via join
+        query = query.or(`user_profiles.first_name.ilike.%${search}%,user_profiles.last_name.ilike.%${search}%`);
       }
 
-      const { data, count, error } = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
+      const { data, count, error } = await query.range(from, to);
       if (error) throw new Error(error.message);
+
+      const total = count ?? 0;
       return {
-        trainers: data as TTrainerOutput[],
+        trainers: (data || []) as TTrainerOutput[],
         meta: {
-          totalPages: Math.ceil((count || 0) / limit),
-          total: count || 0,
+          total,
+          totalPages: Math.ceil(total / limit),
           currentPage: page,
         },
       };
@@ -55,10 +57,9 @@ export const useTrainer = (id: string | null) => {
   return useQuery({
     queryKey: TRAINER_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
       const { data, error } = await supabase
-        .from("trainers")
-        .select("*")
+        .from("fitness_trainers")
+        .select("*, user_profiles(first_name, last_name, email, avatar_url)")
         .eq("id", id!)
         .single();
       if (error) throw new Error(error.message);
@@ -72,10 +73,11 @@ export const useCreateTrainer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: TTrainerInput) => {
-      const supabase = await getSupabaseClient();
+      const payload = { ...data };
+      delete payload.id;
       const { data: result, error } = await supabase
-        .from("trainers")
-        .insert(data)
+        .from("fitness_trainers")
+        .insert(payload)
         .select()
         .single();
       if (error) throw new Error(error.message);
@@ -83,18 +85,20 @@ export const useCreateTrainer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
-      toast.success("Trainer added successfully!");
+      toast.success("Trainer profile created!");
     },
   });
 };
+
 export const useUpdateTrainer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TTrainerInput }) => {
-      const supabase = await getSupabaseClient();
+      const payload = { ...data };
+      delete payload.id;
       const { data: result, error } = await supabase
-        .from("trainers")
-        .update(data)
+        .from("fitness_trainers")
+        .update(payload)
         .eq("id", id)
         .select()
         .single();
@@ -103,7 +107,7 @@ export const useUpdateTrainer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
-      toast.success("Trainer updated successfully!");
+      toast.success("Trainer profile updated!");
     },
   });
 };
@@ -112,14 +116,12 @@ export const useDeleteTrainer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const supabase = await getSupabaseClient();
-      const { error } = await supabase.from("trainers").delete().eq("id", id);
+      const { error } = await supabase.from("fitness_trainers").delete().eq("id", id);
       if (error) throw new Error(error.message);
-      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
-      toast.success("Trainer deleted successfully!");
+      toast.success("Trainer profile deleted!");
     },
   });
 };
