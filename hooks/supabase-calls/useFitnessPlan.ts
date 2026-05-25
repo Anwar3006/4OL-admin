@@ -1,18 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { TWorkoutPlanInput, TWorkoutPlanOutput } from "@/schemas/workout-plan.schema";
+import { TFitnessPlanInput, TFitnessPlanOutput } from "@/schemas/fitness-plan.schema";
 
-export const WORKOUT_PLAN_QUERY_KEYS = {
-  all: ["workout_plans"] as const,
-  lists: () => [...WORKOUT_PLAN_QUERY_KEYS.all, "list"] as const,
+export const FITNESS_PLAN_QUERY_KEYS = {
+  all: ["fitness_plans"] as const,
+  lists: () => [...FITNESS_PLAN_QUERY_KEYS.all, "list"] as const,
   list: (params: { page: number; limit: number; search?: string }) =>
-    [...WORKOUT_PLAN_QUERY_KEYS.lists(), { ...params }] as const,
-  details: () => [...WORKOUT_PLAN_QUERY_KEYS.all, "detail"] as const,
-  detail: (id: string) => [...WORKOUT_PLAN_QUERY_KEYS.details(), id] as const,
+    [...FITNESS_PLAN_QUERY_KEYS.lists(), { ...params }] as const,
+  details: () => [...FITNESS_PLAN_QUERY_KEYS.all, "detail"] as const,
+  detail: (id: string) => [...FITNESS_PLAN_QUERY_KEYS.details(), id] as const,
 };
 
-export const useWorkoutPlans = ({
+export const useFitnessPlans = ({
   page,
   limit,
   search,
@@ -22,13 +22,13 @@ export const useWorkoutPlans = ({
   search?: string;
 }) => {
   return useQuery({
-    queryKey: WORKOUT_PLAN_QUERY_KEYS.list({ page, limit, search }),
+    queryKey: FITNESS_PLAN_QUERY_KEYS.list({ page, limit, search }),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
       let query = supabase
-        .from("workout_plans")
+        .from("fitness_plans")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
@@ -41,7 +41,7 @@ export const useWorkoutPlans = ({
 
       const total = count ?? 0;
       return {
-        plans: (data || []) as TWorkoutPlanOutput[],
+        plans: (data || []) as TFitnessPlanOutput[],
         meta: {
           total,
           totalPages: Math.ceil(total / limit),
@@ -52,14 +52,14 @@ export const useWorkoutPlans = ({
   });
 };
 
-export const useCreateWorkoutPlan = () => {
+export const useCreateFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: TWorkoutPlanInput) => {
+    mutationFn: async (data: TFitnessPlanInput) => {
       const payload = { ...data };
       delete payload.id;
       const { data: result, error } = await supabase
-        .from("workout_plans")
+        .from("fitness_plans")
         .insert(payload)
         .select()
         .single();
@@ -67,20 +67,20 @@ export const useCreateWorkoutPlan = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_PLAN_QUERY_KEYS.all });
-      toast.success("Workout plan created!");
+      queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
+      toast.success("Fitness plan created!");
     },
   });
 };
 
-export const useUpdateWorkoutPlan = () => {
+export const useUpdateFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TWorkoutPlanInput }) => {
+    mutationFn: async ({ id, data }: { id: string; data: TFitnessPlanInput }) => {
       const payload = { ...data };
       delete payload.id;
       const { data: result, error } = await supabase
-        .from("workout_plans")
+        .from("fitness_plans")
         .update(payload)
         .eq("id", id)
         .select()
@@ -89,22 +89,22 @@ export const useUpdateWorkoutPlan = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_PLAN_QUERY_KEYS.all });
-      toast.success("Workout plan updated!");
+      queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
+      toast.success("Fitness plan updated!");
     },
   });
 };
 
-export const useDeleteWorkoutPlan = () => {
+export const useDeleteFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("workout_plans").delete().eq("id", id);
+      const { error } = await supabase.from("fitness_plans").delete().eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_PLAN_QUERY_KEYS.all });
-      toast.success("Workout plan deleted!");
+      queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
+      toast.success("Fitness plan deleted!");
     },
   });
 };

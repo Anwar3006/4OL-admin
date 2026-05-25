@@ -87,32 +87,7 @@ export const menuItems = [
     title: "Fitness",
     isHide: false,
     icon: "mdi:dumbbell",
-    child: [
-      {
-        childtitle: "Workouts",
-        childlink: "fitness/workouts",
-      },
-      {
-        childtitle: "Plans",
-        childlink: "fitness/plans",
-      },
-      {
-        childtitle: "Challenges",
-        childlink: "fitness/challenges",
-      },
-      {
-        childtitle: "Users",
-        childlink: "fitness/users",
-      },
-      {
-        childtitle: "Schedule",
-        childlink: "fitness/schedule",
-      },
-      {
-        childtitle: "Trainers",
-        childlink: "fitness/trainers",
-      },
-    ],
+    link: "fitness",
   },
   {
     title: "Referrals",

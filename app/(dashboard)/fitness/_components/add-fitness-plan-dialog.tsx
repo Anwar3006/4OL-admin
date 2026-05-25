@@ -32,30 +32,30 @@ import { Switch } from "@/components/ui/switch";
 import { ClipboardList, Loader2, Star, Target, Layers } from "lucide-react";
 import { MultiSelect } from "@/components/MultiSelect";
 import {
-  workoutPlanSchema,
-  TWorkoutPlanInput,
-} from "@/schemas/workout-plan.schema";
-import { BODY_PARTS } from "@/schemas/workout.schema";
-import { useAddWorkoutPlanDialog } from "@/stores/dialog-store";
+  fitnessPlanSchema,
+  TFitnessPlanInput,
+} from "@/schemas/fitness-plan.schema";
+import { BODY_PARTS } from "@/schemas/exercise.schema";
+import { useAddFitnessPlanDialog } from "@/stores/dialog-store";
 import {
-  useCreateWorkoutPlan,
-  useUpdateWorkoutPlan,
-} from "@/hooks/supabase-calls/useWorkoutPlan";
+  useCreateFitnessPlan,
+  useUpdateFitnessPlan,
+} from "@/hooks/supabase-calls/useFitnessPlan";
 import { Textarea } from "@/components/ui/textarea";
 
-const AddWorkoutPlanDialog = () => {
-  const { isOpen, close, data, isEditMode } = useAddWorkoutPlanDialog();
-  const { mutate: createPlan, isPending: isCreating } = useCreateWorkoutPlan();
-  const { mutate: updatePlan, isPending: isUpdating } = useUpdateWorkoutPlan();
+const AddFitnessPlanDialog = () => {
+  const { isOpen, close, data, isEditMode } = useAddFitnessPlanDialog();
+  const { mutate: createPlan, isPending: isCreating } = useCreateFitnessPlan();
+  const { mutate: updatePlan, isPending: isUpdating } = useUpdateFitnessPlan();
 
   const isPending = isCreating || isUpdating;
 
-  const defaultValues: TWorkoutPlanInput = {
+  const defaultValues: TFitnessPlanInput = {
     title: "",
     description: "",
     difficulty_level: "beginner",
     duration_weeks: 4,
-    workouts_per_week: 3,
+    exercises_per_week: 3,
     target_body_parts: [],
     goals: [],
     is_premium: false,
@@ -65,8 +65,8 @@ const AddWorkoutPlanDialog = () => {
     tags: [],
   };
 
-  const form = useForm<TWorkoutPlanInput>({
-    resolver: zodResolver(workoutPlanSchema),
+  const form = useForm<TFitnessPlanInput>({
+    resolver: zodResolver(fitnessPlanSchema),
     defaultValues,
   });
 
@@ -78,7 +78,7 @@ const AddWorkoutPlanDialog = () => {
     }
   }, [isOpen, isEditMode, data]);
 
-  const onSubmit = (values: TWorkoutPlanInput) => {
+  const onSubmit = (values: TFitnessPlanInput) => {
     if (isEditMode && data?.id) {
       updatePlan({ id: data.id, data: values }, { onSuccess: close });
     } else {
@@ -102,7 +102,7 @@ const AddWorkoutPlanDialog = () => {
           <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <ClipboardList className="h-6 w-6 text-primary" />
-              {isEditMode ? "Edit Workout Plan" : "Create Workout Plan"}
+              {isEditMode ? "Edit Fitness Plan" : "Create Fitness Plan"}
             </DialogTitle>
           </DialogHeader>
 
@@ -188,10 +188,10 @@ const AddWorkoutPlanDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="workouts_per_week"
+                  name="exercises_per_week"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Workouts / Week</FormLabel>
+                      <FormLabel>Exercises / Week</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
                       </FormControl>
@@ -332,4 +332,4 @@ const AddWorkoutPlanDialog = () => {
   );
 };
 
-export default AddWorkoutPlanDialog;
+export default AddFitnessPlanDialog;

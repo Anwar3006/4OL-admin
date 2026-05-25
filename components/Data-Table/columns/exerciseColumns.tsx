@@ -2,12 +2,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Star, Pencil, Trash2, ShieldCheck, Clock, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TWorkoutOutput } from "@/schemas/workout.schema";
+import { TExerciseOutput } from "@/schemas/exercise.schema";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface WorkoutColumnsProps {
-  onEdit: (row: TWorkoutOutput) => void;
+interface ExerciseColumnsProps {
+  onEdit: (row: TExerciseOutput) => void;
   onDelete: (id: string) => void;
 }
 
@@ -24,10 +24,10 @@ const difficultyColor: Record<string, string> = {
   expert: "bg-rose-50 text-rose-700 border-rose-100",
 };
 
-export const createWorkoutColumns = ({
+export const createExerciseColumns = ({
   onEdit,
   onDelete,
-}: WorkoutColumnsProps): ColumnDef<TWorkoutOutput>[] => [
+}: ExerciseColumnsProps): ColumnDef<TExerciseOutput>[] => [
   {
     accessorKey: "exercise_name",
     header: () => <div className="font-semibold">Exercise Name</div>,

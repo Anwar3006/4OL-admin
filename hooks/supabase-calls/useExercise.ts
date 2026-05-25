@@ -1,20 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { TWorkoutInput, TWorkoutOutput } from "@/schemas/workout.schema";
+import { TExerciseInput, TExerciseOutput } from "@/schemas/exercise.schema";
 
-export const WORKOUT_QUERY_KEYS = {
-  all: ["workouts"] as const,
-  lists: () => [...WORKOUT_QUERY_KEYS.all, "list"] as const,
+export const EXERCISE_QUERY_KEYS = {
+  all: ["fitness_exercises"] as const,
+  lists: () => [...EXERCISE_QUERY_KEYS.all, "list"] as const,
   list: (params: { page: number; limit: number; search?: string }) =>
-    [...WORKOUT_QUERY_KEYS.lists(), { ...params }] as const,
-  details: () => [...WORKOUT_QUERY_KEYS.all, "detail"] as const,
-  detail: (id: string) => [...WORKOUT_QUERY_KEYS.details(), id] as const,
+    [...EXERCISE_QUERY_KEYS.lists(), { ...params }] as const,
+  details: () => [...EXERCISE_QUERY_KEYS.all, "detail"] as const,
+  detail: (id: string) => [...EXERCISE_QUERY_KEYS.details(), id] as const,
 };
 
 // ============= QUERY HOOKS =============
 
-export const useWorkouts = ({
+export const useExercises = ({
   page,
   limit,
   search,
@@ -24,13 +24,13 @@ export const useWorkouts = ({
   search?: string;
 }) => {
   return useQuery({
-    queryKey: WORKOUT_QUERY_KEYS.list({ page, limit, search }),
+    queryKey: EXERCISE_QUERY_KEYS.list({ page, limit, search }),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
       let query = supabase
-        .from("workouts")
+        .from("fitness_exercises")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
@@ -44,7 +44,7 @@ export const useWorkouts = ({
 
       const total = count ?? 0;
       return {
-        workouts: (data || []) as TWorkoutOutput[],
+        exercises: (data || []) as TExerciseOutput[],
         meta: {
           total,
           totalPages: Math.ceil(total / limit),
@@ -56,17 +56,17 @@ export const useWorkouts = ({
   });
 };
 
-export const useWorkout = (id: string | null) => {
+export const useExercise = (id: string | null) => {
   return useQuery({
-    queryKey: WORKOUT_QUERY_KEYS.detail(id!),
+    queryKey: EXERCISE_QUERY_KEYS.detail(id!),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("workouts")
+        .from("fitness_exercises")
         .select("*")
         .eq("id", id!)
         .single();
       if (error) throw new Error(error.message);
-      return data as TWorkoutOutput;
+      return data as TExerciseOutput;
     },
     enabled: !!id,
   });
@@ -74,69 +74,69 @@ export const useWorkout = (id: string | null) => {
 
 // ============= MUTATION HOOKS =============
 
-export const useCreateWorkout = () => {
+export const useCreateExercise = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: TWorkoutInput) => {
+    mutationFn: async (data: TExerciseInput) => {
       const payload = { ...data };
       delete payload.id;
       const { data: result, error } = await supabase
-        .from("workouts")
+        .from("fitness_exercises")
         .insert(payload)
         .select()
         .single();
       if (error) throw new Error(error.message);
-      return result as TWorkoutOutput;
+      return result as TExerciseOutput;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_QUERY_KEYS.all });
-      toast.success("Workout created successfully!");
+      queryClient.invalidateQueries({ queryKey: EXERCISE_QUERY_KEYS.all });
+      toast.success("Exercise created successfully!");
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create workout: ${error.message}`);
+      toast.error(`Failed to create exercise: ${error.message}`);
     },
   });
 };
 
-export const useUpdateWorkout = () => {
+export const useUpdateExercise = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TWorkoutInput }) => {
+    mutationFn: async ({ id, data }: { id: string; data: TExerciseInput }) => {
       const payload = { ...data };
       delete payload.id;
       const { data: result, error } = await supabase
-        .from("workouts")
+        .from("fitness_exercises")
         .update(payload)
         .eq("id", id)
         .select()
         .single();
       if (error) throw new Error(error.message);
-      return result as TWorkoutOutput;
+      return result as TExerciseOutput;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_QUERY_KEYS.all });
-      toast.success("Workout updated successfully!");
+      queryClient.invalidateQueries({ queryKey: EXERCISE_QUERY_KEYS.all });
+      toast.success("Exercise updated successfully!");
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update workout: ${error.message}`);
+      toast.error(`Failed to update exercise: ${error.message}`);
     },
   });
 };
 
-export const useDeleteWorkout = () => {
+export const useDeleteExercise = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("workouts").delete().eq("id", id);
+      const { error } = await supabase.from("fitness_exercises").delete().eq("id", id);
       if (error) throw new Error(error.message);
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: WORKOUT_QUERY_KEYS.all });
-      toast.success("Workout deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: EXERCISE_QUERY_KEYS.all });
+      toast.success("Exercise deleted successfully!");
     },
     onError: (error: Error) => {
-      toast.error(`Failed to delete workout: ${error.message}`);
+      toast.error(`Failed to delete exercise: ${error.message}`);
     },
   });
 };

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { FitnessWorkoutPlan } from "@/types/fitness";
+// import { FitnessWorkoutPlan } from "@/types/fitness";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-const workoutSchema = {
-  description: "Personalized fitness workout plan",
+const fitnessPlanSchema = {
+  description: "Personalized fitness plan",
   type: SchemaType.OBJECT,
   properties: {
     title: { type: SchemaType.STRING },
@@ -120,14 +120,14 @@ export async function POST(req: NextRequest) {
     });
 
   // Cache check
-  const { data: cachedWorkout } = await admin
+  const { data: cachedPlan } = await admin
     .from("fitness_generated_workouts")
     .select("workout_plan")
     .eq("selection_hash", selection_hash)
     .maybeSingle();
 
-  if (cachedWorkout?.workout_plan) {
-    return NextResponse.json({ workout_plan: cachedWorkout.workout_plan, selection_hash, cached: true });
+  if (cachedPlan?.workout_plan) {
+    return NextResponse.json({ workout_plan: cachedPlan.workout_plan, selection_hash, cached: true });
   }
 
   // Gemini generation
@@ -143,37 +143,37 @@ export async function POST(req: NextRequest) {
   const uniqueBodyParts = [...new Set(allowedBodyParts)];
   const uniqueEquipment = [...new Set(allowedEquipment)];
 
-  let workoutQuery = admin
-    .from("workouts")
+  let exerciseQuery = admin
+    .from("fitness_exercises")
     .select("id, exercise_name, primary_body_part, secondary_body_part, equipment_type, video_url, thumbnail_urls, how_to")
     .eq("is_active", true);
 
-  if (uniqueEquipment.length > 0) workoutQuery = workoutQuery.in("equipment_type", uniqueEquipment as string[]);
+  if (uniqueEquipment.length > 0) exerciseQuery = exerciseQuery.in("equipment_type", uniqueEquipment as string[]);
   if (uniqueBodyParts.length > 0 && !selections.focus_areas?.includes("fullBody")) {
-    workoutQuery = workoutQuery.or(`primary_body_part.in.(${uniqueBodyParts.join(",")}),secondary_body_part.in.(${uniqueBodyParts.join(",")})`);
+    exerciseQuery = exerciseQuery.or(`primary_body_part.in.(${uniqueBodyParts.join(",")}),secondary_body_part.in.(${uniqueBodyParts.join(",")})`);
   }
 
-  const { data: dbWorkouts, error: dbError } = await workoutQuery;
+  const { data: dbExercises, error: dbError } = await exerciseQuery;
   if (dbError) console.error("[fitness-generate] DB fetch error:", dbError.message);
 
-  if (!dbWorkouts || dbWorkouts.length === 0) {
-    return NextResponse.json({ workout_plan: null, message: "No workouts match your preferences. Try adjusting your focus areas or equipment." });
+  if (!dbExercises || dbExercises.length === 0) {
+    return NextResponse.json({ workout_plan: null, message: "No exercises match your preferences. Try adjusting your focus areas or equipment." });
   }
 
-  const availableWorkoutsContext = dbWorkouts.map(w => ({
-    id: w.id,
-    name: w.exercise_name,
-    muscles_targeted: [w.primary_body_part, w.secondary_body_part].filter(Boolean),
-    equipment: w.equipment_type,
-    video_url: w.video_url,
-    thumbnail_urls: w.thumbnail_urls,
-    how_to: w.how_to,
+  const availableExercisesContext = dbExercises.map(e => ({
+    id: e.id,
+    name: e.exercise_name,
+    muscles_targeted: [e.primary_body_part, e.secondary_body_part].filter(Boolean),
+    equipment: e.equipment_type,
+    video_url: e.video_url,
+    thumbnail_urls: e.thumbnail_urls,
+    how_to: e.how_to,
   }));
 
   const genAI = new GoogleGenerativeAI(geminiApiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
-    generationConfig: { responseMimeType: "application/json", responseSchema: workoutSchema as any },
+    generationConfig: { responseMimeType: "application/json", responseSchema: fitnessPlanSchema as any },
   });
 
   const fullProfile = { ...selections, gender: userGender || selections.gender, age: userAge || selections.age };
@@ -181,10 +181,10 @@ export async function POST(req: NextRequest) {
   const daysPerWeek = selections.workout_frequency ?? 3;
 
   const userPrompt = `
-Generate a 2-week personalized fitness workout plan using ONLY the provided exercises from our library.
+Generate a 2-week personalized fitness plan using ONLY the provided exercises from our library.
 
 LIBRARY OF AVAILABLE EXERCISES:
-${JSON.stringify(availableWorkoutsContext)}
+${JSON.stringify(availableExercisesContext)}
 
 USER PROFILE & CONSTRAINTS:
 - Primary Goal: ${selections.fitness_goal?.replace(/_/g, " ")}
@@ -210,14 +210,14 @@ IMPORTANT RULES:
 
   try {
     const result = await model.generateContent(userPrompt);
-    const workoutPlan = JSON.parse(result.response.text()) as FitnessWorkoutPlan;
+    const fitnessPlan = JSON.parse(result.response.text()) as any;
 
     // Hydrate with full DB data
-    const workoutMap = new Map(dbWorkouts.map(w => [w.id, w]));
-    workoutPlan.weekly_schedule.forEach(week => {
-      week.days.forEach(day => {
-        day.exercises = day.exercises.map(ex => {
-          const dbEx = workoutMap.get(ex.id || "");
+    const exerciseMap = new Map(dbExercises.map(e => [e.id, e]));
+    fitnessPlan.weekly_schedule.forEach((week: any) => {
+      week.days.forEach((day: any) => {
+        day.exercises = day.exercises.map((ex: any) => {
+          const dbEx = exerciseMap.get(ex.id || "");
           if (dbEx) {
             return {
               ...ex,
@@ -233,9 +233,9 @@ IMPORTANT RULES:
       });
     });
 
-    await admin.from("fitness_generated_workouts").insert({ selection_hash, workout_plan: workoutPlan, generated_by: "gemini-1.5-flash-sdk" });
+    await admin.from("fitness_generated_workouts").insert({ selection_hash, workout_plan: fitnessPlan, generated_by: "gemini-1.5-flash-sdk" });
 
-    return NextResponse.json({ workout_plan: workoutPlan, selection_hash, cached: false });
+    return NextResponse.json({ workout_plan: fitnessPlan, selection_hash, cached: false });
   } catch (error: any) {
     console.error("[fitness-generate] Gemini error:", error);
     return NextResponse.json({ error: "AI Generation failed" }, { status: 500 });

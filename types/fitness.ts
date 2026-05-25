@@ -23,7 +23,7 @@ export interface FitnessWeek {
   days: FitnessDay[];
 }
 
-export interface FitnessWorkoutPlan {
+export interface FitnessPlan {
   title: string;
   summary: string;
   duration_weeks: number;

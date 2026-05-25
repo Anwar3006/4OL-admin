@@ -2,12 +2,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Trash2, ShieldCheck, Clock, ListChecks, Target, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TWorkoutPlanOutput } from "@/schemas/workout-plan.schema";
+import { TFitnessPlanOutput } from "@/schemas/fitness-plan.schema";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface WorkoutPlanColumnsProps {
-  onEdit: (row: TWorkoutPlanOutput) => void;
+interface FitnessPlanColumnsProps {
+  onEdit: (row: TFitnessPlanOutput) => void;
   onDelete: (id: string) => void;
 }
 
@@ -24,10 +24,10 @@ const difficultyColor: Record<string, string> = {
   expert: "bg-rose-50 text-rose-700 border-rose-100",
 };
 
-export const createWorkoutPlanColumns = ({
+export const createFitnessPlanColumns = ({
   onEdit,
   onDelete,
-}: WorkoutPlanColumnsProps): ColumnDef<TWorkoutPlanOutput>[] => [
+}: FitnessPlanColumnsProps): ColumnDef<TFitnessPlanOutput>[] => [
   {
     accessorKey: "title",
     header: () => <div className="font-semibold">Plan Details</div>,
@@ -76,7 +76,7 @@ export const createWorkoutPlanColumns = ({
         </div>
         <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <ListChecks className="w-3.5 h-3.5 text-slate-400" />
-            {row.original.workouts_per_week} workouts / week
+            {row.original.exercises_per_week} exercises / week
         </div>
       </div>
     ),

@@ -1,12 +1,12 @@
 import z from "zod";
 
-export const workoutPlanSchema = z.object({
+export const fitnessPlanSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description is required"),
   difficulty_level: z.enum(["beginner", "intermediate", "advanced", "expert"]).default("beginner"),
   duration_weeks: z.number().int().min(1).default(4),
-  workouts_per_week: z.number().int().min(1).max(7).default(3),
+  exercises_per_week: z.number().int().min(1).max(7).default(3),
   target_body_parts: z.array(z.string()).default([]),
   goals: z.array(z.string()).default([]),
   is_premium: z.boolean().default(false),
@@ -17,9 +17,9 @@ export const workoutPlanSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export type TWorkoutPlanInput = z.infer<typeof workoutPlanSchema>;
+export type TFitnessPlanInput = z.infer<typeof fitnessPlanSchema>;
 
-export const workoutPlanSchemaOutput = workoutPlanSchema.extend({
+export const fitnessPlanSchemaOutput = fitnessPlanSchema.extend({
   id: z.string().uuid(),
   total_completions: z.number().int().default(0),
   average_rating: z.number().default(0),
@@ -28,4 +28,4 @@ export const workoutPlanSchemaOutput = workoutPlanSchema.extend({
   updated_at: z.string().or(z.date()),
 });
 
-export type TWorkoutPlanOutput = z.infer<typeof workoutPlanSchemaOutput>;
+export type TFitnessPlanOutput = z.infer<typeof fitnessPlanSchemaOutput>;

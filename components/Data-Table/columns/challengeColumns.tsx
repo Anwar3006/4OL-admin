@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Pencil, Trash2, Trophy, Users, Calendar, Target, Award } from "lucide-react";
+import { Pencil, Trash2, Trophy, Users, Calendar, Target, Award, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TChallengeOutput } from "@/schemas/challenge.schema";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { format } from "date-fns";
 interface ChallengeColumnsProps {
   onEdit: (row: TChallengeOutput) => void;
   onDelete: (id: string) => void;
+  onView: (id: string) => void;
 }
 
 const statusColor: Record<string, string> = {
@@ -23,6 +24,7 @@ const statusColor: Record<string, string> = {
 export const createChallengeColumns = ({
   onEdit,
   onDelete,
+  onView,
 }: ChallengeColumnsProps): ColumnDef<TChallengeOutput>[] => [
   {
     accessorKey: "title",
@@ -89,6 +91,17 @@ export const createChallengeColumns = ({
     header: () => <div className="font-semibold text-right">Actions</div>,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            onView(row.original.id!);
+          }}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"

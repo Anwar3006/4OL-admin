@@ -33,18 +33,18 @@ import { Dumbbell, Loader2, Star, Tag } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
 import { RichTextEditor } from "@/components/RichTextInput";
 import {
-  workoutSchema,
-  TWorkoutInput,
+  exerciseSchema,
+  TExerciseInput,
   BODY_PARTS,
   EQUIPMENT_TYPES,
   DIFFICULTY_LEVELS,
-  WORKOUT_STATUS,
-} from "@/schemas/workout.schema";
-import { useAddWorkoutDialog } from "@/stores/dialog-store";
+  EXERCISE_STATUS,
+} from "@/schemas/exercise.schema";
+import { useAddExerciseDialog } from "@/stores/dialog-store";
 import {
-  useCreateWorkout,
-  useUpdateWorkout,
-} from "@/hooks/supabase-calls/useWorkout";
+  useCreateExercise,
+  useUpdateExercise,
+} from "@/hooks/supabase-calls/useExercise";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 
@@ -93,16 +93,16 @@ const StarRating = ({
 };
 
 // ── Main Dialog ──────────────────────────────────────────────────────────────
-const AddWorkoutDialog = () => {
-  const { isOpen, close, data, isEditMode } = useAddWorkoutDialog();
-  const { mutate: createWorkout, isPending: isCreating } = useCreateWorkout();
-  const { mutate: updateWorkout, isPending: isUpdating } = useUpdateWorkout();
+const AddExerciseDialog = () => {
+  const { isOpen, close, data, isEditMode } = useAddExerciseDialog();
+  const { mutate: createExercise, isPending: isCreating } = useCreateExercise();
+  const { mutate: updateExercise, isPending: isUpdating } = useUpdateExercise();
 
   const [tagInput, setTagInput] = useState("");
 
   const isPending = isCreating || isUpdating;
 
-  const defaultValues: TWorkoutInput = {
+  const defaultValues: TExerciseInput = {
     exercise_name: "",
     primary_body_part: "Arm",
     secondary_body_part: null,
@@ -120,8 +120,8 @@ const AddWorkoutDialog = () => {
     is_active: true,
   };
 
-  const form = useForm<TWorkoutInput>({
-    resolver: zodResolver(workoutSchema),
+  const form = useForm<TExerciseInput>({
+    resolver: zodResolver(exerciseSchema),
     defaultValues,
   });
 
@@ -138,11 +138,11 @@ const AddWorkoutDialog = () => {
     }
   }, [isOpen, isEditMode, data]);
 
-  const onSubmit = (values: TWorkoutInput) => {
+  const onSubmit = (values: TExerciseInput) => {
     if (isEditMode && data?.id) {
-      updateWorkout({ id: data.id, data: values }, { onSuccess: close });
+      updateExercise({ id: data.id, data: values }, { onSuccess: close });
     } else {
-      createWorkout(values, { onSuccess: close });
+      createExercise(values, { onSuccess: close });
     }
   };
 
@@ -167,7 +167,7 @@ const AddWorkoutDialog = () => {
           <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Dumbbell className="h-6 w-6 text-primary" />
-              {isEditMode ? "Edit Workout" : "Add Workout"}
+              {isEditMode ? "Edit Exercise" : "Add Exercise"}
             </DialogTitle>
           </DialogHeader>
 
@@ -208,7 +208,7 @@ const AddWorkoutDialog = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {WORKOUT_STATUS.map((s) => (
+                          {EXERCISE_STATUS.map((s) => (
                             <SelectItem key={s} value={s} className="capitalize">
                               {s}
                             </SelectItem>
@@ -439,12 +439,12 @@ const AddWorkoutDialog = () => {
                     <FormLabel>Upload Video</FormLabel>
                     <FormControl>
                       <ImageDropZone
-                        filePath="workouts/media"
+                        filePath="fitness/media"
                         mediaType="video"
                         maxFiles={1}
                         onFilesChange={(urls) => field.onChange(urls[0] ?? "")}
                         initialFiles={field.value ? [field.value] : []}
-                        text="Upload workout video"
+                        text="Upload exercise video"
                       />
                     </FormControl>
                     <FormMessage />
@@ -461,7 +461,7 @@ const AddWorkoutDialog = () => {
                     <FormLabel>Upload Thumbnails</FormLabel>
                     <FormControl>
                       <ImageDropZone
-                        filePath="workouts/media"
+                        filePath="fitness/media"
                         onFilesChange={(urls) => field.onChange(urls)}
                         initialFiles={field.value ?? []}
                         text="Upload thumbnails"
@@ -491,7 +491,7 @@ const AddWorkoutDialog = () => {
                   {isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isEditMode ? "Update Workout" : "Create Workout"}
+                  {isEditMode ? "Update Exercise" : "Create Exercise"}
                 </Button>
               </DialogFooter>
             </form>
@@ -502,4 +502,4 @@ const AddWorkoutDialog = () => {
   );
 };
 
-export default AddWorkoutDialog;
+export default AddExerciseDialog;

@@ -35,9 +35,9 @@ export type DialogTypes =
   | "add-challenge"
   | "view-challenge"
   | "facility-toggle"
-  | "add-workout"
-  | "add-workout-plan"
-  | "view-workout-plan";
+  | "add-exercise"
+  | "add-fitness-plan"
+  | "view-fitness-plan";
 
 /**
  * Generic dialog configuration
@@ -664,46 +664,46 @@ export const useFacilityToggleDialog = () => {
   };
 };
 
-export const useAddWorkoutDialog = () => {
+export const useAddExerciseDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-workout"));
-  const data = useDialogStore((state) => state.getDialogData("add-workout"));
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-exercise"));
+  const data = useDialogStore((state) => state.getDialogData("add-exercise"));
 
   return {
     isOpen,
     data,
     isEditMode: !!data,
-    open: (data?: any) => openDialog("add-workout", { data }),
-    close: () => closeDialog("add-workout"),
+    open: (data?: any) => openDialog("add-exercise", { data }),
+    close: () => closeDialog("add-exercise"),
   };
 };
 
-export const useAddWorkoutPlanDialog = () => {
+export const useAddFitnessPlanDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-workout-plan"));
-  const data = useDialogStore((state) => state.getDialogData("add-workout-plan"));
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-fitness-plan"));
+  const data = useDialogStore((state) => state.getDialogData("add-fitness-plan"));
 
   return {
     isOpen,
     data,
     isEditMode: !!data,
-    open: (data?: any) => openDialog("add-workout-plan", { data }),
-    close: () => closeDialog("add-workout-plan"),
+    open: (data?: any) => openDialog("add-fitness-plan", { data }),
+    close: () => closeDialog("add-fitness-plan"),
   };
 };
 
-export const useViewWorkoutPlanDialog = () => {
+export const useViewFitnessPlanDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-workout-plan"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-workout-plan"));
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-fitness-plan"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-fitness-plan"));
 
   return {
     isOpen,
     entityId,
-    open: (entityId: string) => openDialog("view-workout-plan", { entityId }),
-    close: () => closeDialog("view-workout-plan"),
+    open: (entityId: string) => openDialog("view-fitness-plan", { entityId }),
+    close: () => closeDialog("view-fitness-plan"),
   };
 };
