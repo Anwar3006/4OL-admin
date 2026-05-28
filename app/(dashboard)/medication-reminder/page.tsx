@@ -1,123 +1,90 @@
 "use client";
 
-import { medicationColumns } from "@/components/Data-Table/columns/medicationReminderColumns";
-import { DataTable } from "@/components/Data-Table/data-table";
-import { medicationCardConfig } from "@/components/Data-Table/mobile-table-configs/medicationCardConfig";
-import SectionHeader from "@/components/SectionHeader";
-import { createPaginationHandlers } from "@/lib/utils";
-import { PlusCircleIcon } from "lucide-react";
-import React, { useCallback, useMemo, useState, useEffect } from "react";
-import GlobalFilter from "@/components/partials/table/GlobalFilter";
-import { useDebounce } from "@/hooks/use-debounce";
-import ConditionsStats from "../diseases_&_conditions/_components/ConditionStats";
-import { useMedicationReminders } from "@/hooks/supabase-calls/useMedicationReminder";
-import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
-import ViewMedicationReminderDialog from "./_components/view-medication-dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import PageHeader from "@/components/redesign/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MedicationStats from "./_components/MedicationStats";
+import DrugDatabaseTab from "./_components/DrugDatabaseTab";
+import LoggedRemindersTab from "./_components/LoggedRemindersTab";
+import AdherenceTab from "./_components/AdherenceTab";
+import InteractionsTab from "./_components/InteractionsTab";
+import AICheckerTab from "./_components/AICheckerTab";
+import { cn } from "@/lib/utils";
+
+const MedTabs = [
+  { id: "database", label: "💊 Drug Database" },
+  { id: "logged", label: "🔔 Logged Reminders" },
+  { id: "adherence", label: "📋 Adherence" },
+  { id: "interactions", label: "⚠️ Interactions" },
+  { id: "ai", label: "🤖 AI Checker" },
+];
 
 const MedicationReminderPage = () => {
-  const viewMedicationReminder = useViewMediactionReminderDialog();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
-  const limit = 10;
-  // const medicationCardConfig = useMedicationReminderCardConfig();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "database");
 
-  // Reset page when search changes
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
 
-  const { data, isLoading } = useMedicationReminders({ page, limit, search: debouncedSearch });
-
-  const paginationHandler = useMemo(
-    () => createPaginationHandlers(page, setPage, data?.meta.totalPages),
-    [page, data?.meta.totalPages],
-  );
-
-  console.log("Medication: ", data);
-
-  const onRowClick = useCallback(
-    (data: any) => viewMedicationReminder.open(data.id),
-    [viewMedicationReminder],
-  );
-  const pagination = useMemo(
-    () => ({
-      currentPage: page,
-      totalPages: data?.meta?.totalPages || 1,
-      totalItems: data?.meta?.total || 0,
-      pageSize: 10,
-      onPageChange: paginationHandler.goTo,
-      onNextPage: paginationHandler.next,
-      onPreviousPage: paginationHandler.previous,
-      canNextPage: page < (data?.meta?.totalPages || 1),
-      canPreviousPage: page > 1,
-    }),
-    [page, data, paginationHandler],
-  );
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", value);
+    window.history.pushState(null, "", `?${params.toString()}`);
+  };
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
-      <SectionHeader
-        title={"Medication Reminders"}
-        Icon={PlusCircleIcon}
-        description="Track medication reminders for your users"
-        hasButton={false}
-      />
+    <div className="animate-in fade-in duration-500 space-y-6">
+      <PageHeader
+        title="💊 Medication Reminder"
+        subtitle="Drug database · Interaction checker · Dosage reminders · Prescription tracking"
+      >
+        <button className="btn btn-secondary">📥 Export</button>
+        <button className="btn btn-secondary">📋 AI Settings</button>
+        <button className="btn btn-primary text-white font-black uppercase tracking-widest">+ Add Drug</button>
+      </PageHeader>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search medications..."
-            className="pl-9"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
+      <div className="alert bg-ek-green/5 border border-ek-green/20 text-[11px] font-medium p-3 rounded-xl flex items-start gap-2.5">
+        <span className="text-base leading-none mt-0.5 text-ek-green-dark">🔗</span>
+        <div className="flex-1 text-ek-green-dark">
+          <strong className="font-black">Drug Interaction Checker AI</strong> (v1.8, 98.1% accuracy) active. 
+          <strong className="font-black ml-2">12,400 active medication reminders</strong> across the platform.
         </div>
-        <Button variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
       </div>
 
-      {/* StatsCards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <ConditionsStats
-          label="Total Reminders"
-          value={data?.meta?.total || 0}
-          isLoading={isLoading}
-        />
-        <ConditionsStats
-          label="Total Active Reminders"
-          value={data?.meta?.total || 0}
-          isLoading={isLoading}
-        />
+      <MedicationStats />
 
-        <ConditionsStats
-          label="Adherence Rate"
-          value={data?.meta?.total || 0}
-          isLoading={isLoading}
-        />
-      </div>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+          {MedTabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
+              )}
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      {/* Table */}
-      <DataTable
-        columns={medicationColumns}
-        data={data?.data || []}
-        cardConfig={medicationCardConfig}
-        onRowClick={onRowClick}
-        pagination={pagination}
-        isLoading={isLoading}
-      />
-
-      <ViewMedicationReminderDialog />
-    </section>
+        <div className="animate-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="database"><DrugDatabaseTab /></TabsContent>
+          <TabsContent value="logged"><LoggedRemindersTab /></TabsContent>
+          <TabsContent value="adherence"><AdherenceTab /></TabsContent>
+          <TabsContent value="interactions"><InteractionsTab /></TabsContent>
+          <TabsContent value="ai"><AICheckerTab /></TabsContent>
+        </div>
+      </Tabs>
+    </div>
   );
 };
 

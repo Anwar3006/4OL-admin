@@ -1,162 +1,86 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
-import {
-  useDeleteAccountRequests,
-  useUpdateDeleteRequestStatus,
-  DeleteAccountRequest,
-  DeleteRequestStatus,
-} from "@/hooks/supabase-calls/useDeleteAccountRequests";
-import { createDeleteAccountColumns } from "@/components/Data-Table/columns/deleteAccountColumns";
-import { DataTable } from "@/components/Data-Table/data-table";
-import SectionHeader from "@/components/SectionHeader";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import PageHeader from "@/components/redesign/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DeleteRequestStats from "./_components/DeleteRequestStats";
+import AllRequestsTab from "./_components/AllRequestsTab";
+import SettingsPolicyTab from "./_components/SettingsPolicyTab";
+import { cn } from "@/lib/utils";
 
-// ─── Status filter tabs ───────────────────────────────────────────────────────
-const STATUS_TABS = [
-  { label: "All",      value: undefined   },
-  { label: "Pending",  value: "pending"   },
-  { label: "Approved", value: "approved"  },
-  { label: "Rejected", value: "rejected"  },
-] as const;
+const TabsConfig = [
+  { id: "all", label: "🗑️ All Requests" },
+  { id: "pending", label: "⏳ Pending (4)" },
+  { id: "grace", label: "⏰ Grace Period (3)" },
+  { id: "completed", label: "✅ Completed" },
+  { id: "settings", label: "⚙️ Settings & Policy" },
+];
 
-const PAGE_SIZE = 15;
-
-// ─── Section ─────────────────────────────────────────────────────────────────
-function DeleteAccountSection() {
+const DeleteAccountRequestPage = () => {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "all");
 
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
 
-  // Debounce search
-  React.useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  const { data, isLoading } = useDeleteAccountRequests({
-    page,
-    limit: PAGE_SIZE,
-    search: debouncedSearch || undefined,
-    status: statusFilter,
-  });
-
-  const updateStatus = useUpdateDeleteRequestStatus();
-
-  const pagination = useMemo(
-    () =>
-      data
-        ? {
-            currentPage: data.meta.currentPage,
-            totalPages: data.meta.totalPages,
-            totalItems: data.meta.total,
-            pageSize: PAGE_SIZE,
-            onPageChange: setPage,
-            onNextPage: () => {
-              if (data.meta.currentPage < data.meta.totalPages) setPage((p) => p + 1);
-            },
-            onPreviousPage: () => {
-              if (data.meta.currentPage > 1) setPage((p) => p - 1);
-            },
-            canNextPage: data.meta.currentPage < data.meta.totalPages,
-            canPreviousPage: data.meta.currentPage > 1,
-          }
-        : undefined,
-    [data],
-  );
-
-  const handleView = useCallback(
-    (row: DeleteAccountRequest) => {
-      router.push(`/users/view?id=${row.user_id}&from=delete-request-account`);
-    },
-    [router],
-  );
-
-  const handleStatusChange = useCallback(
-    (requestId: string, userId: string, newStatus: DeleteRequestStatus) => {
-      updateStatus.mutate({ requestId, userId, newStatus });
-    },
-    [updateStatus],
-  );
-
-  // Detect super admin role client-side
-  const isSuperAdmin =
-    typeof window !== "undefined" &&
-    localStorage.getItem("user_role") === "Super Admin";
-
-  const columns = useMemo(
-    () =>
-      createDeleteAccountColumns({
-        onView: handleView,
-        onStatusChange: handleStatusChange,
-        isSuperAdmin,
-      }),
-    [handleView, handleStatusChange, isSuperAdmin],
-  );
-
-  const pendingCount = data?.requests.filter((r) => r.status === "pending").length ?? 0;
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/delete-account-request?tab=${value}`, { scroll: false });
+  };
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
-      <SectionHeader
-        title="Account Deletion Requests"
-        Icon={Trash2}
-        description="Review and manage user requests to permanently delete their accounts."
-        hasButton={false}
-      />
+    <div className="animate-in fade-in duration-500 space-y-6">
+      <PageHeader
+        title="🗑️ Delete Account Requests"
+        subtitle="Google Play & App Store policy compliance · GH-DPA data erasure"
+      >
+        <button className="btn btn-secondary btn-sm">📥 Export Log</button>
+        <button className="btn btn-secondary btn-sm font-black uppercase tracking-widest text-[9px]">Copy Public Link</button>
+        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">+ Manual Entry</button>
+      </PageHeader>
 
-      {/* ── Controls row ───────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5 px-1">
-        {/* Status filter pills */}
-        <div className="flex flex-wrap gap-2">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => { setStatusFilter(tab.value); setPage(1); }}
-              className={[
-                "px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border",
-                statusFilter === tab.value
-                  ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
-              ].join(" ")}
-            >
-              {tab.label}
-              {tab.value === "pending" && pendingCount > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
-                  {pendingCount}
-                </span>
-              )}
-            </button>
-          ))}
+      <div className="alert bg-blue-50 border border-blue-200 text-[11px] font-medium p-4 rounded-xl flex items-start gap-3">
+        <span className="text-base leading-none mt-0.5 text-blue-700">⚠️</span>
+        <div className="flex-1 text-blue-700 leading-relaxed">
+          <strong className="font-black">Google Play & App Store Policy Compliance.</strong> Account deletion requests are processed within 30 days per Ghana Data Protection Act (GH-DPA) guidelines. 
+          The public form URL is: <b className="font-mono ml-1">https://4ourlife.com.gh/delete-account</b>
         </div>
-
-        {/* Search */}
-        <Input
-          placeholder="Search by name, email or phone..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="max-w-xs h-9 text-sm"
-        />
       </div>
 
-      {/* ── Data table ─────────────────────────────────────────────────── */}
-      <DataTable
-        columns={columns}
-        data={data?.requests ?? []}
-        isLoading={isLoading || updateStatus.isPending}
-        pagination={pagination}
-        onRowClick={handleView}
-      />
-    </section>
-  );
-}
+      <DeleteRequestStats />
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-export default function DeleteAccountRequestPage() {
-  return <DeleteAccountSection />;
-}
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+          {TabsConfig.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
+              )}
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <div className="animate-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="all"><AllRequestsTab /></TabsContent>
+          <TabsContent value="pending"><AllRequestsTab /></TabsContent>
+          <TabsContent value="grace"><AllRequestsTab /></TabsContent>
+          <TabsContent value="completed"><AllRequestsTab /></TabsContent>
+          <TabsContent value="settings"><SettingsPolicyTab /></TabsContent>
+        </div>
+      </Tabs>
+    </div>
+  );
+};
+
+export default DeleteAccountRequestPage;

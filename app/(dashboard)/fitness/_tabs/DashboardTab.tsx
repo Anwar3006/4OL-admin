@@ -1,181 +1,161 @@
 "use client";
 
 import React from "react";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Trophy, 
-  ShieldCheck, 
-  Plus, 
-  MessageSquare, 
-  ClipboardList,
-  ArrowUpRight,
-  Zap,
-  Calendar,
-  Download,
-  UserSquare,
-  Activity,
-  HeartPulse,
-  Bot
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 
 const DashboardTab = () => {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Alert / Intro */}
-      <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3">
-         <div className="h-10 w-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-200">
-            <Activity className="h-5 w-5" />
-         </div>
-         <div>
-            <h4 className="text-sm font-bold text-emerald-900">Platform-Wide Fitness Dashboard</h4>
-            <p className="text-xs text-emerald-700 font-medium">Real-time overview of exercise engagement, trainer performance, and community growth.</p>
-         </div>
-      </div>
-
-      {/* Primary KPI Grid (6 columns) */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {[
-          { label: "Active Plans", value: "1,240", color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Total Users", value: "3,840", color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Challenges", value: "284", color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Uptime", value: "96%", color: "text-green-600", bg: "bg-green-50" },
-          { label: "New (7d)", value: "18", color: "text-purple-600", bg: "bg-purple-50" },
-          { label: "WA Members", value: "842", color: "text-teal-600", bg: "bg-teal-50" },
-        ].map((kpi, i) => (
-          <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{kpi.label}</p>
-            <h3 className={`text-xl font-black ${kpi.color}`}>{kpi.value}</h3>
+    <div className="animate-in fade-in duration-500">
+      {/* Secondary KPI Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <div className="card flex items-center gap-3 p-3">
+          <div className="w-10 h-10 rounded-lg bg-ek-blue-light flex items-center justify-center text-lg">📊</div>
+          <div>
+            <div className="text-xl font-black text-ek-orange leading-tight">2,340</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Today</div>
           </div>
-        ))}
+        </div>
+        <div className="card flex items-center gap-3 p-3">
+          <div className="w-10 h-10 rounded-lg bg-ek-green-light flex items-center justify-center text-lg">✅</div>
+          <div>
+            <div className="text-xl font-black text-ek-green-dark leading-tight">14 days</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Streak</div>
+          </div>
+        </div>
+        <div className="card flex items-center gap-3 p-3">
+          <div className="w-10 h-10 rounded-lg bg-ek-gold-light flex items-center justify-center text-lg">🏆</div>
+          <div>
+            <div className="text-xl font-black text-ek-gold leading-tight">68%</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Completion</div>
+          </div>
+        </div>
+        <div className="card flex items-center gap-3 p-3">
+          <div className="w-10 h-10 rounded-lg bg-ek-purple-light flex items-center justify-center text-lg">🤖</div>
+          <div>
+            <div className="text-xl font-black text-ek-purple leading-tight">42</div>
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">AI Plans Active</div>
+          </div>
+        </div>
       </div>
 
-      {/* Analytics Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Weekly Active Users Chart Placeholder */}
-        <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-black flex items-center gap-2">
-                 <BarChart3 className="h-5 w-5 text-primary" />
-                 Weekly Active Users
-              </CardTitle>
-              <Badge variant="outline" className="bg-white border-slate-200">7 Day Trend</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-8 h-64 flex items-end justify-between gap-2">
-            {[65, 45, 78, 90, 85, 40, 55].map((val, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
-                <div 
-                  className="w-full bg-emerald-100 rounded-t-xl transition-all group-hover:bg-emerald-500 group-hover:shadow-lg group-hover:shadow-emerald-200" 
-                  style={{ height: `${val}%` }} 
-                />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}
-                </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        {/* Top Challenges */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title text-slate-800">📋 Top Challenges (Active)</h3>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: "30-Day Push-Up Challenge", val: "1,240 joined", color: "text-ek-green-dark" },
+              { name: "10,000 Steps Daily", val: "892 joined", color: "text-ek-blue" },
+              { name: "Core Strength Week", val: "640 joined", color: "text-ek-orange" },
+              { name: "Beginner Yoga 7-Day", val: "420 joined", color: "text-ek-teal" },
+              { name: "Weight Loss Sprint", val: "312 joined", color: "text-ek-purple" },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+                <span className="text-xs font-semibold text-slate-700">{item.name}</span>
+                <span className={`text-[11px] font-black ${item.color}`}>{item.val}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Plan Completion Rate */}
-        <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-             <CardTitle className="text-lg font-black flex items-center gap-2">
-                 <TrendingUp className="h-5 w-5 text-primary" />
-                 Plan Completion Rate
-              </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8 space-y-6">
+        {/* Most Used Plans */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title text-slate-800">📋 Most Used Plans</h3>
+          </div>
+          <div className="space-y-3">
             {[
-              { label: "Weight Loss Sprint", val: 82, color: "bg-blue-500" },
-              { label: "Strength Foundation", val: 64, color: "bg-emerald-500" },
-              { label: "HIIT Mastery", val: 45, color: "bg-amber-500" },
-              { label: "Yoga for Mobility", val: 92, color: "bg-purple-500" },
-            ].map((plan, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between text-xs font-black uppercase tracking-widest text-slate-500">
-                  <span>{plan.label}</span>
-                  <span>{plan.val}%</span>
+              { name: "Full Body Beginner (12wk)", val: "384 users", color: "text-ek-green-dark" },
+              { name: "Weight Loss Program (8wk)", val: "298 users", color: "text-ek-blue" },
+              { name: "Muscle Gain Advanced (16wk)", val: "214 users", color: "text-ek-orange" },
+              { name: "Cardio Endurance (6wk)", val: "176 users", color: "text-ek-teal" },
+              { name: "AI Custom Plans (various)", val: "42 active", color: "text-ek-purple" },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+                <span className="text-xs font-semibold text-slate-700">{item.name}</span>
+                <span className={`text-[11px] font-black ${item.color}`}>{item.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* FitCoins Leaderboard */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title text-slate-800">📋 FitCoins Leaderboard</h3>
+          </div>
+          <div className="space-y-3">
+            {[
+              { rank: "🥇 1.", name: "Kwame O****", val: "12,480 🪙", color: "text-ek-gold" },
+              { rank: "🥈 2.", name: "Ama A****", val: "10,240 🪙", color: "text-slate-400" },
+              { rank: "🥉 3.", name: "Kofi B****", val: "9,120 🪙", color: "text-ek-orange" },
+              { rank: "4.", name: "Abena O****", val: "8,640 🪙", color: "text-slate-700" },
+              { rank: "5.", name: "John M****", val: "7,920 🪙", color: "text-slate-700" },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-black w-7">{item.rank}</span>
+                  <span className="text-xs font-semibold text-slate-700">{item.name}</span>
                 </div>
-                <Progress value={plan.val} className="h-2 bg-slate-100" />
+                <span className={`text-[11px] font-black ${item.color}`}>{item.val}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Top Performing Plans Table */}
-      <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
-        <CardHeader className="p-8 bg-slate-50/50 border-b border-slate-100">
-           <CardTitle className="text-xl font-black">🏆 Top Performing Plans</CardTitle>
-           <CardDescription>Highest revenue and completion rates this quarter</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow className="border-none">
-                <TableHead className="font-black text-[10px] uppercase tracking-widest px-8">Plan</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">Type</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">Users</TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-right px-8">Completion</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[
-                { name: "Summer Shred (8wk)", type: "Archetype", users: 1240, completion: "84%" },
-                { name: "Bulk Mastery (12wk)", type: "Manual", users: 890, completion: "62%" },
-                { name: "Custom AI HIIT", type: "AI-Generated", users: 450, completion: "78%" },
-              ].map((row, i) => (
-                <TableRow key={i} className="hover:bg-slate-50/50 transition-colors border-slate-100">
-                  <TableCell className="px-8 font-bold text-slate-700">{row.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none">{row.type}</Badge>
-                  </TableCell>
-                  <TableCell className="font-medium text-slate-500">{row.users.toLocaleString()}</TableCell>
-                  <TableCell className="text-right px-8 font-black text-emerald-600">{row.completion}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Super Admin Commands */}
-      <div className="space-y-4">
-         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">⚡ Super Admin Commands — Fitness</h4>
-         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top Exercises by Usage */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title text-slate-800">📋 Top Exercises by Usage</h3>
+          </div>
+          <div className="space-y-4">
             {[
-              { label: "AI Studio", icon: Bot, color: "hover:bg-blue-50 hover:text-blue-600" },
-              { label: "Schedule Broadcast", icon: MessageSquare, color: "hover:bg-emerald-50 hover:text-emerald-600" },
-              { label: "Export Analytics", icon: Download, color: "hover:bg-amber-50 hover:text-amber-600" },
-              { label: "Manage Trainers", icon: UserSquare, color: "hover:bg-purple-50 hover:text-purple-600" },
-              { label: "Review Challenges", icon: Trophy, color: "hover:bg-rose-50 hover:text-rose-600" },
-              { label: "Health Integrations", icon: HeartPulse, color: "hover:bg-teal-50 hover:text-teal-600" },
-            ].map((cmd, i) => (
-              <Button 
-                key={i} 
-                variant="outline" 
-                className={`h-auto py-6 rounded-[1.5rem] border-slate-200 flex flex-col gap-3 font-bold transition-all shadow-sm ${cmd.color}`}
-              >
-                <cmd.icon className="h-6 w-6" />
-                <span className="text-xs">{cmd.label}</span>
-              </Button>
+              { name: "Push-Ups", val: "4,820 sets logged", pct: 100, color: "bg-ek-blue" },
+              { name: "Squats", val: "4,120 sets", pct: 85, color: "bg-ek-blue" },
+              { name: "Plank Hold", val: "3,840 sets", pct: 80, color: "bg-ek-teal" },
+              { name: "Lunges", val: "3,240 sets", pct: 67, color: "bg-ek-orange" },
+              { name: "Burpees", val: "2,180 sets", pct: 45, color: "bg-ek-purple" },
+            ].map((item, i) => (
+              <div key={i}>
+                <div className="flex justify-between text-[11px] font-bold text-slate-600 mb-1.5">
+                  <span>{item.name}</span>
+                  <span className="text-ek-blue">{item.val}</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-1000 ${item.color}`} 
+                    style={{ width: `${item.pct}%` }} 
+                  />
+                </div>
+              </div>
             ))}
-         </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title text-slate-800">⚡ Quick Actions</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              "📋 Add Exercise", "📋 Create Plan", 
+              "📋 New Challenge", "📋 Add Trainer", 
+              "📋 Broadcast", "📋 Archive Logs"
+            ].map((action, i) => (
+              <button 
+                key={i} 
+                className="btn btn-secondary justify-start text-[11px] font-bold py-3 px-4 h-auto rounded-xl hover:border-ek-green hover:text-ek-green-dark"
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

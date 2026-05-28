@@ -1,15 +1,14 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
+import { navIcons } from "./navIcons";
 import {
   Bell,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Languages,
   Menu,
   MessageSquare,
   Search,
@@ -19,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import Image from "next/image";
 
 const isActivePath = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -69,7 +69,17 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
         )}
       >
         <div className="mb-3 flex items-center gap-2 rounded-md bg-[#0b7f62] px-2 py-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#10b981] text-sm font-bold">🌿</div>
+          <a href="/login" className="flex items-center gap-2">
+            <div className="p-2 text-primary-foreground flex size-full items-center justify-center rounded-xl shadow-sm border border-muted">
+              <Image
+                src="/assets/images/all-img/logo.png"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="w-10 rounded-md"
+              />
+            </div>
+          </a>
           <div>
             <p className="text-[18px] font-semibold leading-4">4 Our Life</p>
             <p className="mt-1 text-[10px] text-emerald-100">4OL Admin Panel v2.0</p>
@@ -88,7 +98,7 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
                 if (item.title === "Logout") {
                   return (
                     <button key={item.title} onClick={doLogout} className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[15px] text-emerald-50 transition hover:bg-white/10">
-                      <Icon className="h-4 w-4" />
+                      <span className="text-sm">{navIcons["Logout"]}</span>
                       <span className="flex-1">Logout</span>
                     </button>
                   );
@@ -96,9 +106,9 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
 
                 return (
                   <div key={item.title}>
-                    <div className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[15px]", active ? "bg-[#059669] text-white" : "text-emerald-50 hover:bg-white/10")}>
+                    <div className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px]", active ? "bg-[#059669] text-white" : "text-emerald-50 hover:bg-white/10")}>
                       <Link href={item.href} className="flex flex-1 items-center gap-2.5">
-                        <Icon className="h-4 w-4" />
+                        <span className="text-sm">{navIcons[item.title as keyof typeof navIcons] || "🔹"}</span>
                         <span>{item.title}</span>
                       </Link>
                       {item.badge ? (
@@ -143,10 +153,9 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
           </div>
 
           <div className="flex items-center gap-2">
-            <TopIcon><Search className="h-4 w-4" /></TopIcon>
-            <TopIcon badge="3"><Bell className="h-4 w-4" /></TopIcon>
-            <TopIcon badge="5"><MessageSquare className="h-4 w-4" /></TopIcon>
-            <TopIcon badge="2"><Languages className="h-4 w-4" /></TopIcon>
+            <TopIcon><span className="text-sm">{navIcons["Medication Enquiry"] || "🔍"}</span></TopIcon>
+            <TopIcon badge="3"><span className="text-sm">{navIcons["Notifications"] || "🔔"}</span></TopIcon>
+            <TopIcon badge="5"><span className="text-sm">{navIcons["Chats"] || "💬"}</span></TopIcon>
             <div className="h-10 w-px bg-slate-300" />
             <div className="h-8 w-8 rounded-full bg-emerald-600 text-center text-xs font-semibold leading-8 text-white">FN</div>
             <div className="hidden sm:block">

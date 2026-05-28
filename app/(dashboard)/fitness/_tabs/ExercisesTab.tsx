@@ -1,20 +1,12 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
-import { Search, Filter, Plus, Download, MoreVertical, Eye, Edit2, Trash2 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { DataTable } from "@/components/Data-Table/data-table";
-import { createExerciseColumns } from "@/components/Data-Table/columns/exerciseColumns";
-import { createPaginationHandlers } from "@/lib/utils";
+import DataTable from "@/components/redesign/DataTable";
 import { useExercises, useDeleteExercise } from "@/hooks/supabase-calls/useExercise";
 import { useAddExerciseDialog } from "@/stores/dialog-store";
 import AddExerciseDialog from "../_components/add-exercise-dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TExerciseOutput } from "@/schemas/exercise.schema";
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const ExercisesTab = () => {
   const [page, setPage] = useState(1);
@@ -31,28 +23,8 @@ const ExercisesTab = () => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const paginationHandlers = useMemo(
-    () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
-    [page, data?.meta?.totalPages],
-  );
-
-  const pagination = useMemo(
-    () => ({
-      currentPage: page,
-      totalPages: data?.meta?.totalPages || 1,
-      totalItems: data?.meta?.total || 0,
-      pageSize: limit,
-      onPageChange: paginationHandlers.goTo,
-      onNextPage: paginationHandlers.next,
-      onPreviousPage: paginationHandlers.previous,
-      canNextPage: page < (data?.meta?.totalPages || 1),
-      canPreviousPage: page > 1,
-    }),
-    [page, data, paginationHandlers],
-  );
-
   const handleEdit = useCallback(
-    (row: TExerciseOutput) => {
+    (row: any) => {
       exerciseDialog.open(row);
     },
     [exerciseDialog],
@@ -67,77 +39,189 @@ const ExercisesTab = () => {
     [deleteExercise],
   );
 
-  const columns = useMemo(
-    () => createExerciseColumns({ onEdit: handleEdit, onDelete: handleDelete }),
-    [handleEdit, handleDelete],
-  );
+  const columns = [
+    {
+      key: "id",
+      label: "#",
+      width: "50px",
+      render: (_: any, row: any) => {
+        // Since we don't have access to the index here directly, 
+        // and DataTable renders paginated data, we might need a different approach 
+        // for the ID numbering, or just use the row ID if available. 
+        // For now, to fix the type error, I will change the signature.
+        return <span className="text-slate-400 font-medium">#</span>;
+      }
+    },
+    {
+      key: "name",
+      label: "Exercise Name",
+      render: (val: string, row: any) => (
+        <div>
+          <div className="font-bold text-slate-800">{val}</div>
+          <div className="text-[10px] text-slate-400 max-w-[200px] truncate">{row.description}</div>
+        </div>
+      )
+    },
+    {
+      key: "category",
+      label: "Category",
+      render: (val: string) => (
+        <span className="badge badge-blue capitalize">{val || "Equipment"}</span>
+      )
+    },
+    {
+      key: "muscle_groups",
+      label: "Muscle Groups",
+      render: (val: string[]) => (
+        <div className="flex flex-wrap gap-1">
+          {(val || ["Chest", "Triceps"]).map((m, i) => (
+            <span key={i} className="badge badge-purple">{m}</span>
+          ))}
+        </div>
+      )
+    },
+    {
+      key: "equipment",
+      label: "Equipment",
+      render: (val: string) => <span className="text-[11px] text-slate-600">{val || "None"}</span>
+    },
+    {
+      key: "difficulty",
+      label: "Difficulty",
+      render: (val: number) => (
+        <div className="text-ek-gold text-[10px]">
+          {"⭐".repeat(val || 5)}
+          <span className="text-slate-200">{"⭐".repeat(5 - (val || 5))}</span>
+        </div>
+      )
+    },
+    {
+      key: "sets_reps",
+      label: "Sets   Reps",
+      render: (_: any, row: any) => <span className="text-[11px] text-slate-600 font-medium">{row.sets || 3}   {row.reps || "10-12"}</span>
+    },
+    {
+       key: "rest",
+       label: "Rest",
+       render: (val: string) => <span className="text-[11px] text-slate-600">{val || "60s"}</span>
+    },
+    {
+      key: "tier",
+      label: "Tier",
+      render: (val: string) => (
+        <span className={cn(
+          "badge",
+          val === 'free' ? 'bg-slate-700 text-white' : 'badge-amber'
+        )}>{val || "Free"}</span>
+      )
+    },
+    {
+      key: "featured",
+      label: "Featured",
+      render: (val: boolean) => (
+        <div className="text-center">
+          {val ? <span className="text-ek-gold">🏆</span> : <span className="text-slate-300">—</span>}
+        </div>
+      )
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (val: string) => (
+        <span className={cn(
+          "badge",
+          val === 'inactive' ? 'bg-slate-700 text-white' : 'badge-green'
+        )}>{val || "Active"}</span>
+      )
+    }
+  ];
+
+  const rowActions = [
+    { label: "Edit", icon: "✏️", onClick: handleEdit },
+    { label: "View", icon: "👁️", onClick: (row: any) => console.log('View', row) },
+    { label: "Duplicate", icon: "📋", onClick: (row: any) => console.log('Copy', row) },
+    { label: "Delete", icon: "🗑️", onClick: (row: any) => handleDelete(row.id), danger: true },
+  ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Exercises Header & Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-[2rem] bg-white">
-          <CardHeader className="p-8 pb-4">
-             <div className="flex items-center justify-between">
-                <div>
-                   <CardTitle className="text-2xl font-black">🏋️ Exercise Library</CardTitle>
-                   <p className="text-slate-500 font-medium mt-1">Manage physical activities and instructional content</p>
-                </div>
-                <Button className="rounded-xl font-bold bg-[#2cc295] hover:bg-[#25a37d]" onClick={() => exerciseDialog.open()}>
-                  <Plus className="h-4 w-4 mr-2" /> Add New
-                </Button>
-             </div>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by exercise name or muscle..."
-                    className="pl-9 h-12 rounded-2xl border-slate-100 bg-slate-50 focus-visible:ring-emerald-500"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline" className="h-12 rounded-2xl font-bold border-slate-200">
-                  <Filter className="h-4 w-4 mr-2" /> Filters
-                </Button>
-             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-[2rem] bg-slate-900 text-white p-8">
-           <CardTitle className="text-lg font-black mb-6">📊 Exercise Analytics</CardTitle>
-           <div className="space-y-6">
-              {[
-                { label: "Total Exercises", val: data?.meta?.total || 0, max: 2000, color: "bg-blue-400" },
-                { label: "Strength vs Cardio", val: 65, max: 100, color: "bg-emerald-400" },
-                { label: "Beginner Friendly", val: 42, max: 100, color: "bg-amber-400" },
-              ].map((stat, i) => (
-                <div key={i} className="space-y-2">
-                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      <span>{stat.label}</span>
-                      <span>{stat.val}</span>
-                   </div>
-                   <Progress value={(stat.val / stat.max) * 100} className="h-1 bg-slate-800" />
-                </div>
-              ))}
-           </div>
-        </Card>
+    <div className="animate-in fade-in duration-500">
+      <div className="card mb-4">
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="relative flex-1 min-w-[240px]">
+            <input 
+              className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all" 
+              placeholder="🔍 Search exercises by name, muscle group..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <select className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50"><option>Category: All</option></select>
+          <select className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50"><option>Muscle: All</option></select>
+          <select className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50"><option>Difficulty: All</option></select>
+          <select className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50"><option>Status: Active</option></select>
+          <button className="btn btn-secondary">📥 Export CSV</button>
+          <button className="btn btn-primary text-white" onClick={() => exerciseDialog.open()}>+ Add Exercise</button>
+        </div>
       </div>
 
-      {/* Main Table */}
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
-        <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={data?.exercises || []}
-            pagination={pagination}
-            isLoading={isLoading}
-            onRowClick={() => {}}
-          />
-        </CardContent>
-      </Card>
+      <div className="card p-0 overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={data?.exercises || []}
+          rowActions={rowActions}
+          selectable
+          itemsPerPage={limit}
+        />
+      </div>
+
+      {/* Super Admin Commands */}
+      <div className="mt-5">
+        <div 
+          className="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-t-xl cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={(e) => {
+            const next = e.currentTarget.nextElementSibling;
+            if (next) next.classList.toggle('hidden');
+          }}
+        >
+          <div className="text-xs font-extrabold text-slate-800 flex items-center gap-2">
+            🛡️ Super Admin Commands   Exercises & Workouts
+          </div>
+          <span className="text-[10px] text-slate-400">▼</span>
+        </div>
+        <div className="bg-white border border-slate-200 border-top-0 rounded-b-xl overflow-hidden">
+          <table className="data-table">
+            <thead>
+              <tr className="bg-slate-50/50">
+                <th className="w-1/4">Action</th>
+                <th>What It Does</th>
+                <th className="w-1/6 text-right">Access Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="font-bold text-slate-700">Add Exercise</td>
+                <td className="text-slate-500">Form: name, category, muscle groups, equipment, sets/reps, rest, image/video upload, difficulty, goal tags, training styles, age range</td>
+                <td className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <span className="badge badge-red">Super Admin</span>
+                    <span className="badge badge-blue">Editor</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td className="font-bold text-slate-700">Edit Exercise</td>
+                <td className="text-slate-500">Modal edit any field except exercise_id</td>
+                <td className="text-right">
+                   <div className="flex justify-end gap-1">
+                    <span className="badge badge-red">Super Admin</span>
+                    <span className="badge badge-blue">Editor</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <AddExerciseDialog />
     </div>

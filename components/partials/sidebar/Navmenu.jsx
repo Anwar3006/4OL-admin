@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import Icon from "@/components/ui/Icon";
+import { navIcons } from "@/app/(dashboard)/_components/admin-shell/navIcons";
+import Submenu from "./Submenu";
 import { toggleActiveChat } from "@/components/partials/app/chat/store";
 import { useDispatch } from "react-redux";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import { usePermissionContext } from "@/stores/permission-context";
-import Submenu from "./Submenu";
 
 // Roles that can see the Admins and Delete Account Request menu items
 const SUPER_ADMIN_ROLES = ["super_admin", "Super Admin"];
@@ -74,8 +74,8 @@ const Navmenu = ({ menus, onLogout }) => {
             {/* Single menu with no children */}
             {!item.child && !item.isHeadr && item.title !== "Logout" && (
               <Link className="menu-link" href={`/${item.link}`}>
-                <span className="menu-icon flex-grow-0">
-                  <Icon icon={item.icon} />
+                <span className="menu-icon flex-grow-0 text-lg">
+                  {navIcons[item.title as keyof typeof navIcons] || "🔹"}
                 </span>
                 <div className="text-box flex-grow">{item.title}</div>
                 {item.badge && <span className="menu-badge">{item.badge}</span>}
@@ -94,8 +94,8 @@ const Navmenu = ({ menus, onLogout }) => {
                 onClick={() => toggleSubmenu(i)}
               >
                 <div className="flex-1 flex items-start">
-                  <span className="menu-icon">
-                    <Icon icon={item.icon} />
+                  <span className="menu-icon text-lg">
+                    {navIcons[item.title as keyof typeof navIcons] || "🔹"}
                   </span>
                   <div className="text-box">{item.title}</div>
                 </div>
@@ -103,7 +103,7 @@ const Navmenu = ({ menus, onLogout }) => {
                   <div
                     className={`menu-arrow transform transition-all duration-300 ${activeSubmenu === i ? "rotate-90" : ""}`}
                   >
-                    <Icon icon="heroicons-outline:chevron-right" />
+                    <span>▶️</span>
                   </div>
                 </div>
               </div>
@@ -122,8 +122,8 @@ const Navmenu = ({ menus, onLogout }) => {
       {/* Logout Menu Item */}
       <li className="single-sidebar-menu">
         <div className="menu-link" onClick={onLogout}>
-          <span className="menu-icon flex-grow-0">
-            <Icon icon="ant-design:logout-outlined" />
+          <span className="menu-icon flex-grow-0 text-lg">
+            {navIcons["Logout"]}
           </span>
           <div className="text-box flex-grow">Logout</div>
         </div>

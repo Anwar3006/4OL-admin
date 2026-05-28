@@ -1,6 +1,7 @@
 "use client";
+
 import { ColumnDef } from "@tanstack/react-table";
-import { Star, Pencil, Trash2, ShieldCheck, Clock, Zap } from "lucide-react";
+import { Star, Pencil, Trash2, ShieldCheck, Clock, Zap, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TExerciseOutput } from "@/schemas/exercise.schema";
 import { Badge } from "@/components/ui/badge";
@@ -30,47 +31,47 @@ export const createExerciseColumns = ({
 }: ExerciseColumnsProps): ColumnDef<TExerciseOutput>[] => [
   {
     accessorKey: "exercise_name",
-    header: () => <div className="font-semibold">Exercise Name</div>,
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest px-8">Exercise Name</div>,
     cell: ({ row }) => (
-      <div className="flex flex-col min-w-48">
-        <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900">{row.original.exercise_name}</span>
-            {row.original.is_premium && (
-                <Badge className="bg-amber-500 hover:bg-amber-600 border-none px-1.5 h-4 text-[9px] uppercase font-black text-white gap-0.5">
-                    <ShieldCheck className="w-2.5 h-2.5" /> PRO
-                </Badge>
-            )}
+      <div className="flex items-center gap-4 px-8">
+        <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+           <Dumbbell className="h-6 w-6" />
         </div>
-        <div className="flex items-center gap-2 mt-1">
-             <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                {row.original.primary_body_part}
-            </span>
-            {row.original.secondary_body_part && (
-                <>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-[10px] text-slate-400 uppercase font-medium">
-                        {row.original.secondary_body_part}
-                    </span>
-                </>
-            )}
+        <div className="flex flex-col">
+          <span className="font-black text-slate-900">{row.original.exercise_name}</span>
+          <div className="flex items-center gap-2 mt-0.5">
+             <Badge variant="secondary" className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-[9px] tracking-widest">
+                {row.original.primary_body_part} {row.original.secondary_body_part ? `+ ${row.original.secondary_body_part}` : ''}
+             </Badge>
+          </div>
         </div>
       </div>
     ),
   },
   {
-    accessorKey: "status",
-    header: () => <div className="font-semibold text-center">Status</div>,
+    accessorKey: "category",
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest">Category</div>,
     cell: ({ row }) => (
-        <div className="text-center">
-            <Badge variant="outline" className={cn("rounded-lg font-bold text-[10px] uppercase tracking-wider px-2 py-0.5", statusColor[row.original.status])}>
-                {row.original.status}
-            </Badge>
-        </div>
+        <span className="font-bold text-slate-600 capitalize text-sm">N/A</span>
+    ),
+  },
+  {
+    accessorKey: "primary_body_part",
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest">Muscle Group</div>,
+    cell: ({ row }) => (
+        <span className="font-bold text-slate-600 text-sm">{row.original.primary_body_part}</span>
+    ),
+  },
+  {
+    accessorKey: "equipment_type",
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest">Equipment</div>,
+    cell: ({ row }) => (
+        <span className="font-bold text-slate-600 text-sm">{row.original.equipment_type}</span>
     ),
   },
   {
     accessorKey: "difficulty_level",
-    header: () => <div className="font-semibold text-center">Level</div>,
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest text-center">Difficulty</div>,
     cell: ({ row }) => (
         <div className="text-center">
             <Badge variant="outline" className={cn("rounded-lg font-bold text-[10px] uppercase tracking-wider px-2 py-0.5", difficultyColor[row.original.difficulty_level])}>
@@ -80,53 +81,25 @@ export const createExerciseColumns = ({
     ),
   },
   {
-    accessorKey: "metrics",
-    header: () => <div className="font-semibold">Metrics</div>,
+    accessorKey: "status",
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest text-center">Status</div>,
     cell: ({ row }) => (
-      <div className="space-y-1 min-w-32">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            {row.original.duration_minutes} mins
+        <div className="text-center">
+            <Badge variant="outline" className={cn("rounded-lg font-bold text-[10px] uppercase tracking-wider px-2 py-0.5", statusColor[row.original.status])}>
+                {row.original.status}
+            </Badge>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            {row.original.calories_burned} kcal
-        </div>
-      </div>
     ),
-  },
-  {
-    accessorKey: "intensity",
-    header: () => (
-      <div className="font-semibold hidden sm:table-cell">Intensity</div>
-    ),
-    cell: ({ row }) => {
-      const level = row.original.intensity ?? 0;
-      return (
-        <div className="hidden sm:flex items-center gap-0.5 min-w-24">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`h-3.5 w-3.5 ${
-                i < level
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-gray-200 fill-gray-200"
-              }`}
-            />
-          ))}
-        </div>
-      );
-    },
   },
   {
     id: "actions",
-    header: () => <div className="font-semibold text-right">Actions</div>,
+    header: () => <div className="font-black text-[10px] uppercase tracking-widest text-right px-8">Actions</div>,
     cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2 px-8">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+          className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
           onClick={(e) => {
             e.stopPropagation();
             onEdit(row.original);
@@ -137,7 +110,7 @@ export const createExerciseColumns = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(row.original.id!);

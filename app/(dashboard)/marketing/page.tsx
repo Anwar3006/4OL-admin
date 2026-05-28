@@ -1,178 +1,73 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
-import { PlusSquare, Search } from "lucide-react";
-import { StatsCard, TableSkeleton } from "@/components/Data-Table/helpers";
-import SectionHeader from "@/components/SectionHeader";
-import { Input } from "@/components/ui/input";
-import { createPaginationHandlers } from "@/lib/utils";
-import { DataTable } from "@/components/Data-Table/data-table";
-import {
-  useAddMarketingDialog,
-  useViewMarketingDialog,
-} from "@/stores/dialog-store";
-import AddMarketingDialog from "./_components/add-marketing-dialog";
-import { useMarketingProfiles } from "@/hooks/supabase-calls/useMarketing";
-import { marketingColumns } from "@/components/Data-Table/columns/marketingColumns";
-import { ViewMarketingDialog } from "./_components/view-marketing-dialog";
-import { marketingCardConfig } from "@/components/Data-Table/mobile-table-configs/marketingCardConfig";
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import PageHeader from "@/components/redesign/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MarketingStats from "./_components/MarketingStats";
+import AllCampaignsTab from "./_components/AllCampaignsTab";
+import AnalyticsTab from "./_components/AnalyticsTab";
+import LinkagesTab from "./_components/LinkagesTab";
+import { cn } from "@/lib/utils";
 
-// Import Overview content components
-import Activity from "@/components/partials/auth/Marketing_Overview/activity";
+const MktTabs = [
+  { id: "all", label: "📣 All Campaigns" },
+  { id: "analytics", label: "📊 Analytics" },
+  { id: "linkages", label: "🔗 Page Linkages" },
+];
 
 const MarketingPage = () => {
-  const addMarket = useAddMarketingDialog();
-  const viewMarket = useViewMarketingDialog();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "all");
 
-  const [adsSearch, setAdsSearch] = useState("");
-  const [adsPage, setAdsPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
-    undefined,
-  );
-  const limit = 10;
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
 
-  // Call hook
-  const { data: adsData, isLoading } = useMarketingProfiles({
-    search: adsSearch,
-    page: adsPage,
-    limit: limit,
-    status: selectedStatus,
-  });
-
-  const adsPagination = useMemo(
-    () =>
-      createPaginationHandlers(adsPage, setAdsPage, adsData?.meta.totalPages),
-    [adsPage, adsData?.meta.totalPages],
-  );
-
-  const handleStatusChange = (status: string | undefined) => {
-    setSelectedStatus(status);
-    setAdsPage(1); // Reset to first page
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/marketing?tab=${value}`, { scroll: false });
   };
 
-  const onRowClick = useCallback(
-    (campaign: any) => viewMarket.open(campaign.id),
-    [viewMarket],
-  );
-
-  const pagination = useMemo(
-    () => ({
-      currentPage: adsPage,
-      totalPages: adsData?.meta.totalPages || 1,
-      totalItems: adsData?.meta.total || 0,
-      pageSize: limit,
-      onPageChange: adsPagination.goTo,
-      onNextPage: adsPagination.next,
-      onPreviousPage: adsPagination.previous,
-      canNextPage: adsPage < (adsData?.meta.totalPages || 1),
-      canPreviousPage: adsPage > 1,
-    }),
-    [adsPage, adsData, adsPagination],
-  );
-
-  const fetchingAds = false;
-
   return (
-    <div className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
-      <section>
-        <SectionHeader
-          title="Marketing & Advertising"
-          description="Manage your marketing and advertising campaigns."
-          Icon={PlusSquare}
-          hasButton={true}
-          buttonLabel="Add Campaign"
-          onButtonClick={() => addMarket.open()}
-        />
+    <div className="animate-in fade-in duration-500 space-y-6">
+      <PageHeader
+        title="📣 Marketing Campaigns"
+        subtitle="Campaigns, promotions and user acquisition managed by Marketing Manager"
+      >
+        <button className="btn btn-secondary btn-sm">📋 Analytics Report</button>
+        <button className="btn btn-secondary btn-sm">📋 Review Submissions</button>
+        <button className="btn btn-primary text-white font-black uppercase tracking-widest">+ New Campaign</button>
+      </PageHeader>
 
-        {fetchingAds ? (
-          <TableSkeleton />
-        ) : (
-          <>
-            {fetchingAds ? (
-              <TableSkeleton />
-            ) : (
-              <>
-                <div className="flex flex-col sm:row gap-3 mb-6">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by headline or organization"
-                      className="pl-9 w-full"
-                      value={adsSearch}
-                      onChange={(e) => {
-                        setAdsSearch(e.target.value);
-                        setAdsPage(1);
-                      }}
-                    />
-                  </div>
-                </div>
+      <MarketingStats />
 
-                <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-                  <StatsCard
-                    label="Total Campaigns"
-                    value={
-                      (adsData?.analytics?.draft || 0) +
-                      (adsData?.analytics?.scheduled || 0) +
-                      (adsData?.analytics?.live || 0) +
-                      (adsData?.analytics?.paused || 0) +
-                      (adsData?.analytics?.ended || 0)
-                    }
-                    onClick={() => handleStatusChange(undefined)}
-                    active={selectedStatus === undefined}
-                  />
-                  <StatsCard
-                    label="Draft"
-                    value={adsData?.analytics?.draft || 0}
-                    variant="neutral"
-                    onClick={() => handleStatusChange("draft")}
-                    active={selectedStatus === "draft"}
-                  />
-                  <StatsCard
-                    label="Scheduled"
-                    value={adsData?.analytics?.scheduled || 0}
-                    variant="info"
-                    onClick={() => handleStatusChange("scheduled")}
-                    active={selectedStatus === "scheduled"}
-                  />
-                  <StatsCard
-                    label="Live"
-                    value={adsData?.analytics?.live || 0}
-                    variant="success"
-                    onClick={() => handleStatusChange("live")}
-                    active={selectedStatus === "live"}
-                  />
-                  <StatsCard
-                    label="Paused"
-                    value={adsData?.analytics?.paused || 0}
-                    variant="warning"
-                    onClick={() => handleStatusChange("paused")}
-                    active={selectedStatus === "paused"}
-                  />
-                  <StatsCard
-                    label="Ended"
-                    value={adsData?.analytics?.ended || 0}
-                    variant="red"
-                    onClick={() => handleStatusChange("ended")}
-                    active={selectedStatus === "ended"}
-                  />
-                </div>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+          {MktTabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
+              )}
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-                <DataTable
-                  columns={marketingColumns}
-                  data={adsData?.data || []}
-                  cardConfig={marketingCardConfig}
-                  onRowClick={onRowClick}
-                  pagination={pagination}
-                  isLoading={isLoading}
-                />
-              </>
-            )}
-          </>
-        )}
-
-        <ViewMarketingDialog />
-        <AddMarketingDialog />
-      </section>
+        <div className="animate-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="all"><AllCampaignsTab /></TabsContent>
+          <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
+          <TabsContent value="linkages"><LinkagesTab /></TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 };

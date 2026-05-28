@@ -1,8 +1,0 @@
-@reference "tailwindcss";
-
-.badge {
-  @apply py-1 px-2 text-xs  capitalize font-semibold rounded-[.358rem] whitespace-nowrap  align-baseline inline-flex;
-  &.pill {
-    @apply rounded-[999px];
-  }
-}

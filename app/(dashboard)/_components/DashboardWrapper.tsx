@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import AdminDashboardShell from "./admin-shell/AdminDashboardShell";
+import NewAdminDashboardShell from "./admin-shell/NewAdminDashboardShell";
 
 export default function DashboardWrapper({ children }: { children: ReactNode }) {
   const [isPending, setIsPending] = useState(true);
@@ -42,5 +43,5 @@ export default function DashboardWrapper({ children }: { children: ReactNode }) 
 
   if (isPending || !isAuthed) return null;
 
-  return <AdminDashboardShell>{children}</AdminDashboardShell>;
+  return <NewAdminDashboardShell>{children}</NewAdminDashboardShell>;
 }
