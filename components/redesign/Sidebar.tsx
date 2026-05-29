@@ -22,6 +22,19 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const router = useRouter()
   const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>({})
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const [profile, setProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('user_profiles').select('*').eq('user_id', user.id).single();
+        setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [])
 
   // Helper to check if a link is active including query params
   const isLinkActive = (href: string) => {
@@ -205,12 +218,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className="px-3.5 py-3 border-t border-white/10">
         <div className={cn("flex items-center gap-2", collapsed ? 'justify-center' : '')}>
           <div className="w-7 h-7 rounded-full bg-ek-emerald-active flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0 border border-white/20">
-            FN
+            {profile?.name
+              ? profile.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+              : '—'}
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <div className="text-xs font-semibold truncate text-white">Francis Mensah</div>
-              <div className="text-[10px] text-emerald-200/60 truncate">Super Admin</div>
+              <div className="text-xs font-semibold truncate text-white">{profile?.name || 'Loading...'}</div>
+              <div className="text-[10px] text-emerald-200/60 truncate uppercase tracking-wide">{profile?.role || 'Admin'}</div>
             </div>
           )}
         </div>
