@@ -68,8 +68,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-3.5 py-4 border-b border-white/10 min-h-[60px]">
-        <div className="w-8 h-8 rounded-lg bg-ek-emerald-active flex items-center justify-center text-white font-black text-sm flex-shrink-0">
-          4
+        <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+          <img src="/assets/images/all-img/logo.png" alt="4 Our Life" className="w-full h-full object-contain" />
         </div>
         {!collapsed && (
           <div className="font-extrabold text-sm tracking-tight whitespace-nowrap">

@@ -1,10 +1,4 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
-
-export default function Page() {
-  return (
-    <PlaceholderPage
-      title="facilityscout"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+import PagePlaceholder from "@/components/redesign/PagePlaceholder";
+export default function FacilityScoutPage() {
+  return <PagePlaceholder title="🔍 FacilityScout" subtitle="Crowdsourced facility data · Verification queue · Reward management" icon="🔍" />;
 }

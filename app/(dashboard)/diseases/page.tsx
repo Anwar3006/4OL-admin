@@ -114,44 +114,39 @@ const DiseasesPage = () => {
         <KpiCard icon="📊" label="Carousel Features" value="12" variant="teal" delta="Active slots" />
         <KpiCard icon="✅" label="Avg Engagement" value="4.7" variant="green" delta="High interest" deltaType="up" />
       </div>
+<Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+  <TabsList className="bg-transparent h-auto p-0 flex gap-0 border-b border-slate-200 w-full justify-start rounded-none overflow-x-auto no-scrollbar">
+    {[
+      { id: "all", label: "All Conditions", icon: "🦠" },
+      { id: "carousel", label: "Carousel Features", icon: "🎠" },
+      { id: "engagement", label: "Engagement Analytics", icon: "📊" },
+      { id: "linkages", label: "Page Linkages", icon: "🔗" },
+    ].map((tab) => (
+      <TabsTrigger
+        key={tab.id}
+        value={tab.id}
+        className="px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark outline-none"
+      >
+        <span className="mr-2">{tab.icon}</span>
+        {tab.label}
+      </TabsTrigger>
+    ))}
+  </TabsList>
 
-      <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-        <div className="tabs mb-4 overflow-x-auto no-scrollbar">
-          <TabsList className="bg-transparent h-auto p-0 flex gap-0">
-            {[
-              { id: "all", label: "All Conditions", icon: "🦠" },
-              { id: "carousel", label: "Carousel Features", icon: "🎠" },
-              { id: "engagement", label: "Engagement Analytics", icon: "📊" },
-              { id: "linkages", label: "Page Linkages", icon: "🔗" },
-            ].map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="tab transition-all duration-150 data-[state=active]:active data-[state=active]:text-ek-green-dark data-[state=active]:border-b-3 data-[state=active]:border-ek-green-dark"
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-
-        <TabsContent value="all" className="outline-none">
-          <div className="card mb-4">
-            <div className="fbar p-0 m-0">
-              <div className="relative flex-1 min-w-[240px]">
-                <input 
-                  className="fi fi-s w-full pl-8" 
-                  placeholder="🔍 Search by name, ICD code, category..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <select className="fi"><option>All Categories</option></select>
-              <select className="fi"><option>All Status</option></select>
-              <select className="fi"><option>Carousel: All</option></select>
-              <button className="btn btn-secondary">📥 Export</button>
+        <TabsContent value="all" className="outline-none mt-4">
+          <div className="flex flex-wrap gap-2 items-center mb-4">
+            <div className="relative flex-1 min-w-[240px]">
+              <input 
+                className="w-full h-8 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all" 
+                placeholder="🔍 Search by name, ICD code, category..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>All Categories</option></select>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>All Status</option></select>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>Carousel: All</option></select>
+            <button className="btn btn-secondary btn-sm font-bold">📥 Export</button>
           </div>
 
           <div className="card p-0 overflow-hidden">

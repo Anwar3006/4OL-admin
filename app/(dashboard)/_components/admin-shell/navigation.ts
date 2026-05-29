@@ -116,7 +116,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Diseases & Conditions", href: "/diseases", icon: "🦠" },
       { title: "Human Anatomy", href: "/anatomy", icon: "🫁" },
       { title: "Symptoms", href: "/symptoms", icon: "🩺" },
-      { title: "Healthy Living", href: "/healthy", icon: "🥗" },
+      { title: "Healthy Living", href: "/healthy_living", icon: "🥗" },
       { title: "Fitness", href: "/fitness", icon: "💪", badge: "3" },
       { title: "Period Tracker", href: "/period", icon: "📅" },
       {
@@ -186,7 +186,17 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Engagement",
     items: [
-      { title: "Reviews & Ratings", href: "/reviews", icon: "⭐", badge: "Fac" },
+      {
+        title: "Reviews & Ratings",
+        href: "/reviews",
+        icon: "⭐",
+        badge: "Fac",
+        children: [
+          { title: "All Reviews", href: "/reviews?tab=all" },
+          { title: "Flagged (12)", href: "/reviews?tab=flagged" },
+          { title: "Pending (3)", href: "/reviews?tab=pending" },
+        ],
+      },
       { title: "Map", href: "/map", icon: "🗺️", badge: "Fac" },
     ],
   },
@@ -200,10 +210,10 @@ export const dashboardNavSections: DashboardNavSection[] = [
         badge: "2",
         children: [
           { title: "Campaigns", href: "/marketing?tab=all" },
+          { title: "Subscriptions", href: "/marketing?tab=subscriptions" },
+          { title: "Discounts", href: "/marketing?tab=discounts" },
           { title: "Analytics", href: "/marketing?tab=analytics" },
           { title: "Page Linkages", href: "/marketing?tab=linkages" },
-          { title: "Subscriptions", href: "/subscriptions" },
-          { title: "Discounts", href: "/discounts" },
         ],
       },
       {
@@ -214,6 +224,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
         children: [
           { title: "Groups", href: "/chats?tab=groups" },
           { title: "Support", href: "/chats?tab=support" },
+          { title: "Flagged", href: "/chats?tab=flagged" },
         ],
       },
       {

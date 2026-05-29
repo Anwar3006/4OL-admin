@@ -8,10 +8,14 @@ import MarketingStats from "./_components/MarketingStats";
 import AllCampaignsTab from "./_components/AllCampaignsTab";
 import AnalyticsTab from "./_components/AnalyticsTab";
 import LinkagesTab from "./_components/LinkagesTab";
+import SubscriptionsTab from "./_components/SubscriptionsTab";
+import DiscountsTab from "./_components/DiscountsTab";
 import { cn } from "@/lib/utils";
 
 const MktTabs = [
   { id: "all", label: "📣 All Campaigns" },
+  { id: "subscriptions", label: "💎 Subscriptions" },
+  { id: "discounts", label: "🏷️ Discounts" },
   { id: "analytics", label: "📊 Analytics" },
   { id: "linkages", label: "🔗 Page Linkages" },
 ];
@@ -41,7 +45,7 @@ const MarketingPage = () => {
       >
         <button className="btn btn-secondary btn-sm">📋 Analytics Report</button>
         <button className="btn btn-secondary btn-sm">📋 Review Submissions</button>
-        <button className="btn btn-primary text-white font-black uppercase tracking-widest">+ New Campaign</button>
+        <button className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]">+ New Campaign</button>
       </PageHeader>
 
       <MarketingStats />
@@ -64,6 +68,8 @@ const MarketingPage = () => {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent value="all"><AllCampaignsTab /></TabsContent>
+          <TabsContent value="subscriptions"><SubscriptionsTab /></TabsContent>
+          <TabsContent value="discounts"><DiscountsTab /></TabsContent>
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
           <TabsContent value="linkages"><LinkagesTab /></TabsContent>
         </div>

@@ -1,10 +1,4 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
-
-export default function Page() {
-  return (
-    <PlaceholderPage
-      title="jobs"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+import PagePlaceholder from "@/components/redesign/PagePlaceholder";
+export default function JobsPage() {
+  return <PagePlaceholder title="💼 Jobs & Careers" subtitle="Healthcare job board · Professional opportunities · Digital CV management" icon="💼" />;
 }

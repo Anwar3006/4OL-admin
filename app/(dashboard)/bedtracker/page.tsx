@@ -1,10 +1,4 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
-
-export default function Page() {
-  return (
-    <PlaceholderPage
-      title="bedtracker"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+import PagePlaceholder from "@/components/redesign/PagePlaceholder";
+export default function BedTrackerPage() {
+  return <PagePlaceholder title="🛏️ BedTracker (PKM)" subtitle="Live bed availability · Emergency routing · Ambulance dispatch" icon="🛏️" />;
 }

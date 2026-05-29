@@ -215,79 +215,75 @@ const FacilitiesPage = () => {
         />
       </div>
 
-      {/* Facility Type Pills */}
-      <div className="pill-nav mb-5 overflow-x-auto no-scrollbar pb-1">
-        <div 
-          className={cn("pill cursor-pointer", selectedType === "all" && "active")}
-          onClick={() => setSelectedType("all")}
-        >
-          All Types
-        </div>
-        {facilityTypes.map(({ value, count }) => (
-          <div 
-            key={value} 
-            className={cn("pill flex items-center gap-1.5 whitespace-nowrap cursor-pointer", selectedType === value && "active")}
-            onClick={() => setSelectedType(value)}
-          >
-            <span>📋</span>
-            {formatFacilityType(value)}
-            <span className="text-[9px] opacity-60 font-black ml-1">{count}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Status Tabs */}
       <Tabs value={currentStatus} className="w-full" onValueChange={handleStatusChange}>
-        <div className="tabs mb-4 overflow-x-auto no-scrollbar">
-          <TabsList className="bg-transparent h-auto p-0 flex gap-0">
-            {[
-              { id: "all", label: "All Facilities", icon: "🏥" },
-              { id: "pending", label: "Pending Approval", icon: "⏳", badge: "23" },
-              { id: "active", label: "Active", icon: "✅" },
-              { id: "inactive", label: "Inactive", icon: "💤" },
-              { id: "suspended", label: "Suspended", icon: "🚫" },
-              { id: "rejected", label: "Rejected", icon: "❌" },
-              { id: "top_rated", label: "Top Rated", icon: "⭐", badge: "3", badgeColor: "bg-ek-purple" },
-              { id: "featured", label: "Featured", icon: "📌", badge: "4", badgeColor: "bg-ek-indigo" },
-            ].map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className={cn(
-                  "tab transition-all duration-150 data-[state=active]:active data-[state=active]:text-ek-green-dark data-[state=active]:border-b-3 data-[state=active]:border-ek-green-dark",
-                )}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-                {tab.badge && (
-                  <span className={cn(
-                    "ml-2 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-[16px] text-center",
-                    tab.badgeColor || "bg-ek-orange"
-                  )}>
-                    {tab.badge}
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <TabsList className="bg-transparent h-auto p-0 flex gap-0 border-b border-slate-200 w-full justify-start rounded-none overflow-x-auto no-scrollbar mb-4">
+          {[
+            { id: "all", label: "All Facilities", icon: "🏥" },
+            { id: "pending", label: "Pending Approval", icon: "⏳", badge: "23" },
+            { id: "active", label: "Active", icon: "✅" },
+            { id: "inactive", label: "Inactive", icon: "💤" },
+            { id: "suspended", label: "Suspended", icon: "🚫" },
+            { id: "rejected", label: "Rejected", icon: "❌" },
+            { id: "top_rated", label: "Top Rated", icon: "⭐", badge: "3", badgeColor: "bg-ek-purple" },
+            { id: "featured", label: "Featured", icon: "📌", badge: "4", badgeColor: "bg-ek-indigo" },
+          ].map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
+              )}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+              {tab.badge && (
+                <span className={cn(
+                  "ml-2 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-[16px] text-center shadow-sm",
+                  tab.badgeColor || "bg-ek-orange"
+                )}>
+                  {tab.badge}
+                </span>
+              )}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        <div className="mt-4">
-           <div className="card mb-4">
-            <div className="fbar p-0 m-0">
-              <div className="relative flex-1 min-w-[240px]">
-                <input 
-                  className="fi fi-s w-full pl-8" 
-                  placeholder="🔍 Search by name, type, region, phone..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <select className="fi"><option>All Regions</option></select>
-              <select className="fi"><option>All Plans</option></select>
-              <select className="fi"><option>All Ratings</option></select>
-              <button className="btn btn-secondary">📥 Export</button>
+        <div className="space-y-4">
+           {/* Facility Type Pills */}
+          <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+            <button 
+              className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer", selectedType === "all" ? "bg-ek-green-dark text-white border-ek-green-dark" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300")}
+              onClick={() => setSelectedType("all")}
+            >
+              All Types
+            </button>
+            {facilityTypes.map(({ value, count }) => (
+              <button 
+                key={value} 
+                className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer", selectedType === value ? "bg-ek-green-dark text-white border-ek-green-dark" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300")}
+                onClick={() => setSelectedType(value)}
+              >
+                <span>📋</span>
+                {formatFacilityType(value)}
+                <span className={cn("text-[8px] font-black opacity-60", selectedType === value ? "text-white" : "text-slate-400")}>{count}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2 items-center mb-4">
+            <div className="relative flex-1 min-w-[240px]">
+              <input 
+                className="w-full h-8 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all" 
+                placeholder="🔍 Search by name, type, region, phone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>All Regions</option></select>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>All Plans</option></select>
+            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20"><option>All Ratings</option></select>
+            <button className="btn btn-secondary btn-sm font-bold">📥 Export</button>
           </div>
 
           <div className="card p-0 overflow-hidden">
@@ -297,7 +293,6 @@ const FacilitiesPage = () => {
               rowActions={rowActions}
               selectable
               itemsPerPage={limit}
-              // isLoading={isLoading || isFetching}
             />
           </div>
 

@@ -63,14 +63,14 @@ export default function KpiCard({
           <div className={cn("text-2xl font-black tracking-tight leading-none", valueTextColors[variant] || valueTextColors.blue)}>
             {value}
           </div>
-          <div className="text-sm font-bold text-slate-500 mt-1">
+          <div className="text-xs font-bold text-slate-500 mt-1">
             {label}
           </div>
         </div>
 
         {delta && (
           <div className={cn(
-            "inline-flex items-center gap-1 text-[11px] font-bold mt-4 px-3 py-1 rounded-full",
+            "inline-flex items-center gap-1 text-[9px] font-bold mt-4 px-3 py-1 rounded-full",
             deltaClasses[deltaType] || deltaClasses.neutral
           )}>
             {deltaType === 'up' && <span className="font-extrabold">↑</span>}
