@@ -134,6 +134,10 @@ export const useFacilityProfiles = (params: Pagination) => {
         analytics: aggregateStats(statsResponse.data),
         typeCounts: aggregateTypeCounts(statsResponse.data),
         totalRegistered: statsResponse.data?.length || 0,
+        avgRating: statsResponse.data?.length
+          ? (statsResponse.data.reduce((acc: number, s: any) => acc + (s.rating_average || 0), 0) / statsResponse.data.length).toFixed(1)
+          : "0.0",
+        topRatedCount: statsResponse.data?.filter((s: any) => s.is_top_rated).length || 0,
       };
     },
   });

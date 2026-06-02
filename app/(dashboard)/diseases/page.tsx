@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils";
 import { useConditions, useDeleteCondition, useConditionStats } from "@/hooks/supabase-calls/useCondition";
 
 import AddConditionDialog from "./_components/add-condition-dialog";
-import { useAddConditionDialog } from "@/stores/dialog-store";
+import { useAddConditionDialog, useViewConditionDialog } from "@/stores/dialog-store";
+import { ViewConditionDialog } from "./_components/view-condition-dialog";
 
 
 const DiseasesPage = () => {
   const addCondition = useAddConditionDialog();
+  const { open: openViewDialog } = useViewConditionDialog();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const limit = 10;
@@ -104,7 +106,7 @@ const DiseasesPage = () => {
   ];
 
   const rowActions = [
-    { label: "View", icon: "👁️", onClick: (row: any) => console.log('View', row.id) },
+    { label: "View", icon: "👁️", onClick: (row: any) => openViewDialog(row.id) },
     { label: "Edit", icon: "✏️", onClick: (row: any) => addCondition.open(row) },
     { label: "Feature", icon: "⭐", onClick: (row: any) => console.log('Feature', row.id) },
     { label: "Delete", icon: "🗑️", onClick: (row: any) => deleteCondition(row.id), danger: true },
@@ -206,6 +208,7 @@ const DiseasesPage = () => {
                 selectable
                 itemsPerPage={limit}
                 isLoading={isLoading || isFetching}
+                pagination={true}
               />
             </div>
 
@@ -236,6 +239,7 @@ const DiseasesPage = () => {
       </Tabs>
 
       <AddConditionDialog />
+      <ViewConditionDialog />
     </div>
   );
 };

@@ -62,9 +62,14 @@ const FacilitiesPage = () => {
       key: "name",
       label: "Facility",
       render: (val: string, row: any) => (
-        <div>
-          <div className="font-bold text-slate-800">{val}</div>
-          <div className="text-[10px] text-slate-400">{row.address || "No address provided"}</div>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-black text-[10px] text-slate-400 border border-slate-200 uppercase">
+             {val?.slice(0, 2)}
+          </div>
+          <div>
+            <div className="font-bold text-slate-800">{val}</div>
+            <div className="text-[10px] text-slate-400">{row.address || "No address provided"}</div>
+          </div>
         </div>
       ),
     },
@@ -79,7 +84,7 @@ const FacilitiesPage = () => {
       key: "region",
       label: "Region",
       render: (val: string) => (
-        <span className="text-[11px] text-slate-600 font-medium">{val || "Greater Accra"}</span>
+        <span className="text-[11px] text-slate-600 font-bold uppercase tracking-tight">{val || "Greater Accra"}</span>
       ),
     },
     {
@@ -94,7 +99,7 @@ const FacilitiesPage = () => {
     {
       key: "phone",
       label: "Contact",
-      render: (val: string) => <span className="td-s">{val || "N/A"}</span>,
+      render: (val: string) => <span className="td-s font-bold">{val || "N/A"}</span>,
     },
     {
       key: "plan",
@@ -105,7 +110,7 @@ const FacilitiesPage = () => {
       key: "rating",
       label: "Rating",
       render: (val: number) => (
-        <span className="font-bold text-ek-gold text-[11px]">{val || "4.5"} ⭐</span>
+        <span className="font-black text-ek-gold text-[11px]">{val || "4.5"} ⭐</span>
       ),
     },
     {
@@ -126,7 +131,7 @@ const FacilitiesPage = () => {
 
   const rowActions = [
     { label: "View", icon: "👁️", onClick: (row: any) => viewFacility.open(row.id) },
-    { label: "Edit", icon: "✏️", onClick: (row: any) => console.log("Edit", row) },
+    { label: "Edit", icon: "✏️", onClick: (row: any) => addFacility.open(row) },
     { label: "Delete", icon: "🗑️", onClick: (row: any) => console.log("Delete", row), danger: true },
   ];
 
@@ -138,10 +143,10 @@ const FacilitiesPage = () => {
   }, [data?.typeCounts]);
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
         title="🏥 Facilities Management"
-        subtitle="Healthcare facilities registry · HEFRA validated · 1,310 total registered across Ghana"
+        subtitle="Healthcare facilities registry · HEFRA validated · Live database records"
       >
         <button className="btn btn-secondary">📥 Export CSV</button>
         <button className="btn btn-secondary">📋 View Map</button>
@@ -149,7 +154,7 @@ const FacilitiesPage = () => {
           className="btn btn-secondary bg-ek-amber-light text-ek-amber border-ek-amber/20"
           onClick={() => handleStatusChange("pending")}
         >
-          ⏳ Review Pending (23)
+          ⏳ Review Pending ({data?.analytics?.pending ?? 0})
         </button>
         <button className="btn btn-primary" onClick={() => addFacility.open()}>
           + Register Facility
@@ -157,18 +162,20 @@ const FacilitiesPage = () => {
       </PageHeader>
 
       {/* SA Alert Banner */}
-      <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-xl p-3.5 mb-4 flex flex-wrap items-center gap-3 shadow-lg shadow-indigo-100">
-        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 animate-pulse" />
-        <div className="flex-1 min-w-0 text-[11px] text-white/90">
-          <strong className="text-white">23 Facilities Awaiting Super Admin Approval</strong> —
-          Only Super Admin can approve or reject facility submissions. Facilities are hidden from users until approved.
+      {(data?.analytics?.pending ?? 0) > 0 && (
+        <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-xl p-3.5 flex flex-wrap items-center gap-3 shadow-lg shadow-indigo-100">
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0 animate-pulse" />
+          <div className="flex-1 min-w-0 text-[11px] text-white/90">
+            <strong className="text-white">{data?.analytics?.pending} Facilities Awaiting Super Admin Approval</strong> —
+            Only Super Admin can approve or reject facility submissions. Facilities are hidden from users until approved.
+          </div>
+          <button className="btn btn-sm bg-white/15 text-white border border-white/30 hover:bg-white/25 cursor-pointer">
+            ⚡ Review Now
+          </button>
         </div>
-        <button className="btn btn-sm bg-white/15 text-white border border-white/30 hover:bg-white/25">
-          ⚡ Review Now
-        </button>
-      </div>
+      )}
 
-      <div className="alert al-in mb-4">
+      <div className="alert al-in">
         <div className="al-ic">⚠️</div>
         <div className="text-slate-600 text-xs">
           <strong>IBP Advisory:</strong> Independent Business Partners (IBPs) are managed separately
@@ -177,44 +184,44 @@ const FacilitiesPage = () => {
         </div>
       </div>
 
-      {/* KPI Grid — 1 on mobile, 2 on sm, 3 on lg */}
+      {/* KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-5">
         <KpiCard
           icon="📊"
           label="Total Registered"
-          value={data?.totalRegistered?.toLocaleString() ?? "1,310"}
+          value={data?.totalRegistered?.toLocaleString() ?? "0"}
           variant="blue"
-          delta="+23 pending"
-          deltaType="up"
+          delta="Real-time"
+          deltaType="neutral"
         />
         <KpiCard
           icon="✅"
           label="Active"
-          value={data?.analytics?.active?.toLocaleString() ?? "1,287"}
+          value={data?.analytics?.active?.toLocaleString() ?? "0"}
           variant="green"
-          delta="+5.2% month"
+          delta="Live records"
           deltaType="up"
         />
         <KpiCard
           icon="⏳"
           label="Pending Approval"
-          value={data?.analytics?.pending?.toLocaleString() ?? "23"}
+          value={data?.analytics?.pending?.toLocaleString() ?? "0"}
           variant="gold"
-          delta="SA Only"
+          delta="SA Queue"
         />
-        <KpiCard icon="📊" label="Top Rated" value="3" variant="purple" delta="Visible in-app" />
+        <KpiCard icon="📊" label="Top Rated" value={(data as any)?.topRatedCount || "2"} variant="purple" delta="Visible in-app" />
         <KpiCard
           icon="⭐"
           label="Avg. Rating"
-          value="4.4"
+          value={(data as any)?.avgRating || "4.8"}
           variant="teal"
-          delta="+0.1 month"
+          delta="User feedback"
           deltaType="up"
         />
         <KpiCard
           icon="🚩"
           label="Rejected"
-          value={data?.analytics?.rejected?.toLocaleString() ?? "3"}
+          value={data?.analytics?.rejected?.toLocaleString() ?? "0"}
           variant="red"
           delta="Needs review"
           deltaType="down"
@@ -225,31 +232,31 @@ const FacilitiesPage = () => {
         <TabsList className="bg-transparent h-auto p-0 flex gap-0 border-b border-slate-200 w-full justify-start rounded-none overflow-x-auto no-scrollbar mb-4">
           {[
             { id: "all", label: "All Facilities", icon: "🏥" },
-            { id: "pending", label: "Pending Approval", icon: "⏳", badge: "23" },
+            { id: "pending", label: "Pending Approval", icon: "⏳", badge: data?.analytics?.pending },
             { id: "active", label: "Active", icon: "✅" },
             { id: "inactive", label: "Inactive", icon: "💤" },
             { id: "suspended", label: "Suspended", icon: "🚫" },
             { id: "rejected", label: "Rejected", icon: "❌" },
-            { id: "top_rated", label: "Top Rated", icon: "⭐", badge: "3", badgeColor: "bg-ek-purple" },
-            { id: "featured", label: "Featured", icon: "📌", badge: "4", badgeColor: "bg-ek-indigo" },
+            { id: "top_rated", label: "Top Rated", icon: "⭐", badge: (data as any)?.topRatedCount },
           ].map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "px-4 sm:px-5 py-2.5 sm:py-3 text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
-                "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "px-5 py-3.5 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em]",
+                "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
+                "hover:text-ek-green-dark hover:bg-emerald-50/30",
                 "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
                 "data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
               )}
             >
-              <span className="mr-1.5">{tab.icon}</span>
+              <span className="mr-2 text-[14px]">{tab.icon}</span>
               {tab.label}
-              {tab.badge && (
+              {!!tab.badge && (
                 <span
                   className={cn(
-                    "ml-1.5 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-[16px] text-center shadow-sm",
-                    tab.badgeColor || "bg-ek-orange",
+                    "ml-2 px-2 py-0.5 rounded-full text-[9px] font-black text-white min-w-[20px] text-center shadow-sm",
+                    tab.id === 'pending' ? "bg-ek-orange" : "bg-ek-purple",
                   )}
                 >
                   {tab.badge}
@@ -259,15 +266,15 @@ const FacilitiesPage = () => {
           ))}
         </TabsList>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Facility Type Pills */}
           <div className="flex flex-wrap gap-2 overflow-x-auto no-scrollbar pb-1">
             <button
               className={cn(
-                "px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer",
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border transition-all cursor-pointer shadow-sm",
                 selectedType === "all"
-                  ? "bg-ek-green-dark text-white border-ek-green-dark"
-                  : "bg-white text-slate-400 border-slate-200 hover:border-slate-300",
+                  ? "bg-slate-900 text-white border-slate-900 shadow-slate-200"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50",
               )}
               onClick={() => setSelectedType("all")}
             >
@@ -277,19 +284,19 @@ const FacilitiesPage = () => {
               <button
                 key={value}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                  "transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer",
+                  "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm",
+                  "transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                   selectedType === value
-                    ? "bg-ek-green-dark text-white border-ek-green-dark"
-                    : "bg-white text-slate-400 border-slate-200 hover:border-slate-300",
+                    ? "bg-slate-900 text-white border-slate-900 shadow-slate-200"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50",
                 )}
                 onClick={() => setSelectedType(value)}
               >
-                📋 {formatFacilityType(value)}
+                 {formatFacilityType(value)}
                 <span
                   className={cn(
-                    "text-[8px] font-black opacity-60",
-                    selectedType === value ? "text-white" : "text-slate-400",
+                    "px-1.5 py-0.5 rounded-md text-[8px] font-black transition-colors",
+                    selectedType === value ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400",
                   )}
                 >
                   {count}
@@ -298,43 +305,41 @@ const FacilitiesPage = () => {
             ))}
           </div>
 
-          {/* Filter bar */}
-          <div className="fbar p-0 m-0">
-            <div className="relative flex-1 min-w-[200px]">
-              <input
-                className="fi fi-s w-full pl-8"
-                placeholder="🔍 Search by name, type, region, phone…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="card p-0 overflow-hidden min-h-[500px] border-slate-200 shadow-xl shadow-slate-100">
+             {/* Filter bar */}
+            <div className="fbar border-b border-slate-100 bg-slate-50/50 p-4">
+              <div className="relative flex-1 min-w-[300px]">
+                <input
+                  className="fi fi-s w-full pl-10 h-10 rounded-xl"
+                  placeholder="🔍 Search by name, type, region, phone…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <select className="fi h-10 px-4 rounded-xl font-black uppercase text-[10px] tracking-widest cursor-pointer">
+                <option>All Regions</option>
+              </select>
+              <select className="fi h-10 px-4 rounded-xl font-black uppercase text-[10px] tracking-widest cursor-pointer">
+                <option>All Plans</option>
+              </select>
+              <button className="btn btn-secondary h-10 px-5 font-black uppercase text-[10px] tracking-widest">📥 Export CSV</button>
             </div>
-            <select className="fi">
-              <option>All Regions</option>
-            </select>
-            <select className="fi">
-              <option>All Plans</option>
-            </select>
-            <select className="fi">
-              <option>All Ratings</option>
-            </select>
-            <button className="btn btn-secondary btn-sm">📥 Export</button>
-          </div>
 
-          <div className="card p-0 overflow-hidden">
             <DataTable
               columns={columns}
               data={data?.facilities || []}
               rowActions={rowActions}
               selectable
               itemsPerPage={limit}
+              isLoading={isLoading || isFetching}
+              pagination={true}
             />
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button className="btn btn-secondary btn-sm font-bold">✅ Approve Selected</button>
-            <button className="btn btn-secondary btn-sm font-bold">📥 Export</button>
-            <button className="btn btn-secondary btn-sm font-bold">⭐ Feature</button>
-            <button className="btn btn-danger btn-sm font-bold">🚫 Suspend</button>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <button className="btn btn-secondary font-black uppercase tracking-widest text-[10px] px-5 py-2.5">✅ Approve Selected</button>
+            <button className="btn btn-secondary font-black uppercase tracking-widest text-[10px] px-5 py-2.5">⭐ Feature</button>
+            <button className="btn btn-danger font-black uppercase tracking-widest text-[10px] px-5 py-2.5">🚫 Suspend</button>
           </div>
         </div>
       </Tabs>

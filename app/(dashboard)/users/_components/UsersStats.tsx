@@ -4,12 +4,12 @@ import KpiCard from "@/components/redesign/KpiCard";
 export default function UsersStats() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-6">
-      <KpiCard icon="👥" label="Total Users"            value="45,234" variant="blue"  delta="+12.4% this month" deltaType="up"      />
-      <KpiCard icon="✅" label="Active"                  value="38,120" variant="green" delta="84% of total"       deltaType="up"      />
-      <KpiCard icon="⭐" label="Premium"                 value="4,812"  variant="amber" delta="+8.2% this month"  deltaType="up"      />
-      <KpiCard icon="⏳" label="Pending Verification"    value="560"    variant="gold"  delta="Email / Profile"    deltaType="neutral" />
-      <KpiCard icon="🚩" label="Flagged"                 value="12"     variant="red"   delta="⚠️ Needs review"   deltaType="down"    />
-      <KpiCard icon="🗑️" label="Delete Requests"        value="1"      variant="red"   delta="GH-DPA 2012"        deltaType="down"    />
+      <KpiCard icon="👥" label="Total Users"            value="6" variant="blue"  delta="Database reading"  deltaType="neutral" />
+      <KpiCard icon="✅" label="Active"                  value="6" variant="green" delta="100% of total"      deltaType="up"      />
+      <KpiCard icon="⭐" label="Premium"                 value="0" variant="amber" delta="Free tier only"     deltaType="neutral" />
+      <KpiCard icon="⏳" label="Pending Verification"    value="0" variant="gold"  delta="All verified"       deltaType="neutral" />
+      <KpiCard icon="🚩" label="Flagged"                 value="0" variant="red"   delta="None"               deltaType="neutral" />
+      <KpiCard icon="🗑️" label="Delete Requests"        value="0" variant="red"   delta="None pending"       deltaType="neutral" />
     </div>
   );
 }

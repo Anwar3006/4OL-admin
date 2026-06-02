@@ -19,6 +19,7 @@ export default function ProfileModal({ isOpen, onClose }: { isOpen: boolean; onC
           if (data) {
             setProfile({
               ...data,
+              email: user.email,
               name: `${data.first_name || ''} ${data.last_name || ''}`.trim()
             });
           }

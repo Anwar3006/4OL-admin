@@ -501,7 +501,7 @@
     font-weight: 700;
     padding: 2px clamp(6px, 0.6vw + 3px, 8px);
     border-radius: var(--r-pill);
-    font-size: clamp(0.5rem, 0.25vw + 0.4rem, 0.625rem);
+    font-size: clamp(0.4rem, 0.25vw + 0.3rem, 0.525rem);
   }
 
   .badge-green  { background: var(--clr-green-muted);  color: var(--clr-green-deep); }

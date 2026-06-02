@@ -188,7 +188,7 @@ const AddConditionDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Edit Condition" : "Register New Condition"}

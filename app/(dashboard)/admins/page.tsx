@@ -12,6 +12,7 @@ import ActivityLogsTab from "./_components/ActivityLogsTab";
 import SecurityCenterTab from "./_components/SecurityCenterTab";
 import ReportsTab from "./_components/ReportsTab";
 import { cn } from "@/lib/utils";
+import { useAddAdminDialog } from "@/stores/dialog-store";
 
 const AdminTabs = [
   { id: "all", label: "👥 All Admins" },
@@ -24,6 +25,7 @@ const AdminTabs = [
 const AdminsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const addAdmin = useAddAdminDialog();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
 
@@ -48,7 +50,7 @@ const AdminsPage = () => {
       >
         <button className="btn btn-secondary">🛡️ SA Commands</button>
         <button className="btn btn-secondary">🔑 Manage Roles</button>
-        <button className="btn btn-primary text-white">✉️ Invite Admin</button>
+        <button className="btn btn-primary text-white" onClick={() => addAdmin.open()}>✉️ Invite Admin</button>
       </PageHeader>
 
       <div className="alert bg-red-50 border border-red-200 text-[11px] font-medium p-3 rounded-xl flex items-start gap-2.5">
