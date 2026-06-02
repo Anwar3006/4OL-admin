@@ -71,85 +71,81 @@ export default function KpiCard({
   }, [menuOpen]);
 
   return (
-    <div className="kpi-card">
-      {/* ── Left: value + label + delta ── */}
-      <div className="flex flex-col items-start gap-1.5 min-w-0 flex-1">
-        <div
-          className={cn("font-black tracking-tight leading-none", VALUE_CLR[variant])}
-          style={{ fontSize: "clamp(1.1rem, 1.8vw + 0.4rem, 1.75rem)" }}
-        >
+    <div className="kpi-card flex-col gap-4 p-5 sm:p-6 h-full">
+      {/* ── Top Row: Label + Icon/Menu ── */}
+      <div className="flex items-start justify-between w-full gap-2">
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 truncate">
+            {label}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div
+            className={cn(
+              "flex items-center justify-center rounded-xl shrink-0 w-9 h-9",
+              ICON_BG[variant] ?? ICON_BG.blue,
+            )}
+            style={{ fontSize: "18px" }}
+          >
+            {icon}
+          </div>
+
+          {menuItems.length > 0 && (
+            <div ref={menuRef} className="relative">
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400
+                           hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+
+              {menuOpen && (
+                <div
+                  className="absolute top-full right-0 mt-2 bg-white border border-slate-200
+                              rounded-xl z-20 py-1.5 overflow-hidden shadow-xl"
+                  style={{ minWidth: 160 }}
+                >
+                  {menuItems.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { item.onClick?.(); setMenuOpen(false); }}
+                      className="w-full text-left px-4 py-2 text-[11px] font-bold text-slate-600
+                                 hover:bg-slate-50 transition-colors cursor-pointer border-0 bg-transparent"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Middle: Value ── */}
+      <div className="flex flex-col gap-1.5">
+        <div className={cn("text-2xl sm:text-3xl font-black tracking-tighter leading-tight", VALUE_CLR[variant])}>
           {value}
         </div>
 
-        <div
-          className="font-bold uppercase tracking-wider leading-none text-slate-400"
-          style={{ fontSize: "clamp(0.5rem, 0.25vw + 0.4rem, 0.6rem)" }}
-        >
-          {label}
-        </div>
-
+        {/* ── Bottom: Delta Badge ── */}
         {delta && (
-          <div
-            className={cn(
-              "inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full mt-0.5",
-              DELTA_CLR[deltaType] ?? DELTA_CLR.neutral,
-            )}
-            style={{ fontSize: "clamp(0.5rem, 0.25vw + 0.4rem, 0.6rem)" }}
-          >
-            {deltaType === "up"   && <span>↑</span>}
-            {deltaType === "down" && <span>↓</span>}
-            {delta}
-          </div>
-        )}
-      </div>
-
-      {/* ── Right: icon + optional menu ── */}
-      <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
-        {menuItems.length > 0 && (
-          <div ref={menuRef} className="relative">
-            <button
-              onClick={() => setMenuOpen((o) => !o)}
-              className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400
-                         hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+          <div className="flex items-center">
+            <div
+              className={cn(
+                "inline-flex items-center gap-1 font-extrabold px-2 py-0.5 rounded-lg",
+                DELTA_CLR[deltaType] ?? DELTA_CLR.neutral,
+              )}
+              style={{ fontSize: "10px" }}
             >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
-
-            {menuOpen && (
-              <div
-                className="absolute top-full right-0 mt-1 bg-white border border-slate-200
-                            rounded-xl z-20 py-1 overflow-hidden"
-                style={{ minWidth: 140, boxShadow: "var(--shadow-dropdown)" }}
-              >
-                {menuItems.map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { item.onClick?.(); setMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-600
-                               hover:bg-slate-50 transition-colors cursor-pointer border-0 bg-transparent"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
+              {deltaType === "up"   && <span className="text-[12px]">↑</span>}
+              {deltaType === "down" && <span className="text-[12px]">↓</span>}
+              {delta}
+            </div>
           </div>
         )}
-
-        {/* Icon box — uses only default Tailwind colour classes */}
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-xl shrink-0",
-            ICON_BG[variant] ?? ICON_BG.blue,
-          )}
-          style={{
-            width:    "clamp(36px, 3vw + 16px, 50px)",
-            height:   "clamp(36px, 3vw + 16px, 50px)",
-            fontSize: "clamp(16px, 1.5vw + 6px, 22px)",
-          }}
-        >
-          {icon}
-        </div>
       </div>
     </div>
   );

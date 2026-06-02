@@ -37,8 +37,8 @@ const DashboardPage = () => {
 
       <CriticalAlerts />
 
-      {/* Row 1: KPI Grid — 2 on mobile, 4 on sm, 8 on xl */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3">
+      {/* Row 1: KPI Grid — 1 on mobile, 2 on sm, 4 on lg */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-5">
         <KpiCard icon="👥"   label="Total Users"      value="45,234"  variant="blue"   delta="+12.4%"  deltaType="up"   />
         <KpiCard icon="🏥"   label="Facilities"       value="1,287"   variant="teal"   delta="+5.2%"   deltaType="up"   />
         <KpiCard icon="💰"   label="Revenue (MTD)"    value="₵287K"   variant="green"  delta="+18.7%"  deltaType="up"   />

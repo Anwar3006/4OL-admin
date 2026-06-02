@@ -29,6 +29,7 @@ interface DataTableProps<T> {
   externalTotalPages?: number;
   externalPage?: number;
   onPageChange?: (page: number) => void;
+  isLoading?: boolean;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -42,6 +43,7 @@ export default function DataTable<T extends Record<string, any>>({
   externalTotalPages,
   externalPage,
   onPageChange,
+  isLoading = false,
 }: DataTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [internalPage, setInternalPage] = useState(1);
@@ -107,72 +109,98 @@ export default function DataTable<T extends Record<string, any>>({
           </thead>
 
           <tbody>
-            {paginatedData.map((row, idx) => (
-              <tr key={idx}>
-                {selectable && (
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.has(idx)}
-                      onChange={() => toggleRow(idx)}
-                      className="cursor-pointer"
-                    />
-                  </td>
-                )}
-                {columns.map((col) => (
-                  <td key={col.key}>
-                    {col.render ? col.render(row[col.key], row) : row[col.key]}
-                  </td>
-                ))}
-                {rowActions.length > 0 && (
-                  <td>
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenMenuRow(openMenuRow === idx ? null : idx)}
-                        className="w-7 h-7 rounded-md flex items-center justify-center
-                                   text-slate-400 hover:bg-slate-100 hover:text-slate-600
-                                   transition-colors cursor-pointer bg-transparent border-0"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-
-                      {openMenuRow === idx && (
-                        <>
-                          {/* Invisible backdrop to close menu */}
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setOpenMenuRow(null)}
-                          />
-                          <div
-                            className="absolute top-full right-0 mt-1 bg-white
-                                        border border-slate-200 rounded-lg z-20 py-1 overflow-hidden"
-                            style={{ minWidth: 160, boxShadow: "var(--shadow-dropdown)" }}
-                          >
-                            {rowActions.map((action, i) => (
-                              <button
-                                key={i}
-                                onClick={() => {
-                                  action.onClick?.(row);
-                                  setOpenMenuRow(null);
-                                }}
-                                className={cn(
-                                  "w-full text-left px-3 py-2 text-xs cursor-pointer bg-transparent border-0",
-                                  "flex items-center gap-2 transition-colors hover:bg-slate-50",
-                                  action.danger ? "text-red-600" : "text-slate-700",
-                                )}
-                              >
-                                {action.icon && <span>{action.icon}</span>}
-                                {action.label}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                )}
+            {isLoading ? (
+              <tr>
+                <td 
+                  colSpan={columns.length + (selectable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)} 
+                  className="py-24 text-center"
+                >
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-[3px] border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin" />
+                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Fetching records...</span>
+                  </div>
+                </td>
               </tr>
-            ))}
+            ) : paginatedData.length === 0 ? (
+              <tr>
+                <td 
+                  colSpan={columns.length + (selectable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)} 
+                  className="py-24 text-center"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-2xl opacity-50">📂</span>
+                    <span className="text-xs font-black text-slate-300 uppercase tracking-widest">No records found</span>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              paginatedData.map((row, idx) => (
+                <tr key={idx}>
+                  {selectable && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.has(idx)}
+                        onChange={() => toggleRow(idx)}
+                        className="cursor-pointer"
+                      />
+                    </td>
+                  )}
+                  {columns.map((col) => (
+                    <td key={col.key}>
+                      {col.render ? col.render(row[col.key], row) : row[col.key]}
+                    </td>
+                  ))}
+                  {rowActions.length > 0 && (
+                    <td>
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenuRow(openMenuRow === idx ? null : idx)}
+                          className="w-7 h-7 rounded-md flex items-center justify-center
+                                     text-slate-400 hover:bg-slate-100 hover:text-slate-600
+                                     transition-colors cursor-pointer bg-transparent border-0"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+
+                        {openMenuRow === idx && (
+                          <>
+                            {/* Invisible backdrop to close menu */}
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setOpenMenuRow(null)}
+                            />
+                            <div
+                              className="absolute top-full right-0 mt-1 bg-white
+                                          border border-slate-200 rounded-lg z-20 py-1 overflow-hidden"
+                              style={{ minWidth: 160, boxShadow: "var(--shadow-dropdown)" }}
+                            >
+                              {rowActions.map((action, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    action.onClick?.(row);
+                                    setOpenMenuRow(null);
+                                  }}
+                                  className={cn(
+                                    "w-full text-left px-3 py-2 text-xs cursor-pointer bg-transparent border-0",
+                                    "flex items-center gap-2 transition-colors hover:bg-slate-50",
+                                    action.danger ? "text-red-600" : "text-slate-700",
+                                  )}
+                                >
+                                  {action.icon && <span>{action.icon}</span>}
+                                  {action.label}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

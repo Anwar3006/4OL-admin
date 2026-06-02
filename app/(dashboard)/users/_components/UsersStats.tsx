@@ -3,7 +3,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 
 export default function UsersStats() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-6">
       <KpiCard icon="👥" label="Total Users"            value="45,234" variant="blue"  delta="+12.4% this month" deltaType="up"      />
       <KpiCard icon="✅" label="Active"                  value="38,120" variant="green" delta="84% of total"       deltaType="up"      />
       <KpiCard icon="⭐" label="Premium"                 value="4,812"  variant="amber" delta="+8.2% this month"  deltaType="up"      />

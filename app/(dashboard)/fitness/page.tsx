@@ -50,7 +50,7 @@ const FitnessPage = () => {
       </PageHeader>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-5">
         <KpiCard
           icon="🏋️"
           label="Fitness Users"

@@ -177,8 +177,8 @@ const FacilitiesPage = () => {
         </div>
       </div>
 
-      {/* KPI Grid — max 2 on mobile, 3 on tablet, 6 on large screens */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-5">
+      {/* KPI Grid — 1 on mobile, 2 on sm, 3 on lg */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-5">
         <KpiCard
           icon="📊"
           label="Total Registered"

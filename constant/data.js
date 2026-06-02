@@ -1,4 +1,4 @@
-import { handleLogout } from "@/components/partials/auth/store";
+import { handleLogout } from "@/components/redesign/auth/store";
 
 export const menuItems = [
   {

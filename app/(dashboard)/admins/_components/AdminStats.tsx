@@ -3,7 +3,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 
 export default function AdminStats() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-6">
       <KpiCard icon="👥" label="Total Admins"  value="6"  variant="blue"  delta="+1 this month"    deltaType="neutral" />
       <KpiCard icon="✅" label="Active"         value="4"  variant="green" delta="All verified"      deltaType="up"      />
       <KpiCard icon="⏳" label="Pending"        value="1"  variant="gold"  delta="Awaiting 2FA"      deltaType="neutral" />

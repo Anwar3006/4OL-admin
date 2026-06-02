@@ -3,8 +3,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 
 export default function MedicationStats() {
   return (
-    /* 2 cols on mobile → 3 on md → 6 on xl (same ratio as facilities) */
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5 mb-6">
       <KpiCard icon="📊" label="Drugs in Database"      value="4,820"  variant="blue"   delta="+42 this month"  deltaType="up"      />
       <KpiCard icon="✅" label="Active Reminders"        value="12,400" variant="green"  delta="+820 this month" deltaType="up"      />
       <KpiCard icon="🤖" label="AI Accuracy"             value="98.1%"  variant="purple" delta="v1.8 active"     deltaType="up"      />
