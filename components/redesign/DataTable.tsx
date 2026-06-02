@@ -1,31 +1,34 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import { MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import React, { useState } from "react";
+import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface Column<T> {
-  key: string
-  label: string
-  width?: string | number
-  render?: (value: any, row: T) => React.ReactNode
+  key: string;
+  label: string;
+  width?: string | number;
+  render?: (value: any, row: T) => React.ReactNode;
 }
 
 export interface RowAction<T> {
-  label: string
-  icon?: React.ReactNode
-  onClick?: (row: T) => void
-  danger?: boolean
+  label: string;
+  icon?: React.ReactNode;
+  onClick?: (row: T) => void;
+  danger?: boolean;
 }
 
 interface DataTableProps<T> {
-  columns: Column<T>[]
-  data: T[]
-  dark?: boolean
-  rowActions?: RowAction<T>[]
-  selectable?: boolean
-  pagination?: boolean
-  itemsPerPage?: number
+  columns: Column<T>[];
+  data: T[];
+  dark?: boolean;
+  rowActions?: RowAction<T>[];
+  selectable?: boolean;
+  pagination?: boolean;
+  itemsPerPage?: number;
+  externalTotalPages?: number;
+  externalPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -36,40 +39,56 @@ export default function DataTable<T extends Record<string, any>>({
   selectable = false,
   pagination = true,
   itemsPerPage = 10,
+  externalTotalPages,
+  externalPage,
+  onPageChange,
 }: DataTableProps<T>) {
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set())
-  const [currentPage, setCurrentPage] = useState(1)
-  const [openMenuRow, setOpenMenuRow] = useState<number | null>(null)
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [internalPage, setInternalPage] = useState(1);
+  const [openMenuRow, setOpenMenuRow] = useState<number | null>(null);
 
-  const totalPages = Math.ceil(data.length / itemsPerPage)
-  const start = (currentPage - 1) * itemsPerPage
-  const paginatedData = data.slice(start, start + itemsPerPage)
+  const isExternal = externalTotalPages !== undefined && externalPage !== undefined;
+  const currentPage = isExternal ? externalPage! : internalPage;
+  const totalPages = isExternal
+    ? externalTotalPages!
+    : Math.ceil(data.length / itemsPerPage);
+  const paginatedData = isExternal
+    ? data
+    : data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const toggleAll = () => {
-    if (selectedRows.size === paginatedData.length) {
-      setSelectedRows(new Set())
-    } else {
-      setSelectedRows(new Set(paginatedData.map((_, i) => i)))
-    }
-  }
+  const handlePageChange = (page: number) => {
+    if (isExternal) onPageChange?.(page);
+    else setInternalPage(page);
+  };
+
+  const toggleAll = () =>
+    setSelectedRows(
+      selectedRows.size === paginatedData.length
+        ? new Set()
+        : new Set(paginatedData.map((_, i) => i)),
+    );
 
   const toggleRow = (idx: number) => {
-    const next = new Set(selectedRows)
-    if (next.has(idx)) next.delete(idx)
-    else next.add(idx)
-    setSelectedRows(next)
-  }
+    const next = new Set(selectedRows);
+    next.has(idx) ? next.delete(idx) : next.add(idx);
+    setSelectedRows(next);
+  };
 
-  const tableClass = dark ? 'data-table-dark' : 'data-table'
+  const tableClass = dark ? "data-table-dark" : "data-table";
+
+  const pageNums = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (n) => n === 1 || n === totalPages || Math.abs(n - currentPage) <= 2,
+  );
 
   return (
     <div>
-      <div className="overflow-x-auto">
-        <table className={tableClass}>
+      {/* Horizontal scroll container */}
+      <div className="overflow-x-auto w-full">
+        <table className={tableClass} style={{ minWidth: "540px" }}>
           <thead>
             <tr>
               {selectable && (
-                <th className="w-10">
+                <th style={{ width: 36 }}>
                   <input
                     type="checkbox"
                     checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
@@ -79,11 +98,14 @@ export default function DataTable<T extends Record<string, any>>({
                 </th>
               )}
               {columns.map((col) => (
-                <th key={col.key} style={{ width: col.width }}>{col.label}</th>
+                <th key={col.key} style={{ width: col.width }}>
+                  {col.label}
+                </th>
               ))}
-              {rowActions.length > 0 && <th className="w-10" />}
+              {rowActions.length > 0 && <th style={{ width: 36 }} />}
             </tr>
           </thead>
+
           <tbody>
             {paginatedData.map((row, idx) => (
               <tr key={idx}>
@@ -107,21 +129,36 @@ export default function DataTable<T extends Record<string, any>>({
                     <div className="relative">
                       <button
                         onClick={() => setOpenMenuRow(openMenuRow === idx ? null : idx)}
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+                        className="w-7 h-7 rounded-md flex items-center justify-center
+                                   text-slate-400 hover:bg-slate-100 hover:text-slate-600
+                                   transition-colors cursor-pointer bg-transparent border-0"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
+
                       {openMenuRow === idx && (
                         <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuRow(null)}></div>
-                          <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-dropdown min-w-[160px] z-20 py-1 overflow-hidden">
+                          {/* Invisible backdrop to close menu */}
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setOpenMenuRow(null)}
+                          />
+                          <div
+                            className="absolute top-full right-0 mt-1 bg-white
+                                        border border-slate-200 rounded-lg z-20 py-1 overflow-hidden"
+                            style={{ minWidth: 160, boxShadow: "var(--shadow-dropdown)" }}
+                          >
                             {rowActions.map((action, i) => (
                               <button
                                 key={i}
-                                onClick={() => { action.onClick?.(row); setOpenMenuRow(null) }}
+                                onClick={() => {
+                                  action.onClick?.(row);
+                                  setOpenMenuRow(null);
+                                }}
                                 className={cn(
-                                  "w-full text-left px-3 py-2 text-xs cursor-pointer hover:bg-slate-50 flex items-center gap-2 transition-colors",
-                                  action.danger ? 'text-ek-red hover:bg-ek-red-light' : 'text-slate-700'
+                                  "w-full text-left px-3 py-2 text-xs cursor-pointer bg-transparent border-0",
+                                  "flex items-center gap-2 transition-colors hover:bg-slate-50",
+                                  action.danger ? "text-red-600" : "text-slate-700",
                                 )}
                               >
                                 {action.icon && <span>{action.icon}</span>}
@@ -140,44 +177,54 @@ export default function DataTable<T extends Record<string, any>>({
         </table>
       </div>
 
+      {/* Pagination */}
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4 px-1">
-          <span className="text-xs text-slate-500">
-            Showing {start + 1}-{Math.min(start + itemsPerPage, data.length)} of {data.length}
+        <div className="pag">
+          <span>
+            {isExternal
+              ? `Page ${currentPage} of ${totalPages}`
+              : `Showing ${(currentPage - 1) * itemsPerPage + 1}–${Math.min(
+                  currentPage * itemsPerPage,
+                  data.length,
+                )} of ${data.length}`}
           </span>
-          <div className="flex items-center gap-1">
+
+          <div className="pag-b">
             <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 cursor-pointer transition-colors"
+              className="pb"
+              disabled={currentPage <= 1}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            {/* Simple pagination: show all pages if few, or a subset if many. For now, show all like target. */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={cn(
-                  "w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold cursor-pointer transition-colors",
-                  page === currentPage
-                    ? 'bg-ek-green text-white shadow-sm'
-                    : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
-                )}
-              >
-                {page}
-              </button>
-            ))}
+
+            {pageNums.map((n, i) => {
+              const prev = pageNums[i - 1];
+              return (
+                <React.Fragment key={n}>
+                  {prev !== undefined && n - prev > 1 && (
+                    <span className="text-slate-300 text-xs px-1">…</span>
+                  )}
+                  <button
+                    className={cn("pb", n === currentPage && "active")}
+                    onClick={() => handlePageChange(n)}
+                  >
+                    {n}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+
             <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 cursor-pointer transition-colors"
+              className="pb"
+              disabled={currentPage >= totalPages}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

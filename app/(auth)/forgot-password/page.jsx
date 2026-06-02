@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import ForgotPass from "@/components/partials/auth/forgot-pass";
+// import ForgotPass from "@/components/redesign/auth/forgot-pass";
 import useDarkMode from "@/hooks/useDarkMode";
 
 const ForgotPass2 = () => {
@@ -35,7 +35,7 @@ const ForgotPass2 = () => {
                 Enter your Email and instructions will be sent to you!
               </div>
 
-              <ForgotPass />
+              {/* <ForgotPass /> */}
               <div className="md:max-w-[345px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-8 uppercase text-sm">
                
                 <Link

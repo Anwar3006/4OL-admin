@@ -3,13 +3,13 @@
 
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
-import HealthSchoolListing from "@/components/partials/auth/Facilities/HealthSchool/HealthSchoolListing";
+// import HealthSchoolListing from "@/components/redesign/auth/Facilities/HealthSchool/HealthSchoolListing";
 
 const HealthSchoolPage = () => {
   const [isDark] = useDarkmode();
   return (
     <div className="mt-5 relative">
-      <HealthSchoolListing />
+      {/* <HealthSchoolListing /> */}
     </div>
   );
 };

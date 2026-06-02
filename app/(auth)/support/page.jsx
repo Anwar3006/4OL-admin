@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import SupportForm from "@/components/partials/auth/support-form";
+// import SupportForm from "@/components/redesign/auth/support-form";
 import useDarkMode from "@/hooks/useDarkMode";
 
 const SupportPage = () => {
@@ -35,7 +35,7 @@ const SupportPage = () => {
                 Fill out the form below and our team will respond to you shortly!
               </div>
 
-              <SupportForm />
+              {/* <SupportForm /> */}
               <div className="md:max-w-[345px] mx-auto font-normal text-slate-500 dark:text-slate-400 2xl:mt-12 mt-8 uppercase text-sm">
                 <Link
                   href="/"

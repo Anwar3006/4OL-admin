@@ -3,16 +3,16 @@
 import { useEffect, Suspense, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 // import { ToastContainer } from "react-toastify";
-import Header from "@/components/partials/header";
-import Sidebar from "@/components/partials/sidebar";
+import Header from "@/components/redesign/header";
+import Sidebar from "@/components/redesign/sidebar";
 
 import useWidth from "@/hooks/useWidth";
 import useSidebar from "@/hooks/useSidebar";
 import useContentWidth from "@/hooks/useContentWidth";
 import useMenulayout from "@/hooks/useMenulayout";
 import useMenuHidden from "@/hooks/useMenuHidden";
-import Footer from "@/components/partials/footer";
-import MobileMenu from "@/components/partials/sidebar/MobileMenu";
+import Footer from "@/components/redesign/footer";
+import MobileMenu from "@/components/redesign/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";

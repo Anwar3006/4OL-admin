@@ -30,7 +30,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase.from('user_profiles').select('*').eq('user_id', user.id).single();
-        setProfile(data);
+        if (data) {
+          setProfile({
+            ...data,
+            name: `${data.first_name || ''} ${data.last_name || ''}`.trim()
+          });
+        }
       }
     };
     fetchProfile();

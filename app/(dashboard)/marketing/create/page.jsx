@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Card from "@/components/ui/Card";
-import AdsForm from "@/components/partials/auth/ads_form";
+// import AdsForm from "@/components/redesign/auth/ads_form";
 
 export default function page() {
   return (
@@ -11,7 +11,7 @@ export default function page() {
           <div className="right-column relative w-full">
             <Card className="inner-content w-full flex flex-col mt-5 bg-white dark:bg-slate-800">
               <div className=" w-full flex flex-col justify-center sm:p-5">
-                <AdsForm />
+                {/* <AdsForm /> */}
               </div>
             </Card>
           </div>

@@ -3,7 +3,7 @@
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
 import Card from "@/components/ui/Card";
-import AddDiagnosticLabsForm from "@/components/partials/auth/Facilities/DiagnosticLabs/AddDiagnosticLabsForm";
+// import AddDiagnosticLabsForm from "@/components/redesign/auth/Facilities/DiagnosticLabs/AddDiagnosticLabsForm";
 
 export default function page() {
   const [isDark] = useDarkmode();
@@ -17,7 +17,7 @@ export default function page() {
               className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
             >
               <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
-                <AddDiagnosticLabsForm />
+                {/* <AddDiagnosticLabsForm /> */}
               </div>
             </Card>
           </div>

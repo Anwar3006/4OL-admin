@@ -5,12 +5,12 @@ import Card from "@/components/ui/Card";
 import dynamic from "next/dynamic";
 
 // Dynamically import the map to prevent SSR issues with window
-const BasicMapRender = dynamic(
-  () => import("@/components/partials/auth/map/BasicMapRender"),
-  {
-    ssr: false,
-  }
-);
+// const BasicMapRender = dynamic(
+//   () => import("@/components/redesign/map/BasicMapRender"),
+//   {
+//     ssr: false,
+//   }
+// );
 
 export default function Page() {
   return (
@@ -23,7 +23,7 @@ export default function Page() {
             className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
           >
             <div className="w-full flex flex-col justify-center">
-              <BasicMapRender />
+              {/* <BasicMapRender /> */}
             </div>
           </Card>
         </div>

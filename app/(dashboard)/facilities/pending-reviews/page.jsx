@@ -2,14 +2,14 @@
 
 import React from "react";
 import useDarkmode from "@/hooks/useDarkMode";
-import PendingReviewList from "@/components/partials/auth/Facilities/PendingReview";
+// import PendingReviewList from "@/components/redesign/auth/Facilities/PendingReview";
 
 const PendingReview = () => {
   const [isDark] = useDarkmode();
   return (
     <>
       <div className="mt-5 relative">
-        <PendingReviewList />
+        {/* <PendingReviewList /> */}
       </div>
     </>
   );

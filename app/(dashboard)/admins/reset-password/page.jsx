@@ -2,7 +2,7 @@
 
 import React from "react";
 import Card from "@/components/ui/Card";
-import ResetPassword from "@/components/partials/auth/Admin/resetPassword";
+// import ResetPassword from "@/components/redesign/auth/Admin/resetPassword";
 
 export default function page() {
   return (
@@ -15,7 +15,7 @@ export default function page() {
             className="inner-content w-full flex flex-col bg-white dark:bg-slate-800"
           >
             <div className=" lg:w-[80%] w-full flex flex-col justify-center sm:p-5">
-              <ResetPassword />
+              {/* <ResetPassword /> */}
             </div>
           </Card>
         </div>
