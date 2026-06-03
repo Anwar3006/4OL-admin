@@ -461,7 +461,7 @@ const AddHealthyLivingDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto py-5 px-4 md:px-6">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             

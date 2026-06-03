@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 interface KpiCardProps {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: string | number ;
   delta?: string;
   deltaType?: "up" | "down" | "neutral";
   /** Colour variant — controls icon background + value colour */
@@ -71,7 +71,7 @@ export default function KpiCard({
   }, [menuOpen]);
 
   return (
-    <div className="kpi-card flex-col gap-4 p-5 sm:p-6 h-full">
+    <div className="kpi-card flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0">
       {/* ── Top Row: Label + Icon/Menu ── */}
       <div className="flex items-start justify-between w-full gap-2">
         <div className="flex flex-col gap-1 min-w-0">

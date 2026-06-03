@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 
@@ -47,6 +47,7 @@ const FacilitiesPage = () => {
     search: debouncedSearch,
     includeStatsOnly: false,
     status: currentStatus === "all" ? undefined : currentStatus,
+    type: selectedType === "all" ? undefined : selectedType,
   });
 
   const handleStatusChange = (status: string) => {
@@ -59,7 +60,7 @@ const FacilitiesPage = () => {
 
   const columns = [
     {
-      key: "name",
+      key: "facility_name",
       label: "Facility",
       render: (val: string, row: any) => (
         <div className="flex items-center gap-3">
@@ -68,13 +69,13 @@ const FacilitiesPage = () => {
           </div>
           <div>
             <div className="font-bold text-slate-800">{val}</div>
-            <div className="text-[10px] text-slate-400">{row.address || "No address provided"}</div>
+            <div className="text-[10px] text-slate-400">{row.facility_name || "No name provided"}</div>
           </div>
         </div>
       ),
     },
     {
-      key: "type",
+      key: "facility_type",
       label: "Type",
       render: (val: string) => (
         <span className="badge badge-blue">🏥 {formatFacilityType(val)}</span>
@@ -97,20 +98,20 @@ const FacilitiesPage = () => {
       ),
     },
     {
-      key: "phone",
+      key: "contact_number",
       label: "Contact",
       render: (val: string) => <span className="td-s font-bold">{val || "N/A"}</span>,
     },
     {
-      key: "plan",
+      key: "subscription_tier",
       label: "Plan",
-      render: (val: string) => <span className="badge badge-purple">{val || "Standard"}</span>,
+      render: (val: string) => <span className="badge badge-purple uppercase">{val || "Standard"}</span>,
     },
     {
-      key: "rating",
+      key: "rating_average",
       label: "Rating",
       render: (val: number) => (
-        <span className="font-black text-ek-gold text-[11px]">{val || "4.5"} ⭐</span>
+        <span className="font-black text-ek-gold text-[11px]">{val || "0.0"} ⭐</span>
       ),
     },
     {
@@ -123,7 +124,7 @@ const FacilitiesPage = () => {
             val === "active" ? "badge-green" : val === "pending" ? "badge-amber" : "badge-red",
           )}
         >
-          {val === "active" ? "✅ Active" : val === "pending" ? "⏳ Pending" : "Suspended"}
+          {val === "active" ? "✅ Active" : val === "pending" ? "⏳ Pending" : val || "Inactive"}
         </span>
       ),
     },
@@ -209,11 +210,11 @@ const FacilitiesPage = () => {
           variant="gold"
           delta="SA Queue"
         />
-        <KpiCard icon="📊" label="Top Rated" value={(data as any)?.topRatedCount || "2"} variant="purple" delta="Visible in-app" />
+        <KpiCard icon="📊" label="Top Rated" value={(data as any)?.topRatedCount || "0"} variant="purple" delta="Visible in-app" />
         <KpiCard
           icon="⭐"
           label="Avg. Rating"
-          value={(data as any)?.avgRating || "4.8"}
+          value={(data as any)?.avgRating || "0.0"}
           variant="teal"
           delta="User feedback"
           deltaType="up"
@@ -238,6 +239,7 @@ const FacilitiesPage = () => {
             { id: "suspended", label: "Suspended", icon: "🚫" },
             { id: "rejected", label: "Rejected", icon: "❌" },
             { id: "top_rated", label: "Top Rated", icon: "⭐", badge: (data as any)?.topRatedCount },
+            { id: "featured", label: "Featured", icon: "📌" },
           ].map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -276,7 +278,7 @@ const FacilitiesPage = () => {
                   ? "bg-slate-900 text-white border-slate-900 shadow-slate-200"
                   : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50",
               )}
-              onClick={() => setSelectedType("all")}
+              onClick={() => { setSelectedType("all"); setPage(1); }}
             >
               All Types
             </button>
@@ -290,7 +292,7 @@ const FacilitiesPage = () => {
                     ? "bg-slate-900 text-white border-slate-900 shadow-slate-200"
                     : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50",
                 )}
-                onClick={() => setSelectedType(value)}
+                onClick={() => { setSelectedType(value); setPage(1); }}
               >
                  {formatFacilityType(value)}
                 <span

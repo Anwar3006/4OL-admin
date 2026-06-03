@@ -33,14 +33,11 @@ const AddSymptomDialog = () => {
 
   const { data: bodyParts = [], isLoading: loadingParts } =
     useBodyPartsForSymptoms();
-  // const { data: categories = [], isLoading: loadingCats } =
-  //   useCategoriesForSymptoms();
 
   const { mutateAsync, isPending } = useCreateSymptom();
   const { mutateAsync: mutateAsyncEdit, isPending: submittingEdit } =
     useUpdateSymptom();
 
-  // const isLoadingForm = loadingParts && loadingCats;
   const isLoadingForm = loadingParts;
   const isSubmitting = isPending || submittingEdit;
 
@@ -88,7 +85,6 @@ const AddSymptomDialog = () => {
         form.reset({
           ...data,
           bodyParts: rehydrateHierarchy(data.bodyParts, bodyParts),
-          // categories: rehydrateHierarchy(data.categories, categories),
           image_url: data.image_url ?? "",
           nhs_link: data.nhs_link ?? "",
         });
@@ -130,12 +126,10 @@ const AddSymptomDialog = () => {
         formdata.bodyParts || [],
         bodyParts,
       );
-      // const optimizedCategoryIds = getDeepestNodes(formdata.categories || [], categories);
       const slug = slugify(formdata.name || "", { lower: true });
       const payload = {
         ...formdata,
         bodyParts: optimizedBodyPartIds,
-        // categories: optimizedCategoryIds,
         slug,
       };
 
@@ -157,17 +151,17 @@ const AddSymptomDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="font-black text-xl tracking-tight text-slate-900">
             {isEditMode ? "Edit Symptom" : "Register New Symptom"}
           </DialogTitle>
         </DialogHeader>
 
         {isLoadingForm ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="animate-spin mr-2" />
-            Loading form...
+          <div className="flex items-center justify-center py-20 bg-white">
+            <Loader2 className="animate-spin mr-2 text-emerald-600" />
+            <span className="font-black uppercase tracking-widest text-[10px] text-slate-400">Loading form...</span>
           </div>
         ) : (
           <Form {...form}>
@@ -180,7 +174,7 @@ const AddSymptomDialog = () => {
             >
               {/* ── Basic Details ── */}
               <section className="space-y-4">
-                <h3 className="text-base font-semibold border-b pb-1">
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">
                   Basic Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -204,12 +198,6 @@ const AddSymptomDialog = () => {
                     control={form.control}
                     rawParts={bodyParts}
                   />
-                  {/* <TreeMultiSelectForm
-                    label="Associated Category/s"
-                    name="categories"
-                    control={form.control}
-                    rawParts={categories}
-                  /> */}
                 </div>
               </section>
 
@@ -401,19 +389,18 @@ const AddSymptomDialog = () => {
               </section>
 
               {/* ── Actions ── */}
-              <div className="flex gap-3 pt-2">
-                <Button
+              <div className="flex gap-3 pt-6 border-t border-slate-100">
+                <button
                   type="button"
-                  variant="ghost"
-                  className="flex-1"
+                  className="btn btn-secondary flex-1 font-black uppercase tracking-widest text-[10px]"
                   onClick={close}
                   disabled={isSubmitting}
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  className="btn btn-primary flex-1 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-100"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -423,7 +410,7 @@ const AddSymptomDialog = () => {
                   ) : (
                     "Register Symptom"
                   )}
-                </Button>
+                </button>
               </div>
             </form>
           </Form>

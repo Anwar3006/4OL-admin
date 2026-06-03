@@ -108,9 +108,9 @@ export const dashboardNavSections: DashboardNavSection[] = [
         badge: "6",
         children: [
           { title: "All", href: "/facilities" },
-          { title: "Pending Approval", href: "/facilities/pending" },
-          { title: "Top Rated", href: "/facilities/top-rated" },
-          { title: "Featured", href: "/facilities/featured" },
+          { title: "Pending Approval", href: "/facilities?status=pending" },
+          { title: "Top Rated", href: "/facilities?status=top_rated" },
+          { title: "Featured", href: "/facilities?status=featured" },
         ],
       },
       { title: "Diseases & Conditions", href: "/diseases", icon: "🦠" },

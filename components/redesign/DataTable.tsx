@@ -104,11 +104,11 @@ export default function DataTable<T extends Record<string, any>>({
                   {col.label}
                 </th>
               ))}
-              {rowActions.length > 0 && <th style={{ width: 36 }} />}
+              {rowActions.length > 0 && <th style={{ width: 36, overflow: 'visible' }} />}
             </tr>
           </thead>
 
-          <tbody>
+          <tbody style={{ overflow: 'visible' }}>
             {isLoading ? (
               <tr>
                 <td 
@@ -135,7 +135,7 @@ export default function DataTable<T extends Record<string, any>>({
               </tr>
             ) : (
               paginatedData.map((row, idx) => (
-                <tr key={idx}>
+                <tr key={idx} style={{ overflow: 'visible' }}>
                   {selectable && (
                     <td>
                       <input
@@ -152,9 +152,10 @@ export default function DataTable<T extends Record<string, any>>({
                     </td>
                   ))}
                   {rowActions.length > 0 && (
-                    <td>
+                    <td style={{ overflow: 'visible' }}>
                       <div className="relative">
                         <button
+                          id={`menu-btn-${idx}`}
                           onClick={() => setOpenMenuRow(openMenuRow === idx ? null : idx)}
                           className="w-7 h-7 rounded-md flex items-center justify-center
                                      text-slate-400 hover:bg-slate-100 hover:text-slate-600
@@ -164,16 +165,20 @@ export default function DataTable<T extends Record<string, any>>({
                         </button>
 
                         {openMenuRow === idx && (
-                          <>
+                          <div className="fixed inset-0 z-50">
                             {/* Invisible backdrop to close menu */}
                             <div
-                              className="fixed inset-0 z-10"
+                              className="fixed inset-0 z-50"
                               onClick={() => setOpenMenuRow(null)}
                             />
                             <div
-                              className="absolute top-full right-0 mt-1 bg-white
-                                          border border-slate-200 rounded-lg z-20 py-1 overflow-hidden"
-                              style={{ minWidth: 160, boxShadow: "var(--shadow-dropdown)" }}
+                              className="absolute bg-white border border-slate-200 rounded-lg z-[60] py-1 overflow-hidden"
+                              style={{ 
+                                minWidth: 160, 
+                                boxShadow: "var(--shadow-dropdown)",
+                                top: (document.getElementById(`menu-btn-${idx}`)?.getBoundingClientRect().bottom || 0) + 5,
+                                left: (document.getElementById(`menu-btn-${idx}`)?.getBoundingClientRect().left || 0) - 120
+                              }}
                             >
                               {rowActions.map((action, i) => (
                                 <button
@@ -193,7 +198,7 @@ export default function DataTable<T extends Record<string, any>>({
                                 </button>
                               ))}
                             </div>
-                          </>
+                          </div>
                         )}
                       </div>
                     </td>

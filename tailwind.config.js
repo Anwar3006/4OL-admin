@@ -28,6 +28,9 @@ module.exports = {
       },
     },
     extend: {
+      screens: {
+        "3xl": "1600px",
+      },
       colors: {
         primary: {
           50: "#F6F8FF",

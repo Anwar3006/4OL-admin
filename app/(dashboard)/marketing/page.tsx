@@ -10,7 +10,10 @@ import AnalyticsTab from "./_components/AnalyticsTab";
 import LinkagesTab from "./_components/LinkagesTab";
 import SubscriptionsTab from "./_components/SubscriptionsTab";
 import DiscountsTab from "./_components/DiscountsTab";
+
+import { ViewMarketingDialog } from "./_components/view-marketing-dialog";
 import { cn } from "@/lib/utils";
+import AddMarketingDialog from "./_components/add-marketing-dialog";
 
 const MktTabs = [
   { id: "all", label: "📣 All Campaigns" },
@@ -74,6 +77,8 @@ const MarketingPage = () => {
           <TabsContent value="linkages"><LinkagesTab /></TabsContent>
         </div>
       </Tabs>
+      <AddMarketingDialog />
+      <ViewMarketingDialog />
     </div>
   );
 };

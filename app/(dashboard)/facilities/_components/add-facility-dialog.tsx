@@ -414,7 +414,7 @@ const AddFacilityDialog = () => {
           data={credentials}
         />
       )}
-      <DialogContent className="h-full md:h-auto md:max-h-[90vh] overflow-y-auto pt-14! pb-10! px-4 md:px-6">
+      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <div className="flex justify-center gap-2 mb-4 w-full pr-4">
           <div className={cn("h-2 w-1/2 rounded", step >= 1 ? "bg-primary" : "bg-muted")} />
           <div className={cn("h-2 w-1/2 rounded", step >= 2 ? "bg-primary" : "bg-muted")} />

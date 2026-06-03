@@ -240,7 +240,12 @@ const GoogleMapContainer = ({ filters }) => {
       >
         <Data
           onLoad={(loadedData) => {
+            console.log("Data layer loaded:", loadedData);
             setData(loadedData);
+            // Sync initial geojson if it's already available
+            if (geojson) {
+               loadedData.addGeoJson(geojson);
+            }
             loadedData.setStyle((feature) => {
               const type = feature.getGeometry()?.getType();
 
@@ -263,10 +268,10 @@ const GoogleMapContainer = ({ filters }) => {
               }
 
               const statusColors = {
-                active: "#10b981", // emerald-500
-                pending: "#f59e0b", // amber-500
-                inactive: "#6b7280", // gray-500
-                rejected: "#ef4444", // red-500
+                active: "#10b981", 
+                pending: "#f59e0b",
+                inactive: "#6b7280",
+                rejected: "#ef4444",
               };
               const status = feature.getProperty("status");
               const fillColor = statusColors[status?.toLowerCase()] || "#10b981";
@@ -279,8 +284,8 @@ const GoogleMapContainer = ({ filters }) => {
                   strokeWeight: 1.5,
                   strokeColor: "#ffffff",
                   scale: 1.5,
-                  anchor: new window.google.maps.Point(12, 22),
-                  labelOrigin: new window.google.maps.Point(12, 9),
+                  anchor: new google.maps.Point(12, 22),
+                  labelOrigin: new google.maps.Point(12, 9),
                 },
                 visible: feature.getProperty("type") !== "breadcrumb",
               };

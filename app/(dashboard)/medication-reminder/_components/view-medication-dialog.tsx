@@ -98,12 +98,6 @@ const ViewMedicationReminderDialog = () => {
 
                 <div className="flex items-center gap-3">
                   <Button
-                    size="sm"
-                    className="rounded-full px-6 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all"
-                  >
-                    <Edit className="h-3.5 w-3.5 mr-2" /> Edit Schedule
-                  </Button>
-                  <Button
                     onClick={handleDelete}
                     variant="outline"
                     size="icon"

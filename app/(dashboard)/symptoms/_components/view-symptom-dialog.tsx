@@ -61,16 +61,16 @@ const ViewSymptomDialog = () => {
 
   return (
     <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
+      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col !bg-white border-l shadow-2xl z-[250]">
         {isLoading && (
-          <div className="p-6">
+          <div className="p-6 bg-white h-full flex items-center justify-center">
             <ConditionSkeleton />
           </div>
         )}
         {!isLoading && data ? (
           <>
             {/* 1. Impactful Header Section */}
-            <div className="bg-white p-6 md:p-8 pt-12 border-b border-slate-200">
+            <div className="bg-slate-50/80 sticky top-0 z-30 p-6 md:p-8 border-b border-slate-200 backdrop-blur-md">
               <SheetHeader className="space-y-4">
                 <VisuallyHidden.Root>
                   <SheetTitle>Details for {data.name}</SheetTitle>
@@ -78,138 +78,136 @@ const ViewSymptomDialog = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     {data?.isSystemic ? (
-                      <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-50 font-semibold uppercase text-[10px] tracking-wider">
-                        <Dna className="h-3.5 w-3.5 mr-1" /> Systemic
+                      <Badge className="bg-indigo-600 text-white border-none font-black uppercase text-[9px] tracking-[0.15em] px-2.5 py-1 shadow-sm">
+                        <Dna className="h-3 w-3 mr-1" /> Systemic
                       </Badge>
                     ) : (
                       <Badge
                         variant="outline"
-                        className="text-slate-400 font-medium uppercase text-[10px] tracking-wider"
+                        className="text-slate-600 bg-white border-slate-200 font-black uppercase text-[9px] tracking-[0.15em] px-2.5 py-1 shadow-sm"
                       >
                         Localized
                       </Badge>
                     )}
                   </div>
-                  <SheetTitle className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 leading-tight">
+                  <SheetTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
                     {data?.name}
                   </SheetTitle>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    className="rounded-full shadow-md transition-all hover:shadow-lg active:scale-95 px-5"
+                  <button
+                    className="btn btn-primary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] active:scale-95"
                     onClick={handleEdit}
                   >
-                    <Edit className="h-4 w-4 mr-2" /> Edit Details
-                  </Button>
+                    <Edit className="h-3.5 w-3.5 mr-2" /> Edit Details
+                  </button>
                   {data?.nhsLink && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full bg-white"
-                      asChild
+                    <button
+                      className="btn btn-secondary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:bg-slate-50"
+                      onClick={() => window.open(data.nhsLink, '_blank')}
                     >
-                      <a href={data?.nhsLink} target="_blank" rel="noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" /> NHS Resource
-                      </a>
-                    </Button>
+                      <ExternalLink className="h-3.5 w-3.5 mr-2 text-indigo-500" /> NHS Resource
+                    </button>
                   )}
-                  <Button
+                  <button
                     onClick={handleDelete}
-                    variant="ghost"
-                    size="icon"
-                    className="text-slate-400 hover:text-destructive hover:bg-destructive/10 ml-auto rounded-full"
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors ml-auto shadow-sm"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </SheetHeader>
             </div>
 
             {/* 2. Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-6 md:px-8 py-8 space-y-12">
+            <div className="flex-1 overflow-y-auto px-6 md:px-10 py-10 space-y-12 bg-white">
               {/* Cover Image Placeholder/Display */}
               {data.image_url && (
-                <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-sm aspect-video bg-slate-200">
+                <div className="rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-2xl aspect-video bg-slate-50 relative group">
+                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={getPublicImageUrl(data.image_url)}
                     alt={data.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
               )}
               {/* Primary Content Grid */}
-              <div className="space-y-10">
+              <div className="space-y-12">
                 <ContentSection
                   icon={Info}
-                  title="Overview"
+                  title="Overview & Description"
                   content={data?.about}
-                  color="text-blue-600"
+                  color="text-indigo-600"
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <Separator className="bg-slate-50" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <ContentSection
                     icon={Stethoscope}
-                    title="Diagnosis"
+                    title="Clinical Diagnosis"
                     content={data?.diagnosis}
                     color="text-emerald-600"
                   />
 
                   <ContentSection
                     icon={Syringe}
-                    title="Treatment & Management"
+                    title="Care & Treatment"
                     content={data?.treatment}
-                    color="text-indigo-600"
+                    color="text-sky-600"
                   />
                 </div>
 
-                <div className="bg-rose-50/50 p-6 rounded-3xl border border-rose-100 ring-4 ring-rose-50/20">
+                <div className="bg-red-50/30 p-8 rounded-[2.5rem] border border-red-100/50 shadow-sm">
                   <ContentSection
                     icon={AlertTriangle}
-                    title="Potential Complications"
+                    title="Critical Complications"
                     content={data?.complications}
-                    color="text-rose-600"
+                    color="text-red-600"
                   />
                 </div>
 
                 <ContentSection
                   icon={ShieldCheck}
-                  title="Prevention"
+                  title="Prevention Strategy"
                   content={data?.prevention}
                   color="text-teal-600"
                 />
 
-                <ContentSection
-                  icon={UserCheck2Icon}
-                  title="Attribution"
-                  content={data?.attribution}
-                  color="text-teal-600"
-                />
+                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 text-center">
+                  <ContentSection
+                    icon={UserCheck2Icon}
+                    title="Medical Attribution"
+                    content={data?.attribution}
+                    color="text-amber-500"
+                  />
+                </div>
               </div>
 
               {/* 3. Clinical Variants (Types) Section */}
               {data.symptomTypes?.length > 0 && (
-                <section className="space-y-5 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-600">
+                <section className="space-y-6 pt-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm">
                       <LayoutGrid className="h-4 w-4" />
                     </div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Clinical Variants
                     </h3>
                   </div>
-                  <div className="grid gap-4 pl-8">
+                  <div className="grid gap-4 pl-0 md:pl-4">
                     {data.symptomCauses.map((type: any) => (
                       <div
                         key={type.id}
-                        className="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-indigo-200 transition-colors"
+                        className="p-6 rounded-[2rem] border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300"
                       >
-                        <p className="font-bold text-slate-900 text-base mb-2 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                        <p className="font-black text-slate-900 text-lg mb-3 flex items-center gap-3">
+                          <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm shadow-indigo-200" />
                           {type.typeName}
                         </p>
-                        <div className="text-sm text-slate-600 leading-relaxed">
+                        <div className="text-[15px] text-slate-600 leading-relaxed font-medium">
                           <LexicalRenderer initialState={type.aboutType} />
                         </div>
                       </div>
@@ -219,22 +217,20 @@ const ViewSymptomDialog = () => {
               )}
 
               {/* 4. Secondary Meta Section */}
-              <footer className="pt-10 border-t border-slate-200 space-y-6 pb-10">
-                <div className="grid grid-cols-2 gap-8 px-2">
+              <footer className="pt-10 border-t border-slate-200 grid grid-cols-2 gap-8 pb-10">
                   <MetaItem
                     icon={User}
-                    label="Medical Specialist"
+                    label="Verified Specialist"
                     value={data?.specialist || "General Practitioner"}
                   />
                   <MetaItem
                     icon={Calendar}
-                    label="Last Verified"
+                    label="Update Timestamp"
                     value={new Date(data?.updated_at).toLocaleDateString(
                       undefined,
                       { dateStyle: "medium" },
                     )}
                   />
-                </div>
               </footer>
             </div>
           </>

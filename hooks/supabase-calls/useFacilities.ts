@@ -81,7 +81,13 @@ export const useFacilityProfiles = (params: Pagination) => {
         );
       }
       if (status) {
-        query.eq("status", status);
+        if (status === "top_rated") {
+          query.eq("is_top_rated", true);
+        } else if (status === "featured") {
+          query.eq("is_featured", true);
+        } else {
+          query.eq("status", status);
+        }
       }
       if (type) {
         // "wellness_center" is a consolidated display label for all wellness/* variants

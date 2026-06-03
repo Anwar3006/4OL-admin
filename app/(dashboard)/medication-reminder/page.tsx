@@ -10,7 +10,9 @@ import LoggedRemindersTab from "./_components/LoggedRemindersTab";
 import AdherenceTab from "./_components/AdherenceTab";
 import InteractionsTab from "./_components/InteractionsTab";
 import AICheckerTab from "./_components/AICheckerTab";
+
 import { cn } from "@/lib/utils";
+import ViewMedicationReminderDialog from "./_components/view-medication-dialog";
 
 const MedTabs = [
   { id: "database",     label: "💊 Drug Database" },
@@ -93,6 +95,7 @@ const MedicationReminderPage = () => {
           <TabsContent value="ai">           <AICheckerTab />       </TabsContent>
         </div>
       </Tabs>
+      <ViewMedicationReminderDialog />
     </div>
   );
 };
