@@ -4,8 +4,12 @@ import React from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import FAQStats from "./_components/FAQStats";
 import FAQAccordion from "./_components/FAQAccordion";
+import { useAddFAQDialog } from "@/stores/dialog-store";
+import AddFAQDialog from "./_components/add-faq-dialog";
 
 const FAQPage = () => {
+  const addFAQ = useAddFAQDialog();
+
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
@@ -13,7 +17,7 @@ const FAQPage = () => {
         subtitle="20 platform FAQs · AI chatbot integrated · Knowledge base"
       >
         <button className="btn btn-secondary btn-sm">📥 Export</button>
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">+ Add Article</button>
+        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]" onClick={() => addFAQ.open()}>+ Add Article</button>
       </PageHeader>
 
       <FAQStats />
@@ -27,6 +31,7 @@ const FAQPage = () => {
       </div>
 
       <FAQAccordion />
+      <AddFAQDialog />
     </div>
   );
 };

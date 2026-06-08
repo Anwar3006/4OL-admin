@@ -13,6 +13,7 @@ import SecurityCenterTab from "./_components/SecurityCenterTab";
 import ReportsTab from "./_components/ReportsTab";
 import { cn } from "@/lib/utils";
 import { useAddAdminDialog } from "@/stores/dialog-store";
+import AddAdminDialog from "./_components/add-admin-dialog";
 
 const AdminTabs = [
   { id: "all", label: "👥 All Admins" },
@@ -90,6 +91,7 @@ const AdminsPage = () => {
           <TabsContent value="reports"><ReportsTab /></TabsContent>
         </div>
       </Tabs>
+      <AddAdminDialog />
     </div>
   );
 };

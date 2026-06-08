@@ -513,8 +513,7 @@ useEffect(() => {
                         mediaType="video"
                         maxFiles={1}
                         onFilesChange={(urls) => {
-                          const url = Array.isArray(urls) ? urls : urls;
-                          field.onChange(url ?? "");
+                          field.onChange(urls[0] ?? "");
                         }}
                         initialFiles={field.value ? [field.value] : []}
                         text="Upload exercise video"
@@ -537,8 +536,7 @@ useEffect(() => {
                         filePath="fitness/media"
                         maxFiles={1}
                         onFilesChange={(urls) => {
-                          const url = Array.isArray(urls) ? urls : urls;
-                          field.onChange(url ?? "");
+                          field.onChange(urls[0] ?? "");
                         }}
                         initialFiles={field.value ? [field.value] : []}
                         text="Upload thumbnail image"
