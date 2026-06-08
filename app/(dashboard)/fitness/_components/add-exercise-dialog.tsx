@@ -28,14 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Dumbbell, Loader2, Star, Tag } from "lucide-react";
+import { Dumbbell, Loader2, X } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
 import { RichTextEditor } from "@/components/RichTextInput";
 import {
   exerciseSchema,
   TExerciseInput,
-  BODY_PARTS,
+  CATEGORIES,
   EQUIPMENT_TYPES,
   DIFFICULTY_LEVELS,
   EXERCISE_STATUS,
@@ -46,78 +45,36 @@ import {
   useUpdateExercise,
 } from "@/hooks/supabase-calls/useExercise";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// ── Star Rating Component ────────────────────────────────────────────────────
-const StarRating = ({
-  value,
-  onChange,
-}: {
-  value: number | null;
-  onChange: (v: number) => void;
-}) => {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const active = hovered ?? value ?? 0;
-
-  return (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: 5 }).map((_, i) => {
-        const star = i + 1;
-        return (
-          <button
-            key={star}
-            type="button"
-            onMouseEnter={() => setHovered(star)}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => onChange(star === value ? 0 : star)}
-            className="focus:outline-none"
-            aria-label={`Set intensity ${star}`}
-          >
-            <Star
-              className={`h-7 w-7 transition-colors ${
-                star <= active
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-gray-300 fill-gray-100"
-              }`}
-            />
-          </button>
-        );
-      })}
-      {value ? (
-        <span className="ml-2 text-sm text-muted-foreground">
-          {value} / 5
-        </span>
-      ) : null}
-    </div>
-  );
-};
-
-// ── Main Dialog ──────────────────────────────────────────────────────────────
 const AddExerciseDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddExerciseDialog();
   const { mutate: createExercise, isPending: isCreating } = useCreateExercise();
   const { mutate: updateExercise, isPending: isUpdating } = useUpdateExercise();
 
   const [tagInput, setTagInput] = useState("");
-
   const isPending = isCreating || isUpdating;
 
   const defaultValues: TExerciseInput = {
     exercise_name: "",
-    primary_body_part: "Arm",
-    secondary_body_part: null,
-    equipment_type: "No Equipment",
-    intensity: null,
+    category: "Arm",
+    primary_muscle_group: "Arm",
+    secondary_muscles: "",
+    equipment_required: "No Equipment",
     difficulty_level: "beginner",
-    status: "published",
-    duration_minutes: 10,
-    calories_burned: 0,
+    default_sets: "3",
+    default_reps_duration: "12",
+    rest_time_seconds: "60",
+    description: "",
+    benefits: "",
+    muscles_worked_raw: "",
     video_url: "",
-    thumbnail_urls: [],
-    how_to: "",
-    tags: [],
-    is_premium: false,
+    thumbnail_url: "",
+    tier: "pro",
+    is_featured: false,
     is_active: true,
+    status: "published",
+    tags: [],
   };
 
   const form = useForm<TExerciseInput>({
@@ -125,17 +82,38 @@ const AddExerciseDialog = () => {
     defaultValues,
   });
 
-  useEffect(() => {
-    if (isOpen && isEditMode && data) {
-      form.reset({
-        ...data,
-        video_url: data.video_url ?? "",
-        how_to: data.how_to ?? "",
-        tags: data.tags ?? [],
-      });
-    } else if (isOpen) {
-      form.reset(defaultValues);
+  // Watch necessary values for UI logic
+  const tags = form.watch("tags");
+
+useEffect(() => {
+    if (isOpen) {
+      if (isEditMode && data) {
+        form.reset({
+          exercise_name: data.exercise_name ?? "",
+          category: data.category ?? "Arm",
+          primary_muscle_group: data.primary_muscle_group ?? "Arm",
+          secondary_muscles: data.secondary_muscles ?? "",
+          equipment_required: data.equipment_required ?? "No Equipment",
+          difficulty_level: data.difficulty_level ?? "beginner",
+          default_sets: data.default_sets ?? "3",
+          default_reps_duration: data.default_reps_duration ?? "12",
+          rest_time_seconds: data.rest_time_seconds ?? "60",
+          description: data.description ?? "",
+          benefits: data.benefits ?? "",
+          muscles_worked_raw: data.muscles_worked_raw ?? "",
+          video_url: data.video_url ?? "",
+          thumbnail_url: data.thumbnail_url ?? "",
+          tier: data.tier === "free" ? "free" : "pro",
+          is_featured: !!data.is_featured,
+          is_active: data.is_active !== false,
+          status: data.status ?? "published",
+          tags: Array.isArray(data.tags) ? data.tags : [],
+        });
+      } else {
+        form.reset(defaultValues);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isEditMode, data]);
 
   const onSubmit = (values: TExerciseInput) => {
@@ -150,19 +128,19 @@ const AddExerciseDialog = () => {
     if (!tagInput.trim()) return;
     const currentTags = form.getValues("tags") || [];
     if (!currentTags.includes(tagInput.trim())) {
-      form.setValue("tags", [...currentTags, tagInput.trim()]);
+      form.setValue("tags", [...currentTags, tagInput.trim()], { shouldValidate: true });
     }
     setTagInput("");
   };
 
   const removeTag = (tagToRemove: string) => {
     const currentTags = form.getValues("tags") || [];
-    form.setValue("tags", currentTags.filter(t => t !== tagToRemove));
+    form.setValue("tags", currentTags.filter((t) => t !== tagToRemove), { shouldValidate: true });
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
         <div className="bg-white rounded-lg overflow-hidden">
           <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -172,10 +150,8 @@ const AddExerciseDialog = () => {
           </DialogHeader>
 
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="p-6 space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
+              
               {/* Exercise Name & Status */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -183,12 +159,9 @@ const AddExerciseDialog = () => {
                   name="exercise_name"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Exercise Name</FormLabel>
+                      <FormLabel>Exercise Name *</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g. Barbell Curl"
-                          {...field}
-                        />
+                        <Input placeholder="e.g. Barbell Curl" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,16 +173,16 @@ const AddExerciseDialog = () => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>Status *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white z-[100] shadow-md border">
                           {EXERCISE_STATUS.map((s) => (
-                            <SelectItem key={s} value={s} className="capitalize">
+                            <SelectItem key={s} value={s} className="capitalize cursor-pointer">
                               {s}
                             </SelectItem>
                           ))}
@@ -221,30 +194,24 @@ const AddExerciseDialog = () => {
                 />
               </div>
 
-              {/* Body Parts */}
+              {/* Category & Primary Muscle Group */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="primary_body_part"
+                  name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Primary Body Part{" "}
-                        <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
+                      <FormLabel>Category *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select primary body part" />
+                            <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          {BODY_PARTS.map((bp) => (
-                            <SelectItem key={bp} value={bp}>
-                              {bp}
+                        <SelectContent className="bg-white z-[100] shadow-md border">
+                          {CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat} className="cursor-pointer">
+                              {cat}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -256,26 +223,20 @@ const AddExerciseDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="secondary_body_part"
+                  name="primary_muscle_group"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Secondary Body Part</FormLabel>
-                      <Select
-                        onValueChange={(val) =>
-                          field.onChange(val === "none" ? null : val)
-                        }
-                        value={field.value ?? "none"}
-                      >
+                      <FormLabel>Primary Muscle Group *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select secondary body part" />
+                            <SelectValue placeholder="Select primary muscle" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {BODY_PARTS.map((bp) => (
-                            <SelectItem key={bp} value={bp}>
-                              {bp}
+                        <SelectContent className="bg-white z-[100] shadow-md border">
+                          {CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat} className="cursor-pointer">
+                              {cat}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -286,24 +247,37 @@ const AddExerciseDialog = () => {
                 />
               </div>
 
+              {/* Secondary Muscles & Equipment Required & Difficulty */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="equipment_type"
+                  name="secondary_muscles"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Equipment Type <span className="text-red-500">*</span>
-                      </FormLabel>
+                      <FormLabel>Secondary Muscles</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Forearms, Brachialis" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="equipment_required"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Equipment Required *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select equipment" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white z-[100] shadow-md border">
                           {EQUIPMENT_TYPES.map((eq) => (
-                            <SelectItem key={eq} value={eq}>
+                            <SelectItem key={eq} value={eq} className="cursor-pointer">
                               {eq}
                             </SelectItem>
                           ))}
@@ -320,15 +294,15 @@ const AddExerciseDialog = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Difficulty</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select level" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white z-[100] shadow-md border">
                           {DIFFICULTY_LEVELS.map((level) => (
-                            <SelectItem key={level} value={level} className="capitalize">
+                            <SelectItem key={level} value={level} className="capitalize cursor-pointer">
                               {level}
                             </SelectItem>
                           ))}
@@ -338,34 +312,18 @@ const AddExerciseDialog = () => {
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="intensity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Intensity</FormLabel>
-                      <FormControl>
-                        <StarRating
-                          value={field.value ?? null}
-                          onChange={(v) => field.onChange(v || null)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
 
+              {/* Sets, Reps/Duration & Rest Time */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name="duration_minutes"
+                  name="default_sets"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (mins)</FormLabel>
+                      <FormLabel>Default Sets</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                        <Input placeholder="e.g. 3" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -374,12 +332,12 @@ const AddExerciseDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="calories_burned"
+                  name="default_reps_duration"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Est. Calories</FormLabel>
+                      <FormLabel>Default Reps / Duration</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                        <Input placeholder="e.g. 12 or 45s" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -388,38 +346,150 @@ const AddExerciseDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="is_premium"
+                  name="rest_time_seconds"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-6">
+                    <FormItem>
+                      <FormLabel>Rest Time (seconds)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 60" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Extra Meta Text fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="benefits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Benefits</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Hypertrophy, Grip strength" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="muscles_worked_raw"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Muscles Worked Raw</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Comma separated strings" {...field} value={field.value ?? ""} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Premium, Featured & Active Toggles */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="tier"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
                       <div className="space-y-0.5">
-                        <FormLabel>Premium</FormLabel>
+                        <FormLabel>Premium (Pro)</FormLabel>
                         <FormDescription>Gated for pro users</FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Button
+                          type="button"
+                          variant={field.value === "pro" ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "w-20",
+                            field.value === "pro" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                          )}
+                          onClick={() => field.onChange(field.value === "pro" ? "free" : "pro")}
+                        >
+                          {field.value === "pro" ? "Yes" : "No"}
+                        </Button>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_featured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
+                      <div className="space-y-0.5">
+                        <FormLabel>Featured</FormLabel>
+                        <FormDescription>Promote on dashboard</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Button
+                          type="button"
+                          variant={field.value ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "w-20",
+                            field.value ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                          )}
+                          onClick={() => field.onChange(!field.value)}
+                        >
+                          {field.value ? "Yes" : "No"}
+                        </Button>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
+                      <div className="space-y-0.5">
+                        <FormLabel>Active</FormLabel>
+                        <FormDescription>Visible to client apps</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Button
+                          type="button"
+                          variant={field.value ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "w-20",
+                            field.value ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                          )}
+                          onClick={() => field.onChange(!field.value)}
+                        >
+                          {field.value ? "Yes" : "No"}
+                        </Button>
                       </FormControl>
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Tags */}
+              {/* Tags Section */}
               <div className="space-y-3">
                 <FormLabel>Tags</FormLabel>
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="Add tags..." 
+                  <Input
+                    placeholder="Add tags..."
                     value={tagInput}
-                    onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                   />
-                  <Button type="button" variant="outline" onClick={addTag}>Add</Button>
+                  <Button type="button" variant="outline" onClick={addTag}>
+                    Add
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {form.watch("tags")?.map(tag => (
+                  {tags?.map((tag) => (
                     <Badge key={tag} variant="secondary" className="gap-1 pl-2.5">
                       {tag}
                       <button type="button" onClick={() => removeTag(tag)}>
@@ -442,7 +512,10 @@ const AddExerciseDialog = () => {
                         filePath="fitness/media"
                         mediaType="video"
                         maxFiles={1}
-                        onFilesChange={(urls) => field.onChange(urls[0] ?? "")}
+                        onFilesChange={(urls) => {
+                          const url = Array.isArray(urls) ? urls : urls;
+                          field.onChange(url ?? "");
+                        }}
                         initialFiles={field.value ? [field.value] : []}
                         text="Upload exercise video"
                       />
@@ -452,19 +525,23 @@ const AddExerciseDialog = () => {
                 )}
               />
 
-              {/* Thumbnails */}
+              {/* Thumbnail Upload */}
               <FormField
                 control={form.control}
-                name="thumbnail_urls"
+                name="thumbnail_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Upload Thumbnails</FormLabel>
+                    <FormLabel>Upload Thumbnail</FormLabel>
                     <FormControl>
                       <ImageDropZone
                         filePath="fitness/media"
-                        onFilesChange={(urls) => field.onChange(urls)}
-                        initialFiles={field.value ?? []}
-                        text="Upload thumbnails"
+                        maxFiles={1}
+                        onFilesChange={(urls) => {
+                          const url = Array.isArray(urls) ? urls : urls;
+                          field.onChange(url ?? "");
+                        }}
+                        initialFiles={field.value ? [field.value] : []}
+                        text="Upload thumbnail image"
                       />
                     </FormControl>
                     <FormMessage />
@@ -472,25 +549,15 @@ const AddExerciseDialog = () => {
                 )}
               />
 
-              {/* How To */}
-              <RichTextEditor
-                control={form.control}
-                name="how_to"
-                label="How To"
-              />
+              {/* Description / How To */}
+              <RichTextEditor control={form.control} name="description" label="Description / How To Instructions" />
 
               <DialogFooter className="pt-4 border-t">
                 <Button type="button" variant="outline" onClick={close}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isPending}
-                  className="min-w-[140px]"
-                >
-                  {isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button type="submit" disabled={isPending} className="min-w-[140px]">
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isEditMode ? "Update Exercise" : "Create Exercise"}
                 </Button>
               </DialogFooter>
@@ -503,3 +570,6 @@ const AddExerciseDialog = () => {
 };
 
 export default AddExerciseDialog;
+
+
+

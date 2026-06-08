@@ -48,7 +48,7 @@ const ViewChallengeDialog = () => {
               <div className="absolute top-6 right-6">
                 <Badge
                   className={
-                    data.status === "active" ? "bg-emerald-500 hover:bg-emerald-600 border-none px-4" : "bg-slate-500 border-none px-4"
+                    data.status === "published" ? "bg-emerald-500 hover:bg-emerald-600 border-none px-4" : "bg-slate-500 border-none px-4"
                   }
                 >
                   {data.status.toUpperCase()}
@@ -93,7 +93,7 @@ const ViewChallengeDialog = () => {
                       Goal
                     </span>
                     <span className="text-xs font-bold text-slate-700 capitalize">
-                      {data.goal_value.toLocaleString()} {data.goal_metric}
+                      {data?.goal_value?.toLocaleString()} {data.goal_metric}
                     </span>
                   </div>
                 </div>

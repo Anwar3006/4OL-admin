@@ -1,22 +1,24 @@
-import z from "zod";
+import { z } from "zod";
 
-export const CHALLENGE_STATUS = ["draft", "upcoming", "active", "completed", "cancelled"] as const;
+// Matched strictly with DB allowed statuses 
+export const CHALLENGE_STATUS = ["draft", "published", "archived"] as const;
 
 export const challengeSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description is required"),
+  description: z.string().optional().nullable(),
   challenge_type: z.string().min(1, "Challenge type is required"),
-  start_date: z.string().or(z.date()),
-  end_date: z.string().or(z.date()),
-  goal_metric: z.string().min(1, "Goal metric is required"),
-  goal_value: z.number().positive(),
+  // Accept string from input type="date", parse or coerce into Date for local/api processing
+  start_date: z.coerce.date({ error: "Start date is required" }),
+  end_date: z.coerce.date({ error: "End date is required" }),
+  goal_metric: z.string().optional().nullable(),
+  goal_value: z.number().nonnegative().optional().nullable(),
   reward_description: z.string().optional().nullable(),
-  reward_image_url: z.string().optional().nullable(),
+  reward_image_url: z.string().or(z.literal("")).optional().nullable(),
   status: z.enum(CHALLENGE_STATUS).default("draft"),
   is_public: z.boolean().default(true),
   max_participants: z.number().int().positive().optional().nullable(),
-  featured_image_url: z.string().optional().nullable(),
+  featured_image_url: z.string().or(z.literal("")).optional().nullable(),
   tags: z.array(z.string()).default([]),
 });
 

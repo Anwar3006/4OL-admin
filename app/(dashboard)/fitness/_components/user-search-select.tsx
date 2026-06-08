@@ -74,7 +74,7 @@ export function UserSearchSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0 rounded-2xl overflow-hidden shadow-2xl border-none">
+      <PopoverContent className="w-[400px] p-0 rounded-2xl overflow-hidden shadow-2xl border-none z-[100]">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search by name or email..."

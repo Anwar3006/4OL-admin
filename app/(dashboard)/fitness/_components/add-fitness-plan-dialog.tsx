@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -28,20 +27,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { ClipboardList, Loader2, Star, Target, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ClipboardList, Loader2 } from "lucide-react";
 import { MultiSelect } from "@/components/MultiSelect";
 import {
   fitnessPlanSchema,
   TFitnessPlanInput,
+  PLAN_STATUS,
+  PLAN_DIFFICULTY,
 } from "@/schemas/fitness-plan.schema";
-import { BODY_PARTS } from "@/schemas/exercise.schema";
+import { CATEGORIES } from "@/schemas/exercise.schema";
 import { useAddFitnessPlanDialog } from "@/stores/dialog-store";
 import {
   useCreateFitnessPlan,
   useUpdateFitnessPlan,
 } from "@/hooks/supabase-calls/useFitnessPlan";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const AddFitnessPlanDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddFitnessPlanDialog();
@@ -55,7 +57,7 @@ const AddFitnessPlanDialog = () => {
     description: "",
     difficulty_level: "beginner",
     duration_weeks: 4,
-    exercises_per_week: 3,
+    workouts_per_week: 3,
     target_body_parts: [],
     goals: [],
     is_premium: false,
@@ -72,7 +74,13 @@ const AddFitnessPlanDialog = () => {
 
   useEffect(() => {
     if (isOpen && isEditMode && data) {
-      form.reset(data);
+      form.reset({
+        ...data,
+        description: data.description ?? "",
+        target_body_parts: data.target_body_parts ?? [],
+        goals: data.goals ?? [],
+        tags: data.tags ?? [],
+      });
     } else if (isOpen) {
       form.reset(defaultValues);
     }
@@ -86,7 +94,7 @@ const AddFitnessPlanDialog = () => {
     }
   };
 
-  const bodyPartOptions = [...BODY_PARTS];
+  const bodyPartOptions = [...CATEGORIES];
   const goalOptions = [
     "Weight Loss",
     "Muscle Gain",
@@ -97,7 +105,7 @@ const AddFitnessPlanDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
         <div className="bg-white rounded-lg overflow-hidden">
           <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -118,7 +126,7 @@ const AddFitnessPlanDialog = () => {
                   name="title"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Plan Title</FormLabel>
+                      <FormLabel>Plan Title *</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g. 4 Week Shred" {...field} />
                       </FormControl>
@@ -132,17 +140,20 @@ const AddFitnessPlanDialog = () => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>Status *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Status" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                          <SelectItem value="archived">Archived</SelectItem>
+                        {/*bg-white z-50 overrides default transparent layout artifacts inside Dialogs */}
+                        <SelectContent className="bg-white z-[100]">
+                          {PLAN_STATUS.map((status) => (
+                            <SelectItem key={status} value={status} className="capitalize">
+                              {status}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -162,7 +173,8 @@ const AddFitnessPlanDialog = () => {
                       <Textarea 
                         placeholder="Describe the plan and its benefits..." 
                         className="resize-none h-24"
-                        {...field} 
+                        {...field}
+                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -170,16 +182,20 @@ const AddFitnessPlanDialog = () => {
                 )}
               />
 
-              {/* Structure */}
+              {/* Structure Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="duration_weeks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (Weeks)</FormLabel>
+                      <FormLabel>Duration (Weeks) *</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -188,12 +204,16 @@ const AddFitnessPlanDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="exercises_per_week"
+                  name="workouts_per_week"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Exercises / Week</FormLabel>
+                      <FormLabel>Workouts / Week *</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -205,18 +225,19 @@ const AddFitnessPlanDialog = () => {
                   name="difficulty_level"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Difficulty</FormLabel>
+                      <FormLabel>Difficulty *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Level" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
-                          <SelectItem value="expert">Expert</SelectItem>
+                        <SelectContent className="bg-white z-[100]">
+                          {PLAN_DIFFICULTY.map((level) => (
+                            <SelectItem key={level} value={level} className="capitalize">
+                              {level}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -268,22 +289,32 @@ const AddFitnessPlanDialog = () => {
                 />
               </div>
 
-              {/* Options */}
+              {/* Premium and Featured Toggles */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="is_premium"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
                       <div className="space-y-0.5">
                         <FormLabel>Premium Plan</FormLabel>
                         <FormDescription>Gated for pro users</FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Button
+                          type="button"
+                          variant={field.value ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "w-20",
+                            field.value
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : ""
+                          )}
+                          onClick={() => field.onChange(!field.value)}
+                        >
+                          {field.value ? "Yes" : "No"}
+                        </Button>
                       </FormControl>
                     </FormItem>
                   )}
@@ -293,16 +324,26 @@ const AddFitnessPlanDialog = () => {
                   control={form.control}
                   name="is_featured"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
                       <div className="space-y-0.5">
                         <FormLabel>Featured</FormLabel>
                         <FormDescription>Highlight on home screen</FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Button
+                          type="button"
+                          variant={field.value ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "w-20",
+                            field.value
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : ""
+                          )}
+                          onClick={() => field.onChange(!field.value)}
+                        >
+                          {field.value ? "Yes" : "No"}
+                        </Button>
                       </FormControl>
                     </FormItem>
                   )}

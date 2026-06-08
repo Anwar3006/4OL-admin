@@ -63,7 +63,7 @@ export const createChallengeColumns = ({
       <div className="space-y-1 min-w-32">
         <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <Target className="w-3.5 h-3.5 text-slate-400" />
-            {row.original.goal_value.toLocaleString()} {row.original.goal_metric}
+            {row?.original.goal_value?.toLocaleString()} {row.original.goal_metric}
         </div>
         <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <Users className="w-3.5 h-3.5 text-slate-400" />
@@ -81,7 +81,7 @@ export const createChallengeColumns = ({
                 {format(new Date(row.original.start_date), "MMM d")} - {format(new Date(row.original.end_date), "MMM d")}
             </div>
             <div className="text-[9px] text-slate-400 uppercase tracking-widest font-medium">
-                {row.original.status === 'upcoming' ? 'Starts soon' : 'In progress'}
+                {row.original.status === 'draft' ? 'Starts soon' : 'In progress'}
             </div>
         </div>
     ),

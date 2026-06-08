@@ -76,7 +76,7 @@ export const createFitnessPlanColumns = ({
         </div>
         <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <ListChecks className="w-3.5 h-3.5 text-slate-400" />
-            {row.original.exercises_per_week} exercises / week
+            {row.original.duration_weeks} exercises / week
         </div>
       </div>
     ),

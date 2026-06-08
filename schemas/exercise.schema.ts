@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const BODY_PARTS = [
+export const CATEGORIES = [
   "Arm",
   "Back",
   "Biceps",
@@ -33,35 +33,35 @@ export const EQUIPMENT_TYPES = [
 
 export const EXERCISE_STATUS = ["draft", "published", "archived"] as const;
 export const DIFFICULTY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
+export const TIER_LEVELS = ["pro", "free"] as const;
 
 export const exerciseSchema = z.object({
   id: z.string().uuid().optional(),
   exercise_name: z.string().min(2, "Exercise name is required"),
-  primary_body_part: z.enum(BODY_PARTS, {
-    message: "Please select a primary body part",
+  category: z.enum(CATEGORIES, {
+    message: "Please select a category",
   }),
-  secondary_body_part: z.enum(BODY_PARTS).optional().nullable(),
-  equipment_type: z.enum(EQUIPMENT_TYPES, {
-    message: "Please select an equipment type",
+  primary_muscle_group: z.enum(CATEGORIES, {
+    message: "Please select a primary muscle group",
   }),
-  intensity: z
-    .number()
-    .int()
-    .min(1)
-    .max(5)
-    .optional()
-    .nullable(),
-  difficulty_level: z.enum(DIFFICULTY_LEVELS).default("beginner"),
-  status: z.enum(EXERCISE_STATUS).default("published"),
-  duration_minutes: z.number().int().min(1).default(10),
-  calories_burned: z.number().int().min(0).default(0),
-  video_url: z.string().url("Invalid video URL").optional().nullable(),
-  thumbnail_urls: z.array(z.string()).default([]),
-  how_to: z.any().optional().nullable(),
-  tags: z.array(z.string()).default([]),
-  is_premium: z.boolean().default(false),
+  secondary_muscles: z.string().optional().nullable(),
+  equipment_required: z.enum(EQUIPMENT_TYPES, {
+    message: "Please select required equipment",
+  }),
+  difficulty_level: z.enum(DIFFICULTY_LEVELS).default("beginner").nullable(),
+  default_sets: z.string().optional().nullable(),
+  default_reps_duration: z.string().optional().nullable(),
+  rest_time_seconds: z.string().optional().nullable(),
+  description: z.any().optional().nullable(), // For rich text content
+  benefits: z.string().optional().nullable(),
+  muscles_worked_raw: z.string().optional().nullable(),
+  video_url: z.string().url("Invalid video URL").or(z.literal("")).optional().nullable(),
+  thumbnail_url: z.string().url("Invalid thumbnail URL").or(z.literal("")).optional().nullable(),
+  tier: z.enum(TIER_LEVELS).default("pro"),
+  is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
-  author_id: z.string().uuid().optional().nullable(),
+  status: z.enum(EXERCISE_STATUS).default("published"),
+  tags: z.array(z.string()).default([]),
 });
 
 export type TExerciseInput = z.infer<typeof exerciseSchema>;

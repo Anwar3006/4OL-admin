@@ -41,7 +41,7 @@ export const createExerciseColumns = ({
           <span className="font-black text-slate-900">{row.original.exercise_name}</span>
           <div className="flex items-center gap-2 mt-0.5">
              <Badge variant="secondary" className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-[9px] tracking-widest">
-                {row.original.primary_body_part} {row.original.secondary_body_part ? `+ ${row.original.secondary_body_part}` : ''}
+                {row.original.primary_muscle_group} {row.original.secondary_muscles ? `+ ${row.original.secondary_muscles}` : ''}
              </Badge>
           </div>
         </div>
@@ -59,14 +59,14 @@ export const createExerciseColumns = ({
     accessorKey: "primary_body_part",
     header: () => <div className="font-black text-[10px] uppercase tracking-widest">Muscle Group</div>,
     cell: ({ row }) => (
-        <span className="font-bold text-slate-600 text-sm">{row.original.primary_body_part}</span>
+        <span className="font-bold text-slate-600 text-sm">{row.original.primary_muscle_group}</span>
     ),
   },
   {
     accessorKey: "equipment_type",
     header: () => <div className="font-black text-[10px] uppercase tracking-widest">Equipment</div>,
     cell: ({ row }) => (
-        <span className="font-bold text-slate-600 text-sm">{row.original.equipment_type}</span>
+        <span className="font-bold text-slate-600 text-sm">{row.original.equipment_required}</span>
     ),
   },
   {
@@ -74,7 +74,7 @@ export const createExerciseColumns = ({
     header: () => <div className="font-black text-[10px] uppercase tracking-widest text-center">Difficulty</div>,
     cell: ({ row }) => (
         <div className="text-center">
-            <Badge variant="outline" className={cn("rounded-lg font-bold text-[10px] uppercase tracking-wider px-2 py-0.5", difficultyColor[row.original.difficulty_level])}>
+            <Badge variant="outline" className={cn("rounded-lg font-bold text-[10px] uppercase tracking-wider px-2 py-0.5", difficultyColor[row.original.difficulty_level!])}>
                 {row.original.difficulty_level}
             </Badge>
         </div>
