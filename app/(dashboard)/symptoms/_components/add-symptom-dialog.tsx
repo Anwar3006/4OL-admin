@@ -151,7 +151,7 @@ const AddSymptomDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
+<DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white border-slate-200 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="font-black text-xl tracking-tight text-slate-900">
             {isEditMode ? "Edit Symptom" : "Register New Symptom"}
@@ -192,12 +192,14 @@ const AddSymptomDialog = () => {
                     label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
-                  <TreeMultiSelectForm
-                    label="Associated Body Part/s"
-                    name="bodyParts"
-                    control={form.control}
-                    rawParts={bodyParts}
-                  />
+                  <div className="bg-white">
+                    <TreeMultiSelectForm
+                      label="Associated Body Part/s"
+                      name="bodyParts"
+                      control={form.control}
+                      rawParts={bodyParts}
+                    />
+                  </div>
                 </div>
               </section>
 

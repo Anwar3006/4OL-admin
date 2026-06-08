@@ -55,8 +55,8 @@ export const exerciseSchema = z.object({
   description: z.any().optional().nullable(), // For rich text content
   benefits: z.string().optional().nullable(),
   muscles_worked_raw: z.string().optional().nullable(),
-  video_url: z.string().url("Invalid video URL").or(z.literal("")).optional().nullable(),
-  thumbnail_url: z.string().url("Invalid thumbnail URL").or(z.literal("")).optional().nullable(),
+  video_url: z.string("Invalid video URL"),
+  thumbnail_url: z.string("Invalid thumbnail URL"),
   tier: z.enum(TIER_LEVELS).default("pro"),
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),

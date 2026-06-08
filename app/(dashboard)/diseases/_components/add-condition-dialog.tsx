@@ -188,7 +188,7 @@ const AddConditionDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Edit Condition" : "Register New Condition"}
@@ -229,18 +229,22 @@ const AddConditionDialog = () => {
                     label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
-                  <TreeMultiSelectForm
-                    label="Associated Body Part/s"
-                    name="bodyParts"
-                    control={form.control}
-                    rawParts={bodyParts}
-                  />
-                  <TreeMultiSelectForm
-                    label="Associated Category/s"
-                    name="categories"
-                    control={form.control}
-                    rawParts={categories}
-                  />
+                  <div className="bg-white">
+                    <TreeMultiSelectForm
+                      label="Associated Body Part/s"
+                      name="bodyParts"
+                      control={form.control}
+                      rawParts={bodyParts}
+                    />
+                  </div>
+                  <div className="bg-white">
+                    <TreeMultiSelectForm
+                      label="Associated Category/s"
+                      name="categories"
+                      control={form.control}
+                      rawParts={categories}
+                    />
+                  </div>
                 </div>
               </section>
 

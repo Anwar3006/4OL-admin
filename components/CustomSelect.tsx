@@ -68,7 +68,7 @@ const CustomSelect = <T extends FieldValues>({
                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full min-w-(--radix-dropdown-menu-trigger-width)">
+                <DropdownMenuContent className="w-full min-w-(--radix-dropdown-menu-trigger-width) bg-white z-[350]">
                   {options.map((option) => (
                     <DropdownMenuItem
                       key={option.value}

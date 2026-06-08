@@ -12,7 +12,7 @@ export const trainerSchema = z.object({
   is_verified: z.boolean().default(false),
   status: z.enum(TRAINER_STATUS).default("pending"),
   // Allows valid URL or clean empty string without failing validation
-  profile_video_url: z.string().url("Invalid video URL").or(z.literal("")).optional().nullable(),
+  profile_video_url: z.string("Invalid video URL").optional().nullable(),
   social_links: z.object({
     instagram: z.string().optional().nullable(),
     linkedin: z.string().optional().nullable(),
@@ -29,7 +29,7 @@ export const trainerSchemaOutput = trainerSchema.extend({
   rating_count: z.number().int().default(0),
   total_sessions: z.number().int().default(0),
   total_clients: z.number().int().default(0),
-  verified_by: z.string().uuid().optional().nullable(),
+  verified_by: z.string().optional().nullable(),
   verified_at: z.string().or(z.date()).optional().nullable(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),

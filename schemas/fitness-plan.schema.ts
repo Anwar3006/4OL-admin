@@ -18,7 +18,7 @@ export const fitnessPlanSchema = z.object({
   is_premium: z.boolean().default(false),
   is_featured: z.boolean().default(false),
   status: z.enum(PLAN_STATUS).default("published"),
-  author_id: z.string().uuid().optional().nullable(),
+  author_id: z.string().optional().nullable(),
   author_type: z.enum(AUTHOR_TYPES).default("admin"),
   tags: z.array(z.string()).default([]),
 });
