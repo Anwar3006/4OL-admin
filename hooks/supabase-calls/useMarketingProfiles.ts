@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+
+const supabase = getSupabaseBrowserClient();
 
 export const PROFILE_QUERY_KEYS = {
   all: ["marketing_profile"] as const,

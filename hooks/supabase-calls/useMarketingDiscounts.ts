@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { toast } from "sonner";
+
+const supabase = getSupabaseBrowserClient();
 
 export const DISCOUNT_QUERY_KEYS = {
   all: ["marketing_discounts"] as const,

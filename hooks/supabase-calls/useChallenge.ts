@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { toast } from "sonner";
 import { TChallengeInput, TChallengeOutput } from "@/schemas/challenge.schema";
+
+const supabase = getSupabaseBrowserClient();
 
 export const CHALLENGE_QUERY_KEYS = {
   all: ["fitness_challenges"] as const,
