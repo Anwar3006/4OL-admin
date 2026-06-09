@@ -48,7 +48,7 @@ export const useHealthyLivings = ({
       const to = from + limit - 1;
 
       let query = (await getSupabaseClient())
-        .from("healthy_living_info_view")
+        .from("healthy_living_info")
         .select("*", { count: "exact" });
 
       if (search) {

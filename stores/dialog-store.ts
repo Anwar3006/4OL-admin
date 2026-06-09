@@ -36,6 +36,7 @@ export type DialogTypes =
   | "view-challenge"
   | "facility-toggle"
   | "add-exercise"
+  | "view-exercise"
   | "add-fitness-plan"
   | "view-fitness-plan";
 
@@ -679,6 +680,20 @@ export const useAddExerciseDialog = () => {
   };
 };
 
+export const useViewExerciseDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-exercise"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-exercise"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-exercise", { entityId }),
+    close: () => closeDialog("view-exercise"),
+  };
+};
+
 export const useAddFitnessPlanDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
@@ -707,3 +722,4 @@ export const useViewFitnessPlanDialog = () => {
     close: () => closeDialog("view-fitness-plan"),
   };
 };
+

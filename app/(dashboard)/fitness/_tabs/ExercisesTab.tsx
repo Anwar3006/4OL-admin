@@ -4,9 +4,10 @@ import React, { useMemo, useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import DataTable from "@/components/redesign/DataTable";
 import { useExercises, useDeleteExercise } from "@/hooks/supabase-calls/useExercise";
-import { useAddExerciseDialog } from "@/stores/dialog-store";
+import { useAddExerciseDialog, useViewExerciseDialog } from "@/stores/dialog-store";
 import AddExerciseDialog from "../_components/add-exercise-dialog";
 import { cn } from "@/lib/utils";
+import ViewExerciseDialog from "../_components/view-exercise-dialog";
 
 const ExercisesTab = () => {
   const [page, setPage] = useState(1);
@@ -15,6 +16,7 @@ const ExercisesTab = () => {
   const limit = 10;
 
   const exerciseDialog = useAddExerciseDialog();
+  const viewDialog = useViewExerciseDialog();
   const { data, isLoading } = useExercises({ page, limit, search: debouncedSearch });
   const { mutate: deleteExercise } = useDeleteExercise();
 
@@ -58,7 +60,7 @@ const ExercisesTab = () => {
       render: (val: string, row: any) => (
         <div>
           <div className="font-bold text-slate-800">{val}</div>
-          <div className="text-[10px] text-slate-400 max-w-[200px] truncate">{row.description}</div>
+          <div className="text-[10px] text-slate-400 max-w-[200px] truncate">{row.exercise_name}</div>
         </div>
       )
     },
@@ -138,7 +140,7 @@ const ExercisesTab = () => {
 
   const rowActions = [
     { label: "Edit", icon: "✏️", onClick: handleEdit },
-    { label: "View", icon: "👁️", onClick: (row: any) => console.log('View', row) },
+    { label: "View", icon: "👁️", onClick: (row: any) => viewDialog.open(row.id) },
     { label: "Duplicate", icon: "📋", onClick: (row: any) => console.log('Copy', row) },
     { label: "Delete", icon: "🗑️", onClick: (row: any) => handleDelete(row.id), danger: true },
   ];
@@ -224,8 +226,19 @@ const ExercisesTab = () => {
       </div>
 
       <AddExerciseDialog />
+      <ViewExerciseDialog />
     </div>
   );
 };
+
+// export default ExercisesTab;
+// le>
+//         </div>
+//       </div>
+
+//       <AddExerciseDialog />
+//     </div>
+//   );
+// };
 
 export default ExercisesTab;

@@ -1,23 +1,14 @@
 "use client";
 
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { UserSquare, Search, Filter, Plus, ShieldCheck, Star } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { DataTable } from "@/components/Data-Table/data-table";
-import { createPaginationHandlers } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import {
-  useAddTrainerDialog,
-  useViewTrainerDialog,
-} from "@/stores/dialog-store";
-import { createTrainerColumns } from "@/components/Data-Table/columns/trainerColumns";
+import DataTable from "@/components/redesign/DataTable";
 import { useTrainers, useDeleteTrainer } from "@/hooks/supabase-calls/useTrainer";
+import { useAddTrainerDialog, useViewTrainerDialog } from "@/stores/dialog-store";
 import AddTrainerDialog from "../_components/add-trainer-dialog";
 import ViewTrainerDialog from "../_components/view-trainer-dialog";
-import { TTrainerOutput } from "@/schemas/trainer.schema";
+import { cn } from "@/lib/utils";
+import { UserSquare, Search, Filter, Plus, ShieldCheck, Star } from "lucide-react";
 
 const TrainersTab = () => {
   const [page, setPage] = useState(1);
@@ -34,28 +25,8 @@ const TrainersTab = () => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const paginationHandlers = useMemo(
-    () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
-    [page, data?.meta?.totalPages],
-  );
-
-  const pagination = useMemo(
-    () => ({
-      currentPage: page,
-      totalPages: data?.meta?.totalPages || 1,
-      totalItems: data?.meta?.total || 0,
-      pageSize: limit,
-      onPageChange: paginationHandlers.goTo,
-      onNextPage: paginationHandlers.next,
-      onPreviousPage: paginationHandlers.previous,
-      canNextPage: page < (data?.meta?.totalPages || 1),
-      canPreviousPage: page > 1,
-    }),
-    [page, data, paginationHandlers],
-  );
-
   const handleEdit = useCallback(
-    (row: TTrainerOutput) => {
+    (row: any) => {
       trainerDialog.open(row);
     },
     [trainerDialog],
@@ -70,46 +41,104 @@ const TrainersTab = () => {
     [deleteTrainer],
   );
 
-  const columns = useMemo(
-    () => createTrainerColumns({ onEdit: handleEdit, onDelete: handleDelete }),
-    [handleEdit, handleDelete],
-  );
+  const columns = [
+    {
+      key: "trainer",
+      label: "Trainer Profile",
+      render: (_: any, row: any) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden">
+            {row.user_profiles?.avatar_url ? <img src={row.user_profiles.avatar_url} alt="" className="w-full h-full object-cover" /> : (row.user_profiles?.first_name?.[0] || 'T')}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1">
+                <span className="font-bold text-slate-800">{row.user_profiles?.first_name} {row.user_profiles?.last_name}</span>
+                {row.is_verified && <ShieldCheck className="w-3 h-3 text-emerald-500 fill-emerald-50" />}
+            </div>
+            <span className="text-[10px] text-slate-400">{row.user_profiles?.email}</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: "specialties",
+      label: "Specialties",
+      render: (val: string[]) => (
+        <div className="flex flex-wrap gap-1">
+          {val?.slice(0, 2).map((s, i) => (
+            <span key={i} className="badge badge-purple uppercase text-[9px]">{s}</span>
+          ))}
+          {val?.length > 2 && <span className="text-[9px] text-slate-400">+{val.length - 2}</span>}
+        </div>
+      )
+    },
+    {
+      key: "experience",
+      label: "Experience",
+      render: (_: any, row: any) => (
+        <span className="text-[11px] font-bold text-slate-800">{row.years_experience || 0} years</span>
+      )
+    },
+    {
+      key: "rating",
+      label: "Rating",
+      render: (_: any, row: any) => (
+        <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800">
+          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+          {row.average_rating?.toFixed(1) || "5.0"}
+        </div>
+      )
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (val: string) => (
+        <span className={cn(
+          "badge uppercase tracking-wider text-[10px]",
+          val === 'active' ? 'badge-green' : 'badge-amber'
+        )}>{val}</span>
+      )
+    }
+  ];
+
+  const rowActions = [
+    { label: "View Profile", icon: "👁️", onClick: (row: any) => viewTrainer.open(row.id) },
+    { label: "Edit", icon: "✏️", onClick: handleEdit },
+    { label: "Delete", icon: "🗑️", onClick: (row: any) => handleDelete(row.id), danger: true },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <Card className="lg:col-span-3 border-none shadow-sm rounded-[2rem] bg-white">
-          <CardHeader className="p-8 pb-4">
-             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                   <CardTitle className="text-2xl font-black">👨‍🏫 Trainer Directory</CardTitle>
-                   <p className="text-slate-500 font-medium mt-1">Manage certified fitness professionals and availability</p>
-                </div>
-                <Button className="rounded-xl font-bold bg-[#2cc295] hover:bg-[#25a37d]" onClick={() => trainerDialog.open()}>
-                  <Plus className="h-4 w-4 mr-2" /> Add Trainer
-                </Button>
-             </div>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by trainer name or specialty..."
-                    className="pl-9 h-12 rounded-2xl border-slate-100 bg-slate-50 focus-visible:ring-emerald-500"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline" className="h-12 rounded-2xl font-bold border-slate-200">
-                  <Filter className="h-4 w-4 mr-2" /> Verification
-                </Button>
-             </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-3 card bg-white">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                 <h3 className="text-2xl font-black text-slate-800">👨‍🏫 Trainer Directory</h3>
+                 <p className="text-slate-500 font-medium mt-1">Manage certified fitness professionals and availability</p>
+              </div>
+              <button className="btn btn-primary" onClick={() => trainerDialog.open()}>
+                <Plus className="h-4 w-4 mr-1" /> Add Trainer
+              </button>
+           </div>
+           
+           <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  placeholder="Search by trainer name or specialty..."
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <button className="btn btn-secondary">
+                <Filter className="h-4 w-4 mr-1" /> Verification
+              </button>
+           </div>
+        </div>
 
-        <Card className="border-none shadow-sm rounded-[2rem] bg-slate-900 text-white p-8">
-           <CardTitle className="text-lg font-black mb-6">📊 Trainer Stats</CardTitle>
+        <div className="card bg-slate-900 text-white">
+           <h3 className="text-lg font-black mb-6">📊 Trainer Stats</h3>
            <div className="space-y-6">
               {[
                 { label: "Total Trainers", val: 48, icon: UserSquare },
@@ -127,20 +156,20 @@ const TrainersTab = () => {
                 </div>
               ))}
            </div>
-        </Card>
+        </div>
       </div>
 
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
-        <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={data?.trainers || []}
-            pagination={pagination}
-            isLoading={isLoading}
-            onRowClick={(row) => viewTrainer.open(row.id)}
-          />
-        </CardContent>
-      </Card>
+      <div className="card p-0 overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={data?.trainers || []}
+          rowActions={rowActions}
+          isLoading={isLoading}
+          externalPage={page}
+          externalTotalPages={data?.meta?.totalPages || 1}
+          onPageChange={setPage}
+        />
+      </div>
 
       <AddTrainerDialog />
       <ViewTrainerDialog />

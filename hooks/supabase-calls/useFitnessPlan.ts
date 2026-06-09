@@ -54,6 +54,22 @@ export const useFitnessPlans = ({
   });
 };
 
+export const useFitnessPlan = (id: string | null) => {
+  return useQuery({
+    queryKey: FITNESS_PLAN_QUERY_KEYS.detail(id!),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fitness_plans")
+        .select("*")
+        .eq("id", id!)
+        .single();
+      if (error) throw new Error(error.message);
+      return data as TFitnessPlanOutput;
+    },
+    enabled: !!id,
+  });
+};
+
 export const useCreateFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({

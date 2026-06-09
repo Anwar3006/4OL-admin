@@ -1,20 +1,14 @@
 "use client";
 
 import React, { useMemo, useState, useCallback } from "react";
-import { Search, Filter, Plus, Trophy, Target, Users, ShieldCheck } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { DataTable } from "@/components/Data-Table/data-table";
-import { createChallengeColumns } from "@/components/Data-Table/columns/challengeColumns";
-import { createPaginationHandlers } from "@/lib/utils";
+import DataTable from "@/components/redesign/DataTable";
 import { useChallenges, useDeleteChallenge } from "@/hooks/supabase-calls/useChallenge";
 import { useAddChallengeDialog, useViewChallengeDialog } from "@/stores/dialog-store";
 import AddChallengeDialog from "../_components/add-challenge-dialog";
 import ViewChallengeDialog from "../_components/view-challenge-dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TChallengeOutput } from "@/schemas/challenge.schema";
+import { cn } from "@/lib/utils";
+import { Trophy, Target, Users, ShieldCheck, Search, Filter, Plus } from "lucide-react";
 
 const ChallengesTab = () => {
   const [page, setPage] = useState(1);
@@ -32,28 +26,8 @@ const ChallengesTab = () => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const paginationHandlers = useMemo(
-    () => createPaginationHandlers(page, setPage, data?.meta?.totalPages ?? 1),
-    [page, data?.meta?.totalPages],
-  );
-
-  const pagination = useMemo(
-    () => ({
-      currentPage: page,
-      totalPages: data?.meta?.totalPages || 1,
-      totalItems: data?.meta?.total || 0,
-      pageSize: limit,
-      onPageChange: paginationHandlers.goTo,
-      onNextPage: paginationHandlers.next,
-      onPreviousPage: paginationHandlers.previous,
-      canNextPage: page < (data?.meta?.totalPages || 1),
-      canPreviousPage: page > 1,
-    }),
-    [page, data, paginationHandlers],
-  );
-
   const handleEdit = useCallback(
-    (row: TChallengeOutput) => {
+    (row: any) => {
       challengeDialog.open(row);
     },
     [challengeDialog],
@@ -75,48 +49,104 @@ const ChallengesTab = () => {
     [deleteChallenge],
   );
 
-  const columns = useMemo(
-    () => createChallengeColumns({ onEdit: handleEdit, onDelete: handleDelete, onView: handleView }),
-    [handleEdit, handleDelete, handleView],
-  );
+  const columns = [
+    {
+      key: "name",
+      label: "Challenge Details",
+      render: (val: string, row: any) => (
+        <div className="flex flex-col min-w-[200px]">
+          <span className="font-bold text-slate-800">{val}</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{row.category || "Fitness"}</span>
+        </div>
+      )
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (val: string) => (
+        <span className={cn(
+          "badge uppercase tracking-wider text-[10px]",
+          val === 'active' ? 'badge-green' : val === 'draft' ? 'bg-slate-100 text-slate-600' : 'badge-amber'
+        )}>{val}</span>
+      )
+    },
+    {
+      key: "participants",
+      label: "Participants",
+      render: (_: any, row: any) => (
+        <div className="flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400">
+                U
+              </div>
+            ))}
+          </div>
+          <span className="text-[11px] font-bold text-slate-800">{row.total_participants || 0} joined</span>
+        </div>
+      )
+    },
+    {
+      key: "duration",
+      label: "Duration",
+      render: (_: any, row: any) => (
+        <div className="text-[11px] font-medium text-slate-600">
+          {row.start_date && row.end_date ? (
+            `${new Date(row.start_date).toLocaleDateString()} - ${new Date(row.end_date).toLocaleDateString()}`
+          ) : "Ongoing"}
+        </div>
+      )
+    },
+    {
+      key: "rewards",
+      label: "Rewards",
+      render: (val: any) => (
+        <span className="badge badge-gold h-5 text-[10px] uppercase font-black gap-1">
+          🪙 {val?.fitcoins || 0} FitCoins
+        </span>
+      )
+    }
+  ];
+
+  const rowActions = [
+    { label: "View", icon: "👁️", onClick: (row: any) => handleView(row.id) },
+    { label: "Edit", icon: "✏️", onClick: handleEdit },
+    { label: "Delete", icon: "🗑️", onClick: (row: any) => handleDelete(row.id), danger: true },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Challenges Header & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <Card className="lg:col-span-3 border-none shadow-sm rounded-[2rem] bg-white">
-          <CardHeader className="p-8 pb-4">
-             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                   <CardTitle className="text-2xl font-black">🏆 Active Challenges</CardTitle>
-                   <p className="text-slate-500 font-medium mt-1">Community-wide fitness events and goal tracking</p>
-                </div>
-                <Button className="rounded-xl font-bold bg-[#2cc295] hover:bg-[#25a37d]" onClick={() => challengeDialog.open()}>
-                  <Plus className="h-4 w-4 mr-2" /> New Challenge
-                </Button>
-             </div>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by challenge name..."
-                    className="pl-9 h-12 rounded-2xl border-slate-100 bg-slate-50 focus-visible:ring-emerald-500"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <Button variant="outline" className="h-12 rounded-2xl font-bold border-slate-200">
-                  <Filter className="h-4 w-4 mr-2" /> Status
-                </Button>
-             </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-3 card bg-white">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                 <h3 className="text-2xl font-black text-slate-800">🏆 Active Challenges</h3>
+                 <p className="text-slate-500 font-medium mt-1">Community-wide fitness events and goal tracking</p>
+              </div>
+              <button className="btn btn-primary" onClick={() => challengeDialog.open()}>
+                <Plus className="h-4 w-4 mr-1" /> New Challenge
+              </button>
+           </div>
+           
+           <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  placeholder="Search by challenge name..."
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <button className="btn btn-secondary">
+                <Filter className="h-4 w-4 mr-1" /> Status
+              </button>
+           </div>
+        </div>
 
-        <Card className="border-none shadow-sm rounded-[2rem] bg-amber-500 text-white p-8 relative overflow-hidden">
+        <div className="card bg-amber-500 text-white relative overflow-hidden">
            <Trophy className="absolute -bottom-4 -right-4 h-24 w-24 text-white/20 rotate-12" />
-           <CardTitle className="text-lg font-black mb-6">📢 Participation</CardTitle>
+           <h3 className="text-lg font-black mb-6">📢 Participation</h3>
            <div className="space-y-6 relative z-10">
               {[
                 { label: "Active Challenges", val: 48, icon: Target },
@@ -134,21 +164,20 @@ const ChallengesTab = () => {
                 </div>
               ))}
            </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Main Table */}
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
-        <CardContent className="p-0">
-          <DataTable
-            columns={columns}
-            data={data?.challenges || []}
-            pagination={pagination}
-            isLoading={isLoading}
-            onRowClick={(row) => handleView(row.id!)}
-          />
-        </CardContent>
-      </Card>
+      <div className="card p-0 overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={data?.challenges || []}
+          rowActions={rowActions}
+          isLoading={isLoading}
+          externalPage={page}
+          externalTotalPages={data?.meta?.totalPages || 1}
+          onPageChange={setPage}
+        />
+      </div>
 
       <AddChallengeDialog />
       <ViewChallengeDialog />

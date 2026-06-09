@@ -49,7 +49,7 @@ const AddAdminDialog = () => {
 
   return (
     <Dialog open={addAdminDialog.isOpen} onOpenChange={addAdminDialog.close}>
-      <DialogContent className="max-w-2xl! max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-2 md:px-6">
+      <DialogContent className="max-w-2xl! max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-2 md:px-6 bg-white">
         <DialogHeader>
           <DialogTitle>Invite an Admin</DialogTitle>
         </DialogHeader>

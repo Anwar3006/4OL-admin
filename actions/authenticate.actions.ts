@@ -38,15 +38,17 @@ async function getSessionUserWithRole() {
 const createAdminInvite = async (input: TAdminInviteSchema) => {
   const admin = getSupabaseAdmin();
 
-  // 1. Check if user already exists in user_profiles
-  const { data: existingProfile, error: profileError } = await admin
-    .from("user_profiles")
-    .select("user_id")
+  // 1. Check if user already exists in the user table by email
+  const { data: existingUser, error: userError } = await admin
+    .from("user")
+    .select("id")
     .eq("email", input.email)
     .maybeSingle();
 
-  if (profileError) throw new Error("Error checking existing user profile: " + profileError.message);
-  if (existingProfile) throw new Error("A user with this email already has an account.");
+  if (userError)
+    throw new Error("Error checking existing user: " + userError.message);
+  if (existingUser)
+    throw new Error("A user with this email already has an account.");
 
   // 2. Check for existing invite
   const { data: existingInvite, error: checkError } = await admin
@@ -55,8 +57,10 @@ const createAdminInvite = async (input: TAdminInviteSchema) => {
     .eq("email", input.email)
     .maybeSingle();
 
-  if (checkError) throw new Error("Error checking existing invites: " + checkError.message);
-  if (existingInvite) throw new Error("An invite has already been sent to this email.");
+  if (checkError)
+    throw new Error("Error checking existing invites: " + checkError.message);
+  if (existingInvite)
+    throw new Error("An invite has already been sent to this email.");
 
   const { data: result, error: insertError } = await admin
     .from("user_invites")
@@ -69,7 +73,8 @@ const createAdminInvite = async (input: TAdminInviteSchema) => {
     .select()
     .single();
 
-  if (insertError) throw new Error("Failed to create invite record: " + insertError.message);
+  if (insertError)
+    throw new Error("Failed to create invite record: " + insertError.message);
   return result;
 };
 
@@ -84,12 +89,16 @@ export async function inviteAdminAction(email: string, role: string) {
       throw new Error("Unauthorized: You must be logged in.");
     }
 
-    console.log(`[inviteAdminAction] Authenticated as ${sessionUser.email} (Role: ${sessionUser.profileRole})`);
+    console.log(
+      `[inviteAdminAction] Authenticated as ${sessionUser.email} (Role: ${sessionUser.profileRole})`,
+    );
 
     // Only super_admin or admin can send invites
     const allowedRoles = ["super_admin", "admin"];
     if (!allowedRoles.includes(sessionUser.profileRole)) {
-      console.log(`[inviteAdminAction] Role ${sessionUser.profileRole} not allowed to invite`);
+      console.log(
+        `[inviteAdminAction] Role ${sessionUser.profileRole} not allowed to invite`,
+      );
       throw new Error(
         "Unauthorized: You do not have permission to invite admins.",
       );
@@ -128,11 +137,19 @@ export async function inviteAdminAction(email: string, role: string) {
       });
       console.log(`[inviteAdminAction] Email sent successfully to ${email}`);
     } catch (mailError: any) {
-      console.error("[inviteAdminAction] SendGrid Error:", JSON.stringify(mailError, null, 2));
+      console.error(
+        "[inviteAdminAction] SendGrid Error:",
+        JSON.stringify(mailError, null, 2),
+      );
       if (mailError.code === 401) {
-        throw new Error("Email service authentication failed. Please contact support.");
+        throw new Error(
+          "Email service authentication failed. Please contact support.",
+        );
       }
-      throw new Error("Failed to send invitation email: " + (mailError.message || "Unknown error"));
+      throw new Error(
+        "Failed to send invitation email: " +
+          (mailError.message || "Unknown error"),
+      );
     }
 
     return { data: { id: token }, error: null };

@@ -3,6 +3,12 @@
 import React, { useState } from "react";
 import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface Column<T> {
   key: string;
@@ -47,7 +53,6 @@ export default function DataTable<T extends Record<string, any>>({
 }: DataTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [internalPage, setInternalPage] = useState(1);
-  const [openMenuRow, setOpenMenuRow] = useState<number | null>(null);
 
   const isExternal = externalTotalPages !== undefined && externalPage !== undefined;
   const currentPage = isExternal ? externalPage! : internalPage;
@@ -108,7 +113,7 @@ export default function DataTable<T extends Record<string, any>>({
             </tr>
           </thead>
 
-          <tbody style={{ overflow: 'visible' }}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td 
@@ -135,7 +140,7 @@ export default function DataTable<T extends Record<string, any>>({
               </tr>
             ) : (
               paginatedData.map((row, idx) => (
-                <tr key={idx} style={{ overflow: 'visible' }}>
+                <tr key={idx}>
                   {selectable && (
                     <td>
                       <input
@@ -152,55 +157,33 @@ export default function DataTable<T extends Record<string, any>>({
                     </td>
                   ))}
                   {rowActions.length > 0 && (
-                    <td style={{ overflow: 'visible' }}>
-                      <div className="relative">
-                        <button
-                          id={`menu-btn-${idx}`}
-                          onClick={() => setOpenMenuRow(openMenuRow === idx ? null : idx)}
-                          className="w-7 h-7 rounded-md flex items-center justify-center
-                                     text-slate-400 hover:bg-slate-100 hover:text-slate-600
-                                     transition-colors cursor-pointer bg-transparent border-0"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-
-                        {openMenuRow === idx && (
-                          <div className="fixed inset-0 z-50">
-                            {/* Invisible backdrop to close menu */}
-                            <div
-                              className="fixed inset-0 z-50"
-                              onClick={() => setOpenMenuRow(null)}
-                            />
-                            <div
-                              className="absolute bg-white border border-slate-200 rounded-lg z-[60] py-1 overflow-hidden"
-                              style={{ 
-                                minWidth: 160, 
-                                boxShadow: "var(--shadow-dropdown)",
-                                top: (document.getElementById(`menu-btn-${idx}`)?.getBoundingClientRect().bottom || 0) + 5,
-                                left: (document.getElementById(`menu-btn-${idx}`)?.getBoundingClientRect().left || 0) - 120
-                              }}
+                    <td>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className="w-7 h-7 rounded-md flex items-center justify-center
+                                       text-slate-400 hover:bg-slate-100 hover:text-slate-600
+                                       transition-colors cursor-pointer bg-transparent border-0"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 bg-white z-[100]">
+                          {rowActions.map((action, i) => (
+                            <DropdownMenuItem
+                              key={i}
+                              onClick={() => action.onClick?.(row)}
+                              className={cn(
+                                "flex items-center gap-2 cursor-pointer",
+                                action.danger ? "text-red-600 focus:text-red-600 focus:bg-red-50" : "text-slate-700"
+                              )}
                             >
-                              {rowActions.map((action, i) => (
-                                <button
-                                  key={i}
-                                  onClick={() => {
-                                    action.onClick?.(row);
-                                    setOpenMenuRow(null);
-                                  }}
-                                  className={cn(
-                                    "w-full text-left px-3 py-2 text-xs cursor-pointer bg-transparent border-0",
-                                    "flex items-center gap-2 transition-colors hover:bg-slate-50",
-                                    action.danger ? "text-red-600" : "text-slate-700",
-                                  )}
-                                >
-                                  {action.icon && <span>{action.icon}</span>}
-                                  {action.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                              {action.icon && <span className="text-sm">{action.icon}</span>}
+                              {action.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   )}
                 </tr>
@@ -261,3 +244,13 @@ export default function DataTable<T extends Record<string, any>>({
     </div>
   );
 }
+// ePageChange(Math.min(totalPages, currentPage + 1))}
+//             >
+//               <ChevronRight className="w-3.5 h-3.5" />
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
