@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import GoogleMapContainer from "./_components/GoogleMapContainer";
 import FilterDropdown from "./_components/FilterDropdown";
+import ghanaLocations from "@/constant/ghana-locations.json";
+import { FACILITY_TYPE_OPTIONS } from "@/types/formInput";
 
 const MapPage = () => {
   const [filters, setFilters] = useState<{
@@ -17,6 +19,18 @@ const MapPage = () => {
     facilityType: null,
     status: null,
   });
+
+  const regions = useMemo(() => Object.keys(ghanaLocations), []);
+  
+  const districts = useMemo(() => {
+    if (!filters.region) return [];
+    return (ghanaLocations as Record<string, string[]>)[filters.region] || [];
+  }, [filters.region]);
+
+  // Reset district when region changes
+  const handleRegionChange = (val: string | null) => {
+    setFilters(prev => ({ ...prev, region: val, district: null }));
+  };
 
   return (
     <div className="animate-in fade-in duration-500 h-[calc(100vh-100px)] flex flex-col space-y-4">
@@ -32,25 +46,26 @@ const MapPage = () => {
          <FilterDropdown 
             label="Region" 
             value={filters.region} 
-            options={["Greater Accra", "Ashanti", "Western"]} 
-            onChange={(val) => setFilters(prev => ({...prev, region: val}))} 
+            options={regions} 
+            onChange={handleRegionChange}
          />
          <FilterDropdown 
             label="District" 
             value={filters.district} 
-            options={["Accra Metro", "Kumasi Metro"]} 
-            onChange={(val) => setFilters(prev => ({...prev, district: val}))} 
+            options={districts} 
+            onChange={(val) => setFilters(prev => ({...prev, district: val}))}
+            
          />
          <FilterDropdown 
             label="Facility Type" 
             value={filters.facilityType} 
-            options={["hospital", "clinic", "pharmacy"]} 
+            options={FACILITY_TYPE_OPTIONS.map(opt => opt.label)}
             onChange={(val) => setFilters(prev => ({...prev, facilityType: val}))} 
          />
          <FilterDropdown 
             label="Status" 
             value={filters.status} 
-            options={["active", "pending", "suspended"]} 
+            options={["Active", "Pending", "Suspended"]}
             onChange={(val) => setFilters(prev => ({...prev, status: val}))} 
          />
       </div>

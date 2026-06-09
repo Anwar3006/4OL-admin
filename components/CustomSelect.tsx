@@ -59,7 +59,7 @@ const CustomSelect = <T extends FieldValues>({
                     role="combobox"
                     disabled={disabled}
                     className={cn(
-                      "w-full justify-between font-normal",
+                      "w-full justify-between font-normal bg-white hover:bg-slate-50",
                       !field.value && "text-muted-foreground",
                       className,
                     )}

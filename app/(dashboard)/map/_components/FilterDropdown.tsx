@@ -40,7 +40,7 @@ const FilterDropdown = ({
             className="text-sm 2xl:text-base"
           />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           <SelectItem value="all">All {label}</SelectItem>
           {options.map((option) => (
             <SelectItem key={option} value={option}>

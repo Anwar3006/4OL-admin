@@ -18,6 +18,7 @@ import {
   FACILITY_REQUIREMENTS,
   FACILITY_TYPE_OPTIONS,
 } from "@/types/formInput";
+import ghanaLocations from "@/constant/ghana-locations.json";
 import { Button } from "@/components/ui/button";
 import { BusinessHoursSection } from "./business-hours";
 import CustomInput from "@/components/CustomInput";
@@ -25,13 +26,7 @@ import CustomSelect from "@/components/CustomSelect";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import useGhanaPostGPS from "@/hooks/useGhanaPostGPS";
 import { toast } from "sonner";
-import {
-  ImageIcon,
-  Loader2,
-  MapPinHouse,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { ImageIcon, Loader2, MapPinHouse, Star, Trash2 } from "lucide-react";
 import z from "zod";
 import { MultiSelect } from "@/components/MultiSelect";
 import { cn, getPublicImageUrl } from "@/lib/utils";
@@ -50,7 +45,6 @@ import { createFacilityOwnerAccount } from "@/actions/facility-owner.actions";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { OfferingsSection } from "./offerings-section";
 
 type FacilityFormValues = TFacilityProfileInput & { sameForWeekdays: boolean };
@@ -93,19 +87,44 @@ const AddFacilityDialog = () => {
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [newlyUploadedFiles, setNewlyUploadedFiles] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
-  const isMobileScreen = useIsMobile();
 
   const [uploadSessionId] = useState(() => `pending_${nanoid(12)}`);
   const filePath = `facilities/temporary/${uploadSessionId}`;
+  const [selectedRegion, setSelectedRegion] = useState<string>(
+    data?.region || "greater accra",
+  );
 
   const {
     getLocationCoordinates,
     coordinates,
     loading: coordinatesLoading,
-    error: geolocationError,
   } = useGeolocation();
   const { fetchGhanaPostAddress, loading: addressLoading } = useGhanaPostGPS();
   const isLoadingLocation = coordinatesLoading || addressLoading;
+
+  // Get region options from ghana-locations
+  const regionOptions = useMemo(
+    () =>
+      Object.keys(ghanaLocations).map((region) => ({
+        value: region.toLowerCase(),
+        label: region,
+      })),
+    [],
+  );
+
+  // Get districts for selected region
+  const districtOptions = useMemo(() => {
+    const regionKey = Object.keys(ghanaLocations).find(
+      (key) => key.toLowerCase() === selectedRegion,
+    );
+    if (!regionKey) return [];
+    return (ghanaLocations[regionKey as keyof typeof ghanaLocations] || []).map(
+      (district) => ({
+        value: district.toLowerCase(),
+        label: district,
+      }),
+    );
+  }, [selectedRegion]);
 
   const form = useForm<FacilityFormValues>({
     resolver: zodResolver(
@@ -208,13 +227,27 @@ const AddFacilityDialog = () => {
         .then((res) => {
           if (res?.found && res?.data?.Table?.length > 0) {
             const location = res.data.Table[0];
-            form.setValue("gps_address", location.GPSName, { shouldValidate: true });
-            form.setValue("street", location.Street === "[UNKNOWN]" ? location.Area : location.Street, { shouldValidate: true });
-            form.setValue("post_code", location.PostCode, { shouldValidate: true });
+            form.setValue("gps_address", location.GPSName, {
+              shouldValidate: true,
+            });
+            form.setValue(
+              "street",
+              location.Street === "[UNKNOWN]" ? location.Area : location.Street,
+              { shouldValidate: true },
+            );
+            form.setValue("post_code", location.PostCode, {
+              shouldValidate: true,
+            });
             form.setValue("area", location.Area, { shouldValidate: true });
-            form.setValue("district", location.District, { shouldValidate: true });
+            form.setValue("district", location.District, {
+              shouldValidate: true,
+            });
             if (location.Region) {
-              form.setValue("region", location.Region.toLowerCase() as TFacilityProfileInput["region"], { shouldValidate: true });
+              form.setValue(
+                "region",
+                location.Region.toLowerCase() as TFacilityProfileInput["region"],
+                { shouldValidate: true },
+              );
             }
             form.setValue("latitude", coordinates.latitude);
             form.setValue("longitude", coordinates.longitude);
@@ -234,11 +267,29 @@ const AddFacilityDialog = () => {
     }
   }, [isOpen, isEditMode, data]);
 
-  const selectedType = form.watch("facility_type") as keyof typeof FACILITY_REQUIREMENTS;
+  // Watch for region changes and update selectedRegion
+  const watchedRegion = form.watch("region");
+  useEffect(() => {
+    if (watchedRegion) {
+      setSelectedRegion(watchedRegion.toLowerCase());
+      // Reset district when region changes
+      form.setValue("district", "", { shouldValidate: false });
+    }
+  }, [watchedRegion, form]);
+
+  const selectedType = form.watch(
+    "facility_type",
+  ) as keyof typeof FACILITY_REQUIREMENTS;
   const mediaUrls = form.watch("media_urls");
 
-  const availableAmenities = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.amenities || [], [selectedType]);
-  const availableServices = useMemo(() => FACILITY_REQUIREMENTS[selectedType]?.services || [], [selectedType]);
+  const availableAmenities = useMemo(
+    () => FACILITY_REQUIREMENTS[selectedType]?.amenities || [],
+    [selectedType],
+  );
+  const availableServices = useMemo(
+    () => FACILITY_REQUIREMENTS[selectedType]?.services || [],
+    [selectedType],
+  );
 
   const handleContinue = async () => {
     const isValid = await form.trigger(STEP_1_FIELDS);
@@ -254,7 +305,10 @@ const AddFacilityDialog = () => {
       if (isEditMode) {
         setNewlyUploadedFiles(urls);
       } else {
-        form.setValue("media_urls", urls, { shouldValidate: true, shouldDirty: true });
+        form.setValue("media_urls", urls, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     },
     [form, isEditMode],
@@ -302,8 +356,111 @@ const AddFacilityDialog = () => {
     toast.info("Image marked for deletion. Save changes to confirm.");
   };
 
+  const handleDeleteImage = (img: any, isFeatured: boolean) => {
+    if (img.isExisting) {
+      handleDeleteExistingImage(img.path);
+    } else {
+      const updated = newlyUploadedFiles.filter((p) => p !== img.path);
+      setNewlyUploadedFiles(updated);
+      if (!isEditMode) {
+        const updatedMediaUrls = (mediaUrls || []).filter(
+          (p) => p !== img.path,
+        );
+        form.setValue("media_urls", updatedMediaUrls);
+      }
+    }
+    if (isFeatured) setFeaturedImage(null);
+  };
+
   const facilityMutation = useCreateFacilityProfile();
   const facilityUpdateMutation = useUpdateFacilityProfile();
+
+  // Render location detection section
+  const renderLocationSection = () => {
+    if (isLoadingLocation) {
+      return (
+        <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl bg-muted/20">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-2" />
+          <p className="text-sm text-muted-foreground">
+            Accessing GPS & Resolving Address...
+          </p>
+        </div>
+      );
+    }
+    if (form.watch("gps_address")) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-bottom-2 duration-700">
+          <CustomInput
+            type="text"
+            name="gps_address"
+            control={form.control}
+            label="GPS Address"
+            readOnly={false}
+          />
+          <CustomInput
+            type="text"
+            name="street"
+            control={form.control}
+            label="Street Name"
+            readOnly={false}
+          />
+          <CustomInput
+            type="text"
+            name="post_code"
+            control={form.control}
+            label="Post Code"
+            readOnly={false}
+          />
+          <CustomInput
+            type="text"
+            name="area"
+            control={form.control}
+            label="Area"
+            readOnly={false}
+          />
+          <CustomSelect
+            name="region"
+            label="Region"
+            options={regionOptions}
+            control={form.control}
+            className="bg-white! border-slate-200"
+            placeholder="Select Region"
+            disabled={regionOptions.length === 0}
+          />
+          <CustomSelect
+            name="district"
+            label="District"
+            options={districtOptions}
+            control={form.control}
+            className="bg-white! border-slate-200"
+            placeholder="Select District"
+            disabled={!selectedRegion || districtOptions.length === 0}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="text-xs bg-zinc-600 text-white col-span-1 md:col-span-2"
+            onClick={() => getLocationCoordinates()}
+          >
+            Incorrect? Re-detect Location
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl bg-primary/5">
+        <MapPinHouse className="h-8 w-8 text-primary/40 mb-3" />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => getLocationCoordinates()}
+        >
+          Detect My Location
+        </Button>
+      </div>
+    );
+  };
 
   const handleSubmit = async (values: FacilityFormValues) => {
     setSubmitting(true);
@@ -315,13 +472,16 @@ const AddFacilityDialog = () => {
         : profileData.media_urls;
 
       let finalFacilityType: any = profileData.facility_type;
-      if (profileData.facility_type === "wellness_center" && values.wellness_subtype) {
+      if (
+        profileData.facility_type === "wellness_center" &&
+        values.wellness_subtype
+      ) {
         finalFacilityType = `wellness(${values.wellness_subtype})`;
       }
 
       const payload = {
         ...profileData,
-        facility_type: finalFacilityType as any,
+        facility_type: finalFacilityType,
         featured_image_url: featuredImage || finalImageUrls[0],
         adminId: session?.user?.id ?? "",
       };
@@ -346,7 +506,7 @@ const AddFacilityDialog = () => {
       // The owner is forced to change it on first login.
       const temporaryPassword = payload.gps_address;
 
-      const { userId: ownerId, isNewUser, error: accountError } =
+      const { userId: ownerId, error: accountError } =
         await createFacilityOwnerAccount({
           email: payload.owner_email,
           temporaryPassword,
@@ -356,7 +516,8 @@ const AddFacilityDialog = () => {
         });
 
       if (accountError) throw new Error(accountError);
-      if (!ownerId) throw new Error("Could not assign an owner to this facility.");
+      if (!ownerId)
+        throw new Error("Could not assign an owner to this facility.");
 
       const result = await facilityMutation.mutateAsync({
         ...payload,
@@ -388,7 +549,9 @@ const AddFacilityDialog = () => {
           });
         } catch (notifyError) {
           console.error("Notification Error:", notifyError);
-          toast.warning("Facility registered, but notification delivery failed.");
+          toast.warning(
+            "Facility registered, but notification delivery failed.",
+          );
         }
 
         setFacilityModal(true);
@@ -400,7 +563,6 @@ const AddFacilityDialog = () => {
       setSubmitting(false);
     }
   };
-
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
@@ -414,10 +576,20 @@ const AddFacilityDialog = () => {
           data={credentials}
         />
       )}
-      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white! border-slate-200 shadow-2xl">
         <div className="flex justify-center gap-2 mb-4 w-full pr-4">
-          <div className={cn("h-2 w-1/2 rounded", step >= 1 ? "bg-primary" : "bg-muted")} />
-          <div className={cn("h-2 w-1/2 rounded", step >= 2 ? "bg-primary" : "bg-muted")} />
+          <div
+            className={cn(
+              "h-2 w-1/2 rounded",
+              step >= 1 ? "bg-primary" : "bg-muted",
+            )}
+          />
+          <div
+            className={cn(
+              "h-2 w-1/2 rounded",
+              step >= 2 ? "bg-primary" : "bg-muted",
+            )}
+          />
         </div>
         <DialogHeader>
           <DialogTitle className="card-title">
@@ -433,7 +605,7 @@ const AddFacilityDialog = () => {
                 if (errorFields.length > 0) {
                   const errorMessages = errorFields
                     .slice(0, 2)
-                    .map((field) => field.replace(/_/g, " "))
+                    .map((field) => field.replaceAll("_", " "))
                     .join(", ");
                   const message =
                     errorFields.length > 2
@@ -442,7 +614,8 @@ const AddFacilityDialog = () => {
                   toast.error("Form Validation Failed", {
                     description: message,
                     classNames: {
-                      toast: "group-[.toaster]:border-destructive group-[.toaster]:bg-red-50/50",
+                      toast:
+                        "group-[.toaster]:border-destructive group-[.toaster]:bg-red-50/50",
                       title: "font-black text-destructive",
                       description: "text-slate-900 font-medium leading-relaxed",
                     },
@@ -456,14 +629,16 @@ const AddFacilityDialog = () => {
           >
             {step === 1 && (
               <>
-                <h3 className="card-title mb-2 underline text-center">Facility Details</h3>
+                <h3 className="card-title mb-2 underline text-center">
+                  Facility Details
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomSelect
                     name="facility_type"
                     options={FACILITY_TYPE_OPTIONS}
                     control={form.control}
                     label="Facility Type"
-                    className="w-full!"
+                    className="bg-white! border-slate-200"
                   />
                   {form.watch("facility_type") === "wellness_center" ? (
                     <CustomSelect
@@ -477,28 +652,51 @@ const AddFacilityDialog = () => {
                       ]}
                       control={form.control}
                       label="Wellness Sub-type"
-                      className="w-full!"
+                      className="bg-white! border-slate-200"
                     />
                   ) : (
-                    <CustomInput type="text" name="facility_name" control={form.control} label="Facility Name" readOnly={false} />
+                    <CustomInput
+                      type="text"
+                      name="facility_name"
+                      control={form.control}
+                      label="Facility Name"
+                      readOnly={false}
+                    />
                   )}
                 </div>
 
                 {form.watch("facility_type") === "wellness_center" && (
                   <div className="animate-in slide-in-from-top-2 duration-300">
-                    <CustomInput type="text" name="facility_name" control={form.control} label="Facility Name" readOnly={false} />
+                    <CustomInput
+                      type="text"
+                      name="facility_name"
+                      control={form.control}
+                      label="Facility Name"
+                      readOnly={false}
+                    />
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="flex items-center justify-between space-x-2">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-bold">Accepts NHIS</label>
-                      <p className="text-xs text-muted-foreground">Is this facility under the National Health Insurance Scheme?</p>
+                      <Label
+                        htmlFor="accepts_nhis"
+                        className="text-sm font-bold"
+                      >
+                        Accepts NHIS
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Is this facility under the National Health Insurance
+                        Scheme?
+                      </p>
                     </div>
                     <Switch
+                      id="accepts_nhis"
                       checked={form.watch("accepts_nhis")}
-                      onCheckedChange={(val) => form.setValue("accepts_nhis", val)}
+                      onCheckedChange={(val) =>
+                        form.setValue("accepts_nhis", val)
+                      }
                     />
                   </div>
                   <CustomSelect
@@ -510,58 +708,53 @@ const AddFacilityDialog = () => {
                       { label: "Faith-Based", value: "faith" },
                     ]}
                     control={form.control}
+                    className="bg-white! border-slate-200"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <CustomInput type="text" name="contact_number" control={form.control} label="Facility Contact Number" readOnly={false} />
-                  <CustomInput type="text" name="whatsapp_number" control={form.control} label="Whatsapp Number" readOnly={false} />
-                  <CustomInput type="email" name="email" control={form.control} label="Facility Email Address" readOnly={false} />
+                  <CustomInput
+                    type="text"
+                    name="contact_number"
+                    control={form.control}
+                    label="Facility Contact Number"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="text"
+                    name="whatsapp_number"
+                    control={form.control}
+                    label="Whatsapp Number"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="email"
+                    name="email"
+                    control={form.control}
+                    label="Facility Email Address"
+                    readOnly={false}
+                  />
                 </div>
 
-                <h3 className="card-title mb-2 underline text-center">Location Details (Auto-Populated)</h3>
+                <h3 className="card-title mb-2 underline text-center">
+                  Location Details (Auto-Populated)
+                </h3>
 
-                {(() => {
-                  if (isLoadingLocation) {
-                    return (
-                      <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl bg-muted/20">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary mb-2" />
-                        <p className="text-sm text-muted-foreground">Accessing GPS & Resolving Address...</p>
-                      </div>
-                    );
-                  }
-                  if (form.watch("gps_address")) {
-                    return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-bottom-2 duration-700">
-                        <CustomInput type="text" name="gps_address" control={form.control} label="GPS Address" readOnly={false} />
-                        <CustomInput type="text" name="street" control={form.control} label="Street Name" readOnly={false} />
-                        <CustomInput type="text" name="post_code" control={form.control} label="Post Code" readOnly={false} />
-                        <CustomInput type="text" name="area" control={form.control} label="Area" readOnly={false} />
-                        <CustomInput type="text" name="district" control={form.control} label="District" readOnly={false} />
-                        <CustomInput type="text" name="region" control={form.control} label="Region" readOnly />
-                        <Button type="button" variant="outline" size="sm" className="text-xs bg-zinc-600 text-white" onClick={() => getLocationCoordinates()}>
-                          Incorrect? Re-detect Location
-                        </Button>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl bg-primary/5">
-                      <MapPinHouse className="h-8 w-8 text-primary/40 mb-3" />
-                      <Button type="button" variant="outline" onClick={() => getLocationCoordinates()}>
-                        Detect My Location
-                      </Button>
-                    </div>
-                  );
-                })()}
+                {renderLocationSection()}
 
-                <h3 className="card-title mb-2 underline text-center">Services and Specialties</h3>
+                <h3 className="card-title mb-2 underline text-center">
+                  Services and Specialties
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <div className="col-span-2 md:col-span-1">
                     <MultiSelect
                       name="amenities"
                       label="Facility Amenities"
-                      placeholder={selectedType ? "Select Amenities..." : "Please select a facility type first"}
+                      placeholder={
+                        selectedType
+                          ? "Select Amenities..."
+                          : "Please select a facility type first"
+                      }
                       options={availableAmenities}
                       selected={form.watch("amenities")}
                       onChange={(value) => form.setValue("amenities", value)}
@@ -571,7 +764,11 @@ const AddFacilityDialog = () => {
                     <MultiSelect
                       name="services"
                       label="Facility Services"
-                      placeholder={selectedType ? "Select Services..." : "Please select a facility type first"}
+                      placeholder={
+                        selectedType
+                          ? "Select Services..."
+                          : "Please select a facility type first"
+                      }
                       options={availableServices}
                       selected={form.watch("services")}
                       onChange={(value) => form.setValue("services", value)}
@@ -589,13 +786,45 @@ const AddFacilityDialog = () => {
                   </div>
                 </div>
 
-                <h3 className="card-title mb-2 underline text-center">Manager Details</h3>
+                <h3 className="card-title mb-2 underline text-center">
+                  Manager Details
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <CustomInput type="text" name="first_name" control={form.control} label="Facility Owner First Name" readOnly={false} />
-                  <CustomInput type="text" name="last_name" control={form.control} label="Facility Owner Last Name" readOnly={false} />
-                  <CustomInput type="email" name="owner_email" control={form.control} label="Facility Owner Email" readOnly={false} />
-                  <CustomInput type="text" name="person_contact_number" control={form.control} label="Facility Owner Contact Number" readOnly={false} />
-                  <CustomInput type="text" name="position" control={form.control} label="Facility Owner Position" readOnly={false} />
+                  <CustomInput
+                    type="text"
+                    name="first_name"
+                    control={form.control}
+                    label="Facility Owner First Name"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="text"
+                    name="last_name"
+                    control={form.control}
+                    label="Facility Owner Last Name"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="email"
+                    name="owner_email"
+                    control={form.control}
+                    label="Facility Owner Email"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="text"
+                    name="person_contact_number"
+                    control={form.control}
+                    label="Facility Owner Contact Number"
+                    readOnly={false}
+                  />
+                  <CustomInput
+                    type="text"
+                    name="position"
+                    control={form.control}
+                    label="Facility Owner Position"
+                    readOnly={false}
+                  />
                 </div>
 
                 <OfferingsSection />
@@ -606,8 +835,21 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Button type="button" className="w-full bg-emerald-600" onClick={handleContinue}>Continue</Button>
-                  <Button type="button" variant="ghost" className="w-full" onClick={close}>Cancel</Button>
+                  <Button
+                    type="button"
+                    className="w-full bg-emerald-600"
+                    onClick={handleContinue}
+                  >
+                    Continue
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={close}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </>
             )}
@@ -617,10 +859,17 @@ const AddFacilityDialog = () => {
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="card-title text-slate-900">Facility Gallery</h3>
-                      <p className="text-xs text-muted-foreground">Select the star icon to set the featured thumbnail</p>
+                      <h3 className="card-title text-slate-900">
+                        Facility Gallery
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Select the star icon to set the featured thumbnail
+                      </p>
                     </div>
-                    <Badge variant="outline" className="bg-white border-emerald-200 text-emerald-700">
+                    <Badge
+                      variant="outline"
+                      className="bg-white border-emerald-200 text-emerald-700"
+                    >
                       {isEditMode ? "Manage Mode" : "Initial Upload"}
                     </Badge>
                   </div>
@@ -633,7 +882,9 @@ const AddFacilityDialog = () => {
                         return (
                           <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-white/50">
                             <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
-                            <p className="text-sm text-slate-400">No images yet</p>
+                            <p className="text-sm text-slate-400">
+                              No images yet
+                            </p>
                           </div>
                         );
                       }
@@ -644,37 +895,47 @@ const AddFacilityDialog = () => {
                           <div
                             key={img.path}
                             className={cn(
-                              "relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all group",
-                              isFeatured ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/10" : "border-white shadow-sm",
+                              "relative aspect-4/3 rounded-xl overflow-hidden border-2 transition-all group",
+                              isFeatured
+                                ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/10"
+                                : "border-white shadow-sm",
                             )}
                           >
                             {isMediaVideo(img.path) ? (
-                              <video src={img.url} className="object-cover w-full h-full" muted autoPlay loop />
+                              <video
+                                src={img.url}
+                                className="object-cover w-full h-full"
+                                muted
+                                autoPlay
+                                loop
+                              />
                             ) : (
-                              <img src={img.url} alt="Gallery item" className="object-cover w-full h-full" />
+                              <img
+                                src={img.url}
+                                alt="Gallery item"
+                                className="object-cover w-full h-full"
+                              />
                             )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => setFeaturedImage(img.path)}
-                                className={cn("p-2 rounded-full transition-all hover:scale-110", isFeatured ? "bg-emerald-500 text-white" : "bg-white text-slate-600")}
+                                className={cn(
+                                  "p-2 rounded-full transition-all hover:scale-110",
+                                  isFeatured
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-white text-slate-600",
+                                )}
                               >
-                                <Star size={16} fill={isFeatured ? "currentColor" : "none"} />
+                                <Star
+                                  size={16}
+                                  fill={isFeatured ? "currentColor" : "none"}
+                                />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (img.isExisting) {
-                                    handleDeleteExistingImage(img.path);
-                                  } else {
-                                    const updated = newlyUploadedFiles.filter((p) => p !== img.path);
-                                    setNewlyUploadedFiles(updated);
-                                    if (!isEditMode) {
-                                      const updatedMediaUrls = (mediaUrls || []).filter((p) => p !== img.path);
-                                      form.setValue("media_urls", updatedMediaUrls);
-                                    }
-                                  }
-                                  if (isFeatured) setFeaturedImage(null);
+                                  handleDeleteImage(img, isFeatured);
                                 }}
                                 className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all hover:scale-110"
                               >
@@ -694,7 +955,9 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold">{isEditMode ? "Add More Photos" : "Upload Photos"}</Label>
+                  <Label className="text-slate-700 font-semibold">
+                    {isEditMode ? "Add More Photos" : "Upload Photos"}
+                  </Label>
                   <ImageDropZone
                     text="Upload clear photos of your facility (front view, interior, signage, opposite)"
                     filePath={filePath}
@@ -704,9 +967,20 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
-                  <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
-                  <Button type="submit" className="md:col-span-2 bg-emerald-600">
-                    {submitting && <Loader2 size={16} className="animate-spin mr-2" />}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="md:col-span-2 bg-emerald-600"
+                  >
+                    {submitting && (
+                      <Loader2 size={16} className="animate-spin mr-2" />
+                    )}
                     {isEditMode ? "Update Facility" : "Register Facility"}
                   </Button>
                 </div>
