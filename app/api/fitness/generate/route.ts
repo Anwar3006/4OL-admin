@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
-// 1. Upgraded Schema (Aligned with the new DB fields)
+// 1. Upgraded Schema
 const fitnessPlanSchema = {
   description: "A world-class, periodized personalized fitness plan",
   type: SchemaType.OBJECT,
@@ -17,14 +17,14 @@ const fitnessPlanSchema = {
         type: SchemaType.OBJECT,
         properties: {
           week: { type: SchemaType.NUMBER },
-          focus: { type: SchemaType.STRING, description: "The overarching goal of this specific week (e.g., 'Hypertrophy Baseline', 'Strength Overload')." },
+          focus: { type: SchemaType.STRING, description: "The overarching goal of this specific week." },
           days: {
             type: SchemaType.ARRAY,
             items: {
               type: SchemaType.OBJECT,
               properties: {
                 day_name: { type: SchemaType.STRING, description: "e.g., 'Monday', 'Tuesday', or 'Day 1'" },
-                session_type: { type: SchemaType.STRING, description: "e.g., 'Upper Body Push', 'Active Recovery', 'Full Body HIIT', 'Rest'" },
+                session_type: { type: SchemaType.STRING, description: "e.g., 'Upper Body Push', 'Active Recovery', 'Rest'" },
                 duration_minutes: { type: SchemaType.NUMBER },
                 exercises: {
                   type: SchemaType.ARRAY,
@@ -54,7 +54,6 @@ const fitnessPlanSchema = {
   required: ["title", "summary", "duration_weeks", "days_per_week", "weekly_schedule"],
 };
 
-// Aligning your app selections to DB strings
 const equipmentMap: Record<string, string[]> = {
   bodyweight_only: ["No Equipment", "Yoga/ Exercise Mat"],
   dumbbells: ["Dumbbell", "No Equipment", "Yoga/ Exercise Mat"],
@@ -91,7 +90,6 @@ export async function POST(req: NextRequest) {
 
   const { selections, selection_hash } = body;
 
-  // Profile Enrichment
   const { data: profile } = await admin
     .from("user_profiles")
     .select("sex, dob")
@@ -101,7 +99,6 @@ export async function POST(req: NextRequest) {
   const userAge = calculateAge(profile?.dob ?? null);
   const userGender = profile?.sex;
 
-  // Persist Data based on the new Schema
   const { gender: _g, age: _a, ...persistentSelections } = selections;
   await admin
     .from("fitness_onboarding_selections")
@@ -110,7 +107,6 @@ export async function POST(req: NextRequest) {
       if (error) console.error("[fitness-generate] Persistence error:", error.message);
     });
 
-  // Cache Check
   const { data: cachedPlan } = await admin
     .from("fitness_generated_workouts")
     .select("workout_plan")
@@ -121,7 +117,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ workout_plan: cachedPlan.workout_plan, selection_hash, cached: true });
   }
 
-  // 2. Upgraded to optimal 2026 Model: Gemini 3.5 Flash
   const geminiApiKey = process.env.GEMINI_API_KEY;
   const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || "gemini-2.5-flash";
 
@@ -129,7 +124,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Gemini API key missing" }, { status: 500 });
   }
 
-  // 3. Dynamic Database Query utilizing new Table fields
   const allowedEquipment = selections.equipment?.flatMap((eq: string) => equipmentMap[eq] || []) || equipmentMap.bodyweight_only;
   const uniqueEquipment = [...new Set(allowedEquipment)];
 
@@ -150,7 +144,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ workout_plan: null, message: "No exercises match your preferences. Try adjusting your equipment or locations." });
   }
 
-  // Context map for the LLM
   const availableExercisesContext = dbExercises.map(e => ({
     id: e.id,
     name: e.exercise_name,
@@ -167,14 +160,12 @@ export async function POST(req: NextRequest) {
     generationConfig: { responseMimeType: "application/json", responseSchema: fitnessPlanSchema as any },
   });
 
-  // Calculate Dynamic Variables
   const fullProfile = { ...selections, gender: userGender || selections.gender, age: userAge || selections.age };
   const workoutWeeks = selections.workout_weeks || 2;
   const sessionMinutes = selections.workout_duration || 45;
   const workoutDaysList = selections.workout_days?.length > 0 ? selections.workout_days.join(", ") : "3 days per week";
   const targetDaysCount = selections.workout_days?.length || 3;
 
-  // 4. World-Class Elite Coach Prompt
   const userPrompt = `
 You are an elite Strength & Conditioning Coach and biomechanics expert. Your task is to design a highly personalized, scientifically-backed fitness program.
 
@@ -193,17 +184,47 @@ You are an elite Strength & Conditioning Coach and biomechanics expert. Your tas
 2. PERIODIZATION & PROGRESSIVE OVERLOAD: The plan MUST exactly span ${workoutWeeks} weeks. Subsequent weeks must demonstrate progressive overload (e.g., adding a set, increasing rep range, or decreasing rest time).
 3. SCHEDULE MAPPING: You must provide exactly 7 days for every week. Assign the active workouts to the exact days listed in the user's Weekly Schedule (${workoutDaysList}). All other days must be labeled as "Rest" or "Active Recovery" with 0 duration and empty exercise arrays.
 4. PACING: Active days should have an appropriate number of exercises to realistically fit into a ${sessionMinutes}-minute window (approx. ${Math.max(4, Math.round(sessionMinutes / 8))} exercises).
-5. COACHING: Provide high-value, specific "coach_notes" for each exercise (e.g., "Drive through the heels", "Keep eccentric phase to 3 seconds").
+5. COACHING: Provide high-value, specific "coach_notes" for each exercise.
 
 == LIBRARY OF AVAILABLE EXERCISES ==
 ${JSON.stringify(availableExercisesContext)}
   `.trim();
 
+  // ==========================================
+  // SILENT RETRY LOGIC (Exponential Backoff)
+  // ==========================================
+  let result;
+  const MAX_RETRIES = 3; 
+  const BASE_DELAY_MS = 1500; // 1.5 seconds
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      result = await model.generateContent(userPrompt);
+      break; // Success! Break out of the retry loop.
+    } catch (error: any) {
+      console.warn(`[fitness-generate] Gemini attempt ${attempt} failed:`, error.message);
+      
+      if (attempt === MAX_RETRIES) {
+        console.error("[fitness-generate] All Gemini retry attempts exhausted.");
+        // We throw a 503 so the frontend knows the AI is temporarily down, not fully broken.
+        return NextResponse.json({ error: "AI Generation is currently experiencing high demand. Please try again in a moment." }, { status: 503 });
+      }
+      
+      // Calculate delay: 1.5s -> 3s -> 4.5s
+      const delay = BASE_DELAY_MS * attempt;
+      console.log(`[fitness-generate] Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  // Safety check in case the loop exits bizarrely
+  if (!result) {
+    return NextResponse.json({ error: "AI Generation failed unexpectedly." }, { status: 500 });
+  }
+
   try {
-    const result = await model.generateContent(userPrompt);
     const fitnessPlan = JSON.parse(result.response.text()) as any;
 
-    // 5. Hydrate generated output with full DB media & details
     const exerciseMap = new Map(dbExercises.map(e => [e.id, e]));
     
     fitnessPlan.weekly_schedule.forEach((week: any) => {
@@ -213,9 +234,9 @@ ${JSON.stringify(availableExercisesContext)}
           if (dbEx) {
             return {
               ...ex,
-              name: dbEx.exercise_name, // Override with DB exact name
+              name: dbEx.exercise_name,
               video_url: dbEx.video_url,
-              thumbnail_url: dbEx.thumbnail_url, // Adjusted to singular
+              thumbnail_url: dbEx.thumbnail_url,
               muscles_targeted: [dbEx.primary_muscle_group, dbEx.secondary_muscles].filter(Boolean),
             };
           }
@@ -224,16 +245,15 @@ ${JSON.stringify(availableExercisesContext)}
       });
     });
 
-    // Save generated workout
     await admin.from("fitness_generated_workouts").insert({
       selection_hash, 
       workout_plan: fitnessPlan, 
-      generated_by: modelName // Will record gemini-2.5-flash
+      generated_by: modelName
     });
 
     return NextResponse.json({ workout_plan: fitnessPlan, selection_hash, cached: false });
   } catch (error: any) {
-    console.error("[fitness-generate] Gemini error:", error);
-    return NextResponse.json({ error: "AI Generation failed" }, { status: 500 });
+    console.error("[fitness-generate] JSON Parsing or DB Insert error:", error);
+    return NextResponse.json({ error: "Failed to process the AI response." }, { status: 500 });
   }
 }
