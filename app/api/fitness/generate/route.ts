@@ -8,7 +8,10 @@ const fitnessPlanSchema = {
   type: SchemaType.OBJECT,
   properties: {
     title: { type: SchemaType.STRING },
-    summary: { type: SchemaType.STRING, description: "A highly motivating overview of the plan's methodology." },
+    summary: {
+      type: SchemaType.STRING,
+      description: "A highly motivating overview of the plan's methodology.",
+    },
     duration_weeks: { type: SchemaType.NUMBER },
     days_per_week: { type: SchemaType.NUMBER },
     weekly_schedule: {
@@ -17,33 +20,74 @@ const fitnessPlanSchema = {
         type: SchemaType.OBJECT,
         properties: {
           week: { type: SchemaType.NUMBER },
-          focus: { type: SchemaType.STRING, description: "The overarching goal of this specific week." },
+          focus: {
+            type: SchemaType.STRING,
+            description: "The overarching goal of this specific week.",
+          },
           days: {
             type: SchemaType.ARRAY,
             items: {
               type: SchemaType.OBJECT,
               properties: {
-                day_name: { type: SchemaType.STRING, description: "e.g., 'Monday', 'Tuesday', or 'Day 1'" },
-                session_type: { type: SchemaType.STRING, description: "e.g., 'Upper Body Push', 'Active Recovery', 'Rest'" },
+                day_name: {
+                  type: SchemaType.STRING,
+                  description: "e.g., 'Monday', 'Tuesday', or 'Day 1'",
+                },
+                session_type: {
+                  type: SchemaType.STRING,
+                  description:
+                    "e.g., 'Upper Body Push', 'Active Recovery', 'Rest'",
+                },
                 duration_minutes: { type: SchemaType.NUMBER },
                 exercises: {
                   type: SchemaType.ARRAY,
                   items: {
                     type: SchemaType.OBJECT,
                     properties: {
-                      id: { type: SchemaType.STRING, description: "The exact UUID from the provided library." },
+                      id: {
+                        type: SchemaType.STRING,
+                        description:
+                          "The exact UUID from the provided library.",
+                      },
                       name: { type: SchemaType.STRING },
                       sets: { type: SchemaType.NUMBER },
-                      reps: { type: SchemaType.STRING, description: "e.g., '8-10', 'To Failure', '30 sec'" },
+                      reps: {
+                        type: SchemaType.STRING,
+                        description: "e.g., '8-10', 'To Failure', '30 sec'",
+                      },
                       rest_seconds: { type: SchemaType.NUMBER },
-                      coach_notes: { type: SchemaType.STRING, description: "Pro tip for biomechanics, breathing, or intent." },
-                      muscles_targeted: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                      coach_notes: {
+                        type: SchemaType.STRING,
+                        description:
+                          "Pro tip for biomechanics, breathing, or intent.",
+                      },
+                      met_value: {
+                        type: SchemaType.NUMBER,
+                        description: "The MET value provided in the library.",
+                      },
+                      muscles_targeted: {
+                        type: SchemaType.ARRAY,
+                        items: { type: SchemaType.STRING },
+                      },
                     },
-                    required: ["id", "name", "sets", "reps", "rest_seconds", "coach_notes"],
+                    required: [
+                      "id",
+                      "name",
+                      "sets",
+                      "reps",
+                      "rest_seconds",
+                      "coach_notes",
+                      "met_value",
+                    ],
                   },
                 },
               },
-              required: ["day_name", "session_type", "duration_minutes", "exercises"],
+              required: [
+                "day_name",
+                "session_type",
+                "duration_minutes",
+                "exercises",
+              ],
             },
           },
         },
@@ -51,14 +95,34 @@ const fitnessPlanSchema = {
       },
     },
   },
-  required: ["title", "summary", "duration_weeks", "days_per_week", "weekly_schedule"],
+  required: [
+    "title",
+    "summary",
+    "duration_weeks",
+    "days_per_week",
+    "weekly_schedule",
+  ],
 };
 
 const equipmentMap: Record<string, string[]> = {
   bodyweight_only: ["No Equipment", "Yoga/ Exercise Mat"],
   dumbbells: ["Dumbbell", "No Equipment", "Yoga/ Exercise Mat"],
   resistance_bands: ["Resistance Band", "No Equipment", "Yoga/ Exercise Mat"],
-  full_gym: ["No Equipment", "Barbell", "Dumbbell", "Kettlebell", "Gym Machine Workout", "Resistance Band", "Treadmill", "Exercise Bike", "Yoga/ Exercise Mat", "Skipping Ropes", "Exercise Balls", "Weight Bench", "Pull up bar"],
+  full_gym: [
+    "No Equipment",
+    "Barbell",
+    "Dumbbell",
+    "Kettlebell",
+    "Gym Machine Workout",
+    "Resistance Band",
+    "Treadmill",
+    "Exercise Bike",
+    "Yoga/ Exercise Mat",
+    "Skipping Ropes",
+    "Exercise Balls",
+    "Weight Bench",
+    "Pull up bar",
+  ],
 };
 
 function calculateAge(birthday: string | null): number | null {
@@ -73,10 +137,14 @@ function calculateAge(birthday: string | null): number | null {
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!token)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const admin = getSupabaseAdmin();
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
+  const {
+    data: { user },
+    error: authError,
+  } = await admin.auth.getUser(token);
   if (authError || !user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -85,7 +153,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
   if (!body?.selections || !body?.selection_hash) {
-    return NextResponse.json({ error: "Missing selections or hash" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing selections or hash" },
+      { status: 400 },
+    );
   }
 
   const { selections, selection_hash } = body;
@@ -102,9 +173,13 @@ export async function POST(req: NextRequest) {
   const { gender: _g, age: _a, ...persistentSelections } = selections;
   await admin
     .from("fitness_onboarding_selections")
-    .upsert({ user_id: userId, ...persistentSelections, selection_hash }, { onConflict: "user_id" })
+    .upsert(
+      { user_id: userId, ...persistentSelections, selection_hash },
+      { onConflict: "user_id" },
+    )
     .then(({ error }) => {
-      if (error) console.error("[fitness-generate] Persistence error:", error.message);
+      if (error)
+        console.error("[fitness-generate] Persistence error:", error.message);
     });
 
   const { data: cachedPlan } = await admin
@@ -114,37 +189,59 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (cachedPlan?.workout_plan) {
-    return NextResponse.json({ workout_plan: cachedPlan.workout_plan, selection_hash, cached: true });
+    return NextResponse.json({
+      workout_plan: cachedPlan.workout_plan,
+      selection_hash,
+      cached: true,
+    });
   }
 
   const geminiApiKey = process.env.GEMINI_API_KEY;
   const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || "gemini-2.5-flash";
 
   if (!geminiApiKey) {
-    return NextResponse.json({ error: "Gemini API key missing" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Gemini API key missing" },
+      { status: 500 },
+    );
   }
 
-  const allowedEquipment = selections.equipment?.flatMap((eq: string) => equipmentMap[eq] || []) || equipmentMap.bodyweight_only;
+  const allowedEquipment =
+    selections.equipment?.flatMap((eq: string) => equipmentMap[eq] || []) ||
+    equipmentMap.bodyweight_only;
   const uniqueEquipment = [...new Set(allowedEquipment)];
 
   let exerciseQuery = admin
     .from("fitness_exercises")
-    .select("id, exercise_name, category, primary_muscle_group, secondary_muscles, equipment_required, difficulty_level, default_sets, default_reps_duration, rest_time_seconds, description, video_url, thumbnail_url")
+    .select(
+      "id, exercise_name, category, primary_muscle_group, secondary_muscles, equipment_required, difficulty_level, default_sets, default_reps_duration, rest_time_seconds, description, video_url, thumbnail_url, met_value",
+    ) // ADDED met_value
     .eq("is_active", true)
     .eq("status", "published");
 
-  if (uniqueEquipment.length > 0 && !selections.equipment?.includes("full_gym")) {
-    exerciseQuery = exerciseQuery.in("equipment_required", uniqueEquipment as string[]);
+  if (
+    uniqueEquipment.length > 0 &&
+    !selections.equipment?.includes("full_gym")
+  ) {
+    exerciseQuery = exerciseQuery.in(
+      "equipment_required",
+      uniqueEquipment as string[],
+    );
   }
 
   const { data: dbExercises, error: dbError } = await exerciseQuery;
-  if (dbError) console.error("[fitness-generate] DB fetch error:", dbError.message);
+  if (dbError)
+    console.error("[fitness-generate] DB fetch error:", dbError.message);
 
   if (!dbExercises || dbExercises.length === 0) {
-    return NextResponse.json({ workout_plan: null, message: "No exercises match your preferences. Try adjusting your equipment or locations." });
+    return NextResponse.json({
+      workout_plan: null,
+      message:
+        "No exercises match your preferences. Try adjusting your equipment or locations.",
+    });
   }
 
-  const availableExercisesContext = dbExercises.map(e => ({
+  const availableExercisesContext = dbExercises.map((e) => ({
     id: e.id,
     name: e.exercise_name,
     category: e.category,
@@ -152,18 +249,29 @@ export async function POST(req: NextRequest) {
     secondary_muscles: e.secondary_muscles,
     equipment: e.equipment_required,
     difficulty: e.difficulty_level,
+    met_value: e.met_value || 5.0, // Fallback MET if null in DB
   }));
 
   const genAI = new GoogleGenerativeAI(geminiApiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
-    generationConfig: { responseMimeType: "application/json", responseSchema: fitnessPlanSchema as any },
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: fitnessPlanSchema as any,
+    },
   });
 
-  const fullProfile = { ...selections, gender: userGender || selections.gender, age: userAge || selections.age };
+  const fullProfile = {
+    ...selections,
+    gender: userGender || selections.gender,
+    age: userAge || selections.age,
+  };
   const workoutWeeks = selections.workout_weeks || 2;
   const sessionMinutes = selections.workout_duration || 45;
-  const workoutDaysList = selections.workout_days?.length > 0 ? selections.workout_days.join(", ") : "3 days per week";
+  const workoutDaysList =
+    selections.workout_days?.length > 0
+      ? selections.workout_days.join(", ")
+      : "3 days per week";
   const targetDaysCount = selections.workout_days?.length || 3;
 
   const userPrompt = `
@@ -194,7 +302,7 @@ ${JSON.stringify(availableExercisesContext)}
   // SILENT RETRY LOGIC (Exponential Backoff)
   // ==========================================
   let result;
-  const MAX_RETRIES = 3; 
+  const MAX_RETRIES = 3;
   const BASE_DELAY_MS = 1500; // 1.5 seconds
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -202,14 +310,25 @@ ${JSON.stringify(availableExercisesContext)}
       result = await model.generateContent(userPrompt);
       break; // Success! Break out of the retry loop.
     } catch (error: any) {
-      console.warn(`[fitness-generate] Gemini attempt ${attempt} failed:`, error.message);
-      
+      console.warn(
+        `[fitness-generate] Gemini attempt ${attempt} failed:`,
+        error.message,
+      );
+
       if (attempt === MAX_RETRIES) {
-        console.error("[fitness-generate] All Gemini retry attempts exhausted.");
+        console.error(
+          "[fitness-generate] All Gemini retry attempts exhausted.",
+        );
         // We throw a 503 so the frontend knows the AI is temporarily down, not fully broken.
-        return NextResponse.json({ error: "AI Generation is currently experiencing high demand. Please try again in a moment." }, { status: 503 });
+        return NextResponse.json(
+          {
+            error:
+              "AI Generation is currently experiencing high demand. Please try again in a moment.",
+          },
+          { status: 503 },
+        );
       }
-      
+
       // Calculate delay: 1.5s -> 3s -> 4.5s
       const delay = BASE_DELAY_MS * attempt;
       console.log(`[fitness-generate] Retrying in ${delay}ms...`);
@@ -219,41 +338,83 @@ ${JSON.stringify(availableExercisesContext)}
 
   // Safety check in case the loop exits bizarrely
   if (!result) {
-    return NextResponse.json({ error: "AI Generation failed unexpectedly." }, { status: 500 });
+    return NextResponse.json(
+      { error: "AI Generation failed unexpectedly." },
+      { status: 500 },
+    );
   }
 
   try {
     const fitnessPlan = JSON.parse(result.response.text()) as any;
+    const exerciseMap = new Map(dbExercises.map((e) => [e.id, e]));
 
-    const exerciseMap = new Map(dbExercises.map(e => [e.id, e]));
-    
+    // The user's weight for the formula (Fallback to 70kg if unknown)
+    const userWeightKg = selections.weight_kg || 70;
+
     fitnessPlan.weekly_schedule.forEach((week: any) => {
       week.days.forEach((day: any) => {
+        let totalDayMetSum = 0;
+        let exerciseCount = 0;
+
         day.exercises = day.exercises.map((ex: any) => {
           const dbEx = exerciseMap.get(ex.id || "");
+
+          // Use the DB met_value if it exists, otherwise trust the AI, otherwise fallback to 5.0
+          const finalMetValue = dbEx?.met_value || ex.met_value || 5.0;
+
+          totalDayMetSum += finalMetValue;
+          exerciseCount++;
+
           if (dbEx) {
             return {
               ...ex,
               name: dbEx.exercise_name,
               video_url: dbEx.video_url,
               thumbnail_url: dbEx.thumbnail_url,
-              muscles_targeted: [dbEx.primary_muscle_group, dbEx.secondary_muscles].filter(Boolean),
+              met_value: finalMetValue, // Ensure it's saved in the plan
+              muscles_targeted: [
+                dbEx.primary_muscle_group,
+                dbEx.secondary_muscles,
+              ].filter(Boolean),
             };
           }
-          return ex;
+          return { ...ex, met_value: finalMetValue };
         });
+
+        // Calculate Projected Calories for the Day
+        if (day.session_type !== "Rest" && exerciseCount > 0) {
+          // Average MET value for the day's exercises
+          const averageDayMet = totalDayMetSum / exerciseCount;
+          // Standard MET Formula: (MET * 3.5 * Weight in kg / 200) * Duration in minutes
+          const projectedCalories =
+            ((averageDayMet * 3.5 * userWeightKg) / 200) *
+            (day.duration_minutes || 45);
+
+          day.projected_kcal = Math.round(projectedCalories);
+          day.average_met_value = Number(averageDayMet.toFixed(2));
+        } else {
+          day.projected_kcal = 0;
+          day.average_met_value = 1.0; // Resting MET
+        }
       });
     });
 
     await admin.from("fitness_generated_workouts").insert({
-      selection_hash, 
-      workout_plan: fitnessPlan, 
-      generated_by: modelName
+      selection_hash,
+      workout_plan: fitnessPlan,
+      generated_by: modelName,
     });
 
-    return NextResponse.json({ workout_plan: fitnessPlan, selection_hash, cached: false });
+    return NextResponse.json({
+      workout_plan: fitnessPlan,
+      selection_hash,
+      cached: false,
+    });
   } catch (error: any) {
     console.error("[fitness-generate] JSON Parsing or DB Insert error:", error);
-    return NextResponse.json({ error: "Failed to process the AI response." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process the AI response." },
+      { status: 500 },
+    );
   }
 }
