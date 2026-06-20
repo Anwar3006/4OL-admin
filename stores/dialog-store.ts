@@ -38,7 +38,13 @@ export type DialogTypes =
   | "add-exercise"
   | "view-exercise"
   | "add-fitness-plan"
-  | "view-fitness-plan";
+  | "view-fitness-plan"
+  | "add-outdoor-route"
+  | "view-outdoor-route"
+  | "add-outdoor-event"
+  | "view-outdoor-event"
+  | "add-outdoor-review"
+  | "view-outdoor-review";
 
 /**
  * Generic dialog configuration
@@ -722,4 +728,92 @@ export const useViewFitnessPlanDialog = () => {
     close: () => closeDialog("view-fitness-plan"),
   };
 };
+
+export const useAddOutdoorRouteDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-route"));
+  const data = useDialogStore((state) => state.getDialogData("add-outdoor-route"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-outdoor-route", { data }),
+    close: () => closeDialog("add-outdoor-route"),
+  };
+};
+
+export const useViewOutdoorRouteDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-route"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-route"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-outdoor-route", { entityId }),
+    close: () => closeDialog("view-outdoor-route"),
+  };
+};
+
+export const useAddOutdoorEventDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-event"));
+  const data = useDialogStore((state) => state.getDialogData("add-outdoor-event"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-outdoor-event", { data }),
+    close: () => closeDialog("add-outdoor-event"),
+  };
+};
+
+export const useViewOutdoorEventDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-event"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-event"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-outdoor-event", { entityId }),
+    close: () => closeDialog("view-outdoor-event"),
+  };
+};
+
+export const useAddOutdoorReviewDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-review"));
+  const data = useDialogStore((state) => state.getDialogData("add-outdoor-review"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-outdoor-review", { data }),
+    close: () => closeDialog("add-outdoor-review"),
+  };
+};
+
+export const useViewOutdoorReviewDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-review"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-review"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-outdoor-review", { entityId }),
+    close: () => closeDialog("view-outdoor-review"),
+  };
+};
+
 

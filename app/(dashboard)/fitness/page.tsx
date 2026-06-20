@@ -14,6 +14,7 @@ import {
   UsersTab,
   TrainersTab,
   ScheduleTab,
+  OutdoorTab,
 } from "./_tabs";
 
 const fitnessTabs = [
@@ -98,9 +99,10 @@ const FitnessPage = () => {
           <TabsContent value="users"      className="outline-none w-full min-w-0"><UsersTab /></TabsContent>
           <TabsContent value="trainers"   className="outline-none w-full min-w-0"><TrainersTab /></TabsContent>
           <TabsContent value="schedule"   className="outline-none w-full min-w-0"><ScheduleTab /></TabsContent>
+          <TabsContent value="outdoor"    className="outline-none w-full min-w-0"><OutdoorTab /></TabsContent>
 
           {/* Placeholder panels for in-progress tabs */}
-          {["ai_studio", "ai_log", "outdoor", "health", "whatsapp"].map((tabId) => (
+          {["ai_studio", "ai_log", "health", "whatsapp"].map((tabId) => (
             <TabsContent key={tabId} value={tabId} className="outline-none w-full min-w-0">
               <div className="card text-center py-16 w-full">
                 <div className="max-w-md mx-auto space-y-5">

@@ -1,11 +1,8 @@
 "use client";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomInput from "@/components/CustomInput";
 import * as zod from "zod";
@@ -13,12 +10,14 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
-// import { authClient } from "@/lib/auth-client"; // Removed BetterAuth client
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser"; // Use Supabase client for browser
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
+  const router = useRouter();
+  
   const form = useForm<zod.infer<typeof userLoginSchema>>({
     resolver: zodResolver(userLoginSchema),
     defaultValues: {
@@ -26,13 +25,14 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       password: "",
     },
   });
-  const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(false);
+
+  // Extract isSubmitting directly from the form state instead of custom useState
+  const { isSubmitting } = form.formState;
 
   const handleSubmit = async (data: zod.infer<typeof userLoginSchema>) => {
     try {
-      setLoading(true);
       const supabase = getSupabaseBrowserClient();
+      
       const { data: authData, error: supabaseError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -43,8 +43,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         return;
       }
 
-      // Role Check: Only Allow admins or group leaders to the admin panel
-      // Fetch user profile to get the role, as auth.users.role is for internal Supabase roles.
+      // Role Check
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .select('role')
@@ -52,37 +51,28 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         .single();
 
       if (profileError || !userProfile) {
-        toast.error("Failed to fetch user role.");
-        await supabase.auth.signOut(); // Sign out if role cannot be fetched
+        toast.error("Failed to verify user permissions.");
+        await supabase.auth.signOut();
         return;
       }
       
       const role = userProfile.role;
-      const isAllowed = role === "super_admin" || role === "admin" || role === "group_leader";
+      const isAllowed = ["super_admin", "admin", "group_leader"].includes(role);
 
       if (!isAllowed) {
-        await supabase.auth.signOut(); // Sign out unauthorized users
-        toast.error("Unauthorized! You don't have access to the admin panel.");
+        await supabase.auth.signOut();
+        form.setError("root", { message: "Unauthorized. You do not have admin panel access." });
         return;
       }
 
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("isAuth", JSON.stringify(true));
-        window.localStorage.setItem("user_id", authData.user?.id || "");
-        window.localStorage.setItem(
-          "user_email",
-          authData.user?.email || "",
-        );
-        window.localStorage.setItem("user_role", role || "user");
-      }
+      // NOTE: Removed window.localStorage anti-pattern here.
+      // Rely entirely on Supabase's managed session cookies for auth state.
 
-      toast.success("Log in successful!");
-      router.push("/dashboard/overview");
+      toast.success("Authentication successful");
+      router.push("/dashboard");
     } catch (error: unknown) {
-      console.error("Error logging in user: ", error);
-      toast.error("Login failed! : " + (error as Error).message);
-    } finally {
-      setLoading(false);
+      console.error("Login Error: ", error);
+      form.setError("root", { message: "An unexpected network error occurred." });
     }
   };
 
@@ -94,21 +84,30 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         {...props}
       >
         <FieldGroup>
-          <div className="flex flex-col items-center gap-1 text-center">
-            <h1 className="text-2xl font-bold">Login for Admins</h1>
+          <div className="flex flex-col items-center gap-1.5 text-center mb-2">
+            <h1 className="text-2xl font-semibold tracking-tight">Admin Portal</h1>
             <p className="text-muted-foreground text-sm text-balance">
-              Fill in the form below to log in to your account
+              Enter your credentials to access the dashboard
             </p>
           </div>
+
+          {/* Explicitly display root errors (like incorrect password or unauthorized role) */}
+          {form.formState.errors.root && (
+            <Alert variant="destructive" className="bg-destructive/10 text-destructive border-none">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {form.formState.errors.root.message}
+              </AlertDescription>
+            </Alert>
+          )}
 
           <CustomInput
             type="email"
             name="email"
             label="Email Address"
-            placeholder="francis@gmail.com"
+            placeholder="admin@example.com"
             control={form.control}
             description="Use the email address you used to sign up"
-            disabled={false}
             readOnly={false}
           />
 
@@ -116,25 +115,30 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
             type="password"
             name="password"
             label="Password"
-            placeholder="***********"
+            placeholder="••••••••"
             control={form.control}
-            disabled={false}
             readOnly={false}
           />
 
           <Field>
             <Button
               type="submit"
-              className="py-5 bg-emerald-600"
-              disabled={loading}
+              className="w-full py-6 mt-2 bg-[#57CE83] hover:bg-[#47a669] text-white transition-colors"
+              disabled={isSubmitting}
             >
-              {loading ? "Logging in..." : "Login to Account"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                "Log in to Account"
+              )}
             </Button>
           </Field>
 
-          {/* Registration is invite-only — no public sign-up link shown */}
           <Field>
-            <FieldDescription className="px-6 text-center text-muted-foreground text-sm">
+            <FieldDescription className="px-6 text-center text-muted-foreground text-sm mt-4">
               Access is by invitation only. Check your email for an invite link.
             </FieldDescription>
           </Field>

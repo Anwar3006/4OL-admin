@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { verifyOtpSentToEmail } from "@/app/services/login";
+
 import { useRouter } from "next/navigation";
 import Textinput from "@/components/ui/Textinput";
 import Link from "next/link";

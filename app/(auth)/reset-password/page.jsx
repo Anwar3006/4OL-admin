@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { resetPassword } from "@/app/services/login";
+
 import Link from "next/link";
 import Textinput from "@/components/ui/Textinput";
 import useDarkmode from "@/hooks/useDarkMode";

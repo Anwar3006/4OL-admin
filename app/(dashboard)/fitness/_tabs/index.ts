@@ -5,3 +5,5 @@ export { default as ChallengesTab } from "./ChallengesTab";
 export { default as UsersTab } from "./UsersTab";
 export { default as TrainersTab } from "./TrainersTab";
 export { default as ScheduleTab } from "./ScheduleTab";
+export { default as OutdoorTab } from "./OutdoorTab";
+

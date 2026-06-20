@@ -72,65 +72,23 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Administration",
     items: [
-      {
-        title: "Admins",
-        href: "/admins",
-        icon: "👥",
-        children: [
-          { title: "All Admins", href: "/admins?tab=all" },
-          { title: "Roles & Permissions", href: "/admins?tab=roles" },
-          { title: "Activity Logs", href: "/admins?tab=logs" },
-          { title: "Security Center", href: "/admins?tab=security" },
-          { title: "Reports", href: "/admins?tab=reports" },
-        ],
-      },
-      {
-        title: "Users",
-        href: "/users",
-        icon: "👤",
-        children: [
-          { title: "All Users", href: "/users?tab=all" },
-          { title: "Flagged", href: "/users?tab=flagged" },
-          { title: "Delete Requests", href: "/users?tab=delete-requests" },
-          { title: "IBP Businesses", href: "/ibp" },
-        ],
-      },
+      { title: "Admins", href: "/admins", icon: "👥" },
+      { title: "Users", href: "/users", icon: "👤" },
+      { title: "IBP Businesses", href: "/ibp", icon: "🏢" },
       { title: "Task Manager", href: "/tasks", icon: "📋", badge: "SA" },
     ],
   },
   {
     title: "Health Services",
     items: [
-      {
-        title: "Facilities",
-        href: "/facilities",
-        icon: "🏥",
-        badge: "6",
-        children: [
-          { title: "All", href: "/facilities" },
-          { title: "Pending Approval", href: "/facilities?status=pending" },
-          { title: "Top Rated", href: "/facilities?status=top_rated" },
-          { title: "Featured", href: "/facilities?status=featured" },
-        ],
-      },
+      { title: "Facilities", href: "/facilities", icon: "🏥", badge: "6" },
       { title: "Diseases & Conditions", href: "/diseases", icon: "🦠" },
       { title: "Human Anatomy", href: "/anatomy", icon: "🫁" },
       { title: "Symptoms", href: "/symptoms", icon: "🩺" },
       { title: "Healthy Living", href: "/healthy_living", icon: "🥗" },
       { title: "Fitness", href: "/fitness", icon: "💪", badge: "3" },
       { title: "Period Tracker", href: "/period", icon: "📅" },
-      {
-        title: "Medication Reminder",
-        href: "/medication-reminder",
-        icon: "💊",
-        children: [
-          { title: "Drug Database", href: "/medication-reminder?tab=database" },
-          { title: "Logged Reminders", href: "/medication-reminder?tab=logged" },
-          { title: "Adherence", href: "/medication-reminder?tab=adherence" },
-          { title: "Interactions", href: "/medication-reminder?tab=interactions" },
-          { title: "AI Checker", href: "/medication-reminder?tab=ai" },
-        ],
-      },
+      { title: "Medication Reminder", href: "/medication-reminder", icon: "💊" },
       {
         title: "Healthcare Professionals",
         href: "/hcp",
@@ -186,36 +144,14 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Engagement",
     items: [
-      {
-        title: "Reviews & Ratings",
-        href: "/reviews",
-        icon: "⭐",
-        badge: "Fac",
-        children: [
-          { title: "All Reviews", href: "/reviews?tab=all" },
-          { title: "Flagged (12)", href: "/reviews?tab=flagged" },
-          { title: "Pending (3)", href: "/reviews?tab=pending" },
-        ],
-      },
+      { title: "Reviews & Ratings", href: "/reviews", icon: "⭐", badge: "Fac" },
       { title: "Map", href: "/map", icon: "🗺️", badge: "Fac" },
     ],
   },
   {
     title: "Growth",
     items: [
-      {
-        title: "Marketing",
-        href: "/marketing",
-        icon: "📣",
-        badge: "2",
-        children: [
-          { title: "Campaigns", href: "/marketing?tab=all" },
-          { title: "Subscriptions", href: "/marketing?tab=subscriptions" },
-          { title: "Discounts", href: "/marketing?tab=discounts" },
-          { title: "Analytics", href: "/marketing?tab=analytics" },
-          { title: "Page Linkages", href: "/marketing?tab=linkages" },
-        ],
-      },
+      { title: "Marketing", href: "/marketing", icon: "📣", badge: "2" },
       {
         title: "Chats",
         href: "/chats",
