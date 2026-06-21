@@ -580,8 +580,10 @@ const OutdoorTab = () => {
       {/* Render Dialog forms and Side sheets */}
       <AddOutdoorRouteDialog />
       <ViewOutdoorRouteDialog />
+      
       <AddOutdoorEventDialog />
       <ViewOutdoorEventDialog />
+
       <AddOutdoorReviewDialog />
       <ViewOutdoorReviewDialog />
 

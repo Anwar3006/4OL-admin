@@ -12,7 +12,7 @@ import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
@@ -84,8 +84,11 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         {...props}
       >
         <FieldGroup>
-          <div className="flex flex-col items-center gap-1.5 text-center mb-2">
-            <h1 className="text-2xl font-semibold tracking-tight">Admin Portal</h1>
+          <div className="flex flex-col items-center gap-2 text-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-2">
+              <Shield className="w-6 h-6 text-[#57CE83]" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Admin Portal</h1>
             <p className="text-muted-foreground text-sm text-balance">
               Enter your credentials to access the dashboard
             </p>
@@ -123,7 +126,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
           <Field>
             <Button
               type="submit"
-              className="w-full py-6 mt-2 bg-[#57CE83] hover:bg-[#47a669] text-white transition-colors"
+              className="w-full py-6 mt-2 bg-emerald-500 hover:bg-[#47a669] text-white transition-colors"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

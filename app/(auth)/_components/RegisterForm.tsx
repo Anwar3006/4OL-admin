@@ -19,6 +19,7 @@ import { ROLE_OPTIONS, SEX_OPTIONS } from "@/types/formInput";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Shield, AlertCircle } from "lucide-react";
 
 const RegisterForm = ({
   isInvited = false,
@@ -128,8 +129,11 @@ const RegisterForm = ({
         {...props}
       >
         <FieldGroup>
-          <div className="flex flex-col items-center gap-1 text-center">
-            <h1 className="text-2xl font-bold">
+          <div className="flex flex-col items-center gap-2 text-center mb-2">
+            <div className="w-12 h-12 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-1">
+              <Shield className="w-6 h-6 text-[#57CE83]" />
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
               {isInvited ? "Administrative Account Setup" : "Create your account"}
             </h1>
             <p className="text-muted-foreground text-sm text-balance">
@@ -138,9 +142,10 @@ const RegisterForm = ({
           </div>
 
           {form.formState.errors.root && (
-            <p className="text-sm text-red-500 text-center">
-              {form.formState.errors.root.message}
-            </p>
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{form.formState.errors.root.message}</span>
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-5">
@@ -188,7 +193,7 @@ const RegisterForm = ({
           </div>
 
           <Field>
-            <Button type="submit" className="py-5 bg-emerald-600" disabled={isSubmitting}>
+            <Button type="submit" className="w-full py-5 mt-2 bg-emerald-600 hover:bg-emerald-700 text-white transition-colors" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Register an Account"}
             </Button>
           </Field>
