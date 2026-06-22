@@ -26,7 +26,6 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
     },
   });
 
-  // Extract isSubmitting directly from the form state instead of custom useState
   const { isSubmitting } = form.formState;
 
   const handleSubmit = async (data: zod.infer<typeof userLoginSchema>) => {
@@ -43,7 +42,6 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         return;
       }
 
-      // Role Check
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
         .select('role')
@@ -65,9 +63,6 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
         return;
       }
 
-      // NOTE: Removed window.localStorage anti-pattern here.
-      // Rely entirely on Supabase's managed session cookies for auth state.
-
       toast.success("Authentication successful");
       router.push("/dashboard");
     } catch (error: unknown) {
@@ -80,58 +75,60 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className={cn("flex flex-col gap-6", className)}
+        // Increased the gap size for larger screens
+        className={cn("flex flex-col gap-6 2xl:gap-8", className)}
         {...props}
       >
         <FieldGroup>
-          <div className="flex flex-col items-center gap-2 text-center mb-6">
-            <div className="w-12 h-12 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-2">
-              <Shield className="w-6 h-6 text-[#57CE83]" />
+          <div className="flex flex-col items-center gap-2 2xl:gap-4 text-center mb-6 2xl:mb-8">
+            <div className="w-12 h-12 2xl:w-20 2xl:h-20 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-2">
+              <Shield className="w-6 h-6 2xl:w-10 2xl:h-10 text-[#57CE83]" />
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Admin Portal</h1>
-            <p className="text-muted-foreground text-sm text-balance">
+            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-tight text-slate-900">Admin Portal</h1>
+            <p className="text-muted-foreground text-sm 2xl:text-lg text-balance">
               Enter your credentials to access the dashboard
             </p>
           </div>
 
-          {/* Explicitly display root errors (like incorrect password or unauthorized role) */}
           {form.formState.errors.root && (
-            <Alert variant="destructive" className="bg-destructive/10 text-destructive border-none">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
+            <Alert variant="destructive" className="bg-destructive/10 text-destructive border-none 2xl:p-6">
+              <AlertCircle className="h-4 w-4 2xl:w-6 2xl:h-6" />
+              <AlertDescription className="2xl:text-lg">
                 {form.formState.errors.root.message}
               </AlertDescription>
             </Alert>
           )}
 
-          <CustomInput
-            type="email"
-            name="email"
-            label="Email Address"
-            placeholder="admin@example.com"
-            control={form.control}
-            description="Use the email address you used to sign up"
-            readOnly={false}
-          />
+          <div className="space-y-4 2xl:space-y-6">
+            <CustomInput
+              type="email"
+              name="email"
+              label="Email Address"
+              placeholder="admin@example.com"
+              control={form.control}
+              description="Use the email address you used to sign up"
+              readOnly={false}
+            />
 
-          <CustomInput
-            type="password"
-            name="password"
-            label="Password"
-            placeholder="••••••••"
-            control={form.control}
-            readOnly={false}
-          />
+            <CustomInput
+              type="password"
+              name="password"
+              label="Password"
+              placeholder="••••••••"
+              control={form.control}
+              readOnly={false}
+            />
+          </div>
 
-          <Field>
+          <Field className="mt-2 2xl:mt-4">
             <Button
               type="submit"
-              className="w-full py-6 mt-2 bg-emerald-500 hover:bg-[#47a669] text-white transition-colors"
+              className="w-full py-6 2xl:py-8 2xl:text-xl bg-emerald-500 hover:bg-[#47a669] text-white transition-colors"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 2xl:w-6 2xl:h-6 animate-spin" />
                   Authenticating...
                 </>
               ) : (
@@ -141,7 +138,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
           </Field>
 
           <Field>
-            <FieldDescription className="px-6 text-center text-muted-foreground text-sm mt-4">
+            <FieldDescription className="px-6 text-center text-muted-foreground text-sm 2xl:text-base mt-4 2xl:mt-6">
               Access is by invitation only. Check your email for an invite link.
             </FieldDescription>
           </Field>
