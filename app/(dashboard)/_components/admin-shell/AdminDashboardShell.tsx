@@ -106,7 +106,7 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
 
                 return (
                   <div key={item.title}>
-                    <div className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px]", active ? "bg-[#059669] text-white" : "text-emerald-50 hover:bg-white/10")}>
+                    <div className={cn("flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] transition-colors", active ? "bg-slate-50 text-slate-950 font-extrabold shadow-lg shadow-emerald-950/20" : "text-emerald-50 hover:bg-white/10")}>
                       <Link href={item.href} className="flex flex-1 items-center gap-2.5">
                         <span className="text-sm">{navIcons[item.title as keyof typeof navIcons] || "🔹"}</span>
                         <span>{item.title}</span>
@@ -125,7 +125,7 @@ export default function AdminDashboardShell({ children }: { children: ReactNode 
                     {item.children && open ? (
                       <div className="mt-0.5 space-y-0.5 pl-7">
                         {item.children.map((child) => (
-                          <Link key={child.href} href={child.href} className={cn("block rounded px-2 py-1 text-[12px]", isActivePath(pathname, child.href) ? "bg-white/20 text-white" : "text-emerald-100/90 hover:bg-white/10")}>
+                          <Link key={child.href} href={child.href} className={cn("block rounded px-2 py-1 text-[12px] transition-colors", isActivePath(pathname, child.href) ? "bg-slate-50 text-slate-950 font-extrabold shadow-md shadow-emerald-950/15" : "text-emerald-100/90 hover:bg-white/10")}>
                             {child.title}
                           </Link>
                         ))}

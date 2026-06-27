@@ -3,6 +3,138 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FACILITY_PROFILE_QUERY_KEYS } from "./useFacilities";
 
+export interface FacilityRatingRow {
+  id: string;
+  comment_text: string;
+  rating: number;
+  status?: "pending" | "approved" | "rejected" | string;
+  is_published: boolean;
+  is_verified_visit: boolean;
+  helpful_count: number;
+  created_at: string;
+  user_profiles: {
+    user_id?: string;
+    name: string;
+    email?: string;
+  };
+  facility_profile: {
+    id?: string;
+    facility_name: string;
+  };
+  [key: string]: any;
+}
+
+export interface ReviewKpiStats {
+  total_reviews: number;
+  total_delta: number;
+  pending_reviews: number;
+  pending_delta: number;
+  flagged_reviews: number;
+  flagged_delta: number;
+}
+
+// Senior Approach: This replaces the old `fetchFacilityRatings` service.
+// Powers the All Reviews / Flagged (rejected) / Pending tabs on the Reviews
+// admin page — same query shape, filtered by `status` so all three tabs
+// share one hook — paginated, searchable, and joined against the reviewer +
+// facility for display.
+export const useFacilityRatingsList = ({
+  pageIndex,
+  pageSize = 10,
+  search = "",
+  status,
+}: {
+  pageIndex: number;
+  pageSize?: number;
+  search?: string;
+  status?: "pending" | "approved" | "rejected";
+}) => {
+  return useQuery({
+    queryKey: ["facility-ratings-list", pageIndex, pageSize, search, status],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const from = (pageIndex - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from("facility_reviews")
+        .select(
+          `
+          id,
+          comment_text,
+          rating,
+          status,
+          is_verified_visit,
+          helpful_count,
+          created_at,
+          user_profiles (
+            user_id,
+            first_name,
+            last_name
+          ),
+          facility_profile (
+            id,
+            facility_name
+          )
+        `,
+          { count: "exact" },
+        );
+
+      if (status) {
+        query = query.eq("status", status);
+      }
+
+      if (search) {
+        query = query.or(
+          `comment_text.ilike.%${search}%,facility_profile.facility_name.ilike.%${search}%`,
+        );
+      }
+
+      const { data, error, count } = await query
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      // Format the result to match the shape the reviews table expects.
+      const ratings: FacilityRatingRow[] = (data || []).map((item: any) => ({
+        ...item,
+        user_profiles: {
+          user_id: item.user_profiles?.user_id,
+          name:
+            `${item.user_profiles?.first_name || ""} ${item.user_profiles?.last_name || ""}`.trim() ||
+            "Anonymous",
+          email: item.user_profiles?.email,
+        },
+        facility_profile: {
+          id: item.facility_profile?.id,
+          facility_name: item.facility_profile?.facility_name || "N/A",
+        },
+      }));
+
+      return { ratings, count: count || 0 };
+    },
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+// Senior Approach: Powers the KPI cards on the Reviews admin page via the
+// `get_review_kpi_stats` Postgres RPC (see KPIs.sql) — current vs prior
+// 30-day totals/pending/flagged counts with % deltas computed server-side.
+export const useReviewKpiStats = () => {
+  return useQuery({
+    queryKey: ["review-kpi-stats"],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase.rpc("get_review_kpi_stats");
+
+      if (error) throw error;
+
+      return data as ReviewKpiStats;
+    },
+  });
+};
+
 export const useReviews = ({ facilityId }: { facilityId: string }) => {
   return useQuery({
     queryKey: ["facility-reviews", facilityId],

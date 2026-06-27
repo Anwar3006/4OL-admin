@@ -168,7 +168,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                                   className={cn(
                                     "block px-4 py-1.5 text-[11px] rounded-lg transition-all duration-150 hover:bg-white/5",
                                     isLinkActive(child.href)
-                                      ? "text-white font-bold bg-white/10"
+                                      ? "sidebar-child active"
                                       : "text-emerald-100/70 hover:text-white"
                                   )}
                                 >

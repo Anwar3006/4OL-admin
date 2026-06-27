@@ -1,21 +1,17 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReviewStats from "./_components/ReviewStats";
-import AllReviewsTab, { ReviewRow } from "./_components/AllReviewsTab";
-import FlaggedReviewsTab from "./_components/FlaggedReviewsTab";
-import PendingReviewsTab from "./_components/PendingReviewsTab";
+import ReviewsDataTab from "./_components/AllReviewsTab";
 import { cn } from "@/lib/utils";
-import { fetchFacilityRatings } from "@/app/services/fetchFacilityRatings";
-import { useDebounce } from "@/hooks/use-debounce";
 
 const TabsConfig = [
   { id: "all", label: "All Reviews" },
-  { id: "flagged", label: "🚩 Flagged (12)" },
-  { id: "pending", label: "⏳ Pending (3)" },
+  { id: "flagged", label: "🚩 Flagged" },
+  { id: "pending", label: "⏳ Pending" },
 ];
 
 const ReviewsPage = () => {
@@ -23,31 +19,7 @@ const ReviewsPage = () => {
   const router = useRouter();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
-  
-  // Data management
-  const [ratings, setRatings] = useState<ReviewRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pageIndex, setPageIndex] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
 
-  const fetchRatings = useCallback(async () => {
-    setLoading(true);
-    try {
-      const from = (pageIndex - 1) * 10;
-      const to = from + 9;
-      const { ratings: fetchedRatings, count } = await fetchFacilityRatings(from, to, debouncedSearch);
-      setRatings(fetchedRatings || []);
-    } catch (error) {
-      console.error("Failed to fetch ratings", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [pageIndex, debouncedSearch]);
-
-  useEffect(() => {
-    fetchRatings();
-  }, [fetchRatings]);
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -66,8 +38,8 @@ const ReviewsPage = () => {
         title="⭐ Reviews & Ratings"
         subtitle="User reviews for facilities, doctors and services · Moderated by Support Agents"
       >
-        <button className="btn btn-secondary btn-sm font-bold">📥 Export PDF</button>
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">🛡️ Moderate</button>
+        {/* <button className="btn btn-secondary btn-sm font-bold">📥 Export PDF</button> */}
+        {/* <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">🛡️ Moderate</button> */}
       </PageHeader>
 
       <ReviewStats />
@@ -79,8 +51,10 @@ const ReviewsPage = () => {
               key={tab.id}
               value={tab.id}
               className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
+                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
+                "hover:bg-gray-400 hover:text-slate-600",
+                "data-[state=active]:bg-gray-300 data-[state=active]:shadow-none data-[state=active]:text-zinc-800 data-[state=active]:border-ek-green-dark data-[state=active]:hover:bg-gray-400",
+                
               )}
             >
               {tab.label}
@@ -90,15 +64,14 @@ const ReviewsPage = () => {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent value="all">
-            <AllReviewsTab 
-                data={ratings} 
-                loading={loading} 
-                search={search} 
-                setSearch={setSearch} 
-            />
+            <ReviewsDataTab />
           </TabsContent>
-          <TabsContent value="flagged"><FlaggedReviewsTab /></TabsContent>
-          <TabsContent value="pending"><PendingReviewsTab /></TabsContent>
+          <TabsContent value="flagged">
+            <ReviewsDataTab status="rejected" />
+          </TabsContent>
+          <TabsContent value="pending">
+            <ReviewsDataTab status="pending" />
+          </TabsContent>
         </div>
       </Tabs>
     </div>

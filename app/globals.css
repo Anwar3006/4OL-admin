@@ -302,7 +302,26 @@
     transition: background 0.15s, color 0.15s;
   }
   .sidebar-item:hover  { background: var(--clr-sidebar-hover); color: #fff; }
-  .sidebar-item.active { background: var(--clr-sidebar-hi); color: #fff; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .sidebar-item.active {
+    background: #f8fafc;
+    color: #020617;
+    font-weight: 800;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  }
+  .sidebar-item.active:hover { background: #fff; color: #020617; }
+
+  /* Sidebar nav items (used directly in Sidebar.tsx) — active page gets a
+     solid white pill with black text so it's unmistakable against the
+     emerald sidebar background. */
+  .sidebar-item-hover  { color: rgba(255,255,255,0.7); }
+  .sidebar-item-hover:hover { background: var(--clr-sidebar-hover); color: #fff; }
+  .sidebar-item-active {
+    background: #f8fafc;
+    color: #020617;
+    font-weight: 800;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  }
+  .sidebar-item-active:hover { background: #fff; color: #020617; }
 
   .sidebar-child {
     display: flex;
@@ -317,7 +336,13 @@
     transition: background 0.15s, color 0.15s;
   }
   .sidebar-child:hover  { background: var(--clr-sidebar-hover); color: rgba(255,255,255,0.9); }
-  .sidebar-child.active { background: rgba(255,255,255,0.08); color: #fff; font-weight: 600; }
+  .sidebar-child.active {
+    background: #f8fafc;
+    color: #020617;
+    font-weight: 800;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+  }
+  .sidebar-child.active:hover { background: #fff; color: #020617; }
 
   .sidebar-section-label {
     font-size: 9px;

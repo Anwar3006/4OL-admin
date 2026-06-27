@@ -45,19 +45,19 @@ const MedicationReminderPage = () => {
         title="💊 Medication Reminder"
         subtitle="Drug database · Interaction checker · Dosage reminders · Prescription tracking"
       >
-        <button className="btn btn-secondary">📥 Export</button>
-        <button className="btn btn-secondary">🤖 AI Settings</button>
-        <button className="btn btn-primary">+ Add Drug</button>
+        {/* <button className="btn btn-secondary">📥 Export</button> */}
+        {/* <button className="btn btn-secondary">🤖 AI Settings</button> */}
+        {/* <button className="btn btn-primary">+ Add Drug</button> */}
       </PageHeader>
 
-      {/* AI status banner */}
-      <div className="alert al-ok">
+      {/* AI status banner - Completely remove, serves no purpose*/}
+      {/* <div className="alert al-ok">
         <div className="al-ic">🔗</div>
         <div className="flex-1 text-xs">
           <strong>Drug Interaction Checker AI</strong> (v1.8, 98.1% accuracy) active. &nbsp;
           <strong>12,400 active medication reminders</strong> across the platform.
         </div>
-      </div>
+      </div> */}
 
       {/* KPI row */}
       <MedicationStats />

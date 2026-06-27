@@ -2,6 +2,54 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
 
+// Senior Approach: `interval` is a bare number whose unit varies per row
+// (minutes vs hours) — stored separately in `interval_unit`. This formatter
+// is shared between the Logged Reminders table and the View dialog so the
+// display logic only lives in one place.
+export const formatReminderInterval = (
+  interval?: number | null,
+  intervalUnit?: string | null,
+): string => {
+  if (interval === null || interval === undefined) return "—";
+  const unit = (intervalUnit || "hours").toLowerCase();
+  if (unit.startsWith("min")) return `Every ${interval} min`;
+  if (unit.startsWith("hour") || unit === "h") return `Every ${interval}h`;
+  if (unit.startsWith("day")) return `Every ${interval} day${interval === 1 ? "" : "s"}`;
+  return `Every ${interval} ${unit}`;
+};
+
+// Senior Approach: A reminder's lifecycle has three real states, not two.
+// `is_enabled` only tells you whether notifications are toggled on — it
+// doesn't account for a course that has actually finished. A reminder is
+// "Complete" once the last reminder we sent (`last_sent_at`) lands on the
+// same calendar day as the course's `end_date`, regardless of the
+// `is_enabled` flag. Compared by UTC calendar date (not exact timestamp)
+// since `end_date` is typically stored as end-of-day (23:59:59.999) while
+// `last_sent_at` is whenever the notification actually fired.
+export type ReminderStatus = "complete" | "active" | "paused";
+
+const toUtcDateKey = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+};
+
+export const getReminderStatus = (row: {
+  last_sent_at?: string | null;
+  end_date?: string | null;
+  is_enabled?: boolean | null;
+}): ReminderStatus => {
+  const lastSentKey = toUtcDateKey(row.last_sent_at);
+  const endDateKey = toUtcDateKey(row.end_date);
+
+  if (lastSentKey && endDateKey && lastSentKey === endDateKey) {
+    return "complete";
+  }
+
+  return row.is_enabled ? "active" : "paused";
+};
+
 type Pagination = {
   limit: number;
   page: number;
@@ -54,6 +102,197 @@ export const useMedicationReminders = ({
         analytics: "",
       };
     },
+  });
+};
+
+// Senior Approach: Powers the "Logged Reminders" tab on the Medication
+// Reminder admin page — the actual medication reminders created by mobile
+// app users, joined against their profile for display. Paginated + searchable
+// by drug name.
+export interface LoggedReminderRow {
+  id: string;
+  drug_name: string;
+  generic_name?: string | null;
+  dosage_amount?: string | null;
+  interval?: number | null;
+  interval_unit?: "minutes" | "hours" | string | null;
+  drug_type?: string | null;
+  drug_color?: string | null;
+  notification_schedule?: string | null;
+  number_of_intakes?: number | null;
+  is_enabled: boolean;
+  is_active: boolean;
+  start_date?: string | null;
+  end_date?: string | null;
+  last_sent_at?: string | null;
+  created_at: string;
+  user_profiles?: {
+    user_id?: string;
+    name: string;
+  };
+  [key: string]: any;
+}
+
+export const useLoggedReminders = ({
+  pageIndex,
+  pageSize = 10,
+  search = "",
+}: {
+  pageIndex: number;
+  pageSize?: number;
+  search?: string;
+}) => {
+  return useQuery({
+    queryKey: ["logged-reminders-list", pageIndex, pageSize, search],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const from = (pageIndex - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from("medication_reminders")
+        .select(
+          `
+          id,
+          drug_name,
+          dosage_amount,
+          interval,
+          interval_unit,
+          drug_type,
+          drug_color,
+          notification_schedule,
+          number_of_intakes,
+          is_enabled,
+          is_active,
+          start_date,
+          end_date,
+          last_sent_at,
+          created_at,
+          user_profiles (
+            user_id,
+            first_name,
+            last_name
+          )
+        `,
+          { count: "exact" },
+        );
+
+      if (search) {
+        query = query.ilike("drug_name", `%${search}%`);
+      }
+
+      const { data, error, count } = await query
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const reminders: LoggedReminderRow[] = (data || []).map((item: any) => ({
+        ...item,
+        user_profiles: {
+          user_id: item.user_profiles?.user_id,
+          name:
+            `${item.user_profiles?.first_name || ""} ${item.user_profiles?.last_name || ""}`.trim() ||
+            "Unknown User",
+        },
+      }));
+
+      return { reminders, count: count || 0 };
+    },
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+// Senior Approach: Powers the "Adherence" tab — reads directly from
+// `medication_adherence` (see KPIs.sql), joined to the parent reminder for
+// the drug name and to the user for display. Paginated + filterable by
+// status (taken / skipped / missed).
+export interface AdherenceLogRow {
+  id: string;
+  reminder_id: string;
+  user_id: string;
+  status: "taken" | "skipped" | "missed";
+  scheduled_time: string;
+  action_time?: string | null;
+  created_at: string;
+  medication_reminders?: {
+    id?: string;
+    drug_name: string;
+  };
+  user_profiles?: {
+    user_id?: string;
+    name: string;
+  };
+  [key: string]: any;
+}
+
+export const useMedicationAdherence = ({
+  pageIndex,
+  pageSize = 10,
+  status,
+}: {
+  pageIndex: number;
+  pageSize?: number;
+  status?: "taken" | "skipped" | "missed";
+}) => {
+  return useQuery({
+    queryKey: ["medication-adherence-list", pageIndex, pageSize, status],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const from = (pageIndex - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from("medication_adherence")
+        .select(
+          `
+          id,
+          reminder_id,
+          user_id,
+          status,
+          scheduled_time,
+          action_time,
+          created_at,
+          medication_reminders (
+            id,
+            drug_name
+          ),
+          user_profiles (
+            user_id,
+            first_name,
+            last_name
+          )
+        `,
+          { count: "exact" },
+        );
+
+      if (status) {
+        query = query.eq("status", status);
+      }
+
+      const { data, error, count } = await query
+        .order("scheduled_time", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const logs: AdherenceLogRow[] = (data || []).map((item: any) => ({
+        ...item,
+        medication_reminders: {
+          id: item.medication_reminders?.id,
+          drug_name: item.medication_reminders?.drug_name || "Unknown Drug",
+        },
+        user_profiles: {
+          user_id: item.user_profiles?.user_id,
+          name:
+            `${item.user_profiles?.first_name || ""} ${item.user_profiles?.last_name || ""}`.trim() ||
+            "Unknown User",
+        },
+      }));
+
+      return { logs, count: count || 0 };
+    },
+    placeholderData: (previousData) => previousData,
   });
 };
 
