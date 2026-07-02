@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
-import KpiCard from "@/components/redesign/KpiCard";
 import DataTable from "@/components/redesign/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Eye, Trash2 } from "lucide-react";
@@ -18,21 +17,32 @@ import {
 import AddHealthyLivingDialog from "./_components/add-healthyLiving-dialog";
 import ViewHealthyLivingDialog from "./_components/view-healthyLiving-dialog";
 import { cn } from "@/lib/utils";
+import HealthyLivingStats from "./_components/HealthyLivingStats";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();
   const viewHealthyLiving = useViewHealthyLivingDialog();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const page = 1;
   const limit = 10;
 
   const { mutate: deleteHealthyLiving } = useDeleteHealthyLiving();
-  const { data: healthyLivingData } = useHealthyLivings({
-    page,
-    limit,
-    search: search || undefined,
-  });
+const { data: healthyLivingData } = useHealthyLivings({
+  page,
+  limit,
+  search: search || undefined,
+  // Pass the status filter here (convert "all" to undefined so the hook ignores it)
+  status: statusFilter === "all" ? undefined : statusFilter, 
+});
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -181,9 +191,9 @@ const HealthyLivingPage = () => {
         title="🥗 Healthy Living"
         subtitle="Public health knowledge base · Lifestyle guidance · Wellness content"
       >
-        <button className="btn btn-secondary btn-sm font-bold">
+        {/* <button className="btn btn-secondary btn-sm font-bold">
           📥 Export CSV
-        </button>
+        </button> */}
         <button
           className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]"
           onClick={() => addHealthLiving.open()}
@@ -193,100 +203,84 @@ const HealthyLivingPage = () => {
       </PageHeader>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mb-5">
-        <KpiCard
-          icon="📊"
-          label="Total Articles"
-          value={(healthyLivingData?.meta?.total || 0).toString()}
-          variant="blue"
-          delta="+4 this month"
-          deltaType="up"
-        />
-        <KpiCard
-          icon="📂"
-          label="Categories"
-          value="12"
-          variant="purple"
-          delta="Well organized"
-        />
-        <KpiCard
-          icon="👁️"
-          label="Total Views"
-          value="48K"
-          variant="teal"
-          delta="+12.4%"
-          deltaType="up"
-        />
-        <KpiCard
-          icon="✅"
-          label="Avg Rating"
-          value="4.8"
-          variant="green"
-          delta="High helpfulness"
-          deltaType="up"
-        />
-      </div>
+<HealthyLivingStats />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-transparent h-auto p-0 flex gap-0 border-b border-slate-200 w-full justify-start rounded-none overflow-x-auto no-scrollbar">
-          {[
-            { id: "all", label: "All Content", icon: "🥗" },
-            { id: "categories", label: "Categories", icon: "📂" },
-            { id: "engagement", label: "Analytics", icon: "📊" },
-          ].map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
-              )}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {[
+              { id: "all", label: "All Content", icon: "🥗" },
+              // { id: "categories", label: "Categories", icon: "📂" },
+              { id: "engagement", label: "Analytics", icon: "📊" },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                )}
+              >
+                <span className="mr-1.5">{tab.icon}</span>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-        <TabsContent value="all" className="outline-none mt-4">
-          <div className="flex flex-wrap gap-2 items-center mb-4">
-            <div className="relative flex-1 min-w-60">
-              <input
-                className="w-full h-8 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
-                placeholder="🔍 Search articles by title, topic..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20">
-              <option>All Topics</option>
-            </select>
-            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-bold bg-white outline-none focus:ring-2 focus:ring-ek-green/20">
-              <option>All Status</option>
-            </select>
-            <button className="btn btn-secondary btn-sm font-bold text-[10px]">
-              📥 Export
-            </button>
-          </div>
+<TabsContent value="all" className="outline-none mt-4">
+  <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center mb-4">
+    <div className="relative w-full sm:flex-1 sm:min-w-[240px]">
+      <input
+        className="w-full h-9 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
+        placeholder="🔍 Search articles by title, topic..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </div>
+    
+    <div className="flex w-full sm:w-auto gap-2">
+     <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[140px] h-9 text-[11px] font-bold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="pending_review">Pending Review</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+    </div>
+  </div>
 
-          <div className="card p-0 overflow-hidden border border-slate-200 shadow-sm rounded-xl">
-            <DataTable
-              columns={tableColumns}
-              data={healthyLivingData?.healthyLivings || []}
-              selectable
-              pagination={false}
-            />
-          </div>
+  <div className="card p-0 overflow-hidden border border-slate-200 shadow-sm rounded-xl">
+    <DataTable
+      columns={tableColumns}
+      data={healthyLivingData?.healthyLivings || []}
+      selectable
+      pagination={false}
+    />
+  </div>
 
-          <div className="flex gap-2 mt-4">
-            <button className="btn btn-secondary btn-sm font-bold text-[10px]">
-              ✅ Publish Selected
-            </button>
-            <button className="btn btn-danger btn-sm font-bold text-[10px]">
-              🗑️ Delete Selected
-            </button>
-          </div>
-        </TabsContent>
+  {/* <div className="flex gap-2 mt-4">
+    <button className="btn btn-secondary btn-sm font-bold text-[10px]">
+      ✅ Publish Selected
+    </button>
+    <button className="btn btn-danger btn-sm font-bold text-[10px]">
+      🗑️ Delete Selected
+    </button>
+  </div> */}
+</TabsContent>
 
         {["categories", "engagement"].map((tabId) => (
           <TabsContent key={tabId} value={tabId} className="outline-none mt-4">

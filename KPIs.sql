@@ -142,3 +142,58 @@ BEGIN
   );
 END;
 $$;
+
+------------------
+
+CREATE OR REPLACE FUNCTION get_healthy_living_kpi_stats()
+RETURNS json
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  current_period_start TIMESTAMP := now() - interval '30 days';
+  previous_period_start TIMESTAMP := now() - interval '60 days';
+  
+  tot_curr INT; tot_prev INT;
+  pub_curr INT; pub_prev INT;
+  
+  tot_views INT; featured_count INT;
+  tot_delta NUMERIC; pub_delta NUMERIC;
+BEGIN
+  -- 1. Creation stats for current 30 days
+  SELECT 
+    count(*), 
+    count(*) FILTER (WHERE status = 'published')
+  INTO tot_curr, pub_curr
+  FROM public.healthy_living_info
+  WHERE created_at >= current_period_start;
+
+  -- 2. Creation stats for previous 30 days
+  SELECT 
+    count(*), 
+    count(*) FILTER (WHERE status = 'published')
+  INTO tot_prev, pub_prev
+  FROM public.healthy_living_info
+  WHERE created_at >= previous_period_start AND created_at < current_period_start;
+
+  -- 3. Lifetime totals for views and featured items
+  SELECT 
+    COALESCE(sum(view_count), 0),
+    count(*) FILTER (WHERE is_featured = true)
+  INTO tot_views, featured_count
+  FROM public.healthy_living_info;
+
+  -- 4. Calculate Deltas
+  tot_delta := CASE WHEN tot_prev = 0 THEN 0 ELSE round(((tot_curr - tot_prev)::numeric / tot_prev) * 100, 1) END;
+  pub_delta := CASE WHEN pub_prev = 0 THEN 0 ELSE round(((pub_curr - pub_prev)::numeric / pub_prev) * 100, 1) END;
+
+  -- 5. Return JSON object
+  RETURN json_build_object(
+    'total_articles', (SELECT count(*) FROM public.healthy_living_info),
+    'total_delta', tot_delta,
+    'published_articles', (SELECT count(*) FROM public.healthy_living_info WHERE status = 'published'),
+    'published_delta', pub_delta,
+    'total_views', tot_views,
+    'featured_articles', featured_count
+  );
+END;
+$$;

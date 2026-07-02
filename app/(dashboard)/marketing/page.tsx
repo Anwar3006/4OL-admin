@@ -53,21 +53,31 @@ const MarketingPage = () => {
 
       <MarketingStats />
 
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
-          {MktTabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
-              )}
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {MktTabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                )}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent value="all"><AllCampaignsTab /></TabsContent>

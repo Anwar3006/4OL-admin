@@ -9,7 +9,8 @@
     "lint": "next lint",
     "prod": "node scripts/build.js",
     "type-check": "tsc",
-    "seed": "tsx scripts/seeder.ts"
+    "seed": "tsx scripts/seeder.ts",
+    "seed:disease": "tsx scripts/disease_seeder.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.4",

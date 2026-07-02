@@ -176,26 +176,35 @@ const SymptomsPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-transparent h-auto p-0 flex gap-0 border-b border-slate-200 w-full justify-start rounded-none overflow-x-auto no-scrollbar">
-          {[
-            { id: "all", label: "All Symptoms", icon: "🩺" },
-            { id: "categories", label: "Categories", icon: "📂" },
-            { id: "analytics", label: "Analytics", icon: "📊" },
-          ].map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "px-6 py-3.5 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
-                "hover:text-ek-green-dark hover:bg-emerald-50/30",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
-              )}
-            >
-              <span className="mr-2 text-base">{tab.icon}</span>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {[
+              { id: "all", label: "All Symptoms", icon: "🩺" },
+              { id: "categories", label: "Categories", icon: "📂" },
+              { id: "analytics", label: "Analytics", icon: "📊" },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                )}
+              >
+                <span className="mr-1.5">{tab.icon}</span>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <div className="mt-6">
           <TabsContent value="all" className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">

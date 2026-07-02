@@ -12,8 +12,8 @@ import {
 export const HEALTHY_LIVING_QUERY_KEYS = {
   all: ["healthy-living"] as const,
   lists: () => [...HEALTHY_LIVING_QUERY_KEYS.all, "list"] as const,
-  list: (page: number, limit: number, search?: string) =>
-    [...HEALTHY_LIVING_QUERY_KEYS.lists(), { page, limit, search }] as const,
+  list: (page: number, limit: number, search?: string, status?: string) =>
+    [...HEALTHY_LIVING_QUERY_KEYS.lists(), { page, limit, search, status }] as const,
   details: () => [...HEALTHY_LIVING_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...HEALTHY_LIVING_QUERY_KEYS.details(), id] as const,
 };
@@ -36,13 +36,16 @@ export const useHealthyLivings = ({
   page,
   limit,
   search,
+  status, // Add status here
 }: {
   page: number;
   limit: number;
   search?: string;
+  status?: string; // Add status type here
 }) => {
   return useQuery<PaginatedResponse, Error>({
-    queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit, search),
+    // Pass status to the query key
+    queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit, search, status),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
@@ -53,6 +56,11 @@ export const useHealthyLivings = ({
 
       if (search) {
         query = query.ilike("name", `%${search}%`);
+      }
+
+      // 3. Apply the status filter if it exists
+      if (status) {
+        query = query.eq("status", status);
       }
 
       const {
@@ -69,8 +77,7 @@ export const useHealthyLivings = ({
       const totalCount = count ?? 0;
 
       return {
-        healthyLivings: (healthyLivings ||
-          []) as unknown as THealthyLivingOutput[],
+        healthyLivings: (healthyLivings || []) as unknown as THealthyLivingOutput[],
         meta: {
           totalPages: Math.ceil(totalCount / limit),
           total: totalCount,
@@ -262,3 +269,5 @@ export const useHealthyLivingOperations = () => {
     delete: useDeleteHealthyLiving(),
   };
 };
+
+
