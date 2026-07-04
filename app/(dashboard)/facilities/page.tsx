@@ -6,15 +6,19 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useFacilities } from "@/hooks/supabase-calls/useFacilities";
-import { usePagination } from "@/hooks/use-pagination";
+
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { useAddFacilityDialog, useViewFacilityDialog } from "@/stores/dialog-store";
+import {
+  useAddFacilityDialog,
+  useViewFacilityDialog,
+} from "@/stores/dialog-store";
 import { cn } from "@/lib/utils";
 import AddFacilityDialog from "./_components/add-facility-dialog";
-import FacilityViewDialog from "./_components/facility-view-dialog";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Building2, Phone, MapPin } from "lucide-react";
+import { Phone, MapPin } from "lucide-react";
+import FacilityViewDialog from "./_components/view-facility-dialog";
+import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
 
 const FacilitiesPage = () => {
   const searchParams = useSearchParams();
@@ -25,14 +29,16 @@ const FacilitiesPage = () => {
   const selectedType = searchParams.get("type") || "all";
   const search = searchParams.get("search") || "";
 
-  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "fac_page" });
+  // Read page from URL to trigger refetch when pagination changes
+  const page = parseInt(searchParams.get("fac_page") || "1", 10);
 
-  const { data, isLoading, isFetching } = useFacilities({
+  const { data, isLoading, isFetching } = useFacilityProfiles({
     page,
-    limit: pageSize,
+    limit: 10,
     status: currentStatus === "all" ? undefined : (currentStatus as any),
     type: selectedType === "all" ? undefined : selectedType,
     search,
+    includeStatsOnly: false,
   });
 
   const viewFacility = useViewFacilityDialog();
@@ -47,9 +53,12 @@ const FacilitiesPage = () => {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const handleStatusChange = (status: string) => updateParams({ status, fac_page: "1" });
-  const handleTypeChange = (type: string) => updateParams({ type, fac_page: "1" });
-  const handleSearchChange = (val: string) => updateParams({ search: val, fac_page: "1" });
+  const handleStatusChange = (status: string) =>
+    updateParams({ status, fac_page: "1" });
+  const handleTypeChange = (type: string) =>
+    updateParams({ type, fac_page: "1" });
+  const handleSearchChange = (val: string) =>
+    updateParams({ search: val, fac_page: "1" });
 
   const facilityTypes = useMemo(() => {
     const counts = data?.typeCounts || {};
@@ -63,21 +72,33 @@ const FacilitiesPage = () => {
       title: (data) => data.facility_name,
       subtitle: (data) => data.facility_type?.replace(/_/g, " "),
       badge: (data) => (
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-          data.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
-        }`}>
+        <span
+          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+            data.status === "active"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-amber-50 text-amber-700 border-amber-100"
+          }`}
+        >
           {data.status}
         </span>
       ),
     },
     fields: [
-      { id: "phone", icon: <Phone className="w-3 h-3" />, render: (data) => data.contact_number },
-      { id: "region", icon: <MapPin className="w-3 h-3" />, render: (data) => data.region },
+      {
+        id: "phone",
+        icon: <Phone className="w-3 h-3" />,
+        render: (data) => data.contact_number,
+      },
+      {
+        id: "region",
+        icon: <MapPin className="w-3 h-3" />,
+        render: (data) => data.region,
+      },
     ],
     actions: [
       { label: "View Details", onClick: (data) => viewFacility.open(data.id) },
       { label: "Edit Facility", onClick: (data) => addFacility.open(data) },
-    ]
+    ],
   };
 
   return (
@@ -87,21 +108,58 @@ const FacilitiesPage = () => {
         subtitle="Healthcare facilities registry · HEFRA validated · Live database records"
       >
         <button className="btn btn-secondary btn-sm">📥 Export CSV</button>
-        <button className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]" onClick={() => addFacility.open()}>
+        <button
+          className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
+          onClick={() => addFacility.open()}
+        >
           + Register Facility
         </button>
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <KpiCard icon="📊" label="Total" value={data?.totalRegistered?.toLocaleString() ?? "0"} variant="blue" />
-        <KpiCard icon="✅" label="Active" value={data?.analytics?.active?.toLocaleString() ?? "0"} variant="green" />
-        <KpiCard icon="⏳" label="Pending" value={data?.analytics?.pending?.toLocaleString() ?? "0"} variant="gold" />
-        <KpiCard icon="📊" label="Top Rated" value={(data as any)?.topRatedCount || "0"} variant="purple" />
-        <KpiCard icon="⭐" label="Rating" value={(data as any)?.avgRating || "0.0"} variant="teal" />
-        <KpiCard icon="🚩" label="Rejected" value={data?.analytics?.rejected?.toLocaleString() ?? "0"} variant="red" />
+        <KpiCard
+          icon="📊"
+          label="Total"
+          value={data?.totalRegistered?.toLocaleString() ?? "0"}
+          variant="blue"
+        />
+        <KpiCard
+          icon="✅"
+          label="Active"
+          value={data?.analytics?.active?.toLocaleString() ?? "0"}
+          variant="green"
+        />
+        <KpiCard
+          icon="⏳"
+          label="Pending"
+          value={data?.analytics?.pending?.toLocaleString() ?? "0"}
+          variant="gold"
+        />
+        <KpiCard
+          icon="📊"
+          label="Top Rated"
+          value={(data as any)?.topRatedCount || "0"}
+          variant="purple"
+        />
+        <KpiCard
+          icon="⭐"
+          label="Rating"
+          value={(data as any)?.avgRating || "0.0"}
+          variant="teal"
+        />
+        <KpiCard
+          icon="🚩"
+          label="Rejected"
+          value={data?.analytics?.rejected?.toLocaleString() ?? "0"}
+          variant="red"
+        />
       </div>
 
-      <Tabs value={currentStatus} className="w-full" onValueChange={handleStatusChange}>
+      <Tabs
+        value={currentStatus}
+        className="w-full"
+        onValueChange={handleStatusChange}
+      >
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden">
             {[
@@ -140,7 +198,9 @@ const FacilitiesPage = () => {
               <button
                 className={cn(
                   "h-9 px-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all",
-                  selectedType === "all" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                  selectedType === "all"
+                    ? "bg-slate-900 text-white border-slate-900"
+                    : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
                 )}
                 onClick={() => handleTypeChange("all")}
               >
@@ -151,7 +211,9 @@ const FacilitiesPage = () => {
                   key={value}
                   className={cn(
                     "h-9 px-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                    selectedType === value ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                    selectedType === value
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
                   )}
                   onClick={() => handleTypeChange(value)}
                 >
@@ -169,17 +231,12 @@ const FacilitiesPage = () => {
               onRowClick={(row) => viewFacility.open(row.id)}
               onDeleteSelected={(rows) => console.log("Delete", rows)}
               cardConfig={cardConfig}
-              pagination={{
-                currentPage: page,
-                totalPages: Math.ceil((data?.totalRegistered || 0) / pageSize) || 1,
-                totalItems: data?.totalRegistered || 0,
-                pageSize: pageSize,
-                onPageChange,
-                onNextPage,
-                onPreviousPage,
-                canNextPage: page < (Math.ceil((data?.totalRegistered || 0) / pageSize) || 1),
-                canPreviousPage: page > 1,
+              pagination={true}
+              urlPersistence={{
+                pageKey: "fac_page",
+                pageSizeKey: "fac_pageSize",
               }}
+              totalItems={data?.totalRegistered || 0}
             />
           </div>
         </div>

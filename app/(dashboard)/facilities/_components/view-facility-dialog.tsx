@@ -54,10 +54,16 @@ export default function FacilityViewDialog() {
   const { open: openGallery } = useGalleryModal();
   const { user } = useSupabaseSession();
 
-  const { data: facility, isLoading } = useFacilityProfile(entityId || "");
+  const { data: facility, isLoading } = useFacilityProfile({
+    id: entityId || "",
+    enabled: isOpen && !!entityId,
+  });
   const { mutate: approve, isPending: isApproving } = useApproveFacility();
   const { mutate: reject, isPending: isRejecting } = useRejectFacility();
-  const { data: auditData } = useAdminFacilityAudit(entityId || "");
+  const { data: auditData } = useAdminFacilityAudit({
+    facilityId: entityId || "",
+    adminId: user?.id || "",
+  });
 
   const canManage = useMemo(() => {
     return user?.role === "super_admin" || user?.role === "admin";

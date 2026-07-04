@@ -3,16 +3,26 @@
 import React, { useState } from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { exerciseColumns } from "@/components/Data-Table/columns/exerciseColumns";
-import { useExercises, useDeleteExercise } from "@/hooks/supabase-calls/useExercise";
-import { usePagination } from "@/hooks/use-pagination";
-import { useAddExerciseDialog, useViewExerciseDialog } from "@/stores/dialog-store";
+import {
+  useExercises,
+  useDeleteExercise,
+} from "@/hooks/supabase-calls/useExercise";
+import {
+  useAddExerciseDialog,
+  useViewExerciseDialog,
+} from "@/stores/dialog-store";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import AddExerciseDialog from "../_components/add-exercise-dialog";
 import ViewExerciseDialog from "../_components/view-exercise-dialog";
+import { useSearchParams } from "next/navigation";
 
 const ExercisesTab = () => {
-  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "exercises_page" });
   const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+
+  // Read page from URL to trigger refetch when pagination changes
+  const page = parseInt(searchParams.get("fit_exercise_page") || "1", 10);
+  const pageSize = 10;
 
   const exerciseDialog = useAddExerciseDialog();
   const viewDialog = useViewExerciseDialog();
@@ -21,8 +31,7 @@ const ExercisesTab = () => {
   const { mutate: deleteExercise } = useDeleteExercise();
 
   const exercises = data?.exercises || [];
-  const totalItems = data?.totalCount || 0;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalItems = data?.meta?.total || 0;
 
   const cardConfig: MobileCardConfig<any> = {
     header: {
@@ -40,7 +49,7 @@ const ExercisesTab = () => {
     actions: [
       { label: "View Details", onClick: (data) => viewDialog.open(data.id) },
       { label: "Edit Exercise", onClick: (data) => exerciseDialog.open(data) },
-    ]
+    ],
   };
 
   return (
@@ -68,21 +77,16 @@ const ExercisesTab = () => {
           onRowClick={(row) => viewDialog.open(row.id)}
           onDeleteSelected={(rows) => {
             if (confirm(`Delete ${rows.length} exercises?`)) {
-              rows.forEach(r => deleteExercise(r.id));
+              rows.forEach((r) => deleteExercise(r.id));
             }
           }}
           cardConfig={cardConfig}
-          pagination={{
-            currentPage: page,
-            totalPages: totalPages || 1,
-            totalItems: totalItems,
-            pageSize: pageSize,
-            onPageChange,
-            onNextPage,
-            onPreviousPage,
-            canNextPage: page < totalPages,
-            canPreviousPage: page > 1,
+          pagination={true}
+          urlPersistence={{
+            pageKey: "fit_exercise_page",
+            pageSizeKey: "fit_exercise_pageSize",
           }}
+          totalItems={totalItems}
         />
       </div>
 

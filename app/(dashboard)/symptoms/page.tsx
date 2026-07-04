@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
-import DataTable from "@/components/redesign/DataTable";
+import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -18,21 +18,20 @@ import {
 } from "@/hooks/supabase-calls/useSymptoms";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useSearchParams } from "next/navigation";
 
 const SymptomsPage = () => {
   const addSymptom = useAddConditionDialog();
   const { open: openViewDialog } = useViewConditionDialog();
 
   const limit = 10;
-  const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [activeTab, setActiveTab] = useState("all");
+  const searchParams = useSearchParams();
 
-  // Reset page when search changes
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
+  // Read page from URL to trigger refetch when pagination changes
+  const page = parseInt(searchParams.get("sym_page") || "1", 10);
 
   const { data, isLoading, isFetching } = useSymptoms({
     limit,
@@ -44,86 +43,117 @@ const SymptomsPage = () => {
 
   const columns = [
     {
-      key: "name",
-      label: "Symptom Name",
-      render: (val: string, row: any) => (
+      accessorKey: "name",
+      header: "Symptom Name",
+      cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xs text-slate-500 shrink-0 uppercase border border-slate-200 shadow-sm">
-            {val?.slice(0, 2)}
+            {row.original.name?.slice(0, 2)}
           </div>
           <div className="min-w-0">
-            <div className="font-bold text-slate-800 truncate">{val}</div>
+            <div className="font-bold text-slate-800 truncate">
+              {row.original.name}
+            </div>
             <div className="text-[10px] text-slate-400 max-w-[200px] truncate leading-tight mt-0.5">
-              {row.description || "No description provided"}
+              {row.original.description || "No description provided"}
             </div>
           </div>
         </div>
       ),
     },
     {
-      key: "bodyParts",
-      label: "Body Parts",
-      render: (val: string[]) => (
+      accessorKey: "bodyParts",
+      header: "Body Parts",
+      cell: ({ row }: any) => (
         <div className="flex flex-wrap gap-1">
-          {(val || []).length > 0 ? (
-            val.slice(0, 3).map((bp, i) => (
-              <span key={i} className="text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100">
+          {(row.original.bodyParts || []).length > 0 ? (
+            row.original.bodyParts.slice(0, 3).map((bp: string, i: number) => (
+              <span
+                key={i}
+                className="text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
+              >
                 {bp}
               </span>
             ))
           ) : (
             <span className="text-[10px] text-slate-300 italic">—</span>
           )}
-          {val?.length > 3 && <span className="text-[9px] text-slate-400 font-bold">+{val.length - 3} more</span>}
-        </div>
-      ),
-    },
-    {
-      key: "categories",
-      label: "Categories",
-      render: (val: string[]) => (
-        <div className="flex flex-wrap gap-1">
-          {(val || ["General"]).slice(0, 2).map((cat, i) => (
-            <span key={i} className="badge badge-blue">
-              {cat}
+          {row.original.bodyParts?.length > 3 && (
+            <span className="text-[9px] text-slate-400 font-bold">
+              +{row.original.bodyParts.length - 3} more
             </span>
-          ))}
+          )}
         </div>
       ),
     },
     {
-      key: "specialist",
-      label: "Specialist",
-      render: (val: string) => (
+      accessorKey: "categories",
+      header: "Categories",
+      cell: ({ row }: any) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.original.categories || ["General"])
+            .slice(0, 2)
+            .map((cat: string, i: number) => (
+              <span key={i} className="badge badge-blue">
+                {cat}
+              </span>
+            ))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "specialist",
+      header: "Specialist",
+      cell: ({ row }: any) => (
         <span className="badge badge-purple font-bold">
-          {val || "General"}
+          {row.original.specialist || "General"}
         </span>
       ),
     },
     {
-      key: "updated_at",
-      label: "Last Edited",
-      render: (val: string) => (
+      accessorKey: "updated_at",
+      header: "Last Edited",
+      cell: ({ row }: any) => (
         <div className="text-[10px] text-slate-500 font-medium">
-          {val ? format(new Date(val), "MMM dd, yyyy") : "—"}
+          {row.original.updated_at
+            ? format(new Date(row.original.updated_at), "MMM dd, yyyy")
+            : "—"}
         </div>
       ),
     },
     {
-      key: "status",
-      label: "Status",
-      render: (val: string) => (
-        <span className={cn("badge", val === "verified" ? "badge-green" : "badge-amber")}>
-          {val === "verified" ? "✅ Verified" : "⏳ Pending"}
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: any) => (
+        <span
+          className={cn(
+            "badge",
+            row.original.status === "verified" ? "badge-green" : "badge-amber",
+          )}
+        >
+          {row.original.status === "verified" ? "✅ Verified" : "⏳ Pending"}
         </span>
       ),
     },
   ];
 
   const rowActions = [
-    { label: "View", icon: "👁️", onClick: (row: any) => openViewDialog(row.id) },
-    { label: "Edit", icon: "✏️", onClick: (row: any) => addSymptom.open(row) },
-    { label: "Delete", icon: "🗑️", onClick: (row: any) => console.log("Delete", row.id), danger: true },
+    {
+      label: "View",
+      icon: "👁️",
+      onClick: (row: any) => openViewDialog(row.id),
+    },
+    {
+      label: "Edit",
+      icon: "✏️",
+      onClick: (row: any) => addSymptom.open(row),
+    },
+    {
+      label: "Delete",
+      icon: "🗑️",
+      onClick: (row: any) => console.log("Delete", row.id),
+      danger: true,
+    },
   ];
 
   return (
@@ -133,10 +163,7 @@ const SymptomsPage = () => {
         subtitle="Independent symptoms database · Conditions mapping · Adherence insights"
       >
         <button className="btn btn-secondary">📥 Export CSV</button>
-        <button
-          className="btn btn-primary"
-          onClick={() => addSymptom.open()}
-        >
+        <button className="btn btn-primary" onClick={() => addSymptom.open()}>
           + Add Symptom
         </button>
       </PageHeader>
@@ -146,7 +173,11 @@ const SymptomsPage = () => {
         <KpiCard
           icon="📊"
           label="Total Symptoms"
-          value={isStatsLoading ? "..." : (stats?.totalSymptoms || 0).toLocaleString()}
+          value={
+            isStatsLoading
+              ? "..."
+              : (stats?.totalSymptoms || 0).toLocaleString()
+          }
           variant="blue"
           delta="+8.4% month"
           deltaType="up"
@@ -154,7 +185,11 @@ const SymptomsPage = () => {
         <KpiCard
           icon="📂"
           label="Categories"
-          value={isStatsLoading ? "..." : (stats?.totalCategories || 0).toLocaleString()}
+          value={
+            isStatsLoading
+              ? "..."
+              : (stats?.totalCategories || 0).toLocaleString()
+          }
           variant="purple"
           delta="Well organized"
         />
@@ -179,7 +214,12 @@ const SymptomsPage = () => {
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+            style={
+              {
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              } as React.CSSProperties
+            }
           >
             {[
               { id: "all", label: "All Symptoms", icon: "🩺" },
@@ -207,7 +247,10 @@ const SymptomsPage = () => {
         </div>
 
         <div className="mt-6">
-          <TabsContent value="all" className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <TabsContent
+            value="all"
+            className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          >
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[300px]">
                 <input
@@ -217,8 +260,18 @@ const SymptomsPage = () => {
                   onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
                   </svg>
                 </div>
               </div>
@@ -235,13 +288,17 @@ const SymptomsPage = () => {
 
             <div className="card p-0 overflow-hidden min-h-[400px] border-slate-200 shadow-xl shadow-slate-100">
               <DataTable
-                columns={columns as any}
+                columns={columns}
                 data={data?.symptoms || []}
                 rowActions={rowActions}
                 selectable
-                itemsPerPage={limit}
                 isLoading={isLoading || isFetching}
                 pagination={true}
+                urlPersistence={{
+                  pageKey: "sym_page",
+                  pageSizeKey: "sym_pageSize",
+                }}
+                totalItems={data?.meta?.total || 0}
               />
             </div>
 
@@ -256,7 +313,11 @@ const SymptomsPage = () => {
           </TabsContent>
 
           {["categories", "analytics"].map((tabId) => (
-            <TabsContent key={tabId} value={tabId} className="outline-none animate-in fade-in zoom-in-95 duration-300">
+            <TabsContent
+              key={tabId}
+              value={tabId}
+              className="outline-none animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="card py-32 text-center border-dashed border-2 border-slate-200 bg-slate-50/50">
                 <div className="max-w-md mx-auto space-y-4">
                   <div className="w-20 h-20 bg-white rounded-3xl border border-slate-100 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-slate-200/50 animate-bounce">
@@ -266,7 +327,8 @@ const SymptomsPage = () => {
                     {tabId} Module
                   </h3>
                   <p className="text-[13px] text-slate-500 font-bold leading-relaxed px-6">
-                    We're building a high-fidelity dashboard for this module. Real-time data visualization and insights are coming soon.
+                    We're building a high-fidelity dashboard for this module.
+                    Real-time data visualization and insights are coming soon.
                   </p>
                   <div className="pt-4">
                     <span className="badge bg-slate-900 text-white px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-slate-200">

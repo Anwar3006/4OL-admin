@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
-import DataTable from "@/components/redesign/DataTable";
+import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSearchParams } from "next/navigation";
 
 const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();
@@ -32,17 +33,19 @@ const HealthyLivingPage = () => {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const page = 1;
-  const limit = 10;
+  const searchParams = useSearchParams();
+
+  // Read page from URL to trigger refetch when pagination changes
+  const page = parseInt(searchParams.get("hl_page") || "1", 10);
 
   const { mutate: deleteHealthyLiving } = useDeleteHealthyLiving();
-const { data: healthyLivingData } = useHealthyLivings({
-  page,
-  limit,
-  search: search || undefined,
-  // Pass the status filter here (convert "all" to undefined so the hook ignores it)
-  status: statusFilter === "all" ? undefined : statusFilter, 
-});
+  const { data: healthyLivingData } = useHealthyLivings({
+    page,
+    limit: 10,
+    search: search || undefined,
+    // Pass the status filter here (convert "all" to undefined so the hook ignores it)
+    status: statusFilter === "all" ? undefined : statusFilter,
+  });
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -57,64 +60,80 @@ const { data: healthyLivingData } = useHealthyLivings({
     [deleteHealthyLiving],
   );
 
-  // Convert data to columns format for redesign DataTable
+  const rowActions = [
+    {
+      label: "View",
+      icon: "👁️",
+      onClick: (row: any) => viewHealthyLiving.open(row.id),
+    },
+    {
+      label: "Edit",
+      icon: "✏️",
+      onClick: (row: any) => addHealthLiving.open(row),
+    },
+    {
+      label: "Delete",
+      icon: "🗑️",
+      onClick: (row: any) => handleDelete(row.id),
+      danger: true,
+    },
+  ];
+
+  // Convert data to columns format for Data-Table
   const tableColumns = useMemo(
     () => [
       {
-        key: "name",
-        label: "Article Name",
-        width: 250,
-        render: (value: string, row: any) => (
+        accessorKey: "name",
+        header: "Article Name",
+        cell: ({ row }: any) => (
           <div className="flex flex-col gap-1">
             <span className="font-bold text-sm text-slate-800">
-              {value || "Untitled"}
+              {row.original.name || "Untitled"}
             </span>
-            {row.slug && (
+            {row.original.slug && (
               <span className="text-xs text-slate-500 font-mono">
-                /{row.slug}
+                /{row.original.slug}
               </span>
             )}
           </div>
         ),
       },
       {
-        key: "content_type",
-        label: "Type",
-        width: 100,
-        render: (value: string) => (
+        accessorKey: "content_type",
+        header: "Type",
+        cell: ({ row }: any) => (
           <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-700 rounded capitalize">
-            {value || "article"}
+            {row.original.content_type || "article"}
           </span>
         ),
       },
       {
-        key: "status",
-        label: "Status",
-        width: 120,
-        render: (value: string) => {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }: any) => {
           const statusColors: Record<string, string> = {
             published: "bg-emerald-50 text-emerald-700",
             draft: "bg-slate-100 text-slate-700",
             pending_review: "bg-amber-50 text-amber-700",
             archived: "bg-rose-50 text-rose-700",
           };
-          const colorClass = statusColors[value] || statusColors.draft;
+          const colorClass =
+            statusColors[row.original.status] || statusColors.draft;
           return (
             <span
               className={`text-xs font-semibold px-2 py-1 rounded capitalize ${colorClass}`}
             >
-              {value?.replace("_", " ") || "draft"}
+              {row.original.status?.replace("_", " ") || "draft"}
             </span>
           );
         },
       },
       {
-        key: "is_featured",
-        label: "Featured",
-        width: 80,
-        render: (value: boolean) => (
+        accessorKey: "is_featured",
+        header: "Featured",
+        cell: ({ row }: any) => (
           <div className="text-center">
-            {value ? (
+            {row.original.is_featured ? (
               <span className="text-lg">⭐</span>
             ) : (
               <span className="text-slate-300">○</span>
@@ -123,66 +142,30 @@ const { data: healthyLivingData } = useHealthyLivings({
         ),
       },
       {
-        key: "view_count",
-        label: "Views",
-        width: 80,
-        render: (value: number) => (
+        accessorKey: "view_count",
+        header: "Views",
+        cell: ({ row }: any) => (
           <div className="flex items-center gap-1 justify-center">
             <Eye className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-sm text-slate-600">{value || 0}</span>
+            <span className="text-sm text-slate-600">
+              {row.original.view_count || 0}
+            </span>
           </div>
         ),
       },
       {
-        key: "created_at",
-        label: "Created",
-        width: 130,
-        render: (value: string) => (
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ row }: any) => (
           <span className="text-xs text-slate-600">
-            {new Date(value).toLocaleDateString(undefined, {
+            {new Date(row.original.created_at).toLocaleDateString(undefined, {
               dateStyle: "medium",
             })}
           </span>
         ),
       },
-      {
-        key: "actions",
-        label: "Actions",
-        width: 120,
-        render: (value: any, row: any) => (
-          <div className="flex items-center gap-1 justify-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
-              onClick={() => viewHealthyLiving.open(row.id)}
-              title="View"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-              onClick={() => addHealthLiving.open(row)}
-              title="Edit"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
-              onClick={() => handleDelete(row.id)}
-              title="Delete"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ),
-      },
     ],
-    [viewHealthyLiving, addHealthLiving, handleDelete],
+    [],
   );
 
   return (
@@ -203,13 +186,18 @@ const { data: healthyLivingData } = useHealthyLivings({
       </PageHeader>
 
       {/* KPI Grid */}
-<HealthyLivingStats />
+      <HealthyLivingStats />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+            style={
+              {
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              } as React.CSSProperties
+            }
           >
             {[
               { id: "all", label: "All Content", icon: "🥗" },
@@ -236,19 +224,19 @@ const { data: healthyLivingData } = useHealthyLivings({
           </TabsList>
         </div>
 
-<TabsContent value="all" className="outline-none mt-4">
-  <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center mb-4">
-    <div className="relative w-full sm:flex-1 sm:min-w-[240px]">
-      <input
-        className="w-full h-9 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
-        placeholder="🔍 Search articles by title, topic..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-    </div>
-    
-    <div className="flex w-full sm:w-auto gap-2">
-     <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <TabsContent value="all" className="outline-none mt-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center mb-4">
+            <div className="relative w-full sm:flex-1 sm:min-w-[240px]">
+              <input
+                className="w-full h-9 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
+                placeholder="🔍 Search articles by title, topic..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex w-full sm:w-auto gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[140px] h-9 text-[11px] font-bold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
@@ -260,19 +248,24 @@ const { data: healthyLivingData } = useHealthyLivings({
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
-    </div>
-  </div>
+            </div>
+          </div>
 
-  <div className="card p-0 overflow-hidden border border-slate-200 shadow-sm rounded-xl">
-    <DataTable
-      columns={tableColumns}
-      data={healthyLivingData?.healthyLivings || []}
-      selectable
-      pagination={false}
-    />
-  </div>
+          <div className="card p-0 overflow-hidden border border-slate-200 shadow-sm rounded-xl">
+            <DataTable
+              columns={tableColumns}
+              data={healthyLivingData?.healthyLivings || []}
+              selectable={false}
+              pagination={true}
+              urlPersistence={{
+                pageKey: "hl_page",
+                pageSizeKey: "hl_pageSize",
+              }}
+              totalItems={healthyLivingData?.meta?.total || 0}
+            />
+          </div>
 
-  {/* <div className="flex gap-2 mt-4">
+          {/* <div className="flex gap-2 mt-4">
     <button className="btn btn-secondary btn-sm font-bold text-[10px]">
       ✅ Publish Selected
     </button>
@@ -280,7 +273,7 @@ const { data: healthyLivingData } = useHealthyLivings({
       🗑️ Delete Selected
     </button>
   </div> */}
-</TabsContent>
+        </TabsContent>
 
         {["categories", "engagement"].map((tabId) => (
           <TabsContent key={tabId} value={tabId} className="outline-none mt-4">

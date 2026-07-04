@@ -2,29 +2,46 @@
 
 import React, { useMemo, useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
-import DataTable from "@/components/redesign/DataTable";
-import { useChallenges, useDeleteChallenge } from "@/hooks/supabase-calls/useChallenge";
-import { useAddChallengeDialog, useViewChallengeDialog } from "@/stores/dialog-store";
+import { DataTable } from "@/components/Data-Table/data-table";
+import {
+  useChallenges,
+  useDeleteChallenge,
+} from "@/hooks/supabase-calls/useChallenge";
+import {
+  useAddChallengeDialog,
+  useViewChallengeDialog,
+} from "@/stores/dialog-store";
 import AddChallengeDialog from "../_components/add-challenge-dialog";
 import ViewChallengeDialog from "../_components/view-challenge-dialog";
 import { cn } from "@/lib/utils";
-import { Trophy, Target, Users, ShieldCheck, Search, Filter, Plus } from "lucide-react";
+import {
+  Trophy,
+  Target,
+  Users,
+  ShieldCheck,
+  Search,
+  Filter,
+  Plus,
+} from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 const ChallengesTab = () => {
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const limit = 10;
+  const searchParams = useSearchParams();
+
+  // Read page from URL to trigger refetch when pagination changes
+  const page = parseInt(searchParams.get("fit_chal_page") || "1", 10);
 
   const challengeDialog = useAddChallengeDialog();
   const viewDialog = useViewChallengeDialog();
-  const { data, isLoading } = useChallenges({ page, limit, search: debouncedSearch });
+  const { data, isLoading } = useChallenges({
+    page,
+    limit,
+    search: debouncedSearch,
+  });
   const { mutate: deleteChallenge } = useDeleteChallenge();
-
-  // Reset page when search changes
-  React.useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
 
   const handleEdit = useCallback(
     (row: any) => {
@@ -51,119 +68,148 @@ const ChallengesTab = () => {
 
   const columns = [
     {
-      key: "name",
-      label: "Challenge Details",
-      render: (val: string, row: any) => (
+      accessorKey: "name",
+      header: "Challenge Details",
+      cell: ({ row }: any) => (
         <div className="flex flex-col min-w-[200px]">
-          <span className="font-bold text-slate-800">{val}</span>
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{row.category || "Fitness"}</span>
+          <span className="font-bold text-slate-800">{row.original.name}</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+            {row.original.category || "Fitness"}
+          </span>
         </div>
-      )
+      ),
     },
     {
-      key: "status",
-      label: "Status",
-      render: (val: string) => (
-        <span className={cn(
-          "badge uppercase tracking-wider text-[10px]",
-          val === 'active' ? 'badge-green' : val === 'draft' ? 'bg-slate-100 text-slate-600' : 'badge-amber'
-        )}>{val}</span>
-      )
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: any) => (
+        <span
+          className={cn(
+            "badge uppercase tracking-wider text-[10px]",
+            row.original.status === "active"
+              ? "badge-green"
+              : row.original.status === "draft"
+                ? "bg-slate-100 text-slate-600"
+                : "badge-amber",
+          )}
+        >
+          {row.original.status}
+        </span>
+      ),
     },
     {
-      key: "participants",
-      label: "Participants",
-      render: (_: any, row: any) => (
+      accessorKey: "participants",
+      header: "Participants",
+      cell: ({ row }: any) => (
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400"
+              >
                 U
               </div>
             ))}
           </div>
-          <span className="text-[11px] font-bold text-slate-800">{row.total_participants || 0} joined</span>
+          <span className="text-[11px] font-bold text-slate-800">
+            {row.original.total_participants || 0} joined
+          </span>
         </div>
-      )
+      ),
     },
     {
-      key: "duration",
-      label: "Duration",
-      render: (_: any, row: any) => (
+      accessorKey: "duration",
+      header: "Duration",
+      cell: ({ row }: any) => (
         <div className="text-[11px] font-medium text-slate-600">
-          {row.start_date && row.end_date ? (
-            `${new Date(row.start_date).toLocaleDateString()} - ${new Date(row.end_date).toLocaleDateString()}`
-          ) : "Ongoing"}
+          {row.original.start_date && row.original.end_date
+            ? `${new Date(row.original.start_date).toLocaleDateString()} - ${new Date(row.original.end_date).toLocaleDateString()}`
+            : "Ongoing"}
         </div>
-      )
+      ),
     },
     {
-      key: "rewards",
-      label: "Rewards",
-      render: (val: any) => (
+      accessorKey: "rewards",
+      header: "Rewards",
+      cell: ({ row }: any) => (
         <span className="badge badge-gold h-5 text-[10px] uppercase font-black gap-1">
-          🪙 {val?.fitcoins || 0} FitCoins
+          🪙 {row.original.rewards?.fitcoins || 0} FitCoins
         </span>
-      )
-    }
+      ),
+    },
   ];
 
   const rowActions = [
     { label: "View", icon: "👁️", onClick: (row: any) => handleView(row.id) },
     { label: "Edit", icon: "✏️", onClick: handleEdit },
-    { label: "Delete", icon: "🗑️", onClick: (row: any) => handleDelete(row.id), danger: true },
+    {
+      label: "Delete",
+      icon: "🗑️",
+      onClick: (row: any) => handleDelete(row.id),
+      danger: true,
+    },
   ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 card bg-white">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                 <h3 className="text-2xl font-black text-slate-800">🏆 Active Challenges</h3>
-                 <p className="text-slate-500 font-medium mt-1">Community-wide fitness events and goal tracking</p>
-              </div>
-              <button className="btn btn-primary" onClick={() => challengeDialog.open()}>
-                <Plus className="h-4 w-4 mr-1" /> New Challenge
-              </button>
-           </div>
-           
-           <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  placeholder="Search by challenge name..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <button className="btn btn-secondary">
-                <Filter className="h-4 w-4 mr-1" /> Status
-              </button>
-           </div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-2xl font-black text-slate-800">
+                🏆 Active Challenges
+              </h3>
+              <p className="text-slate-500 font-medium mt-1">
+                Community-wide fitness events and goal tracking
+              </p>
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => challengeDialog.open()}
+            >
+              <Plus className="h-4 w-4 mr-1" /> New Challenge
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                placeholder="Search by challenge name..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-secondary">
+              <Filter className="h-4 w-4 mr-1" /> Status
+            </button>
+          </div>
         </div>
 
         <div className="card bg-amber-500 text-white relative overflow-hidden">
-           <Trophy className="absolute -bottom-4 -right-4 h-24 w-24 text-white/20 rotate-12" />
-           <h3 className="text-lg font-black mb-6">📢 Participation</h3>
-           <div className="space-y-6 relative z-10">
-              {[
-                { label: "Active Challenges", val: 48, icon: Target },
-                { label: "Total Participants", val: "3,240", icon: Users },
-                { label: "Avg Completion", val: "62%", icon: ShieldCheck },
-              ].map((stat, i) => (
-                <div key={i} className="flex items-center gap-3">
-                   <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                      <stat.icon className="h-4 w-4" />
-                   </div>
-                   <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-amber-100 opacity-80">{stat.label}</p>
-                      <h4 className="text-lg font-black">{stat.val}</h4>
-                   </div>
+          <Trophy className="absolute -bottom-4 -right-4 h-24 w-24 text-white/20 rotate-12" />
+          <h3 className="text-lg font-black mb-6">📢 Participation</h3>
+          <div className="space-y-6 relative z-10">
+            {[
+              { label: "Active Challenges", val: 48, icon: Target },
+              { label: "Total Participants", val: "3,240", icon: Users },
+              { label: "Avg Completion", val: "62%", icon: ShieldCheck },
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+                  <stat.icon className="h-4 w-4" />
                 </div>
-              ))}
-           </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-100 opacity-80">
+                    {stat.label}
+                  </p>
+                  <h4 className="text-lg font-black">{stat.val}</h4>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -173,9 +219,12 @@ const ChallengesTab = () => {
           data={data?.challenges || []}
           rowActions={rowActions}
           isLoading={isLoading}
-          externalPage={page}
-          externalTotalPages={data?.meta?.totalPages || 1}
-          onPageChange={setPage}
+          pagination={true}
+          urlPersistence={{
+            pageKey: "fit_chal_page",
+            pageSizeKey: "fit_chal_pageSize",
+          }}
+          totalItems={data?.meta?.total || 0}
         />
       </div>
 

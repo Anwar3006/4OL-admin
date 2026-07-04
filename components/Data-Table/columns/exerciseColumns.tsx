@@ -1,13 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Dumbbell, Info, Edit, Trash2 } from "lucide-react";
+import { Dumbbell, Info, Edit, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const exerciseColumns: ColumnDef<any>[] = [
   {
-    accessorKey: "name",
-    header: "Exercise",
+    accessorKey: "exercise_name",
+    header: "Exercise Name",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
@@ -15,21 +15,43 @@ export const exerciseColumns: ColumnDef<any>[] = [
         </div>
         <div>
           <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
-            {row.original.name}
-          </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
-            {row.original.category}
+            {row.original.exercise_name}
           </div>
         </div>
       </div>
     ),
   },
   {
-    accessorKey: "target_muscle",
-    header: "Target Muscle",
+    accessorKey: "category",
+    header: "Category",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
-        {row.original.target_muscle}
+      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">
+        {row.original.category}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "muscle_groups",
+    header: "Muscle Groups",
+    cell: ({ row }) => (
+      <div className="flex flex-wrap gap-1">
+        <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          {row.original.primary_muscle_group}
+        </span>
+        {row.original.secondary_muscles && (
+          <span className="text-[10px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+            {row.original.secondary_muscles}
+          </span>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "equipment",
+    header: "Equipment",
+    cell: ({ row }) => (
+      <span className="text-[11px] font-medium text-slate-600">
+        {row.original.equipment_required}
       </span>
     ),
   },
@@ -37,16 +59,72 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "difficulty",
     header: "Difficulty",
     cell: ({ row }) => (
-      <span className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-        row.original.difficulty === 'beginner'
-          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-          : row.original.difficulty === 'intermediate'
-          ? "bg-amber-50 text-amber-700 border-amber-100"
-          : "bg-red-50 text-red-700 border-red-100"
-      )}>
-        {row.original.difficulty}
+      <span
+        className={cn(
+          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+          row.original.difficulty_level === "beginner"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            : row.original.difficulty_level === "intermediate"
+              ? "bg-amber-50 text-amber-700 border-amber-100"
+              : "bg-red-50 text-red-700 border-red-100",
+        )}
+      >
+        {row.original.difficulty_level || "Medium"}
       </span>
+    ),
+  },
+  {
+    accessorKey: "steps_reps",
+    header: "Steps / Reps",
+    cell: ({ row }) => (
+      <div className="text-[11px] font-medium text-slate-600">
+        <div className="font-bold text-slate-800">
+          {row.original.default_sets || "—"} sets
+        </div>
+        <div className="text-[10px] text-slate-500">
+          {row.original.default_reps_duration || "—"}
+        </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "rest_time",
+    header: "Rest Time",
+    cell: ({ row }) => (
+      <span className="text-[11px] font-bold text-slate-700">
+        {row.original.rest_time_seconds
+          ? `${row.original.rest_time_seconds}s`
+          : "—"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "tier",
+    header: "Tier",
+    cell: ({ row }) => (
+      <span
+        className={cn(
+          "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+          row.original.tier === "premium"
+            ? "bg-purple-50 text-purple-700 border-purple-200"
+            : "bg-slate-100 text-slate-600 border-slate-200",
+        )}
+      >
+        {row.original.tier || "Pro"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "is_featured",
+    header: "Featured",
+    cell: ({ row }) => (
+      <div className="text-center">
+        {row.original.is_featured ? (
+          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+        ) : (
+          <span className="text-slate-300">○</span>
+        )}
+      </div>
     ),
   },
   {

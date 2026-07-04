@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo, useState } from "react";
+import React, { memo, useMemo, useState, useEffect } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -26,12 +26,20 @@ import {
   ChevronsRight,
   Loader2,
   Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollShadow } from "@/hooks/use-scroll-shadow";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTableState } from "@/hooks/use-table-state";
 import { MobileCard } from "./mobile-card";
 import { MobileCardConfig } from "./mobile-card-types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PaginationProps {
   currentPage: number;
@@ -48,12 +56,27 @@ interface PaginationProps {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<any, TValue>[];
   data: TData[];
-  pagination?: PaginationProps;
+  pagination?: PaginationProps | boolean;
   isLoading?: boolean;
   cardConfig?: MobileCardConfig<TData>;
   onRowClick?: (row: TData) => void;
   onDeleteSelected?: (selectedRows: TData[]) => void;
   deleteLabel?: string;
+  selectable?: boolean;
+  rowActions?: RowAction<TData>[];
+  /** Enable URL persistence for pagination (uses "page" and "pageSize" params by default) */
+  urlPersistence?: boolean | { pageKey?: string; pageSizeKey?: string };
+  /** Total items count for URL persistence mode (required when urlPersistence is true and pagination is boolean) */
+  totalItems?: number;
+  /** Callback when page changes - useful for triggering data refetches */
+  onPageChange?: (page: number) => void;
+}
+
+interface RowAction<T> {
+  label: string;
+  icon?: React.ReactNode;
+  onClick?: (row: T) => void;
+  danger?: boolean;
 }
 
 const DataTableComponent = <TData, TValue>({
@@ -65,37 +88,67 @@ const DataTableComponent = <TData, TValue>({
   onRowClick,
   onDeleteSelected,
   deleteLabel = "Delete Selected",
+  selectable = true,
+  rowActions = [],
+  urlPersistence = false,
+  totalItems,
+  onPageChange: onPageChangeProp,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
   const isMobile = useIsMobile();
   const { scrollRef, showLeftShadow, showRightShadow } = useScrollShadow();
 
+  // URL persistence for pagination
+  const urlPaginationConfig = useMemo(() => {
+    if (!urlPersistence) return null;
+    if (typeof urlPersistence === "object") {
+      return {
+        pageKey: urlPersistence.pageKey || "page",
+        pageSizeKey: urlPersistence.pageSizeKey || "pageSize",
+      };
+    }
+    return { pageKey: "page", pageSizeKey: "pageSize" };
+  }, [urlPersistence]);
+
+  const tablePagination = useTableState(
+    urlPaginationConfig || { defaultPage: 1, defaultPageSize: 10 },
+  );
+
+  // Determine if we're using URL-based pagination
+  const useUrlPagination =
+    urlPersistence && pagination === true && urlPaginationConfig;
+
   const finalColumns = useMemo(() => {
-    const selectColumn: ColumnDef<any> = {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="translate-y-[2px]"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-          className="translate-y-[2px]"
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    };
-    return [selectColumn, ...columns];
-  }, [columns]);
+    if (selectable) {
+      const selectColumn: ColumnDef<any> = {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={table.getIsAllPageRowsSelected()}
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="Select all"
+            className="translate-y-[2px]"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+            className="translate-y-[2px]"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      };
+      return [selectColumn, ...columns];
+    }
+    return columns;
+  }, [columns, selectable]);
 
   const table = useReactTable({
     data,
@@ -112,6 +165,27 @@ const DataTableComponent = <TData, TValue>({
     manualPagination: true,
   });
 
+  // Build pagination props for URL persistence mode
+  const urlBasedPagination = useUrlPagination
+    ? {
+        currentPage: tablePagination.page,
+        totalPages:
+          Math.ceil((totalItems || data.length) / tablePagination.pageSize) ||
+          1,
+        totalItems: totalItems || data.length,
+        pageSize: tablePagination.pageSize,
+        onPageChange: tablePagination.setPage,
+        onNextPage: () => tablePagination.setPage(tablePagination.page + 1),
+        onPreviousPage: () =>
+          tablePagination.setPage(Math.max(1, tablePagination.page - 1)),
+        canNextPage:
+          tablePagination.page <
+          (Math.ceil((totalItems || data.length) / tablePagination.pageSize) ||
+            1),
+        canPreviousPage: tablePagination.page > 1,
+      }
+    : undefined;
+
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const hasSelection = selectedRows.length > 0;
 
@@ -126,13 +200,47 @@ const DataTableComponent = <TData, TValue>({
     }
   };
 
+  const renderRowActions = (row: TData) => {
+    if (!rowActions || rowActions.length === 0) return null;
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer bg-transparent border-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40 bg-white z-[100]">
+          {rowActions.map((action, i) => (
+            <DropdownMenuItem
+              key={i}
+              onClick={() => action.onClick?.(row)}
+              className={cn(
+                "flex items-center gap-2 cursor-pointer",
+                action.danger
+                  ? "text-red-600 focus:text-red-600 focus:bg-red-50"
+                  : "text-slate-700",
+              )}
+            >
+              {action.icon && <span className="text-sm">{action.icon}</span>}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
   return (
     <div className="space-y-4 relative">
       {/* Floating Bulk Actions Bar */}
       {hasSelection && onDeleteSelected && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate/50 text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <span className="text-sm font-medium">
-            {selectedRows.length} item{selectedRows.length > 1 ? "s" : ""} selected
+            {selectedRows.length} item{selectedRows.length > 1 ? "s" : ""}{" "}
+            selected
           </span>
           <div className="w-px h-4 bg-slate-700" />
           <Button
@@ -157,14 +265,16 @@ const DataTableComponent = <TData, TValue>({
           )}
           <div className="space-y-3">
             {cardConfig ? (
-              table.getRowModel().rows.map((row) => (
-                <MobileCard
-                  key={row.id}
-                  data={row.original}
-                  config={cardConfig}
-                  onClick={() => handleRowClick(row.original)}
-                />
-              ))
+              table
+                .getRowModel()
+                .rows.map((row) => (
+                  <MobileCard
+                    key={row.id}
+                    data={row.original}
+                    config={cardConfig}
+                    onClick={() => handleRowClick(row.original)}
+                  />
+                ))
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No card configuration provided for mobile view
@@ -178,13 +288,13 @@ const DataTableComponent = <TData, TValue>({
           <div
             className={cn(
               "absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white/80 to-transparent pointer-events-none z-10 transition-opacity",
-              showLeftShadow ? "opacity-100" : "opacity-0"
+              showLeftShadow ? "opacity-100" : "opacity-0",
             )}
           />
           <div
             className={cn(
               "absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent pointer-events-none z-10 transition-opacity",
-              showRightShadow ? "opacity-100" : "opacity-0"
+              showRightShadow ? "opacity-100" : "opacity-0",
             )}
           />
 
@@ -203,30 +313,40 @@ const DataTableComponent = <TData, TValue>({
             className="rounded-lg border border-slate-200 overflow-x-auto scroll-smooth shadow-sm"
           >
             <Table className="min-w-full">
-              <TableHeader className="bg-slate-50 dark:bg-slate-900">
+              <TableHeader className="bg-slate-100">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                  <TableRow
+                    key={headerGroup.id}
+                    className="hover:bg-transparent"
+                  >
                     {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <TableHead
+                        key={header.id}
+                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500"
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     ))}
+                    {rowActions.length > 0 && (
+                      <TableHead className="px-6 py-4 w-[50px]" />
+                    )}
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody className="bg-white dark:bg-slate-800">
+              <TableBody className="bg-slate-100">
                 {table.getRowModel().rows.length > 0 ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       className={cn(
                         "transition-colors",
-                        onRowClick && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"
+                        onRowClick &&
+                          "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700",
                       )}
                       onClick={() => handleRowClick(row.original)}
                       data-state={row.getIsSelected() && "selected"}
@@ -235,15 +355,23 @@ const DataTableComponent = <TData, TValue>({
                         <TableCell key={cell.id} className="px-6 py-4">
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}
+                      {rowActions.length > 0 && (
+                        <TableCell className="px-6 py-4">
+                          {renderRowActions(row.original)}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={finalColumns.length} className="h-24 text-center text-slate-400">
+                    <TableCell
+                      colSpan={finalColumns.length}
+                      className="h-24 text-center text-slate-400"
+                    >
                       No results found.
                     </TableCell>
                   </TableRow>
@@ -255,70 +383,79 @@ const DataTableComponent = <TData, TValue>({
       )}
 
       {/* Pagination */}
-      {pagination && (
+      {(pagination || urlBasedPagination) && (
         <div className="flex items-center justify-between mt-4 px-2">
-          <div className="hidden sm:block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            Showing {(pagination.currentPage - 1) * pagination.pageSize + 1} to{" "}
-            {Math.min(
-              pagination.currentPage * pagination.pageSize,
-              pagination.totalItems
-            )}{" "}
-            of {pagination.totalItems} results
-          </div>
+          {(() => {
+            const pag =
+              pagination && typeof pagination === "object"
+                ? pagination
+                : urlBasedPagination;
+            if (!pag) return null;
 
-          <div className="flex items-center gap-2 ml-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => pagination.onPageChange(1)}
-              disabled={!pagination.canPreviousPage || isLoading}
-              className="hidden sm:flex h-8 w-8 p-0"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={pagination.onPreviousPage}
-              disabled={!pagination.canPreviousPage || isLoading}
-              className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
-            >
-              <ChevronLeft className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Previous</span>
-            </Button>
+            return (
+              <>
+                <div className="hidden sm:block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                  Showing {(pag.currentPage - 1) * pag.pageSize + 1} to{" "}
+                  {Math.min(pag.currentPage * pag.pageSize, pag.totalItems)} of{" "}
+                  {pag.totalItems} results
+                </div>
 
-            <div className="flex items-center gap-2 px-2">
-              <span className="text-[11px] font-black text-slate-700">
-                {pagination.currentPage}
-              </span>
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                of
-              </span>
-              <span className="text-[11px] font-black text-slate-700">
-                {pagination.totalPages}
-              </span>
-            </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => pag.onPageChange(1)}
+                    disabled={!pag.canPreviousPage || isLoading}
+                    className="hidden sm:flex h-8 w-8 p-0"
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={pag.onPreviousPage}
+                    disabled={!pag.canPreviousPage || isLoading}
+                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
+                  >
+                    <ChevronLeft className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Previous</span>
+                  </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={pagination.onNextPage}
-              disabled={!pagination.canNextPage || isLoading}
-              className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 sm:ml-2" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => pagination.onPageChange(pagination.totalPages)}
-              disabled={!pagination.canNextPage || isLoading}
-              className="hidden sm:flex h-8 w-8 p-0"
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
+                  <div className="flex items-center gap-2 px-2">
+                    <span className="text-[11px] font-black text-slate-700">
+                      {pag.currentPage}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                      of
+                    </span>
+                    <span className="text-[11px] font-black text-slate-700">
+                      {pag.totalPages}
+                    </span>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={pag.onNextPage}
+                    disabled={!pag.canNextPage || isLoading}
+                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="h-4 w-4 sm:ml-2" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => pag.onPageChange(pag.totalPages)}
+                    disabled={!pag.canNextPage || isLoading}
+                    className="hidden sm:flex h-8 w-8 p-0"
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
