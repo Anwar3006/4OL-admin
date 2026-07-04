@@ -1,68 +1,71 @@
+"use client";
+
 import React from "react";
-import DataTable, { Column } from "@/components/redesign/DataTable";
-
-export interface AccountDeleteRequestRow {
-  id: string;
-  user: string;
-  userId: string;
-  phone: string;
-  plan: string;
-  reason: string;
-  dataDownload: string;
-  submitted: string;
-  graceEnd: string;
-  status: string;
-}
-
-const data: AccountDeleteRequestRow[] = [
-  { 
-    id: "DEL-2026-041", user: "Ama A****", userId: "4OL-204412", phone: "+233 24 *** 4412", 
-    plan: "Pro", reason: "Privacy Concerns", dataDownload: "Downloaded", 
-    submitted: "May 7, 2026", graceEnd: "Jun 6, 2026", status: "Pending" 
-  },
-  { 
-    id: "DEL-2026-040", user: "Kofi B****", userId: "4OL-201205", phone: "+233 50 *** 1205", 
-    plan: "Free", reason: "No Longer Using", dataDownload: "Not Started", 
-    submitted: "May 5, 2026", graceEnd: "Jun 4, 2026", status: "Grace Period" 
-  },
-];
+import { DataTable } from "@/components/Data-Table/data-table";
+import { deleteAccountColumns } from "@/components/Data-Table/columns/deleteAccountColumns";
+import { useDeleteAccountRequests } from "@/hooks/supabase-calls/useDeleteAccountRequests";
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function AllRequestsTab() {
-  const columns: Column<AccountDeleteRequestRow>[] = [
-    { key: "id", label: "Request ID", render: (val) => <span className="font-mono text-[10px] font-bold text-slate-500">{val}</span> },
-    { key: "user", label: "User", render: (val, row) => (
-        <div>
-            <div className="font-bold text-slate-800">{val}</div>
-            <div className="text-[10px] text-slate-400">user#4412</div>
-        </div>
-    )},
-    { key: "userId", label: "User ID", render: (val) => <span className="id-badge">{val}</span> },
-    { key: "phone", label: "Phone", render: (val) => <span className="font-mono text-[10px] text-slate-500">{val}</span> },
-    { key: "plan", label: "Plan", render: (val) => <span className="badge badge-purple">{val}</span> },
-    { key: "reason", label: "Reason", render: (val) => <span className="text-[11px] font-bold text-slate-600">{val}</span> },
-    { key: "dataDownload", label: "Data Download", render: (val) => (
-        <span className={`badge ${val === 'Downloaded' ? 'badge-green' : 'badge-secondary'}`}>
-            {val === 'Downloaded' ? '✅ Downloaded' : val}
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "delete_req_page" });
+  const { data, isLoading } = useDeleteAccountRequests({ page, pageSize });
+
+  const requests = data?.requests || [];
+  const totalItems = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => `${data.first_name} ${data.last_name}`,
+      subtitle: (data) => data.email,
+      badge: (data) => (
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+          data.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+        }`}>
+          {data.status}
         </span>
-    )},
-    { key: "submitted", label: "Submitted", render: (val) => <span className="text-[10px] font-bold text-slate-400">{val}</span> },
-    { key: "graceEnd", label: "Grace End", render: (val) => <span className="text-[10px] font-bold text-red-500">{val}</span> },
-    { key: "status", label: "Status", render: (val) => (
-        <span className={`badge ${val === 'Pending' ? 'badge-amber' : val === 'Grace Period' ? 'badge-purple' : 'badge-green'}`}>
-            {val === 'Pending' ? '⏳ Pending' : val}
-        </span>
-    )},
-  ];
+      ),
+    },
+    fields: [
+      { id: "reason", label: "Reason", render: (data) => data.reason || "No reason provided" },
+    ],
+    actions: [
+      { label: "View Details", onClick: (data) => console.log('View', data.id) },
+    ]
+  };
 
   return (
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
-        <input className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none" placeholder="🔍 Search by User ID, name, phone, request ID..." />
-        <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"><option>Status: All</option></select>
-        <button className="btn btn-secondary btn-sm">📥 Export</button>
+        <input
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search requests..."
+        />
+        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+          📥 Export List
+        </button>
       </div>
-      <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={data} selectable />
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <DataTable
+          columns={deleteAccountColumns}
+          data={requests}
+          isLoading={isLoading}
+          onRowClick={(row) => console.log('Row Click', row.id)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages || 1,
+            totalItems: totalItems,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
+        />
       </div>
     </div>
   );

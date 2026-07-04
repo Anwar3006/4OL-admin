@@ -1,33 +1,76 @@
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
+"use client";
+
+import React from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { subscriptionColumns } from "@/components/Data-Table/columns/subscriptionColumns";
 import { useMarketingSubscriptions } from "@/hooks/supabase-calls/useMarketingSubscriptions";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Eye } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function SubscriptionsTab() {
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "subs_page" });
   const { data, isLoading } = useMarketingSubscriptions();
   const subs = data || [];
 
-  const columns: Column<any>[] = [
-    { key: "name", label: "User", render: (val) => <span className="font-bold text-slate-800">{val}</span> },
-    { key: "tier_type", label: "Plan", render: (val) => <span className="badge badge-purple">{val}</span> },
-    { key: "price", label: "Monthly Price", render: (val) => <span className="font-black">₵{val}</span> },
-    { key: "payment_status", label: "Status", render: (val) => <span className={cn("badge", val === 'active' ? 'badge-green' : 'badge-amber')}>{val}</span> },
-    { key: "created_at", label: "Signed Up", render: (val) => <span className="text-[10px] font-bold text-slate-400">{format(new Date(val), "MMM dd, yyyy")}</span> },
-  ];
+  const paginatedData = subs.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(subs.length / pageSize);
 
-  const rowActions: RowAction<any>[] = [
-    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: (row) => console.log('View', row.id) },
-  ];
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => data.plan_name || data.name,
+      subtitle: (data) => data.billing_cycle || data.tier_type,
+      badge: (data) => (
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+          data.status === 'active' || data.payment_status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+        }`}>
+          {data.status || data.payment_status || 'active'}
+        </span>
+      ),
+    },
+    fields: [
+      {
+        id: "price",
+        label: "Price",
+        render: (data) => `${data.price}`,
+      }
+    ],
+    actions: [
+      { label: "View", onClick: (data) => console.log('View', data.id) },
+    ]
+  };
 
   return (
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
-        <input className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none" placeholder="🔍 Search subscribers..." />
-        <button className="btn btn-secondary btn-sm">📥 Export List</button>
+        <input
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search subscribers..."
+        />
+        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+          📥 Export List
+        </button>
       </div>
-      <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={subs} selectable rowActions={rowActions} isLoading={isLoading} />
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <DataTable
+          columns={subscriptionColumns}
+          data={paginatedData}
+          isLoading={isLoading}
+          onRowClick={(row) => console.log('Row Click', row.id)}
+          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages || 1,
+            totalItems: subs.length,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
+        />
       </div>
     </div>
   );

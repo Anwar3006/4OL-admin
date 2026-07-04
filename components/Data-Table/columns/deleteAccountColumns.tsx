@@ -1,192 +1,96 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { DeleteAccountRequest, DeleteRequestStatus } from "@/hooks/supabase-calls/useDeleteAccountRequests";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, XCircle, Clock, Eye, Trash2, FileText, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CheckCircle2, XCircle, Clock, ChevronDown, Eye } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-// ─── Status badge ──────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<
-  DeleteRequestStatus,
-  { label: string; variant: "default" | "destructive" | "outline" | "secondary"; icon: React.FC<any> }
-> = {
-  pending: {
-    label: "Pending",
-    variant: "outline",
-    icon: ({ className }: any) => <Clock className={`h-3 w-3 text-amber-500 ${className}`} />,
-  },
-  approved: {
-    label: "Approved",
-    variant: "destructive",
-    icon: ({ className }: any) => <CheckCircle2 className={`h-3 w-3 ${className}`} />,
-  },
-  rejected: {
-    label: "Rejected",
-    variant: "secondary",
-    icon: ({ className }: any) => <XCircle className={`h-3 w-3 ${className}`} />,
-  },
-};
-
-function StatusBadge({ status }: { status: DeleteRequestStatus }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
-  const Icon = cfg.icon;
-  return (
-    <Badge
-      variant={cfg.variant}
-      className={
-        status === "pending"
-          ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800"
-          : status === "approved"
-          ? "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400"
-          : "text-slate-500 border-slate-200 bg-slate-50"
-      }
-    >
-      <Icon className="mr-1" />
-      {cfg.label}
-    </Badge>
-  );
-}
-
-// ─── Column factory ──────────────────────────────────────────────────────────
-
-interface DeleteAccountColumnsProps {
-  onView: (row: DeleteAccountRequest) => void;
-  onStatusChange: (requestId: string, userId: string, newStatus: DeleteRequestStatus) => void;
-  isSuperAdmin?: boolean;
-}
-
-export const createDeleteAccountColumns = ({
-  onView,
-  onStatusChange,
-  isSuperAdmin = false,
-}: DeleteAccountColumnsProps): ColumnDef<DeleteAccountRequest>[] => [
+export const deleteAccountColumns: ColumnDef<any>[] = [
   {
-    accessorKey: "first_name",
-    header: () => <div className="font-semibold">Name</div>,
+    accessorKey: "user",
+    header: "User Request",
     cell: ({ row }) => (
-      <div className="min-w-[140px]">
-        <p className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-          {row.original.first_name} {row.original.last_name}
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5">{row.original.sex ?? "—"}</p>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 border border-red-100">
+          <User className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+            {row.original.first_name} {row.original.last_name}
+          </div>
+          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+            {row.original.email}
+          </div>
+        </div>
       </div>
     ),
   },
   {
-    accessorKey: "email",
-    header: () => <div className="font-semibold">Email</div>,
-    cell: ({ row }) => (
-      <span className="text-sm text-slate-700 dark:text-slate-300 min-w-[180px] block">
-        {row.original.email}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "phone_number",
-    header: () => <div className="font-semibold hidden md:block">Phone</div>,
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground hidden md:block min-w-[120px]">
-        {row.original.phone_number ?? "—"}
-      </span>
-    ),
-  },
-  {
     accessorKey: "reason",
-    header: () => <div className="font-semibold hidden lg:block">Reason</div>,
+    header: "Reason",
     cell: ({ row }) => (
-      <p
-        className="text-sm text-muted-foreground hidden lg:block max-w-[220px] truncate"
-        title={row.original.reason ?? ""}
-      >
-        {row.original.reason ?? <span className="italic">Not provided</span>}
-      </p>
-    ),
-  },
-  {
-    accessorKey: "created_at",
-    header: () => <div className="font-semibold hidden sm:block">Submitted</div>,
-    cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground hidden sm:block min-w-[100px]">
-        {format(new Date(row.original.created_at), "MMM d, yyyy")}
-      </span>
+      <div className="max-w-[200px]">
+        <p className="text-[11px] font-black text-slate-600 uppercase tracking-tight leading-tight truncate">
+          {row.original.reason || "Privacy Concerns"}
+        </p>
+      </div>
     ),
   },
   {
     accessorKey: "status",
-    header: () => <div className="font-semibold">Status</div>,
-    cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status || 'pending';
+      return (
+        <span className={cn(
+          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+          status === 'approved'
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            : status === 'pending'
+            ? "bg-amber-50 text-amber-700 border-amber-100"
+            : "bg-red-50 text-red-700 border-red-100"
+        )}>
+          {status === 'pending' ? <Clock className="h-3 w-3 mr-1" /> : null}
+          {status}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: "Submitted",
+    cell: ({ row }) => (
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+        {format(new Date(row.original.created_at), "MMM dd, yyyy")}
+      </span>
+    ),
   },
   {
     id: "actions",
-    header: () => <div className="font-semibold text-right">Actions</div>,
-    cell: ({ row }) => {
-      const req = row.original;
-      return (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(req);
-            }}
-            title="View user"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-
-          {isSuperAdmin && req.status === "pending" && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1 text-xs font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Update <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 gap-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStatusChange(req.id, req.user_id, "approved");
-                  }}
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Approve
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-slate-600 focus:bg-slate-50 gap-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStatusChange(req.id, req.user_id, "rejected");
-                  }}
-                >
-                  <XCircle className="h-3.5 w-3.5" />
-                  Reject
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* Non-super-admin read-only status */}
-          {!isSuperAdmin && req.status !== "pending" && (
-            <StatusBadge status={req.status} />
-          )}
-        </div>
-      );
-    },
+    header: "",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <FileText className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    ),
   },
 ];

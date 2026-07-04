@@ -1,101 +1,83 @@
 "use client";
 
 import React, { useState } from "react";
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
-import { Eye, Flag, Trash2 } from "lucide-react";
-import { useDebounce } from "@/hooks/use-debounce";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { reviewColumns } from "@/components/Data-Table/columns/reviewColumns";
 import { useFacilityRatingsList } from "@/hooks/supabase-calls/useReviews";
-
-export interface ReviewRow {
-  id: string;
-  user_profiles?: { name: string; email?: string };
-  facility_profile?: { facility_name: string };
-  rating: number;
-  comment_text: string;
-  status?: "pending" | "approved" | "rejected" | string;
-  created_at: string;
-  [key: string]: any;
-}
-
-const STATUS_BADGE: Record<string, { label: string; className: string }> = {
-  approved: { label: "✅ Approved", className: "badge badge-green" },
-  pending: { label: "⏳ Pending", className: "badge badge-amber" },
-  rejected: { label: "🚩 Flagged", className: "badge badge-red" },
-};
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
+import { Star } from "lucide-react";
 
 interface ReviewsDataTabProps {
-  /** Filter applied server-side; omit to show all statuses ("All Reviews" tab) */
   status?: "pending" | "approved" | "rejected";
 }
 
-const PAGE_SIZE = 10;
-
 export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
-  const [pageIndex, setPageIndex] = useState(1);
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: `reviews_${status || 'all'}_page` });
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
 
   const { data, isLoading } = useFacilityRatingsList({
-    pageIndex,
-    pageSize: PAGE_SIZE,
-    search: debouncedSearch,
+    pageIndex: page,
+    pageSize: pageSize,
+    search: search,
     status,
   });
 
-  const rows = (data?.ratings || []) as ReviewRow[];
+  const rows = (data?.ratings || []) as any[];
   const totalCount = data?.count || 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPageIndex(1); // reset to first page on new search
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => data.user_profiles?.name || "Anonymous",
+      subtitle: (data) => data.facility_profile?.facility_name || "N/A",
+      badge: (data) => (
+        <span className="flex items-center gap-1 text-[10px] font-black text-amber-500">
+          {data.rating} <Star className="h-3 w-3 fill-amber-500" />
+        </span>
+      ),
+    },
+    fields: [
+      { id: "comment", render: (data) => data.comment_text, className: "italic text-[11px]" },
+    ],
+    actions: [
+      { label: "View Details", onClick: (data) => console.log('View', data.id) },
+    ]
   };
-
-  const columns: Column<ReviewRow>[] = [
-    { key: "reviewer", label: "Reviewer", render: (val, row) => (
-        <div><div className="font-bold text-slate-800">{row.user_profiles?.name || "Anonymous"}</div><div className="text-[10px] text-slate-400">ID: {row.id}</div></div>
-    )},
-    { key: "target", label: "Target", render: (val, row) => (
-        <div><div className="font-bold text-slate-800">{row.facility_profile?.facility_name || "N/A"}</div></div>
-    )},
-    { key: "rating", label: "Rating", render: (val, row) => <span className="text-ek-gold font-bold">{row.rating} ⭐</span> },
-    { key: "comment_text", label: "Review Excerpt", render: (val, row) => <div className="text-[11px] text-slate-600 max-w-[200px] truncate">{row.comment_text}</div> },
-    { key: "created_at", label: "Date", render: (val, row) => <span className="text-[10px] font-bold text-slate-400">{new Date(row.created_at).toLocaleDateString()}</span> },
-    { key: "status", label: "Status", render: (val, row) => {
-        const badge = STATUS_BADGE[row.status || "approved"] || STATUS_BADGE.approved;
-        return <span className={badge.className}>{badge.label}</span>;
-    }},
-  ];
-
-  const rowActions: RowAction<ReviewRow>[] = [
-    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: () => {} },
-    { label: "Flag", icon: <Flag className="w-4 h-4" />, onClick: () => {} },
-    { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => {} },
-  ];
 
   return (
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input 
-            className="flex-1 min-w-[240px] h-8 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all" 
-            placeholder="🔍 Search by reviewer, facility, content..." 
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search reviews..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
-        <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"><option>All Ratings</option></select>
-        <button className="btn btn-secondary btn-sm">📥 Export</button>
+        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+          📥 Export Data
+        </button>
       </div>
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <DataTable
-          columns={columns}
+          columns={reviewColumns}
           data={rows}
-          selectable
-          rowActions={rowActions}
           isLoading={isLoading}
-          pagination
-          externalPage={pageIndex}
-          externalTotalPages={totalPages}
-          onPageChange={setPageIndex}
+          onRowClick={(row) => console.log('Row Click', row.id)}
+          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalCount,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
         />
       </div>
     </div>

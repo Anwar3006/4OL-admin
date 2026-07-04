@@ -1,13 +1,6 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -43,289 +36,180 @@ import {
   useDeleteMarketingProfile,
 } from "@/hooks/supabase-calls/useMarketing";
 import { useAddMarketingDialog } from "@/stores/dialog-store";
+import { toast } from "sonner";
 
 export function ViewMarketingDialog() {
   const { isOpen, entityId, close } = useViewMarketingDialog();
 
   const { data: campaign, isLoading } = useMarketingProfile({
-    id: entityId!,
-    enabled: isOpen && !!entityId,
+    id: entityId || "",
   });
 
-  const { mutateAsync: updateCampaign } = useUpdateMarketingProfile();
-  const { mutateAsync: deleteCampaign } = useDeleteMarketingProfile();
-  const { open: openAddMarketing } = useAddMarketingDialog();
+  const { mutate: updateCampaign } = useUpdateMarketingProfile();
+  const { mutate: deleteCampaign } = useDeleteMarketingProfile();
+  const { open: openEdit } = useAddMarketingDialog();
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const getImageUrl = (img: string) =>
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${img}`;
-
-  if (!isOpen) return null;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const handleEdit = () => {
+    if (campaign) {
+      openEdit(campaign);
+      close();
+    }
   };
 
-  const toggleCampaignStatus = async () => {
-    if (!campaign) return;
-
-    const now = new Date();
-    const start = new Date(campaign.startDate);
-
-    let newStatus = campaign.status;
-
-    if (campaign.status === "draft" || campaign.status === "paused") {
-      // Logic for "Start"
-      if (start <= now) {
-        newStatus = "live";
-      } else {
-        newStatus = "scheduled";
-      }
-    } else if (campaign.status === "live" || campaign.status === "scheduled") {
-      // Logic for "Pause"
-      newStatus = "paused";
-    }
-
-    if (newStatus !== campaign.status) {
-      await updateCampaign({
-        data: { status: newStatus },
-        id: campaign.id,
+  const handleDelete = () => {
+    if (entityId) {
+      deleteCampaign(entityId, {
+        onSuccess: () => {
+          setIsDeleteDialogOpen(false);
+          close();
+          toast.success("Campaign deleted successfully");
+        },
       });
     }
   };
 
-  const handleEdit = () => {
-    if (!campaign) return;
-    openAddMarketing(campaign);
-    close();
+  const toggleCampaignStatus = () => {
+    if (!campaign || !entityId) return;
+
+    let newStatus = campaign.status;
+    if (campaign.status === "live") newStatus = "paused";
+    else if (campaign.status === "paused") newStatus = "live";
+    else if (campaign.status === "draft") newStatus = "live";
+
+    updateCampaign(
+      { id: entityId, updates: { status: newStatus } },
+      {
+        onSuccess: () => {
+          toast.success(`Campaign ${newStatus} successfully`);
+        },
+      }
+    );
   };
 
-  const handleDelete = async () => {
-    if (!campaign) return;
-    try {
-      await deleteCampaign({ id: campaign.id, imageUrl: campaign.imageUrl });
-      setIsDeleteDialogOpen(false);
-      close();
-    } catch (error) {
-      console.error("Delete error:", error);
-    }
+  const getImageUrl = (path: string) => {
+    if (path.startsWith("http")) return path;
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/marketing-media/${path}`;
+  };
+
+  const formatDate = (date: string | null) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
-      <SheetContent className="w-full sm:max-w-2xl xl:max-w-2/3 p-0 flex flex-col h-full">
-        <SheetHeader>
-          <VisuallyHidden.Root>
-            <SheetTitle>Campaign Details for {campaign?.headline}</SheetTitle>
-          </VisuallyHidden.Root>
-        </SheetHeader>
-        {isLoading && (
-          <div className="p-6">
+      <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          {isLoading ? (
             <CampaignSkeleton />
-          </div>
-        )}{" "}
-        {campaign ? (
-          <>
-            {/* Responsive Header Padding */}
-            <SheetHeader className="p-4 md:p-6 border-b bg-muted/20">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <SheetTitle className="text-xl md:text-2xl font-bold leading-tight">
-                    {campaign.headline}
-                  </SheetTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="capitalize px-2 py-0 text-[10px] md:text-xs"
-                    >
-                      {campaign.marketingType.replace("_", " ")}
-                    </Badge>
-                    <SheetDescription className="text-xs md:text-sm font-medium">
-                      Campaign Review
-                    </SheetDescription>
+          ) : campaign ? (
+            <div className="space-y-6">
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl font-bold leading-none mb-1">
+                      {campaign.headline}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                      {campaign.marketingType} • ID: {campaign.id.substring(0, 8)}
+                    </DialogDescription>
                   </div>
                 </div>
-                <div className="self-start sm:self-center">
-                  {
-                    MarketingStatusMap[
-                      campaign.status as keyof typeof MarketingStatusMap
-                    ]
-                  }
-                </div>
-              </div>
-            </SheetHeader>
+              </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4 md:p-6 space-y-8">
-                {/* 1. Quick Actions - Fluid Layout */}
-                <div className="grid grid-cols-3 sm:flex gap-2">
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${
+                      campaign.status === "live"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                        : "bg-amber-50 text-amber-700 border-amber-100"
+                    }`}
+                  >
+                    {MarketingStatusMap[campaign.status]}
+                  </Badge>
+                  <Separator orientation="vertical" className="h-4" />
+                  <div className="text-[11px] font-bold text-muted-foreground flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {formatDate(campaign.startDate)} — {formatDate(campaign.endDate)}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 text-xs md:text-sm h-9 md:h-10 hover:cursor-pointer"
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[10px]"
                     onClick={handleEdit}
                   >
-                    <Edit className="h-4 w-4 mr-1.5 md:mr-2" />
-                    Edit
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Campaign
                   </Button>
                   <Button
                     variant="outline"
-                    className={
-                      "flex-1 text-xs md:text-sm h-9 md:h-10 hover:cursor-pointer" +
-                      (campaign.status === "draft"
-                        ? " bg-green-400 hover:bg-green-500"
-                        : "")
-                    }
-                    disabled={campaign.status === "ended"}
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[10px]"
                     onClick={toggleCampaignStatus}
                   >
-                    {campaign.status === "live" ||
-                    campaign.status === "scheduled" ? (
-                      <>
-                        <Pause className="h-4 w-4 mr-1.5 md:mr-2" /> Pause
-                      </>
-                    ) : campaign.status === "ended" ? (
-                      <div className="text-red-500 flex items-center">
-                        <Ban className="h-4 w-4 mr-1.5 md:mr-2" /> Ended
-                      </div>
+                    {campaign.status === "live" ? (
+                      <><Pause className="h-4 w-4 mr-2" /> Pause</>
                     ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-1.5 md:mr-2" />{" "}
-                        {campaign.status === "paused" ? "Resume" : "Start"}
-                      </>
+                      <><Play className="h-4 w-4 mr-2" /> Resume</>
                     )}
                   </Button>
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="h-9 w-9 md:h-10 md:w-10 shrink-0 hover:cursor-pointer"
+                    className="h-10 w-10 shrink-0"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
-                    <Trash2 className="h-4 w-4 stroke-white" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {/* 2. Visual Content Card */}
                 <Card className="overflow-hidden border-none bg-muted/30 shadow-none">
-                  {campaign.imageUrl.length > 0 ? (
+                  {campaign.imageUrl ? (
                     <div className="relative aspect-video w-full bg-black/5">
-                      {isMediaVideo(campaign.imageUrl) ? (
-                        <video
-                          src={getImageUrl(campaign.imageUrl)}
-                          controls
-                          className="w-full h-full object-cover transition-opacity duration-300"
-                        />
-                      ) : (
-                        <img
-                          src={getImageUrl(campaign.imageUrl)}
-                          alt={campaign.headline}
-                          className="w-full h-full object-cover transition-opacity duration-300"
-                        />
-                      )}
+                      <img
+                        src={getImageUrl(campaign.imageUrl)}
+                        alt={campaign.headline}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ) : (
                     <div className="aspect-video flex flex-col items-center justify-center bg-muted">
                       <Building2 className="h-10 w-10 text-muted-foreground/40" />
-                      <span className="text-xs text-muted-foreground mt-2">
-                        No Image Provided
-                      </span>
+                      <span className="text-xs text-muted-foreground mt-2">No Image Provided</span>
                     </div>
                   )}
 
-                  <div className="p-4 md:p-5 space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
                       <Info className="h-4 w-4" />
                       About this Campaign
                     </div>
-                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                      {campaign.description ||
-                        "No description provided for this campaign."}
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {campaign.description || "No description provided."}
                     </p>
-
-                    {campaign.links && (
-                      <div className="pt-4 border-t space-y-3">
-                        <label className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                          Engagement Links
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(
-                            campaign.links as Record<string, string>,
-                          ).map(([key, value]) => (
-                            <Button
-                              key={key}
-                              variant="secondary"
-                              size="sm"
-                              className="h-8 text-xs rounded-full hover:cursor-pointer"
-                            >
-                              <Globe className="h-3 w-3 mr-1.5" />
-                              {/* <span className="capitalize mr-1">{key}:</span> */}
-                              <span className="max-w-30 truncate">{value}</span>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </Card>
-
-                {/* 3. Metadata Grid */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Separator className="flex-1" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Schedule & ID
-                    </span>
-                    <Separator className="flex-1" />
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <DetailBlock
-                      label="Start Date"
-                      value={formatDate(campaign.startDate)}
-                      icon={Calendar}
-                    />
-                    <DetailBlock
-                      label="End Date"
-                      value={formatDate(campaign.endDate)}
-                      icon={Calendar}
-                    />
-                    <DetailBlock
-                      label="Organization"
-                      value={campaign.organization || "N/A"}
-                      icon={Building2}
-                    />
-                    {/* <DetailBlock
-                      label="Created"
-                      value={new Date(campaign.created_at).toLocaleDateString()}
-                      icon={FileText}
-                    /> TODO: add createdAt field to campaign output */}
-                  </div>
-                </div>
-
-                {/* <div className="rounded-lg bg-orange-50 p-3 border border-orange-100 flex items-start gap-3">
-                  <Info className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
-                  <div className="text-[11px] text-orange-800 leading-tight">
-                    Internal ID:{" "}
-                    <span className="font-mono">{campaign.id}</span>
-                    <br />
-                    This campaign is currently visible to users in the
-                    healthcare registry.
-                  </div>
-                </div> */}
               </div>
             </div>
-          </>
-        ) : (
-          <EmptyState />
-        )}
-      </SheetContent>
-    </Sheet>
+          ) : (
+            <EmptyState />
+          )}
+        </DialogContent>
+      </Dialog>
 
-    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -333,23 +217,15 @@ export function ViewMarketingDialog() {
               Delete Campaign
             </DialogTitle>
             <DialogDescription className="py-3">
-              Are you sure you want to delete <span className="font-semibold text-black">"{campaign?.headline}"</span>? This action will permanently remove the campaign and its media from our records and storage.
+              Are you sure you want to delete <span className="font-semibold text-black">"{campaign?.headline}"</span>? This action is permanent.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-0 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="flex-1 sm:flex-none hover:cursor-pointer"
-            >
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="flex-1">
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              className="flex-1 sm:flex-none hover:cursor-pointer text-white"
-            >
-              Delete Campaign
+            <Button variant="destructive" onClick={handleDelete} className="flex-1">
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -358,35 +234,15 @@ export function ViewMarketingDialog() {
   );
 }
 
-// Reusable Detail Block for Clean Grid
-function DetailBlock({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: any;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <p className="text-[10px] md:text-xs font-medium text-muted-foreground">
-        {label}
-      </p>
-      <div className="flex items-center gap-1.5 text-xs md:text-sm font-semibold">
-        <Icon className="h-3.5 w-3.5 text-primary/70" />
-        <span className="truncate">{value}</span>
-      </div>
-    </div>
-  );
-}
-
 function CampaignSkeleton() {
   return (
-    <div className="space-y-8 animate-pulse">
-      <div className="space-y-3">
-        <Skeleton className="h-8 w-3/4" />
-        <Skeleton className="h-4 w-1/4" />
+    <div className="space-y-6 animate-pulse">
+      <div className="flex gap-3">
+        <Skeleton className="h-12 w-12 rounded-xl" />
+        <div className="space-y-2 flex-1">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-1/4" />
+        </div>
       </div>
       <div className="flex gap-2">
         <Skeleton className="h-10 flex-1" />
@@ -394,24 +250,16 @@ function CampaignSkeleton() {
         <Skeleton className="h-10 w-10" />
       </div>
       <Skeleton className="aspect-video w-full rounded-xl" />
-      <div className="grid grid-cols-2 gap-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-      </div>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center h-100 text-center p-6">
-      <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4">
-        <FileText className="h-8 w-8 text-muted-foreground/50" />
-      </div>
-      <h3 className="text-lg font-semibold">Campaign not found</h3>
-      <p className="text-sm text-muted-foreground max-w-62.5">
-        We couldn't retrieve the details. It may have been deleted or moved.
-      </p>
+    <div className="flex flex-col items-center justify-center h-64 text-center">
+      <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
+      <h3 className="text-lg font-semibold">Not found</h3>
+      <p className="text-sm text-muted-foreground">The requested campaign could not be found.</p>
     </div>
   );
 }

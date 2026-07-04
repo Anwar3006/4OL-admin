@@ -1,83 +1,76 @@
+"use client";
+
 import React from "react";
-import { MoreHorizontal, Pencil, Eye, LayoutPanelLeft, Activity, Trash2, CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { adminColumns } from "@/components/Data-Table/columns/adminColumns";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
-import { format } from "date-fns";
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function AllAdminsTab() {
-  const { data, isLoading } = useUsers({ admin: true });
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "admins_page" });
+  const { data, isLoading } = useUsers({ admin: true, page, limit: pageSize });
+
   const admins = data?.users || [];
+  const totalItems = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => data.name,
+      subtitle: (data) => data.email,
+      badge: (data) => (
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+          data.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
+        }`}>
+          {data.status || 'active'}
+        </span>
+      ),
+    },
+    fields: [
+      { id: "role", label: "Role", render: (data) => data.role },
+      { id: "mfa", label: "MFA", render: (data) => (data.mfa_enabled ? '✅ ON' : '❌ OFF') },
+    ],
+    actions: [
+      { label: "View Details", onClick: (data) => console.log('View', data.user_id) },
+    ]
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
-        <input className="flex-1 min-w-[200px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none" placeholder="🔍 Search admins by name, email, role..." />
-        <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"><option>All Roles</option></select>
-        <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"><option>All Status</option></select>
-        <button className="btn btn-secondary btn-sm">📥 Export CSV</button>
+        <input
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search admins..."
+        />
+        <select className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20">
+          <option>All Roles</option>
+        </select>
+        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+          📥 Export CSV
+        </button>
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="w-10"><input type="checkbox" /></th>
-                <th>Admin</th>
-                <th>Role</th>
-                <th>MFA</th>
-                <th>IP Address</th>
-                <th>Joined</th>
-                <th>Status</th>
-                <th className="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-4">Loading admins...</td>
-                </tr>
-              ) : (
-                admins.map((adm, i) => (
-                  <tr key={i}>
-                    <td><input type="checkbox" /></td>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs">
-                          {adm.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800">{adm.name}</div>
-                          <div className="text-[10px] text-slate-400">{adm.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`badge ${adm.role === 'super_admin' ? 'badge-red' : adm.role === 'admin' ? 'badge-purple' : 'bg-slate-100 text-slate-600'}`}>
-                        {adm.role}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`text-[10px] font-extrabold ${(adm as any).mfa_enabled ? 'text-ek-green-dark' : 'text-red-500'}`}>
-                        {(adm as any).mfa_enabled ? '✅ ON' : '❌ OFF'}
-                      </span>
-                    </td>
-                    <td className="font-mono text-[10px]">{(adm as any).whitelisted_ips?.join(', ') || 'N/A'}</td>
-                    <td className="text-[10px] text-slate-500">{format(new Date(adm.created_at), "MMM dd, yyyy")}</td>
-                    <td><span className={`badge ${adm.status === 'active' ? 'badge-green' : 'badge-secondary'}`}>{adm.status}</span></td>
-                    <td>
-                      <div className="flex justify-end gap-1">
-                        <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors"><Eye className="w-4 h-4" /></button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-ek-blue transition-colors"><Pencil className="w-4 h-4" /></button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-ek-red transition-colors"><Trash2 className="w-4 h-4" /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <DataTable
+          columns={adminColumns}
+          data={admins}
+          isLoading={isLoading}
+          onRowClick={(row) => console.log('Row Click', row.user_id)}
+          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages || 1,
+            totalItems: totalItems,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
+        />
       </div>
     </div>
   );

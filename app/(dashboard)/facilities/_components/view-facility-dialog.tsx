@@ -12,15 +12,14 @@ import {
   CheckCircle2,
   AlertCircle,
   PhoneCall,
-  MailboxIcon,
   Loader2,
 } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,438 +48,211 @@ import { FacilityRatingSection } from "./facility-rating";
 import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
 import { GalleryModal } from "@/components/GalleryModal";
 
-export function FacilityViewDialog() {
-  const viewDialog = useViewFacilityDialog();
-  const addDialog = useAddFacilityDialog();
-  const viewGallery = useGalleryModal();
+export default function FacilityViewDialog() {
+  const { isOpen, entityId, close } = useViewFacilityDialog();
+  const { open: openEdit } = useAddFacilityDialog();
+  const { open: openGallery } = useGalleryModal();
+  const { user } = useSupabaseSession();
 
-  const { data: session } = useSupabaseSession();
+  const { data: facility, isLoading } = useFacilityProfile(entityId || "");
+  const { mutate: approve, isPending: isApproving } = useApproveFacility();
+  const { mutate: reject, isPending: isRejecting } = useRejectFacility();
+  const { data: auditData } = useAdminFacilityAudit(entityId || "");
 
-  const { data: facilityData, isLoading: isFacilityLoading } =
-    useFacilityProfile({
-      id: viewDialog.entityId!,
-      enabled: !!viewDialog.entityId,
-    });
+  const canManage = useMemo(() => {
+    return user?.role === "super_admin" || user?.role === "admin";
+  }, [user]);
 
-  const getImageUrl = (img: string) =>
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${img}`;
-
-  const imageUrls = useMemo(() => {
-    return facilityData?.media_urls.map(getImageUrl);
-  }, [facilityData]);
-
-  const { mutateAsync: approveFacilityMutation, isPending: isApprovePending } =
-    useApproveFacility();
-
-  const { mutateAsync: rejectFacilityMutation, isPending: isRejectPending } =
-    useRejectFacility();
-
-  const { data: adminReviews } = useAdminFacilityAudit({
-    facilityId: viewDialog.entityId as string,
-    adminId: session?.user.id as string,
-  });
-
-  const isLoading = isFacilityLoading;
-
-  const facility = {
-    ...facilityData,
-    region: facilityData?.region
-      ?.split(" ")
-      .map(toUppercaseFirstLetter)
-      .join(" ") as TFacilityProfileOutput["region"],
+  const getImageUrl = (path: string) => {
+    if (!path) return "/placeholder.png";
+    if (path.startsWith("http")) return path;
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/facility-media/${path}`;
   };
 
-  //   Approve Registered Facility
-  const handleApproval = async () => {
-    try {
-      await approveFacilityMutation({
-        adminId: session?.user.id as string,
-        id: facility.id as string,
-        featured_image_url: facility.featured_image_url as string,
-        media_urls: facility.media_urls as string[],
-      });
-    } catch (error) {
-      console.error("Error approving facility: ", error);
-      return;
-    } finally {
-      viewDialog.close();
-    }
-  };
-  const handleRejection = async () => {
-    try {
-      await rejectFacilityMutation({
-        adminId: session?.user.id as string,
-        id: facility.id as string,
-        featured_image_url: facility.featured_image_url as string,
-        media_urls: facility.media_urls as string[],
-      });
-    } catch (error) {
-      console.error("Error rejecting facility: ", error);
-      return;
-    } finally {
-      viewDialog.close();
-    }
-  };
-  //   Edit Registered Facility
-  const handleEdit = () => {
-    viewDialog.close();
-    addDialog.open(facilityData);
-  };
+  if (!isOpen) return null;
 
   return (
-    <>
-      <Sheet
-        open={viewDialog.isOpen}
-        onOpenChange={(open) => !open && viewDialog.close()}
-      >
-        <SheetContent className="w-full sm:max-w-2xl xl:max-w-2/3 p-0 flex flex-col overflow-x-hidden overflow-y-scroll border-l shadow-2xl">
-          <SheetHeader>
-            <VisuallyHidden.Root>
-              <SheetTitle>
-                Facility Details for {facility.facility_name}
-              </SheetTitle>
-            </VisuallyHidden.Root>
-          </SheetHeader>
-          {(() => {
-            if (isLoading) {
-              return (
-                <div className="p-10 animate-pulse space-y-4">
-                  <div className="h-64 bg-muted rounded-xl" />
-                  <div className="h-10 w-1/2 bg-muted rounded" />
-                  <div className="h-4 w-1/4 bg-muted rounded" />
-                </div>
-              );
-            }
+    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-6 border-b bg-slate-50/50">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl font-bold truncate">
+                {facility?.facility_name || "Facility Details"}
+              </DialogTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-white">
+                  {facility?.facility_type?.replace(/_/g, " ")}
+                </Badge>
+                <Separator orientation="vertical" className="h-3" />
+                <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                  <MapPin className="h-3 w-3" />
+                  {facility?.region}, {facility?.district}
+                </span>
+              </div>
+            </div>
+            {facility?.status && (
+              <Badge
+                className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
+                  facility.status === "active"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}
+              >
+                {facility.status}
+              </Badge>
+            )}
+          </div>
+        </DialogHeader>
 
-            if (facility) {
-              return (
-                <>
-                  <ScrollArea className="flex-1">
-                    {/* 1. Immersive Hero Gallery */}
-                    <div className="relative group">
-                      <div
-                        className={`grid gap-1 p-1 bg-background ${
-                          imageUrls && imageUrls.length > 1
-                            ? "grid-cols-4"
-                            : "grid-cols-1"
-                        }`}
-                      >
-                        {/* Main Image */}
-                        <div
-                          className={
-                            imageUrls && imageUrls.length > 1
-                              ? "col-span-3"
-                              : "col-span-4"
-                          }
-                        >
-                          <AspectRatio
-                            ratio={16 / 9}
-                            className="overflow-hidden rounded-l-lg"
-                          >
-                            {isMediaVideo(facilityData?.media_urls[0]) ? (
-                              <video
-                                src={getImageUrl(
-                                  facilityData?.media_urls[0] ?? "",
-                                )}
-                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                                muted
-                                autoPlay
-                                loop
-                              />
-                            ) : (
-                              <img
-                                src={getImageUrl(
-                                  facilityData?.media_urls[0] ?? "",
-                                )}
-                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                              />
-                            )}
-                          </AspectRatio>
-                        </div>
-                        {/* Thumbnails */}
-
-                        {imageUrls && imageUrls.length > 1 && (
-                          <div className="col-span-1 flex flex-col gap-1">
-                            {imageUrls?.slice(1, 3).map((img, i) => (
-                              <AspectRatio
-                                key={i}
-                                ratio={4 / 3}
-                                className="overflow-hidden rounded-tr-lg"
-                              >
-                                {isMediaVideo(img) ? (
-                                  <video
-                                    src={img}
-                                    className="object-cover w-full h-full"
-                                    muted
-                                    autoPlay
-                                    loop
-                                  />
-                                ) : (
-                                  <img
-                                    src={img}
-                                    className="object-cover w-full h-full"
-                                  />
-                                )}
-                              </AspectRatio>
-                            ))}
-
-                            <Button
-                              type="button"
-                              onClick={() => viewGallery.open(facilityData)}
-                              className="flex-1 border-b-2 bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground cursor-pointer"
-                            >
-                              +{(imageUrls || [])?.length - 3} More
-                            </Button>
-                          </div>
-                        )}
+        <ScrollArea className="flex-1">
+          <div className="p-6 space-y-8">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+              </div>
+            ) : facility ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <section>
+                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                        <Info className="h-3.5 w-3.5" /> General Information
+                      </h3>
+                      <div className="grid grid-cols-1 gap-4">
+                        <InfoRow label="Email" value={facility.email} icon={Mail} />
+                        <InfoRow label="Phone" value={facility.contact_number} icon={Phone} />
+                        <InfoRow label="Digital Address" value={facility.digital_address} icon={MapPin} />
+                        <InfoRow label="Website" value={facility.website} icon={Globe} isLink />
                       </div>
-                    </div>
+                    </section>
 
-                    <div className="p-8 space-y-10">
-                      {/* 2. Primary Header & Status */}
-                      <header className="space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-wider">
-                              <Building2 className="w-4 h-4" />
-                              {facility.facility_type?.replaceAll("_", " ")}
-                            </div>
-                            <SheetTitle className="text-4xl font-black tracking-tight text-foreground">
-                              {facility.facility_name}
-                            </SheetTitle>
-                          </div>
-                          <Badge
-                            variant={
-                              facility.status === "active"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className="px-4 py-1 text-sm rounded-full"
-                          >
-                            {facility.status?.toUpperCase()}
-                          </Badge>
-                        </div>
+                    <Separator />
 
-                        <div className="flex flex-wrap items-center gap-6 text-muted-foreground text-sm">
-                          {/* <div className="flex items-center"> */}
-                          <span className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" /> {facility.area},{" "}
-                            {facility.region}
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <Globe className="w-4 h-4" /> {facility.country}
-                          </span>
-                          {/* </div> */}
-                          {facility.contact_number && (
-                            <span className="flex items-center gap-2">
-                              <PhoneCall className="w-4 h-4" />
-                              {facility.contact_number}
-                            </span>
-                          )}
-                          {facility.whatsapp_number && (
-                            <span className="flex items-center gap-2">
-                              <WhatsAppIcon className="w-4 h-4" />
-                              {facility.whatsapp_number}
-                            </span>
-                          )}
-                          {facility.email && (
-                            <span className="flex items-center gap-2">
-                              <MailboxIcon className="w-4 h-4" />
-                              {facility.email}
-                            </span>
-                          )}
-                        </div>
-                      </header>
+                    <section>
+                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+                        Business Hours
+                      </h3>
+                      <BusinessHoursDisplay hours={facility.business_hours} />
+                    </section>
+                  </div>
 
-                      <Separator className="bg-border/60" />
-
-                      {/* 3. The Details Bento Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <section className="space-y-4">
-                          <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
-                            Facility Amenities
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {(facility?.amenities as string[])?.map((a) => (
-                              <Badge
-                                key={a}
-                                variant="outline"
-                                className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 transition-colors"
-                              >
-                                <CheckCircle2 className="w-3 h-3 mr-1.5" /> {a}
-                              </Badge>
-                            ))}
-                          </div>
-                        </section>
-
-                        <section className="space-y-4">
-                          <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
-                            Facility Services
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {(facility?.services as string[])?.map((a) => (
-                              <Badge
-                                key={a}
-                                variant="outline"
-                                className="bg-gray-600 border-primary/20 text-white hover:bg-primary/10 transition-colors"
-                              >
-                                <CheckCircle2 className="w-3 h-3 mr-1.5" /> {a}
-                              </Badge>
-                            ))}
-                          </div>
-                        </section>
-
-                        <section className="space-y-4">
-                          <BusinessHoursDisplay
-                            businessHours={facility.business_hours as any}
-                          />
-                        </section>
+                  <div className="space-y-6">
+                    <section>
+                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Validation Details
+                      </h3>
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
+                        <InfoRow label="HEFRA ID" value={facility.hefra_id} icon={ShieldCheck} />
+                        <InfoRow label="HCP Name" value={facility.hcp_name} icon={User} />
+                        <InfoRow label="HCP License" value={facility.hcp_license_number} icon={FileText} />
                       </div>
+                    </section>
 
-                      {/* 4. Owner & Governance Section (High Contrast) */}
-                      <section className="bg-[#ebf9e6] border border-secondary p-6 rounded-2xl space-y-6">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-background rounded-lg shadow-sm">
-                            <ShieldCheck className="w-5 h-5 text-primary" />
-                          </div>
-                          <h3 className="font-bold text-lg">
-                            Ownership & Governance
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <DetailItem
-                            icon={User}
-                            label="Primary Contact"
-                            value={`${facility.first_name} ${facility.last_name}`}
-                            subValue={facility.position || "Administrator"}
-                          />
-                          <DetailItem
-                            icon={Mail}
-                            label="Official Correspondence"
-                            value={facility.owner_email}
-                          />
-                          <DetailItem
-                            icon={Phone}
-                            label="Direct Line"
-                            value={facility.person_contact_number}
-                          />
-                          <DetailItem
-                            icon={Calendar}
-                            label="Registration Date"
-                            value={new Date(
-                              facility.created_at!,
-                            ).toLocaleDateString(undefined, {
-                              dateStyle: "long",
-                            })}
-                          />
-                        </div>
-                      </section>
-
-                      <Separator className="bg-border/60" />
-
-                      <section className="space-y-6">
-                        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
-                          Review & Performance History
+                    {facility.facility_images?.length > 0 && (
+                      <section>
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+                          Gallery ({facility.facility_images.length})
                         </h3>
-                        <FacilityRatingSection
-                          facility={facility}
-                          adminId={session?.user.id as string}
-                          // reviews={adminReviews?.myReviews ?? []} // Fetch this with a useQuery
-                          auditData={adminReviews}
-                        />
-                      </section>
-
-                      {/* 5. Keywords / Tags Footer */}
-                      <footer className="pt-4 pb-10">
-                        <div className="flex flex-wrap gap-2 opacity-60 hover:opacity-100 transition-opacity">
-                          {(typeof facility.keywords === "string"
-                            ? (facility.keywords as string).split(",")
-                            : Array.isArray(facility.keywords)
-                              ? facility.keywords
-                              : []
-                          )
-                            .filter((k) => k && k.trim() !== "") // Remove empty strings
-                            .map((k: string) => (
-                              <span
-                                key={k}
-                                className="text-[10px] font-medium bg-gray-200 px-2 py-0.5 rounded"
-                              >
-                                #{k.trim()}
-                              </span>
-                            ))}
+                        <div className="grid grid-cols-3 gap-2">
+                          {facility.facility_images.slice(0, 3).map((img: string, i: number) => (
+                            <button
+                              key={i}
+                              className="aspect-square rounded-lg overflow-hidden border border-slate-200 hover:opacity-80 transition-opacity"
+                              onClick={() => openGallery(facility.facility_images, i)}
+                            >
+                              <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                            </button>
+                          ))}
                         </div>
-                      </footer>
-                    </div>
-                  </ScrollArea>
-
-                  {/* 6. Sticky Footer Actions */}
-                  {/* Sticky Footer Actions */}
-                  <div className="p-4 bg-background border-t flex gap-3">
-                    {facility.status === "pending" ? (
-                      <>
-                        <button
-                          onClick={handleApproval}
-                          disabled={isApprovePending}
-                          className="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center"
-                        >
-                          {isApprovePending ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            "Approve Registration"
-                          )}
-                        </button>
-                        <button
-                          onClick={handleRejection}
-                          disabled={isRejectPending}
-                          className="px-6 border border-destructive text-destructive font-bold rounded-xl hover:bg-destructive/10"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={handleEdit}
-                        className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl"
-                      >
-                        Edit Profile
-                      </button>
+                      </section>
                     )}
                   </div>
-                </>
-              );
-            }
+                </div>
 
-            return (
-              <div className="p-20 text-center space-y-4">
-                <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
-                <p className="text-muted-foreground">
-                  Facility profile could not be retrieved.
-                </p>
+                <Separator />
+
+                <FacilityRatingSection facilityId={facility.id} />
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <AlertCircle className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 font-medium">Facility not found</p>
               </div>
-            );
-          })()}
-        </SheetContent>
-      </Sheet>
-      <GalleryModal />
-    </>
+            )}
+          </div>
+        </ScrollArea>
+
+        {facility && canManage && (
+          <div className="p-6 border-t bg-slate-50/50 flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+              onClick={() => openEdit(facility)}
+            >
+              <Edit className="h-4 w-4 mr-2" /> Edit Facility
+            </Button>
+            {facility.status === "pending" && (
+              <>
+                <Button
+                  className="flex-1 h-11 font-black uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => approve(facility.id)}
+                  disabled={isApproving}
+                >
+                  {isApproving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve Facility"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+                  onClick={() => reject(facility.id)}
+                  disabled={isRejecting}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+        <GalleryModal />
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// Helper component for clean detail layouts
-function DetailItem({ icon: Icon, label, value, subValue }: any) {
+function InfoRow({ label, value, icon: Icon, isLink }: any) {
+  if (!value) return null;
   return (
-    <div className="flex items-start gap-3">
-      <Icon className="w-4 h-4 mt-1 text-muted-foreground/60" />
-      <div className="space-y-0.5">
-        <p className="text-[10px] font-bold uppercase text-muted-foreground/80 tracking-widest">
-          {label}
-        </p>
-        <p className="text-sm font-semibold text-foreground">{value}</p>
-        {subValue && (
-          <p className="text-xs text-muted-foreground">{subValue}</p>
+    <div className="space-y-1">
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+        {isLink ? (
+          <a href={value} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary hover:underline truncate">
+            {value}
+          </a>
+        ) : (
+          <span className="text-xs font-bold text-slate-700 truncate">{value}</span>
         )}
       </div>
     </div>
+  );
+}
+
+function Info({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function FileText({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
   );
 }

@@ -5,71 +5,67 @@ import { Button } from "@/components/ui/button";
 import { useAddMarketingDialog, useViewMarketingDialog } from "@/stores/dialog-store";
 import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
 import { MarketingStatusMap } from "@/constants/marketing.const";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
   {
-    accessorKey: "type",
-    header: () => <div className="font-semibold">Type</div>,
-    cell: ({ row }) => (
-      <div className="flex flex-col min-w-18">
-        <div className="font-medium text-sm">
-          {row.original.marketingType.toLocaleUpperCase()}
-        </div>
-        {/* Show headline on mobile as subtitle
-        <div className="text-xs text-muted-foreground md:hidden truncate">
-          {row.original.email}
-        </div> */}
-      </div>
-    ),
-  },
-  {
     accessorKey: "headline",
-    header: () => (
-      <div className="font-semibold hidden md:table-cell">Headline</div>
-    ),
+    header: "Campaign",
     cell: ({ row }) => (
-      <div className="hidden md:table-cell min-w-40">
-        <div className="flex items-center gap-2">
-          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm truncate">{row.original.headline}</span>
-        </div>
+      <div>
+        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight">{row.original.headline}</div>
+        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{row.original.marketingType || "Marketing"}</div>
       </div>
     ),
   },
   {
-    accessorKey: "organization",
-    header: () => (
-      <div className="font-semibold hidden lg:table-cell">Organization</div>
-    ),
+    accessorKey: "marketingType",
+    header: "Type",
     cell: ({ row }) => (
-      <div className="hidden lg:table-cell min-w-35">
-        <div className="flex items-center gap-2">
-          <BriefcaseBusiness className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm">{row.original.organization}</span>
-        </div>
-      </div>
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100">
+        {row.original.marketingType}
+      </span>
     ),
   },
   {
     accessorKey: "status",
-    header: () => <div className="font-semibold">Status</div>,
-    cell: ({ row }) => (
-      <div className="min-w-16">{MarketingStatusMap[row.original.status]}</div>
-    ),
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      return (
+        <span className={cn(
+          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+          status === 'live'
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            : "bg-amber-50 text-amber-700 border-amber-100"
+        )}>
+          {status}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "startDate",
-    header: () => <div className="font-semibold">Start Date</div>,
-    cell: ({ row }) => <div className="min-w-25">{row.original.startDate}</div>,
+    header: "Start Date",
+    cell: ({ row }) => (
+      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+        {format(new Date(row.original.startDate), "MMM dd, yyyy")}
+      </span>
+    ),
   },
   {
     accessorKey: "endDate",
-    header: () => <div className="font-semibold">End Date</div>,
-    cell: ({ row }) => <div className="min-w-25">{row.original.endDate}</div>,
+    header: "End Date",
+    cell: ({ row }) => (
+      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+        {format(new Date(row.original.endDate), "MMM dd, yyyy")}
+      </span>
+    ),
   },
   {
     id: "actions",
-    header: () => <div className="sr-only">Actions</div>,
+    header: "",
     cell: ({ row }) => {
       const marketing = row.original;
       const { open: openView } = useViewMarketingDialog();
@@ -80,7 +76,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
+            className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               openView(marketing.id);
@@ -91,7 +87,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               openEdit(marketing);
@@ -102,10 +98,10 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              // handle delete
+              // handle delete logic here if needed
             }}
           >
             <Trash2 className="h-4 w-4" />

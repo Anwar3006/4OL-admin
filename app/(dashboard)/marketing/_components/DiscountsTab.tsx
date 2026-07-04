@@ -1,35 +1,76 @@
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
+"use client";
+
+import React from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { discountColumns } from "@/components/Data-Table/columns/discountColumns";
 import { useMarketingDiscounts } from "@/hooks/supabase-calls/useMarketingDiscounts";
-import { format } from "date-fns";
-import { Eye, Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function DiscountsTab() {
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "discounts_page" });
   const { data, isLoading } = useMarketingDiscounts();
-  const codes = data || [];
+  const discounts = data || [];
 
-  const columns: Column<any>[] = [
-    { key: "code", label: "Promo Code", render: (val) => <span className="font-black text-ek-blue tracking-widest">{val}</span> },
-    { key: "name", label: "Description", render: (val) => <span className="text-[11px] text-slate-500 font-medium">{val}</span> },
-    { key: "discount_type", label: "Type", render: (val) => <span className="badge badge-secondary capitalize">{val}</span> },
-    { key: "discount_value", label: "Discount", render: (val) => <span className="font-black text-slate-700">{val}</span> },
-    { key: "is_active", label: "Status", render: (val) => <span className={cn("badge", val ? 'badge-green' : 'badge-red')}>✅ {val ? 'Active' : 'Inactive'}</span> },
-    { key: "valid_until", label: "Expiry", render: (val) => <span className="text-[10px] font-bold text-slate-400">{format(new Date(val), "MMM dd, yyyy")}</span> },
-  ];
+  const paginatedData = discounts.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(discounts.length / pageSize);
 
-  const rowActions: RowAction<any>[] = [
-    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: (row) => console.log('View', row.id) },
-    { label: "Edit", icon: <Pencil className="w-4 h-4" />, onClick: (row) => console.log('Edit', row.id) },
-  ];
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => data.code,
+      subtitle: (data) => data.description,
+      badge: (data) => (
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+          data.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
+        }`}>
+          {data.status || 'active'}
+        </span>
+      ),
+    },
+    fields: [
+      {
+        id: "value",
+        label: "Value",
+        render: (data) => `${data.discount_value}${data.discount_type === 'percentage' ? '%' : ' OFF'}`,
+      }
+    ],
+    actions: [
+      { label: "Edit", onClick: (data) => console.log('Edit', data.id) },
+    ]
+  };
 
   return (
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
-        <input className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none" placeholder="🔍 Search promo codes..." />
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">+ Create Code</button>
+        <input
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search promo codes..."
+        />
+        <button className="h-9 px-4 rounded-xl bg-slate-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-slate-800 transition-all">
+          + Create Code
+        </button>
       </div>
-      <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={codes} selectable rowActions={rowActions} isLoading={isLoading} />
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <DataTable
+          columns={discountColumns}
+          data={paginatedData}
+          isLoading={isLoading}
+          onRowClick={(row) => console.log('Row Click', row.id)}
+          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages || 1,
+            totalItems: discounts.length,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
+        />
       </div>
     </div>
   );

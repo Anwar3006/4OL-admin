@@ -1,52 +1,71 @@
-import React, { useState } from "react";
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
-import { Trash2, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useDeleteAccountRequests, useUpdateDeleteRequestStatus, DeleteAccountRequest } from "@/hooks/supabase-calls/useDeleteAccountRequests";
-import { format } from "date-fns";
+"use client";
+
+import React from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { deleteAccountColumns } from "@/components/Data-Table/columns/deleteAccountColumns";
+import { useDeleteAccountRequests } from "@/hooks/supabase-calls/useDeleteAccountRequests";
+import { usePagination } from "@/hooks/use-pagination";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function DeleteRequestsTab() {
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useDeleteAccountRequests({ page, limit: 10, status: 'pending' });
-  const updateStatus = useUpdateDeleteRequestStatus();
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "user_delete_req_page" });
+  const { data, isLoading } = useDeleteAccountRequests({ page, limit: pageSize, status: 'pending' });
 
   const requests = data?.requests || [];
+  const totalItems = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalItems / pageSize);
 
-  const columns: Column<DeleteAccountRequest>[] = [
-    {
-      key: "user",
-      label: "User",
-      render: (_, row) => (
-        <div>
-          <div className="font-bold text-slate-800">{row.first_name} {row.last_name}</div>
-          <div className="text-[10px] text-slate-400">{row.email}</div>
-        </div>
-      )
+  const cardConfig: MobileCardConfig<any> = {
+    header: {
+      title: (data) => `${data.first_name} ${data.last_name}`,
+      subtitle: (data) => data.email,
+      badge: (data) => (
+        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-100">
+          {data.status}
+        </span>
+      ),
     },
-    { key: "created_at", label: "Request Date", render: (val) => format(new Date(val), "MMM dd, yyyy") },
-    { key: "reason", label: "Reason" },
-    {
-      key: "status",
-      label: "Status",
-      render: (val, row) => <span className={cn("badge", row.status === 'pending' ? 'badge-gold' : 'badge-secondary')}>{val}</span>
-    },
-  ];
-
-  const rowActions: RowAction<DeleteAccountRequest>[] = [
-    { label: "Approve", icon: <Trash2 className="w-4 h-4" />, onClick: (row) => updateStatus.mutate({ requestId: row.id, userId: row.user_id, newStatus: 'approved' }), danger: true },
-    { label: "Reject", icon: <XCircle className="w-4 h-4" />, onClick: (row) => updateStatus.mutate({ requestId: row.id, userId: row.user_id, newStatus: 'rejected' }) },
-  ];
+    fields: [
+      { id: "reason", label: "Reason", render: (data) => data.reason || "Privacy Concerns" },
+    ],
+    actions: [
+      { label: "View Details", onClick: (data) => console.log('View', data.id) },
+    ]
+  };
 
   return (
     <div className="space-y-4">
-      <div className="alert bg-amber-50 border border-amber-200 text-xs p-3 rounded-lg flex items-start gap-2">
-        <span className="text-lg">⚠️</span>
-        <div className="flex-1">
-          <strong className="text-amber-700">{data?.meta.total || 0} pending deletion request{data?.meta.total !== 1 ? 's' : ''}</strong> – must be processed within 30 days per Ghana Data Protection Act 2012 (Section 34).
+      <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
+        <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 text-xl">
+          ⚠️
+        </div>
+        <div>
+          <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-900 mb-1">Attention Required</h4>
+          <p className="text-xs text-amber-700 leading-relaxed font-medium">
+            <strong>{totalItems} pending deletion requests</strong> – must be processed within 30 days per Ghana Data Protection Act 2012 (Section 34).
+          </p>
         </div>
       </div>
-      <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={requests} selectable rowActions={rowActions} />
+
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <DataTable
+          columns={deleteAccountColumns}
+          data={requests}
+          isLoading={isLoading}
+          onRowClick={(row) => console.log('Row Click', row.id)}
+          cardConfig={cardConfig}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages || 1,
+            totalItems: totalItems,
+            pageSize: pageSize,
+            onPageChange,
+            onNextPage,
+            onPreviousPage,
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
+        />
       </div>
     </div>
   );
