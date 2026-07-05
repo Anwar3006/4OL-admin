@@ -6,7 +6,8 @@ import Card from "@/components/ui/Card";
 import { formatDate } from "@/app/utils/helpers";
 import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
-import { changeFacilityStatus } from "@/services/approveFacility";
+import { useApproveFacility } from "@/hooks/supabase-calls/useFacilities";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { facilityFields } from "@/constant/facility-labels-data";
 
 export default function Page() {
@@ -16,6 +17,8 @@ export default function Page() {
   const [error, setError] = useState(null);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const { data: session } = useSupabaseSession();
+  const { mutate: approveFacility, isPending: isApproving } = useApproveFacility();
 
   useEffect(() => {
     const fetchFacility = async () => {
@@ -137,13 +140,18 @@ export default function Page() {
             />
             <Button
               className="px-6 py-1 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
-              text={"Approve"}
-              onClick={async () => {
-                await changeFacilityStatus(
-                  facility.id,
-                  facility.contact_num,
-                  facility.facility_name
-                ).then(() => router.back());
+              text={isApproving ? "Approving..." : "Approve"}
+              disabled={isApproving}
+              onClick={() => {
+                approveFacility(
+                  {
+                    adminId: session?.user?.id,
+                    id: facility.id,
+                    media_urls: facility.media_urls || [],
+                    featured_image_url: facility.featured_image_url,
+                  },
+                  { onSuccess: () => router.back() }
+                );
               }}
             />
           </div>

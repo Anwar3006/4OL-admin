@@ -8,11 +8,12 @@ import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function AllAdminsTab() {
-  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "admins_page" });
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
+    usePagination({ key: "admins_page" });
   const { data, isLoading } = useUsers({ admin: true, page, limit: pageSize });
 
   const admins = data?.users || [];
-  const totalItems = data?.totalCount || 0;
+  const totalItems = data?.meta.total || 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const cardConfig: MobileCardConfig<any> = {
@@ -20,20 +21,31 @@ export default function AllAdminsTab() {
       title: (data) => data.name,
       subtitle: (data) => data.email,
       badge: (data) => (
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-          data.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
-        }`}>
-          {data.status || 'active'}
+        <span
+          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+            data.status === "active"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-red-50 text-red-700 border-red-100"
+          }`}
+        >
+          {data.status || "active"}
         </span>
       ),
     },
     fields: [
       { id: "role", label: "Role", render: (data) => data.role },
-      { id: "mfa", label: "MFA", render: (data) => (data.mfa_enabled ? '✅ ON' : '❌ OFF') },
+      {
+        id: "mfa",
+        label: "MFA",
+        render: (data) => (data.mfa_enabled ? "✅ ON" : "❌ OFF"),
+      },
     ],
     actions: [
-      { label: "View Details", onClick: (data) => console.log('View', data.user_id) },
-    ]
+      {
+        label: "View Details",
+        onClick: (data) => console.log("View", data.user_id),
+      },
+    ],
   };
 
   return (
@@ -56,8 +68,8 @@ export default function AllAdminsTab() {
           columns={adminColumns}
           data={admins}
           isLoading={isLoading}
-          onRowClick={(row) => console.log('Row Click', row.user_id)}
-          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          onRowClick={(row) => console.log("Row Click", row.user_id)}
+          onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
           cardConfig={cardConfig}
           pagination={{
             currentPage: page,

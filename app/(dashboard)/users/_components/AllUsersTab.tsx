@@ -13,7 +13,7 @@ export default function AllUsersTab() {
   const { data, isLoading } = useUsers({ admin: false, page, limit: pageSize });
 
   const users = data?.users || [];
-  const totalItems = data?.totalCount || 0;
+  const totalItems = data?.meta?.total ?? 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const cardConfig: MobileCardConfig<any> = {

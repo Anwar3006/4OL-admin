@@ -25,7 +25,7 @@ import {
   useViewFacilityDialog,
 } from "@/stores/dialog-store";
 import AddFacilityDialog from "../_components/add-facility-dialog";
-import { FacilityViewDialog } from "../_components/view-facility-dialog";
+import FacilityViewDialog from "../_components/view-facility-dialog";
 
 const formatFacilityType = (rawType = "") =>
   rawType

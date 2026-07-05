@@ -12,7 +12,7 @@ export default function DeleteRequestsTab() {
   const { data, isLoading } = useDeleteAccountRequests({ page, limit: pageSize, status: 'pending' });
 
   const requests = data?.requests || [];
-  const totalItems = data?.totalCount || 0;
+  const totalItems = data?.meta?.total ?? 0;
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const cardConfig: MobileCardConfig<any> = {

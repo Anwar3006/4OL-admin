@@ -9,11 +9,11 @@ import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function AllRequestsTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "delete_req_page" });
-  const { data, isLoading } = useDeleteAccountRequests({ page, pageSize });
+  const { data, isLoading } = useDeleteAccountRequests({ page, limit: pageSize });
 
   const requests = data?.requests || [];
-  const totalItems = data?.totalCount || 0;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalItems = data?.meta?.total || 0;
+  const totalPages = data?.meta?.totalPages || Math.ceil(totalItems / pageSize);
 
   const cardConfig: MobileCardConfig<any> = {
     header: {

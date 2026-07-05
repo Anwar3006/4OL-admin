@@ -5,6 +5,21 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
+export type DiscountType = {
+  id: string;
+  name: string;
+  discount_value: number;
+  type: string;
+  code: string;
+  usage: string;
+  createdAt: string;
+  updatedAt: string;
+  status?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+};
+
 export const discountColumns: ColumnDef<any>[] = [
   {
     accessorKey: "code",

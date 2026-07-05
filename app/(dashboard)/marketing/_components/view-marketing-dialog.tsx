@@ -43,6 +43,7 @@ export function ViewMarketingDialog() {
 
   const { data: campaign, isLoading } = useMarketingProfile({
     id: entityId || "",
+    enabled: !!entityId,
   });
 
   const { mutate: updateCampaign } = useUpdateMarketingProfile();
@@ -59,14 +60,20 @@ export function ViewMarketingDialog() {
   };
 
   const handleDelete = () => {
-    if (entityId) {
-      deleteCampaign(entityId, {
-        onSuccess: () => {
-          setIsDeleteDialogOpen(false);
-          close();
-          toast.success("Campaign deleted successfully");
+    if (entityId && campaign?.imageUrl) {
+      deleteCampaign(
+        {
+          id: entityId,
+          imageUrl: campaign.imageUrl,
         },
-      });
+        {
+          onSuccess: () => {
+            setIsDeleteDialogOpen(false);
+            close();
+            toast.success("Campaign deleted successfully");
+          },
+        }
+      );
     }
   };
 
@@ -79,7 +86,7 @@ export function ViewMarketingDialog() {
     else if (campaign.status === "draft") newStatus = "live";
 
     updateCampaign(
-      { id: entityId, updates: { status: newStatus } },
+      { id: entityId, data: { status: newStatus } },
       {
         onSuccess: () => {
           toast.success(`Campaign ${newStatus} successfully`);

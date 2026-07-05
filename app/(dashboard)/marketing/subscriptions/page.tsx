@@ -6,13 +6,14 @@ import { PlusSquare, Search } from "lucide-react";
 import React, { useState, useCallback, useMemo } from "react";
 import { createPaginationHandlers } from "@/lib/utils";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { createSubscriptionColumns } from "@/components/Data-Table/columns/subscriptionColumns";
+
 import {
   useAddSubscriptionDialog,
   useViewSubscriptionDialog,
 } from "@/stores/dialog-store";
 import ViewSubscriptionDialog from "./_components/view-subscription-dialog";
 import AddSubscriptionDialog from "./_components/add-subscription-dialog";
+import { subscriptionColumns } from "@/components/Data-Table/columns/subscriptionColumns";
 import {
   useDeleteMarketingSubscription,
   useMarketingSubscriptions,
@@ -48,7 +49,9 @@ const SubscriptionsPage = () => {
 
   const handleDelete = useCallback(
     (id: string) => {
-      if (window.confirm("Are you sure you want to delete this subscription?")) {
+      if (
+        window.confirm("Are you sure you want to delete this subscription?")
+      ) {
         deleteSubscription(id);
       }
     },
@@ -72,18 +75,10 @@ const SubscriptionsPage = () => {
     };
   }, [data]);
 
-  const columns = useMemo(
-    () =>
-      createSubscriptionColumns({
-        onEdit: handleEdit,
-        onDelete: handleDelete,
-      }),
-    [handleEdit, handleDelete],
-  );
+  const columns = subscriptionColumns;
 
   const pagination = useMemo(
-    () =>
-      createPaginationHandlers(page, setPage, data?.meta?.totalPages || 1),
+    () => createPaginationHandlers(page, setPage, data?.meta?.totalPages || 1),
     [page, data?.meta?.totalPages],
   );
 

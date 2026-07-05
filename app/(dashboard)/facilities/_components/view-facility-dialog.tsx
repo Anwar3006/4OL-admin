@@ -6,13 +6,10 @@ import {
   Globe,
   Phone,
   Mail,
-  ShieldCheck,
-  User,
-  Calendar,
-  CheckCircle2,
   AlertCircle,
   PhoneCall,
   Loader2,
+  Edit,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,28 +28,25 @@ import {
   useViewFacilityDialog,
 } from "@/stores/dialog-store";
 import BusinessHoursDisplay from "@/app/(dashboard)/facilities/_components/business-hours-display";
-import { isMediaVideo } from "@/components/ImageDropZone";
 import { Button } from "@/components/ui/button";
-import { toUppercaseFirstLetter } from "@/lib/utils";
 import {
   useApproveFacility,
   useFacilityProfile,
   useRejectFacility,
 } from "@/hooks/supabase-calls/useFacilities";
 
-import { TFacilityProfileOutput } from "@/schemas/facility-profile.schema";
-import { WhatsAppIcon } from "@/public/assets/images/icon/whatsapp";
 import { useMemo } from "react";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { FacilityRatingSection } from "./facility-rating";
 import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
 import { GalleryModal } from "@/components/GalleryModal";
+import Image from "next/image";
 
 export default function FacilityViewDialog() {
   const { isOpen, entityId, close } = useViewFacilityDialog();
   const { open: openEdit } = useAddFacilityDialog();
   const { open: openGallery } = useGalleryModal();
-  const { user } = useSupabaseSession();
+  const { data: session } = useSupabaseSession();
 
   const { data: facility, isLoading } = useFacilityProfile({
     id: entityId || "",
@@ -62,12 +56,14 @@ export default function FacilityViewDialog() {
   const { mutate: reject, isPending: isRejecting } = useRejectFacility();
   const { data: auditData } = useAdminFacilityAudit({
     facilityId: entityId || "",
-    adminId: user?.id || "",
+    adminId: session?.user?.id || "",
   });
 
   const canManage = useMemo(() => {
-    return user?.role === "super_admin" || user?.role === "admin";
-  }, [user]);
+    return (
+      session?.user?.role === "super_admin" || session?.user?.role === "admin"
+    );
+  }, [session?.user]);
 
   const getImageUrl = (path: string) => {
     if (!path) return "/placeholder.png";
@@ -90,7 +86,10 @@ export default function FacilityViewDialog() {
                 {facility?.facility_name || "Facility Details"}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-white">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] font-black uppercase tracking-widest bg-white"
+                >
                   {facility?.facility_type?.replace(/_/g, " ")}
                 </Badge>
                 <Separator orientation="vertical" className="h-3" />
@@ -129,10 +128,21 @@ export default function FacilityViewDialog() {
                         <Info className="h-3.5 w-3.5" /> General Information
                       </h3>
                       <div className="grid grid-cols-1 gap-4">
-                        <InfoRow label="Email" value={facility.email} icon={Mail} />
-                        <InfoRow label="Phone" value={facility.contact_number} icon={Phone} />
-                        <InfoRow label="Digital Address" value={facility.digital_address} icon={MapPin} />
-                        <InfoRow label="Website" value={facility.website} icon={Globe} isLink />
+                        <InfoRow
+                          label="Email"
+                          value={facility.email}
+                          icon={Mail}
+                        />
+                        <InfoRow
+                          label="Phone"
+                          value={facility.contact_number}
+                          icon={Phone}
+                        />
+                        <InfoRow
+                          label="Digital Address"
+                          value={facility.gps_address}
+                          icon={MapPin}
+                        />
                       </div>
                     </section>
 
@@ -142,37 +152,34 @@ export default function FacilityViewDialog() {
                       <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
                         Business Hours
                       </h3>
-                      <BusinessHoursDisplay hours={facility.business_hours} />
+                      <BusinessHoursDisplay
+                        businessHours={facility.business_hours}
+                      />
                     </section>
                   </div>
 
                   <div className="space-y-6">
-                    <section>
-                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
-                        <ShieldCheck className="h-3.5 w-3.5" /> Validation Details
-                      </h3>
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
-                        <InfoRow label="HEFRA ID" value={facility.hefra_id} icon={ShieldCheck} />
-                        <InfoRow label="HCP Name" value={facility.hcp_name} icon={User} />
-                        <InfoRow label="HCP License" value={facility.hcp_license_number} icon={FileText} />
-                      </div>
-                    </section>
-
-                    {facility.facility_images?.length > 0 && (
+                    {facility.media_urls?.length > 0 && (
                       <section>
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
-                          Gallery ({facility.facility_images.length})
+                          Gallery ({facility.media_urls.length})
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
-                          {facility.facility_images.slice(0, 3).map((img: string, i: number) => (
-                            <button
-                              key={i}
-                              className="aspect-square rounded-lg overflow-hidden border border-slate-200 hover:opacity-80 transition-opacity"
-                              onClick={() => openGallery(facility.facility_images, i)}
-                            >
-                              <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
-                            </button>
-                          ))}
+                          {facility.media_urls
+                            .slice(0, 3)
+                            .map((img: string, i: number) => (
+                              <button
+                                key={i}
+                                className="aspect-square rounded-lg overflow-hidden border border-slate-200 hover:opacity-80 transition-opacity"
+                                onClick={() => openGallery(facility.media_urls)}
+                              >
+                                <Image
+                                  src={getImageUrl(img)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            ))}
                         </div>
                       </section>
                     )}
@@ -181,7 +188,11 @@ export default function FacilityViewDialog() {
 
                 <Separator />
 
-                <FacilityRatingSection facilityId={facility.id} />
+                <FacilityRatingSection
+                  facility={facility}
+                  adminId={session?.user?.id || ""}
+                  auditData={auditData}
+                />
               </>
             ) : (
               <div className="text-center py-12">
@@ -205,15 +216,33 @@ export default function FacilityViewDialog() {
               <>
                 <Button
                   className="flex-1 h-11 font-black uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => approve(facility.id)}
+                  onClick={() =>
+                    approve({
+                      adminId: session?.user?.id || "",
+                      id: facility.id,
+                      media_urls: facility.media_urls || [],
+                      featured_image_url: facility.featured_image_url,
+                    })
+                  }
                   disabled={isApproving}
                 >
-                  {isApproving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve Facility"}
+                  {isApproving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Approve Facility"
+                  )}
                 </Button>
                 <Button
                   variant="destructive"
                   className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
-                  onClick={() => reject(facility.id)}
+                  onClick={() =>
+                    reject({
+                      adminId: session?.user?.id || "",
+                      id: facility.id,
+                      media_urls: facility.media_urls || [],
+                      featured_image_url: facility.featured_image_url,
+                    })
+                  }
                   disabled={isRejecting}
                 >
                   Reject
@@ -232,15 +261,24 @@ function InfoRow({ label, value, icon: Icon, isLink }: any) {
   if (!value) return null;
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+        {label}
+      </p>
       <div className="flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
         {isLink ? (
-          <a href={value} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary hover:underline truncate">
+          <a
+            href={value}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold text-primary hover:underline truncate"
+          >
             {value}
           </a>
         ) : (
-          <span className="text-xs font-bold text-slate-700 truncate">{value}</span>
+          <span className="text-xs font-bold text-slate-700 truncate">
+            {value}
+          </span>
         )}
       </div>
     </div>
@@ -249,16 +287,36 @@ function InfoRow({ label, value, icon: Icon, isLink }: any) {
 
 function Info({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
     </svg>
   );
 }
 
 function FileText({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <svg
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
     </svg>
   );
 }
