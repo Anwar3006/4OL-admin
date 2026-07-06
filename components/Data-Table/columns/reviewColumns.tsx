@@ -1,12 +1,16 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Star, CheckCircle2, Eye, EyeOff, Heart, FileText, Trash2, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const RatingStars = ({ rating }: { rating: number | null | undefined }) => {
-  if (!rating) return <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No rating</span>;
+  if (!rating)
+    return (
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        No rating
+      </span>
+    );
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -69,12 +73,14 @@ export const reviewColumns: ColumnDef<any>[] = [
             <ShieldCheck className="h-3 w-3" /> Verified
           </span>
         )}
-        <span className={cn(
-          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border w-fit",
-          row.original.is_published
-            ? "bg-blue-50 text-blue-700 border-blue-100"
-            : "bg-slate-50 text-slate-500 border-slate-100"
-        )}>
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border w-fit",
+            row.original.is_published
+              ? "bg-blue-50 text-blue-700 border-blue-100"
+              : "bg-slate-50 text-slate-500 border-slate-100",
+          )}
+        >
           {row.original.is_published ? "Published" : "Hidden"}
         </span>
       </div>
@@ -92,29 +98,39 @@ export const reviewColumns: ColumnDef<any>[] = [
   {
     id: "actions",
     header: "",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <FileText className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const review = row.original;
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // View handler will be added in page component
+            }}
+          >
+            👁️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Edit handler will be added in page component
+            }}
+          >
+            ✏️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Delete handler will be added in page component
+            }}
+          >
+            🗑️
+          </button>
+        </div>
+      );
+    },
   },
 ];

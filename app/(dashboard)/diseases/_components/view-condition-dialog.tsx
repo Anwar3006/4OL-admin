@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -15,8 +15,6 @@ import {
   AlertTriangle,
   Info,
   ExternalLink,
-  Edit,
-  Trash2,
   Syringe,
   ShieldCheck,
   Dna,
@@ -53,11 +51,11 @@ export function ViewConditionDialog() {
   });
 
   // Handle both old single strings and new arrays for backward compatibility
-const images = Array.isArray(condition?.image_url) 
-  ? condition.image_url 
-  : condition?.image_url 
-    ? [condition.image_url] 
-    : [];
+  const images = Array.isArray(condition?.image_url)
+    ? condition.image_url
+    : condition?.image_url
+      ? [condition.image_url]
+      : [];
 
   const { mutateAsync: deleteCondition } = useDeleteCondition();
 
@@ -68,19 +66,23 @@ const images = Array.isArray(condition?.image_url)
     addDialog.open(condition as any);
   };
 
-const handleDelete = async () => {
-  // Pass the entire images array for cleanup
-  await deleteCondition({ id: condition?.id!, imagePath: images });
-  close();
-};
+  const handleDelete = async () => {
+    // Pass the entire images array for cleanup
+    await deleteCondition({ id: condition?.id!, imagePath: images });
+    close();
+  };
 
   const imageUrl = condition?.image_url
     ? getPublicImageUrl(condition.image_url)
     : "/assets/images/all-img/user.png";
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-2xl xl:max-w-4xl p-0 flex flex-col bg-white border-l shadow-2xl z-[250]">
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh]">
+        <VisuallyHidden.Root>
+          <DialogTitle>Details for {condition?.name}</DialogTitle>
+        </VisuallyHidden.Root>
+
         {isLoading ? (
           <div className="flex items-center justify-center h-full p-12 bg-white">
             <ConditionSkeleton />
@@ -89,11 +91,7 @@ const handleDelete = async () => {
           <>
             {/* ── Header ── */}
             <div className="bg-slate-50/80 sticky top-0 z-30 p-6 md:px-8 md:py-4 border-b border-slate-200 backdrop-blur-md">
-              <SheetHeader className="space-y-4">
-                <VisuallyHidden.Root>
-                  <SheetTitle>Details for {condition.name}</SheetTitle>
-                </VisuallyHidden.Root>
-
+              <DialogHeader className="space-y-4">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative">
                   <div className="space-y-3 flex-1">
                     <div className="flex items-center gap-2">
@@ -110,9 +108,9 @@ const handleDelete = async () => {
                         </Badge>
                       )}
                     </div>
-                    <SheetTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
+                    <DialogTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
                       {condition?.name}
-                    </SheetTitle>
+                    </DialogTitle>
                   </div>
 
                   {/* Condition Image */}
@@ -128,7 +126,7 @@ const handleDelete = async () => {
                     className="rounded-xl shadow-lg shadow-indigo-100 transition-all hover:shadow-indigo-200 active:scale-95 px-6 font-black uppercase tracking-widest text-[10px] bg-indigo-600 hover:bg-indigo-700"
                     onClick={handleEdit}
                   >
-                    <Edit className="h-3.5 w-3.5 mr-2" /> Edit Condition
+                    ✏️ Edit Condition
                   </Button>
                   {condition?.nhs_link && (
                     <Button
@@ -137,8 +135,12 @@ const handleDelete = async () => {
                       className="rounded-xl bg-white border-slate-200 font-black uppercase tracking-widest text-[10px] text-slate-600 hover:bg-slate-50"
                       asChild
                     >
-                      <a href={condition.nhs_link} target="_blank" rel="noreferrer">
-                        <ExternalLink className="h-3.5 w-3.5 mr-2 text-indigo-500" /> NHS Resource
+                      <a
+                        href={condition.nhs_link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        🔗 NHS Resource
                       </a>
                     </Button>
                   )}
@@ -148,15 +150,14 @@ const handleDelete = async () => {
                     onClick={handleDelete}
                     className="text-slate-400 hover:text-red-600 hover:bg-red-50 ml-auto rounded-xl transition-colors"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    🗑️
                   </Button>
                 </div>
-              </SheetHeader>
+              </DialogHeader>
             </div>
 
             {/* ── Scrollable Content ── */}
             <div className="flex-1 overflow-y-auto px-6 md:px-10 py-10 space-y-12 bg-white">
-
               {/* About */}
               <ContentSection
                 icon={Info}
@@ -174,7 +175,9 @@ const handleDelete = async () => {
                     <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
                       <LayoutGrid className="h-4 w-4" />
                     </div>
-                    <h3 className="font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Classification & Types</h3>
+                    <h3 className="font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      Classification & Types
+                    </h3>
                   </div>
                   <div className="grid gap-4 pl-0 md:pl-4">
                     {condition.types.map((type: any) => (
@@ -220,7 +223,9 @@ const handleDelete = async () => {
                     <div className="p-2.5 rounded-2xl bg-orange-50 text-orange-600 border border-orange-100">
                       <Flame className="h-4 w-4" />
                     </div>
-                    <h3 className="font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Etiology & Causes</h3>
+                    <h3 className="font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      Etiology & Causes
+                    </h3>
                   </div>
                   <div className="grid gap-4 pl-0 md:pl-4">
                     {condition.causes.map((cause: any, i: number) => (
@@ -234,7 +239,9 @@ const handleDelete = async () => {
                         </p>
                         {cause.other_possible_causes && (
                           <div className="text-[15px] text-slate-600 leading-relaxed font-medium">
-                            <LexicalRenderer initialState={cause.other_possible_causes} />
+                            <LexicalRenderer
+                              initialState={cause.other_possible_causes}
+                            />
                           </div>
                         )}
                       </div>
@@ -273,7 +280,7 @@ const handleDelete = async () => {
 
               {/* Footer Links */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-                 <ContentSection
+                <ContentSection
                   icon={BookOpen}
                   title="Resources"
                   content={condition?.more_information}
@@ -299,18 +306,21 @@ const handleDelete = async () => {
 
               {/* ── Footer Meta ── */}
               <footer className="pt-10 border-t border-slate-200 grid grid-cols-2 gap-8 pb-10">
-                  <MetaItem
-                    icon={User}
-                    label="Medical Specialist"
-                    value={condition?.specialist || "General Practitioner"}
-                  />
-                  <MetaItem
-                    icon={Calendar}
-                    label="Last Verified"
-                    value={new Date(condition?.updated_at).toLocaleDateString(undefined, {
+                <MetaItem
+                  icon={User}
+                  label="Medical Specialist"
+                  value={condition?.specialist || "General Practitioner"}
+                />
+                <MetaItem
+                  icon={Calendar}
+                  label="Last Verified"
+                  value={new Date(condition?.updated_at).toLocaleDateString(
+                    undefined,
+                    {
                       dateStyle: "medium",
-                    })}
-                  />
+                    },
+                  )}
+                />
               </footer>
             </div>
           </>
@@ -327,8 +337,8 @@ const handleDelete = async () => {
             </Button>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -342,7 +352,9 @@ function ContentSection({ icon: Icon, title, content, color }: any) {
         <div className={`p-2 rounded-xl bg-current/10 ${color}`}>
           <Icon className="h-4 w-4" />
         </div>
-        <h3 className="font-bold text-sm uppercase tracking-widest text-slate-800">{title}</h3>
+        <h3 className="font-bold text-sm uppercase tracking-widest text-slate-800">
+          {title}
+        </h3>
       </div>
       <div className="text-slate-600 text-[15px] leading-relaxed pl-10">
         {!isContentEmpty ? (
@@ -358,12 +370,22 @@ function ContentSection({ icon: Icon, title, content, color }: any) {
   );
 }
 
-function MetaItem({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function MetaItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
         <Icon className="h-3.5 w-3.5" />
-        <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider">
+          {label}
+        </span>
       </div>
       <p className="text-sm font-semibold text-slate-700">{value}</p>
     </div>
@@ -379,7 +401,6 @@ function ConditionSkeleton() {
   );
 }
 
-
 function ImageGallery({ images, name }: { images: string[]; name: string }) {
   if (!images || images.length === 0) {
     return (
@@ -392,9 +413,9 @@ function ImageGallery({ images, name }: { images: string[]; name: string }) {
   return (
     <div className="space-y-3 w-full max-w-[280px] md:max-w-md ml-auto">
       {/* Scroll Container */}
-      <div 
+      <div
         className="flex gap-4 overflow-x-auto pb-4 pt-2 px-2 snap-x snap-mandatory scrollbar-hide"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {images.map((img, index) => (
           <div
@@ -415,7 +436,7 @@ function ImageGallery({ images, name }: { images: string[]; name: string }) {
           </div>
         ))}
       </div>
-      
+
       {/* Navigation Hint */}
       <div className="flex items-center justify-between px-2">
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">

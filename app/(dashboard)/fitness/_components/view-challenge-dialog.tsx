@@ -2,19 +2,27 @@
 
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   useViewChallengeDialog,
   useAddChallengeDialog,
 } from "@/stores/dialog-store";
 import { useChallenge } from "@/hooks/supabase-calls/useChallenge";
-import { Trophy, Calendar, Users, ShieldCheck, Target, Layers } from "lucide-react";
+import {
+  Trophy,
+  Calendar,
+  Users,
+  ShieldCheck,
+  Target,
+  Layers,
+} from "lucide-react";
 import { parseISO, format } from "date-fns";
 
 const ViewChallengeDialog = () => {
@@ -33,8 +41,12 @@ const ViewChallengeDialog = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto border-l-slate-100 p-0 bg-white">
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh] flex flex-col">
+        <VisuallyHidden.Root>
+          <DialogTitle>Challenge Details</DialogTitle>
+        </VisuallyHidden.Root>
+
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-muted-foreground italic">
             <div className="flex flex-col items-center gap-4">
@@ -56,7 +68,7 @@ const ViewChallengeDialog = () => {
                 className="w-full h-full object-cover opacity-80"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
-              
+
               {/* Dynamic Status Badges */}
               <div className="absolute top-6 right-6 flex gap-2">
                 {!data.is_public && (
@@ -74,7 +86,7 @@ const ViewChallengeDialog = () => {
                   {(data.status || "draft").toUpperCase()}
                 </Badge>
               </div>
-              
+
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="flex items-center gap-2 text-emerald-400 mb-2">
                   <Trophy className="h-4 w-4" />
@@ -82,7 +94,10 @@ const ViewChallengeDialog = () => {
                     {data.challenge_type}
                   </span>
                 </div>
-                <h2 className="text-3xl font-black text-white leading-tight" style={{ fontFamily: "var(--font-syne)" }}>
+                <h2
+                  className="text-3xl font-black text-white leading-tight"
+                  style={{ fontFamily: "var(--font-syne)" }}
+                >
                   {data.title}
                 </h2>
               </div>
@@ -100,7 +115,15 @@ const ViewChallengeDialog = () => {
                       Timeline
                     </span>
                     <span className="text-xs font-bold text-slate-700">
-                      {formatDbDate(new Date(data.start_date).toISOString().split("T")[0], "MMM d")} - {formatDbDate(new Date(data.end_date).toISOString().split("T")[0], "MMM d, yyyy")}
+                      {formatDbDate(
+                        new Date(data.start_date).toISOString().split("T")[0],
+                        "MMM d",
+                      )}{" "}
+                      -{" "}
+                      {formatDbDate(
+                        new Date(data.end_date).toISOString().split("T")[0],
+                        "MMM d, yyyy",
+                      )}
                     </span>
                   </div>
                 </div>
@@ -114,7 +137,9 @@ const ViewChallengeDialog = () => {
                       Target Goal
                     </span>
                     <span className="text-xs font-bold text-slate-700 capitalize">
-                      {data.goal_value ? Number(data.goal_value).toLocaleString() : "Custom"}{" "}
+                      {data.goal_value
+                        ? Number(data.goal_value).toLocaleString()
+                        : "Custom"}{" "}
                       {data.goal_metric || ""}
                     </span>
                   </div>
@@ -127,7 +152,8 @@ const ViewChallengeDialog = () => {
                   Mission Statement
                 </h4>
                 <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                  {data.description || "No description provided for this challenge."}
+                  {data.description ||
+                    "No description provided for this challenge."}
                 </p>
               </div>
 
@@ -136,10 +162,10 @@ const ViewChallengeDialog = () => {
                 <div className="flex gap-4 p-6 bg-emerald-50/50 rounded-[2rem] border border-emerald-100/50">
                   {data.reward_image_url && (
                     <div className="h-16 w-16 min-w-[4rem] rounded-xl overflow-hidden bg-white border border-emerald-200">
-                      <img 
-                        src={data.reward_image_url} 
-                        alt="Reward Preview" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={data.reward_image_url}
+                        alt="Reward Preview"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}
@@ -165,7 +191,11 @@ const ViewChallengeDialog = () => {
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {data.tags.map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="text-[11px] font-medium rounded-md px-2 py-0.5">
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="text-[11px] font-medium rounded-md px-2 py-0.5"
+                      >
                         #{tag}
                       </Badge>
                     ))}
@@ -182,7 +212,9 @@ const ViewChallengeDialog = () => {
                   </h4>
                   <p className="text-sm font-bold text-slate-700">
                     {data.current_participants ?? 0}
-                    {data.max_participants ? ` / ${data.max_participants}` : " Users Enrolled"}
+                    {data.max_participants
+                      ? ` / ${data.max_participants}`
+                      : " Users Enrolled"}
                   </p>
                 </div>
 
@@ -204,13 +236,13 @@ const ViewChallengeDialog = () => {
                 className="w-full h-14 text-sm font-black uppercase tracking-[0.1em] shadow-xl hover:shadow-primary/20 transition-all rounded-2xl"
                 onClick={() => openAdd(data)}
               >
-                Manage Challenge
+                ✏️ Manage Challenge
               </Button>
             </div>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 

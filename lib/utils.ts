@@ -107,6 +107,14 @@ export const toUppercaseFirstLetter = (str: string) => {
 };
 
 export const getPublicImageUrl = (url: string) => {
+  // If URL is already absolute (starts with http:// or https://), return as-is
+  // if (url.startsWith("http://") || url.startsWith("https://")) {
+  //   return url;
+  // }
+  if (url.includes("blob.core.windows.net")) {
+    return "";
+  }
+  // Otherwise, prepend the Supabase storage URL
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/bucket4ol/${url}`;
 };
 

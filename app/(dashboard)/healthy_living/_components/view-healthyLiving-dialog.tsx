@@ -2,17 +2,15 @@
 
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
-  Edit,
-  Trash2,
   HeartPulse,
   UserCheck,
   Calendar,
@@ -47,8 +45,12 @@ const ViewHealthyLivingDialog = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-slate-50 border-l shadow-2xl">
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="max-w-3xl xl:max-w-4xl p-0 flex flex-col bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh]">
+        <VisuallyHidden.Root>
+          <DialogTitle>Details for {data?.name}</DialogTitle>
+        </VisuallyHidden.Root>
+
         {isLoading ? (
           <ConditionSkeleton />
         ) : !data ? (
@@ -57,7 +59,9 @@ const ViewHealthyLivingDialog = () => {
               <FolderOpen className="h-8 w-8" />
             </div>
             <p className="text-slate-500 font-medium">Record not found.</p>
-            <Button variant="outline" onClick={close}>Close Panel</Button>
+            <Button variant="outline" onClick={close}>
+              Close
+            </Button>
           </div>
         ) : (
           <>
@@ -67,11 +71,7 @@ const ViewHealthyLivingDialog = () => {
                 <HeartPulse size={120} />
               </div>
 
-              <SheetHeader className="space-y-4 relative z-10">
-                <VisuallyHidden.Root>
-                  <SheetTitle>Details for {data.name}</SheetTitle>
-                </VisuallyHidden.Root>
-
+              <DialogHeader className="space-y-4 relative z-10">
                 <div className="space-y-2">
                   {/* Breadcrumb / parent path */}
                   {(data as any).parent_path ? (
@@ -81,10 +81,18 @@ const ViewHealthyLivingDialog = () => {
                         .split(" → ")
                         .map((seg: string, i: number, arr: string[]) => (
                           <span key={i} className="flex items-center gap-1">
-                            <span className={i === arr.length - 1 ? "font-semibold text-slate-600" : ""}>
+                            <span
+                              className={
+                                i === arr.length - 1
+                                  ? "font-semibold text-slate-600"
+                                  : ""
+                              }
+                            >
                               {seg}
                             </span>
-                            {i < arr.length - 1 && <ChevronRight className="h-3 w-3" />}
+                            {i < arr.length - 1 && (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
                           </span>
                         ))}
                     </div>
@@ -94,9 +102,9 @@ const ViewHealthyLivingDialog = () => {
                     </Badge>
                   )}
 
-                  <SheetTitle className="card-title font-black tracking-tight text-slate-900 leading-tight">
+                  <DialogTitle className="card-title font-black tracking-tight text-slate-900 leading-tight">
                     {data.name}
-                  </SheetTitle>
+                  </DialogTitle>
 
                   {data.description && (
                     <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
@@ -111,18 +119,18 @@ const ViewHealthyLivingDialog = () => {
                     className="rounded-full shadow-md transition-all hover:shadow-lg active:scale-95 px-5 bg-emerald-600 hover:bg-emerald-700"
                     onClick={() => openAdd(data)}
                   >
-                    <Edit className="h-4 w-4 mr-2" /> Edit
+                    ✏️ Edit
                   </Button>
                   <Button
                     onClick={handleDelete}
                     variant="ghost"
                     size="icon"
-                    className="text-slate-400 hover:text-destructive hover:bg-destructive/10 ml-auto rounded-full"
+                    className="text-slate-400 hover:text-red-600 hover:bg-red-50 ml-auto rounded-full"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    🗑️
                   </Button>
                 </div>
-              </SheetHeader>
+              </DialogHeader>
             </div>
 
             {/* ── Scrollable body ── */}
@@ -139,36 +147,55 @@ const ViewHealthyLivingDialog = () => {
               )}
 
               {/* Content sections */}
-              {Array.isArray(data.content_sections) && data.content_sections.length > 0 && (
-                <section className="space-y-4">
-                  <SectionHeading icon={HeartPulse} label="Content Sections" />
-                  <div className="grid gap-4">
-                    {(data.content_sections as { sub_name: string; sub_content: any }[]).map(
-                      (sec: { sub_name: string; sub_content: any }, idx: number) => (
-                        <div
-                          key={idx}
-                          className="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm"
-                        >
-                          <p className="font-bold text-slate-900 text-base mb-2">
-                            {sec.sub_name}
-                          </p>
-                          <div className="text-sm text-slate-600 leading-relaxed">
-                            <LexicalRenderer initialState={sec.sub_content} />
+              {Array.isArray(data.content_sections) &&
+                data.content_sections.length > 0 && (
+                  <section className="space-y-4">
+                    <SectionHeading
+                      icon={HeartPulse}
+                      label="Content Sections"
+                    />
+                    <div className="grid gap-4">
+                      {(
+                        data.content_sections as {
+                          sub_name: string;
+                          sub_content: any;
+                        }[]
+                      ).map(
+                        (
+                          sec: { sub_name: string; sub_content: any },
+                          idx: number,
+                        ) => (
+                          <div
+                            key={idx}
+                            className="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm"
+                          >
+                            <p className="font-bold text-slate-900 text-base mb-2">
+                              {sec.sub_name}
+                            </p>
+                            <div className="text-sm text-slate-600 leading-relaxed">
+                              <LexicalRenderer initialState={sec.sub_content} />
+                            </div>
                           </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </section>
-              )}
+                        ),
+                      )}
+                    </div>
+                  </section>
+                )}
 
               {/* Children (sub-topics) */}
               {data.children && data.children.length > 0 && (
                 <section className="space-y-4">
-                  <SectionHeading icon={FolderOpen} label={`Sub-topics (${data.children.length})`} />
+                  <SectionHeading
+                    icon={FolderOpen}
+                    label={`Sub-topics (${data.children.length})`}
+                  />
                   <div className="grid gap-3">
                     {data.children.map((child: THealthyLivingOutput) => (
-                      <ChildCard key={child.id} child={child} onOpen={openAdd} />
+                      <ChildCard
+                        key={child.id}
+                        child={child}
+                        onOpen={openAdd}
+                      />
                     ))}
                   </div>
                 </section>
@@ -196,9 +223,12 @@ const ViewHealthyLivingDialog = () => {
                         Created On
                       </p>
                       <p className="text-sm font-medium text-slate-600">
-                        {new Date(data.created_at).toLocaleDateString(undefined, {
-                          dateStyle: "long",
-                        })}
+                        {new Date(data.created_at).toLocaleDateString(
+                          undefined,
+                          {
+                            dateStyle: "long",
+                          },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -207,14 +237,20 @@ const ViewHealthyLivingDialog = () => {
             </div>
           </>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 // ── Small helpers ──────────────────────────────────────────────────────────
 
-const SectionHeading = ({ icon: Icon, label }: { icon: any; label: string }) => (
+const SectionHeading = ({
+  icon: Icon,
+  label,
+}: {
+  icon: any;
+  label: string;
+}) => (
   <div className="flex items-center gap-2">
     <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-600">
       <Icon className="h-4 w-4" />
@@ -232,19 +268,27 @@ const ChildCard = ({
   child: THealthyLivingOutput;
   onOpen: (data: any) => void;
 }) => (
-  <div className="group flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-emerald-200 hover:shadow-md transition-all cursor-pointer"
-    onClick={() => onOpen(child)}>
+  <div
+    className="group flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-emerald-200 hover:shadow-md transition-all cursor-pointer"
+    onClick={() => onOpen(child)}
+  >
     <div className="mt-0.5 p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
       <FolderOpen className="h-4 w-4" />
     </div>
     <div className="flex-1 min-w-0">
       <p className="font-semibold text-slate-900 text-sm">{child.name}</p>
       {child.description && (
-        <p className="text-xs text-slate-500 mt-0.5 truncate">{child.description}</p>
+        <p className="text-xs text-slate-500 mt-0.5 truncate">
+          {child.description}
+        </p>
       )}
       {child.children && child.children.length > 0 && (
-        <Badge variant="outline" className="mt-1.5 text-[10px] text-emerald-600 border-emerald-200">
-          {child.children.length} sub-topic{child.children.length !== 1 ? "s" : ""}
+        <Badge
+          variant="outline"
+          className="mt-1.5 text-[10px] text-emerald-600 border-emerald-200"
+        >
+          {child.children.length} sub-topic
+          {child.children.length !== 1 ? "s" : ""}
         </Badge>
       )}
     </div>

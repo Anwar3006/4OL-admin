@@ -138,16 +138,43 @@ const ChallengesTab = () => {
         </span>
       ),
     },
-  ];
-
-  const rowActions = [
-    { label: "View", icon: "👁️", onClick: (row: any) => handleView(row.id) },
-    { label: "Edit", icon: "✏️", onClick: handleEdit },
     {
-      label: "Delete",
-      icon: "🗑️",
-      onClick: (row: any) => handleDelete(row.id),
-      danger: true,
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const challenge = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleView(challenge.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(challenge);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(challenge.id);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -217,7 +244,6 @@ const ChallengesTab = () => {
         <DataTable
           columns={columns}
           data={data?.challenges || []}
-          rowActions={rowActions}
           isLoading={isLoading}
           pagination={true}
           urlPersistence={{

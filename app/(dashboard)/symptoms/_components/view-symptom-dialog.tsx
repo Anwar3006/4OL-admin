@@ -3,11 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPublicImageUrl, hasLexicalContent } from "@/lib/utils";
 import {
@@ -21,19 +21,16 @@ import {
   Ban,
   Calendar,
   Dna,
-  Edit,
   ExternalLink,
   Info,
   LayoutGrid,
   ShieldCheck,
   Stethoscope,
   Syringe,
-  Trash2,
   User,
   UserCheck2Icon,
 } from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { DialogTitle } from "@/components/ui/dialog";
 import { LexicalRenderer } from "@/components/LexicalRenderer";
 import {
   useDeleteSymptom,
@@ -60,8 +57,12 @@ const ViewSymptomDialog = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-3xl xl:max-w-4xl p-0 flex flex-col !bg-white border-l shadow-2xl z-[250]">
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="max-w-3xl xl:max-w-4xl p-0 flex flex-col !bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh]">
+        <VisuallyHidden.Root>
+          <DialogTitle>Details for {data?.name}</DialogTitle>
+        </VisuallyHidden.Root>
+
         {isLoading && (
           <div className="p-6 bg-white h-full flex items-center justify-center">
             <ConditionSkeleton />
@@ -71,10 +72,7 @@ const ViewSymptomDialog = () => {
           <>
             {/* 1. Impactful Header Section */}
             <div className="bg-slate-50/80 sticky top-0 z-30 p-6 md:p-8 border-b border-slate-200 backdrop-blur-md">
-              <SheetHeader className="space-y-4">
-                <VisuallyHidden.Root>
-                  <SheetTitle>Details for {data.name}</SheetTitle>
-                </VisuallyHidden.Root>
+              <DialogHeader className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     {data?.isSystemic ? (
@@ -90,9 +88,9 @@ const ViewSymptomDialog = () => {
                       </Badge>
                     )}
                   </div>
-                  <SheetTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
+                  <DialogTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
                     {data?.name}
-                  </SheetTitle>
+                  </DialogTitle>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -100,24 +98,24 @@ const ViewSymptomDialog = () => {
                     className="btn btn-primary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] active:scale-95"
                     onClick={handleEdit}
                   >
-                    <Edit className="h-3.5 w-3.5 mr-2" /> Edit Details
+                    ✏️ Edit Details
                   </button>
                   {data?.nhsLink && (
                     <button
                       className="btn btn-secondary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:bg-slate-50"
-                      onClick={() => window.open(data.nhsLink, '_blank')}
+                      onClick={() => window.open(data.nhsLink, "_blank")}
                     >
-                      <ExternalLink className="h-3.5 w-3.5 mr-2 text-indigo-500" /> NHS Resource
+                      🔗 NHS Resource
                     </button>
                   )}
                   <button
                     onClick={handleDelete}
                     className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors ml-auto shadow-sm"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    🗑️
                   </button>
                 </div>
-              </SheetHeader>
+              </DialogHeader>
             </div>
 
             {/* 2. Scrollable Content Area */}
@@ -125,7 +123,7 @@ const ViewSymptomDialog = () => {
               {/* Cover Image Placeholder/Display */}
               {data.image_url && (
                 <div className="rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-2xl aspect-video bg-slate-50 relative group">
-                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={getPublicImageUrl(data.image_url)}
                     alt={data.name}
@@ -218,19 +216,19 @@ const ViewSymptomDialog = () => {
 
               {/* 4. Secondary Meta Section */}
               <footer className="pt-10 border-t border-slate-200 grid grid-cols-2 gap-8 pb-10">
-                  <MetaItem
-                    icon={User}
-                    label="Verified Specialist"
-                    value={data?.specialist || "General Practitioner"}
-                  />
-                  <MetaItem
-                    icon={Calendar}
-                    label="Update Timestamp"
-                    value={new Date(data?.updated_at).toLocaleDateString(
-                      undefined,
-                      { dateStyle: "medium" },
-                    )}
-                  />
+                <MetaItem
+                  icon={User}
+                  label="Verified Specialist"
+                  value={data?.specialist || "General Practitioner"}
+                />
+                <MetaItem
+                  icon={Calendar}
+                  label="Update Timestamp"
+                  value={new Date(data?.updated_at).toLocaleDateString(
+                    undefined,
+                    { dateStyle: "medium" },
+                  )}
+                />
               </footer>
             </div>
           </>
@@ -247,8 +245,8 @@ const ViewSymptomDialog = () => {
             </Button>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -60,25 +60,6 @@ const HealthyLivingPage = () => {
     [deleteHealthyLiving],
   );
 
-  const rowActions = [
-    {
-      label: "View",
-      icon: "👁️",
-      onClick: (row: any) => viewHealthyLiving.open(row.id),
-    },
-    {
-      label: "Edit",
-      icon: "✏️",
-      onClick: (row: any) => addHealthLiving.open(row),
-    },
-    {
-      label: "Delete",
-      icon: "🗑️",
-      onClick: (row: any) => handleDelete(row.id),
-      danger: true,
-    },
-  ];
-
   // Convert data to columns format for Data-Table
   const tableColumns = useMemo(
     () => [
@@ -88,13 +69,10 @@ const HealthyLivingPage = () => {
         cell: ({ row }: any) => (
           <div className="flex flex-col gap-1">
             <span className="font-bold text-sm text-slate-800">
-              {row.original.name || "Untitled"}
+              {row.original.name.length > 20
+                ? `${row.original.name.slice(0, 20)}...`
+                : row.original.name}
             </span>
-            {row.original.slug && (
-              <span className="text-xs text-slate-500 font-mono">
-                /{row.original.slug}
-              </span>
-            )}
           </div>
         ),
       },
@@ -146,7 +124,6 @@ const HealthyLivingPage = () => {
         header: "Views",
         cell: ({ row }: any) => (
           <div className="flex items-center gap-1 justify-center">
-            <Eye className="h-3.5 w-3.5 text-slate-400" />
             <span className="text-sm text-slate-600">
               {row.original.view_count || 0}
             </span>
@@ -163,6 +140,50 @@ const HealthyLivingPage = () => {
             })}
           </span>
         ),
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }: any) => {
+          const item = row.original;
+          return (
+            <div className="flex items-center justify-end gap-2">
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  viewHealthyLiving.open(item.id);
+                }}
+              >
+                👁️
+              </button>
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addHealthLiving.open(item);
+                }}
+              >
+                ✏️
+              </button>
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (
+                    confirm(
+                      "Are you sure you want to delete this Healthy Living item?",
+                    )
+                  ) {
+                    handleDelete(item.id);
+                  }
+                }}
+              >
+                🗑️
+              </button>
+            </div>
+          );
+        },
       },
     ],
     [],
@@ -256,6 +277,7 @@ const HealthyLivingPage = () => {
               columns={tableColumns}
               data={healthyLivingData?.healthyLivings || []}
               selectable={false}
+              onRowClick={(row: any) => viewHealthyLiving.open(row.id)}
               pagination={true}
               urlPersistence={{
                 pageKey: "hl_page",

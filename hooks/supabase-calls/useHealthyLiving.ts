@@ -69,7 +69,7 @@ export const useHealthyLivings = ({
         error,
       } = await query
         .order("display_order", { ascending: true })
-        .order("created_at", { ascending: false })
+        .order("name", { ascending: true })
         .range(from, to);
 
       if (error) throw new Error(error.message);

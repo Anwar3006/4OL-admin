@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
-import { Eye, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -52,7 +51,9 @@ export default function LoggedRemindersTab() {
           <div>
             <div className="font-bold text-slate-800">{val}</div>
             {row.generic_name && (
-              <div className="text-[10px] text-slate-400">{row.generic_name}</div>
+              <div className="text-[10px] text-slate-400">
+                {row.generic_name}
+              </div>
             )}
           </div>
         </div>
@@ -62,14 +63,18 @@ export default function LoggedRemindersTab() {
       key: "drug_type",
       label: "Type",
       render: (val, row) => (
-        <span className="text-[11px] font-medium text-slate-600 capitalize">{row.drug_type || "—"}</span>
+        <span className="text-[11px] font-medium text-slate-600 capitalize">
+          {row.drug_type || "—"}
+        </span>
       ),
     },
     {
       key: "user_profiles",
       label: "Logged By",
       render: (val, row) => (
-        <span className="font-medium text-slate-700">{row.user_profiles?.name || "Unknown User"}</span>
+        <span className="font-medium text-slate-700">
+          {row.user_profiles?.name || "Unknown User"}
+        </span>
       ),
     },
     {
@@ -80,7 +85,9 @@ export default function LoggedRemindersTab() {
     {
       key: "interval",
       label: "Interval",
-      render: (val, row) => <span>{formatReminderInterval(row.interval, row.interval_unit)}</span>,
+      render: (val, row) => (
+        <span>{formatReminderInterval(row.interval, row.interval_unit)}</span>
+      ),
     },
     {
       key: "is_enabled",
@@ -94,9 +101,7 @@ export default function LoggedRemindersTab() {
         }[status];
 
         return (
-          <span className={cn("badge", config.className)}>
-            {config.label}
-          </span>
+          <span className={cn("badge", config.className)}>{config.label}</span>
         );
       },
     },
@@ -109,12 +114,30 @@ export default function LoggedRemindersTab() {
         </span>
       ),
     },
+
+    {
+      key: "actions",
+      label: "Actions",
+      render: (val, row) => (
+        <div className="flex gap-2 md:gap-6">
+          <button
+            className="hover:bg-emerald-200 cursor-pointer"
+            onClick={() => openView(row.id)}
+          >
+            👁️
+          </button>
+          <button className="text-red-500 hover:bg-red-700" onClick={() => {}}>
+            🗑️
+          </button>
+        </div>
+      ),
+    },
   ];
 
-  const rowActions: RowAction<LoggedReminderRow>[] = [
-    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: (row) => openView(row.id) },
-    { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => {}, danger: true },
-  ];
+  // const rowActions: RowAction<LoggedReminderRow>[] = [
+  //   { label: "View", icon: "👁️", onClick: (row) => openView(row.id) },
+  //   { label: "Delete", icon: "🗑️", onClick: () => {}, danger: true },
+  // ];
 
   return (
     <div className="space-y-4 mt-4">
@@ -132,7 +155,7 @@ export default function LoggedRemindersTab() {
           columns={columns}
           data={rows}
           selectable
-          rowActions={rowActions}
+          // rowActions={rowActions}
           isLoading={isLoading}
           pagination
           externalPage={pageIndex}

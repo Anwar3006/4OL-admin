@@ -18,7 +18,11 @@ import AddFacilityDialog from "./_components/add-facility-dialog";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Phone, MapPin } from "lucide-react";
 import FacilityViewDialog from "./_components/view-facility-dialog";
-import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
+import {
+  useFacilityProfiles,
+  useDeleteFacility,
+} from "@/hooks/supabase-calls/useFacilities";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 const FacilitiesPage = () => {
   const searchParams = useSearchParams();
@@ -43,6 +47,8 @@ const FacilitiesPage = () => {
 
   const viewFacility = useViewFacilityDialog();
   const addFacility = useAddFacilityDialog();
+  const { mutate: deleteFacility } = useDeleteFacility();
+  const { data: session } = useSupabaseSession();
 
   const updateParams = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -229,7 +235,20 @@ const FacilitiesPage = () => {
               data={data?.facilities || []}
               isLoading={isLoading || isFetching}
               onRowClick={(row) => viewFacility.open(row.id)}
-              onDeleteSelected={(rows) => console.log("Delete", rows)}
+              onDeleteSelected={(rows) => {
+                if (
+                  globalThis.confirm(
+                    `Are you sure you want to delete ${rows.length} facilit${rows.length > 1 ? "ies" : "y"}? This action cannot be undone.`,
+                  )
+                ) {
+                  rows.forEach((row: any) =>
+                    deleteFacility({
+                      adminId: session?.user?.id || "",
+                      id: row.id,
+                    }),
+                  );
+                }
+              }}
               cardConfig={cardConfig}
               pagination={true}
               urlPersistence={{

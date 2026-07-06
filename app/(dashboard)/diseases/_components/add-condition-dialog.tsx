@@ -96,10 +96,28 @@ const AddConditionDialog = () => {
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && condition) {
+        // Helper to convert name strings to IDs
+        const getIdsFromNames = (names: string[], items: any[]): string[] => {
+          if (!Array.isArray(names)) return [];
+          return names
+            .map((name) => items.find((item) => item.name === name)?.id)
+            .filter(Boolean);
+        };
+
+        // Get body part and category IDs from names
+        const bodyPartIds = getIdsFromNames(
+          condition.bodyParts || [],
+          bodyParts,
+        );
+        const categoryIds = getIdsFromNames(
+          condition.categories || [],
+          categories,
+        );
+
         form.reset({
           ...condition,
-          bodyParts: rehydrateHierarchy(condition.bodyParts, bodyParts),
-          categories: rehydrateHierarchy(condition.categories, categories),
+          bodyParts: rehydrateHierarchy(bodyPartIds, bodyParts),
+          categories: rehydrateHierarchy(categoryIds, categories),
           types: condition.types,
           causes: condition.causes,
           nhs_link: condition.nhs_link ?? "",
@@ -132,7 +150,7 @@ const AddConditionDialog = () => {
         });
       }
     }
-  }, [isOpen, isEditMode, condition, form]);
+  }, [isOpen, isEditMode, condition, bodyParts, categories, form]);
 
   const name = form.watch("name") ?? "";
   const filename = `${name.replace(/\s+/g, "").toLowerCase()}-${nanoid(8)}`;

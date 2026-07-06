@@ -2,19 +2,28 @@
 
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   useViewFitnessPlanDialog,
   useAddFitnessPlanDialog,
 } from "@/stores/dialog-store";
 import { useFitnessPlan } from "@/hooks/supabase-calls/useFitnessPlan";
-import { ClipboardList, Clock, Calendar, BarChart3, Star, Target, ShieldAlert, Tag } from "lucide-react";
+import {
+  ClipboardList,
+  Clock,
+  Calendar,
+  BarChart3,
+  Star,
+  Target,
+  Tag,
+} from "lucide-react";
 
 const ViewFitnessPlanDialog = () => {
   const { isOpen, close, entityId } = useViewFitnessPlanDialog();
@@ -22,8 +31,12 @@ const ViewFitnessPlanDialog = () => {
   const { data, isLoading } = useFitnessPlan(entityId!);
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto border-l-slate-100 p-0 bg-white">
+    <Dialog open={isOpen} onOpenChange={close}>
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh] flex flex-col">
+        <VisuallyHidden.Root>
+          <DialogTitle>Fitness Plan Details</DialogTitle>
+        </VisuallyHidden.Root>
+
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-muted-foreground italic">
             <div className="flex flex-col items-center gap-4">
@@ -54,7 +67,7 @@ const ViewFitnessPlanDialog = () => {
                   {data.status || "published"}
                 </Badge>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-indigo-300">
                   <ClipboardList className="h-4 w-4" />
@@ -75,7 +88,6 @@ const ViewFitnessPlanDialog = () => {
 
             {/* Core Body Fields */}
             <div className="p-8 space-y-8 flex-1">
-              
               {/* Quick Metrics Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -83,7 +95,9 @@ const ViewFitnessPlanDialog = () => {
                     <Calendar className="h-5 w-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duration</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Duration
+                    </span>
                     <span className="text-xs font-bold text-slate-700">
                       {data.duration_weeks} Weeks
                     </span>
@@ -95,7 +109,9 @@ const ViewFitnessPlanDialog = () => {
                     <Clock className="h-5 w-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Frequency</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Frequency
+                    </span>
                     <span className="text-xs font-bold text-slate-700">
                       {data.workouts_per_week} Workouts / Wk
                     </span>
@@ -107,11 +123,16 @@ const ViewFitnessPlanDialog = () => {
                     <BarChart3 className="h-5 w-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rating</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Rating
+                    </span>
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                       <span className="text-xs font-bold text-slate-700">
-                        {data.average_rating ? Number(data.average_rating).toFixed(1) : "0.0"} ({data.rating_count || 0})
+                        {data.average_rating
+                          ? Number(data.average_rating).toFixed(1)
+                          : "0.0"}{" "}
+                        ({data.rating_count || 0})
                       </span>
                     </div>
                   </div>
@@ -122,7 +143,9 @@ const ViewFitnessPlanDialog = () => {
                     <Target className="h-5 w-5" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Completions</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Total Completions
+                    </span>
                     <span className="text-xs font-bold text-slate-700">
                       {data.total_completions || 0} users
                     </span>
@@ -148,7 +171,11 @@ const ViewFitnessPlanDialog = () => {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {data.target_body_parts.map((part: string) => (
-                      <Badge key={part} variant="secondary" className="bg-indigo-50 text-indigo-600 border-none font-bold uppercase text-[9px] px-3 py-1">
+                      <Badge
+                        key={part}
+                        variant="secondary"
+                        className="bg-indigo-50 text-indigo-600 border-none font-bold uppercase text-[9px] px-3 py-1"
+                      >
                         {part}
                       </Badge>
                     ))}
@@ -164,7 +191,11 @@ const ViewFitnessPlanDialog = () => {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {data.goals.map((goal: string) => (
-                      <Badge key={goal} variant="secondary" className="bg-purple-50 text-purple-600 border-none font-bold uppercase text-[9px] px-3 py-1">
+                      <Badge
+                        key={goal}
+                        variant="secondary"
+                        className="bg-purple-50 text-purple-600 border-none font-bold uppercase text-[9px] px-3 py-1"
+                      >
                         {goal}
                       </Badge>
                     ))}
@@ -180,7 +211,10 @@ const ViewFitnessPlanDialog = () => {
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {data.tags.map((tag: string) => (
-                      <div key={tag} className="inline-flex items-center gap-1 text-slate-400 text-xs bg-slate-50 border border-slate-100 rounded-md px-2 py-0.5">
+                      <div
+                        key={tag}
+                        className="inline-flex items-center gap-1 text-slate-400 text-xs bg-slate-50 border border-slate-100 rounded-md px-2 py-0.5"
+                      >
                         <Tag className="h-3 w-3 text-slate-400" />
                         <span>{tag}</span>
                       </div>
@@ -188,7 +222,6 @@ const ViewFitnessPlanDialog = () => {
                   </div>
                 </div>
               )}
-
             </div>
 
             {/* Action Footer */}
@@ -197,13 +230,13 @@ const ViewFitnessPlanDialog = () => {
                 className="w-full h-14 text-sm font-black uppercase tracking-[0.1em] shadow-xl hover:shadow-indigo-900/10 transition-all rounded-2xl bg-slate-900 hover:bg-slate-800 text-white"
                 onClick={() => openAdd(data)}
               >
-                Manage Fitness Plan
+                ✏️ Manage Fitness Plan
               </Button>
             </div>
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 

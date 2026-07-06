@@ -2,13 +2,13 @@
   "categories_seed": [
     {
       "name": "Blood And Lymph",
-      "slug": "blood.and.lymph",
+      "slug": "blood-and-lymph",
       "path": "conditions.blood.and.lymph",
       "type": "condition"
     },
     {
       "name": "Muscle Bone And Joints",
-      "slug": "muscle.bone.and.joints",
+      "slug": "muscle-bone-and-joint",
       "path": "conditions.muscle.bone.and.joints",
       "type": "condition"
     },
@@ -20,7 +20,7 @@
     },
     {
       "name": "Stomach Liver And Gastrointestinal Tract",
-      "slug": "stomach.liver.and.gastrointestinal.tract",
+      "slug": "stomach-liver-and-gastrointestinal",
       "path": "conditions.stomach.liver.and.gastrointestinal.tract",
       "type": "condition"
     },
@@ -38,49 +38,49 @@
     },
     {
       "name": "Brain Nerves And Spinal Cord",
-      "slug": "brain.nerves.and.spinal.cord",
+      "slug": "brain-nerves-and-spinal-cord",
       "path": "conditions.brain.nerves.and.spinal.cord",
       "type": "condition"
     },
     {
       "name": "Immune System",
-      "slug": "immune.system",
+      "slug": "immune-system",
       "path": "conditions.immune.system",
       "type": "condition"
     },
     {
       "name": "Cardiovascular Disease",
-      "slug": "cardiovascular.disease",
+      "slug": "cardiovascular-disease",
       "path": "conditions.cardiovascular.disease",
       "type": "condition"
     },
     {
       "name": "Lungs And Airways",
-      "slug": "lungs.and.airways",
+      "slug": "lungs-and-airways",
       "path": "conditions.lungs.and.airways",
       "type": "condition"
     },
     {
       "name": "Mental Health",
-      "slug": "mental.health",
+      "slug": "mental-health",
       "path": "conditions.mental.health",
       "type": "condition"
     },
     {
       "name": "Sexual And Reproductive",
-      "slug": "sexual.and.reproductive",
+      "slug": "sexual-and-reproductive",
       "path": "conditions.sexual.and.reproductive",
       "type": "condition"
     },
     {
       "name": "Kidneys Bladder And Prostate",
-      "slug": "kidneys.bladder.and.prostate",
+      "slug": "kidneys-bladder-and-prostate",
       "path": "conditions.kidneys.bladder.and.prostate",
       "type": "condition"
     },
     {
       "name": "Infections And Poisoning",
-      "slug": "infections.and.poisoning",
+      "slug": "infections-and-poisoning",
       "path": "conditions.infections.and.poisoning",
       "type": "condition"
     },
@@ -110,19 +110,19 @@
     },
     {
       "name": "Rare Conditions",
-      "slug": "rare.conditions",
+      "slug": "rare-conditions",
       "path": "conditions.rare.conditions",
       "type": "condition"
     },
     {
       "name": "Chromosomal Conditions",
-      "slug": "chromosomal.conditions",
+      "slug": "chromosomal-conditions",
       "path": "conditions.chromosomal.conditions",
       "type": "condition"
     },
     {
       "name": "Ears Nose And Throat",
-      "slug": "ears.nose.and.throat",
+      "slug": "ears-nose-and-throat",
       "path": "conditions.ears.nose.and.throat",
       "type": "condition"
     },
@@ -134,13 +134,13 @@
     },
     {
       "name": "Pregnancy And Childbirth",
-      "slug": "pregnancy.and.childbirth",
+      "slug": "pregnancy-and-childbirth",
       "path": "conditions.pregnancy.and.childbirth",
       "type": "condition"
     },
     {
       "name": "Skin Hair And Nails",
-      "slug": "skin.hair.and.nails",
+      "slug": "skin",
       "path": "conditions.skin.hair.and.nails",
       "type": "condition"
     }
@@ -153,7 +153,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2025/02/the-aplastic-anaemia-trust-logo-225x115-1.png",
       "specialist": "Haematologist",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -832,7 +832,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/11/achilles-tendinopathy-diagram-1024x592.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -2326,7 +2326,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -6219,7 +6219,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -8597,7 +8597,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Neurologist / Geriatrician",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -10091,7 +10091,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "immune.system",
+      "category_association_slug": "immune-system",
       "about": {
         "root": {
           "type": "root",
@@ -11178,7 +11178,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -11925,7 +11925,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/12/ankle-sprain-diagram-1024x642.jpg",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -12553,7 +12553,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -13521,7 +13521,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/scottish-socety-for-rheumatology-attribution-logo.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -14081,7 +14081,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2025/02/the-aplastic-anaemia-trust-logo-225x115-1.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -14505,7 +14505,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/telecare-584-px-wide.jpg",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -15262,7 +15262,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -16739,7 +16739,7 @@
       "image_url": null,
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -17248,7 +17248,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Infectious Disease Specialist",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -17621,7 +17621,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Urologist",
       "status": "published",
-      "category_association_slug": "kidneys.bladder.and.prostate",
+      "category_association_slug": "kidneys-bladder-and-prostate",
       "about": {
         "root": {
           "type": "root",
@@ -20407,7 +20407,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -21103,7 +21103,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -23627,7 +23627,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -25733,7 +25733,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -26123,7 +26123,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Gastroenterologist",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -26955,7 +26955,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2025/05/knock-knee-and-bow-legs-1024x625.jpg",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -29706,7 +29706,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -30215,7 +30215,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -31080,7 +31080,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -32302,7 +32302,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -32896,7 +32896,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -33609,7 +33609,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Infectious Disease Specialist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -34016,7 +34016,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/chickenpox.jpg",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -35187,7 +35187,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/scotgov-logo-small-transparent-final.png",
       "specialist": "Neurologist / Neurosurgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -37514,7 +37514,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -38193,7 +38193,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -39620,7 +39620,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -40842,7 +40842,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -42787,7 +42787,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2024/07/chest-heart-and-stroke-scotland-logo-225x115-1.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -44435,7 +44435,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -45453,7 +45453,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -47077,7 +47077,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -47613,7 +47613,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -48258,7 +48258,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -48971,7 +48971,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -49429,7 +49429,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -50397,7 +50397,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "kidneys.bladder.and.prostate",
+      "category_association_slug": "kidneys-bladder-and-prostate",
       "about": {
         "root": {
           "type": "root",
@@ -52122,7 +52122,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -52767,7 +52767,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -53259,7 +53259,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -56120,7 +56120,7 @@
       "image_url": null,
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -56527,7 +56527,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-greater-glasgow-and-clyde-logo-225x115-1.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "rare.conditions",
+      "category_association_slug": "rare-conditions",
       "about": {
         "root": {
           "type": "root",
@@ -56900,7 +56900,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -57562,7 +57562,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Infectious Disease Specialist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -58037,7 +58037,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/shutterstock_1951767676.jpg",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -59039,7 +59039,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/softuk-logo-225x115-1.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "chromosomal.conditions",
+      "category_association_slug": "chromosomal-conditions",
       "about": {
         "root": {
           "type": "root",
@@ -59541,7 +59541,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -60101,7 +60101,7 @@
       "image_url": null,
       "specialist": "Neurologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -60848,7 +60848,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -62734,7 +62734,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -64635,7 +64635,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Ophthalmologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -65246,7 +65246,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Neurologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -65772,7 +65772,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -66213,7 +66213,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-scotland-logo-225x115-1.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -66943,7 +66943,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -67401,7 +67401,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -69439,7 +69439,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2025/02/ganglion-cyst-wrist-300x202.jpg",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -69982,7 +69982,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -70576,7 +70576,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -71986,7 +71986,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -72427,7 +72427,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -73038,7 +73038,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/12/golfers-elbow-diagram-copy-1024x902.jpg",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -73598,7 +73598,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/scottish-socety-for-rheumatology-attribution-logo.png",
       "specialist": "Rheumatologist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -76264,7 +76264,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/attirbution.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -76817,7 +76817,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -77377,7 +77377,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-greater-glasgow-and-clyde-logo-225x115-1.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -78107,7 +78107,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "General Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -79194,7 +79194,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Haematologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -79703,7 +79703,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -80161,7 +80161,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -80755,7 +80755,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "immune.system",
+      "category_association_slug": "immune-system",
       "about": {
         "root": {
           "type": "root",
@@ -83149,7 +83149,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -83862,7 +83862,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Haematologist",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -84864,7 +84864,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-greater-glasgow-and-clyde-logo-225x115-1.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -85373,7 +85373,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/impetigo-rash-816x544-1.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -86579,7 +86579,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -87241,7 +87241,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/attirbution.png",
       "specialist": "Ophthalmologist",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -89143,7 +89143,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/phstransparent240x80.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -89499,7 +89499,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -89974,7 +89974,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Hepatologist / Gastroenterologist",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -91281,7 +91281,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "immune.system",
+      "category_association_slug": "immune-system",
       "about": {
         "root": {
           "type": "root",
@@ -92946,7 +92946,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/lyme-disease-rash-on-leg-816x544-1.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -93455,7 +93455,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "blood.and.lymph",
+      "category_association_slug": "blood-and-lymph",
       "about": {
         "root": {
           "type": "root",
@@ -94015,7 +94015,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -94541,7 +94541,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Neurologist / Neurosurgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -96154,7 +96154,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/child-with-measles-rash-816x544-1.png",
       "specialist": "Neurologist / Neurosurgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -96646,7 +96646,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/02/meningitis-rash-on-arm-816x544-2-1024x648.jpg",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -98089,7 +98089,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/attirbution.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -99005,7 +99005,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Obstetrician / Gynaecologist",
       "status": "published",
-      "category_association_slug": "pregnancy.and.childbirth",
+      "category_association_slug": "pregnancy-and-childbirth",
       "about": {
         "root": {
           "type": "root",
@@ -102309,7 +102309,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/06/scotgov-logo-small-transparent-final.png",
       "specialist": "Neurologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -103039,7 +103039,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/06/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -103446,7 +103446,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -103955,7 +103955,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -104396,7 +104396,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -104837,7 +104837,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -108453,7 +108453,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhsscoths-02-01.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -108945,7 +108945,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final-3.png",
       "specialist": "Ophthalmologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -109352,7 +109352,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -109759,7 +109759,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -111695,7 +111695,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/softuk-logo-225x115-1.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "chromosomal.conditions",
+      "category_association_slug": "chromosomal-conditions",
       "about": {
         "root": {
           "type": "root",
@@ -112197,7 +112197,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Pain Management Specialist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -112672,7 +112672,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -113232,7 +113232,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -114675,7 +114675,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -115439,7 +115439,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -116050,7 +116050,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -116474,7 +116474,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Pain Management Specialist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -117238,7 +117238,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/scotgov-logo-small-transparent-final.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "lungs.and.airways",
+      "category_association_slug": "lungs-and-airways",
       "about": {
         "root": {
           "type": "root",
@@ -117747,7 +117747,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/scottish-socety-for-rheumatology-attribution-logo.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -118256,7 +118256,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -118663,7 +118663,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -119036,7 +119036,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -120819,7 +120819,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Oncologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -122459,7 +122459,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/scottish-socety-for-rheumatology-attribution-logo.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -122951,7 +122951,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/phstransparent240x80.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -123460,7 +123460,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/scottish-socety-for-rheumatology-attribution-logo.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -124207,7 +124207,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/06/ringworm-2.jpg",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -126601,7 +126601,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/02/scarlatina3__watermarkedwyjxyxrlcm1hcmtlzcjd.jpg",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -127331,7 +127331,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -128122,7 +128122,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -128750,7 +128750,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Neurologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -130040,7 +130040,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/06/shingles-rash-on-chest-816x544-1.png",
       "specialist": "Ophthalmologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -130600,7 +130600,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-greater-glasgow-and-clyde-logo-225x115-1.png",
       "specialist": "Haematologist",
       "status": "published",
-      "category_association_slug": "rare.conditions",
+      "category_association_slug": "rare-conditions",
       "about": {
         "root": {
           "type": "root",
@@ -130956,7 +130956,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "immune.system",
+      "category_association_slug": "immune-system",
       "about": {
         "root": {
           "type": "root",
@@ -134516,7 +134516,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/04/nhs24logotrim-2.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -134923,7 +134923,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/nhs24logotrim.png",
       "specialist": "Psychiatrist / Clinical Psychologist",
       "status": "published",
-      "category_association_slug": "mental.health",
+      "category_association_slug": "mental-health",
       "about": {
         "root": {
           "type": "root",
@@ -135425,7 +135425,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "ENT Specialist (Otolaryngologist)",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -135900,7 +135900,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/phstransparent240x80.png",
       "specialist": "Obstetrician / Gynaecologist",
       "status": "published",
-      "category_association_slug": "pregnancy.and.childbirth",
+      "category_association_slug": "pregnancy-and-childbirth",
       "about": {
         "root": {
           "type": "root",
@@ -137224,7 +137224,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Rheumatologist / Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -137665,7 +137665,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Pain Management Specialist",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -138751,7 +138751,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Cardiologist",
       "status": "published",
-      "category_association_slug": "cardiovascular.disease",
+      "category_association_slug": "cardiovascular-disease",
       "about": {
         "root": {
           "type": "root",
@@ -141400,7 +141400,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -142096,7 +142096,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/attirbution.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "ears.nose.and.throat",
+      "category_association_slug": "ears-nose-and-throat",
       "about": {
         "root": {
           "type": "root",
@@ -142649,7 +142649,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final.png",
       "specialist": "Endocrinologist / Diabetologist",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -143175,7 +143175,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2025/05/trigger-thumb-1024x576.jpg",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "muscle.bone.and.joints",
+      "category_association_slug": "muscle-bone-and-joint",
       "about": {
         "root": {
           "type": "root",
@@ -144084,7 +144084,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/scotgov-logo-small-transparent-final-2.png",
       "specialist": "Orthopaedic Surgeon",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -144746,7 +144746,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "kidneys.bladder.and.prostate",
+      "category_association_slug": "kidneys-bladder-and-prostate",
       "about": {
         "root": {
           "type": "root",
@@ -145204,7 +145204,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/05/hives-on-shoulder-816x544-1.png",
       "specialist": "Emergency Medicine / Trauma Surgeon",
       "status": "published",
-      "category_association_slug": "skin.hair.and.nails",
+      "category_association_slug": "skin",
       "about": {
         "root": {
           "type": "root",
@@ -146851,7 +146851,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/06/scotgov-logo-small-transparent-final.png",
       "specialist": "Infectious Disease Specialist",
       "status": "published",
-      "category_association_slug": "sexual.and.reproductive",
+      "category_association_slug": "sexual-and-reproductive",
       "about": {
         "root": {
           "type": "root",
@@ -148192,7 +148192,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/10/scotgov-logo-small-transparent-final.png",
       "specialist": "Neurologist / Geriatrician",
       "status": "published",
-      "category_association_slug": "brain.nerves.and.spinal.cord",
+      "category_association_slug": "brain-nerves-and-spinal-cord",
       "about": {
         "root": {
           "type": "root",
@@ -148599,7 +148599,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2026/04/nhs-greater-glasgow-and-clyde-logo-225x115-1.png",
       "specialist": "Pulmonologist / Respiratory Specialist",
       "status": "published",
-      "category_association_slug": "rare.conditions",
+      "category_association_slug": "rare-conditions",
       "about": {
         "root": {
           "type": "root",
@@ -151639,7 +151639,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Paediatrician",
       "status": "published",
-      "category_association_slug": "stomach.liver.and.gastrointestinal.tract",
+      "category_association_slug": "stomach-liver-and-gastrointestinal",
       "about": {
         "root": {
           "type": "root",
@@ -152046,7 +152046,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/nhs24logotrim.png",
       "specialist": "Neurologist / Neurosurgeon",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",
@@ -153268,7 +153268,7 @@
       "image_url": "https://appnhs24wp41a8c38064.blob.core.windows.net/blobappnhs24wp41a8c38064/wp-content/uploads/2023/03/phstransparent240x80.png",
       "specialist": "Ophthalmologist",
       "status": "published",
-      "category_association_slug": "infections.and.poisoning",
+      "category_association_slug": "infections-and-poisoning",
       "about": {
         "root": {
           "type": "root",

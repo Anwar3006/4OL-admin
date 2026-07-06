@@ -39,14 +39,70 @@ const DashboardPage = () => {
 
       {/* Row 1: KPI Grid — 1 on mobile, 2 on sm, 4 on lg */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-5">
-        <KpiCard icon="👥"   label="Total Users"      value="45,234"  variant="blue"   delta="+12.4%"  deltaType="up"   />
-        <KpiCard icon="🏥"   label="Facilities"       value="1,287"   variant="teal"   delta="+5.2%"   deltaType="up"   />
-        <KpiCard icon="💰"   label="Revenue (MTD)"    value="₵287K"   variant="green"  delta="+18.7%"  deltaType="up"   />
-        <KpiCard icon="💳"   label="Transactions"     value="8,934"   variant="purple" delta="+3.1%"   deltaType="up"   />
-        <KpiCard icon="🤖"   label="AI Queries/Day"   value="23,450"  variant="indigo" delta="+45.2%"  deltaType="up"   />
-        <KpiCard icon="⭐"   label="Premium Subs"     value="4,812"   variant="amber"  delta="+8.2%"   deltaType="up"   />
-        <KpiCard icon="👨‍⚕️" label="HCPs"             value="3,420"   variant="pink"   delta="+120"    deltaType="up"   />
-        <KpiCard icon="🔐"   label="Security Score"   value="82/100"  variant="red"    delta="MFA Issue" deltaType="down" />
+        <KpiCard
+          icon="👥"
+          label="Total Users"
+          value={0}
+          variant="blue"
+          delta="+12.4%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="🏥"
+          label="Facilities"
+          value={0}
+          variant="teal"
+          delta="+5.2%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="💰"
+          label="Revenue (MTD)"
+          value={0}
+          variant="green"
+          delta="+18.7%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="💳"
+          label="Transactions"
+          value={0}
+          variant="purple"
+          delta="+3.1%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="🤖"
+          label="AI Queries/Day"
+          value={0}
+          variant="indigo"
+          delta="+45.2%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="⭐"
+          label="Premium Subs"
+          value={0}
+          variant="amber"
+          delta="+8.2%"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="👨‍⚕️"
+          label="HCPs"
+          value={0}
+          variant="pink"
+          delta="+120"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="🔐"
+          label="Security Score"
+          value={0}
+          variant="red"
+          delta="MFA Issue"
+          deltaType="down"
+        />
       </div>
 
       {/* Row 2: Revenue chart + Health + Quick actions */}

@@ -64,7 +64,7 @@ export const useSymptoms = ({
       }
 
       const { data, count, error } = await query
-        .order("created_at", { ascending: false })
+        .order("name", { ascending: true })
         .range(from, to);
 
       if (error) throw new Error(error.message);

@@ -120,7 +120,7 @@ export const useFacilityProfiles = (params: Pagination) => {
       }
 
       const [facilitiesResponse, statsResponse] = await Promise.all([
-        query.order("created_at", { ascending: false }).range(from, to),
+        query.order("facility_name", { ascending: true }).range(from, to),
         statsQuery,
       ]);
 
@@ -281,7 +281,7 @@ export const useFeaturedFacilities = (params: FeaturedTopRatedParams) => {
       }
 
       const { data, count, error } = await query
-        .order("created_at", { ascending: false })
+        .order("facility_name", { ascending: true })
         .range(from, to);
 
       if (error) throw error;
@@ -319,7 +319,7 @@ export const useTopRatedFacilities = (params: FeaturedTopRatedParams) => {
       }
 
       const { data, count, error } = await query
-        .order("created_at", { ascending: false })
+        .order("facility_name", { ascending: true })
         .range(from, to);
 
       if (error) throw error;

@@ -1,9 +1,7 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { CreditCard, Calendar, Edit, FileText, Trash2, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CreditCard, Calendar, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 export const subscriptionColumns: ColumnDef<any>[] = [
   {
@@ -38,14 +36,16 @@ export const subscriptionColumns: ColumnDef<any>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.original.status || 'active';
+      const status = row.original.status || "active";
       return (
-        <span className={cn(
-          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          status === 'active'
-            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-            : "bg-red-50 text-red-700 border-red-100"
-        )}>
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            status === "active"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-red-50 text-red-700 border-red-100",
+          )}
+        >
           {status}
         </span>
       );
@@ -63,29 +63,39 @@ export const subscriptionColumns: ColumnDef<any>[] = [
   {
     id: "actions",
     header: "",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <FileText className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const subscription = row.original;
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // View handler will be added in page component
+            }}
+          >
+            👁️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Edit handler will be added in page component
+            }}
+          >
+            ✏️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Delete handler will be added in page component
+            }}
+          >
+            🗑️
+          </button>
+        </div>
+      );
+    },
   },
 ];

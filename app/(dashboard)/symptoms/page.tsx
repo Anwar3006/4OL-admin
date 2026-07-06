@@ -47,15 +47,11 @@ const SymptomsPage = () => {
       header: "Symptom Name",
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xs text-slate-500 shrink-0 uppercase border border-slate-200 shadow-sm">
-            {row.original.name?.slice(0, 2)}
-          </div>
           <div className="min-w-0">
             <div className="font-bold text-slate-800 truncate">
-              {row.original.name}
-            </div>
-            <div className="text-[10px] text-slate-400 max-w-[200px] truncate leading-tight mt-0.5">
-              {row.original.description || "No description provided"}
+              {row.original.name.length > 20
+                ? `${row.original.name.slice(0, 20)}...`
+                : row.original.name}
             </div>
           </div>
         </div>
@@ -135,24 +131,47 @@ const SymptomsPage = () => {
         </span>
       ),
     },
-  ];
-
-  const rowActions = [
     {
-      label: "View",
-      icon: "👁️",
-      onClick: (row: any) => openViewDialog(row.id),
-    },
-    {
-      label: "Edit",
-      icon: "✏️",
-      onClick: (row: any) => addSymptom.open(row),
-    },
-    {
-      label: "Delete",
-      icon: "🗑️",
-      onClick: (row: any) => console.log("Delete", row.id),
-      danger: true,
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const symptom = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                openViewDialog(symptom.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                addSymptom.open(symptom);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (
+                  confirm(`Are you sure you want to delete "${symptom.name}"?`)
+                ) {
+                  console.log("Delete", symptom.id);
+                }
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -290,7 +309,6 @@ const SymptomsPage = () => {
               <DataTable
                 columns={columns}
                 data={data?.symptoms || []}
-                rowActions={rowActions}
                 selectable
                 isLoading={isLoading || isFetching}
                 pagination={true}

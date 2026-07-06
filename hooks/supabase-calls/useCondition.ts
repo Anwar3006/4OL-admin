@@ -66,7 +66,9 @@ export const useConditions = ({
           query = query.or(`name.ilike.%${search}%`);
         }
 
-        const { data, count, error } = await query.range(from, to);
+        const { data, count, error } = await query
+          .order("name", { ascending: true })
+          .range(from, to);
         if (error) throw error;
 
         const totalCount = count ?? 0;

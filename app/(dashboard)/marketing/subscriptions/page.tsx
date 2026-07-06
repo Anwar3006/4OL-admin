@@ -75,7 +75,48 @@ const SubscriptionsPage = () => {
     };
   }, [data]);
 
-  const columns = subscriptionColumns;
+  const columns = subscriptionColumns.map((col) => {
+    if (col.id === "actions") {
+      return {
+        ...col,
+        cell: ({ row }: any) => {
+          const subscription = row.original;
+          return (
+            <div className="flex items-center justify-end gap-2">
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  viewSubscription.open(subscription.id);
+                }}
+              >
+                👁️
+              </button>
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(subscription);
+                }}
+              >
+                ✏️
+              </button>
+              <button
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(subscription.id);
+                }}
+              >
+                🗑️
+              </button>
+            </div>
+          );
+        },
+      };
+    }
+    return col;
+  });
 
   const pagination = useMemo(
     () => createPaginationHandlers(page, setPage, data?.meta?.totalPages || 1),

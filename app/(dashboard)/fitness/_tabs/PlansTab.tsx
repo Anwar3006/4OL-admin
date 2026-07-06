@@ -159,20 +159,43 @@ const PlansTab = () => {
         </div>
       ),
     },
-  ];
-
-  const rowActions = [
     {
-      label: "View",
-      icon: "👁️",
-      onClick: (row: any) => viewDialog.open(row.id),
-    },
-    { label: "Edit", icon: "✏️", onClick: handleEdit },
-    {
-      label: "Delete",
-      icon: "🗑️",
-      onClick: (row: any) => handleDelete(row.id),
-      danger: true,
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const plan = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewDialog.open(plan.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(plan);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(plan.id);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -248,7 +271,6 @@ const PlansTab = () => {
         <DataTable
           columns={columns}
           data={data?.plans || []}
-          rowActions={rowActions}
           isLoading={isLoading}
           pagination={true}
           urlPersistence={{

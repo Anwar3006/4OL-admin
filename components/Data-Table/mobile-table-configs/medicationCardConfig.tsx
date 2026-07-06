@@ -1,10 +1,11 @@
 "use client";
 import { Pill, Activity, Calendar, FileText, ChevronRight } from "lucide-react";
 import { MobileCardConfig } from "../mobile-card-types";
-import { TMedicationReminder } from "../columns/medicationReminderColumns";
-import { Badge } from "@/components/ui/badge";
 
-export const medicationCardConfig: MobileCardConfig<TMedicationReminder> = {
+import { Badge } from "@/components/ui/badge";
+import { LoggedReminderRow } from "@/hooks/supabase-calls/useMedicationReminder";
+
+export const medicationCardConfig: MobileCardConfig<LoggedReminderRow> = {
   header: {
     title: (med) => med.drug_name,
     subtitle: (med) => `${med.dosage_amount} • ${med.drug_type}`,

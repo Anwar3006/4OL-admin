@@ -39,15 +39,27 @@ const DiseasesPage = () => {
 
   const { mutate: deleteCondition } = useDeleteCondition();
 
+  const handleDelete = (condition: any) => {
+    if (
+      globalThis.confirm(
+        `Are you sure you want to delete "${condition.name}"? This action cannot be undone.`,
+      )
+    ) {
+      const images = Array.isArray(condition.image_url)
+        ? condition.image_url
+        : condition.image_url
+          ? [condition.image_url]
+          : [];
+      deleteCondition({ id: condition.id, imagePath: images });
+    }
+  };
+
   const columns = [
     {
       accessorKey: "name",
       header: "Condition",
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center font-black text-xs text-slate-500 shrink-0 uppercase border border-slate-200 shadow-sm">
-            {row.original.name?.slice(0, 2)}
-          </div>
           <div className="min-w-0">
             <div className="font-bold text-slate-800 truncate">
               {row.original.name}
@@ -59,15 +71,15 @@ const DiseasesPage = () => {
         </div>
       ),
     },
-    {
-      accessorKey: "icd_11",
-      header: "ICD-11",
-      cell: ({ row }: any) => (
-        <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-          {row.original.icd_11 || "BA80"}
-        </span>
-      ),
-    },
+    // {
+    //   accessorKey: "icd_11",
+    //   header: "ICD-11",
+    //   cell: ({ row }: any) => (
+    //     <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+    //       {row.original.icd_11 || "BA80"}
+    //     </span>
+    //   ),
+    // },
     {
       accessorKey: "categories",
       header: "Category",
@@ -145,6 +157,41 @@ const DiseasesPage = () => {
         </span>
       ),
     },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              openViewDialog(row.original.id);
+            }}
+          >
+            👁️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              addCondition.open(row.original);
+            }}
+          >
+            ✏️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(row.original);
+            }}
+          >
+            🗑️
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -180,9 +227,10 @@ const DiseasesPage = () => {
         <KpiCard
           icon="🚩"
           label="Total Likes"
-          value="124K"
+          // value={stats?.totalLikes?.toLocaleString() || "0"}
+          value={0}
           variant="red"
-          delta="+8.4% month"
+          delta="High engagement"
           deltaType="up"
         />
         <KpiCard
@@ -202,7 +250,7 @@ const DiseasesPage = () => {
         <KpiCard
           icon="✅"
           label="Avg Engagement"
-          value="4.7"
+          value={0}
           variant="green"
           delta="High interest"
           deltaType="up"
@@ -292,6 +340,7 @@ const DiseasesPage = () => {
                 data={data?.conditions || []}
                 selectable
                 isLoading={isLoading || isFetching}
+                onRowClick={(row: any) => openViewDialog(row.id)}
                 pagination={true}
                 urlPersistence={{
                   pageKey: "dis_page",

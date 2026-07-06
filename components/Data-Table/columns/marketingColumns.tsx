@@ -2,7 +2,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Mail, BriefcaseBusiness, FileText, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAddMarketingDialog, useViewMarketingDialog } from "@/stores/dialog-store";
+import {
+  useAddMarketingDialog,
+  useViewMarketingDialog,
+} from "@/stores/dialog-store";
 import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
 import { MarketingStatusMap } from "@/constants/marketing.const";
 import { format } from "date-fns";
@@ -14,8 +17,12 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     header: "Campaign",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight">{row.original.headline}</div>
-        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{row.original.marketingType || "Marketing"}</div>
+        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+          {row.original.headline}
+        </div>
+        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+          {row.original.marketingType || "Marketing"}
+        </div>
       </div>
     ),
   },
@@ -34,12 +41,14 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     cell: ({ row }) => {
       const status = row.original.status;
       return (
-        <span className={cn(
-          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          status === 'live'
-            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-            : "bg-amber-50 text-amber-700 border-amber-100"
-        )}>
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            status === "live"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-amber-50 text-amber-700 border-amber-100",
+          )}
+        >
           {status}
         </span>
       );
@@ -82,7 +91,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
               openView(marketing.id);
             }}
           >
-            <FileText className="h-4 w-4" />
+            👁️
           </Button>
           <Button
             variant="ghost"
@@ -93,7 +102,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
               openEdit(marketing);
             }}
           >
-            <Edit className="h-4 w-4" />
+            ✏️
           </Button>
           <Button
             variant="ghost"
@@ -104,7 +113,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
               // handle delete logic here if needed
             }}
           >
-            <Trash2 className="h-4 w-4" />
+            🗑️
           </Button>
         </div>
       );

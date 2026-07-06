@@ -108,23 +108,43 @@ const UsersTab = () => {
         </span>
       ),
     },
-  ];
-
-  const rowActions = [
     {
-      label: "View Profile",
-      icon: "👁️",
-      onClick: (row: any) => console.log("View", row),
-    },
-    {
-      label: "Invite to Challenge",
-      icon: "🏆",
-      onClick: (row: any) => console.log("Invite", row),
-    },
-    {
-      label: "Edit Role",
-      icon: "✏️",
-      onClick: (row: any) => console.log("Edit", row),
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const user = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("View", user);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Edit", user);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Delete", user);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -207,7 +227,6 @@ const UsersTab = () => {
         <DataTable
           columns={columns}
           data={data?.users || []}
-          rowActions={rowActions}
           isLoading={isLoading}
           pagination={true}
           urlPersistence={{

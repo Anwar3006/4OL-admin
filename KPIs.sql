@@ -197,3 +197,225 @@ BEGIN
   );
 END;
 $$;
+
+---------
+-- For the Fitness KPI Dashboard we need to add these 2 tables to the db to track leaderboard stats and an append-only ledger for coins
+---------
+-- Create the initial ENUM with your core modules
+CREATE TYPE ledger_category AS ENUM ('fitness', 'medication', 'facility', 'general');
+CREATE TABLE app_ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL, 
+    category ledger_category NOT NULL,
+    amount NUMERIC(10, 2) NOT NULL, -- Supports decimals if needed, or change to INT for whole coins
+    transaction_type VARCHAR(50) NOT NULL, -- e.g., 'challenge_reward', 'medication_logged'
+    reference_id UUID, -- Polymorphic relation to a challenge_id, facility_id, etc.
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+-- Primary composite index for the dashboard RPC (filters by user, module, and time)
+CREATE INDEX idx_app_ledger_user_category_date 
+ON app_ledger (user_id, category, created_at DESC);
+
+-- Index for quickly calculating module-wide totals (e.g., total fitness coins issued platform-wide)
+CREATE INDEX idx_app_ledger_category_date 
+ON app_ledger (category, created_at DESC);
+
+-- Index for fast lookups of specific transaction references
+CREATE INDEX idx_app_ledger_reference 
+ON app_ledger (reference_id);
+
+CREATE TABLE fitness_leaderboards (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    score INT NOT NULL DEFAULT 0,
+    period VARCHAR(20) NOT NULL, -- e.g., 'weekly', 'monthly', 'all_time'
+    rank_position INT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Ensures a user only has one active rank per period type
+CREATE UNIQUE INDEX idx_fitness_leaderboards_user_period 
+ON fitness_leaderboards (user_id, period);
+
+-------
+-- RLS: app_ledger and fitness_leaderboards
+-- Reuses public.request_user_id() / public.is_app_admin() (see RLS.md).
+-- app_ledger is append-only (per its comment above), so users get
+-- select + insert on their own rows only — no update/delete policy is
+-- defined, which means Postgres denies those operations by default for
+-- non-admins even with RLS enabled. Admins bypass via is_app_admin().
+-------
+ALTER TABLE public.app_ledger ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "app_ledger_select"
+ON public.app_ledger
+FOR SELECT
+TO authenticated
+USING (
+  user_id::text = public.request_user_id()
+  OR public.is_app_admin()
+);
+
+CREATE POLICY "app_ledger_insert"
+ON public.app_ledger
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  user_id::text = public.request_user_id()
+  OR public.is_app_admin()
+);
+
+-------
+-- fitness_leaderboards: scores get upserted as they change (unique on
+-- user_id, period), so users also get update on their own row. Reading
+-- a leaderboard only makes sense if everyone can see everyone's rank,
+-- so select is open to all authenticated users rather than scoped to
+-- user_id.
+-------
+ALTER TABLE public.fitness_leaderboards ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "fitness_leaderboards_select"
+ON public.fitness_leaderboards
+FOR SELECT
+TO authenticated
+USING (true);
+
+CREATE POLICY "fitness_leaderboards_insert"
+ON public.fitness_leaderboards
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  user_id::text = public.request_user_id()
+  OR public.is_app_admin()
+);
+
+CREATE POLICY "fitness_leaderboards_update"
+ON public.fitness_leaderboards
+FOR UPDATE
+TO authenticated
+USING (
+  user_id::text = public.request_user_id()
+  OR public.is_app_admin()
+)
+WITH CHECK (
+  user_id::text = public.request_user_id()
+  OR public.is_app_admin()
+);
+
+-------
+--- Instead of a traditional Materialized View, the most efficient pattern for a Node.js backend serving a dashboard API is to use a Single-Row JSONB Cache Table. 
+--- The RPC computes the complex aggregations, packages them into a single JSON object, and stores it in one row. 
+--- When your API endpoint requests the dashboard data, it performs an $O(1)$ lookup, returning the data instantly without further serialization.
+-------
+CREATE TABLE fitness_dashboard_cache (
+    id INT PRIMARY KEY DEFAULT 1,
+    kpi_payload JSONB NOT NULL,
+    last_updated TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Constraint ensures this table only ever holds one row (id = 1)
+    CONSTRAINT single_row_cache CHECK (id = 1) 
+);
+
+-- Insert an empty initial state
+INSERT INTO fitness_dashboard_cache (id, kpi_payload) VALUES (1, '{}');
+
+--- This function uses Common Table Expressions (CTEs) to independently gather the scalar KPIs and the array-based top lists, before rolling them up into a single JSONB payload.
+CREATE OR REPLACE FUNCTION refresh_fitness_dashboard()
+RETURNS void AS $$
+DECLARE
+    final_payload JSONB;
+BEGIN
+    WITH 
+    -- 1. Aggregate all scalar (single value) KPIs
+    scalars AS (
+        SELECT 
+            (SELECT COUNT(*) FROM fitness_users) AS total_fitness_users,
+            (SELECT COUNT(*) FROM exercise_sessions WHERE status = 'in_progress') AS active_plans,
+            (SELECT COUNT(*) FROM fitness_challenges WHERE status = 'published') AS live_challenges,
+            (SELECT COUNT(*) FROM fitness_exercises) AS exercise_library_count,
+            (SELECT COALESCE(SUM(amount), 0) FROM app_ledger WHERE category = 'fitness' AND amount > 0) AS fitcoins_issued,
+            (SELECT COUNT(*) FROM fitness_generated_workouts) AS ai_generated_plans,
+            (SELECT COUNT(*) FROM workouts WHERE is_active = true) AS active_workouts,
+            (SELECT COALESCE(AVG(streak_count), 0)::INT FROM fitness_users) AS avg_streak,
+            (SELECT COALESCE(AVG(completion_percentage), 0)::INT FROM exercise_sessions) AS avg_completion
+    ),
+    -- 2. Aggregate Top 5 Active Challenges
+    top_challenges AS (
+        SELECT COALESCE(jsonb_agg(row_to_json(tc)), '[]'::jsonb) AS data
+        FROM (
+            SELECT id, title, participants_count 
+            FROM fitness_challenges 
+            WHERE status = 'published' -- or is_active = true
+            ORDER BY participants_count DESC 
+            LIMIT 5
+        ) tc
+    ),
+    -- 3. Aggregate Most Used Plans
+    top_plans AS (
+        SELECT COALESCE(jsonb_agg(row_to_json(tp)), '[]'::jsonb) AS data
+        FROM (
+            SELECT plan_id, title, COUNT(*) as usage_count
+            FROM exercise_sessions 
+            GROUP BY plan_id, title
+            ORDER BY usage_count DESC 
+            LIMIT 5
+        ) tp
+    ),
+    -- 4. Aggregate Fitcoin Leaderboard
+    leaderboard AS (
+        SELECT COALESCE(jsonb_agg(row_to_json(lb)), '[]'::jsonb) AS data
+        FROM (
+            SELECT user_id, score, rank_position 
+            FROM fitness_leaderboards 
+            WHERE period = 'all_time' 
+            ORDER BY rank_position ASC 
+            LIMIT 5
+        ) lb
+    ),
+    -- 5. Aggregate Top Exercises
+    top_exercises AS (
+        SELECT COALESCE(jsonb_agg(row_to_json(te)), '[]'::jsonb) AS data
+        FROM (
+            SELECT exercise_id, name, COUNT(*) as completion_count
+            FROM exercise_logs 
+            GROUP BY exercise_id, name
+            ORDER BY completion_count DESC 
+            LIMIT 5
+        ) te
+    )
+    
+    -- Assemble the final JSONB object
+    SELECT jsonb_build_object(
+        'metrics', (SELECT row_to_json(s) FROM scalars s),
+        'top_challenges', (SELECT data FROM top_challenges),
+        'most_used_plans', (SELECT data FROM top_plans),
+        'fitcoin_leaderboard', (SELECT data FROM leaderboard),
+        'top_exercises', (SELECT data FROM top_exercises)
+    ) INTO final_payload;
+
+    -- Update the single cache row
+    UPDATE fitness_dashboard_cache 
+    SET 
+        kpi_payload = final_payload,
+        last_updated = NOW()
+    WHERE id = 1;
+
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run the aggregation every 10 minutes
+SELECT cron.schedule('refresh_fitness_dashboard_job', '*/10 * * * *', 'SELECT refresh_fitness_dashboard()');
+
+--- this simple RPC will fetch the single JSONB payload
+CREATE OR REPLACE FUNCTION get_fitness_dashboard_kpis()
+RETURNS jsonb AS $$
+DECLARE
+    result jsonb;
+BEGIN
+    SELECT kpi_payload INTO result
+    FROM fitness_dashboard_cache
+    WHERE id = 1;
+
+    -- Return an empty JSON object if the cache is somehow empty, preventing frontend crashes
+    RETURN COALESCE(result, '{}'::jsonb);
+END;
+$$ LANGUAGE plpgsql;

@@ -1,8 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Dumbbell, Info, Edit, Trash2, Star } from "lucide-react";
+import { Dumbbell, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  useAddExerciseDialog,
+  useViewExerciseDialog,
+} from "@/stores/dialog-store";
+import { useDeleteExercise } from "@/hooks/supabase-calls/useExercise";
 
 export const exerciseColumns: ColumnDef<any>[] = [
   {
@@ -10,8 +15,8 @@ export const exerciseColumns: ColumnDef<any>[] = [
     header: "Exercise Name",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
-          <Dumbbell className="h-4 w-4" />
+        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 text-sm">
+          🏋️
         </div>
         <div>
           <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
@@ -130,39 +135,53 @@ export const exerciseColumns: ColumnDef<any>[] = [
   {
     id: "actions",
     header: "",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Info className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const exercise = row.original;
+      const { open: openView } = useViewExerciseDialog();
+      const { open: openEdit } = useAddExerciseDialog();
+      const { mutate: deleteExercise, isPending: isDeleting } =
+        useDeleteExercise();
+
+      const handleDelete = (e: any) => {
+        e.stopPropagation();
+        if (
+          globalThis.confirm(
+            `Are you sure you want to delete "${exercise.exercise_name}"? This action cannot be undone.`,
+          )
+        ) {
+          deleteExercise(exercise.id);
+        }
+      };
+
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              openView(exercise.id);
+            }}
+          >
+            👁️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(exercise);
+            }}
+          >
+            ✏️
+          </button>
+          <button
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            disabled={isDeleting}
+            onClick={handleDelete}
+          >
+            🗑️
+          </button>
+        </div>
+      );
+    },
   },
 ];

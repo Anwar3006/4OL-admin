@@ -345,8 +345,7 @@ const DataTableComponent = <TData, TValue>({
                       key={row.id}
                       className={cn(
                         "transition-colors",
-                        onRowClick &&
-                          "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700",
+                        onRowClick && "cursor-pointer hover:bg-slate-300",
                       )}
                       onClick={() => handleRowClick(row.original)}
                       data-state={row.getIsSelected() && "selected"}
