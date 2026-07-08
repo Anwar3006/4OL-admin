@@ -49,9 +49,14 @@ export const rehydrateHierarchy = (junctionData: any[], allData: any[]) => {
 
   // Extract the actual IDs from the nested junction structure
   // This handles condition_body_parts[i].body_parts.id
-  // and condition_categories[i].categories.id
+  // and condition_categories[i].categories.id.
+  // It also handles the case where junctionData is already a plain array
+  // of ID strings (e.g. pre-resolved via getIds()) — without this, every
+  // string item would fail all the object lookups below and silently
+  // resolve to an empty array, wiping the field on edit.
   const leafIds = junctionData
     .map((item) => {
+      if (typeof item === "string") return item;
       return (
         item.body_parts?.id ||
         item.categories?.id ||

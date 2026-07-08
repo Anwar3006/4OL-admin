@@ -1,12 +1,7 @@
 "use client";
 
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -19,225 +14,423 @@ import {
   ClipboardList,
   Clock,
   Calendar,
-  BarChart3,
   Star,
   Target,
   Tag,
+  Pencil,
+  Trash2,
+  X,
+  Ban,
+  CheckCircle2,
+  User,
+  TrendingUp,
 } from "lucide-react";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
-const ViewFitnessPlanDialog = () => {
+export function ViewFitnessPlanDialog() {
   const { isOpen, close, entityId } = useViewFitnessPlanDialog();
   const { open: openAdd } = useAddFitnessPlanDialog();
   const { data, isLoading } = useFitnessPlan(entityId!);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh] flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+      <DialogContent className="max-w-4xl p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[90vh] overflow-hidden">
         <VisuallyHidden.Root>
-          <DialogTitle>Fitness Plan Details</DialogTitle>
+          <DialogTitle>
+            {data?.title ? `Details for ${data.title}` : "Fitness Plan Details"}
+          </DialogTitle>
         </VisuallyHidden.Root>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground italic">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-              Loading fitness plan...
+          <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-white">
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
+              <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
+                <ClipboardList className="h-8 w-8 text-emerald-600 animate-pulse" />
+              </div>
             </div>
+            <span className="mt-6 text-xs font-black text-slate-400 uppercase tracking-widest">
+              Retrieving Fitness Plan...
+            </span>
           </div>
-        ) : !data ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground italic">
-            Fitness plan not found
-          </div>
+        ) : data ? (
+          <DetailView
+            data={data}
+            onEdit={() => {
+              close();
+              openAdd(data);
+            }}
+            onDelete={() => setShowDeleteModal(true)}
+            onClose={close}
+          />
         ) : (
-          <div className="flex flex-col h-full">
-            {/* Header Banner Background */}
-            <div className="relative h-60 w-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 p-8 flex flex-col justify-end">
-              <div className="absolute top-6 right-6 flex gap-2">
-                {data.is_premium && (
-                  <Badge className="bg-amber-500 hover:bg-amber-600 border-none px-3 font-bold text-[10px]">
-                    PRO
-                  </Badge>
-                )}
-                {data.is_featured && (
-                  <Badge className="bg-indigo-500 hover:bg-indigo-600 border-none px-3 flex gap-1 font-bold text-[10px]">
-                    <Star className="h-3 w-3 fill-current" /> FEATURED
-                  </Badge>
-                )}
-                <Badge className="bg-emerald-500 hover:bg-emerald-600 border-none px-3 font-bold text-[10px] capitalize">
-                  {data.status || "published"}
-                </Badge>
-              </div>
+          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-5 bg-white min-h-[400px]">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+              <Ban className="h-10 w-10" />
+            </div>
+            <p className="text-slate-900 font-bold text-lg">Plan Not Found</p>
+            <p className="text-slate-500 font-medium max-w-sm">
+              This fitness plan may have been removed or updated.
+            </p>
+            <Button
+              onClick={close}
+              className="bg-black hover:bg-slate-800 text-white rounded-xl px-8 mt-2"
+            >
+              Close Panel
+            </Button>
+          </div>
+        )}
+      </DialogContent>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-indigo-300">
-                  <ClipboardList className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                    {data.difficulty_level || "Intermediate"} Level
-                  </span>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          setShowDeleteModal(false);
+          close();
+        }}
+        title="Delete Fitness Plan"
+        itemName={data?.title || ""}
+        itemType="fitness plan"
+      />
+    </Dialog>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────
+   Detail View Component
+   ─────────────────────────────────────────────────────────── */
+
+function DetailView({
+  data,
+  onEdit,
+  onDelete,
+  onClose,
+}: {
+  data: any;
+  onEdit: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const statusColors: Record<string, string> = {
+    published:
+      "bg-emerald-100 text-emerald-800 border-none hover:bg-emerald-200",
+    draft: "bg-amber-100 text-amber-800 border-none hover:bg-amber-200",
+    archived: "bg-slate-100 text-slate-800 border-none hover:bg-slate-200",
+  };
+
+  const currentStatus = (data.status || "published").toLowerCase();
+  const statusBadgeClass =
+    statusColors[currentStatus] || statusColors.published;
+
+  const difficultyColors: Record<string, string> = {
+    beginner: "bg-blue-50 text-blue-700 border-blue-200",
+    intermediate: "bg-purple-50 text-purple-700 border-purple-200",
+    advanced: "bg-red-50 text-red-700 border-red-200",
+  };
+  const diffClass =
+    difficultyColors[(data.difficulty_level || "").toLowerCase()] ||
+    "bg-slate-50 text-slate-700 border-slate-200";
+
+  // Array parsing fallbacks for Postgres Arrays
+  const targetBodyParts = Array.isArray(data.target_body_parts)
+    ? data.target_body_parts
+    : [];
+  const goals = Array.isArray(data.goals) ? data.goals : [];
+  const tags = Array.isArray(data.tags) ? data.tags : [];
+
+  return (
+    <>
+      {/* ── Sticky Top Bar Header ── */}
+      <div className="bg-white sticky top-0 z-30 px-6 py-6 md:px-10 border-b border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-3 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${statusBadgeClass}`}
+              >
+                {data.status || "Published"}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${diffClass}`}
+              >
+                {data.difficulty_level || "General"}
+              </Badge>
+              {data.is_premium && (
+                <Badge className="bg-amber-500 text-white font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
+                  👑 Premium
+                </Badge>
+              )}
+              {data.is_featured && (
+                <Badge className="bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
+                  ✨ Featured
+                </Badge>
+              )}
+            </div>
+            <h2 className="text-2xl md:text-4xl font-black tracking-tight text-black leading-tight">
+              {data.title}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto pt-2 md:pt-0">
+            <Button
+              onClick={onEdit}
+              className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"
+            >
+              <Pencil className="w-4 h-4 mr-2" /> Edit Plan
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onDelete}
+              className="h-11 w-11 rounded-xl text-slate-400 hover:text-white hover:bg-red-600 transition-colors"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Scrollable Content Bento ── */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 bg-slate-50">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Main Context Panels */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Description Section */}
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                  <ClipboardList className="h-5 w-5" />
                 </div>
-                <h2 className="text-3xl font-black text-white leading-tight">
-                  {data.title}
-                </h2>
-                {data.author_type && (
-                  <span className="inline-block text-[10px] font-medium text-slate-400 capitalize">
-                    Created via {data.author_type} Engine
-                  </span>
-                )}
+                <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                  Plan Description
+                </h3>
               </div>
+              <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
+                {data.description ||
+                  "No description provided for this fitness plan."}
+              </p>
             </div>
 
-            {/* Core Body Fields */}
-            <div className="p-8 space-y-8 flex-1">
-              {/* Quick Metrics Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-indigo-600">
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Duration
-                    </span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {data.duration_weeks} Weeks
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-emerald-600">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Frequency
-                    </span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {data.workouts_per_week} Workouts / Wk
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-amber-600">
-                    <BarChart3 className="h-5 w-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Rating
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-bold text-slate-700">
-                        {data.average_rating
-                          ? Number(data.average_rating).toFixed(1)
-                          : "0.0"}{" "}
-                        ({data.rating_count || 0})
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-purple-600">
+            {/* Targets & Goals Section */}
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+              {/* Target Body Parts */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                     <Target className="h-5 w-5" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Total Completions
-                    </span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {data.total_completions || 0} users
-                    </span>
-                  </div>
+                  <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                    Target Body Parts
+                  </h3>
                 </div>
-              </div>
-
-              {/* Description Section */}
-              <div className="space-y-3">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Plan Description
-                </h4>
-                <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                  {data.description || "No description provided for this plan."}
-                </p>
-              </div>
-
-              {/* Targets Array Section */}
-              {data.target_body_parts && data.target_body_parts.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    Target Focus Areas
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {data.target_body_parts.map((part: string) => (
+                {targetBodyParts.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {targetBodyParts.map((part: string, idx: number) => (
                       <Badge
-                        key={part}
+                        key={idx}
                         variant="secondary"
-                        className="bg-indigo-50 text-indigo-600 border-none font-bold uppercase text-[9px] px-3 py-1"
+                        className="bg-slate-100 text-slate-800 hover:bg-slate-200 border-none font-bold rounded-lg px-3 py-1.5 text-xs"
                       >
                         {part}
                       </Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs font-medium text-slate-400 italic pl-1">
+                    No target body parts configured.
+                  </p>
+                )}
+              </div>
 
-              {/* Goals Section */}
-              {data.goals && data.goals.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    Target Goals
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {data.goals.map((goal: string) => (
+              {/* Goals */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                    Plan Goals
+                  </h3>
+                </div>
+                {goals.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {goals.map((goal: string, idx: number) => (
                       <Badge
-                        key={goal}
+                        key={idx}
                         variant="secondary"
-                        className="bg-purple-50 text-purple-600 border-none font-bold uppercase text-[9px] px-3 py-1"
+                        className="bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-100 font-bold rounded-lg px-3 py-1.5 text-xs"
                       >
-                        {goal}
+                        🎯 {goal}
                       </Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs font-medium text-slate-400 italic pl-1">
+                    No localized milestones or goals mapped.
+                  </p>
+                )}
+              </div>
 
               {/* Tags Section */}
-              {data.tags && data.tags.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    Search Tags
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.tags.map((tag: string) => (
-                      <div
-                        key={tag}
-                        className="inline-flex items-center gap-1 text-slate-400 text-xs bg-slate-50 border border-slate-100 rounded-md px-2 py-0.5"
+              {tags.length > 0 && (
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-slate-50 text-slate-500">
+                      <Tag className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                      Tags
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {tags.map((tag: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md"
                       >
-                        <Tag className="h-3 w-3 text-slate-400" />
-                        <span>{tag}</span>
-                      </div>
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Action Footer */}
-            <div className="p-8 bg-white border-t border-slate-100">
-              <Button
-                className="w-full h-14 text-sm font-black uppercase tracking-[0.1em] shadow-xl hover:shadow-indigo-900/10 transition-all rounded-2xl bg-slate-900 hover:bg-slate-800 text-white"
-                onClick={() => openAdd(data)}
-              >
-                ✏️ Manage Fitness Plan
-              </Button>
+          {/* Sidebar Metrics Bento Row */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Timeline Breakdown Widget */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                    Plan Duration
+                  </span>
+                  <p className="text-sm font-black text-black leading-tight">
+                    {data.duration_weeks}{" "}
+                    {data.duration_weeks === 1 ? "Week" : "Weeks"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 border-t border-slate-100 pt-4">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                    Frequency Split
+                  </span>
+                  <p className="text-sm font-black text-black leading-tight">
+                    {data.workouts_per_week}{" "}
+                    {data.workouts_per_week === 1 ? "Workout" : "Workouts"} /
+                    Week
+                  </p>
+                </div>
+              </div>
+
+              {data.author_type && (
+                <div className="flex items-center gap-4 border-t border-slate-100 pt-4">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 text-slate-600 shrink-0">
+                    <User className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                      Author Category
+                    </span>
+                    <p className="text-sm font-black text-slate-800 leading-tight capitalize">
+                      {data.author_type} Module
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Performance Engagement Metric Card */}
+            <div className="bg-black text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden space-y-6">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-900/30 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="p-2.5 rounded-xl bg-white/10 text-emerald-400">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+                <h3 className="font-black uppercase tracking-[0.15em] text-sm text-white">
+                  Completions & Feedback
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 relative z-10 pt-2">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                    Total Completions
+                  </span>
+                  <p className="text-2xl font-black text-white tracking-tight">
+                    {(data.total_completions ?? 0).toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="space-y-1 border-l border-white/10 pl-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                    Average Rating
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-2xl font-black text-white tracking-tight">
+                      {Number(data.average_rating || 0).toFixed(1)}
+                    </p>
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+                  </div>
+                  <span className="text-[10px] text-slate-400 block">
+                    from {data.rating_count ?? 0} scores
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Timestamps Meta Box */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
+              <div className="text-center sm:text-left space-y-1">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                  Date Created
+                </span>
+                <span className="text-xs font-bold text-slate-700">
+                  {data.created_at
+                    ? new Date(data.created_at).toLocaleDateString(undefined, {
+                        dateStyle: "medium",
+                      })
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="text-center sm:text-left space-y-1 border-l border-slate-100 pl-4">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                  Last Updated
+                </span>
+                <span className="text-xs font-bold text-slate-700">
+                  {data.updated_at
+                    ? new Date(data.updated_at).toLocaleDateString(undefined, {
+                        dateStyle: "medium",
+                      })
+                    : "N/A"}
+                </span>
+              </div>
             </div>
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </>
   );
-};
-
-export default ViewFitnessPlanDialog;
+}

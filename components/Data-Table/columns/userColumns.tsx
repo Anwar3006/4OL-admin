@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useViewUserDialog } from "@/stores/dialog-store";
 
 export const userColumns: ColumnDef<any>[] = [
   {
@@ -108,13 +109,16 @@ export const userColumns: ColumnDef<any>[] = [
     id: "actions",
     header: "",
     cell: ({ row }) => {
+      const user = row.original;
+      const { open: openView } = useViewUserDialog();
+
       return (
         <div className="flex items-center justify-end gap-2">
           <button
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              // View handler will be added in page component
+              openView(user.user_id);
             }}
           >
             👁️

@@ -12,7 +12,7 @@ import {
   useViewFitnessPlanDialog,
 } from "@/stores/dialog-store";
 import AddFitnessPlanDialog from "../_components/add-fitness-plan-dialog";
-import ViewFitnessPlanDialog from "../_components/view-fitness-plan-dialog";
+
 import { cn } from "@/lib/utils";
 import {
   Star,
@@ -25,6 +25,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { ViewFitnessPlanDialog } from "../_components/view-fitness-plan-dialog";
 
 const PlansTab = () => {
   const [search, setSearch] = useState("");

@@ -52,7 +52,7 @@ const AddConditionDialog = () => {
   const { mutateAsync: mutateAsyncEdit, isPending: submittingEdit } =
     useUpdateCondition();
 
-  const isLoadingForm = loadingParts && loadingCats;
+  const isLoadingForm = loadingParts || loadingCats;
   const isSubmitting = isPending || submittingEdit;
 
   const form = useForm<TConditionsInput>({
@@ -96,23 +96,30 @@ const AddConditionDialog = () => {
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && condition) {
-        // Helper to convert name strings to IDs
-        const getIdsFromNames = (names: string[], items: any[]): string[] => {
-          if (!Array.isArray(names)) return [];
-          return names
-            .map((name) => items.find((item) => item.name === name)?.id)
+        // Helper to extract IDs from either objects or strings
+        const getIds = (data: any[], items: any[]): string[] => {
+          if (!Array.isArray(data)) return [];
+
+          // Check if data is already an array of objects (from useCondition)
+          if (data.length > 0 && typeof data[0] === "object") {
+            // Extract IDs from junction objects
+            return data
+              .map((item) => {
+                // Handle nested structure: condition_body_parts[0].body_parts.id
+                return item.body_parts?.id || item.categories?.id || item.id;
+              })
+              .filter(Boolean);
+          }
+
+          // Otherwise, treat as array of names (from useConditions list)
+          return data
+            .map((name: string) => items.find((item) => item.name === name)?.id)
             .filter(Boolean);
         };
 
-        // Get body part and category IDs from names
-        const bodyPartIds = getIdsFromNames(
-          condition.bodyParts || [],
-          bodyParts,
-        );
-        const categoryIds = getIdsFromNames(
-          condition.categories || [],
-          categories,
-        );
+        // Get body part and category IDs
+        const bodyPartIds = getIds(condition.bodyParts || [], bodyParts);
+        const categoryIds = getIds(condition.categories || [], categories);
 
         form.reset({
           ...condition,

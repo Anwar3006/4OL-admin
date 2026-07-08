@@ -2,7 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Phone, Calendar, Activity } from "lucide-react";
 import {
-  useViewUserDialog,
+  useViewAdminDialog,
   useAddAdminDialog,
   useMakeGroupLeaderDialog,
 } from "@/stores/dialog-store";
@@ -87,8 +87,7 @@ export const adminColumns: ColumnDef<any>[] = [
     header: "",
     cell: ({ row }) => {
       const user = row.original;
-      const { open: openView } = useViewUserDialog();
-      const { open: openEdit } = useAddAdminDialog();
+      const { open: openView } = useViewAdminDialog();
       const { open: openMakeLeader } = useMakeGroupLeaderDialog();
 
       return (
@@ -101,15 +100,6 @@ export const adminColumns: ColumnDef<any>[] = [
             }}
           >
             👁️
-          </button>
-          <button
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              openEdit(user);
-            }}
-          >
-            ✏️
           </button>
           <button
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"

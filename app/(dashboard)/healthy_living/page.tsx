@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSearchParams } from "next/navigation";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();
@@ -39,6 +40,27 @@ const HealthyLivingPage = () => {
   const page = parseInt(searchParams.get("hl_page") || "1", 10);
 
   const { mutate: deleteHealthyLiving } = useDeleteHealthyLiving();
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    item: any;
+  }>({ isOpen: false, item: null });
+
+  const handleDeleteClick = useCallback((item: any) => {
+    setDeleteModal({ isOpen: true, item });
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleteModal.item) {
+      deleteHealthyLiving(deleteModal.item.id);
+      setDeleteModal({ isOpen: false, item: null });
+    }
+  }, [deleteModal.item, deleteHealthyLiving]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteModal({ isOpen: false, item: null });
+  }, []);
+
   const { data: healthyLivingData } = useHealthyLivings({
     page,
     limit: 10,
@@ -46,19 +68,6 @@ const HealthyLivingPage = () => {
     // Pass the status filter here (convert "all" to undefined so the hook ignores it)
     status: statusFilter === "all" ? undefined : statusFilter,
   });
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (
-        globalThis.confirm(
-          "Are you sure you want to delete this Healthy Living item?",
-        )
-      ) {
-        deleteHealthyLiving(id);
-      }
-    },
-    [deleteHealthyLiving],
-  );
 
   // Convert data to columns format for Data-Table
   const tableColumns = useMemo(
@@ -170,13 +179,7 @@ const HealthyLivingPage = () => {
                 className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (
-                    confirm(
-                      "Are you sure you want to delete this Healthy Living item?",
-                    )
-                  ) {
-                    handleDelete(item.id);
-                  }
+                  handleDeleteClick(item);
                 }}
               >
                 🗑️
@@ -324,6 +327,14 @@ const HealthyLivingPage = () => {
 
       <AddHealthyLivingDialog />
       <ViewHealthyLivingDialog />
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Healthy Living Article"
+        itemName={deleteModal.item?.name || ""}
+        itemType="healthy living article"
+      />
     </div>
   );
 };

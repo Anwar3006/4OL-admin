@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useSearchParams } from "next/navigation";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const SymptomsPage = () => {
   const addSymptom = useAddConditionDialog();
@@ -40,6 +41,27 @@ const SymptomsPage = () => {
   });
 
   const { data: stats, isLoading: isStatsLoading } = useSymptomStats();
+
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    item: any;
+  }>({ isOpen: false, item: null });
+
+  const handleDeleteClick = (symptom: any) => {
+    setDeleteModal({ isOpen: true, item: symptom });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModal.item) {
+      console.log("Delete symptom:", deleteModal.item.id);
+      // TODO: Implement actual delete mutation
+      setDeleteModal({ isOpen: false, item: null });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, item: null });
+  };
 
   const columns = [
     {
@@ -160,11 +182,7 @@ const SymptomsPage = () => {
               className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                if (
-                  confirm(`Are you sure you want to delete "${symptom.name}"?`)
-                ) {
-                  console.log("Delete", symptom.id);
-                }
+                handleDeleteClick(symptom);
               }}
             >
               🗑️
@@ -362,6 +380,14 @@ const SymptomsPage = () => {
 
       <AddSymptomDialog />
       <ViewSymptomDialog />
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Symptom"
+        itemName={deleteModal.item?.name || ""}
+        itemType="symptom"
+      />
     </div>
   );
 };

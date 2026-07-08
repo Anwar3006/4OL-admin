@@ -17,6 +17,7 @@ export type DialogTypes =
   | "view-discount"
   | "add-admin"
   | "view-admin"
+  | "view-user"
   | "add-condition"
   | "view-condition"
   | "add-healthy-living"
@@ -44,7 +45,8 @@ export type DialogTypes =
   | "add-outdoor-event"
   | "view-outdoor-event"
   | "add-outdoor-review"
-  | "view-outdoor-review";
+  | "view-outdoor-review"
+  | "flag-user";
 
 /**
  * Generic dialog configuration
@@ -260,6 +262,23 @@ export const useAddAdminDialog = () => {
 export const useViewUserDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-user"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-user"));
+
+  return {
+    isOpen,
+    entityId,
+    open: (entityId: string) => openDialog("view-user", { entityId }),
+    close: () => closeDialog("view-user"),
+  };
+};
+
+/**
+ * Hook for View Admin Dialog
+ */
+export const useViewAdminDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
   const isOpen = useDialogStore((state) => state.isDialogOpen("view-admin"));
   const entityId = useDialogStore((state) => state.getEntityId("view-admin"));
 
@@ -268,6 +287,26 @@ export const useViewUserDialog = () => {
     entityId,
     open: (entityId: string) => openDialog("view-admin", { entityId }),
     close: () => closeDialog("view-admin"),
+  };
+};
+
+/**
+ * Hook for Flag User Dialog
+ */
+export const useFlagUserDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("flag-user"));
+  const entityId = useDialogStore((state) => state.getEntityId("flag-user"));
+  const data = useDialogStore((state) => state.getDialogData("flag-user"));
+
+  return {
+    isOpen,
+    entityId,
+    data,
+    open: (entityId: string, data?: any) =>
+      openDialog("flag-user", { entityId, data }),
+    close: () => closeDialog("flag-user"),
   };
 };
 
@@ -521,19 +560,25 @@ export const useViewDiscountDialog = () => {
   };
 };
 
-
 export const useMakeGroupLeaderDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("make-group-leader"));
-  const entityId = useDialogStore((state) => state.getEntityId("make-group-leader"));
-  const data = useDialogStore((state) => state.getDialogData("make-group-leader"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("make-group-leader"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("make-group-leader"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("make-group-leader"),
+  );
 
   return {
     isOpen,
     entityId,
     data,
-    open: (userId: string, data?: any) => openDialog("make-group-leader", { entityId: userId, data }),
+    open: (userId: string, data?: any) =>
+      openDialog("make-group-leader", { entityId: userId, data }),
     close: () => closeDialog("make-group-leader"),
   };
 };
@@ -549,7 +594,8 @@ export const useAssignAdminDialog = () => {
     isOpen,
     entityId,
     data,
-    open: (entityId: string, data?: any) => openDialog("assign-admin", { entityId, data }),
+    open: (entityId: string, data?: any) =>
+      openDialog("assign-admin", { entityId, data }),
     close: () => closeDialog("assign-admin"),
   };
 };
@@ -557,15 +603,22 @@ export const useAssignAdminDialog = () => {
 export const useViewConversationDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-conversation"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-conversation"));
-  const data = useDialogStore((state) => state.getDialogData("view-conversation"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-conversation"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-conversation"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("view-conversation"),
+  );
 
   return {
     isOpen,
     entityId,
     data,
-    open: (entityId: string, data?: any) => openDialog("view-conversation", { entityId, data }),
+    open: (entityId: string, data?: any) =>
+      openDialog("view-conversation", { entityId, data }),
     close: () => closeDialog("view-conversation"),
   };
 };
@@ -646,8 +699,12 @@ export const useAddChallengeDialog = () => {
 export const useViewChallengeDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-challenge"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-challenge"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-challenge"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-challenge"),
+  );
 
   return {
     isOpen,
@@ -660,8 +717,12 @@ export const useViewChallengeDialog = () => {
 export const useFacilityToggleDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("facility-toggle"));
-  const data = useDialogStore((state) => state.getDialogData("facility-toggle"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("facility-toggle"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("facility-toggle"),
+  );
 
   return {
     isOpen,
@@ -690,7 +751,9 @@ export const useViewExerciseDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
   const isOpen = useDialogStore((state) => state.isDialogOpen("view-exercise"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-exercise"));
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-exercise"),
+  );
 
   return {
     isOpen,
@@ -703,8 +766,12 @@ export const useViewExerciseDialog = () => {
 export const useAddFitnessPlanDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-fitness-plan"));
-  const data = useDialogStore((state) => state.getDialogData("add-fitness-plan"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-fitness-plan"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-fitness-plan"),
+  );
 
   return {
     isOpen,
@@ -718,8 +785,12 @@ export const useAddFitnessPlanDialog = () => {
 export const useViewFitnessPlanDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-fitness-plan"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-fitness-plan"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-fitness-plan"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-fitness-plan"),
+  );
 
   return {
     isOpen,
@@ -732,8 +803,12 @@ export const useViewFitnessPlanDialog = () => {
 export const useAddOutdoorRouteDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-route"));
-  const data = useDialogStore((state) => state.getDialogData("add-outdoor-route"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-outdoor-route"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-outdoor-route"),
+  );
 
   return {
     isOpen,
@@ -747,8 +822,12 @@ export const useAddOutdoorRouteDialog = () => {
 export const useViewOutdoorRouteDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-route"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-route"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-outdoor-route"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-outdoor-route"),
+  );
 
   return {
     isOpen,
@@ -761,8 +840,12 @@ export const useViewOutdoorRouteDialog = () => {
 export const useAddOutdoorEventDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-event"));
-  const data = useDialogStore((state) => state.getDialogData("add-outdoor-event"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-outdoor-event"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-outdoor-event"),
+  );
 
   return {
     isOpen,
@@ -776,8 +859,12 @@ export const useAddOutdoorEventDialog = () => {
 export const useViewOutdoorEventDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-event"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-event"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-outdoor-event"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-outdoor-event"),
+  );
 
   return {
     isOpen,
@@ -790,8 +877,12 @@ export const useViewOutdoorEventDialog = () => {
 export const useAddOutdoorReviewDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-outdoor-review"));
-  const data = useDialogStore((state) => state.getDialogData("add-outdoor-review"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-outdoor-review"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-outdoor-review"),
+  );
 
   return {
     isOpen,
@@ -805,8 +896,12 @@ export const useAddOutdoorReviewDialog = () => {
 export const useViewOutdoorReviewDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-outdoor-review"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-outdoor-review"));
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-outdoor-review"),
+  );
+  const entityId = useDialogStore((state) =>
+    state.getEntityId("view-outdoor-review"),
+  );
 
   return {
     isOpen,
@@ -815,5 +910,3 @@ export const useViewOutdoorReviewDialog = () => {
     close: () => closeDialog("view-outdoor-review"),
   };
 };
-
-

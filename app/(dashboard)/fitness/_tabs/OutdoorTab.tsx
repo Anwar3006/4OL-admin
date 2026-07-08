@@ -24,7 +24,7 @@ import {
 import AddOutdoorRouteDialog from "../_components/add-outdoor-route-dialog";
 import ViewOutdoorRouteDialog from "../_components/view-outdoor-route-dialog";
 import AddOutdoorEventDialog from "../_components/add-outdoor-event-dialog";
-import ViewOutdoorEventDialog from "../_components/view-outdoor-event-dialog";
+
 import AddOutdoorReviewDialog from "../_components/add-outdoor-review-dialog";
 import ViewOutdoorReviewDialog from "../_components/view-outdoor-review-dialog";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { ViewOutdoorEventDialog } from "../_components/view-outdoor-event-dialog";
 
 const OutdoorTab = () => {
   const [activeSubTab, setActiveSubTab] = useState("routes");

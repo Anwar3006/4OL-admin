@@ -12,7 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, ChevronDown, ChevronRight, TreePine } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  TreePine,
+} from "lucide-react";
 import { nanoid } from "nanoid";
 import slugify from "slugify";
 import { cn } from "@/lib/utils";
@@ -35,14 +42,14 @@ type ContentSection = {
 };
 
 type NodeData = {
-  _localId: string;        // React key only — never sent to DB
+  _localId: string; // React key only — never sent to DB
   name: string;
-  description: string;     // Short card preview text
+  description: string; // Short card preview text
   content_sections: ContentSection[];
   image_url: string;
   attribution: any;
   children: NodeData[];
-  _expanded: boolean;      // UI state: whether children panel is open
+  _expanded: boolean; // UI state: whether children panel is open
 };
 
 function createEmptyNode(): NodeData {
@@ -65,7 +72,7 @@ function createEmptyNode(): NodeData {
 function updateNode(
   tree: NodeData,
   localId: string,
-  updater: (node: NodeData) => NodeData
+  updater: (node: NodeData) => NodeData,
 ): NodeData {
   if (tree._localId === localId) return updater(tree);
   return {
@@ -140,7 +147,8 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
   onRemove,
 }) => {
   const borderColor = DEPTH_COLORS[Math.min(depth, DEPTH_COLORS.length - 1)];
-  const depthLabel = depth === 0 ? "Topic" : depth === 1 ? "Sub-topic" : "Sub-sub-topic";
+  const depthLabel =
+    depth === 0 ? "Topic" : depth === 1 ? "Sub-topic" : "Sub-sub-topic";
 
   const set = (field: keyof NodeData) => (value: any) =>
     onUpdate(node._localId, (n) => ({ ...n, [field]: value }));
@@ -174,7 +182,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
     <div
       className={cn(
         "relative border-l-4 pl-4 pr-3 py-4 rounded-r-lg bg-white shadow-sm mb-3",
-        borderColor
+        borderColor,
       )}
     >
       {/* Header */}
@@ -183,11 +191,18 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
           <button
             type="button"
             onClick={() =>
-              onUpdate(node._localId, (n) => ({ ...n, _expanded: !n._expanded }))
+              onUpdate(node._localId, (n) => ({
+                ...n,
+                _expanded: !n._expanded,
+              }))
             }
             className="text-muted-foreground hover:text-foreground"
           >
-            {node._expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            {node._expanded ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
           </button>
           {/* <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {depthLabel}
@@ -248,7 +263,10 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
             </div>
 
             {node.content_sections.map((section, i) => (
-              <div key={i} className="relative p-3 bg-white border rounded-lg space-y-2 grid grid-cols-1 gap-4">
+              <div
+                key={i}
+                className="relative p-3 bg-white border rounded-lg space-y-2 grid grid-cols-1 gap-4"
+              >
                 <Input
                   placeholder="Section title"
                   value={section.sub_name}
@@ -262,7 +280,9 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
                   // Since we're not using react-hook-form here, use onChange prop if your RichTextEditor supports it
                   // Adapt this to your actual RichTextEditor API:
                   defaultValue={section.sub_content}
-                  onChange={(value: any) => updateSection(i, "sub_content", value)}
+                  onChange={(value: any) =>
+                    updateSection(i, "sub_content", value)
+                  }
                   label=""
                 />
                 <button
@@ -282,7 +302,12 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
             )}
 
             <div className="flex items-center justify-end">
-              <Button type="button" variant="outline" size="sm" onClick={addSection}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSection}
+              >
                 <Plus size={12} className="mr-1" /> Add Content
               </Button>
             </div>
@@ -294,7 +319,9 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
             <ImageDropZone
               filePath={filePath}
               text="Drop an image"
-              onFilesChange={(urls: string[]) => set("image_url")(urls[0] ?? "")}
+              onFilesChange={(urls: string[]) =>
+                set("image_url")(urls[0] ?? "")
+              }
               initialFiles={node.image_url ? [node.image_url] : []}
             />
           </div>
@@ -353,8 +380,10 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
 const AddHealthyLivingDialog = () => {
   const { isOpen, data, isEditMode, close } = useAddHealthyLivingDialog();
 
-  const { mutateAsync: createTree, isPending: creating } = useCreateHealthyLiving();
-  const { mutateAsync: updateNodeMutation, isPending: updating } = useUpdateHealthyLiving();
+  const { mutateAsync: createTree, isPending: creating } =
+    useCreateHealthyLiving();
+  const { mutateAsync: updateNodeMutation, isPending: updating } =
+    useUpdateHealthyLiving();
 
   const isSubmitting = creating || updating;
 
@@ -365,11 +394,16 @@ const AddHealthyLivingDialog = () => {
     if (isOpen) {
       if (isEditMode && data) {
         // Edit mode: single-node edit (tree editing of existing data is a separate concern)
+        // Ensure content_sections is always an array
+        const contentSections = Array.isArray(data.content_sections)
+          ? data.content_sections
+          : [];
+
         setTree({
           _localId: nanoid(8),
           name: data.name ?? "",
           description: data.description ?? "",
-          content_sections: data.content_sections ?? [],
+          content_sections: contentSections,
           image_url: data.image_url ?? "",
           attribution: data.attribution ?? EMPTY_LEXICAL_STATE,
           children: [],
@@ -387,7 +421,7 @@ const AddHealthyLivingDialog = () => {
     (localId: string, updater: (n: NodeData) => NodeData) => {
       setTree((prev) => updateNode(prev, localId, updater));
     },
-    []
+    [],
   );
 
   const handleAddChild = useCallback((parentLocalId: string) => {
@@ -433,8 +467,8 @@ const AddHealthyLivingDialog = () => {
               createTree({
                 tree: serializeTree(child),
                 parent_id: data.id,
-              } as any)
-            )
+              } as any),
+            ),
           );
         }
 
@@ -464,7 +498,6 @@ const AddHealthyLivingDialog = () => {
       <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            
             {isEditMode
               ? `Edit — ${data?.name || "Healthy Living"}`
               : "Add Healthy Living"}
@@ -502,10 +535,15 @@ const AddHealthyLivingDialog = () => {
               {isSubmitting
                 ? "Saving…"
                 : isEditMode
-                ? "Update"
-                : `Save ${totalNodes} node${totalNodes !== 1 ? "s" : ""}`}
+                  ? "Update"
+                  : `Save ${totalNodes} node${totalNodes !== 1 ? "s" : ""}`}
             </Button>
-            <Button type="button" variant="ghost" onClick={close} className="flex-1">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={close}
+              className="flex-1"
+            >
               Cancel
             </Button>
           </div>

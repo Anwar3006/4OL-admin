@@ -34,7 +34,8 @@ export const useExercises = ({
       let query = supabase
         .from("fitness_exercises")
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false });
+        // Updated here: sort by exercise_name in ascending order
+        .order("exercise_name", { ascending: true });
 
       if (search) {
         query = query.ilike("exercise_name", `%${search}%`);
@@ -129,7 +130,10 @@ export const useDeleteExercise = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("fitness_exercises").delete().eq("id", id);
+      const { error } = await supabase
+        .from("fitness_exercises")
+        .delete()
+        .eq("id", id);
       if (error) throw new Error(error.message);
       return id;
     },

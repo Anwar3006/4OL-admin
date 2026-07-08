@@ -1,14 +1,9 @@
-import { memo } from "react";
+"use client";
+
+import { memo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getPublicImageUrl, hasLexicalContent } from "@/lib/utils";
 import {
   useAddConditionDialog,
@@ -28,7 +23,11 @@ import {
   Stethoscope,
   Syringe,
   User,
-  UserCheck2Icon,
+  Pencil,
+  Trash2,
+  X,
+  HeartPulse,
+  FolderOpen,
 } from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { LexicalRenderer } from "@/components/LexicalRenderer";
@@ -36,6 +35,13 @@ import {
   useDeleteSymptom,
   useSymptom,
 } from "@/hooks/supabase-calls/useSymptoms";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+
+/* ───────────────────────────────────────────────────────────
+   Main Component
+   ─────────────────────────────────────────────────────────── */
 
 const ViewSymptomDialog = () => {
   const { isOpen, entityId, close } = useViewConditionDialog();
@@ -44,6 +50,16 @@ const ViewSymptomDialog = () => {
   const { data, isLoading } = useSymptom(entityId!);
   const { mutateAsync: deleteSymptom } = useDeleteSymptom();
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+
+  // Guard against empty / null image URLs
+  const rawImage = data?.image_url;
+  const images =
+    typeof rawImage === "string" && rawImage.trim().length > 0
+      ? [rawImage]
+      : [];
+
   if (!isOpen) return null;
 
   const handleEdit = () => {
@@ -51,271 +67,547 @@ const ViewSymptomDialog = () => {
     addDialog.open(data as TSymptomsOutput);
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => setShowDeleteModal(true);
+
+  const handleDeleteConfirm = async () => {
     await deleteSymptom(entityId!);
+    setShowDeleteModal(false);
     close();
   };
 
+  const handleDeleteCancel = () => setShowDeleteModal(false);
+
   return (
-    <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl xl:max-w-4xl p-0 flex flex-col !bg-white border-0 shadow-2xl rounded-3xl max-h-[90vh]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+      <DialogContent className="p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
         <VisuallyHidden.Root>
-          <DialogTitle>Details for {data?.name}</DialogTitle>
+          <DialogTitle>
+            {data?.name ? `Details for ${data.name}` : "Symptom Details"}
+          </DialogTitle>
         </VisuallyHidden.Root>
 
-        {isLoading && (
-          <div className="p-6 bg-white h-full flex items-center justify-center">
-            <ConditionSkeleton />
-          </div>
-        )}
-        {!isLoading && data ? (
-          <>
-            {/* 1. Impactful Header Section */}
-            <div className="bg-slate-50/80 sticky top-0 z-30 p-6 md:p-8 border-b border-slate-200 backdrop-blur-md">
-              <DialogHeader className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    {data?.isSystemic ? (
-                      <Badge className="bg-indigo-600 text-white border-none font-black uppercase text-[9px] tracking-[0.15em] px-2.5 py-1 shadow-sm">
-                        <Dna className="h-3 w-3 mr-1" /> Systemic
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-slate-600 bg-white border-slate-200 font-black uppercase text-[9px] tracking-[0.15em] px-2.5 py-1 shadow-sm"
-                      >
-                        Localized
-                      </Badge>
-                    )}
-                  </div>
-                  <DialogTitle className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 leading-none">
-                    {data?.name}
-                  </DialogTitle>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 pt-2">
-                  <button
-                    className="btn btn-primary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02] active:scale-95"
-                    onClick={handleEdit}
-                  >
-                    ✏️ Edit Details
-                  </button>
-                  {data?.nhsLink && (
-                    <button
-                      className="btn btn-secondary h-9 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:bg-slate-50"
-                      onClick={() => window.open(data.nhsLink, "_blank")}
-                    >
-                      🔗 NHS Resource
-                    </button>
-                  )}
-                  <button
-                    onClick={handleDelete}
-                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors ml-auto shadow-sm"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </DialogHeader>
-            </div>
-
-            {/* 2. Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-6 md:px-10 py-10 space-y-12 bg-white">
-              {/* Cover Image Placeholder/Display */}
-              {data.image_url && (
-                <div className="rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-2xl aspect-video bg-slate-50 relative group">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <img
-                    src={getPublicImageUrl(data.image_url)}
-                    alt={data.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </div>
-              )}
-              {/* Primary Content Grid */}
-              <div className="space-y-12">
-                <ContentSection
-                  icon={Info}
-                  title="Overview & Description"
-                  content={data?.about}
-                  color="text-indigo-600"
-                />
-
-                <Separator className="bg-slate-50" />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                  <ContentSection
-                    icon={Stethoscope}
-                    title="Clinical Diagnosis"
-                    content={data?.diagnosis}
-                    color="text-emerald-600"
-                  />
-
-                  <ContentSection
-                    icon={Syringe}
-                    title="Care & Treatment"
-                    content={data?.treatment}
-                    color="text-sky-600"
-                  />
-                </div>
-
-                <div className="bg-red-50/30 p-8 rounded-[2.5rem] border border-red-100/50 shadow-sm">
-                  <ContentSection
-                    icon={AlertTriangle}
-                    title="Critical Complications"
-                    content={data?.complications}
-                    color="text-red-600"
-                  />
-                </div>
-
-                <ContentSection
-                  icon={ShieldCheck}
-                  title="Prevention Strategy"
-                  content={data?.prevention}
-                  color="text-teal-600"
-                />
-
-                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 text-center">
-                  <ContentSection
-                    icon={UserCheck2Icon}
-                    title="Medical Attribution"
-                    content={data?.attribution}
-                    color="text-amber-500"
-                  />
-                </div>
-              </div>
-
-              {/* 3. Clinical Variants (Types) Section */}
-              {data.symptomTypes?.length > 0 && (
-                <section className="space-y-6 pt-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm">
-                      <LayoutGrid className="h-4 w-4" />
-                    </div>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-                      Clinical Variants
-                    </h3>
-                  </div>
-                  <div className="grid gap-4 pl-0 md:pl-4">
-                    {data.symptomCauses.map((type: any) => (
-                      <div
-                        key={type.id}
-                        className="p-6 rounded-[2rem] border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300"
-                      >
-                        <p className="font-black text-slate-900 text-lg mb-3 flex items-center gap-3">
-                          <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-sm shadow-indigo-200" />
-                          {type.typeName}
-                        </p>
-                        <div className="text-[15px] text-slate-600 leading-relaxed font-medium">
-                          <LexicalRenderer initialState={type.aboutType} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* 4. Secondary Meta Section */}
-              <footer className="pt-10 border-t border-slate-200 grid grid-cols-2 gap-8 pb-10">
-                <MetaItem
-                  icon={User}
-                  label="Verified Specialist"
-                  value={data?.specialist || "General Practitioner"}
-                />
-                <MetaItem
-                  icon={Calendar}
-                  label="Update Timestamp"
-                  value={new Date(data?.updated_at).toLocaleDateString(
-                    undefined,
-                    { dateStyle: "medium" },
-                  )}
-                />
-              </footer>
-            </div>
-          </>
+        {isLoading ? (
+          <LoadingState />
+        ) : data ? (
+          <DetailView
+            data={data}
+            images={images}
+            activeImage={activeImage}
+            onSelectImage={setActiveImage}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+            onClose={close}
+          />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-4">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
-              <Ban className="h-8 w-8" />
-            </div>
-            <p className="text-slate-500 font-medium">
-              Condition record not found or has been moved.
-            </p>
-            <Button variant="outline" onClick={close}>
-              Close Panel
-            </Button>
-          </div>
+          <NotFoundState onClose={close} />
         )}
       </DialogContent>
+
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Symptom"
+        itemName={data?.name || ""}
+        itemType="symptom"
+      />
     </Dialog>
   );
 };
 
-/* --- Refactored Sub-Components --- */
+/* ───────────────────────────────────────────────────────────
+   Loading / Empty States
+   ─────────────────────────────────────────────────────────── */
 
-function ContentSection({ icon: Icon, title, content, color }: any) {
-  const isContentEmpty = !hasLexicalContent(content);
+function LoadingState() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white">
+      <div className="relative">
+        <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
+        <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
+          <HeartPulse className="h-8 w-8 text-emerald-600 animate-pulse" />
+        </div>
+      </div>
+      <span className="mt-6 text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">
+        Retrieving Symptom Data
+      </span>
+    </div>
+  );
+}
+
+function NotFoundState({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white">
+      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+        <Ban className="h-10 w-10 text-slate-300" />
+      </div>
+      <div className="space-y-2">
+        <p className="text-slate-900 font-black text-xl tracking-tight">
+          Record Not Found
+        </p>
+        <p className="text-slate-500 font-medium max-w-sm leading-relaxed">
+          This symptom record may have been deleted or moved. Please return to
+          the directory.
+        </p>
+      </div>
+      <Button
+        onClick={onClose}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-[11px] mt-2"
+      >
+        Close Panel
+      </Button>
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────
+   Detail View
+   ─────────────────────────────────────────────────────────── */
+
+function DetailView({
+  data,
+  images,
+  activeImage,
+  onSelectImage,
+  onEdit,
+  onDelete,
+  onClose,
+}: {
+  data: TSymptomsOutput;
+  images: string[];
+  activeImage: number;
+  onSelectImage: (i: number) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const hasTypes = data.symptomTypes && data.symptomTypes.length > 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-xl bg-current/10 ${color}`}>
-          <Icon className="h-4 w-4" />
+    <div className="flex flex-col h-full min-h-0 bg-slate-50">
+      {/* ── Sticky Top Bar ── */}
+      <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-none border border-emerald-100">
+            <HeartPulse className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
+              {data.name}
+            </h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
+              Symptom Reference Record
+            </p>
+          </div>
         </div>
-        <h3 className="font-bold text-sm uppercase tracking-widest text-slate-800">
-          {title}
-        </h3>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            onClick={onEdit}
+            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
+          >
+            <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
+          </Button>
+
+          {data?.nhsLink && (
+            <Button
+              variant="outline"
+              className="rounded-none border-slate-200 h-10 px-4 font-bold uppercase tracking-widest text-[10px] text-slate-700 hover:bg-slate-50 hover:border-emerald-200 transition-all hidden sm:inline-flex"
+              asChild
+            >
+              <a href={data.nhsLink} target="_blank" rel="noreferrer">
+                <ExternalLink className="w-3.5 h-3.5 mr-2 text-emerald-600" />
+                NHS
+              </a>
+            </Button>
+          )}
+
+          <Button
+            variant="ghost"
+            onClick={onDelete}
+            className="rounded-none text-slate-400 hover:text-white hover:bg-red-600 h-10 w-10 p-0 transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="rounded-none text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-10 w-10 p-0 transition-all md:hidden"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="text-slate-600 text-[15px] leading-relaxed pl-10">
-        {!isContentEmpty ? (
-          <LexicalRenderer initialState={content} />
-        ) : (
-          <div className="flex items-center gap-2 p-4 rounded-xl bg-slate-100/50 border border-slate-100 text-slate-400 italic text-sm">
-            <Ban className="h-4 w-4 opacity-50" />
-            Information not currently provided for this section
+      {/* ── Scrollable Body ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        {/* Hero Section */}
+        <div className="bg-white border-b border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+            {/* Left: Meta & Classification */}
+            <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-between gap-8">
+              <div className="space-y-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  {data?.isSystemic ? (
+                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none">
+                      <Dna className="h-3 w-3 mr-1.5" /> Systemic Symptom
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none">
+                      Localized
+                    </Badge>
+                  )}
+                </div>
+
+                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                  {data.name}
+                </DialogTitle>
+
+                {data.bodyParts && data.bodyParts.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {data.bodyParts.map((bp: any) => (
+                      <span
+                        key={bp.body_parts?.id ?? bp.id ?? Math.random()}
+                        className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-600 rounded-none"
+                      >
+                        {bp.body_parts?.name ?? bp.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100">
+                <MetaPill
+                  icon={User}
+                  label="Specialist"
+                  value={data.specialist || "General Practitioner"}
+                />
+                <MetaPill
+                  icon={Calendar}
+                  label="Last Updated"
+                  value={new Date(data.updated_at).toLocaleDateString(
+                    undefined,
+                    { month: "short", day: "numeric", year: "numeric" },
+                  )}
+                />
+                <MetaPill
+                  icon={Dna}
+                  label="Systemic"
+                  value={data.isSystemic ? "Yes" : "No"}
+                />
+              </div>
+            </div>
+
+            {/* Right: Image Gallery */}
+            <div className="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 md:p-10">
+              <ImageGallery
+                images={images}
+                name={data.name}
+                activeIndex={activeImage}
+                onSelect={onSelectImage}
+              />
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Content Sections */}
+        <div className="p-6 md:p-10 space-y-10">
+          {/* Overview */}
+          <ContentBlock
+            icon={Info}
+            title="Overview & Description"
+            content={data?.about}
+            accent="emerald"
+          />
+
+          {/* Diagnosis & Treatment */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ContentBlock
+              icon={Stethoscope}
+              title="Clinical Diagnosis"
+              content={data?.diagnosis}
+              accent="emerald"
+            />
+            <ContentBlock
+              icon={Syringe}
+              title="Care & Treatment"
+              content={data?.treatment}
+              accent="emerald"
+            />
+          </div>
+
+          {/* Complications - Dark */}
+          <ContentBlock
+            icon={AlertTriangle}
+            title="Critical Complications"
+            content={data?.complications}
+            variant="dark"
+            accent="emerald"
+          />
+
+          {/* Prevention */}
+          <ContentBlock
+            icon={ShieldCheck}
+            title="Prevention Strategy"
+            content={data?.prevention}
+            accent="emerald"
+          />
+
+          {/* Clinical Variants */}
+          {hasTypes && (
+            <section className="space-y-5">
+              <SectionHeader icon={LayoutGrid} title="Clinical Variants" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data.symptomTypes!.map((type: any, i: number) => (
+                  <div
+                    key={type.id ?? i}
+                    className="bg-white p-6 md:p-8 border border-slate-200 rounded-none shadow-sm hover:border-emerald-200 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-none">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      </div>
+                      <h4 className="font-black text-slate-900 text-lg tracking-tight">
+                        {type.typeName}
+                      </h4>
+                    </div>
+                    <div className="text-[15px] text-slate-600 leading-relaxed font-medium">
+                      <LexicalRenderer initialState={type.aboutType} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Attribution */}
+          {hasLexicalContent(data?.attribution) && (
+            <ContentBlock
+              icon={User}
+              title="Medical Attribution"
+              content={data?.attribution}
+              accent="emerald"
+              compact
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-slate-200 px-6 py-6 md:px-10 md:py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-slate-400">
+              <HeartPulse className="w-4 h-4 text-emerald-500" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                Ghana Health Tech Reference Database
+              </span>
+            </div>
+            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+              ID: {data.id.slice(0, 8)}…
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );
 }
-export default memo(ViewSymptomDialog);
 
-function MetaItem({
+/* ───────────────────────────────────────────────────────────
+   Sub-Components
+   ─────────────────────────────────────────────────────────── */
+
+function SectionHeader({
+  icon: Icon,
+  title,
+}: {
+  icon: React.ElementType;
+  title: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
+        <Icon className="h-4 w-4" />
+      </div>
+      <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">
+        {title}
+      </h3>
+    </div>
+  );
+}
+
+function ContentBlock({
+  icon: Icon,
+  title,
+  content,
+  variant = "light",
+  accent = "emerald",
+  compact = false,
+}: {
+  icon: React.ElementType;
+  title: string;
+  content: any;
+  variant?: "light" | "dark";
+  accent?: "emerald";
+  compact?: boolean;
+}) {
+  const isEmpty = !hasLexicalContent(content);
+  const isDark = variant === "dark";
+
+  return (
+    <div
+      className={`${isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"} 
+        ${compact ? "p-6" : "p-6 md:p-8"} 
+        border border-slate-200 rounded-none shadow-sm relative overflow-hidden`}
+    >
+      {isDark && (
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-900/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+      )}
+
+      <div className="relative space-y-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`p-2 rounded-none ${isDark ? "bg-white/10 text-emerald-400" : "bg-emerald-50 text-emerald-600 border border-emerald-100"}`}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+          <h3
+            className={`font-black uppercase tracking-[0.15em] ${compact ? "text-xs" : "text-sm"} ${isDark ? "text-white" : "text-slate-900"}`}
+          >
+            {title}
+          </h3>
+        </div>
+
+        <div
+          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-[15px] leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
+        >
+          {!isEmpty ? (
+            <LexicalRenderer initialState={content} />
+          ) : (
+            <div
+              className={`flex items-center gap-3 p-4 rounded-none border italic text-sm font-medium ${isDark ? "bg-white/5 border-white/10 text-slate-500" : "bg-slate-50 border-slate-100 text-slate-400"}`}
+            >
+              <Ban className="h-4 w-4 opacity-50 shrink-0" />
+              No clinical data provided for this section.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetaPill({
   icon: Icon,
   label,
   value,
 }: {
-  icon: any;
+  icon: React.ElementType;
   label: string;
   value: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
-        <Icon className="h-3.5 w-3.5" />
-        <span className="text-[10px] font-bold uppercase tracking-wider">
+        <Icon className="h-3.5 w-3.5 text-emerald-600" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
-      <p className="text-sm font-semibold text-slate-700">{value}</p>
+      <p className="text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
 }
 
-function ConditionSkeleton() {
+function ImageGallery({
+  images,
+  name,
+  activeIndex,
+  onSelect,
+}: {
+  images: string[];
+  name: string;
+  activeIndex: number;
+  onSelect: (i: number) => void;
+}) {
+  if (!images || images.length === 0) {
+    return (
+      <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
+        <FolderOpen className="h-10 w-10 text-slate-300 mb-3" />
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          No Visual Reference
+        </span>
+      </div>
+    );
+  }
+
+  const currentSrc = getPublicImageUrl(images[activeIndex]);
+
   return (
-    <div className="p-8 space-y-6">
-      <Skeleton className="h-12 w-3/4" />
-      <div className="flex gap-2">
-        <Skeleton className="h-8 w-24 rounded-full" />
-        <Skeleton className="h-8 w-24 rounded-full" />
+    <div className="space-y-4">
+      <div className="relative aspect-[4/3] w-full bg-slate-100 border border-slate-200 rounded-none overflow-hidden group">
+        {currentSrc ? (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Image
+                src={currentSrc}
+                alt={`${name} reference ${activeIndex + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 500px"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xs text-slate-400">Invalid image URL</span>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+        {images.length > 1 && (
+          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] font-black text-white tracking-widest rounded-none">
+            {activeIndex + 1} / {images.length}
+          </div>
+        )}
       </div>
-      <Skeleton className="h-64 w-full rounded-xl" />
-      <div className="grid grid-cols-2 gap-4">
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-      </div>
+
+      {images.length > 1 && (
+        <div
+          className="flex gap-2 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {images.map((img, i) => {
+            const thumbSrc = getPublicImageUrl(img);
+            if (!thumbSrc) return null;
+            return (
+              <button
+                key={i}
+                onClick={() => onSelect(i)}
+                className={`relative w-16 h-16 shrink-0 border-2 overflow-hidden rounded-none transition-all ${activeIndex === i ? "border-emerald-500 ring-1 ring-emerald-500" : "border-slate-200 hover:border-slate-300"}`}
+              >
+                <Image
+                  src={thumbSrc}
+                  alt={`${name} thumb ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
+
+export default memo(ViewSymptomDialog);

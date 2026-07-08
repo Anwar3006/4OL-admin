@@ -34,11 +34,14 @@ const AddSymptomDialog = () => {
   const { data: bodyParts = [], isLoading: loadingParts } =
     useBodyPartsForSymptoms();
 
+  const { data: categories = [], isLoading: loadingCats } =
+    useCategoriesForSymptoms();
+
   const { mutateAsync, isPending } = useCreateSymptom();
   const { mutateAsync: mutateAsyncEdit, isPending: submittingEdit } =
     useUpdateSymptom();
 
-  const isLoadingForm = loadingParts;
+  const isLoadingForm = loadingParts || loadingCats;
   const isSubmitting = isPending || submittingEdit;
 
   const form = useForm<TSymptomsInput>({
@@ -82,9 +85,33 @@ const AddSymptomDialog = () => {
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && data) {
+        // Helper to extract IDs from either objects or strings
+        const getIds = (data: any[], items: any[]): string[] => {
+          if (!Array.isArray(data)) return [];
+
+          // Check if data is already an array of objects
+          if (data.length > 0 && typeof data[0] === "object") {
+            // Extract IDs from junction objects
+            return data
+              .map((item) => {
+                return item.body_parts?.id || item.categories?.id || item.id;
+              })
+              .filter(Boolean);
+          }
+
+          // Otherwise, treat as array of names
+          return data
+            .map((name: string) => items.find((item) => item.name === name)?.id)
+            .filter(Boolean);
+        };
+
+        const bodyPartIds = getIds(data.bodyParts || [], bodyParts);
+        const categoryIds = getIds(data.categories || [], categories);
+
         form.reset({
           ...data,
-          bodyParts: rehydrateHierarchy(data.bodyParts, bodyParts),
+          bodyParts: rehydrateHierarchy(bodyPartIds, bodyParts),
+          categories: rehydrateHierarchy(categoryIds, categories),
           image_url: data.image_url ?? "",
           nhs_link: data.nhs_link ?? "",
         });
@@ -151,7 +178,7 @@ const AddSymptomDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-<DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white border-slate-200 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="font-black text-xl tracking-tight text-slate-900">
             {isEditMode ? "Edit Symptom" : "Register New Symptom"}
@@ -161,7 +188,9 @@ const AddSymptomDialog = () => {
         {isLoadingForm ? (
           <div className="flex items-center justify-center py-20 bg-white">
             <Loader2 className="animate-spin mr-2 text-emerald-600" />
-            <span className="font-black uppercase tracking-widest text-[10px] text-slate-400">Loading form...</span>
+            <span className="font-black uppercase tracking-widest text-[10px] text-slate-400">
+              Loading form...
+            </span>
           </div>
         ) : (
           <Form {...form}>

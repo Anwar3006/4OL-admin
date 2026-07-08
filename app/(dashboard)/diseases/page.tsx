@@ -19,6 +19,7 @@ import {
 } from "@/stores/dialog-store";
 import { ViewConditionDialog } from "./_components/view-condition-dialog";
 import { useSearchParams } from "next/navigation";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const DiseasesPage = () => {
   const addCondition = useAddConditionDialog();
@@ -39,19 +40,29 @@ const DiseasesPage = () => {
 
   const { mutate: deleteCondition } = useDeleteCondition();
 
-  const handleDelete = (condition: any) => {
-    if (
-      globalThis.confirm(
-        `Are you sure you want to delete "${condition.name}"? This action cannot be undone.`,
-      )
-    ) {
-      const images = Array.isArray(condition.image_url)
-        ? condition.image_url
-        : condition.image_url
-          ? [condition.image_url]
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    item: any;
+  }>({ isOpen: false, item: null });
+
+  const handleDeleteClick = (condition: any) => {
+    setDeleteModal({ isOpen: true, item: condition });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModal.item) {
+      const images = Array.isArray(deleteModal.item.image_url)
+        ? deleteModal.item.image_url
+        : deleteModal.item.image_url
+          ? [deleteModal.item.image_url]
           : [];
-      deleteCondition({ id: condition.id, imagePath: images });
+      deleteCondition({ id: deleteModal.item.id, imagePath: images });
+      setDeleteModal({ isOpen: false, item: null });
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, item: null });
   };
 
   const columns = [
@@ -184,7 +195,7 @@ const DiseasesPage = () => {
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(row.original);
+              handleDeleteClick(row.original);
             }}
           >
             🗑️
@@ -399,6 +410,14 @@ const DiseasesPage = () => {
 
       <AddConditionDialog />
       <ViewConditionDialog />
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Condition"
+        itemName={deleteModal.item?.name || ""}
+        itemType="condition"
+      />
     </div>
   );
 };

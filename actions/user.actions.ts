@@ -64,14 +64,32 @@ export async function getProfileById(targetId: string) {
     const { data, error } = await admin
       .from("user_profiles")
       .select("*")
-      .eq("id", targetId)
+      .eq("user_id", targetId)
       .single();
 
     if (error) {
       console.error("[getProfileById] Supabase error:", error.message);
       return { data: null, error: error.message };
     }
-    return { data, error: null };
+
+    let email = (data as any)?.email || "";
+    if (!email && data?.user_id) {
+      try {
+        const authRes = await admin.auth.admin.getUserById(data.user_id);
+        if (authRes.data?.user?.email) email = authRes.data.user.email;
+      } catch {
+        // ignore, leave email blank
+      }
+    }
+
+    return {
+      data: {
+        ...data,
+        email,
+        name: [data?.first_name, data?.last_name].filter(Boolean).join(" ") || "—",
+      },
+      error: null,
+    };
   } catch (err: any) {
     console.error("[getProfileById] Unexpected error:", err.message);
     return { data: null, error: err.message };
@@ -107,7 +125,7 @@ export async function updateProfileById(id: string, formData: any) {
     const { error } = await admin
       .from("user_profiles")
       .update(updateData)
-      .eq("id", id);
+      .eq("user_id", id);
 
     if (error) {
       console.error("[updateProfileById] Supabase error:", error.message);
@@ -117,6 +135,129 @@ export async function updateProfileById(id: string, formData: any) {
   } catch (err: any) {
     console.error("[updateProfileById] Unexpected error:", err.message);
     return { error: err.message };
+  }
+}
+
+// ── flagUserProfile ───────────────────────────────────────────────────────────
+export async function flagUserProfile(targetId: string, reason: string) {
+  const user = await getSessionUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const admin = getSupabaseAdmin();
+
+  const { data: callerProfile, error: callerError } = await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
+    return { error: "Unauthorized: Admin access required" };
+  }
+
+  try {
+    const { error } = await admin
+      .from("user_profiles")
+      .update({
+        is_flagged: true,
+        flag_reason: reason,
+        flagged_at: new Date().toISOString(),
+        flagged_by: user.id,
+      })
+      .eq("user_id", targetId);
+
+    if (error) {
+      console.error("[flagUserProfile] Supabase error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  } catch (err: any) {
+    console.error("[flagUserProfile] Unexpected error:", err.message);
+    return { error: err.message };
+  }
+}
+
+// ── clearUserFlag ─────────────────────────────────────────────────────────────
+export async function clearUserFlag(targetId: string) {
+  const user = await getSessionUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const admin = getSupabaseAdmin();
+
+  const { data: callerProfile, error: callerError } = await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
+    return { error: "Unauthorized: Admin access required" };
+  }
+
+  try {
+    const { error } = await admin
+      .from("user_profiles")
+      .update({
+        is_flagged: false,
+        flag_reason: null,
+        flagged_at: null,
+        flagged_by: null,
+      })
+      .eq("user_id", targetId);
+
+    if (error) {
+      console.error("[clearUserFlag] Supabase error:", error.message);
+      return { error: error.message };
+    }
+    return { error: null };
+  } catch (err: any) {
+    console.error("[clearUserFlag] Unexpected error:", err.message);
+    return { error: err.message };
+  }
+}
+
+// ── getFlaggedUsers ───────────────────────────────────────────────────────────
+export async function getFlaggedUsers(pageIndex: number, pageSize: number) {
+  const user = await getSessionUser();
+  if (!user) return { data: [], count: 0, error: "Unauthorized" };
+
+  const admin = getSupabaseAdmin();
+
+  const { data: callerProfile, error: callerError } = await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
+    return { data: [], count: 0, error: "Unauthorized: Admin access required" };
+  }
+
+  try {
+    const from = pageIndex * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await admin
+      .from("user_profiles")
+      .select("*", { count: "exact" })
+      .eq("is_flagged", true)
+      .order("flagged_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error("[getFlaggedUsers] Supabase error:", error.message);
+      return { data: [], count: 0, error: error.message };
+    }
+
+    const userData = (data || []).map((profile: any) => ({
+      ...profile,
+      name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—",
+    }));
+
+    return { data: userData, count: count || 0, error: null };
+  } catch (err: any) {
+    console.error("[getFlaggedUsers] Unexpected error:", err.message);
+    return { data: [], count: 0, error: err.message };
   }
 }
 
