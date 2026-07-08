@@ -143,14 +143,18 @@ const SymptomsPage = () => {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }: any) => (
-        <span
-          className={cn(
-            "badge",
-            row.original.status === "verified" ? "badge-green" : "badge-amber",
-          )}
-        >
-          {row.original.status === "verified" ? "✅ Verified" : "⏳ Pending"}
+        <span className="badge badge-green">
+          {row.original.status === "published" ? "✅ Published" : "⏳ Pending"}
         </span>
+      ),
+    },
+    {
+      accessorKey: "views",
+      header: "Views",
+      cell: ({ row }: any) => (
+        <div className="text-[11px] font-bold text-slate-600">
+          {row.original.views?.toLocaleString() || "0"}
+        </div>
       ),
     },
     {

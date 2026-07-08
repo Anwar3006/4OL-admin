@@ -229,6 +229,14 @@ const AddSymptomDialog = () => {
                       rawParts={bodyParts}
                     />
                   </div>
+                  <div className="bg-white">
+                    <TreeMultiSelectForm
+                      label="Associated Category/s"
+                      name="categories"
+                      control={form.control}
+                      rawParts={categories}
+                    />
+                  </div>
                 </div>
               </section>
 
