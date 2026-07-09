@@ -35,6 +35,7 @@ import {
   exerciseSchema,
   TExerciseInput,
   CATEGORIES,
+  EXERCISE_TYPES,
   EQUIPMENT_TYPES,
   DIFFICULTY_LEVELS,
   EXERCISE_STATUS,
@@ -57,7 +58,7 @@ const AddExerciseDialog = () => {
 
   const defaultValues: TExerciseInput = {
     exercise_name: "",
-    category: "Arm",
+    category: "strength",
     primary_muscle_group: "Arm",
     secondary_muscles: "",
     equipment_required: "No Equipment",
@@ -84,8 +85,18 @@ const AddExerciseDialog = () => {
 
   // Watch necessary values for UI logic
   const tags = form.watch("tags");
+  const exerciseName = form.watch("exercise_name");
 
-useEffect(() => {
+  // Media uploads for the same exercise share one folder — keyed by
+  // exercise_name, mirroring scripts/fitness_media_seeder.ts — so both the
+  // admin-uploaded and seeded video/image for an exercise live together,
+  // which makes future migration straightforward. Falls back to a flat
+  // "fitness/media" bucket while the name is still empty (new exercise).
+  const mediaFolder = exerciseName?.trim()
+    ? `fitness/media/${exerciseName.trim().replace(/\s+/g, "_")}`
+    : "fitness/media";
+
+  useEffect(() => {
     if (isOpen) {
       if (isEditMode && data) {
         form.reset({
@@ -128,14 +139,20 @@ useEffect(() => {
     if (!tagInput.trim()) return;
     const currentTags = form.getValues("tags") || [];
     if (!currentTags.includes(tagInput.trim())) {
-      form.setValue("tags", [...currentTags, tagInput.trim()], { shouldValidate: true });
+      form.setValue("tags", [...currentTags, tagInput.trim()], {
+        shouldValidate: true,
+      });
     }
     setTagInput("");
   };
 
   const removeTag = (tagToRemove: string) => {
     const currentTags = form.getValues("tags") || [];
-    form.setValue("tags", currentTags.filter((t) => t !== tagToRemove), { shouldValidate: true });
+    form.setValue(
+      "tags",
+      currentTags.filter((t) => t !== tagToRemove),
+      { shouldValidate: true },
+    );
   };
 
   return (
@@ -150,8 +167,10 @@ useEffect(() => {
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
-              
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="p-6 space-y-6"
+            >
               {/* Exercise Name & Status */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -174,7 +193,10 @@ useEffect(() => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
@@ -182,7 +204,11 @@ useEffect(() => {
                         </FormControl>
                         <SelectContent className="bg-white z-[100] shadow-md border">
                           {EXERCISE_STATUS.map((s) => (
-                            <SelectItem key={s} value={s} className="capitalize cursor-pointer">
+                            <SelectItem
+                              key={s}
+                              value={s}
+                              className="capitalize cursor-pointer"
+                            >
                               {s}
                             </SelectItem>
                           ))}
@@ -202,16 +228,23 @@ useEffect(() => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-white z-[100] shadow-md border">
-                          {CATEGORIES.map((cat) => (
-                            <SelectItem key={cat} value={cat} className="cursor-pointer">
-                              {cat}
+                          {EXERCISE_TYPES.map((type) => (
+                            <SelectItem
+                              key={type}
+                              value={type}
+                              className="cursor-pointer capitalize"
+                            >
+                              {type}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -227,7 +260,10 @@ useEffect(() => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Primary Muscle Group *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select primary muscle" />
@@ -235,7 +271,11 @@ useEffect(() => {
                         </FormControl>
                         <SelectContent className="bg-white z-[100] shadow-md border">
                           {CATEGORIES.map((cat) => (
-                            <SelectItem key={cat} value={cat} className="cursor-pointer">
+                            <SelectItem
+                              key={cat}
+                              value={cat}
+                              className="cursor-pointer"
+                            >
                               {cat}
                             </SelectItem>
                           ))}
@@ -256,7 +296,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Secondary Muscles</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Forearms, Brachialis" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. Forearms, Brachialis"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -269,7 +313,10 @@ useEffect(() => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Equipment Required *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select equipment" />
@@ -277,7 +324,11 @@ useEffect(() => {
                         </FormControl>
                         <SelectContent className="bg-white z-[100] shadow-md border">
                           {EQUIPMENT_TYPES.map((eq) => (
-                            <SelectItem key={eq} value={eq} className="cursor-pointer">
+                            <SelectItem
+                              key={eq}
+                              value={eq}
+                              className="cursor-pointer"
+                            >
                               {eq}
                             </SelectItem>
                           ))}
@@ -294,7 +345,10 @@ useEffect(() => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Difficulty</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? undefined}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select level" />
@@ -302,7 +356,11 @@ useEffect(() => {
                         </FormControl>
                         <SelectContent className="bg-white z-[100] shadow-md border">
                           {DIFFICULTY_LEVELS.map((level) => (
-                            <SelectItem key={level} value={level} className="capitalize cursor-pointer">
+                            <SelectItem
+                              key={level}
+                              value={level}
+                              className="capitalize cursor-pointer"
+                            >
                               {level}
                             </SelectItem>
                           ))}
@@ -323,7 +381,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Default Sets</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 3" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. 3"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -337,7 +399,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Default Reps / Duration</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 12 or 45s" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. 12 or 45s"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -351,7 +417,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Rest Time (seconds)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 60" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. 60"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -368,7 +438,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Benefits</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Hypertrophy, Grip strength" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. Hypertrophy, Grip strength"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -382,7 +456,11 @@ useEffect(() => {
                     <FormItem>
                       <FormLabel>Muscles Worked Raw</FormLabel>
                       <FormControl>
-                        <Input placeholder="Comma separated strings" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="Comma separated strings"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -404,13 +482,21 @@ useEffect(() => {
                       <FormControl>
                         <Button
                           type="button"
-                          variant={field.value === "pro" ? "default" : "outline"}
+                          variant={
+                            field.value === "pro" ? "default" : "outline"
+                          }
                           size="sm"
                           className={cn(
                             "w-20",
-                            field.value === "pro" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                            field.value === "pro"
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : "",
                           )}
-                          onClick={() => field.onChange(field.value === "pro" ? "free" : "pro")}
+                          onClick={() =>
+                            field.onChange(
+                              field.value === "pro" ? "free" : "pro",
+                            )
+                          }
                         >
                           {field.value === "pro" ? "Yes" : "No"}
                         </Button>
@@ -435,7 +521,9 @@ useEffect(() => {
                           size="sm"
                           className={cn(
                             "w-20",
-                            field.value ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                            field.value
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : "",
                           )}
                           onClick={() => field.onChange(!field.value)}
                         >
@@ -453,7 +541,9 @@ useEffect(() => {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
                       <div className="space-y-0.5">
                         <FormLabel>Active</FormLabel>
-                        <FormDescription>Visible to client apps</FormDescription>
+                        <FormDescription>
+                          Visible to client apps
+                        </FormDescription>
                       </div>
                       <FormControl>
                         <Button
@@ -462,7 +552,9 @@ useEffect(() => {
                           size="sm"
                           className={cn(
                             "w-20",
-                            field.value ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                            field.value
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              : "",
                           )}
                           onClick={() => field.onChange(!field.value)}
                         >
@@ -482,7 +574,9 @@ useEffect(() => {
                     placeholder="Add tags..."
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTag())
+                    }
                   />
                   <Button type="button" variant="outline" onClick={addTag}>
                     Add
@@ -490,7 +584,11 @@ useEffect(() => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {tags?.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1 pl-2.5">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="gap-1 pl-2.5"
+                    >
                       {tag}
                       <button type="button" onClick={() => removeTag(tag)}>
                         <X className="h-3 w-3" />
@@ -509,7 +607,7 @@ useEffect(() => {
                     <FormLabel>Upload Video</FormLabel>
                     <FormControl>
                       <ImageDropZone
-                        filePath="fitness/media"
+                        filePath={mediaFolder}
                         mediaType="video"
                         maxFiles={1}
                         onFilesChange={(urls) => {
@@ -533,7 +631,8 @@ useEffect(() => {
                     <FormLabel>Upload Thumbnail</FormLabel>
                     <FormControl>
                       <ImageDropZone
-                        filePath="fitness/media"
+                        filePath={mediaFolder}
+                        mediaType="image"
                         maxFiles={1}
                         onFilesChange={(urls) => {
                           field.onChange(urls[0] ?? "");
@@ -548,14 +647,24 @@ useEffect(() => {
               />
 
               {/* Description / How To */}
-              <RichTextEditor control={form.control} name="description" label="Description / How To Instructions" />
+              <RichTextEditor
+                control={form.control}
+                name="description"
+                label="Description / How To Instructions"
+              />
 
               <DialogFooter className="pt-4 border-t">
                 <Button type="button" variant="outline" onClick={close}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isPending} className="min-w-[140px]">
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="min-w-[140px]"
+                >
+                  {isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {isEditMode ? "Update Exercise" : "Create Exercise"}
                 </Button>
               </DialogFooter>
@@ -568,6 +677,3 @@ useEffect(() => {
 };
 
 export default AddExerciseDialog;
-
-
-

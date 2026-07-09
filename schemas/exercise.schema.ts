@@ -6,6 +6,8 @@ export const CATEGORIES = [
   "Biceps",
   "Chest",
   "Chest and Triceps",
+  "Core",
+  "Hips",
   "Glutes",
   "Hamstring",
   "Legs",
@@ -14,6 +16,8 @@ export const CATEGORIES = [
   "Shoulder",
   "Triceps",
 ] as const;
+
+export const EXERCISE_TYPES = ["cardio", "strength", "stretching"] as const;
 
 export const EQUIPMENT_TYPES = [
   "No Equipment",
@@ -32,13 +36,18 @@ export const EQUIPMENT_TYPES = [
 ] as const;
 
 export const EXERCISE_STATUS = ["draft", "published", "archived"] as const;
-export const DIFFICULTY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
+export const DIFFICULTY_LEVELS = [
+  "beginner",
+  "intermediate",
+  "advanced",
+  "expert",
+] as const;
 export const TIER_LEVELS = ["pro", "free"] as const;
 
 export const exerciseSchema = z.object({
   id: z.string().uuid().optional(),
   exercise_name: z.string().min(2, "Exercise name is required"),
-  category: z.enum(CATEGORIES, {
+  category: z.enum(EXERCISE_TYPES, {
     message: "Please select a category",
   }),
   primary_muscle_group: z.enum(CATEGORIES, {

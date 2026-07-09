@@ -252,6 +252,44 @@ const OutdoorTab = () => {
         </span>
       ),
     },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const route = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewRouteDialog.open(route.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                addRouteDialog.open(route);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteRoute(route.id);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
   const eventColumns = [
@@ -340,6 +378,44 @@ const OutdoorTab = () => {
         </span>
       ),
     },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const event = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewEventDialog.open(event.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                addEventDialog.open(event);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteEvent(event.id);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
+    },
   ];
 
   const reviewColumns = [
@@ -411,6 +487,44 @@ const OutdoorTab = () => {
           )}
         </div>
       ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }: any) => {
+        const review = row.original;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewReviewDialog.open(review.id);
+              }}
+            >
+              👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                addReviewDialog.open(review);
+              }}
+            >
+              ✏️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteReview(review.id);
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
