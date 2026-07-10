@@ -8,6 +8,8 @@ import ChatStats from "./_components/ChatStats";
 import GroupsTab from "./_components/GroupsTab";
 import SupportTab from "./_components/SupportTab";
 import FlaggedTab from "./_components/FlaggedTab";
+import ViewGroupDialog from "./_components/ViewGroupDialog";
+import EditGroupDialog from "./_components/EditGroupDialog";
 import { cn } from "@/lib/utils";
 
 const TabsConfig = [
@@ -39,49 +41,75 @@ const ChatsPage = () => {
         title="💬 Chats"
         subtitle="Group chats management · User support tickets · Platform communication"
       >
-        <button className="btn btn-secondary btn-sm font-bold">📥 Export</button>
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">+ New Group</button>
+        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">
+          + New Group
+        </button>
       </PageHeader>
 
-      <div className="alert bg-ek-green/5 border border-ek-green/20 text-[11px] font-medium p-3 rounded-xl flex items-start gap-2.5">
-        <span className="text-base leading-none mt-0.5 text-ek-green-dark">🔗</span>
-        <div className="flex-1 text-ek-green-dark">
-          <strong className="font-black">SA: Module Connections</strong> — Chats is connected to HCP Group Chats, Users, Facilities, and Notifications.
-        </div>
-      </div>
-
+      {/* KPI stats */}
       <ChatStats />
 
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
-          {TabsConfig.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark"
-              )}
-            >
-              {tab.label}
-              {tab.badge && (
-                  <span className={cn(
-                    "ml-2 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-[16px] text-center shadow-sm",
-                    tab.badgeColor || "bg-ek-orange"
-                  )}>
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
+        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={
+              {
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              } as React.CSSProperties
+            }
+          >
+            {TabsConfig.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                )}
+              >
+                {tab.label}
+                {tab.badge && (
+                  <span
+                    className={cn(
+                      "ml-2 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-4 text-center shadow-sm",
+                      tab.badgeColor || "bg-ek-orange",
+                    )}
+                  >
                     {tab.badge}
                   </span>
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="groups"><GroupsTab /></TabsContent>
-          <TabsContent value="support"><SupportTab /></TabsContent>
-          <TabsContent value="flagged"><FlaggedTab /></TabsContent>
+          <TabsContent value="groups">
+            <GroupsTab />
+          </TabsContent>
+          <TabsContent value="support">
+            <SupportTab />
+          </TabsContent>
+          <TabsContent value="flagged">
+            <FlaggedTab />
+          </TabsContent>
         </div>
       </Tabs>
+
+      {/* Dialogs */}
+      <ViewGroupDialog />
+      <EditGroupDialog />
     </div>
   );
 };

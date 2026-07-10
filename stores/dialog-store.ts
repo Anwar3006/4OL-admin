@@ -46,7 +46,10 @@ export type DialogTypes =
   | "view-outdoor-event"
   | "add-outdoor-review"
   | "view-outdoor-review"
-  | "flag-user";
+  | "flag-user"
+  | "add-group"
+  | "view-group"
+  | "edit-group";
 
 /**
  * Generic dialog configuration
@@ -890,6 +893,38 @@ export const useAddOutdoorReviewDialog = () => {
     isEditMode: !!data,
     open: (data?: any) => openDialog("add-outdoor-review", { data }),
     close: () => closeDialog("add-outdoor-review"),
+  };
+};
+
+export const useViewGroupDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-group"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-group"));
+  const data = useDialogStore((state) => state.getDialogData("view-group"));
+
+  return {
+    isOpen,
+    entityId,
+    data,
+    open: (entityId: string, data?: any) =>
+      openDialog("view-group", { entityId, data }),
+    close: () => closeDialog("view-group"),
+  };
+};
+
+export const useEditGroupDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("edit-group"));
+  const data = useDialogStore((state) => state.getDialogData("edit-group"));
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("edit-group", { data }),
+    close: () => closeDialog("edit-group"),
   };
 };
 

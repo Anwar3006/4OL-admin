@@ -59,15 +59,15 @@ const UsersTab = () => {
         </div>
       ),
     },
-    {
-      accessorKey: "role",
-      header: "Role",
-      cell: ({ row }: any) => (
-        <span className="badge badge-blue uppercase tracking-wider text-[10px]">
-          {row.original.role || "User"}
-        </span>
-      ),
-    },
+    // {
+    //   accessorKey: "role",
+    //   header: "Role",
+    //   cell: ({ row }: any) => (
+    //     <span className="badge badge-blue uppercase tracking-wider text-[10px]">
+    //       {row.original.role || "User"}
+    //     </span>
+    //   ),
+    // },
     {
       accessorKey: "activity",
       header: "Activity",
@@ -161,9 +161,9 @@ const UsersTab = () => {
                 Monitor user engagement, progress and platform activity
               </p>
             </div>
-            <button className="btn btn-primary shadow-lg">
+            {/* <button className="btn btn-primary shadow-lg">
               <UserPlus className="h-4 w-4 mr-1" /> Invite User
-            </button>
+            </button> */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -176,13 +176,13 @@ const UsersTab = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button className="btn btn-secondary">
+            {/* <button className="btn btn-secondary">
               <Filter className="h-4 w-4 mr-1" /> Activity Level
-            </button>
+            </button> */}
           </div>
         </div>
 
-        <div className="card bg-slate-50 border-slate-200">
+        {/* <div className="card bg-slate-50 border-slate-200">
           <h3 className="text-lg font-black mb-6 text-slate-900">
             📊 Risk Profile
           </h3>
@@ -220,7 +220,7 @@ const UsersTab = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="card p-0 overflow-hidden">
