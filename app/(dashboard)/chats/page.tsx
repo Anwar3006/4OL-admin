@@ -10,19 +10,16 @@ import SupportTab from "./_components/SupportTab";
 import FlaggedTab from "./_components/FlaggedTab";
 import ViewGroupDialog from "./_components/ViewGroupDialog";
 import EditGroupDialog from "./_components/EditGroupDialog";
+import { useChatTabCounts } from "@/hooks/supabase-calls/useConversation";
 import { cn } from "@/lib/utils";
-
-const TabsConfig = [
-  { id: "groups", label: "💬 Groups (48)" },
-  { id: "support", label: "🎟️ Support", badge: "5" },
-  { id: "flagged", label: "🚩 Flagged", badge: "3", badgeColor: "bg-red-500" },
-];
 
 const ChatsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "groups");
+
+  const { data: counts } = useChatTabCounts();
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -34,6 +31,27 @@ const ChatsPage = () => {
     setActiveTab(value);
     router.push(`/chats?tab=${value}`, { scroll: false });
   };
+
+  const TabsConfig = [
+    {
+      id: "groups",
+      label: "💬 Groups",
+      badge: counts?.total_groups ?? "...",
+      badgeColor: "bg-emerald-500",
+    },
+    {
+      id: "support",
+      label: "🎟️ Support",
+      badge: counts?.open_support ?? "...",
+      badgeColor: "bg-slate-500",
+    },
+    {
+      id: "flagged",
+      label: "🚩 Flagged",
+      badge: counts?.pending_flags ?? "...",
+      badgeColor: "bg-red-500",
+    },
+  ];
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
@@ -79,7 +97,7 @@ const ChatsPage = () => {
                 )}
               >
                 {tab.label}
-                {tab.badge && (
+                {tab.badge !== undefined && (
                   <span
                     className={cn(
                       "ml-2 px-1.5 py-0 rounded-full text-[9px] font-black text-white min-w-4 text-center shadow-sm",

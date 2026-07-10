@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Modal from "@/components/redesign/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useEditGroupDialog } from "@/stores/dialog-store";
 import { useUpdateConversation } from "@/hooks/supabase-calls/useConversation";
 import { Loader2 } from "lucide-react";
@@ -34,60 +44,78 @@ export default function EditGroupDialog() {
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={close}
-      title={`✏️ Edit Group: ${group?.name || ""}`}
-      footer={
-        <div className="flex gap-2">
-          <button
+    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span>✏️</span>
+            <span>Edit Group: {group?.name || ""}</span>
+          </DialogTitle>
+        </DialogHeader>
+
+        <form
+          id="edit-group-form"
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label
+              htmlFor="group-name"
+              className="text-[10px] font-black uppercase tracking-wider text-slate-400"
+            >
+              Group Name
+            </Label>
+            <Input
+              id="group-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter group name"
+              className="h-9 text-xs"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="group-description"
+              className="text-[10px] font-black uppercase tracking-wider text-slate-400"
+            >
+              Description
+            </Label>
+            <Textarea
+              id="group-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter group description"
+              rows={3}
+              className="text-xs resize-none"
+            />
+          </div>
+        </form>
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button
             type="button"
+            variant="outline"
             onClick={close}
             disabled={updateMutation.isPending}
-            className="px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
+            className="text-[11px] font-black uppercase tracking-widest"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             form="edit-group-form"
             disabled={updateMutation.isPending}
-            className="px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-lg bg-ek-green text-white hover:bg-ek-green-dark transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+            className="text-[11px] font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white"
           >
             {updateMutation.isPending && (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
             )}
             Save Changes
-          </button>
-        </div>
-      }
-    >
-      <form id="edit-group-form" onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Group Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full h-9 px-3 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-ek-green/20"
-            placeholder="Enter group name"
-          />
-        </div>
-        <div>
-          <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Description
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-ek-green/20 resize-none"
-            placeholder="Enter group description"
-          />
-        </div>
-      </form>
-    </Modal>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

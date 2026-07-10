@@ -274,6 +274,131 @@ export const useAdminConversations = ({
   });
 };
 
+export interface ChatTabCounts {
+  total_groups: number;
+  open_support: number;
+  pending_flags: number;
+}
+
+export const useChatTabCounts = () => {
+  return useQuery({
+    queryKey: [...CONVERSATION_QUERY_KEYS.all, "tab-counts"],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase.rpc("get_chat_tab_counts");
+
+      if (error) throw new Error(error.message);
+
+      return data as ChatTabCounts;
+    },
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
+
+export interface ChatKpiStats {
+  total_groups: number;
+  groups_delta: number;
+  total_members: number;
+  members_delta: number;
+  unread_support: number;
+  support_delta: number;
+  avg_response_hrs: number;
+  response_delta: number;
+}
+
+export const useChatKpiStats = () => {
+  return useQuery({
+    queryKey: [...CONVERSATION_QUERY_KEYS.all, "kpi-stats"],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase.rpc("get_chat_kpi_stats");
+
+      if (error) throw new Error(error.message);
+
+      return data as ChatKpiStats;
+    },
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+};
+
+// =============================================================================
+// Flagged Content Moderation Hooks
+// =============================================================================
+
+export interface FlaggedContentItem {
+  content_type: "message" | "conversation";
+  content_id: string;
+  content_preview: string;
+  content_created_at: string;
+  sender_id: string;
+  sender_first_name: string | null;
+  sender_last_name: string | null;
+  conversation_name: string | null;
+  conversation_id: string;
+  flag_id: string;
+  reported_by: string | null;
+  reporter_first_name: string | null;
+  reporter_last_name: string | null;
+  report_reason: string;
+  report_detail: string | null;
+  ai_detected: boolean | null;
+  ai_confidence: number | null;
+  ai_reason: string | null;
+  moderation_status: string;
+  action_taken: string | null;
+  action_notes: string | null;
+  flagged_at: string;
+}
+
+export const useFlaggedContent = () => {
+  return useQuery({
+    queryKey: [...CONVERSATION_QUERY_KEYS.all, "flagged-content"],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase.rpc("get_flagged_content");
+
+      if (error) throw new Error(error.message);
+
+      return (data || []) as FlaggedContentItem[];
+    },
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
+
+export const useModerateContent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      flag_id,
+      action,
+      action_notes,
+    }: {
+      flag_id: string;
+      action: "dismiss" | "warn" | "remove" | "ban";
+      action_notes?: string;
+    }) => {
+      const supabase = await getSupabaseClient();
+      const { error } = await supabase.rpc("moderate_content", {
+        p_flag_id: flag_id,
+        p_action: action,
+        p_action_notes: action_notes || null,
+      });
+
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...CONVERSATION_QUERY_KEYS.all, "flagged-content"],
+      });
+      toast.success("Content moderated successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to moderate: ${error.message}`);
+    },
+  });
+};
+
 export const useMakeGroupLeader = () => {
   const queryClient = useQueryClient();
 

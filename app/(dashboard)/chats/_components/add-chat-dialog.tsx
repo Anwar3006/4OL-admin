@@ -85,7 +85,7 @@ const AddChatDialog = () => {
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Requested By</span>
               <span className="font-medium text-sm">
-                {addChat.data.user_profiles?.first_name} {addChat.data.user_profiles?.last_name} ({addChat.data.user_profiles?.email})
+                {addChat.data.user_profiles?.first_name} {addChat.data.user_profiles?.last_name} ({addChat.data.user_profiles?.phone_number || "no phone on file"})
               </span>
             </div>
             <div className="flex flex-col">

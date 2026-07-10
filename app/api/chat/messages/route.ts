@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
     const baseQuery = admin
       .from("messages")
-      .select(`*, sender:sender_id ( first_name, last_name )`)
+      .select(`*, sender:sender_id ( first_name, last_name, avatar_url )`)
       .eq("is_deleted", false);
 
     if (id) {
@@ -62,8 +62,15 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { conversation_id, content, message_type, attachment_url, reply_to_id } =
-      await req.json();
+    const {
+      conversation_id,
+      content,
+      message_type,
+      attachment_url,
+      attachment_name,
+      attachment_size,
+      reply_to_id,
+    } = await req.json();
 
     if (!conversation_id) {
       return NextResponse.json({ error: "conversation_id is required" }, { status: 400 });
@@ -79,15 +86,77 @@ export async function POST(req: NextRequest) {
         content,
         message_type: message_type || "text",
         attachment_url,
+        attachment_name: attachment_name ?? null,
+        attachment_size: attachment_size ?? null,
         reply_to_id,
       }])
-      .select()
+      .select(`*, sender:sender_id ( first_name, last_name, avatar_url )`)
       .single();
 
     if (error) {
       console.error("[chat/messages POST] Supabase error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/chat/messages
+ *
+ * Edits a message's content. Only the original sender may edit their own
+ * message. Sets is_edited=true and edited_at=now() — mirrors the DB
+ * columns that previously had no write path anywhere in this codebase.
+ *
+ * Body: { id: string, content: string }
+ */
+export async function PATCH(req: NextRequest) {
+  const user = await getRequestUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { id, content } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
+    if (typeof content !== "string" || !content.trim()) {
+      return NextResponse.json({ error: "content is required" }, { status: 400 });
+    }
+
+    const admin = getSupabaseAdmin();
+
+    const { data: existing, error: fetchError } = await admin
+      .from("messages")
+      .select("sender_id, is_deleted")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !existing) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+    }
+    if (existing.is_deleted) {
+      return NextResponse.json({ error: "Cannot edit a deleted message" }, { status: 400 });
+    }
+    if (existing.sender_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { data, error } = await admin
+      .from("messages")
+      .update({
+        content,
+        is_edited: true,
+        edited_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select(`*, sender:sender_id ( first_name, last_name, avatar_url )`)
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     return NextResponse.json(data);
   } catch (err: any) {

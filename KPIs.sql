@@ -419,3 +419,184 @@ BEGIN
     RETURN COALESCE(result, '{}'::jsonb);
 END;
 $$ LANGUAGE plpgsql;
+
+-- =============================================================================
+-- Chat / Conversations KPI Stats
+-- =============================================================================
+-- Aggregates:
+--   total_groups       — count of non-deleted group conversations
+--   total_members      — sum of member counts across all groups
+--   unread_support     — count of open (unresolved) support tickets
+--   avg_response_hrs   — average hours to close a support ticket
+--   groups_delta       — % change in group creation (30d vs previous 30d)
+--   members_delta      — % change in total members (30d vs previous 30d)
+--   support_delta      — % change in open tickets (30d vs previous 30d)
+--   response_delta     — point change in avg response hours
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_chat_kpi_stats()
+RETURNS json
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  current_period_start TIMESTAMP := now() - interval '30 days';
+  previous_period_start TIMESTAMP := now() - interval '60 days';
+
+  -- Lifetime totals
+  total_groups INT;
+  total_members INT;
+  unread_support INT;
+  avg_response_hrs NUMERIC;
+
+  -- Period-over-period
+  groups_curr INT; groups_prev INT;
+  members_curr INT; members_prev INT;
+  support_curr INT; support_prev INT;
+  resp_curr NUMERIC; resp_prev NUMERIC;
+
+  -- Deltas
+  groups_delta NUMERIC;
+  members_delta NUMERIC;
+  support_delta NUMERIC;
+  response_delta NUMERIC;
+BEGIN
+  -- 1. Lifetime totals
+  SELECT count(*) INTO total_groups
+  FROM public.conversations
+  WHERE type = 'group' AND is_deleted = false;
+
+  SELECT COALESCE(sum(cnt), 0) INTO total_members
+  FROM (
+    SELECT count(*) AS cnt
+    FROM public.conversation_members cm
+    JOIN public.conversations c ON c.id = cm.conversation_id
+    WHERE c.type = 'group' AND c.is_deleted = false
+      AND cm.left_at IS NULL
+    GROUP BY cm.conversation_id
+  ) sub;
+
+  SELECT count(*) INTO unread_support
+  FROM public.chat_support
+  WHERE status = 'Open' AND (is_deleted = false OR is_deleted IS NULL);
+
+  SELECT COALESCE(
+    round(avg(extract(epoch FROM (updated_at - created_at)) / 3600), 1), 0
+  ) INTO avg_response_hrs
+  FROM public.chat_support
+  WHERE status = 'Closed' AND updated_at > created_at
+    AND (is_deleted = false OR is_deleted IS NULL);
+
+  -- 2. Current 30-day period
+  SELECT count(*) INTO groups_curr
+  FROM public.conversations
+  WHERE type = 'group' AND is_deleted = false
+    AND created_at >= current_period_start;
+
+  SELECT COALESCE(sum(cnt), 0) INTO members_curr
+  FROM (
+    SELECT count(*) AS cnt
+    FROM public.conversation_members cm
+    JOIN public.conversations c ON c.id = cm.conversation_id
+    WHERE c.type = 'group' AND c.is_deleted = false
+      AND cm.left_at IS NULL
+      AND cm.joined_at >= current_period_start
+    GROUP BY cm.conversation_id
+  ) sub;
+
+  SELECT count(*) INTO support_curr
+  FROM public.chat_support
+  WHERE status = 'Open' AND (is_deleted = false OR is_deleted IS NULL)
+    AND created_at >= current_period_start;
+
+  SELECT COALESCE(
+    round(avg(extract(epoch FROM (updated_at - created_at)) / 3600), 1), 0
+  ) INTO resp_curr
+  FROM public.chat_support
+  WHERE status = 'Closed' AND updated_at > created_at
+    AND (is_deleted = false OR is_deleted IS NULL)
+    AND created_at >= current_period_start;
+
+  -- 3. Previous 30-day period
+  SELECT count(*) INTO groups_prev
+  FROM public.conversations
+  WHERE type = 'group' AND is_deleted = false
+    AND created_at >= previous_period_start AND created_at < current_period_start;
+
+  SELECT COALESCE(sum(cnt), 0) INTO members_prev
+  FROM (
+    SELECT count(*) AS cnt
+    FROM public.conversation_members cm
+    JOIN public.conversations c ON c.id = cm.conversation_id
+    WHERE c.type = 'group' AND c.is_deleted = false
+      AND cm.left_at IS NULL
+      AND cm.joined_at >= previous_period_start AND cm.joined_at < current_period_start
+    GROUP BY cm.conversation_id
+  ) sub;
+
+  SELECT count(*) INTO support_prev
+  FROM public.chat_support
+  WHERE status = 'Open' AND (is_deleted = false OR is_deleted IS NULL)
+    AND created_at >= previous_period_start AND created_at < current_period_start;
+
+  SELECT COALESCE(
+    round(avg(extract(epoch FROM (updated_at - created_at)) / 3600), 1), 0
+  ) INTO resp_prev
+  FROM public.chat_support
+  WHERE status = 'Closed' AND updated_at > created_at
+    AND (is_deleted = false OR is_deleted IS NULL)
+    AND created_at >= previous_period_start AND created_at < current_period_start;
+
+  -- 4. Calculate deltas
+  groups_delta := CASE WHEN groups_prev = 0 THEN 0 ELSE round(((groups_curr - groups_prev)::numeric / groups_prev) * 100, 1) END;
+  members_delta := CASE WHEN members_prev = 0 THEN 0 ELSE round(((members_curr - members_prev)::numeric / members_prev) * 100, 1) END;
+  support_delta := CASE WHEN support_prev = 0 THEN 0 ELSE round(((support_curr - support_prev)::numeric / support_prev) * 100, 1) END;
+  response_delta := round(resp_curr - resp_prev, 1);
+
+  -- 5. Return JSON
+  RETURN json_build_object(
+    'total_groups', total_groups,
+    'groups_delta', groups_delta,
+    'total_members', total_members,
+    'members_delta', members_delta,
+    'unread_support', unread_support,
+    'support_delta', support_delta,
+    'avg_response_hrs', avg_response_hrs,
+    'response_delta', response_delta
+  );
+END;
+$$;
+
+-- =============================================================================
+-- Chat Tab Counts (for live badge counts in the tab bar)
+-- Returns:
+--   total_groups  INT  — count of non-deleted group conversations
+--   open_support  INT  — count of open support tickets
+--   pending_flags INT  — count of content_moderation_flags with status = 'pending_review'
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_chat_tab_counts()
+RETURNS json
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  total_groups INT;
+  open_support INT;
+  pending_flags INT;
+BEGIN
+  SELECT count(*) INTO total_groups
+  FROM public.conversations
+  WHERE type = 'group' AND is_deleted = false;
+
+  SELECT count(*) INTO open_support
+  FROM public.chat_support
+  WHERE status = 'Open' AND (is_deleted = false OR is_deleted IS NULL);
+
+  SELECT count(*) INTO pending_flags
+  FROM public.content_moderation_flags
+  WHERE status = 'pending_review';
+
+  RETURN json_build_object(
+    'total_groups', total_groups,
+    'open_support', open_support,
+    'pending_flags', pending_flags
+  );
+END;
+$$;
