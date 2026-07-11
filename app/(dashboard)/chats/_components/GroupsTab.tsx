@@ -6,7 +6,7 @@ import {
   useAdminConversations,
   useDeleteConversation,
 } from "@/hooks/supabase-calls/useConversation";
-import { useViewGroupDialog, useEditGroupDialog } from "@/stores/dialog-store";
+import { useViewGroupDialog, useEditGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
 
 export interface GroupRow {
   id: string;
@@ -35,6 +35,7 @@ export default function GroupsTab() {
 
   const viewGroupDialog = useViewGroupDialog();
   const editGroupDialog = useEditGroupDialog();
+  const addGroupDialog = useAddGroupDialog();
   const deleteMutation = useDeleteConversation();
 
   const { data, isLoading } = useAdminConversations({
@@ -205,7 +206,10 @@ export default function GroupsTab() {
         >
           <option>All Status</option>
         </select>
-        <button className="btn btn-primary btn-sm text-white">
+        <button
+          className="btn btn-primary btn-sm text-white"
+          onClick={() => addGroupDialog.open()}
+        >
           + Create Group
         </button>
       </div>

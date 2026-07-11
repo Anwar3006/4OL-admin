@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import DataTable, { Column } from "@/components/redesign/DataTable";
 import { useChats, useDeleteChat } from "@/hooks/supabase-calls/useChat";
-import { useAddChatDialog } from "@/stores/dialog-store";
+import { useAddTicketDialog } from "@/stores/dialog-store";
 import { TChatOutput } from "@/schemas/chat.schema";
-import AddChatDialog from "./add-chat-dialog";
+import AddTicketDialog from "./add-ticket-dialog";
 
 const PRIORITY_BADGE: Record<string, string> = {
   Low: "badge-blue",
@@ -26,20 +25,20 @@ export default function SupportTab() {
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
   const { data, isLoading, isFetching } = useChats({ page, limit: 10 });
-  const { mutate: deleteChat } = useDeleteChat();
-  const addChat = useAddChatDialog();
+  const { mutate: deleteTicket } = useDeleteChat();
+  const addTicket = useAddTicketDialog();
 
-  const filteredChats = (data?.chats || []).filter((chat) => {
-    if (statusFilter !== "all" && chat.status !== statusFilter) return false;
-    if (priorityFilter !== "all" && chat.priority !== priorityFilter)
+  const filteredTickets = (data?.chats || []).filter((ticket) => {
+    if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
+    if (priorityFilter !== "all" && ticket.priority !== priorityFilter)
       return false;
     if (search) {
       const q = search.toLowerCase();
       const requester =
-        `${chat.user_profiles?.first_name ?? ""} ${chat.user_profiles?.last_name ?? ""}`.toLowerCase();
+        `${ticket.user_profiles?.first_name ?? ""} ${ticket.user_profiles?.last_name ?? ""}`.toLowerCase();
       if (
-        !chat.subject?.toLowerCase().includes(q) &&
-        !chat.message?.toLowerCase().includes(q) &&
+        !ticket.subject?.toLowerCase().includes(q) &&
+        !ticket.message?.toLowerCase().includes(q) &&
         !requester.includes(q)
       ) {
         return false;
@@ -47,6 +46,24 @@ export default function SupportTab() {
     }
     return true;
   });
+
+  const handleView = (row: TChatOutput) => addTicket.open(row);
+
+  const handleToggleStatus = (row: TChatOutput) =>
+    addTicket.open({
+      ...row,
+      status: row.status === "Open" ? "Closed" : "Open",
+    });
+
+  const handleDelete = (row: TChatOutput) => {
+    if (
+      globalThis.confirm(
+        `Delete ticket #${row.id} (${row.subject || "no subject"})? This cannot be undone.`,
+      )
+    ) {
+      deleteTicket(row.id);
+    }
+  };
 
   const columns: Column<TChatOutput>[] = [
     {
@@ -107,33 +124,34 @@ export default function SupportTab() {
         </span>
       ),
     },
-  ];
-
-  const rowActions: RowAction<TChatOutput>[] = [
     {
-      label: "View / Edit",
-      icon: <Eye className="w-4 h-4" />,
-      onClick: (row) => addChat.open(row),
-    },
-    {
-      label: "Mark Closed",
-      icon: <Pencil className="w-4 h-4" />,
-      onClick: (row) =>
-        addChat.open({ ...row, status: row.status === "Open" ? "Closed" : "Open" }),
-    },
-    {
-      label: "Delete",
-      icon: <Trash2 className="w-4 h-4" />,
-      onClick: (row) => {
-        if (
-          globalThis.confirm(
-            `Delete ticket #${row.id} (${row.subject || "no subject"})? This cannot be undone.`,
-          )
-        ) {
-          deleteChat(row.id);
-        }
-      },
-      danger: true,
+      key: "actions" as any,
+      label: "Actions",
+      render: (_, row) => (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleView(row)}
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-ek-green/10 hover:text-ek-green-dark transition-colors cursor-pointer bg-transparent border-0 text-sm"
+            title="View / Edit"
+          >
+            👁️
+          </button>
+          <button
+            onClick={() => handleToggleStatus(row)}
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
+            title={row.status === "Open" ? "Mark Closed" : "Reopen"}
+          >
+            {row.status === "Open" ? "✅" : "🔄"}
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
+            title="Delete"
+          >
+            🗑️
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -170,8 +188,7 @@ export default function SupportTab() {
       <div className="card p-0 overflow-hidden">
         <DataTable
           columns={columns}
-          data={filteredChats}
-          rowActions={rowActions}
+          data={filteredTickets}
           isLoading={isLoading || isFetching}
           externalTotalPages={data?.meta.totalPages}
           externalPage={page}
@@ -179,7 +196,7 @@ export default function SupportTab() {
         />
       </div>
 
-      <AddChatDialog />
+      <AddTicketDialog />
     </div>
   );
 }

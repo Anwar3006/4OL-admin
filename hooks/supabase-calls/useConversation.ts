@@ -130,6 +130,67 @@ export const useDeleteConversation = () => {
   });
 };
 
+export const useCreateConversation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      name: string;
+      description?: string;
+      group_category?: string;
+      is_verified_only?: boolean;
+      max_members?: number;
+    }) => {
+      const supabase = await getSupabaseClient();
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: conversation, error: convError } = await supabase
+        .from("conversations")
+        .insert({
+          type: "group",
+          is_group: true,
+          name: params.name,
+          description: params.description || null,
+          group_name: params.name,
+          group_description: params.description || null,
+          group_category: params.group_category || null,
+          is_verified_only: params.is_verified_only ?? false,
+          max_members: params.max_members ?? 500,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (convError) throw new Error(convError.message);
+
+      // The creating admin becomes the group's owner so it isn't orphaned
+      // with zero members.
+      const { error: memberError } = await supabase
+        .from("conversation_members")
+        .insert({
+          conversation_id: conversation.id,
+          user_id: user.id,
+          role: "owner",
+        });
+
+      if (memberError) throw new Error(memberError.message);
+
+      return conversation;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CONVERSATION_QUERY_KEYS.all });
+      toast.success("Group created successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to create group: ${error.message}`);
+    },
+  });
+};
+
 export const useUpdateConversation = () => {
   const queryClient = useQueryClient();
 

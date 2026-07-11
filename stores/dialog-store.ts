@@ -26,8 +26,8 @@ export type DialogTypes =
   | "view-faq"
   | "gallery-modal"
   | "view-medication-reminder"
-  | "add-chat"
-  | "view-chat"
+  | "add-ticket"
+  | "view-ticket"
   | "assign-admin"
   | "make-group-leader"
   | "view-conversation"
@@ -454,32 +454,32 @@ export const useViewMediactionReminderDialog = () => {
   };
 };
 
-export const useAddChatDialog = () => {
+export const useAddTicketDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("add-chat"));
-  const data = useDialogStore((state) => state.getDialogData("add-chat"));
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-ticket"));
+  const data = useDialogStore((state) => state.getDialogData("add-ticket"));
 
   return {
     isOpen,
     data,
     isEditMode: !!data,
-    open: (data?: any) => openDialog("add-chat", { data }),
-    close: () => closeDialog("add-chat"),
+    open: (data?: any) => openDialog("add-ticket", { data }),
+    close: () => closeDialog("add-ticket"),
   };
 };
 
-export const useViewChatDialog = () => {
+export const useViewTicketDialog = () => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("view-chat"));
-  const entityId = useDialogStore((state) => state.getEntityId("view-chat"));
+  const isOpen = useDialogStore((state) => state.isDialogOpen("view-ticket"));
+  const entityId = useDialogStore((state) => state.getEntityId("view-ticket"));
 
   return {
     isOpen,
     entityId,
-    open: (entityId: string) => openDialog("view-chat", { entityId }),
-    close: () => closeDialog("view-chat"),
+    open: (entityId: string) => openDialog("view-ticket", { entityId }),
+    close: () => closeDialog("view-ticket"),
   };
 };
 
@@ -893,6 +893,20 @@ export const useAddOutdoorReviewDialog = () => {
     isEditMode: !!data,
     open: (data?: any) => openDialog("add-outdoor-review", { data }),
     close: () => closeDialog("add-outdoor-review"),
+  };
+};
+
+export const useAddGroupDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) => state.isDialogOpen("add-group"));
+  const data = useDialogStore((state) => state.getDialogData("add-group"));
+
+  return {
+    isOpen,
+    data,
+    open: () => openDialog("add-group"),
+    close: () => closeDialog("add-group"),
   };
 };
 
