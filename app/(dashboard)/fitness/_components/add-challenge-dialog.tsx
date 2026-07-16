@@ -1,24 +1,39 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useAddChallengeDialog } from '@/stores/dialog-store';
-import { challengeSchema, TChallengeInput, CHALLENGE_STATUS } from '@/schemas/challenge.schema';
-import { useCreateChallenge, useUpdateChallenge } from '@/hooks/supabase-calls/useChallenge';
-import { Loader2, Trophy, X } from 'lucide-react';
-import ImageDropZone from '@/components/ImageDropZone';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useAddChallengeDialog } from "@/stores/dialog-store";
+import {
+  challengeSchema,
+  TChallengeInput,
+  CHALLENGE_STATUS,
+} from "@/schemas/challenge.schema";
+import {
+  useCreateChallenge,
+  useUpdateChallenge,
+} from "@/hooks/supabase-calls/useChallenge";
+import { Loader2, Trophy, X } from "lucide-react";
+import ImageDropZone from "@/components/ImageDropZone";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -26,39 +41,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 // Helper function to reliably output native input format values (YYYY-MM-DD)
 const formatDateString = (dateVal: any) => {
   if (!dateVal) return "";
   const d = new Date(dateVal);
-  return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
+  return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
 };
 
 const AddChallengeDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddChallengeDialog();
-  const { mutate: createChallenge, isPending: isCreating } = useCreateChallenge();
-  const { mutate: updateChallenge, isPending: isUpdating } = useUpdateChallenge();
+  const { mutate: createChallenge, isPending: isCreating } =
+    useCreateChallenge();
+  const { mutate: updateChallenge, isPending: isUpdating } =
+    useUpdateChallenge();
 
   const [tagInput, setTagInput] = useState("");
   const isPending = isCreating || isUpdating;
 
   const defaultValues: Partial<TChallengeInput> = {
-    title: '',
-    description: '',
-    challenge_type: 'Weight Loss',
+    title: "",
+    description: "",
+    challenge_type: "Weight Loss",
     start_date: new Date(),
     end_date: new Date(),
-    goal_metric: 'steps',
+    goal_metric: "steps",
     goal_value: 10000,
-    reward_description: '',
-    reward_image_url: '',
-    status: 'draft',
+    reward_description: "",
+    reward_image_url: "",
+    status: "draft",
     is_public: true,
     max_participants: null,
-    featured_image_url: '',
+    featured_image_url: "",
     tags: [],
   };
 
@@ -73,10 +90,10 @@ const AddChallengeDialog = () => {
         ...data,
         start_date: data.start_date ? new Date(data.start_date) : new Date(),
         end_date: data.end_date ? new Date(data.end_date) : new Date(),
-        description: data.description ?? '',
-        reward_description: data.reward_description ?? '',
-        reward_image_url: data.reward_image_url ?? '',
-        featured_image_url: data.featured_image_url ?? '',
+        description: data.description ?? "",
+        reward_description: data.reward_description ?? "",
+        reward_image_url: data.reward_image_url ?? "",
+        featured_image_url: data.featured_image_url ?? "",
         tags: data.tags ?? [],
       });
     } else if (isOpen) {
@@ -103,23 +120,28 @@ const AddChallengeDialog = () => {
 
   const removeTag = (tagToRemove: string) => {
     const currentTags = form.getValues("tags") || [];
-    form.setValue("tags", currentTags.filter(t => t !== tagToRemove));
+    form.setValue(
+      "tags",
+      currentTags.filter((t) => t !== tagToRemove),
+    );
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className='max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white'>
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
         <div className="bg-white rounded-lg overflow-hidden">
           <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Trophy className="h-6 w-6 text-primary" />
-              {isEditMode ? 'Edit Fitness Challenge' : 'Launch New Challenge'}
+              {isEditMode ? "Edit Fitness Challenge" : "Launch New Challenge"}
             </DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='p-6 space-y-6'>
-              
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="p-6 space-y-6"
+            >
               {/* Media Zones */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -131,7 +153,9 @@ const AddChallengeDialog = () => {
                       <FormControl>
                         <ImageDropZone
                           filePath="challenges"
-                          onFilesChange={(urls) => field.onChange(urls || '')}
+                          onFilesChange={(urls) =>
+                            field.onChange(urls?.[0] || "")
+                          }
                           initialFiles={field.value ? [field.value] : []}
                           text="Upload cover image"
                         />
@@ -150,7 +174,9 @@ const AddChallengeDialog = () => {
                       <FormControl>
                         <ImageDropZone
                           filePath="challenges/rewards"
-                          onFilesChange={(urls) => field.onChange(urls || '')}
+                          onFilesChange={(urls) =>
+                            field.onChange(urls?.[0] || "")
+                          }
                           initialFiles={field.value ? [field.value] : []}
                           text="Upload reward image"
                         />
@@ -165,25 +191,31 @@ const AddChallengeDialog = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
-                  name='title'
+                  name="title"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
                       <FormLabel>Challenge Title *</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Summer Shred 2026" {...field} />
+                        <Input
+                          placeholder="e.g. Summer Shred 2026"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
-                  name='status'
+                  name="status"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Status" />
@@ -191,8 +223,14 @@ const AddChallengeDialog = () => {
                         </FormControl>
                         {/*bg-white and explicit layer definitions protect from transparent dropdown bleed */}
                         <SelectContent className="bg-white z-[100]">
-                          {CHALLENGE_STATUS.map(s => (
-                            <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                          {CHALLENGE_STATUS.map((s) => (
+                            <SelectItem
+                              key={s}
+                              value={s}
+                              className="capitalize"
+                            >
+                              {s}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -204,9 +242,9 @@ const AddChallengeDialog = () => {
 
               {/* Metadata Rules */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <FormField
+                <FormField
                   control={form.control}
-                  name='challenge_type'
+                  name="challenge_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Type *</FormLabel>
@@ -220,12 +258,16 @@ const AddChallengeDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name='goal_metric'
+                  name="goal_metric"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Goal Metric</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. calories, steps" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="e.g. calories, steps"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,16 +276,22 @@ const AddChallengeDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name='goal_value'
+                  name="goal_value"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Goal Value</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
+                        <Input
+                          type="number"
+                          {...field}
                           value={field.value ?? ""}
-                          onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : null)} 
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? parseFloat(e.target.value)
+                                : null,
+                            )
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -256,15 +304,19 @@ const AddChallengeDialog = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name='start_date'
+                  name="start_date"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Start Date *</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="date" 
-                          value={formatDateString(field.value)} 
-                          onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : "")} 
+                        <Input
+                          type="date"
+                          value={formatDateString(field.value)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? new Date(e.target.value) : "",
+                            )
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -273,15 +325,19 @@ const AddChallengeDialog = () => {
                 />
                 <FormField
                   control={form.control}
-                  name='end_date'
+                  name="end_date"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>End Date *</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="date" 
-                          value={formatDateString(field.value)} 
-                          onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : "")} 
+                        <Input
+                          type="date"
+                          value={formatDateString(field.value)}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? new Date(e.target.value) : "",
+                            )
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -294,15 +350,15 @@ const AddChallengeDialog = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name='description'
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Detailed Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Challenge rules and motivation..." 
+                        <Textarea
+                          placeholder="Challenge rules and motivation..."
                           className="min-h-[120px] resize-none"
-                          {...field} 
+                          {...field}
                           value={field.value ?? ""}
                         />
                       </FormControl>
@@ -313,15 +369,15 @@ const AddChallengeDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name='reward_description'
+                  name="reward_description"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Reward Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="What do participants win?" 
+                        <Textarea
+                          placeholder="What do participants win?"
                           className="min-h-[120px] resize-none"
-                          {...field} 
+                          {...field}
                           value={field.value ?? ""}
                         />
                       </FormControl>
@@ -351,7 +407,7 @@ const AddChallengeDialog = () => {
                             "w-20",
                             field.value
                               ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                              : ""
+                              : "",
                           )}
                           onClick={() => field.onChange(!field.value)}
                         >
@@ -376,7 +432,7 @@ const AddChallengeDialog = () => {
                           value={field.value ?? ""}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value ? parseInt(e.target.value) : null
+                              e.target.value ? parseInt(e.target.value) : null,
                             )
                           }
                         />
@@ -391,17 +447,25 @@ const AddChallengeDialog = () => {
               <div className="space-y-3">
                 <FormLabel>Challenge Tags</FormLabel>
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="e.g. nutrition, cardio" 
+                  <Input
+                    placeholder="e.g. nutrition, cardio"
                     value={tagInput}
-                    onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTag())
+                    }
                   />
-                  <Button type="button" variant="outline" onClick={addTag}>Add</Button>
+                  <Button type="button" variant="outline" onClick={addTag}>
+                    Add
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {form.watch("tags")?.map(tag => (
-                    <Badge key={tag} variant="secondary" className="gap-1 pl-2.5">
+                  {form.watch("tags")?.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="gap-1 pl-2.5"
+                    >
                       {tag}
                       <button type="button" onClick={() => removeTag(tag)}>
                         <X className="h-3 w-3" />
@@ -412,10 +476,18 @@ const AddChallengeDialog = () => {
               </div>
 
               <DialogFooter className="pt-4 border-t">
-                <Button type='button' variant='outline' onClick={close}>Cancel</Button>
-                <Button type='submit' disabled={isPending} className="min-w-[140px]">
-                  {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-                  {isEditMode ? 'Update Challenge' : 'Start Challenge'}
+                <Button type="button" variant="outline" onClick={close}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="min-w-[140px]"
+                >
+                  {isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEditMode ? "Update Challenge" : "Start Challenge"}
                 </Button>
               </DialogFooter>
             </form>

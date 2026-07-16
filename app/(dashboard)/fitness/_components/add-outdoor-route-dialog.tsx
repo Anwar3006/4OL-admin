@@ -1,8 +1,10 @@
+// app/(dashboard)/fitness/_components/add-outdoor-route-dialog.tsx
 "use client";
 
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +20,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,406 +30,505 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MapPin, Loader2, UploadCloud } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
-import { UserSearchSelect } from "./user-search-select";
-import {
-  fitnessOutdoorRouteSchema,
-  TFitnessOutdoorRouteInput,
-  DIFFICULTY_LEVELS,
-  MODERATION_STATUS,
-} from "@/schemas/fitness-outdoor.schema";
 import { useAddOutdoorRouteDialog } from "@/stores/dialog-store";
 import {
   useCreateFitnessOutdoorRoute,
   useUpdateFitnessOutdoorRoute,
 } from "@/hooks/supabase-calls/useFitnessOutdoor";
-import { cn } from "@/lib/utils";
+import { GHANA_REGIONS_ENUM } from "@/types/formInput";
+
+// Expanded Schema handling Area, Region, and Metadata injection
+const routeFormSchema = z.object({
+  name: z.string().min(2, "Route name required"),
+  category: z.string().min(1, "Category required"),
+  difficulty: z.string().min(1, "Difficulty required"),
+  distance_km: z.number().positive("Must be positive"),
+  estimated_duration_mins: z.number().nullable(),
+  area: z.string().min(1, "Area/Suburb required"),
+  region: z.string().min(1, "Region required"),
+  surface_type: z.string().optional(),
+  description: z.string().optional(),
+  verification_status: z.string(),
+  registered_by: z.string().optional(), // Maps to JSON metadata
+  fitcoins_reward: z.number().default(50), // Maps to JSON metadata
+  features: z.array(z.string()).default([]), // Maps to JSON metadata
+  image_url: z.array(z.string()).default([]),
+  gpx_file_url: z.string().optional(), // Maps to JSON gps_data
+});
+
+type FormValues = z.infer<typeof routeFormSchema>;
+
+const SAFETY_TAGS = [
+  "Safe at night",
+  "Well lit",
+  "Ocean view",
+  "Coastal",
+  "Shade cover",
+  "Water stations",
+  "Parking available",
+  "Restrooms",
+  "Pet friendly",
+];
 
 const AddOutdoorRouteDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddOutdoorRouteDialog();
-  const { mutate: createRoute, isPending: isCreating } = useCreateFitnessOutdoorRoute();
-  const { mutate: updateRoute, isPending: isUpdating } = useUpdateFitnessOutdoorRoute();
-
+  const { mutate: createRoute, isPending: isCreating } =
+    useCreateFitnessOutdoorRoute();
+  const { mutate: updateRoute, isPending: isUpdating } =
+    useUpdateFitnessOutdoorRoute();
   const isPending = isCreating || isUpdating;
 
-  const defaultValues: TFitnessOutdoorRouteInput = {
-    name: "",
-    description: "",
-    category: "",
-    difficulty: "low",
-    surface_type: "",
-    gps_data: null,
-    start_location_name: "",
-    distance_km: null,
-    estimated_duration_mins: null,
-    verification_status: "pending_review",
-    verified_by: null,
-    image_urls: [],
-    is_active: true,
-    created_by: null,
-  };
-
-  const form = useForm<TFitnessOutdoorRouteInput>({
-    resolver: zodResolver(fitnessOutdoorRouteSchema),
-    defaultValues,
+  const form = useForm<FormValues>({
+    resolver: zodResolver(routeFormSchema),
+    defaultValues: {
+      name: "",
+      category: "Running",
+      difficulty: "low",
+      distance_km: 0,
+      estimated_duration_mins: null,
+      area: "",
+      region: "Greater Accra",
+      surface_type: "Paved",
+      description: "",
+      verification_status: "official_business",
+      registered_by: "",
+      fitcoins_reward: 50,
+      features: [],
+      image_url: [],
+      gpx_file_url: "",
+    },
   });
 
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && data) {
+        // Extract metadata cleanly from gps_data JSONB if editing
+        const meta = (data.gps_data as any) || {};
         form.reset({
           name: data.name ?? "",
-          description: data.description ?? "",
-          category: data.category ?? "",
+          category: data.category ?? "Running",
           difficulty: data.difficulty ?? "low",
-          surface_type: data.surface_type ?? "",
-          gps_data: data.gps_data ?? null,
-          start_location_name: data.start_location_name ?? "",
-          distance_km: data.distance_km ?? null,
+          distance_km: data.distance_km ?? 0,
           estimated_duration_mins: data.estimated_duration_mins ?? null,
-          verification_status: data.verification_status ?? "pending_review",
-          verified_by: data.verified_by ?? null,
-          image_urls: Array.isArray(data.image_urls) ? data.image_urls : [],
-          is_active: data.is_active !== false,
-          created_by: data.created_by ?? null,
+          area: data.area ?? "",
+          region: data.region ?? "Greater Accra",
+          surface_type: data.surface_type ?? "Paved",
+          description: data.description ?? "",
+          verification_status: data.verification_status ?? "official_business",
+          registered_by: meta.registered_by ?? "",
+          fitcoins_reward: meta.fitcoins_reward ?? 50,
+          features: meta.features ?? [],
+          image_url: Array.isArray(data.image_url) ? data.image_url : [],
+          gpx_file_url: meta.gpx_file_url ?? "",
         });
       } else {
-        form.reset(defaultValues);
+        form.reset();
       }
     }
-  }, [isOpen, isEditMode, data]);
+  }, [isOpen, isEditMode, data, form]);
 
-  const onSubmit = (values: TFitnessOutdoorRouteInput) => {
+  const onSubmit = (values: FormValues) => {
+    // Package custom fields into the gps_data JSONB payload to avoid schema altering
+    const payload = {
+      name: values.name,
+      category: values.category.toLowerCase(),
+      difficulty: values.difficulty,
+      distance_km: values.distance_km,
+      estimated_duration_mins: values.estimated_duration_mins,
+      area: values.area,
+      region: values.region,
+      surface_type: values.surface_type,
+      description: values.description,
+      verification_status: values.verification_status,
+      image_url: values.image_url,
+      is_active: true,
+      gps_data: {
+        features: values.features,
+        fitcoins_reward: values.fitcoins_reward,
+        registered_by: values.registered_by,
+        gpx_file_url: values.gpx_file_url,
+      },
+    };
+
     if (isEditMode && data?.id) {
-      updateRoute({ id: data.id, data: values }, { onSuccess: close });
+      updateRoute({ id: data.id, data: payload as any }, { onSuccess: close });
     } else {
-      createRoute(values, { onSuccess: close });
+      createRoute(payload as any, { onSuccess: close });
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
       <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-              <MapPin className="h-6 w-6 text-emerald-600" />
-              {isEditMode ? "Edit Outdoor Route" : "Add Outdoor Route"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
+          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-slate-800">
+            🗺️ {isEditMode ? "Edit Outdoor Route" : "Add Outdoor Route"}
+          </DialogTitle>
+          <p className="text-sm text-slate-500">
+            Register a new outdoor workout route for the fitness app
+          </p>
+        </DialogHeader>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6 bg-white">
-              
-              {/* Route Name & Category */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Route Name *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g. Forest Trail Loop" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="p-6 space-y-5 bg-white"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Route Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Labone Beach Run" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Category *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g. Hiking, Running, Cycling" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Difficulty & Verification Status */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="difficulty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Difficulty Level *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
-                            <SelectValue placeholder="Select difficulty" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
-                          {DIFFICULTY_LEVELS.map((level) => (
-                            <SelectItem key={level} value={level} className="capitalize cursor-pointer">
-                              {level}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="verification_status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Verification Status *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
-                          {MODERATION_STATUS.map((status) => (
-                            <SelectItem key={status} value={status} className="capitalize cursor-pointer">
-                              {status.replace("_", " ")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Surface Type & Start Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="surface_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Surface Type</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g. Gravel, Asphalt, Dirt" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="start_location_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Start Location Name</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g. Main Park Entrance Gate A" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Distance & Duration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="distance_km"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Distance (km)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          placeholder="e.g. 5.25" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? null : parseFloat(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="estimated_duration_mins"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Est. Duration (minutes)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="e.g. 45" 
-                          readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
-                          {...field} 
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Users Selects */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="created_by"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Created By</FormLabel>
-                      <FormControl>
-                        <UserSearchSelect 
-                          value={field.value ?? ""} 
-                          onValueChange={(val) => field.onChange(val || null)} 
-                          placeholder="Select creator..."
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="verified_by"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Verified By</FormLabel>
-                      <FormControl>
-                        <UserSearchSelect 
-                          value={field.value ?? ""} 
-                          onValueChange={(val) => field.onChange(val || null)} 
-                          placeholder="Select verifier..."
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Active Toggle */}
+            <div className="grid grid-cols-2 gap-4 w-full">
               <FormField
                 control={form.control}
-                name="is_active"
+                name="category"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-slate-200 p-4 bg-white shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-slate-700 font-semibold">Active Status</FormLabel>
-                      <FormDescription>Make this route visible on user search maps</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Button
-                        type="button"
-                        variant={field.value ? "default" : "outline"}
-                        size="sm"
-                        className={cn(
-                          "w-24 rounded-xl font-bold",
-                          field.value ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                  <FormItem>
+                    <FormLabel>Category *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white">
+                        {["Running", "Walking", "Cycling", "Hiking"].map(
+                          (t) => (
+                            <SelectItem key={t} value={t}>
+                              {t}
+                            </SelectItem>
+                          ),
                         )}
-                        onClick={() => field.onChange(!field.value)}
-                      >
-                        {field.value ? "Active" : "Inactive"}
-                      </Button>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="difficulty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="low">Beginner</SelectItem>
+                        <SelectItem value="medium">Intermediate</SelectItem>
+                        <SelectItem value="high">Advanced</SelectItem>
+                        <SelectItem value="extreme">Extreme</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="distance_km"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Distance (km) *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g. 3.2"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value) || 0)
+                        }
+                      />
                     </FormControl>
                   </FormItem>
                 )}
               />
-
-              {/* Description */}
               <FormField
                 control={form.control}
-                name="description"
+                name="estimated_duration_mins"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Route Description</FormLabel>
+                    <FormLabel>Est. Duration (minutes)</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Provide details about viewpoints, track conditions, elevation..." 
-                        readOnly={false} 
-                        className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl resize-y min-h-[100px]"
-                        {...field} 
+                      <Input
+                        type="number"
+                        placeholder="e.g. 22"
+                        {...field}
                         value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || null)
+                        }
                       />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
-              {/* Images Dropzone */}
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="image_urls"
+                name="area"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Route Gallery Images</FormLabel>
+                    <FormLabel>Area / Suburb *</FormLabel>
                     <FormControl>
-                      <ImageDropZone
-                        filePath="fitness/outdoor/routes"
-                        maxFiles={5}
-                        onFilesChange={(urls) => field.onChange(urls)}
-                        initialFiles={field.value || []}
-                        text="Drag & drop route gallery photos here"
-                      />
+                      <Input placeholder="e.g. Labone" {...field} />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="region"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Region *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white">
+                        {GHANA_REGIONS_ENUM.map((r) => (
+                          <SelectItem key={r} value={r.toUpperCase()}>
+                            {r.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              <DialogFooter className="pt-4 border-t gap-2 md:gap-0">
-                <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" onClick={close} className="rounded-xl border-slate-200 min-w-[140px]">
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isPending} className="min-w-[240px] rounded-xl bg-slate-900 text-white hover:bg-slate-800">
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditMode ? "Update Route" : "Create Route"}
-                </Button>
-                </div>
-              </DialogFooter>
-            </form>
-          </Form>
-        </div>
+            <FormField
+              control={form.control}
+              name="surface_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Surface Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white">
+                      {["Paved", "Trail", "Mixed", "Sand"].map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Route Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe the route experience, scenery, safety notes..."
+                      className="resize-y"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="verification_status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Verification Type *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="approved">
+                          Official Business Verified
+                        </SelectItem>
+                        <SelectItem value="pending_review">
+                          Community Verified
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="registered_by"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Registered By (Business)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. FitLife Gym" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Tags Grid */}
+            <FormField
+              control={form.control}
+              name="features"
+              render={() => (
+                <FormItem className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                  <div className="font-bold text-sm text-slate-800 mb-3">
+                    📋 Safety & Features Tags
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {SAFETY_TAGS.map((tag) => (
+                      <FormField
+                        key={tag}
+                        control={form.control}
+                        name="features"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={tag}
+                              className="flex flex-row items-start space-x-2 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(tag)}
+                                  onCheckedChange={(checked) => {
+                                    const currentValues = Array.isArray(
+                                      field.value,
+                                    )
+                                      ? field.value
+                                      : [];
+                                    return checked
+                                      ? field.onChange([...currentValues, tag])
+                                      : field.onChange(
+                                          currentValues.filter(
+                                            (val) => val !== tag,
+                                          ),
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-xs font-medium cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                {tag}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="fitcoins_reward"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>FitCoins Reward per Completion</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
+                      }
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* File Uploaders */}
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Route Gallery Image</FormLabel>
+                  <FormControl>
+                    <ImageDropZone
+                      filePath="fitness/outdoor/routes"
+                      maxFiles={1}
+                      onFilesChange={(urls) => field.onChange(urls)}
+                      initialFiles={field.value || []}
+                      text="Upload a featured route image"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* GPX Upload Stub */}
+            <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50 mt-2">
+              <div className="text-2xl mb-2">🗺️</div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-8 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+              >
+                <UploadCloud className="w-3 h-3 mr-2" /> Upload GPX Route File
+              </Button>
+              <div className="text-[10px] text-slate-400 mt-2">
+                Or draw route on map (feature coming soon)
+              </div>
+            </div>
+
+            <DialogFooter className="pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={close}
+                className="rounded-xl border-slate-200 min-w-[120px]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="min-w-[180px] rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+              >
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                📋 {isEditMode ? "Update Route" : "Add Route"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

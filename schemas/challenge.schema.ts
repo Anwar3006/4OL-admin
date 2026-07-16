@@ -1,7 +1,13 @@
 import { z } from "zod";
 
-// Matched strictly with DB allowed statuses 
-export const CHALLENGE_STATUS = ["draft", "published", "archived"] as const;
+// Matched strictly with DB allowed statuses
+export const CHALLENGE_STATUS = [
+  "draft",
+  "upcoming",
+  "completed",
+  "cancelled",
+  "active",
+] as const;
 
 export const challengeSchema = z.object({
   id: z.string().uuid().optional(),

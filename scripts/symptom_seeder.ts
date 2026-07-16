@@ -230,6 +230,18 @@ async function seedSymptoms() {
           s.slug ||
           (s.name || s.title).toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         nhs_link: s.nhs_link || null,
+        image_url: s.image_url || null,
+        specialist: s.specialist || null,
+        status: s.status || "published",
+        is_systemic: s.is_systemic || false,
+        about: s.about || null,
+        diagnosis: s.diagnosis || null,
+        treatment: s.treatment || null,
+        complications: s.complications || null,
+        prevention: s.prevention || null,
+        contact_your_doctor: s.contact_your_doctor || null,
+        more_information: s.more_information || null,
+        attribution: s.attribution || null,
         metadata: s.metadata || {},
       }));
 

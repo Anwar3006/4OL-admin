@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
-
-// Import your types from the schema
 import {
   THealthyLivingInput,
   THealthyLivingOutput,
@@ -20,31 +18,22 @@ export const HEALTHY_LIVING_QUERY_KEYS = {
 
 interface PaginatedResponse {
   healthyLivings: THealthyLivingOutput[];
-  meta: {
-    totalPages: number;
-    total: number;
-    currentPage: number;
-  };
+  meta: { totalPages: number; total: number; currentPage: number };
 }
 
-// ============= QUERY HOOKS =============
-
-/**
- * Fetch paginated healthy living items
- */
+/** Paginated flat list — no more nesting/tree, so simple offset pagination. */
 export const useHealthyLivings = ({
   page,
   limit,
   search,
-  status, // Add status here
+  status,
 }: {
   page: number;
   limit: number;
   search?: string;
-  status?: string; // Add status type here
+  status?: string;
 }) => {
   return useQuery<PaginatedResponse, Error>({
-    // Pass status to the query key
     queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit, search, status),
     queryFn: async () => {
       const from = (page - 1) * limit;
@@ -54,220 +43,135 @@ export const useHealthyLivings = ({
         .from("healthy_living_info")
         .select("*", { count: "exact" });
 
-      if (search) {
-        query = query.ilike("name", `%${search}%`);
-      }
+      if (search) query = query.ilike("name", `%${search}%`);
+      if (status) query = query.eq("status", status);
 
-      // 3. Apply the status filter if it exists
-      if (status) {
-        query = query.eq("status", status);
-      }
-
-      const {
-        data: healthyLivings,
-        count,
-        error,
-      } = await query
-        .order("display_order", { ascending: true })
-        .order("name", { ascending: true })
+      const { data, count, error } = await query
+        .order("created_at", { ascending: false })
         .range(from, to);
 
       if (error) throw new Error(error.message);
 
       const totalCount = count ?? 0;
-
       return {
-        healthyLivings: (healthyLivings || []) as unknown as THealthyLivingOutput[],
+        healthyLivings: (data || []) as unknown as THealthyLivingOutput[],
         meta: {
-          totalPages: Math.ceil(totalCount / limit),
+          totalPages: Math.max(1, Math.ceil(totalCount / limit)),
           total: totalCount,
           currentPage: page,
         },
       };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 
-/**
- * Fetch single healthy living item with related types
- */
+/** Single item — flat, no children/tree join needed anymore. */
 export const useHealthyLiving = (id: string | null) => {
   return useQuery<THealthyLivingOutput, Error>({
     queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const { data, error } = await (
-        await getSupabaseClient()
-      )
+      const { data, error } = await (await getSupabaseClient())
         .from("healthy_living_info")
-        .select(
-          `
-          *,
-          children:healthy_living_info(
-            *,
-            children:healthy_living_info(*)
-          )
-        `,
-        )
+        .select("*")
         .eq("id", id!)
         .single();
-
       if (error) throw new Error(error.message);
-
-      // content_sections is stored as a JSON string in the DB — parse it back to an array
-      const normalize = (record: any): any => ({
-        ...record,
-        content_sections:
-          typeof record.content_sections === "string"
-            ? JSON.parse(record.content_sections)
-            : (record.content_sections ?? []),
-        children: (record.children ?? []).map(normalize),
-      });
-
-      return normalize(data) as unknown as THealthyLivingOutput;
+      return data as unknown as THealthyLivingOutput;
     },
     enabled: !!id,
   });
 };
 
-// ============= MUTATION HOOKS =============
-
-/**
- * Recursive function to insert a tree of healthy living items
- */
-const insertHealthyLivingTree = async (input: any) => {
-  if (input.tree) {
-    // Tree insert
-    const { data: node, error } = await (
-      await getSupabaseClient()
-    ).rpc("insert_healthy_living_info_tree", {
-      p_node: input.tree,
-      p_parent_id: input.parent_id || null,
-    });
-    if (error) throw new Error(error.message);
-    return node;
-  }
-
-  // Single node insert
-  const { data: node, error } = await (
-    await getSupabaseClient()
-  )
-    .rpc("insert_healthy_living_info", {
-      p_name: input.name,
-      p_slug: input.slug,
-      p_description: input.description || null,
-      p_content_sections: JSON.stringify(input.content_sections || []),
-      p_parent_id: input.parent_id || null,
-      p_image_url: input.image_url || null,
-      p_attribution: JSON.stringify(input.attribution || {}),
-    })
-    .single();
-
-  if (error) throw new Error(error.message);
-  return node;
-};
-
-/**
- * Create new healthy living item (with hierarchy)
- */
 export const useCreateHealthyLiving = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<THealthyLivingOutput, Error, any>({
+  return useMutation<THealthyLivingOutput, Error, THealthyLivingInput>({
     mutationFn: async (input) => {
-      const node = await insertHealthyLivingTree(input);
-      return node as unknown as THealthyLivingOutput;
+      const { data, error } = await (await getSupabaseClient())
+        .from("healthy_living_info")
+        .insert([
+          {
+            name: input.name,
+            slug: input.slug,
+            description: input.description || null,
+            content: input.content || {},
+            image_url: input.image_url || null,
+            attribution: input.attribution || {},
+            status: input.status || "published",
+          },
+        ])
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return data as unknown as THealthyLivingOutput;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: HEALTHY_LIVING_QUERY_KEYS.all,
-      });
+      queryClient.invalidateQueries({ queryKey: HEALTHY_LIVING_QUERY_KEYS.all });
       toast.success("Saved successfully!");
     },
-    onError: (error) => {
-      toast.error(`Failed to save: ${error.message}`);
-    },
+    onError: (error) => toast.error(`Failed to save: ${error.message}`),
   });
 };
 
-/**
- * Update healthy living item
- */
 export const useUpdateHealthyLiving = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<THealthyLivingOutput, Error, { id: string; data: any }>({
+  return useMutation<
+    THealthyLivingOutput,
+    Error,
+    { id: string; data: THealthyLivingInput }
+  >({
     mutationFn: async ({ id, data: input }) => {
-      const { data: healthyLiving, error } = await (
-        await getSupabaseClient()
-      )
-        .rpc("update_healthy_living_info", {
-          p_id: id,
-          p_name: input.name,
-          p_slug: input.slug,
-          p_description: input.description || null,
-          p_content_sections: JSON.stringify(input.content_sections || []),
-          p_parent_id: input.parent_id || null,
-          p_image_url: input.image_url || null,
-          p_attribution: JSON.stringify(input.attribution || {}),
+      const { data, error } = await (await getSupabaseClient())
+        .from("healthy_living_info")
+        .update({
+          name: input.name,
+          slug: input.slug,
+          description: input.description || null,
+          content: input.content || {},
+          image_url: input.image_url || null,
+          attribution: input.attribution || {},
+          status: input.status || "published",
         })
+        .eq("id", id)
+        .select()
         .single();
-
       if (error) throw new Error(error.message);
-
-      return healthyLiving as unknown as THealthyLivingOutput;
+      return data as unknown as THealthyLivingOutput;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(data.id),
       });
-      queryClient.invalidateQueries({
-        queryKey: HEALTHY_LIVING_QUERY_KEYS.all,
-      });
+      queryClient.invalidateQueries({ queryKey: HEALTHY_LIVING_QUERY_KEYS.all });
       toast.success("Updated successfully!");
     },
-    onError: (error) => {
-      toast.error(`Failed to update: ${error.message}`);
-    },
+    onError: (error) => toast.error(`Failed to update: ${error.message}`),
   });
 };
 
-/**
- * Delete healthy living item
- */
 export const useDeleteHealthyLiving = () => {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const { error } = await (
-        await getSupabaseClient()
-      ).rpc("delete_healthy_living_info", { p_id: id });
+      const { error } = await (await getSupabaseClient())
+        .from("healthy_living_info")
+        .delete()
+        .eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: HEALTHY_LIVING_QUERY_KEYS.all,
-      });
-      toast.success("Healthy living item deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: HEALTHY_LIVING_QUERY_KEYS.all });
+      toast.success("Deleted successfully!");
     },
-    onError: (error) => {
-      toast.error(`Failed to delete: ${error.message}`);
-    },
+    onError: (error) => toast.error(`Failed to delete: ${error.message}`),
   });
 };
 
-// ============= CONVENIENCE HOOK =============
-
-/**
- * All-in-one healthy living operations hook
- */
-export const useHealthyLivingOperations = () => {
-  return {
-    create: useCreateHealthyLiving(),
-    update: useUpdateHealthyLiving(),
-    delete: useDeleteHealthyLiving(),
-  };
-};
-
-
+export const useHealthyLivingOperations = () => ({
+  create: useCreateHealthyLiving(),
+  update: useUpdateHealthyLiving(),
+  delete: useDeleteHealthyLiving(),
+});

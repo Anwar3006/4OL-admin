@@ -313,27 +313,13 @@ const AddExerciseDialog = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Equipment Required *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select equipment" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
-                          {EQUIPMENT_TYPES.map((eq) => (
-                            <SelectItem
-                              key={eq}
-                              value={eq}
-                              className="cursor-pointer"
-                            >
-                              {eq}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. Dumbbell, Barbell"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -345,27 +331,13 @@ const AddExerciseDialog = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Difficulty</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? undefined}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
-                          {DIFFICULTY_LEVELS.map((level) => (
-                            <SelectItem
-                              key={level}
-                              value={level}
-                              className="capitalize cursor-pointer"
-                            >
-                              {level}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. beginner, intermediate"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

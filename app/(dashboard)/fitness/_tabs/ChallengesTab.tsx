@@ -22,8 +22,13 @@ import {
   Search,
   Filter,
   Plus,
+  Calendar,
+  Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 const ChallengesTab = () => {
   const [search, setSearch] = useState("");
@@ -68,75 +73,157 @@ const ChallengesTab = () => {
 
   const columns = [
     {
-      accessorKey: "name",
-      header: "Challenge Details",
-      cell: ({ row }: any) => (
-        <div className="flex flex-col min-w-[200px]">
-          <span className="font-bold text-slate-800">{row.original.name}</span>
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-            {row.original.category || "Fitness"}
-          </span>
-        </div>
-      ),
+      accessorKey: "title",
+      header: "Challenge",
+      cell: ({ row }: any) => {
+        const challenge = row.original;
+        return (
+          <div className="flex flex-col gap-0.5 min-w-[220px]">
+            <span className="font-bold text-slate-900 text-sm leading-tight">
+              {challenge.title}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Badge
+                variant="outline"
+                className="text-[9px] h-5 px-1.5 font-bold uppercase tracking-wider border-slate-200 text-slate-500"
+              >
+                {challenge.challenge_type}
+              </Badge>
+              {challenge.tags?.length > 0 && (
+                <span className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
+                  {challenge.tags.slice(0, 2).join(", ")}
+                  {challenge.tags.length > 2 && "..."}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "goal",
+      header: "Goal",
+      cell: ({ row }: any) => {
+        const { goal_metric, goal_value } = row.original;
+        if (!goal_metric || !goal_value)
+          return (
+            <span className="text-[11px] text-slate-400 italic">
+              No goal set
+            </span>
+          );
+        return (
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <Target className="w-3.5 h-3.5 text-indigo-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold text-slate-800">
+                {Number(goal_value).toLocaleString()}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-500 capitalize">
+                {goal_metric}
+              </span>
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }: any) => (
-        <span
-          className={cn(
-            "badge uppercase tracking-wider text-[10px]",
-            row.original.status === "active"
-              ? "badge-green"
-              : row.original.status === "draft"
-                ? "bg-slate-100 text-slate-600"
-                : "badge-amber",
-          )}
-        >
-          {row.original.status}
-        </span>
-      ),
+      cell: ({ row }: any) => {
+        const status = row.original.status;
+        return (
+          <Badge
+            className={cn(
+              "h-5 px-2 text-[10px] font-black uppercase tracking-wider border-0",
+              status === "active" &&
+                "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+              status === "draft" &&
+                "bg-slate-100 text-slate-600 hover:bg-slate-100",
+              status === "upcoming" &&
+                "bg-blue-100 text-blue-700 hover:bg-blue-100",
+              status === "completed" &&
+                "bg-amber-100 text-amber-700 hover:bg-amber-100",
+            )}
+          >
+            {status}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "participants",
       header: "Participants",
-      cell: ({ row }: any) => (
-        <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400"
+      cell: ({ row }: any) => {
+        const current = row.original.current_participants ?? 0;
+        const max = row.original.max_participants;
+        const isFull = max && current >= max;
+        return (
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-slate-50 flex items-center justify-center">
+              <Users className="w-3.5 h-3.5 text-slate-500" />
+            </div>
+            <div className="flex flex-col">
+              <span
+                className={cn(
+                  "text-[11px] font-bold",
+                  isFull ? "text-amber-600" : "text-slate-800",
+                )}
               >
-                U
-              </div>
-            ))}
+                {current.toLocaleString()}
+                {max ? ` / ${max}` : ""}
+              </span>
+              {max && (
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  {isFull ? "Full" : `${max - current} left`}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-[11px] font-bold text-slate-800">
-            {row.original.total_participants || 0} joined
-          </span>
-        </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "duration",
       header: "Duration",
-      cell: ({ row }: any) => (
-        <div className="text-[11px] font-medium text-slate-600">
-          {row.original.start_date && row.original.end_date
-            ? `${new Date(row.original.start_date).toLocaleDateString()} - ${new Date(row.original.end_date).toLocaleDateString()}`
-            : "Ongoing"}
-        </div>
-      ),
+      cell: ({ row }: any) => {
+        const { start_date, end_date } = row.original;
+        if (!start_date || !end_date)
+          return <span className="text-[11px] text-slate-400">—</span>;
+        const start = new Date(start_date).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        });
+        const end = new Date(end_date).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        return (
+          <div className="flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-[11px] font-semibold text-slate-600">
+              {start} – {end}
+            </span>
+          </div>
+        );
+      },
     },
     {
-      accessorKey: "rewards",
-      header: "Rewards",
-      cell: ({ row }: any) => (
-        <span className="badge badge-gold h-5 text-[10px] uppercase font-black gap-1">
-          🪙 {row.original.rewards?.fitcoins || 0} FitCoins
-        </span>
-      ),
+      accessorKey: "reward",
+      header: "Reward",
+      cell: ({ row }: any) => {
+        const reward = row.original.reward_description;
+        if (!reward)
+          return <span className="text-[11px] text-slate-400">—</span>;
+        return (
+          <Badge className="h-6 px-2.5 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50 gap-1">
+            <Trophy className="w-3 h-3 text-amber-600" />
+            <span className="truncate max-w-[140px]">{reward}</span>
+          </Badge>
+        );
+      },
     },
     {
       id: "actions",
@@ -144,9 +231,9 @@ const ChallengesTab = () => {
       cell: ({ row }: any) => {
         const challenge = row.original;
         return (
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-1">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleView(challenge.id);
@@ -155,7 +242,7 @@ const ChallengesTab = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit(challenge);
@@ -164,7 +251,7 @@ const ChallengesTab = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(challenge.id);

@@ -57,21 +57,48 @@ function plainTextToLexicalState(text: string): SerializedEditorState {
 }
 
 /**
+ * Lexical requires root.children to always contain at least one node (its
+ * own "empty" state is one empty paragraph, never zero children) — passing
+ * it a root with no children throws "the editor state is empty. Ensure the
+ * editor state's root node never becomes empty." This guards against every
+ * shape that can produce that: `{}`, `{ root: {} }`,
+ * `{ root: { children: [] } }`, etc. — any of which can come from a jsonb
+ * column that was written as `{}` instead of null/a real Lexical doc.
+ */
+function ensureNonEmptyLexicalState(parsed: any): SerializedEditorState {
+  if (
+    parsed &&
+    parsed.root &&
+    Array.isArray(parsed.root.children) &&
+    parsed.root.children.length > 0
+  ) {
+    return parsed;
+  }
+  return plainTextToLexicalState("");
+}
+
+/**
  * Safely resolves a field/default value into a SerializedEditorState.
- * Handles three shapes seen in the wild:
- *  - already a parsed Lexical object -> returned as-is
- *  - a JSON string produced by this editor -> parsed
+ * Handles the shapes seen in the wild:
+ *  - already a parsed Lexical object -> validated, used as-is if healthy
+ *  - a JSON string produced by this editor -> parsed, then validated
  *  - a plain string from legacy/CSV-seeded text columns (not valid JSON,
  *    e.g. "Stand tall with feet hip-width apart...") -> wrapped into a
  *    real paragraph so the content still shows up, instead of crashing or
  *    silently wiping the field.
+ *  - `{}` or a root with no children (malformed/empty jsonb from a DB
+ *    column, e.g. symptoms.about) -> repaired into a valid empty state,
+ *    instead of being handed to Lexical as-is and crashing it.
  */
 function resolveEditorState(
-  value: string | SerializedEditorState,
+  value: string | SerializedEditorState | null | undefined,
 ): SerializedEditorState {
-  if (typeof value !== "string") return value;
+  if (value === null || value === undefined) {
+    return JSON.parse(EMPTY_LEXICAL_STATE);
+  }
+  if (typeof value !== "string") return ensureNonEmptyLexicalState(value);
   try {
-    return JSON.parse(value);
+    return ensureNonEmptyLexicalState(JSON.parse(value));
   } catch {
     return plainTextToLexicalState(value);
   }

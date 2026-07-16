@@ -86,22 +86,12 @@ const HealthyLivingPage = () => {
         ),
       },
       {
-        accessorKey: "content_type",
-        header: "Type",
-        cell: ({ row }: any) => (
-          <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-700 rounded capitalize">
-            {row.original.content_type || "article"}
-          </span>
-        ),
-      },
-      {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }: any) => {
           const statusColors: Record<string, string> = {
             published: "bg-emerald-50 text-emerald-700",
             draft: "bg-slate-100 text-slate-700",
-            pending_review: "bg-amber-50 text-amber-700",
             archived: "bg-rose-50 text-rose-700",
           };
           const colorClass =
@@ -114,19 +104,6 @@ const HealthyLivingPage = () => {
             </span>
           );
         },
-      },
-      {
-        accessorKey: "is_featured",
-        header: "Featured",
-        cell: ({ row }: any) => (
-          <div className="text-center">
-            {row.original.is_featured ? (
-              <span className="text-lg">⭐</span>
-            ) : (
-              <span className="text-slate-300">○</span>
-            )}
-          </div>
-        ),
       },
       {
         accessorKey: "view_count",
@@ -268,7 +245,6 @@ const HealthyLivingPage = () => {
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="pending_review">Pending Review</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
