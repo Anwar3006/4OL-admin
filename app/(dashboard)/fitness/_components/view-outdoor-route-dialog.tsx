@@ -46,7 +46,7 @@ const ViewOutdoorRouteDialog = () => {
   const [activeImage, setActiveImage] = useState(0);
 
   // Guard against empty / null image URLs
-  const rawImages = data?.image_urls || [];
+  const rawImages = data?.image_url || [];
   const images = Array.isArray(rawImages)
     ? rawImages.filter(
         (url): url is string =>
@@ -390,14 +390,54 @@ function DetailView({
 
         {/* Content Sections */}
         <div className="p-6 md:p-10 space-y-10">
-          {/* Start Location */}
-          {data.start_location_name && (
+          {/* Location */}
+          {(data.area || data.region) && (
             <section className="space-y-5">
-              <SectionHeader icon={MapPin} title="Start Location" />
+              <SectionHeader icon={MapPin} title="Location" />
               <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm">
                 <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
-                  {data.start_location_name}
+                  {[data.area, data.region].filter(Boolean).join(', ')}
                 </p>
+              </div>
+            </section>
+          )}
+
+          {/* Features & Reward */}
+          {(data.features?.length > 0 || data.fitcoins_reward || data.registered_by) && (
+            <section className="space-y-5">
+              <SectionHeader icon={ShieldCheck} title="Features & Rewards" />
+              <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm space-y-4">
+                {data.features?.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {data.features.map((f: string) => (
+                      <Badge
+                        key={f}
+                        variant="outline"
+                        className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border-emerald-200 text-emerald-700 bg-emerald-50"
+                      >
+                        {f}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-6 text-sm">
+                  {data.fitcoins_reward != null && (
+                    <p className="text-slate-600 font-medium">
+                      <span className="font-black text-slate-900">{data.fitcoins_reward}</span> FitCoins per completion
+                    </p>
+                  )}
+                  {data.registered_by && (
+                    <p className="text-slate-600 font-medium">
+                      Registered by <span className="font-black text-slate-900">{data.registered_by}</span>
+                    </p>
+                  )}
+                </div>
+                {data.gps_data?.pointCount && (
+                  <p className="text-slate-500 text-xs font-semibold">
+                    GPS track: {data.gps_data.pointCount.toLocaleString()} points •{' '}
+                    {data.gps_data.distanceKm ?? data.distance_km ?? '--'} km
+                  </p>
+                )}
               </div>
             </section>
           )}

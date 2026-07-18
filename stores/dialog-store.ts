@@ -46,6 +46,7 @@ export type DialogTypes =
   | "view-outdoor-event"
   | "add-outdoor-review"
   | "view-outdoor-review"
+  | "ai-generate-plan"
   | "flag-user"
   | "add-group"
   | "view-group"
@@ -939,6 +940,27 @@ export const useEditGroupDialog = () => {
     isEditMode: !!data,
     open: (data?: any) => openDialog("edit-group", { data }),
     close: () => closeDialog("edit-group"),
+  };
+};
+
+/**
+ * Hook for AI Generate Plan Dialog (admin panel)
+ *
+ * @example
+ * const aiGenerateDialog = useAiGeneratePlanDialog();
+ * <button onClick={() => aiGenerateDialog.open()}>AI Generate</button>
+ */
+export const useAiGeneratePlanDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("ai-generate-plan"),
+  );
+
+  return {
+    isOpen,
+    open: () => openDialog("ai-generate-plan"),
+    close: () => closeDialog("ai-generate-plan"),
   };
 };
 

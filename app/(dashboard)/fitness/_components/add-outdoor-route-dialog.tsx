@@ -1,7 +1,7 @@
 // app/(dashboard)/fitness/_components/add-outdoor-route-dialog.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin, Loader2, UploadCloud } from "lucide-react";
+import { MapPin, Loader2, UploadCloud, CheckCircle2, X } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
 import { useAddOutdoorRouteDialog } from "@/stores/dialog-store";
 import {
@@ -39,6 +39,7 @@ import {
   useUpdateFitnessOutdoorRoute,
 } from "@/hooks/supabase-calls/useFitnessOutdoor";
 import { GHANA_REGIONS_ENUM } from "@/types/formInput";
+import { parseGpx, computeBoundsFromPoints, type GpxParseResult } from "@/lib/gpx";
 
 // Expanded Schema handling Area, Region, and Metadata injection
 const routeFormSchema = z.object({
@@ -56,7 +57,6 @@ const routeFormSchema = z.object({
   fitcoins_reward: z.number().default(50), // Maps to JSON metadata
   features: z.array(z.string()).default([]), // Maps to JSON metadata
   image_url: z.array(z.string()).default([]),
-  gpx_file_url: z.string().optional(), // Maps to JSON gps_data
 });
 
 type FormValues = z.infer<typeof routeFormSchema>;
@@ -81,6 +81,11 @@ const AddOutdoorRouteDialog = () => {
     useUpdateFitnessOutdoorRoute();
   const isPending = isCreating || isUpdating;
 
+  const [gpxResult, setGpxResult] = useState<GpxParseResult | null>(null);
+  const [gpxFileName, setGpxFileName] = useState<string | null>(null);
+  const [gpxError, setGpxError] = useState<string | null>(null);
+  const gpxInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(routeFormSchema),
     defaultValues: {
@@ -98,15 +103,12 @@ const AddOutdoorRouteDialog = () => {
       fitcoins_reward: 50,
       features: [],
       image_url: [],
-      gpx_file_url: "",
     },
   });
 
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && data) {
-        // Extract metadata cleanly from gps_data JSONB if editing
-        const meta = (data.gps_data as any) || {};
         form.reset({
           name: data.name ?? "",
           category: data.category ?? "Running",
@@ -118,20 +120,67 @@ const AddOutdoorRouteDialog = () => {
           surface_type: data.surface_type ?? "Paved",
           description: data.description ?? "",
           verification_status: data.verification_status ?? "official_business",
-          registered_by: meta.registered_by ?? "",
-          fitcoins_reward: meta.fitcoins_reward ?? 50,
-          features: meta.features ?? [],
+          registered_by: (data as any).registered_by ?? "",
+          fitcoins_reward: (data as any).fitcoins_reward ?? 50,
+          features: (data as any).features ?? [],
           image_url: Array.isArray(data.image_url) ? data.image_url : [],
-          gpx_file_url: meta.gpx_file_url ?? "",
         });
+
+        // Existing GPS track, if any -- show a summary instead of re-parsing
+        const existingGps = (data as any).gps_data as
+          | {points?: [number, number][]; distanceKm?: number}
+          | null
+          | undefined;
+        if (existingGps?.points?.length) {
+          setGpxResult({
+            points: existingGps.points,
+            pointCount: existingGps.points.length,
+            bounds: computeBoundsFromPoints(existingGps.points),
+            distanceKm: existingGps.distanceKm ?? data.distance_km ?? 0,
+          });
+          setGpxFileName("Existing route track");
+        } else {
+          setGpxResult(null);
+          setGpxFileName(null);
+        }
+        setGpxError(null);
       } else {
         form.reset();
+        setGpxResult(null);
+        setGpxFileName(null);
+        setGpxError(null);
       }
     }
   }, [isOpen, isEditMode, data, form]);
 
+  const handleGpxFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setGpxError(null);
+    try {
+      const text = await file.text();
+      const result = parseGpx(text);
+      setGpxResult(result);
+      setGpxFileName(file.name);
+      // Auto-fill distance if the admin hasn't already typed one in
+      if (!form.getValues("distance_km")) {
+        form.setValue("distance_km", result.distanceKm, {
+          shouldValidate: true,
+        });
+      }
+    } catch (err: any) {
+      setGpxResult(null);
+      setGpxFileName(null);
+      setGpxError(err?.message ?? "Couldn't parse this GPX file.");
+    } finally {
+      // Allow re-selecting the same file name after a failed/changed upload
+      e.target.value = "";
+    }
+  };
+
   const onSubmit = (values: FormValues) => {
-    // Package custom fields into the gps_data JSONB payload to avoid schema altering
     const payload = {
       name: values.name,
       category: values.category.toLowerCase(),
@@ -145,12 +194,21 @@ const AddOutdoorRouteDialog = () => {
       verification_status: values.verification_status,
       image_url: values.image_url,
       is_active: true,
-      gps_data: {
-        features: values.features,
-        fitcoins_reward: values.fitcoins_reward,
-        registered_by: values.registered_by,
-        gpx_file_url: values.gpx_file_url,
-      },
+      // Real columns as of the latest schema -- no longer nested inside gps_data
+      features: values.features,
+      fitcoins_reward: values.fitcoins_reward,
+      registered_by: values.registered_by,
+      // gps_data is reserved exclusively for the actual GPS track now
+      gps_data: gpxResult
+        ? {
+            points: gpxResult.points,
+            pointCount: gpxResult.pointCount,
+            bounds: gpxResult.bounds,
+            distanceKm: gpxResult.distanceKm,
+            source: "gpx",
+            uploadedAt: new Date().toISOString(),
+          }
+        : null,
     };
 
     if (isEditMode && data?.id) {
@@ -480,33 +538,84 @@ const AddOutdoorRouteDialog = () => {
               name="image_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Route Gallery Image</FormLabel>
+                  <FormLabel>Route Gallery Images</FormLabel>
                   <FormControl>
                     <ImageDropZone
                       filePath="fitness/outdoor/routes"
-                      maxFiles={1}
+                      maxFiles={5}
                       onFilesChange={(urls) => field.onChange(urls)}
                       initialFiles={field.value || []}
-                      text="Upload a featured route image"
+                      text="Upload up to 5 route photos"
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
 
-            {/* GPX Upload Stub */}
-            <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50 mt-2">
-              <div className="text-2xl mb-2">🗺️</div>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-8 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
-              >
-                <UploadCloud className="w-3 h-3 mr-2" /> Upload GPX Route File
-              </Button>
-              <div className="text-[10px] text-slate-400 mt-2">
-                Or draw route on map (feature coming soon)
-              </div>
+            {/* GPX Upload */}
+            <div>
+              <FormLabel className="mb-2 block">Route GPS Track</FormLabel>
+              <input
+                ref={gpxInputRef}
+                type="file"
+                accept=".gpx,application/gpx+xml,application/xml,text/xml"
+                className="hidden"
+                onChange={handleGpxFileChange}
+              />
+              {gpxResult ? (
+                <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50 flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                    <div>
+                      <div className="text-sm font-bold text-emerald-800">
+                        {gpxFileName}
+                      </div>
+                      <div className="text-xs text-emerald-700 mt-0.5">
+                        {gpxResult.pointCount.toLocaleString()} points parsed •{" "}
+                        {gpxResult.distanceKm.toFixed(2)} km
+                      </div>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-emerald-700 underline mt-1"
+                        onClick={() => gpxInputRef.current?.click()}
+                      >
+                        Replace file
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-slate-400 hover:text-slate-600"
+                    onClick={() => {
+                      setGpxResult(null);
+                      setGpxFileName(null);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50">
+                  <div className="text-2xl mb-2">🗺️</div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                    onClick={() => gpxInputRef.current?.click()}
+                  >
+                    <UploadCloud className="w-3 h-3 mr-2" /> Upload GPX Route File
+                  </Button>
+                  <div className="text-[10px] text-slate-400 mt-2">
+                    Parsed entirely in your browser — no file leaves your machine
+                    until you save the route.
+                  </div>
+                  {gpxError && (
+                    <div className="text-xs font-semibold text-rose-600 mt-2">
+                      {gpxError}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <DialogFooter className="pt-4 border-t">

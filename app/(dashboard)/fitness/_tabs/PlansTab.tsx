@@ -10,8 +10,10 @@ import {
 import {
   useAddFitnessPlanDialog,
   useViewFitnessPlanDialog,
+  useAiGeneratePlanDialog,
 } from "@/stores/dialog-store";
 import AddFitnessPlanDialog from "../_components/add-fitness-plan-dialog";
+import AiGeneratePlanDialog from "../_components/ai-generate-plan-dialog";
 
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +40,7 @@ const PlansTab = () => {
 
   const planDialog = useAddFitnessPlanDialog();
   const viewDialog = useViewFitnessPlanDialog();
+  const aiGenerateDialog = useAiGeneratePlanDialog();
   const { data, isLoading } = useFitnessPlans({
     page,
     limit,
@@ -216,7 +219,7 @@ const PlansTab = () => {
             <div className="flex items-center gap-2">
               <button
                 className="btn btn-secondary"
-                onClick={() => alert("Open AI Generator")}
+                onClick={() => aiGenerateDialog.open()}
               >
                 <Bot className="h-4 w-4 mr-1 text-blue-500" /> AI Generate
               </button>
@@ -283,6 +286,7 @@ const PlansTab = () => {
       </div>
 
       <AddFitnessPlanDialog />
+      <AiGeneratePlanDialog />
       <ViewFitnessPlanDialog />
     </div>
   );
