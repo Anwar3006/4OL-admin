@@ -36,15 +36,12 @@ import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 // Leaflet touches `window` on import — must be dynamically imported with
 // ssr: false or Next.js's server render throws "window is not defined".
-const RouteMapPreview = dynamic(
-  () => import("@/components/RouteMapPreview"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-72 w-full bg-slate-100 animate-pulse rounded-none border border-slate-200" />
-    ),
-  },
-);
+const RouteMapPreview = dynamic(() => import("@/components/RouteMapPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-72 w-full bg-slate-100 animate-pulse rounded-none border border-slate-200" />
+  ),
+});
 
 // Stable reference so "no gps_data" doesn't pass a fresh [] literal to
 // RouteMapPreview on every render of this dialog.
@@ -413,7 +410,7 @@ function DetailView({
               <SectionHeader icon={MapPin} title="Location" />
               <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm">
                 <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
-                  {[data.area, data.region].filter(Boolean).join(', ')}
+                  {[data.area, data.region].filter(Boolean).join(", ")}
                 </p>
               </div>
             </section>
@@ -429,14 +426,17 @@ function DetailView({
             />
             {data.gps_data?.pointCount && (
               <p className="text-slate-500 text-xs font-semibold">
-                {data.gps_data.pointCount.toLocaleString()} GPS points •{' '}
-                {data.gps_data.distanceKm ?? data.distance_km ?? '--'} km tracked
+                {data.gps_data.pointCount.toLocaleString()} GPS points •{" "}
+                {data.gps_data.distanceKm ?? data.distance_km ?? "--"} km
+                tracked
               </p>
             )}
           </section>
 
           {/* Features & Reward */}
-          {(data.features?.length > 0 || data.fitcoins_reward || data.registered_by) && (
+          {(data.features?.length > 0 ||
+            data.fitcoins_reward ||
+            data.registered_by) && (
             <section className="space-y-5">
               <SectionHeader icon={ShieldCheck} title="Features & Rewards" />
               <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm space-y-4">
@@ -456,12 +456,18 @@ function DetailView({
                 <div className="flex items-center gap-6 text-sm">
                   {data.fitcoins_reward != null && (
                     <p className="text-slate-600 font-medium">
-                      <span className="font-black text-slate-900">{data.fitcoins_reward}</span> FitCoins per completion
+                      <span className="font-black text-slate-900">
+                        {data.fitcoins_reward}
+                      </span>{" "}
+                      FitCoins per completion
                     </p>
                   )}
                   {data.registered_by && (
                     <p className="text-slate-600 font-medium">
-                      Registered by <span className="font-black text-slate-900">{data.registered_by}</span>
+                      Registered by{" "}
+                      <span className="font-black text-slate-900">
+                        {data.registered_by}
+                      </span>
                     </p>
                   )}
                 </div>

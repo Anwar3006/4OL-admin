@@ -25,12 +25,12 @@ import {
   $isSupabaseImageNode,
   ImagePayload,
   SupabaseImageNode,
-} from "../nodes/supabase-image-node.js";
+} from "../nodes/supabase-image-node";
 import { JSX } from "react";
 import {
   uploadImageToSupabase,
   uploadBlobToSupabase,
-} from "../utils/upload-image.js";
+} from "../utils/upload-image";
 
 export type InsertImagePayload = Readonly<ImagePayload>;
 

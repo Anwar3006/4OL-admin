@@ -1,7 +1,7 @@
 import { ImageIcon } from "lucide-react";
 
 import { ComponentPickerOption } from "@/components/editor/plugins/picker/component-picker-option";
-import { InsertImageDialog } from "../toolbar/block-insert/insert-image-dialog.js";
+import { InsertImageDialog } from "../toolbar/block-insert/insert-image-dialog";
 
 export function ImagePickerPlugin() {
   return new ComponentPickerOption("Image", {

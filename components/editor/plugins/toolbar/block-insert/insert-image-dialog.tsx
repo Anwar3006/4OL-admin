@@ -3,7 +3,7 @@
 import { useState, useRef, type ChangeEvent } from "react";
 import { LexicalEditor } from "lexical";
 import { uploadImageToSupabase } from "@/components/editor/utils/upload-image";
-import { INSERT_IMAGE_COMMAND } from "../../images-plugin.js";
+import { INSERT_IMAGE_COMMAND } from "../../images-plugin";
 
 interface InsertImageDialogProps {
   activeEditor: LexicalEditor;
@@ -51,7 +51,11 @@ export function InsertImageDialog({
 
       // Upload to Supabase Storage
       // Default bucket from env or "bucket4ol", path "richTextImages"
-      const result = await uploadImageToSupabase(file, "bucket4ol", "richTextImages");
+      const result = await uploadImageToSupabase(
+        file,
+        "bucket4ol",
+        "richTextImages",
+      );
 
       if (result.error) throw result.error;
 
@@ -215,4 +219,3 @@ export function InsertImageDialog({
     </div>
   );
 }
-
