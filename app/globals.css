@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
+@import "leaflet/dist/leaflet.css";
 
 /* ─── Design Tokens ──────────────────────────────────────────────────────────
  *  All custom tokens live in :root as plain CSS variables.

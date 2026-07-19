@@ -319,6 +319,8 @@ CREATE TABLE fitness_dashboard_cache (
 INSERT INTO fitness_dashboard_cache (id, kpi_payload) VALUES (1, '{}');
 
 --- This function uses Common Table Expressions (CTEs) to independently gather the scalar KPIs and the array-based top lists, before rolling them up into a single JSONB payload.
+--- NOTE: Updated in migration 20260719_fix_fitness_kpis.sql to query fitness_user_assignments for active_plans
+--- and to properly filter exercise_library_count by is_active and status.
 CREATE OR REPLACE FUNCTION refresh_fitness_dashboard()
 RETURNS void AS $$
 DECLARE
@@ -329,33 +331,47 @@ BEGIN
     scalars AS (
         SELECT 
             (SELECT COUNT(*) FROM fitness_users) AS total_fitness_users,
-            (SELECT COUNT(*) FROM exercise_sessions WHERE status = 'in_progress') AS active_plans,
-            (SELECT COUNT(*) FROM fitness_challenges WHERE status = 'published') AS live_challenges,
-            (SELECT COUNT(*) FROM fitness_exercises) AS exercise_library_count,
+            -- FIX: Query fitness_user_assignments for active plans (not exercise_sessions)
+            (SELECT COUNT(*) FROM fitness_user_assignments WHERE status = 'active') AS active_plans,
+            (SELECT COUNT(*) FROM fitness_challenges WHERE status = 'active') AS live_challenges,
+            -- FIX: Only count active and published exercises
+            (SELECT COUNT(*) FROM fitness_exercises WHERE is_active = true AND status = 'published') AS exercise_library_count,
             (SELECT COALESCE(SUM(amount), 0) FROM app_ledger WHERE category = 'fitness' AND amount > 0) AS fitcoins_issued,
             (SELECT COUNT(*) FROM fitness_generated_workouts) AS ai_generated_plans,
-            (SELECT COUNT(*) FROM workouts WHERE is_active = true) AS active_workouts,
-            (SELECT COALESCE(AVG(streak_count), 0)::INT FROM fitness_users) AS avg_streak,
-            (SELECT COALESCE(AVG(completion_percentage), 0)::INT FROM exercise_sessions) AS avg_completion
+            -- Count active exercise sessions instead of non-existent workouts table
+            (SELECT COUNT(*) FROM exercise_sessions WHERE status = 'in_progress') AS active_workouts,
+            -- Use fitness_challenge_participants for avg progress instead of non-existent streak_count
+            (SELECT COALESCE(AVG(progress_pct), 0)::INT FROM fitness_challenge_participants WHERE status = 'active') AS avg_streak,
+            -- Calculate completion rate from exercise_sessions
+            (SELECT COALESCE(
+                (SELECT COUNT(*)::numeric FROM exercise_sessions WHERE status = 'completed') / 
+                NULLIF((SELECT COUNT(*) FROM exercise_sessions), 0) * 100, 
+                0
+            )::INT) AS avg_completion
     ),
     -- 2. Aggregate Top 5 Active Challenges
     top_challenges AS (
         SELECT COALESCE(jsonb_agg(row_to_json(tc)), '[]'::jsonb) AS data
         FROM (
-            SELECT id, title, participants_count 
+            SELECT id, title, current_participants 
             FROM fitness_challenges 
-            WHERE status = 'published' -- or is_active = true
-            ORDER BY participants_count DESC 
+            WHERE status = 'active'
+            ORDER BY current_participants DESC 
             LIMIT 5
         ) tc
     ),
-    -- 3. Aggregate Most Used Plans
+    -- 3. Aggregate Most Used Plans (from fitness_user_assignments)
     top_plans AS (
         SELECT COALESCE(jsonb_agg(row_to_json(tp)), '[]'::jsonb) AS data
         FROM (
-            SELECT plan_id, title, COUNT(*) as usage_count
-            FROM exercise_sessions 
-            GROUP BY plan_id, title
+            SELECT 
+                fua.plan_id, 
+                fp.title, 
+                COUNT(*) as usage_count
+            FROM fitness_user_assignments fua
+            JOIN fitness_plans fp ON fp.id = fua.plan_id
+            WHERE fua.status = 'active'
+            GROUP BY fua.plan_id, fp.title
             ORDER BY usage_count DESC 
             LIMIT 5
         ) tp
@@ -371,13 +387,17 @@ BEGIN
             LIMIT 5
         ) lb
     ),
-    -- 5. Aggregate Top Exercises
+    -- 5. Aggregate Top Exercises (join with fitness_exercises to get exercise name)
     top_exercises AS (
         SELECT COALESCE(jsonb_agg(row_to_json(te)), '[]'::jsonb) AS data
         FROM (
-            SELECT exercise_id, name, COUNT(*) as completion_count
-            FROM exercise_logs 
-            GROUP BY exercise_id, name
+            SELECT 
+                el.exercise_id, 
+                fe.exercise_name as name, 
+                COUNT(*) as completion_count
+            FROM exercise_logs el
+            JOIN fitness_exercises fe ON fe.id = el.exercise_id
+            GROUP BY el.exercise_id, fe.exercise_name
             ORDER BY completion_count DESC 
             LIMIT 5
         ) te

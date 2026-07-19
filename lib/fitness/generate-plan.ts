@@ -457,12 +457,10 @@ ${JSON.stringify(availableExercisesContext)}
     .from("fitness_plans")
     .insert({
       title: fitnessPlan.title,
-      summary: fitnessPlan.summary,
-      description: fitnessPlan.summary,
+      description: fitnessPlan.summary, // summary column dropped — description is the single source now
       difficulty_level: selections.fitness_level,
       duration_weeks: fitnessPlan.duration_weeks,
-      days_per_week: fitnessPlan.days_per_week,
-      workouts_per_week: targetDaysCount,
+      workouts_per_week: targetDaysCount, // days_per_week column dropped — this is the single source now
       target_body_parts: selections.focus_areas || [],
       goals: selections.fitness_goals || [],
       style_tag: styleTag,
@@ -490,6 +488,13 @@ ${JSON.stringify(availableExercisesContext)}
   const planId = insertedPlan.id as string;
 
   // ── Insert plan days and exercises ──
+  // Only ACTIVE (non-rest) days get a fitness_plan_days row — a plan with
+  // workouts_per_week = 3 must produce exactly 3 rows per week, not 7 with
+  // 4 marked is_rest. day_number is kept as the AI's true weekday-in-week
+  // position (1-7, gaps allowed) rather than renumbered sequentially, so
+  // the mobile plan screen's calendar-date math (offset = (week-1)*7 +
+  // (day_number-1) from the assignment's started_at) still lines up with
+  // real calendar days even though rest slots have no row at all.
   const planExerciseRows: any[] = [];
 
   for (const week of fitnessPlan.weekly_schedule as any[]) {
@@ -499,6 +504,8 @@ ${JSON.stringify(availableExercisesContext)}
         day.session_type === "Rest" ||
         !day.exercises ||
         day.exercises.length === 0;
+
+      if (isRest) continue; // no row at all for rest days
 
       const targetMuscles = Array.from(
         new Set(
@@ -521,7 +528,7 @@ ${JSON.stringify(availableExercisesContext)}
           day_category: deriveDayCategory(day.session_type, isRest),
           target_muscles: targetMuscles,
           duration_minutes: day.duration_minutes || 0,
-          is_rest: isRest,
+          is_rest: false,
         })
         .select("id")
         .single();
@@ -546,8 +553,6 @@ ${JSON.stringify(availableExercisesContext)}
           plan_id: planId,
           plan_day_id: insertedDay.id,
           exercise_id: dbEx.id,
-          week_number: week.week,
-          day_number: dayNumber,
           order_index: orderIdx,
           sets: ex.sets ?? null,
           reps: ex.reps ?? null,

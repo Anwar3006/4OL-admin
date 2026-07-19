@@ -205,7 +205,7 @@ const PlansTab = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="xl:col-span-3 card bg-white">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
@@ -244,28 +244,6 @@ const PlansTab = () => {
             </div>
             <button className="btn btn-secondary">
               <Filter className="h-4 w-4 mr-1" /> Difficulty
-            </button>
-          </div>
-        </div>
-
-        <div className="card bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden">
-          <Sparkles className="absolute top-4 right-4 h-12 w-12 text-white/10" />
-          <h3 className="text-lg font-black mb-4">🤖 AI Performance</h3>
-          <div className="space-y-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">
-                AI Plans Active
-              </p>
-              <h3 className="text-3xl font-black">340</h3>
-            </div>
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-xs font-medium text-blue-100 leading-relaxed">
-                AI-generated plans have an 18% higher completion rate this
-                month.
-              </p>
-            </div>
-            <button className="w-full btn bg-white text-blue-700 hover:bg-blue-50 font-bold">
-              Review AI Queue
             </button>
           </div>
         </div>

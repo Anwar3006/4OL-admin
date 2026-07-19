@@ -150,7 +150,7 @@ const UsersTab = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-3 card bg-white">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
@@ -161,9 +161,6 @@ const UsersTab = () => {
                 Monitor user engagement, progress and platform activity
               </p>
             </div>
-            {/* <button className="btn btn-primary shadow-lg">
-              <UserPlus className="h-4 w-4 mr-1" /> Invite User
-            </button> */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -176,51 +173,8 @@ const UsersTab = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            {/* <button className="btn btn-secondary">
-              <Filter className="h-4 w-4 mr-1" /> Activity Level
-            </button> */}
           </div>
         </div>
-
-        {/* <div className="card bg-slate-50 border-slate-200">
-          <h3 className="text-lg font-black mb-6 text-slate-900">
-            📊 Risk Profile
-          </h3>
-          <div className="space-y-6">
-            {[
-              {
-                label: "Active (7d)",
-                val: "2,140",
-                icon: Users,
-                color: "text-emerald-500",
-              },
-              {
-                label: "Premium",
-                val: "840",
-                icon: ShieldCheck,
-                color: "text-blue-500",
-              },
-              {
-                label: "Churn Risk",
-                val: "124",
-                icon: TrendingDown,
-                color: "text-rose-500",
-              },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                  <span className="text-xs font-bold text-slate-500">
-                    {stat.label}
-                  </span>
-                </div>
-                <span className="text-lg font-black text-slate-700">
-                  {stat.val}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div> */}
       </div>
 
       <div className="card p-0 overflow-hidden">

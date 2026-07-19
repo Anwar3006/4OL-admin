@@ -267,7 +267,7 @@ const ChallengesTab = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-3 card bg-white">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
@@ -299,30 +299,6 @@ const ChallengesTab = () => {
             <button className="btn btn-secondary">
               <Filter className="h-4 w-4 mr-1" /> Status
             </button>
-          </div>
-        </div>
-
-        <div className="card bg-amber-500 text-white relative overflow-hidden">
-          <Trophy className="absolute -bottom-4 -right-4 h-24 w-24 text-white/20 rotate-12" />
-          <h3 className="text-lg font-black mb-6">📢 Participation</h3>
-          <div className="space-y-6 relative z-10">
-            {[
-              { label: "Active Challenges", val: 48, icon: Target },
-              { label: "Total Participants", val: "3,240", icon: Users },
-              { label: "Avg Completion", val: "62%", icon: ShieldCheck },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                  <stat.icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-100 opacity-80">
-                    {stat.label}
-                  </p>
-                  <h4 className="text-lg font-black">{stat.val}</h4>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>

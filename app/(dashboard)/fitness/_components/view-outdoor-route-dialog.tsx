@@ -29,9 +29,26 @@ import {
   Route,
 } from "lucide-react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPublicImageUrl } from "@/lib/utils";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+
+// Leaflet touches `window` on import — must be dynamically imported with
+// ssr: false or Next.js's server render throws "window is not defined".
+const RouteMapPreview = dynamic(
+  () => import("@/components/RouteMapPreview"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-72 w-full bg-slate-100 animate-pulse rounded-none border border-slate-200" />
+    ),
+  },
+);
+
+// Stable reference so "no gps_data" doesn't pass a fresh [] literal to
+// RouteMapPreview on every render of this dialog.
+const EMPTY_ROUTE_POINTS: [number, number][] = [];
 
 /* ───────────────────────────────────────────────────────────
    Main Component
@@ -402,6 +419,22 @@ function DetailView({
             </section>
           )}
 
+          {/* Route Map */}
+          <section className="space-y-5">
+            <SectionHeader icon={Route} title="Route Map" />
+            <RouteMapPreview
+              points={data.gps_data?.points ?? EMPTY_ROUTE_POINTS}
+              strokeColor="#10B981"
+              heightClassName="h-80"
+            />
+            {data.gps_data?.pointCount && (
+              <p className="text-slate-500 text-xs font-semibold">
+                {data.gps_data.pointCount.toLocaleString()} GPS points •{' '}
+                {data.gps_data.distanceKm ?? data.distance_km ?? '--'} km tracked
+              </p>
+            )}
+          </section>
+
           {/* Features & Reward */}
           {(data.features?.length > 0 || data.fitcoins_reward || data.registered_by) && (
             <section className="space-y-5">
@@ -432,12 +465,6 @@ function DetailView({
                     </p>
                   )}
                 </div>
-                {data.gps_data?.pointCount && (
-                  <p className="text-slate-500 text-xs font-semibold">
-                    GPS track: {data.gps_data.pointCount.toLocaleString()} points •{' '}
-                    {data.gps_data.distanceKm ?? data.distance_km ?? '--'} km
-                  </p>
-                )}
               </div>
             </section>
           )}
