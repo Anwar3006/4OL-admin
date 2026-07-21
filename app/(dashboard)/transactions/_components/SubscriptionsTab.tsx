@@ -1,40 +1,79 @@
-import DataTable, { Column } from "@/components/redesign/DataTable";
+"use client";
+
+import React from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { facilitySubscriptionColumns } from "@/components/Data-Table/columns/facilitySubscriptionColumns";
+import { useFacilitySubscriptions } from "@/hooks/supabase-calls/useFacilitySubscriptions";
+import { usePagination } from "@/hooks/use-pagination";
 import KpiCard from "@/components/redesign/KpiCard";
 
 export interface SubscriptionRow {
   id: string;
-  user: string;
+  facility: string;
   plan: string;
   value: string;
   date: string;
   status: string;
 }
 
-const subs: SubscriptionRow[] = [
-  { id: "SUB-8812", user: "Kofi Owner", plan: "Pro", value: "₵350.00", date: "May 7, 2026", status: "Active" },
-  { id: "SUB-8813", user: "Ama Member", plan: "Elite", value: "₵500.00", date: "May 7, 2026", status: "Active" },
-];
-
 export default function SubscriptionsTab() {
-  const columns: Column<SubscriptionRow>[] = [
-    { key: "id", label: "Subscription ID", render: (val) => <span className="font-mono text-[10px] text-slate-500 font-bold">{val}</span> },
-    { key: "user", label: "User", render: (val) => <span className="font-black text-slate-800">{val}</span> },
-    { key: "plan", label: "Plan", render: (val) => <span className="badge badge-purple">{val}</span> },
-    { key: "value", label: "Monthly Value", render: (val) => <span className="font-black text-ek-green-dark">{val}</span> },
-    { key: "date", label: "Next Renewal", render: (val) => <span className="text-slate-400 font-medium">{val}</span> },
-    { key: "status", label: "Status", render: (val) => <span className="badge badge-green">✅ {val}</span> },
-  ];
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
+    usePagination({
+      key: "facility-subs-page",
+    });
+  const { data, isLoading } = useFacilitySubscriptions({
+    page,
+    limit: pageSize,
+  });
+
+  const subscriptions = data?.data || [];
+  const totalPages = data?.meta?.totalPages || 1;
+
+  // Calculate KPI values from real data
+  const activeCount = subscriptions.filter((s) => s.status === "active").length;
+  const totalValue = subscriptions
+    .filter((s) => s.status === "active")
+    .reduce((sum, s) => sum + (s.subscription?.price || 0), 0);
 
   return (
     <div className="space-y-6 mt-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard icon="✅" label="Renewals (MTD)" value="₵87,400" variant="green" delta="+9.2%" deltaType="up" />
-        <KpiCard icon="💸" label="New Subs (MTD)" value="₵48,200" variant="blue" delta="+14.1%" deltaType="up" />
-        <KpiCard icon="📊" label="Upgrades (MTD)" value="₵9,840" variant="purple" delta="+6.4%" deltaType="up" />
-        <KpiCard icon="📉" label="Churn Rate" value="1.8%" variant="red" delta="-0.2%" deltaType="up" />
+        <KpiCard
+          icon="✅"
+          label="Active Subscriptions"
+          value={activeCount.toString()}
+          variant="green"
+        />
+        <KpiCard
+          icon="💸"
+          label="Total Value (MTD)"
+          value={`₵${totalValue.toLocaleString()}`}
+          variant="blue"
+        />
+        <KpiCard
+          icon="📊"
+          label="Pending"
+          value={subscriptions
+            .filter((s) => s.status === "pending_payment")
+            .length.toString()}
+          variant="purple"
+        />
+        <KpiCard
+          icon="📉"
+          label="Expired"
+          value={subscriptions
+            .filter((s) => s.status === "expired")
+            .length.toString()}
+          variant="red"
+        />
       </div>
       <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={subs} selectable />
+        <DataTable
+          columns={facilitySubscriptionColumns}
+          data={subscriptions}
+          isLoading={isLoading}
+          selectable
+        />
       </div>
     </div>
   );

@@ -50,7 +50,8 @@ export type DialogTypes =
   | "flag-user"
   | "add-group"
   | "view-group"
-  | "edit-group";
+  | "edit-group"
+  | "add-top-rated-item";
 
 /**
  * Generic dialog configuration
@@ -979,5 +980,27 @@ export const useViewOutdoorReviewDialog = () => {
     entityId,
     open: (entityId: string) => openDialog("view-outdoor-review", { entityId }),
     close: () => closeDialog("view-outdoor-review"),
+  };
+};
+
+/**
+ * Hook for Add Top Rated Item Dialog
+ */
+export const useAddTopRatedItemDialog = () => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("add-top-rated-item"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData("add-top-rated-item"),
+  );
+
+  return {
+    isOpen,
+    data,
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-top-rated-item", { data }),
+    close: () => closeDialog("add-top-rated-item"),
   };
 };

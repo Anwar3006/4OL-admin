@@ -59,7 +59,10 @@ export const dashboardNavSections: DashboardNavSection[] = [
         badge: "2",
         children: [
           { title: "Recent Transactions", href: "/transactions?tab=recent" },
-          { title: "Service Charge %", href: "/transactions?tab=service-charge" },
+          {
+            title: "Service Charge %",
+            href: "/transactions?tab=service-charge",
+          },
           { title: "Subscriptions", href: "/transactions?tab=subscriptions" },
           { title: "Failed (12)", href: "/transactions?tab=failed" },
           { title: "Refunds (4)", href: "/transactions?tab=refunds" },
@@ -88,7 +91,11 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Healthy Living", href: "/healthy_living", icon: "🥗" },
       { title: "Fitness", href: "/fitness", icon: "💪", badge: "3" },
       { title: "Period Tracker", href: "/period", icon: "📅" },
-      { title: "Medication Reminder", href: "/medication-reminder", icon: "💊" },
+      {
+        title: "Medication Reminder",
+        href: "/medication-reminder",
+        icon: "💊",
+      },
       {
         title: "Healthcare Professionals",
         href: "/hcp",
@@ -113,12 +120,18 @@ export const dashboardNavSections: DashboardNavSection[] = [
         icon: "🛏️",
         badge: "LIVE",
       },
+      { title: "Top Rated", href: "/top-rated", icon: "🏆" },
     ],
   },
   {
     title: "Engagement",
     items: [
-      { title: "Reviews & Ratings", href: "/reviews", icon: "⭐", badge: "Fac" },
+      {
+        title: "Reviews & Ratings",
+        href: "/reviews",
+        icon: "⭐",
+        badge: "Fac",
+      },
       { title: "Map", href: "/map", icon: "🗺️", badge: "Fac" },
     ],
   },
@@ -139,7 +152,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
         badge: "14",
       },
       { title: "FAQ", href: "/faq", icon: "❓" },
-      { title: "Notifications", href: "/notifications", icon: "🔔", badge: "3" },
+      {
+        title: "Notifications",
+        href: "/notifications",
+        icon: "🔔",
+        badge: "3",
+      },
     ],
   },
   {
@@ -171,10 +189,16 @@ export const dashboardNavSections: DashboardNavSection[] = [
         badge: "4",
         children: [
           { title: "All Requests", href: "/delete-account-request?tab=all" },
-          { title: "Pending Review", href: "/delete-account-request?tab=pending" },
+          {
+            title: "Pending Review",
+            href: "/delete-account-request?tab=pending",
+          },
           { title: "Grace Period", href: "/delete-account-request?tab=grace" },
           { title: "Completed", href: "/delete-account-request?tab=completed" },
-          { title: "Settings & Policy", href: "/delete-account-request?tab=settings" },
+          {
+            title: "Settings & Policy",
+            href: "/delete-account-request?tab=settings",
+          },
         ],
       },
       { title: "Logout", href: "/logout", icon: "🚪" },
