@@ -82,6 +82,28 @@ export async function POST(req: NextRequest) {
 
     const admin = getSupabaseAdmin();
 
+    // Enforce max_members at join time too — the discovery list already
+    // hides full groups, but this closes the race where two users join a
+    // group that has one slot left at the same moment.
+    const { data: convo, error: convoError } = await admin
+      .from("conversations")
+      .select("max_members, conversation_members(count)")
+      .eq("id", conversation_id)
+      .single();
+
+    if (convoError) {
+      return NextResponse.json({ error: convoError.message }, { status: 500 });
+    }
+
+    const memberCount = (convo as any)?.conversation_members?.[0]?.count ?? 0;
+    const maxMembers = convo?.max_members ?? 500;
+    if (memberCount >= maxMembers) {
+      return NextResponse.json(
+        { error: "This group is full." },
+        { status: 409 },
+      );
+    }
+
     const { data, error } = await admin
       .from("conversation_members")
       .insert({

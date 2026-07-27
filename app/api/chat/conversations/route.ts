@@ -24,9 +24,19 @@ async function getRequestUser(req: NextRequest) {
  * admin.auth.getUser() returns a real UUID from auth.users.
  *
  * Query params:
- *   include_public=true  — also include public "general" groups the user is
- *                          not yet a member of, provided they have not hit
- *                          their max_members limit.
+ *   include_public=true  — also include groups the user is not yet a member
+ *                          of that they're eligible to discover/join, per
+ *                          category:
+ *                            general/specialty/support/announcements — open
+ *                              to everyone
+ *                            facility  — only shown to the owner of the
+ *                              linked facility (no facility-staff/membership
+ *                              table exists yet, so ownership is the only
+ *                              signal available)
+ *                            is_verified_only groups — only shown to users
+ *                              with an approved hcp_verifications row
+ *                          Groups already at max_members are excluded either
+ *                          way.
  */
 export async function GET(req: NextRequest) {
   const user = await getRequestUser(req);
@@ -64,7 +74,41 @@ export async function GET(req: NextRequest) {
       conversations.filter((c) => c.type === "group").map((c) => c.id),
     );
 
-    // Fetch public "general" groups the user can join
+    // Categories that are open to everyone (no extra eligibility check).
+    const OPEN_CATEGORIES = ["general", "specialty", "support", "announcements"];
+
+    // Is this user a verified HCP? Needed to gate is_verified_only groups.
+    const { data: verification } = await admin
+      .from("hcp_verifications")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("verification_status", "verified")
+      .limit(1)
+      .maybeSingle();
+    const isVerifiedHcp = !!verification;
+
+    // Which facilities (if any) does this user own? Needed to gate
+    // "facility" category groups.
+    const { data: ownedFacilities } = await admin
+      .from("facility_profile")
+      .select("id")
+      .eq("owner_id", user.id);
+    const ownedFacilityIds = (ownedFacilities || []).map((f: any) => f.id);
+
+    let ownedFacilityConversationIds = new Set<string>();
+    if (ownedFacilityIds.length > 0) {
+      const { data: facilityConvos } = await admin
+        .from("facility_conversations")
+        .select("conversation_id, facility_id")
+        .in("facility_id", ownedFacilityIds);
+      ownedFacilityConversationIds = new Set(
+        (facilityConvos || []).map((fc: any) => fc.conversation_id),
+      );
+    }
+
+    // Fetch every discoverable group category in one query; eligibility
+    // filtering (verified-only, facility ownership) happens below since it
+    // needs cross-table lookups above.
     let publicQuery = admin
       .from("conversations")
       .select(
@@ -86,7 +130,7 @@ export async function GET(req: NextRequest) {
       )
       .eq("type", "group")
       .eq("is_deleted", false)
-      .eq("group_category", "general")
+      .in("group_category", [...OPEN_CATEGORIES, "facility"])
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -116,6 +160,17 @@ export async function GET(req: NextRequest) {
 
         // Skip full groups
         if (memberCount >= maxMembers) return null;
+
+        // Verified-HCPs-only groups: hide from anyone who isn't verified.
+        if (g.is_verified_only && !isVerifiedHcp) return null;
+
+        // Facility groups: only discoverable by that facility's owner.
+        if (
+          g.group_category === "facility" &&
+          !ownedFacilityConversationIds.has(g.id)
+        ) {
+          return null;
+        }
 
         return {
           id: g.id,
