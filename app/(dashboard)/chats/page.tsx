@@ -9,7 +9,6 @@ import GroupsTab from "./_components/GroupsTab";
 import SupportTab from "./_components/SupportTab";
 import FlaggedTab from "./_components/FlaggedTab";
 import ViewGroupDialog from "./_components/ViewGroupDialog";
-import EditGroupDialog from "./_components/EditGroupDialog";
 import CreateGroupDialog from "./_components/CreateGroupDialog";
 import { useChatTabCounts } from "@/hooks/supabase-calls/useConversation";
 import { cn } from "@/lib/utils";
@@ -128,7 +127,6 @@ const ChatsPage = () => {
 
       {/* Dialogs */}
       <ViewGroupDialog />
-      <EditGroupDialog />
       <CreateGroupDialog />
     </div>
   );

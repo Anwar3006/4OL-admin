@@ -85,6 +85,30 @@ export default function ViewGroupDialog() {
                 {group.status || "Active"}
               </p>
             </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Category
+              </span>
+              <p className="font-bold text-slate-800 mt-0.5 capitalize">
+                {group.group_category || "—"}
+              </p>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Max Members
+              </span>
+              <p className="font-bold text-slate-800 mt-0.5">
+                {group.max_members ?? "—"}
+              </p>
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Verified HCPs Only
+              </span>
+              <p className="font-bold text-slate-800 mt-0.5">
+                {group.is_verified_only ? "Yes" : "No"}
+              </p>
+            </div>
           </div>
 
           {/* Last Message */}

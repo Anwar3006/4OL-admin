@@ -199,15 +199,31 @@ export const useUpdateConversation = () => {
       id,
       name,
       description,
+      group_category,
+      is_verified_only,
+      max_members,
     }: {
       id: string;
       name?: string;
       description?: string;
+      group_category?: string;
+      is_verified_only?: boolean;
+      max_members?: number;
     }) => {
       const supabase = await getSupabaseClient();
       const payload: Record<string, any> = {};
-      if (name !== undefined) payload.name = name;
-      if (description !== undefined) payload.description = description;
+      if (name !== undefined) {
+        payload.name = name;
+        payload.group_name = name;
+      }
+      if (description !== undefined) {
+        payload.description = description;
+        payload.group_description = description;
+      }
+      if (group_category !== undefined) payload.group_category = group_category;
+      if (is_verified_only !== undefined)
+        payload.is_verified_only = is_verified_only;
+      if (max_members !== undefined) payload.max_members = max_members;
       payload.updated_at = new Date().toISOString();
 
       const { error } = await supabase

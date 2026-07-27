@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAddGroupDialog } from "@/stores/dialog-store";
-import { useCreateConversation } from "@/hooks/supabase-calls/useConversation";
+import {
+  useCreateConversation,
+  useUpdateConversation,
+} from "@/hooks/supabase-calls/useConversation";
 import { Loader2, Users, ShieldCheck } from "lucide-react";
 
 const CATEGORY_OPTIONS = [
@@ -56,8 +59,10 @@ const CATEGORY_OPTIONS = [
 const MAX_MEMBERS_DEFAULT = 500;
 
 export default function CreateGroupDialog() {
-  const { isOpen, close } = useAddGroupDialog();
+  const { isOpen, close, data, isEditMode } = useAddGroupDialog();
+  const group = data as any;
   const createMutation = useCreateConversation();
+  const updateMutation = useUpdateConversation();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -65,6 +70,23 @@ export default function CreateGroupDialog() {
   const [isVerifiedOnly, setIsVerifiedOnly] = useState(false);
   const [maxMembers, setMaxMembers] = useState(String(MAX_MEMBERS_DEFAULT));
   const [error, setError] = useState<string | null>(null);
+
+  // Populate form when editing an existing group
+  useEffect(() => {
+    if (isEditMode && group) {
+      setName(group.name || "");
+      setDescription(group.description || "");
+      setCategory(group.group_category || "general");
+      setIsVerifiedOnly(group.is_verified_only ?? false);
+      setMaxMembers(
+        group.max_members
+          ? String(group.max_members)
+          : String(MAX_MEMBERS_DEFAULT),
+      );
+    } else {
+      resetForm();
+    }
+  }, [isEditMode, group]);
 
   const resetForm = () => {
     setName("");
@@ -89,13 +111,24 @@ export default function CreateGroupDialog() {
     setError(null);
 
     try {
-      await createMutation.mutateAsync({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        group_category: category,
-        is_verified_only: isVerifiedOnly,
-        max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
-      });
+      if (isEditMode && group?.id) {
+        await updateMutation.mutateAsync({
+          id: group.id,
+          name: name.trim(),
+          description: description.trim() || undefined,
+          group_category: category,
+          is_verified_only: isVerifiedOnly,
+          max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
+        });
+      } else {
+        await createMutation.mutateAsync({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          group_category: category,
+          is_verified_only: isVerifiedOnly,
+          max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
+        });
+      }
       resetForm();
       close();
     } catch {
@@ -103,7 +136,7 @@ export default function CreateGroupDialog() {
     }
   };
 
-  const isSubmitting = createMutation.isPending;
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog
@@ -121,10 +154,12 @@ export default function CreateGroupDialog() {
             </span>
             <span className="flex-1 text-left">
               <span className="block font-black text-base">
-                Create New Group
+                {isEditMode ? "Edit Group" : "Create New Group"}
               </span>
               <span className="block text-[11px] font-medium text-emerald-50/90">
-                Start a new community group chat
+                {isEditMode
+                  ? "Update this community group chat"
+                  : "Start a new community group chat"}
               </span>
             </span>
           </DialogTitle>
@@ -261,8 +296,10 @@ export default function CreateGroupDialog() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
-                  Creating...
+                  {isEditMode ? "Saving..." : "Creating..."}
                 </>
+              ) : isEditMode ? (
+                "Save Changes"
               ) : (
                 "Create Group"
               )}

@@ -50,7 +50,6 @@ export type DialogTypes =
   | "flag-user"
   | "add-group"
   | "view-group"
-  | "edit-group"
   | "add-top-rated-item";
 
 /**
@@ -907,7 +906,8 @@ export const useAddGroupDialog = () => {
   return {
     isOpen,
     data,
-    open: () => openDialog("add-group"),
+    isEditMode: !!data,
+    open: (data?: any) => openDialog("add-group", { data }),
     close: () => closeDialog("add-group"),
   };
 };
@@ -926,21 +926,6 @@ export const useViewGroupDialog = () => {
     open: (entityId: string, data?: any) =>
       openDialog("view-group", { entityId, data }),
     close: () => closeDialog("view-group"),
-  };
-};
-
-export const useEditGroupDialog = () => {
-  const openDialog = useDialogStore((state) => state.openDialog);
-  const closeDialog = useDialogStore((state) => state.closeDialog);
-  const isOpen = useDialogStore((state) => state.isDialogOpen("edit-group"));
-  const data = useDialogStore((state) => state.getDialogData("edit-group"));
-
-  return {
-    isOpen,
-    data,
-    isEditMode: !!data,
-    open: (data?: any) => openDialog("edit-group", { data }),
-    close: () => closeDialog("edit-group"),
   };
 };
 

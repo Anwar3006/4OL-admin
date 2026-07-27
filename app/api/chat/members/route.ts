@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+
+async function getRequestUser(req: NextRequest) {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
+  if (!token) return null;
+  const admin = getSupabaseAdmin();
+  const {
+    data: { user },
+    error,
+  } = await admin.auth.getUser(token);
+  if (error || !user?.id) return null;
+  return user;
+}
 
 /**
  * GET /api/chat/members?conversation_id=XYZ
@@ -8,11 +19,9 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
  * Fetches members of a conversation.
  */
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: req.headers,
-  });
+  const user = await getRequestUser(req);
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -62,11 +71,9 @@ export async function GET(req: NextRequest) {
  * Joins a conversation.
  */
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: req.headers,
-  });
+  const user = await getRequestUser(req);
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -79,7 +86,7 @@ export async function POST(req: NextRequest) {
       .from("conversation_members")
       .insert({
         conversation_id,
-        user_id: session.user.id,
+        user_id: user.id,
         role: "member",
         joined_at: new Date().toISOString(),
       })
@@ -93,7 +100,7 @@ export async function POST(req: NextRequest) {
           .from("conversation_members")
           .update({ left_at: null, joined_at: new Date().toISOString() })
           .eq("conversation_id", conversation_id)
-          .eq("user_id", session.user.id);
+          .eq("user_id", user.id);
 
         if (updateError)
           return NextResponse.json(
@@ -117,11 +124,9 @@ export async function POST(req: NextRequest) {
  * Leaves or removes a member from a conversation.
  */
 export async function PATCH(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: req.headers,
-  });
+  const user = await getRequestUser(req);
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -132,10 +137,10 @@ export async function PATCH(req: NextRequest) {
 
     // If user_id is provided, it's a "remove member" action (requires admin check)
     // If not, it's a "leave" action (self)
-    const targetUserId = user_id || session.user.id;
+    const targetUserId = user_id || user.id;
 
-    if (user_id && user_id !== session.user.id) {
-      // TODO: Verify that session.user.id is an admin of the conversation
+    if (user_id && user_id !== user.id) {
+      // TODO: Verify that user.id is an admin of the conversation
     }
 
     const { error } = await admin

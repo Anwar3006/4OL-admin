@@ -12,14 +12,30 @@ dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 const BATCH_SIZE = 50;
 const SEED_FILE = "constant/nhs_healthy_living_seed.json";
 
-// healthy_living_info has NO separate categories table or junction table —
-// hierarchy is expressed purely through the self-referencing `parent_id`
-// column. So each entry in `categories_seed` becomes a top-level "hub" row
-// (content_type: "category"), and each article in `symptoms_seed` becomes a
-// child row pointing at its hub via parent_id (resolved from
-// `category_association_slug`).
+// ─────────────────────────────────────────────────────────────
+// SCHEMA NOTE (rewritten to match the live `healthy_living_info` table)
+// ─────────────────────────────────────────────────────────────
+// The actual columns on healthy_living_info are just:
+//   id, created_at, name, slug, description, image_url,
+//   attribution (jsonb), status, view_count, content (jsonb),
+//   updated_at, metadata (jsonb)
+//
+// There is NO content_sections column, NO parent_id, NO display_order,
+// NO content_type, and NO tags column. There is also no separate
+// categories table for this domain — everything lives in one flat table.
+//
+// So this rewrite folds the previous "extra" concepts into the two jsonb
+// columns that do exist:
+//   • content  → { sections: [...] }  (the Lexical body sections)
+//   • metadata → { content_type: "category" | "article", parent_slug,
+//                  display_order, tags, reading_time_minutes }
+//
+// Hierarchy (category hub → child articles) is expressed purely via
+// metadata.parent_slug pointing at the hub row's slug — no id lookup /
+// join step is needed before inserting articles, since we already know
+// the category's slug straight from the seed JSON.
 
-// Lexical-content fields to fold into the `content_sections` jsonb array.
+// Lexical-content fields to fold into the `content.sections` jsonb array.
 // NOTE: "attribution" is intentionally excluded here — it's provenance
 // metadata, not a body section, and healthy_living_info has its own
 // dedicated `attribution` jsonb column for it.
@@ -90,9 +106,9 @@ function extractTextPreview(lexicalJson: any): string | null {
 }
 
 /**
- * Build the `content_sections` jsonb ARRAY (column default is '[]'::jsonb,
- * i.e. an array, not a keyed object) from all populated Lexical fields,
- * preserving full Lexical structure for frontend rendering.
+ * Build the sections array (to be nested under the `content` jsonb column
+ * as `content.sections`) from all populated Lexical fields, preserving
+ * full Lexical structure for frontend rendering.
  */
 function buildContentSections(item: any): Array<{
   key: string;
@@ -174,8 +190,15 @@ async function seedHealthyLiving() {
   );
 
   // ═══════════════════════════════════════════════════════════
-  // STEP 1: Upsert category "hub" rows (top-level, parent_id null)
+  // STEP 1: Upsert category "hub" rows (top-level, no parent_slug)
   // ═══════════════════════════════════════════════════════════
+  // NOTE: no id-lookup step is needed afterwards — since there's no
+  // parent_id foreign key, child articles just carry the category's slug
+  // directly in metadata.parent_slug.
+  const categorySlugs = new Set<string>(
+    categoriesSeed.map((cat: any) => cat.slug),
+  );
+
   if (categoriesSeed.length > 0) {
     console.log(`📦 Upserting ${categoriesSeed.length} category hub rows...`);
 
@@ -183,15 +206,16 @@ async function seedHealthyLiving() {
       name: cat.name,
       slug: cat.slug,
       description: null,
-      content_sections: [],
-      display_order: index,
-      parent_id: null,
       image_url: null,
       attribution: {},
       status: "published",
-      is_featured: false,
-      content_type: "category",
-      tags: [],
+      content: { sections: [] },
+      metadata: {
+        content_type: "category",
+        parent_slug: null,
+        display_order: index,
+        tags: [],
+      },
     }));
 
     const { error: hubUpsertErr } = await client
@@ -206,23 +230,7 @@ async function seedHealthyLiving() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // STEP 2: Fetch hub IDs to resolve parent_id for articles
-  // ═══════════════════════════════════════════════════════════
-  const { data: hubRows, error: fetchHubErr } = await client
-    .from("healthy_living_info")
-    .select("id, slug")
-    .eq("content_type", "category");
-
-  if (fetchHubErr || !hubRows) {
-    console.error("❌ Error fetching category hub rows from DB:", fetchHubErr);
-    process.exit(1);
-  }
-
-  const hubMap = new Map<string, string>(hubRows.map((h) => [h.slug, h.id]));
-  console.log(`🔗 Mapped ${hubMap.size} category hub rows from database`);
-
-  // ═══════════════════════════════════════════════════════════
-  // STEP 3: Process articles in batches
+  // STEP 2: Process articles in batches
   // ═══════════════════════════════════════════════════════════
   const unmatchedCategorySlugs = new Set<string>();
   const articlesWithoutSections = new Set<string>();
@@ -246,9 +254,9 @@ async function seedHealthyLiving() {
       const name = item.name || item.title;
       const slug = item.slug || slugify(name);
       const catSlug = item.category_association_slug || item.category_slug;
-      const parentId = catSlug ? hubMap.get(catSlug) ?? null : null;
+      const parentSlug = catSlug && categorySlugs.has(catSlug) ? catSlug : null;
 
-      if (catSlug && !parentId) {
+      if (catSlug && !parentSlug) {
         unmatchedCategorySlugs.add(catSlug);
       }
 
@@ -265,16 +273,17 @@ async function seedHealthyLiving() {
         name,
         slug,
         description: buildDescription(item),
-        content_sections: contentSections,
-        display_order: displayOrder,
-        parent_id: parentId,
         image_url: item.image_url || null,
         attribution: item.attribution || {},
         status: item.status || "published",
-        is_featured: item.is_featured ?? false,
-        content_type: "article",
-        tags: [],
-        reading_time_minutes: estimateReadingTimeMinutes(item),
+        content: { sections: contentSections },
+        metadata: {
+          content_type: "article",
+          parent_slug: parentSlug,
+          display_order: displayOrder,
+          tags: [],
+          reading_time_minutes: estimateReadingTimeMinutes(item),
+        },
       };
     });
 
@@ -296,7 +305,7 @@ async function seedHealthyLiving() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // STEP 4: Final Summary
+  // STEP 3: Final Summary
   // ═══════════════════════════════════════════════════════════
   if (failedBatches > 0) {
     console.error(

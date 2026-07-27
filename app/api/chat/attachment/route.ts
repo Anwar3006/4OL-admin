@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+
+async function getRequestUser(req: NextRequest) {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
+  if (!token) return null;
+  const admin = getSupabaseAdmin();
+  const {
+    data: { user },
+    error,
+  } = await admin.auth.getUser(token);
+  if (error || !user?.id) return null;
+  return user;
+}
 
 function sanitizeFilename(input: string) {
   const name = input?.trim() || "attachment";
@@ -25,8 +36,8 @@ function sanitizeFilename(input: string) {
  * Response: { signedUrl: string, publicUrl: string, path: string }
  */
 export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: req.headers });
-  if (!session?.user?.id) {
+  const user = await getRequestUser(req);
+  if (!user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -6,7 +6,7 @@ import {
   useAdminConversations,
   useDeleteConversation,
 } from "@/hooks/supabase-calls/useConversation";
-import { useViewGroupDialog, useEditGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
+import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
 
 export interface GroupRow {
   id: string;
@@ -34,7 +34,6 @@ export default function GroupsTab() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const viewGroupDialog = useViewGroupDialog();
-  const editGroupDialog = useEditGroupDialog();
   const addGroupDialog = useAddGroupDialog();
   const deleteMutation = useDeleteConversation();
 
@@ -67,7 +66,7 @@ export default function GroupsTab() {
   };
 
   const handleEdit = (row: GroupRow) => {
-    editGroupDialog.open(row);
+    addGroupDialog.open(row);
   };
 
   const handleDelete = (row: GroupRow) => {

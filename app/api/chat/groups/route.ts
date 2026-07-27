@@ -1,23 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+
+async function getRequestUser(req: NextRequest) {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
+  if (!token) return null;
+  const admin = getSupabaseAdmin();
+  const {
+    data: { user },
+    error,
+  } = await admin.auth.getUser(token);
+  if (error || !user?.id) return null;
+  return user;
+}
 
 /**
  * POST /api/chat/groups
- * 
+ *
  * Creates a group conversation.
  */
 export async function POST(req: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: req.headers,
-  });
+  const user = await getRequestUser(req);
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { name, description, memberIds, avatar_url, facilityId } = await req.json();
+    const { name, description, memberIds, avatar_url, facilityId } =
+      await req.json();
 
     const admin = getSupabaseAdmin();
 
@@ -25,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await admin.rpc("fn_create_group_conversation", {
       p_name: name,
       p_description: description || null,
-      p_created_by: session.user.id,
+      p_created_by: user.id,
       p_member_ids: memberIds || [],
       p_avatar_url: avatar_url || null,
       p_facility_id: facilityId || null,

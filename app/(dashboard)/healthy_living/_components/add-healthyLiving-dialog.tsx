@@ -39,6 +39,66 @@ const emptyForm = () => ({
   status: "published" as "draft" | "published" | "archived",
 });
 
+/** Some legacy rows store content as a JSON string rather than jsonb. */
+function parseMaybeString(value: any): any {
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
+}
+
+/** The canonical content shape groups articles into labelled sections. */
+function isSectionsContent(value: any): value is {
+  sections: Array<{ key: string; label: string; content: any }>;
+} {
+  const parsed = parseMaybeString(value);
+  return parsed && typeof parsed === "object" && Array.isArray(parsed.sections);
+}
+
+/**
+ * Returns the Lexical document that should actually be loaded into the
+ * rich-text editor. If the stored content uses sections, we edit the first
+ * section's content while preserving the rest on save.
+ */
+function getEditableLexicalContent(content: any): any {
+  const parsed = parseMaybeString(content);
+  if (isSectionsContent(parsed)) {
+    return parsed.sections[0]?.content ?? EMPTY_LEXICAL_STATE;
+  }
+  return content ?? EMPTY_LEXICAL_STATE;
+}
+
+/**
+ * Puts the edited Lexical document back into the same shape we received.
+ * This keeps section-aware records section-aware and plain records plain.
+ */
+function buildSavedContent(
+  originalContent: any,
+  editedLexicalContent: any,
+): any {
+  const parsed = parseMaybeString(originalContent);
+  if (isSectionsContent(parsed)) {
+    const sections =
+      parsed.sections.length > 0
+        ? parsed.sections.map((s: any, i: number) =>
+            i === 0 ? { ...s, content: editedLexicalContent } : s,
+          )
+        : [
+            {
+              key: "about",
+              label: "About",
+              content: editedLexicalContent,
+            },
+          ];
+    return { sections };
+  }
+  return editedLexicalContent;
+}
+
 const AddHealthyLivingDialog = () => {
   const { isOpen, data, isEditMode, close } = useAddHealthyLivingDialog();
   const { mutateAsync: create, isPending: creating } = useCreateHealthyLiving();
@@ -54,7 +114,7 @@ const AddHealthyLivingDialog = () => {
         name: data.name ?? "",
         description: data.description ?? "",
         image_url: data.image_url ?? "",
-        content: data.content ?? EMPTY_LEXICAL_STATE,
+        content: getEditableLexicalContent(data.content),
         attribution: data.attribution ?? EMPTY_LEXICAL_STATE,
         status: data.status ?? "published",
       });
@@ -79,7 +139,7 @@ const AddHealthyLivingDialog = () => {
       name: form.name.trim(),
       slug: slugify(form.name.trim(), { lower: true, strict: true }),
       description: form.description.trim() || null,
-      content: form.content,
+      content: buildSavedContent(data?.content, form.content),
       image_url: form.image_url || null,
       attribution: form.attribution,
       status: form.status,
@@ -102,7 +162,9 @@ const AddHealthyLivingDialog = () => {
       <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? `Edit — ${data?.name || "Healthy Living"}` : "Add Healthy Living"}
+            {isEditMode
+              ? `Edit — ${data?.name || "Healthy Living"}`
+              : "Add Healthy Living"}
           </DialogTitle>
         </DialogHeader>
 
@@ -149,7 +211,9 @@ const AddHealthyLivingDialog = () => {
             <ImageDropZone
               filePath={filePath}
               text="Drop an image"
-              onFilesChange={(urls: string[]) => set("image_url")(urls[0] ?? "")}
+              onFilesChange={(urls: string[]) =>
+                set("image_url")(urls[0] ?? "")
+              }
               initialFiles={form.image_url ? [form.image_url] : []}
             />
           </div>
@@ -182,10 +246,17 @@ const AddHealthyLivingDialog = () => {
               disabled={isSubmitting}
               className="flex-1 bg-emerald-600 hover:bg-emerald-700"
             >
-              {isSubmitting && <Loader2 size={15} className="animate-spin mr-2" />}
+              {isSubmitting && (
+                <Loader2 size={15} className="animate-spin mr-2" />
+              )}
               {isSubmitting ? "Saving…" : isEditMode ? "Update" : "Save"}
             </Button>
-            <Button type="button" variant="ghost" onClick={close} className="flex-1">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={close}
+              className="flex-1"
+            >
               Cancel
             </Button>
           </div>
