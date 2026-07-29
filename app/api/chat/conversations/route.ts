@@ -124,7 +124,6 @@ export async function GET(req: NextRequest) {
         created_by,
         created_at,
         updated_at,
-        status,
         conversation_members(count)
         `,
       )
@@ -192,7 +191,6 @@ export async function GET(req: NextRequest) {
           created_by: g.created_by,
           created_at: g.created_at,
           updated_at: g.updated_at,
-          status: g.status,
         };
       })
       .filter(Boolean);
