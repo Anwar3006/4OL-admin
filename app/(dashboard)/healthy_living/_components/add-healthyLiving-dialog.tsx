@@ -25,7 +25,10 @@ import { useAddHealthyLivingDialog } from "@/stores/dialog-store";
 import { RichTextEditor } from "@/components/RichTextInput";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import ImageDropZone from "@/components/ImageDropZone";
+import { rehydrateHierarchy } from "@/lib/utils";
+import { TreeMultiSelect } from "@/components/TreeMultiSelect";
 import {
+  useCategoriesForHealthyLiving,
   useCreateHealthyLiving,
   useUpdateHealthyLiving,
 } from "@/hooks/supabase-calls/useHealthyLiving";
@@ -37,6 +40,7 @@ const emptyForm = () => ({
   content: EMPTY_LEXICAL_STATE,
   attribution: EMPTY_LEXICAL_STATE,
   status: "published" as "draft" | "published" | "archived",
+  categories: [] as string[],
 });
 
 /** Some legacy rows store content as a JSON string rather than jsonb. */
@@ -103,6 +107,8 @@ const AddHealthyLivingDialog = () => {
   const { isOpen, data, isEditMode, close } = useAddHealthyLivingDialog();
   const { mutateAsync: create, isPending: creating } = useCreateHealthyLiving();
   const { mutateAsync: update, isPending: updating } = useUpdateHealthyLiving();
+  const { data: categories = [], isLoading: loadingCats } =
+    useCategoriesForHealthyLiving();
   const isSubmitting = creating || updating;
 
   const [form, setForm] = useState(emptyForm());
@@ -117,11 +123,12 @@ const AddHealthyLivingDialog = () => {
         content: getEditableLexicalContent(data.content),
         attribution: data.attribution ?? EMPTY_LEXICAL_STATE,
         status: data.status ?? "published",
+        categories: rehydrateHierarchy(data.categories || [], categories),
       });
     } else {
       setForm(emptyForm());
     }
-  }, [isOpen, isEditMode, data]);
+  }, [isOpen, isEditMode, data, categories]);
 
   const set = (field: keyof ReturnType<typeof emptyForm>) => (value: any) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -143,6 +150,7 @@ const AddHealthyLivingDialog = () => {
       image_url: form.image_url || null,
       attribution: form.attribution,
       status: form.status,
+      categories: form.categories,
     };
 
     try {
@@ -204,6 +212,22 @@ const AddHealthyLivingDialog = () => {
               rows={2}
               className="resize-none"
             />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">Categories</Label>
+            {loadingCats ? (
+              <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                <Loader2 size={14} className="animate-spin" /> Loading categories…
+              </div>
+            ) : (
+              <TreeMultiSelect
+                data={categories}
+                value={form.categories}
+                onChange={set("categories")}
+                placeholder="Select categories…"
+              />
+            )}
           </div>
 
           <div className="space-y-1">

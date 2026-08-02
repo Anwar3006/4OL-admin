@@ -297,7 +297,18 @@ function DetailView({
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100">
-                <MetaPill icon={Leaf} label="Category" value="Healthy Living" />
+                <MetaPill
+                  icon={Leaf}
+                  label="Categories"
+                  value={
+                    Array.isArray(data.categories) && data.categories.length > 0
+                      ? data.categories
+                          .map((c: any) => c.categories?.name)
+                          .filter(Boolean)
+                          .join(", ")
+                      : "Uncategorized"
+                  }
+                />
                 <MetaPill
                   icon={Calendar}
                   label="Last Updated"

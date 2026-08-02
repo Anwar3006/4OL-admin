@@ -11,6 +11,7 @@ export const healthyLivingSchema = z.object({
   image_url: z.string().optional().nullable(),
   attribution: richTextSchema.optional(),
   status: z.enum(["draft", "published", "archived"]).default("published"),
+  categories: z.array(z.string()).optional().default([]),
 });
 
 export type THealthyLivingInput = z.infer<typeof healthyLivingSchema>;
@@ -28,6 +29,10 @@ export const healthyLivingOutputSchema = z.object({
   metadata: z.record(z.any(), z.any()).default({}),
   created_at: z.string(),
   updated_at: z.string(),
+  // Either an array of category names (list view, already flattened) or an
+  // array of raw healthy_living_categories junction rows (detail view) —
+  // mirrors how symptoms/conditions shapes this field.
+  categories: z.array(z.any()).optional().default([]),
 });
 
 export type THealthyLivingOutput = z.infer<typeof healthyLivingOutputSchema>;

@@ -106,6 +106,33 @@ const HealthyLivingPage = () => {
         },
       },
       {
+        accessorKey: "categories",
+        header: "Categories",
+        cell: ({ row }: any) => {
+          const cats: string[] = row.original.categories || [];
+          if (cats.length === 0) {
+            return <span className="text-xs text-slate-300">—</span>;
+          }
+          return (
+            <div className="flex flex-wrap gap-1 max-w-[200px]">
+              {cats.slice(0, 2).map((name) => (
+                <span
+                  key={name}
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700"
+                >
+                  {name}
+                </span>
+              ))}
+              {cats.length > 2 && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                  +{cats.length - 2}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "view_count",
         header: "Views",
         cell: ({ row }: any) => (

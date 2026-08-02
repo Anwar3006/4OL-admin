@@ -14,12 +14,29 @@ export const HEALTHY_LIVING_QUERY_KEYS = {
     [...HEALTHY_LIVING_QUERY_KEYS.lists(), { page, limit, search, status }] as const,
   details: () => [...HEALTHY_LIVING_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...HEALTHY_LIVING_QUERY_KEYS.details(), id] as const,
+  categories: ["healthy-living-categories"] as const,
 };
 
 interface PaginatedResponse {
   healthyLivings: THealthyLivingOutput[];
   meta: { totalPages: number; total: number; currentPage: number };
 }
+
+/** Categories admins can tag a healthy living article with (type='healthy_living'). */
+export const useCategoriesForHealthyLiving = () => {
+  return useQuery<any, Error>({
+    queryKey: HEALTHY_LIVING_QUERY_KEYS.categories,
+    queryFn: async () => {
+      const { data, error } = await (await getSupabaseClient())
+        .from("categories")
+        .select("*")
+        .eq("type", "healthy_living")
+        .order("name", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+};
 
 /** Paginated flat list — no more nesting/tree, so simple offset pagination. */
 export const useHealthyLivings = ({
@@ -41,7 +58,7 @@ export const useHealthyLivings = ({
 
       let query = (await getSupabaseClient())
         .from("healthy_living_info")
-        .select("*", { count: "exact" });
+        .select("*, healthy_living_categories (categories (id, name))", { count: "exact" });
 
       if (search) query = query.ilike("name", `%${search}%`);
       if (status) query = query.eq("status", status);
@@ -53,8 +70,16 @@ export const useHealthyLivings = ({
       if (error) throw new Error(error.message);
 
       const totalCount = count ?? 0;
+      const formatted = (data || []).map((row: any) => {
+        const { healthy_living_categories, ...rest } = row;
+        return {
+          ...rest,
+          categories:
+            healthy_living_categories?.map((c: any) => c.categories?.name) || [],
+        };
+      });
       return {
-        healthyLivings: (data || []) as unknown as THealthyLivingOutput[],
+        healthyLivings: formatted as unknown as THealthyLivingOutput[],
         meta: {
           totalPages: Math.max(1, Math.ceil(totalCount / limit)),
           total: totalCount,
@@ -73,11 +98,15 @@ export const useHealthyLiving = (id: string | null) => {
     queryFn: async () => {
       const { data, error } = await (await getSupabaseClient())
         .from("healthy_living_info")
-        .select("*")
+        .select("*, healthy_living_categories (category_id, categories (id, name))")
         .eq("id", id!)
         .single();
       if (error) throw new Error(error.message);
-      return data as unknown as THealthyLivingOutput;
+      const { healthy_living_categories, ...rest } = data as any;
+      return {
+        ...rest,
+        categories: healthy_living_categories || [],
+      } as unknown as THealthyLivingOutput;
     },
     enabled: !!id,
   });
@@ -88,7 +117,8 @@ export const useCreateHealthyLiving = () => {
 
   return useMutation<THealthyLivingOutput, Error, THealthyLivingInput>({
     mutationFn: async (input) => {
-      const { data, error } = await (await getSupabaseClient())
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase
         .from("healthy_living_info")
         .insert([
           {
@@ -104,6 +134,20 @@ export const useCreateHealthyLiving = () => {
         .select()
         .single();
       if (error) throw new Error(error.message);
+
+      const categoryIds = input.categories || [];
+      if (categoryIds.length > 0) {
+        const { error: catError } = await supabase
+          .from("healthy_living_categories")
+          .insert(
+            categoryIds.map((category_id) => ({
+              healthy_living_id: data.id,
+              category_id,
+            })),
+          );
+        if (catError) throw new Error(catError.message);
+      }
+
       return data as unknown as THealthyLivingOutput;
     },
     onSuccess: () => {
@@ -123,7 +167,8 @@ export const useUpdateHealthyLiving = () => {
     { id: string; data: THealthyLivingInput }
   >({
     mutationFn: async ({ id, data: input }) => {
-      const { data, error } = await (await getSupabaseClient())
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase
         .from("healthy_living_info")
         .update({
           name: input.name,
@@ -138,6 +183,29 @@ export const useUpdateHealthyLiving = () => {
         .select()
         .single();
       if (error) throw new Error(error.message);
+
+      // Re-sync category tags: clear out the old set and write the new one.
+      // Simpler and safer than a diff for a list this small, and matches how
+      // symptoms/conditions handle their category junctions via RPC.
+      const { error: deleteError } = await supabase
+        .from("healthy_living_categories")
+        .delete()
+        .eq("healthy_living_id", id);
+      if (deleteError) throw new Error(deleteError.message);
+
+      const categoryIds = input.categories || [];
+      if (categoryIds.length > 0) {
+        const { error: catError } = await supabase
+          .from("healthy_living_categories")
+          .insert(
+            categoryIds.map((category_id) => ({
+              healthy_living_id: id,
+              category_id,
+            })),
+          );
+        if (catError) throw new Error(catError.message);
+      }
+
       return data as unknown as THealthyLivingOutput;
     },
     onSuccess: (data) => {

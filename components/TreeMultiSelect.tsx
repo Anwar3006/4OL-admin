@@ -43,7 +43,7 @@ interface TreeMultiSelectProps {
   label?: string;
 }
 
-function TreeMultiSelect({
+export function TreeMultiSelect({
   data,
   value,
   onChange,
