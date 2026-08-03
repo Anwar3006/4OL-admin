@@ -74,8 +74,14 @@ export const useHealthyLivings = ({
         const { healthy_living_categories, ...rest } = row;
         return {
           ...rest,
+          // Display-friendly names, used by the table's Categories column.
           categories:
             healthy_living_categories?.map((c: any) => c.categories?.name) || [],
+          // Raw {category_id, categories:{id,name}} refs, in the same shape
+          // useHealthyLiving (detail) returns — needed so rehydrateHierarchy
+          // can resolve real ids when the edit dialog is opened directly
+          // from a table row instead of from the view dialog.
+          categoryRefs: healthy_living_categories || [],
         };
       });
       return {

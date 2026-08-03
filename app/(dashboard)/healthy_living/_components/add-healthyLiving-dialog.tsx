@@ -123,7 +123,15 @@ const AddHealthyLivingDialog = () => {
         content: getEditableLexicalContent(data.content),
         attribution: data.attribution ?? EMPTY_LEXICAL_STATE,
         status: data.status ?? "published",
-        categories: rehydrateHierarchy(data.categories || [], categories),
+        // Prefer the raw {category_id, categories:{id,name}} refs (present
+        // when the item came from the list/table). Fall back to `categories`
+        // for the detail-query shape (view dialog → Edit). Never pass the
+        // list's plain display-name strings straight through —
+        // rehydrateHierarchy would mistake them for ids and resolve to [].
+        categories: rehydrateHierarchy(
+          data.categoryRefs ?? data.categories ?? [],
+          categories,
+        ),
       });
     } else {
       setForm(emptyForm());
