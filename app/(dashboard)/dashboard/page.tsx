@@ -3,6 +3,14 @@
 import React from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CriticalAlerts from "./_components/CriticalAlerts";
 import RevenueTrendChart from "./_components/RevenueTrendChart";
 import SystemHealth from "./_components/SystemHealth";
@@ -19,20 +27,31 @@ import ComplianceGRA from "./_components/ComplianceGRA";
 
 const DashboardPage = () => {
   return (
-    <div className="animate-in fade-in duration-500 space-y-5">
+    <div className="flex flex-col gap-5 animate-in fade-in duration-500">
       <PageHeader
         title="📊 Platform Dashboard"
         subtitle="4 Our Life · Real-time overview · Updated: just now"
       >
-        <select className="fi">
-          <option>📅 Last 30 Days</option>
-          <option>Last 7 Days</option>
-          <option>Last 90 Days</option>
-          <option>This Year</option>
-        </select>
-        <button className="btn btn-secondary btn-sm">📥 Export</button>
-        <button className="btn btn-secondary btn-sm">🔐 Security</button>
-        <button className="btn btn-primary btn-sm">📣 Broadcast</button>
+        <Select defaultValue="30">
+          <SelectTrigger size="sm" className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">📅 Last 7 Days</SelectItem>
+            <SelectItem value="30">📅 Last 30 Days</SelectItem>
+            <SelectItem value="90">📅 Last 90 Days</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm">
+          📥 Export
+        </Button>
+        <Button variant="outline" size="sm">
+          🔐 Security
+        </Button>
+        <Button variant="default" size="sm">
+          📣 Broadcast
+        </Button>
       </PageHeader>
 
       <CriticalAlerts />

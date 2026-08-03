@@ -56,7 +56,6 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Transactions",
         href: "/transactions",
         icon: "💳",
-        badge: "2",
         children: [
           { title: "Recent Transactions", href: "/transactions?tab=recent" },
           {
@@ -64,8 +63,8 @@ export const dashboardNavSections: DashboardNavSection[] = [
             href: "/transactions?tab=service-charge",
           },
           { title: "Subscriptions", href: "/transactions?tab=subscriptions" },
-          { title: "Failed (12)", href: "/transactions?tab=failed" },
-          { title: "Refunds (4)", href: "/transactions?tab=refunds" },
+          { title: "Failed", href: "/transactions?tab=failed" },
+          { title: "Refunds", href: "/transactions?tab=refunds" },
           { title: "Tax & VAT", href: "/transactions?tab=tax-vat" },
           { title: "Expenses", href: "/transactions?tab=expenses" },
         ],
@@ -78,18 +77,18 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Admins", href: "/admins", icon: "👥" },
       { title: "Users", href: "/users", icon: "👤" },
       { title: "IBP Businesses", href: "/ibp", icon: "🏢" },
-      { title: "Task Manager", href: "/tasks", icon: "📋", badge: "SA" },
+      { title: "Task Manager", href: "/tasks", icon: "📋" },
     ],
   },
   {
     title: "Health Services",
     items: [
-      { title: "Facilities", href: "/facilities", icon: "🏥", badge: "6" },
+      { title: "Facilities", href: "/facilities", icon: "🏥" },
       { title: "Diseases & Conditions", href: "/diseases", icon: "🦠" },
       { title: "Human Anatomy", href: "/anatomy", icon: "🫁" },
       { title: "Symptoms", href: "/symptoms", icon: "🩺" },
       { title: "Healthy Living", href: "/healthy_living", icon: "🥗" },
-      { title: "Fitness", href: "/fitness", icon: "💪", badge: "3" },
+      { title: "Fitness", href: "/fitness", icon: "💪" },
       { title: "Period Tracker", href: "/period", icon: "📅" },
       {
         title: "Medication Reminder",
@@ -100,19 +99,16 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Healthcare Professionals",
         href: "/hcp",
         icon: "🧑‍⚕️",
-        badge: "12",
       },
       {
         title: "Jobs",
         href: "/jobs",
         icon: "💼",
-        badge: "24",
       },
       {
         title: "Medication Enquiry",
         href: "/medenquiry",
         icon: "🔬",
-        badge: "8",
       },
       {
         title: "BedTracker (PKM)",
@@ -130,33 +126,29 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Reviews & Ratings",
         href: "/reviews",
         icon: "⭐",
-        badge: "Fac",
       },
-      { title: "Map", href: "/map", icon: "🗺️", badge: "Fac" },
+      { title: "Map", href: "/map", icon: "🗺️" },
     ],
   },
   {
     title: "Growth",
     items: [
-      { title: "Marketing", href: "/marketing", icon: "📣", badge: "2" },
+      { title: "Marketing", href: "/marketing", icon: "📣" },
       {
         title: "Chats",
         href: "/chats",
         icon: "💬",
-        badge: "5",
       },
       {
         title: "FacilityScout",
         href: "/facilityscout",
         icon: "🔍",
-        badge: "14",
       },
       { title: "FAQ", href: "/faq", icon: "❓" },
       {
         title: "Notifications",
         href: "/notifications",
         icon: "🔔",
-        badge: "3",
       },
     ],
   },
@@ -186,7 +178,6 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Delete Account Requests",
         href: "/delete-account-request",
         icon: "🗑️",
-        badge: "4",
         children: [
           { title: "All Requests", href: "/delete-account-request?tab=all" },
           {

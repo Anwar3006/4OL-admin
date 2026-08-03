@@ -167,7 +167,7 @@ const AddHealthyLivingDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl z-[300]">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode
@@ -176,7 +176,10 @@ const AddHealthyLivingDialog = () => {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8 grid grid-cols-1 gap-4 items-start"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs">
@@ -188,13 +191,13 @@ const AddHealthyLivingDialog = () => {
                 onChange={(e) => set("name")(e.target.value)}
               />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 bg-white">
               <Label className="text-xs">Status</Label>
               <Select value={form.status} onValueChange={set("status")}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
@@ -218,7 +221,8 @@ const AddHealthyLivingDialog = () => {
             <Label className="text-xs">Categories</Label>
             {loadingCats ? (
               <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
-                <Loader2 size={14} className="animate-spin" /> Loading categories…
+                <Loader2 size={14} className="animate-spin" /> Loading
+                categories…
               </div>
             ) : (
               <TreeMultiSelect

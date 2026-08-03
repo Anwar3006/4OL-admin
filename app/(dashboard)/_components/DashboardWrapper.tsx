@@ -4,10 +4,13 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import AdminDashboardShell from "./admin-shell/AdminDashboardShell";
 import NewAdminDashboardShell from "./admin-shell/NewAdminDashboardShell";
 
-export default function DashboardWrapper({ children }: { children: ReactNode }) {
+export default function DashboardWrapper({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [isPending, setIsPending] = useState(true);
   const [isAuthed, setIsAuthed] = useState(false);
   const router = useRouter();
