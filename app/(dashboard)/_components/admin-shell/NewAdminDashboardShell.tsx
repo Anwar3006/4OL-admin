@@ -181,6 +181,7 @@ export default function NewAdminDashboardShell({
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
       />
+
       <SidebarProvider className="min-h-svh">
         {/* ── Sidebar: solid emerald panel, flush top-to-bottom ── */}
         <Sidebar collapsible="icon" className="border-sidebar-border">
