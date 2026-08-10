@@ -1,29 +1,27 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { headers } from "next/headers";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 /**
  * Add a new facility profile.
  */
 export async function addFacility(facilityData: any) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const supabase = await getSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session?.user?.id) {
+  if (!user) {
     return { error: "Unauthorized" };
   }
 
   try {
     const admin = getSupabaseAdmin();
-    
+
     // Add auditing fields
     const dataToInsert = {
       ...facilityData,
-      created_by: session.user.id,
-      updated_by: session.user.id,
+      created_by: user.id,
+      updated_by: user.id,
       is_created_by_admin_panel: false,
       status: "Pending",
       avg_rating: 0

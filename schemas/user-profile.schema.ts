@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { ROLE_ENUM, SEX_ENUM, USER_TYPE_ENUM } from "../types/formInput";
-import type { Session as BetterAuthSession } from "@/lib/auth";
 
 // User registration schema - single source of truth
 // For input validation
@@ -64,8 +63,6 @@ export type TAdminInviteInputSchema = z.infer<typeof adminInviteInputSchema>;
 //The above are for Form input validations
 
 //The below are actual types
-export type TBetterAuthUser = BetterAuthSession["user"];
-
 export type TUserProfile = {
   user_id: string;
   created_at: Date | string;

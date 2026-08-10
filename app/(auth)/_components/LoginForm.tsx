@@ -11,13 +11,15 @@ import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { AlertCircle, Loader2, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
   const router = useRouter();
-  
+  const searchParams = useSearchParams();
+
   const form = useForm<zod.infer<typeof userLoginSchema>>({
     resolver: zodResolver(userLoginSchema),
     defaultValues: {
@@ -25,6 +27,16 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       password: "",
     },
   });
+
+  useEffect(() => {
+    if (searchParams.get("error") === "unauthorized") {
+      form.setError("root", {
+        message:
+          "This account doesn't have access to the admin dashboard.",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { isSubmitting } = form.formState;
 
@@ -55,7 +67,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       }
       
       const role = userProfile.role;
-      const isAllowed = ["super_admin", "admin", "group_leader"].includes(role);
+      const isAllowed = ["super_admin", "admin", "registrar"].includes(role);
 
       if (!isAllowed) {
         await supabase.auth.signOut();

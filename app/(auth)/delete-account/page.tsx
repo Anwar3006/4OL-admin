@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/app/utils/supabaseClient";
-import { authClient } from "@/lib/auth-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Step = "verify" | "confirm" | "done" | "already_pending";
@@ -108,19 +107,18 @@ export default function DeleteAccountPage() {
     setAuthError("");
 
     try {
-      const result = await authClient.signIn.email({
-        email: email.trim().toLowerCase(),
-        password,
-        callbackURL: "/delete-account",
-      });
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
 
-      if (result.error) {
+      if (signInError) {
         setAuthError("Invalid email or password.");
         return;
       }
 
-      const session = await authClient.getSession();
-      const userId = session?.data?.user?.id;
+      const userId = signInData?.user?.id;
       if (!userId) {
         setAuthError("Failed to retrieve account information.");
         return;
@@ -173,7 +171,7 @@ export default function DeleteAccountPage() {
         return;
       }
 
-      await authClient.signOut();
+      await supabase.auth.signOut();
       setStep("done");
     } catch (err) {
       setReasonError("An unexpected error occurred.");

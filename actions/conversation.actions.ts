@@ -1,8 +1,7 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { headers } from "next/headers";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 /**
  * assignAdminWithRulesAction
@@ -15,7 +14,7 @@ import { headers } from "next/headers";
  *
  * We use the admin (service_role) client so the server action can bypass
  * RLS without exposing the secret key to the browser. The caller's
- * BetterAuth session is validated before any write is made.
+ * Supabase session is validated before any write is made.
  */
 export async function assignAdminWithRulesAction(
   conversation_id: string,
@@ -24,11 +23,10 @@ export async function assignAdminWithRulesAction(
   role: string = "admin",
 ): Promise<{ error: string | null }> {
   // ── Auth guard ────────────────────────────────────────────────────────────
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const supabase = await getSupabaseServerClient();
+  const { data: { user: callerUser } } = await supabase.auth.getUser();
 
-  if (!session?.user?.id) {
+  if (!callerUser) {
     return { error: "Unauthorized" };
   }
 
