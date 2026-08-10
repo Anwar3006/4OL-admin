@@ -26,6 +26,7 @@ import {
   Globe,
 } from "lucide-react";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 export function ViewOutdoorEventDialog() {
   const { isOpen, close, entityId } = useViewOutdoorEventDialog();
@@ -179,6 +180,14 @@ function DetailView({
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto pt-2 md:pt-0">
+            <TopRatedToggle
+              compact
+              module="outdoor_event"
+              itemId={data.id}
+              title={data.title}
+              subtitle={data.category}
+            />
+
             <Button
               onClick={onEdit}
               className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"

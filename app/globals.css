@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
 @plugin "tailwindcss-animate";
 @import "leaflet/dist/leaflet.css";
 
@@ -34,6 +35,14 @@
   --color-sidebar-accent-foreground: #ffffff;
   --color-sidebar-border: rgba(255, 255, 255, 0.08);
   --color-sidebar-ring: #10b981;
+
+  /* Ultra-wide breakpoints — Tailwind v4 CSS-native, so these are
+     guaranteed to generate 4xl:/5xl:/6xl: utility variants regardless of
+     whether tailwind.config.js is picked up. Mirrors the values also set
+     there for anyone still relying on the JS config. */
+  --breakpoint-4xl: 1920px;
+  --breakpoint-5xl: 2560px;
+  --breakpoint-6xl: 3200px;
 }
 
 /* ─── Design Tokens ──────────────────────────────────────────────────────────
@@ -1005,12 +1014,6 @@
 @media (min-width: 2000px) {
   html {
     font-size: 17px;
-  }
-  /* Optional: Cap the content width for readability on extreme monitors */
-  .flex-1.w-full.min-w-0 {
-    max-width: 1800px;
-    margin-left: auto;
-    margin-right: auto;
   }
 }
 

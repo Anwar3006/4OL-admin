@@ -26,6 +26,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 export function ViewFitnessPlanDialog() {
   const { isOpen, close, entityId } = useViewFitnessPlanDialog();
@@ -178,6 +179,16 @@ function DetailView({
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto pt-2 md:pt-0">
+            <TopRatedToggle
+              compact
+              module="fitness_plan"
+              itemId={data.id}
+              title={data.title}
+              subtitle={data.difficulty_level}
+              rating={data.average_rating}
+              ratingCount={data.rating_count}
+            />
+
             <Button
               onClick={onEdit}
               className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"

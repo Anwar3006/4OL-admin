@@ -42,6 +42,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { getPublicImageUrl } from "@/lib/utils";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 /* ───────────────────────────────────────────────────────────
    Types
@@ -298,6 +299,17 @@ function DetailView({
               {facility.status}
             </Badge>
           )}
+
+          <TopRatedToggle
+            compact
+            module="facility"
+            itemId={facility.id}
+            title={facility.facility_name}
+            subtitle={[facility.region, facility.district]
+              .filter(Boolean)
+              .join(", ")}
+            imageUrl={facility.featured_image_url}
+          />
 
           <Button
             onClick={onEdit}

@@ -19,7 +19,6 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +48,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ProfileModal from "@/components/redesign/modals/ProfileModal";
+import AdminSearchDialog from "./AdminSearchDialog";
 
 interface NewAdminDashboardShellProps {
   children: React.ReactNode;
@@ -73,6 +73,29 @@ export default function NewAdminDashboardShell({
   );
   const [profile, setProfile] = useState<any>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [isMac, setIsMac] = useState(false);
+
+  // Detect platform client-side only, to avoid SSR/client markup mismatch
+  useEffect(() => {
+    setIsMac(
+      /Mac|iPod|iPhone|iPad/.test(
+        window.navigator.platform ?? navigator.userAgent,
+      ),
+    );
+  }, []);
+
+  // Global ⌘K (Mac) / Ctrl+K (Windows, Linux) shortcut to open app-wide search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Fetch user profile from Supabase
   useEffect(() => {
@@ -181,6 +204,7 @@ export default function NewAdminDashboardShell({
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
       />
+      <AdminSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
       <SidebarProvider className="min-h-svh">
         {/* ── Sidebar: solid emerald panel, flush top-to-bottom ── */}
@@ -238,7 +262,7 @@ export default function NewAdminDashboardShell({
                             <SidebarMenuButton
                               onClick={handleLogout}
                               tooltip="Logout"
-                              className="text-white/55 hover:bg-white/10 hover:text-white transition-colors font-medium"
+                              className="text-white/55 hover:bg-white/10 hover:text-white transition-colors font-medium text-[11px]"
                             >
                               <span className="flex items-center justify-center">
                                 {item.icon}
@@ -257,7 +281,7 @@ export default function NewAdminDashboardShell({
                               isActive={active}
                               tooltip={item.title}
                               className={cn(
-                                "transition-colors font-medium",
+                                "transition-colors font-medium text-[11px]",
                                 active
                                   ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
                                   : "text-white hover:bg-white/10 hover:text-white",
@@ -284,7 +308,7 @@ export default function NewAdminDashboardShell({
                                       asChild
                                       isActive={isLinkActive(child.href)}
                                       className={cn(
-                                        "font-medium",
+                                        "font-medium text-[11px]",
                                         isLinkActive(child.href)
                                           ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
                                           : "text-white/50 hover:bg-white/10 hover:text-white",
@@ -309,7 +333,7 @@ export default function NewAdminDashboardShell({
                             isActive={active}
                             tooltip={item.title}
                             className={cn(
-                              "transition-colors font-medium",
+                              "transition-colors font-medium text-[11px]",
                               active
                                 ? "bg-white! text-black! shadow-sm hover:bg-white hover:text-slate-900"
                                 : "text-white hover:bg-white/10 hover:text-white",
@@ -423,9 +447,9 @@ export default function NewAdminDashboardShell({
         </Sidebar>
 
         {/* ── Main Content Area ── */}
-        <SidebarInset className="bg-background min-w-0 min-h-svh">
+        <SidebarInset className="bg-background min-h-svh min-w-0 max-w-[3800px]!">
           {/* Sticky Header */}
-          <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 sm:px-6 2xl:px-10 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mx-2 h-4" />
@@ -439,23 +463,26 @@ export default function NewAdminDashboardShell({
             {/* Right side actions */}
             <div className="ml-auto flex items-center gap-4">
               {/* Search */}
-              <div className="relative hidden lg:flex items-center">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="relative hidden lg:flex items-center h-9 w-64 2xl:w-80 5xl:w-96 rounded-md bg-muted/50 border border-transparent hover:bg-muted transition-colors text-left"
+              >
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="h-9 w-64 rounded-md bg-muted/50 pl-9 pr-12 border-transparent focus-visible:bg-background focus-visible:border-border"
-                />
+                <span className="pl-9 pr-12 text-sm text-muted-foreground truncate">
+                  Search...
+                </span>
                 <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden select-none items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
-                  ⌘K
+                  {isMac ? "⌘K" : "Ctrl K"}
                 </kbd>
-              </div>
+              </button>
 
               {/* Mobile Search */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="lg:hidden text-muted-foreground"
+                onClick={() => setSearchOpen(true)}
               >
                 <Search className="size-4" />
               </Button>
@@ -493,8 +520,8 @@ export default function NewAdminDashboardShell({
           </header>
 
           {/* Page content */}
-          <main className="flex-1 w-full min-w-0 p-6 lg:p-8">
-            <div className="mx-auto w-full max-w-7xl animate-in fade-in-50 duration-500">
+          <main className="flex-1 w-full p-4 sm:p-6 xl:p-8 2xl:p-10 min-w-0 max-w-[3800px]!">
+            <div className="mx-auto w-full max-w-[3800px] animate-in fade-in-50 duration-500">
               {children}
             </div>
           </main>

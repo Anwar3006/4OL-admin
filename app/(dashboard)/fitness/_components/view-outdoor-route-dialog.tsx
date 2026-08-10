@@ -33,6 +33,7 @@ import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPublicImageUrl } from "@/lib/utils";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 // Leaflet touches `window` on import — must be dynamically imported with
 // ssr: false or Next.js's server render throws "window is not defined".
@@ -224,6 +225,15 @@ function DetailView({
               {data.verification_status.replace("_", " ")}
             </Badge>
           )}
+
+          <TopRatedToggle
+            compact
+            module="outdoor_route"
+            itemId={data.id}
+            title={data.name}
+            subtitle={data.category}
+            imageUrl={Array.isArray(data.image_url) ? data.image_url[0] : data.image_url}
+          />
 
           <Button
             onClick={onEdit}

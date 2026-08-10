@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,18 +26,35 @@ const fitnessTabs = [
   { id: "challenges", label: "Challenges", icon: "🏆" },
   { id: "users", label: "Fitness Users", icon: "👥" },
   { id: "trainers", label: "Trainers", icon: "👨‍🏫" },
+  { id: "outdoor", label: "Outdoor", icon: "🌳" },
   { id: "schedule", label: "Schedule", icon: "📅" },
   { id: "ai_studio", label: "AI Studio", icon: "🤖" },
   { id: "ai_log", label: "AI Log", icon: "📝" },
-  { id: "outdoor", label: "Outdoor", icon: "🌳" },
   { id: "health", label: "Health Integrations", icon: "📱" },
   { id: "whatsapp", label: "WhatsApp", icon: "💬" },
 ];
 
 const FitnessPage = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "dashboard");
   const { data, isLoading } = useFitnessDashboardKpis();
   const metrics = data?.metrics;
+
+  // Keep tab in sync if the URL changes externally (e.g. search navigation)
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(value === "dashboard" ? "/fitness" : `/fitness?tab=${value}`, {
+      scroll: false,
+    });
+  };
 
   return (
     /* w-full so content fills the entire content-area width, not half of it */
@@ -93,9 +111,9 @@ const FitnessPage = () => {
 
       {/* Tabs — w-full so the tab bar spans the full content area */}
       <Tabs
-        defaultValue="dashboard"
+        value={activeTab}
         className="w-full min-w-0"
-        onValueChange={setActiveTab}
+        onValueChange={handleTabChange}
       >
         {/* Tab bar */}
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">

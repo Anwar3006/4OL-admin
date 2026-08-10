@@ -31,6 +31,7 @@ import {
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 /* ───────────────────────────────────────────────────────────
    Main Component
@@ -224,6 +225,15 @@ function DetailView({
               Featured
             </Badge>
           )}
+
+          <TopRatedToggle
+            compact
+            module="exercise"
+            itemId={data.id}
+            title={data.exercise_name}
+            subtitle={data.category}
+            imageUrl={data.thumbnail_url}
+          />
 
           <Button
             onClick={onEdit}

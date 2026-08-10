@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { parseISO, format } from "date-fns";
 import { getPublicImageUrl } from "@/lib/utils";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 /* ───────────────────────────────────────────────────────────
    Main Component
@@ -222,6 +223,15 @@ function DetailView({
               Private
             </Badge>
           )}
+
+          <TopRatedToggle
+            compact
+            module="challenge"
+            itemId={data.id}
+            title={data.title}
+            subtitle={data.challenge_type}
+            imageUrl={data.featured_image_url}
+          />
 
           <Button
             onClick={onEdit}

@@ -528,66 +528,6 @@ const OutdoorTab = () => {
     },
   ];
 
-  // -------------------------------------------------------------
-  // ROW ACTIONS DEFINITIONS
-  // -------------------------------------------------------------
-  const routeRowActions = [
-    {
-      label: "View Details",
-      icon: "👁️",
-      onClick: (row: any) => viewRouteDialog.open(row.id),
-    },
-    {
-      label: "Edit Route",
-      icon: "✏️",
-      onClick: (row: any) => addRouteDialog.open(row),
-    },
-    {
-      label: "Delete Route",
-      icon: "🗑️",
-      onClick: (row: any) => handleDeleteRoute(row.id),
-      danger: true,
-    },
-  ];
-
-  const eventRowActions = [
-    {
-      label: "View Details",
-      icon: "👁️",
-      onClick: (row: any) => viewEventDialog.open(row.id),
-    },
-    {
-      label: "Edit Event",
-      icon: "✏️",
-      onClick: (row: any) => addEventDialog.open(row),
-    },
-    {
-      label: "Delete Event",
-      icon: "🗑️",
-      onClick: (row: any) => handleDeleteEvent(row.id),
-      danger: true,
-    },
-  ];
-
-  const reviewRowActions = [
-    {
-      label: "View Details",
-      icon: "👁️",
-      onClick: (row: any) => viewReviewDialog.open(row.id),
-    },
-    {
-      label: "Moderate / Edit",
-      icon: "✏️",
-      onClick: (row: any) => addReviewDialog.open(row),
-    },
-    {
-      label: "Delete Review",
-      icon: "🗑️",
-      onClick: (row: any) => handleDeleteReview(row.id),
-      danger: true,
-    },
-  ];
-
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Sub-KPI Row for Outdoor Management */}
@@ -722,7 +662,6 @@ const OutdoorTab = () => {
             <DataTable
               columns={routeColumns}
               data={routesData?.routes || []}
-              rowActions={routeRowActions}
               isLoading={routesLoading}
               pagination={true}
               urlPersistence={{
@@ -772,7 +711,6 @@ const OutdoorTab = () => {
             <DataTable
               columns={eventColumns}
               data={eventsData?.events || []}
-              rowActions={eventRowActions}
               isLoading={eventsLoading}
               pagination={true}
               urlPersistence={{
@@ -823,7 +761,6 @@ const OutdoorTab = () => {
             <DataTable
               columns={reviewColumns}
               data={reviewsData?.reviews || []}
-              rowActions={reviewRowActions}
               isLoading={reviewsLoading}
               pagination={true}
               urlPersistence={{

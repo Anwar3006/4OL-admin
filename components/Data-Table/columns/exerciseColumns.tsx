@@ -1,13 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Dumbbell, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useAddExerciseDialog,
   useViewExerciseDialog,
 } from "@/stores/dialog-store";
 import { useDeleteExercise } from "@/hooks/supabase-calls/useExercise";
+import { Badge } from "@/components/ui/badge";
 
 export const exerciseColumns: ColumnDef<any>[] = [
   {
@@ -30,9 +30,9 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">
+      <Badge variant="blue" className="text-[8px]">
         {row.original.category}
-      </span>
+      </Badge>
     ),
   },
   {
@@ -66,7 +66,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <span
         className={cn(
-          "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+          "inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
           row.original.difficulty_level === "beginner"
             ? "bg-emerald-50 text-emerald-700 border-emerald-100"
             : row.original.difficulty_level === "intermediate"

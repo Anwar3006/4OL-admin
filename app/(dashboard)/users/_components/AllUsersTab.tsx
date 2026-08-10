@@ -7,10 +7,12 @@ import { useUsers } from "@/hooks/supabase-calls/useUser";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { User, Mail, Phone } from "lucide-react";
+import { useViewUserDialog } from "@/stores/dialog-store";
 
 export default function AllUsersTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "users_page" });
   const { data, isLoading } = useUsers({ admin: false, page, limit: pageSize });
+  const viewDialog = useViewUserDialog();
 
   const users = data?.users || [];
   const totalItems = data?.meta?.total ?? 0;
@@ -42,7 +44,7 @@ export default function AllUsersTab() {
       }
     ],
     actions: [
-      { label: "View User", onClick: (data) => console.log('View', data.user_id) },
+      { label: "View User", onClick: (data) => viewDialog.open(data.user_id) },
       { label: "Edit User", onClick: (data) => console.log('Edit', data.user_id) },
     ]
   };
@@ -67,7 +69,7 @@ export default function AllUsersTab() {
           columns={userColumns}
           data={users}
           isLoading={isLoading}
-          onRowClick={(row) => console.log('Row Click', row.user_id)}
+          onRowClick={(row) => viewDialog.open(row.user_id)}
           onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
           cardConfig={cardConfig}
           pagination={{

@@ -116,6 +116,30 @@ export const useTopRatedItems = ({
   });
 };
 
+/**
+ * Checks whether a specific entity (module + item_id) is currently
+ * curated as a top-rated item. Used to drive the toggle switch shown
+ * in each entity's view dialog.
+ */
+export const useIsTopRated = (module: string, itemId?: string | null) => {
+  return useQuery<TTopRatedItemOutput | null, Error>({
+    queryKey: [...TOP_RATED_QUERY_KEYS.all, "is-top-rated", module, itemId],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase
+        .from("top_rated_items")
+        .select("*")
+        .eq("module", module)
+        .eq("item_id", itemId as string)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data ? mapTopRatedRow(data as TopRatedItemRow) : null;
+    },
+    enabled: !!module && !!itemId,
+  });
+};
+
 // =============== Mutation Hooks ============
 
 export const useUpsertTopRatedItem = () => {

@@ -8,6 +8,7 @@ import UsersStats from "./_components/UsersStats";
 import AllUsersTab from "./_components/AllUsersTab";
 import FlaggedUsersTab from "./_components/FlaggedUsersTab";
 import DeleteRequestsTab from "./_components/DeleteRequestsTab";
+import ViewUserDialog from "./_components/view-user-dialog";
 import { cn } from "@/lib/utils";
 
 const UserTabs = [
@@ -79,6 +80,8 @@ const UsersPage = () => {
           <TabsContent value="delete-requests"><DeleteRequestsTab /></TabsContent>
         </div>
       </Tabs>
+
+      <ViewUserDialog />
     </div>
   );
 };
