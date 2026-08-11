@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { supabase } from "@/app/utils/supabaseClient";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -191,9 +192,11 @@ export default function DeleteAccountPage() {
         <div className="flex justify-center gap-2 md:justify-start items-end mb-3 ">
           <div className="flex items-center gap-2">
             <div className="p-1 text-primary-foreground flex size-full items-center justify-center rounded-xl shadow-sm border border-muted">
-              <img
+              <Image
                 src="/assets/images/all-img/logo.png"
                 alt="Logo"
+                width={40}
+                height={40}
                 className="w-10 rounded-md"
               />
             </div>

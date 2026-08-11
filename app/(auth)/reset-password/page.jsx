@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -65,13 +66,15 @@ const ResetPassword = () => {
             <div className="auth-box h-full flex flex-col justify-center">
               <div className="mobile-logo text-center mb-6 lg:hidden block w-10 mx-auto">
                 <Link href="/">
-                  <img
+                  <Image
                     src={
                       isDark
                         ? "assets/images/all-img/logo-green.png"
                         : "/assets/images/all-img/logo-green.png"
                     }
                     alt=""
+                    width={160}
+                    height={64}
                     className="mx-auto"
                   />
                 </Link>

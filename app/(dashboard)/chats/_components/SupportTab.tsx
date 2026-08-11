@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import React, { useCallback, useMemo, useState } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useChats, useDeleteChat } from "@/hooks/supabase-calls/useChat";
 import { useAddTicketDialog } from "@/stores/dialog-store";
 import { TChatOutput } from "@/schemas/chat.schema";
@@ -47,15 +48,21 @@ export default function SupportTab() {
     return true;
   });
 
-  const handleView = (row: TChatOutput) => addTicket.open(row);
+  const handleView = useCallback(
+    (row: TChatOutput) => addTicket.open(row),
+    [addTicket],
+  );
 
-  const handleToggleStatus = (row: TChatOutput) =>
+  const handleToggleStatus = useCallback(
+    (row: TChatOutput) =>
     addTicket.open({
       ...row,
       status: row.status === "Open" ? "Closed" : "Open",
-    });
+    }),
+    [addTicket],
+  );
 
-  const handleDelete = (row: TChatOutput) => {
+  const handleDelete = useCallback((row: TChatOutput) => {
     if (
       globalThis.confirm(
         `Delete ticket #${row.id} (${row.subject || "no subject"})? This cannot be undone.`,
@@ -63,88 +70,95 @@ export default function SupportTab() {
     ) {
       deleteTicket(row.id);
     }
-  };
+  }, [deleteTicket]);
 
-  const columns: Column<TChatOutput>[] = [
+  const totalPages = data?.meta?.totalPages || 1;
+  const totalItems = data?.meta?.total || 0;
+
+  const columns = useMemo<ColumnDef<TChatOutput>[]>(
+    () => [
     {
-      key: "subject",
-      label: "Ticket",
-      render: (val, row) => (
+      accessorKey: "subject",
+      header: "Ticket",
+      cell: ({ row }) => (
         <div>
-          <div className="font-bold text-slate-800">{val || "No subject"}</div>
-          <div className="text-[10px] text-slate-400">#{row.id}</div>
+          <div className="font-bold text-slate-800">{row.original.subject || "No subject"}</div>
+          <div className="text-[10px] text-slate-400">#{row.original.id}</div>
         </div>
       ),
     },
     {
-      key: "user_profiles",
-      label: "Requested By",
-      render: (val: TChatOutput["user_profiles"]) => (
-        <div className="text-[11px]">
-          <div className="font-bold text-slate-700">
-            {val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown"}
+      accessorKey: "user_profiles",
+      header: "Requested By",
+      cell: ({ row }) => {
+        const val = row.original.user_profiles;
+        return (
+          <div className="text-[11px]">
+            <div className="font-bold text-slate-700">
+              {val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown"}
+            </div>
+            <div className="text-slate-400">{val?.phone_number || "—"}</div>
           </div>
-          <div className="text-slate-400">{val?.phone_number || "—"}</div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      key: "message",
-      label: "Message",
-      render: (val) => (
+      accessorKey: "message",
+      header: "Message",
+      cell: ({ row }) => (
         <div className="text-[11px] text-slate-500 max-w-[220px] truncate">
-          {val || "—"}
+          {row.original.message || "—"}
         </div>
       ),
     },
     {
-      key: "priority",
-      label: "Priority",
-      render: (val) => (
-        <span className={`badge ${PRIORITY_BADGE[val] || "badge-gray"}`}>
-          {val}
+      accessorKey: "priority",
+      header: "Priority",
+      cell: ({ row }) => (
+        <span className={`badge ${PRIORITY_BADGE[row.original.priority] || "badge-gray"}`}>
+          {row.original.priority}
         </span>
       ),
     },
     {
-      key: "status",
-      label: "Status",
-      render: (val) => (
-        <span className={`badge ${STATUS_BADGE[val] || "badge-gray"}`}>
-          {val}
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <span className={`badge ${STATUS_BADGE[row.original.status] || "badge-gray"}`}>
+          {row.original.status}
         </span>
       ),
     },
     {
-      key: "created_at",
-      label: "Created",
-      render: (val) => (
+      accessorKey: "created_at",
+      header: "Created",
+      cell: ({ row }) => (
         <span className="text-[10px] text-slate-400">
-          {val ? new Date(val).toLocaleDateString() : "—"}
+          {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : "—"}
         </span>
       ),
     },
     {
-      key: "actions" as any,
-      label: "Actions",
-      render: (_, row) => (
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={() => handleView(row)}
+            onClick={() => handleView(row.original)}
             className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-ek-green/10 hover:text-ek-green-dark transition-colors cursor-pointer bg-transparent border-0 text-sm"
             title="View / Edit"
           >
             👁️
           </button>
           <button
-            onClick={() => handleToggleStatus(row)}
+            onClick={() => handleToggleStatus(row.original)}
             className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
-            title={row.status === "Open" ? "Mark Closed" : "Reopen"}
+            title={row.original.status === "Open" ? "Mark Closed" : "Reopen"}
           >
-            {row.status === "Open" ? "✅" : "🔄"}
+            {row.original.status === "Open" ? "✅" : "🔄"}
           </button>
           <button
-            onClick={() => handleDelete(row)}
+            onClick={() => handleDelete(row.original)}
             className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
             title="Delete"
           >
@@ -153,10 +167,12 @@ export default function SupportTab() {
         </div>
       ),
     },
-  ];
+    ],
+    [handleDelete, handleToggleStatus, handleView],
+  );
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
           className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
@@ -190,9 +206,17 @@ export default function SupportTab() {
           columns={columns}
           data={filteredTickets}
           isLoading={isLoading || isFetching}
-          externalTotalPages={data?.meta.totalPages}
-          externalPage={page}
-          onPageChange={setPage}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            pageSize: 10,
+            onPageChange: setPage,
+            onNextPage: () => setPage((p) => p + 1),
+            onPreviousPage: () => setPage((p) => Math.max(1, p - 1)),
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
         />
       </div>
 

@@ -25,7 +25,7 @@ const headers = ["Module / Permission", "SA", "Adm Mgr", "Content", "Fac Mgr", "
 
 export default function RolesPermissionsTab() {
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {roles.map((role, i) => (
           <div key={i} className={cn("card border shadow-sm", role.border, role.bg)}>

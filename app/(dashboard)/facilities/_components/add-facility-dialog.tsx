@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -910,9 +911,12 @@ const AddFacilityDialog = () => {
                                 loop
                               />
                             ) : (
-                              <img
+                              <Image
                                 src={img.url}
                                 alt="Gallery item"
+                                fill
+                                sizes="(min-width: 768px) 33vw, 100vw"
+                                unoptimized
                                 className="object-cover w-full h-full"
                               />
                             )}

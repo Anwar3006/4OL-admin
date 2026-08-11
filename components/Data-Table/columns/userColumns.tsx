@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Mail,
@@ -23,9 +24,12 @@ export const userColumns: ColumnDef<any>[] = [
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200">
           {row.original.avatar_url ? (
-            <img
+            <Image
               src={row.original.avatar_url}
               alt=""
+              width={32}
+              height={32}
+              unoptimized
               className="w-full h-full object-cover"
             />
           ) : (
@@ -114,7 +118,7 @@ export const userColumns: ColumnDef<any>[] = [
 
       return (
         <div className="flex items-center justify-end gap-2">
-          <button
+          <button aria-label="View Details"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -123,7 +127,7 @@ export const userColumns: ColumnDef<any>[] = [
           >
             👁️
           </button>
-          <button
+          <button aria-label="Edit"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -132,7 +136,7 @@ export const userColumns: ColumnDef<any>[] = [
           >
             ✏️
           </button>
-          <button
+          <button aria-label="Delete"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();

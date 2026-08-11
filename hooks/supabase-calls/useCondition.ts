@@ -101,7 +101,7 @@ export const useConditions = ({
           },
         };
       } catch (error) {
-        console.error("Error fetching conditions: ", error);
+        throw error;
       }
     },
     enabled: enabled,

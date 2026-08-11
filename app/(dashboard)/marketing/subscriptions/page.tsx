@@ -6,6 +6,17 @@ import { PlusSquare, Search } from "lucide-react";
 import React, { useState, useCallback, useMemo } from "react";
 import { createPaginationHandlers } from "@/lib/utils";
 import { DataTable } from "@/components/Data-Table/data-table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   useAddSubscriptionDialog,
@@ -29,7 +40,7 @@ const SubscriptionsPage = () => {
   const limit = 10;
   const viewSubscription = useViewSubscriptionDialog();
   const addSubscriptions = useAddSubscriptionDialog();
-  const { data, isLoading } = useMarketingSubscriptions({
+  const { data, isLoading, isError, error } = useMarketingSubscriptions({
     page,
     limit,
     search: searchTerm || undefined,
@@ -49,11 +60,7 @@ const SubscriptionsPage = () => {
 
   const handleDelete = useCallback(
     (id: string) => {
-      if (
-        window.confirm("Are you sure you want to delete this subscription?")
-      ) {
-        deleteSubscription(id);
-      }
+      deleteSubscription(id);
     },
     [deleteSubscription],
   );
@@ -101,15 +108,35 @@ const SubscriptionsPage = () => {
               >
                 ✏️
               </button>
-              <button
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(subscription.id);
-                }}
-              >
-                🗑️
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    🗑️
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this subscription?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(subscription.id);
+                      }}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         },
@@ -213,6 +240,8 @@ const SubscriptionsPage = () => {
               onRowClick={onRowClick}
               pagination={paginationConfig}
               isLoading={isLoading}
+              isError={isError}
+              error={error}
             />
           </>
         )}

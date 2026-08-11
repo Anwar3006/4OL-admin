@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import React, { useState, useCallback, useMemo } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   useAdminConversations,
   useDeleteConversation,
 } from "@/hooks/supabase-calls/useConversation";
 import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export interface GroupRow {
   id: string;
@@ -61,116 +73,135 @@ export default function GroupsTab() {
     [],
   );
 
-  const handleView = (row: GroupRow) => {
+  const handleView = useCallback((row: GroupRow) => {
     viewGroupDialog.open(row.id, row);
-  };
+  }, [viewGroupDialog]);
 
-  const handleEdit = (row: GroupRow) => {
+  const handleEdit = useCallback((row: GroupRow) => {
     addGroupDialog.open(row);
-  };
+  }, [addGroupDialog]);
 
-  const handleDelete = (row: GroupRow) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete "${row.name || "this group"}"?`,
-      )
-    ) {
-      deleteMutation.mutate(row.id);
-    }
-  };
+  const handleDelete = useCallback((row: GroupRow) => {
+    deleteMutation.mutate(row.id);
+  }, [deleteMutation]);
 
-  const creatorName = (row: GroupRow) =>
+  const creatorName = useCallback((row: GroupRow) =>
     row.user_profiles
       ? `${row.user_profiles.first_name || ""} ${row.user_profiles.last_name || ""}`.trim()
-      : "—";
+      : "—", []);
 
-  const columns: Column<GroupRow>[] = [
+  const columns = useMemo<ColumnDef<GroupRow>[]>(
+    () => [
     {
-      key: "name",
-      label: "Group Name",
-      render: (val, row) => (
+      accessorKey: "name",
+      header: "Group Name",
+      cell: ({ row }) => (
         <div>
-          <div className="font-bold text-slate-800">{val}</div>
+          <div className="font-bold text-slate-800">{row.original.name}</div>
           <div className="text-[10px] text-slate-400 line-clamp-1">
-            {row.description || "No description"}
+            {row.original.description || "No description"}
           </div>
         </div>
       ),
     },
     {
-      key: "member_count",
-      label: "Members",
-      render: (val) => <span className="font-black">{val}</span>,
+      accessorKey: "member_count",
+      header: "Members",
+      cell: ({ row }) => <span className="font-black">{row.original.member_count}</span>,
     },
     {
-      key: "user_profiles",
-      label: "Group Admin / Creator",
-      render: (_, row) => (
+      accessorKey: "user_profiles",
+      header: "Group Admin / Creator",
+      cell: ({ row }) => (
         <div className="text-[11px] font-bold text-slate-700">
-          {creatorName(row)}
+          {creatorName(row.original)}
         </div>
       ),
     },
     {
-      key: "last_message",
-      label: "Last Message",
-      render: (val) => (
-        <div className="max-w-[180px]">
-          <span className="text-[10px] text-slate-500 line-clamp-1">
-            {val?.content || "—"}
-          </span>
-          {val?.sender && (
-            <span className="text-[9px] text-slate-400 block">
-              by{" "}
-              {`${val.sender.first_name || ""} ${val.sender.last_name || ""}`.trim() ||
-                "Unknown"}
+      accessorKey: "last_message",
+      header: "Last Message",
+      cell: ({ row }) => {
+        const val = row.original.last_message;
+        return (
+          <div className="max-w-[180px]">
+            <span className="text-[10px] text-slate-500 line-clamp-1">
+              {val?.content || "—"}
             </span>
-          )}
-        </div>
-      ),
+            {val?.sender && (
+              <span className="text-[9px] text-slate-400 block">
+                by{" "}
+                {`${val.sender.first_name || ""} ${val.sender.last_name || ""}`.trim() || "Unknown"}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
-      key: "created_at",
-      label: "Created",
-      render: (val) => (
+      accessorKey: "created_at",
+      header: "Created",
+      cell: ({ row }) => (
         <span className="text-[10px] text-slate-400">
-          {val ? new Date(val).toLocaleDateString() : "—"}
+          {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : "—"}
         </span>
       ),
     },
     {
-      key: "actions" as any,
-      label: "Actions",
-      render: (_, row) => (
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <button
-            onClick={() => handleView(row)}
+            onClick={() => handleView(row.original)}
             className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-ek-green/10 hover:text-ek-green-dark transition-colors cursor-pointer bg-transparent border-0 text-sm"
             title="View"
+            aria-label="View Group"
           >
             👁️
           </button>
           <button
-            onClick={() => handleEdit(row)}
+            onClick={() => handleEdit(row.original)}
             className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
             title="Edit"
+            aria-label="Edit Group"
           >
             ✏️
           </button>
-          <button
-            onClick={() => handleDelete(row)}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
-            title="Delete"
-          >
-            🗑️
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
+                title="Delete"
+                aria-label="Delete Group"
+              >
+                🗑️
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{row.original.name || "this group"}"?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDelete(row.original)}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       ),
     },
-  ];
+    ],
+    [creatorName, handleDelete, handleEdit, handleView],
+  );
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       {/* <div className="alert bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg flex items-center gap-3">
         <span className="text-base">🔍</span>
         <div className="flex-1 text-[11px] font-medium">
@@ -217,13 +248,18 @@ export default function GroupsTab() {
         <DataTable
           columns={columns}
           data={groups}
-          selectable
-          pagination
-          itemsPerPage={10}
-          externalTotalPages={totalPages}
-          externalPage={page}
-          onPageChange={setPage}
           isLoading={isLoading}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: groups.length,
+            pageSize: 10,
+            onPageChange: setPage,
+            onNextPage: () => setPage((p) => p + 1),
+            onPreviousPage: () => setPage((p) => Math.max(1, p - 1)),
+            canNextPage: page < totalPages,
+            canPreviousPage: page > 1,
+          }}
         />
       </div>
     </div>

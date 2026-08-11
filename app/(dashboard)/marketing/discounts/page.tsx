@@ -28,7 +28,7 @@ const DiscountsPage = () => {
 
   const viewDiscount = useViewDiscountDialog();
   const addDiscount = useAddDiscountDialog();
-  const { data, isLoading } = useMarketingDiscounts({
+  const { data, isLoading, isError, error } = useMarketingDiscounts({
     page,
     limit,
     search: searchTerm || undefined,
@@ -186,6 +186,8 @@ const DiscountsPage = () => {
               onRowClick={onRowClick}
               pagination={paginationConfig}
               isLoading={isLoading}
+              isError={isError}
+              error={error}
             />
           </>
         )}

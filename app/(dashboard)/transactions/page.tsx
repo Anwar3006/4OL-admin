@@ -87,13 +87,13 @@ const TransactionsPage = () => {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="recent"><RecentTransactionsTab /></TabsContent>
-          <TabsContent value="service-charge"><ServiceChargeTab /></TabsContent>
-          <TabsContent value="subscriptions"><SubscriptionsTab /></TabsContent>
-          <TabsContent value="failed"><FailedTransactionsTab /></TabsContent>
-          <TabsContent value="refunds"><RefundsTab /></TabsContent>
-          <TabsContent value="tax-vat"><TaxVATTab /></TabsContent>
-          <TabsContent value="expenses"><ExpensesTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="recent"><RecentTransactionsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="service-charge"><ServiceChargeTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="subscriptions"><SubscriptionsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="failed"><FailedTransactionsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="refunds"><RefundsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="tax-vat"><TaxVATTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="expenses"><ExpensesTab /></TabsContent>
         </div>
       </Tabs>
     </div>

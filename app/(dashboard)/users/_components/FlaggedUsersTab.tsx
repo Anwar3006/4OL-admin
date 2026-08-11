@@ -1,5 +1,6 @@
-import React from "react";
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
+import React, { useMemo } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Ban } from "lucide-react";
 
 export interface FlaggedUserRow {
@@ -23,30 +24,44 @@ const flaggedUsers: FlaggedUserRow[] = [
 ];
 
 export default function FlaggedUsersTab() {
-  const columns: Column<FlaggedUserRow>[] = [
+  const columns = useMemo<ColumnDef<FlaggedUserRow>[]>(
+    () => [
     {
-      key: "user",
-      label: "User",
-      render: (_, row) => (
+      id: "user",
+      header: "User",
+      cell: ({ row }) => (
         <div>
-          <div className="font-bold text-slate-800">{row.name}</div>
-          <div className="text-[10px] text-slate-400">{row.id}</div>
+          <div className="font-bold text-slate-800">{row.original.name}</div>
+          <div className="text-[10px] text-slate-400">{row.original.id}</div>
         </div>
-      )
+      ),
     },
-    { key: "reason", label: "Flag Reason", render: (val) => <span className="text-red-500 text-xs">{val}</span> },
-    { key: "flaggedBy", label: "Flagged By" },
-    { key: "dateFlagged", label: "Date Flagged" },
-    { key: "reports", label: "Reports", render: (val) => <span className="font-bold text-red-500">{val}</span> },
-  ];
+    {
+      accessorKey: "reason",
+      header: "Flag Reason",
+      cell: ({ row }) => <span className="text-red-500 text-xs">{row.original.reason}</span>,
+    },
+    { accessorKey: "flaggedBy", header: "Flagged By" },
+    { accessorKey: "dateFlagged", header: "Date Flagged" },
+    {
+      accessorKey: "reports",
+      header: "Reports",
+      cell: ({ row }) => <span className="font-bold text-red-500">{row.original.reports}</span>,
+    },
+    ],
+    [],
+  );
 
-  const rowActions: RowAction<FlaggedUserRow>[] = [
-    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: (row) => console.log('View', row.id) },
-    { label: "Clear Flag", icon: <Ban className="w-4 h-4" />, onClick: (row) => console.log('Clear Flag', row.id) },
-  ];
+  const rowActions = useMemo(
+    () => [
+    { label: "View", icon: <Eye className="w-4 h-4" />, onClick: (row: FlaggedUserRow) => console.log('View', row.id) },
+    { label: "Clear Flag", icon: <Ban className="w-4 h-4" />, onClick: (row: FlaggedUserRow) => console.log('Clear Flag', row.id) },
+    ],
+    [],
+  );
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <div className="alert bg-red-50 border border-red-200 text-xs p-3 rounded-lg flex items-start gap-2">
         <span className="text-lg">⚠️</span>
         <div className="flex-1">
@@ -54,7 +69,7 @@ export default function FlaggedUsersTab() {
         </div>
       </div>
       <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={flaggedUsers} selectable rowActions={rowActions} />
+        <DataTable columns={columns} data={flaggedUsers} rowActions={rowActions} />
       </div>
     </div>
   );

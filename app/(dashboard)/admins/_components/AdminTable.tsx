@@ -1,15 +1,19 @@
-import React from "react";
-import DataTable from "@/components/redesign/DataTable";
+import React, { useMemo } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 // Assuming we need a basic implementation that mirrors the table from the HTML
 export default function AdminTable() {
-  const columns = [
-    { key: "admin", label: "Admin" },
-    { key: "role", label: "Role" },
-    { key: "mfa", label: "MFA" },
-    { key: "ip", label: "IP Address" },
-    { key: "status", label: "Status" },
-  ];
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+    { accessorKey: "admin", header: "Admin" },
+    { accessorKey: "role", header: "Role" },
+    { accessorKey: "mfa", header: "MFA" },
+    { accessorKey: "ip", header: "IP Address" },
+    { accessorKey: "status", header: "Status" },
+    ],
+    [],
+  );
   
   // This is a placeholder as actual data fetching needs to be implemented
   const data = [
@@ -19,7 +23,7 @@ export default function AdminTable() {
 
   return (
     <div className="card p-0 overflow-hidden">
-      <DataTable columns={columns} data={data} selectable />
+      <DataTable columns={columns} data={data} />
     </div>
   );
 }

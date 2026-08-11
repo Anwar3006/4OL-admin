@@ -1,8 +1,9 @@
 "use client";
 import { supabase } from "@/app/utils/supabaseClient";
 import Loading from "@/components/Loading";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Icon } from "@iconify/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -45,12 +46,13 @@ const Notifications = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
         <h1 className="text-xl font-bold">Notification Details</h1>
         <Button
-          icon="heroicons-outline:arrow-left"
-          text="Back"
-          className="btn-dark text-sm sm:text-base font-normal btn-sm sm:mr-3"
-          iconClass="text-lg"
+          className="text-sm sm:text-base font-normal sm:mr-3 px-3 h-8"
+          variant="default"
           onClick={() => router.back()}
-        />
+        >
+          <Icon icon="heroicons-outline:arrow-left" className="text-lg mr-2" />
+          Back
+        </Button>
       </div>
 
       {data && (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo, useState, useEffect } from "react";
+import React, { memo, useMemo, useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -19,11 +19,13 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  AlertCircle,
   Loader2,
   Trash2,
   MoreHorizontal,
@@ -58,6 +60,8 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   pagination?: PaginationProps | boolean;
   isLoading?: boolean;
+  isError?: boolean;
+  error?: Error | null;
   cardConfig?: MobileCardConfig<TData>;
   onRowClick?: (row: TData) => void;
   onDeleteSelected?: (selectedRows: TData[]) => void;
@@ -84,6 +88,8 @@ const DataTableComponent = <TData, TValue>({
   data,
   pagination,
   isLoading = false,
+  isError = false,
+  error: tableError = null,
   cardConfig,
   onRowClick,
   onDeleteSelected,
@@ -263,18 +269,33 @@ const DataTableComponent = <TData, TValue>({
               Updating...
             </div>
           )}
+          {isError && (
+            <div className="flex w-full items-center justify-center py-6 text-sm text-red-500">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              {(tableError as any)?.message || "Something went wrong"}
+            </div>
+          )}
           <div className="space-y-3">
             {cardConfig ? (
-              table
-                .getRowModel()
-                .rows.map((row) => (
-                  <MobileCard
-                    key={row.id}
-                    data={row.original}
-                    config={cardConfig}
-                    onClick={() => handleRowClick(row.original)}
-                  />
-                ))
+              table.getRowModel().rows.length > 0 ? (
+                table
+                  .getRowModel()
+                  .rows.map((row) => (
+                    <MobileCard
+                      key={row.id}
+                      data={row.original}
+                      config={cardConfig}
+                      onClick={() => handleRowClick(row.original)}
+                    />
+                  ))
+              ) : !isLoading ? (
+                <div className="flex flex-col items-center gap-2 py-16">
+                  <span className="text-2xl opacity-50">📂</span>
+                  <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
+                    No records found
+                  </span>
+                </div>
+              ) : null
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No card configuration provided for mobile view
@@ -298,12 +319,13 @@ const DataTableComponent = <TData, TValue>({
             )}
           />
 
-          {/* Loading overlay */}
-          {isLoading && (
+          {isError && (
             <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-20 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Loading...</span>
+              <div className="flex items-center gap-2 text-sm text-red-500">
+                <AlertCircle className="h-5 w-5" />
+                <span>
+                  {(tableError as any)?.message || "Something went wrong"}
+                </span>
               </div>
             </div>
           )}
@@ -339,7 +361,22 @@ const DataTableComponent = <TData, TValue>({
                 ))}
               </TableHeader>
               <TableBody className="bg-slate-100">
-                {table.getRowModel().rows.length > 0 ? (
+                {isLoading && (!data || data.length === 0) ? (
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <TableRow key={`skeleton-${idx}`} className="hover:bg-transparent">
+                      {finalColumns.map((col: any, colIdx: number) => (
+                        <TableCell key={`skeleton-cell-${idx}-${colIdx}`} className="px-6 py-4">
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                      {rowActions.length > 0 && (
+                        <TableCell className="px-6 py-4">
+                          <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows.length > 0 ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
@@ -365,16 +402,21 @@ const DataTableComponent = <TData, TValue>({
                       )}
                     </TableRow>
                   ))
-                ) : (
-                  <TableRow>
+                ) : !isLoading ? (
+                  <TableRow className="hover:bg-transparent">
                     <TableCell
-                      colSpan={finalColumns.length}
-                      className="h-24 text-center text-slate-400"
+                      colSpan={finalColumns.length + (rowActions.length > 0 ? 1 : 0)}
+                      className="h-40 text-center"
                     >
-                      No results found.
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-2xl opacity-50">📂</span>
+                        <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
+                          No records found
+                        </span>
+                      </div>
                     </TableCell>
                   </TableRow>
-                )}
+                ) : null}
               </TableBody>
             </Table>
           </div>

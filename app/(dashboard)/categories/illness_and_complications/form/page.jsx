@@ -1,12 +1,8 @@
-"use client";
-
 import React from "react";
-import useDarkmode from "@/hooks/useDarkMode";
-import Card from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import Illness_and_complication_form from "@/components/redesign/auth/Categories/illness_and_complication_form";
 
 export default function page() {
-  const [isDark] = useDarkmode();
   return (
     <>
       <Card

@@ -60,16 +60,16 @@ export default function MedEnquiryPage() {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <AllEnquiriesTab />
           </TabsContent>
-          <TabsContent value="pending">
+          <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <PendingEnquiriesTab />
           </TabsContent>
-          <TabsContent value="escrow">
+          <TabsContent className="w-full min-w-0 outline-none" value="escrow">
             <EscrowTab />
           </TabsContent>
-          <TabsContent value="delivery">
+          <TabsContent className="w-full min-w-0 outline-none" value="delivery">
             <DeliveryTab />
           </TabsContent>
         </div>

@@ -71,13 +71,13 @@ const ReviewsPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <ReviewsDataTab />
           </TabsContent>
-          <TabsContent value="flagged">
+          <TabsContent className="w-full min-w-0 outline-none" value="flagged">
             <ReviewsDataTab status="rejected" />
           </TabsContent>
-          <TabsContent value="pending">
+          <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <ReviewsDataTab status="pending" />
           </TabsContent>
         </div>

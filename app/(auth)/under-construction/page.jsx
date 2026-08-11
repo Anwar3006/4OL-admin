@@ -1,7 +1,8 @@
 "use client";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/Icon";
 import Link from "next/link";
+import Image from "next/image";
 import useDarkMode from "@/hooks/useDarkMode";
 
 const UnderConstructionPage = () => {
@@ -12,24 +13,26 @@ const UnderConstructionPage = () => {
         <div className="flex flex-wrap justify-between items-center py-6 container">
           <div>
             <Link href="/">
-              <img
+              <Image
                 src={
                   isDark
                     ? "/assets/images/logo/logo-white.svg"
                     : "/assets/images/logo/logo.svg"
                 }
                 alt=""
+                width={160}
+                height={64}
               />
             </Link>
           </div>
           <div>
-            <Button text="Contact us" className=" btn-outline-dark btn-sm" />
+            <Button variant="outline" className="btn-sm">Contact us</Button>
           </div>
         </div>
       </div>
       <div className="container">
         <div className="flex justify-center flex-wrap items-center min-h-screen flex-col text-center">
-          <img src="/assets/images/svg/img-2.svg" alt="" />
+          <Image src="/assets/images/svg/img-2.svg" alt="" width={520} height={360} />
           <h4 className="text-3xl font-medium text-slate-900 dark:text-white mb-2">
             We are under maintenance.
           </h4>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,6 @@ import {
 } from "@/stores/dialog-store";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
-import { LexicalRenderer } from "@/components/LexicalRenderer";
 import {
   useCondition,
   useDeleteCondition,
@@ -40,6 +40,12 @@ import {
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+
+const LexicalRenderer = dynamic(
+  () =>
+    import("@/components/LexicalRenderer").then((mod) => mod.LexicalRenderer),
+  { ssr: false },
+);
 
 /* ───────────────────────────────────────────────────────────
    Types

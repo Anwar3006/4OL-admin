@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import React, { useState } from "react";
+import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -185,9 +186,11 @@ export function ViewMarketingDialog() {
                 <Card className="overflow-hidden border-none bg-muted/30 shadow-none">
                   {campaign.imageUrl ? (
                     <div className="relative aspect-video w-full bg-black/5">
-                      <img
+                      <Image
                         src={getImageUrl(campaign.imageUrl)}
                         alt={campaign.headline}
+                        fill
+                        sizes="(min-width: 768px) 520px, 90vw"
                         className="w-full h-full object-cover"
                       />
                     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
@@ -23,7 +24,7 @@ const UsersTab = () => {
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("fit_user_page") || "1", 10);
 
-  const { data, isLoading } = useUsers({
+  const { data, isLoading, isError, error } = useUsers({
     page,
     limit,
     search: debouncedSearch,
@@ -31,7 +32,8 @@ const UsersTab = () => {
     userType: "user",
   });
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "user",
       header: "User Profile",
@@ -39,9 +41,12 @@ const UsersTab = () => {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden">
             {row.original.image ? (
-              <img
+              <Image
                 src={row.original.image}
                 alt=""
+                width={32}
+                height={32}
+                unoptimized
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -146,7 +151,9 @@ const UsersTab = () => {
         );
       },
     },
-  ];
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -182,6 +189,8 @@ const UsersTab = () => {
           columns={columns}
           data={data?.users || []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           pagination={true}
           urlPersistence={{
             pageKey: "fit_user_page",

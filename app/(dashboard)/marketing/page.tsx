@@ -80,11 +80,11 @@ const MarketingPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all"><AllCampaignsTab /></TabsContent>
-          <TabsContent value="subscriptions"><SubscriptionsTab /></TabsContent>
-          <TabsContent value="discounts"><DiscountsTab /></TabsContent>
-          <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
-          <TabsContent value="linkages"><LinkagesTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="all"><AllCampaignsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="subscriptions"><SubscriptionsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="discounts"><DiscountsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="analytics"><AnalyticsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="linkages"><LinkagesTab /></TabsContent>
         </div>
       </Tabs>
       <AddMarketingDialog />

@@ -90,11 +90,11 @@ const MedicationReminderPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="database">     <DrugDatabaseTab />    </TabsContent>
-          <TabsContent value="logged">       <LoggedRemindersTab /> </TabsContent>
-          <TabsContent value="adherence">    <AdherenceTab />       </TabsContent>
-          <TabsContent value="interactions"> <InteractionsTab />    </TabsContent>
-          <TabsContent value="ai">           <AICheckerTab />       </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="database">     <DrugDatabaseTab />    </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="logged">       <LoggedRemindersTab /> </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="adherence">    <AdherenceTab />       </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="interactions"> <InteractionsTab />    </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="ai">           <AICheckerTab />       </TabsContent>
         </div>
       </Tabs>
       <ViewMedicationReminderDialog />

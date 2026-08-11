@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import useDarkMode from "@/hooks/useDarkMode";
 
 const Loading = () => {
@@ -7,13 +8,15 @@ const Loading = () => {
   return (
     <div className="flex flex-col items-center justify-center app_height">
       <div className="mb-3">
-        <img
+        <Image
           src={
             isDark
               ? "/assets/images/all-img/logo.png"
               : "/assets/images/all-img/logo-green.png"
           }
           alt="Logo"
+          width={160}
+          height={64}
         />
       </div>
 

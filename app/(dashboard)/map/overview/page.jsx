@@ -1,8 +1,5 @@
-"use client";
-
 import React from "react";
-import Card from "@/components/ui/Card";
-import dynamic from "next/dynamic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Dynamically import the map to prevent SSR issues with window
 // const BasicMapRender = dynamic(

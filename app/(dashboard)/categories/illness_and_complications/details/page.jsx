@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getDiseaseById } from "@/app/services/diseases-service";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import Loading from "@/components/Loading";
 import { Icon } from "@iconify/react";
@@ -55,7 +56,7 @@ const IllnessAndComplicationDetails = () => {
         headerslot={
           <Button
             text="Back to Overview"
-            icon="heroicons-outline:arrow-left"
+           
             className="btn-dark btn-sm"
             onClick={() => router.push("/categories/illness_and_complications/overview")}
           />
@@ -65,9 +66,12 @@ const IllnessAndComplicationDetails = () => {
           {/* Image */}
           {disease.image_url && (
             <div className="flex justify-center">
-              <img
+              <Image
                 src={disease.image_url}
                 alt={disease.condition_name}
+                width={640}
+                height={360}
+                unoptimized
                 className="max-w-xl shadow-lg"
               />
             </div>
@@ -229,4 +233,3 @@ const IllnessAndComplicationDetails = () => {
 };
 
 export default IllnessAndComplicationDetails;
-

@@ -1,13 +1,16 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleMenuHidden } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useMenuHidden = () => {
-  const dispatch = useDispatch();
-  const menuHidden = useSelector((state) => state.layout.menuHidden);
+  const [menuHidden, setMenuHiddenState] = useState(
+    themeConfig.layout.menu.isHidden,
+  );
 
-  const setMenuHidden = (value) => {
-    dispatch(handleMenuHidden(value));
-  };
+  const setMenuHidden = useCallback((value) => {
+    setMenuHiddenState(value);
+  }, []);
 
   return [menuHidden, setMenuHidden];
 };

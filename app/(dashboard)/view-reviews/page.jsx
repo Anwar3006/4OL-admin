@@ -2,8 +2,9 @@
 
 import { supabase } from "@/app/utils/supabaseClient";
 import Loading from "@/components/Loading";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Icon } from "@iconify/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -50,23 +51,21 @@ const ViewReviews = () => {
     );
   }
   return (
-    <Card
-      className="min-h-[70vh] bg-white mt-5"
-      bodyClass="p-0"
-      title={"Reviews Details"}
-      headerslot={
-        <>
-          {" "}
+    <Card className="min-h-[70vh] bg-white mt-5">
+      <CardHeader className="flex flex-row justify-between items-center mb-4">
+        <CardTitle>Reviews Details</CardTitle>
+        <div>
           <Button
-            icon="heroicons-outline:arrow-left"
-            text="Back"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
+            className="max-sm:text-xs font-normal mr-3 max-sm:mt-2 px-3 h-8"
+            variant="default"
             onClick={() => router.back()}
-          />
-        </>
-      }
-    >
+          >
+            <Icon icon="heroicons-outline:arrow-left" className="text-lg mr-2" />
+            Back
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
       {reviewData && (
         <div className="sm:text-sm text-xs text-gray-600 lg:w-[50%] w-full">
           <div className="grid grid-cols-1 gap-2 capitalize  lg:p-6 p-4">
@@ -97,6 +96,7 @@ const ViewReviews = () => {
           </div>
         </div>
       )}
+      </CardContent>
     </Card>
   );
 };

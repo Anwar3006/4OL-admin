@@ -1,5 +1,27 @@
 "use client";
 import React from "react";
+import DOMPurify from "isomorphic-dompurify";
+
+// Tags/attributes this app's rich-text editor (Lexical) actually produces.
+// Keep this list tight — it's the allowlist that makes dangerouslySetInnerHTML
+// safe to use below.
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: [
+    "p", "br", "strong", "b", "em", "i", "u", "s", "strike",
+    "ul", "ol", "li", "a", "span", "h1", "h2", "h3", "h4", "h5", "h6",
+    "blockquote", "code", "pre", "hr", "table", "thead", "tbody", "tr", "td", "th",
+  ],
+  ALLOWED_ATTR: ["href", "target", "rel", "class"],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+};
+
+function sanitize(html, allowedTags) {
+  if (!html) return "";
+  const config = allowedTags
+    ? { ...SANITIZE_CONFIG, ALLOWED_TAGS: allowedTags }
+    : SANITIZE_CONFIG;
+  return DOMPurify.sanitize(html, config);
+}
 
 /**
  * HtmlRenderer - Safely renders HTML content from rich text editors
@@ -20,7 +42,7 @@ const HtmlRenderer = ({
   }
 
   // Clean and prepare HTML content
-  let content = htmlContent;
+  let content = sanitize(htmlContent);
 
   // If maxLength is specified, truncate the text content (not HTML)
   if (maxLength && typeof maxLength === 'number') {
@@ -229,14 +251,7 @@ export const SafeHtmlRenderer = ({
     return null;
   }
 
-  // Basic HTML sanitization (you might want to use a library like DOMPurify for production)
-  const sanitizeHtml = (html) => {
-    // This is a basic implementation - consider using DOMPurify for better security
-    const allowedTagsRegex = new RegExp(`<(?!\/?(?:${allowedTags.join('|')})\s*\/?>)[^>]+>`, 'gi');
-    return html.replace(allowedTagsRegex, '');
-  };
-
-  let content = sanitizeHtml(htmlContent);
+  let content = sanitize(htmlContent, allowedTags);
 
   // Truncate if needed
   if (maxLength) {

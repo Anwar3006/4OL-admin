@@ -94,11 +94,11 @@ const AdminsPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all"><AllAdminsTab /></TabsContent>
-          <TabsContent value="roles"><RolesPermissionsTab /></TabsContent>
-          <TabsContent value="logs"><ActivityLogsTab /></TabsContent>
-          <TabsContent value="security"><SecurityCenterTab /></TabsContent>
-          <TabsContent value="reports"><ReportsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="all"><AllAdminsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="roles"><RolesPermissionsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="logs"><ActivityLogsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="security"><SecurityCenterTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="reports"><ReportsTab /></TabsContent>
         </div>
       </Tabs>
       <AddAdminDialog />

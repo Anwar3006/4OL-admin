@@ -82,7 +82,7 @@ export const transactionColumns: ColumnDef<any>[] = [
     header: "",
     cell: ({ row }) => (
       <div className="flex items-center justify-end">
-        <Button
+        <Button aria-label="Action"
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"

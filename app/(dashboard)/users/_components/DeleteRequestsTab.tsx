@@ -9,7 +9,7 @@ import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
 export default function DeleteRequestsTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "user_delete_req_page" });
-  const { data, isLoading } = useDeleteAccountRequests({ page, limit: pageSize, status: 'pending' });
+  const { data, isLoading, isError, error } = useDeleteAccountRequests({ page, limit: pageSize, status: 'pending' });
 
   const requests = data?.requests || [];
   const totalItems = data?.meta?.total ?? 0;
@@ -34,7 +34,7 @@ export default function DeleteRequestsTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
         <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 text-xl">
           ⚠️
@@ -52,6 +52,8 @@ export default function DeleteRequestsTab() {
           columns={deleteAccountColumns}
           data={requests}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           onRowClick={(row) => console.log('Row Click', row.id)}
           cardConfig={cardConfig}
           pagination={{

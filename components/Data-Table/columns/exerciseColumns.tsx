@@ -155,7 +155,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
 
       return (
         <div className="flex items-center justify-end gap-2">
-          <button
+          <button aria-label="View Details"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -164,7 +164,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
           >
             👁️
           </button>
-          <button
+          <button aria-label="Edit"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -173,7 +173,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
           >
             ✏️
           </button>
-          <button
+          <button aria-label="Delete"
             className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             disabled={isDeleting}
             onClick={handleDelete}

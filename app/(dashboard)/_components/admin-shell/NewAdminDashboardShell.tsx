@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronRight,
@@ -219,9 +220,11 @@ export default function NewAdminDashboardShell({
                   className="hover:bg-transparent cursor-default text-sidebar-foreground"
                 >
                   <div className="flex size-fit items-center justify-center rounded-full bg-white/10">
-                    <img
+                    <Image
                       src="/assets/images/all-img/logo.png"
                       alt="4 Our Life"
+                      width={32}
+                      height={32}
                       className="w-8 h-8 object-contain rounded-full"
                     />
                   </div>

@@ -1,11 +1,15 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleRtl } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useRtl = () => {
-  const dispatch = useDispatch();
-  const isRtl = useSelector((state) => state.layout.isRTL);
+  const [isRtl, setIsRtl] = useState(themeConfig.layout.isRTL);
 
-  const setRtl = (val) => dispatch(handleRtl(val));
+  const setRtl = useCallback((value) => {
+    setIsRtl(value);
+    window.localStorage.setItem("direction", JSON.stringify(value));
+  }, []);
 
   return [isRtl, setRtl];
 };

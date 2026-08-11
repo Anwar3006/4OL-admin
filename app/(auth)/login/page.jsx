@@ -2,6 +2,7 @@
 
 import LoginForm from "../_components/LoginForm";
 import Link from "next/link";
+import Image from "next/image";
 import Lottie from "lottie-react";
 import medical_care from "@/public/assets/lottie/medical-care.json";
 import { Heart, Shield, Stethoscope } from "lucide-react";
@@ -21,9 +22,11 @@ const LoginPage = () => {
         <div className="relative z-10 flex items-center gap-3 2xl:gap-4">
           <Link href="/login" className="flex items-center gap-3 2xl:gap-4 transition-opacity hover:opacity-80">
             <div className="flex items-center justify-center p-1.5 2xl:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
-              <img
+              <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
+                width={56}
+                height={56}
                 className="rounded-md w-9 h-9 2xl:w-14 2xl:h-14"
               />
             </div>
@@ -83,9 +86,11 @@ const LoginPage = () => {
         <div className="flex items-center lg:hidden mb-8">
           <Link href="/login" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             <div className="flex items-center justify-center p-1.5 rounded-xl shadow-sm bg-card">
-              <img
+              <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
+                width={36}
+                height={36}
                 className="rounded-md w-9 h-9"
               />
             </div>

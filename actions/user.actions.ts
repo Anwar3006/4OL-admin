@@ -375,30 +375,22 @@ export async function getUsers(params: {
     { active: 0, pending: 0, inactive: 0, suspended: 0 },
   );
 
-  // Flatten profile + email into a single object for consumers
-  const userData = await Promise.all(
-    (data || []).map(async (row) => {
-      const profile = row as any;
-      let email = profile.email || "";
-
-      if (!email && profile.user_id) {
-        try {
-          const authRes = await admin.auth.admin.getUserById(profile.user_id);
-          if (authRes.data?.user?.email) {
-            email = authRes.data.user.email;
-          }
-        } catch (e) {
-          // ignore error and leave email blank
-        }
-      }
-
-      return {
-        ...profile,
-        email,
-        name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—",
-      };
-    })
+  // Batch-fetch all auth users once to resolve emails (avoids N+1 getUserById calls)
+  const { data: authUsers } = await admin.auth.admin.listUsers();
+  const emailMap = new Map(
+    (authUsers?.users || []).map((u) => [u.id, u.email || ""]),
   );
+
+  const userData = (data || []).map((row) => {
+    const profile = row as any;
+    const email = profile.email || emailMap.get(profile.user_id) || "";
+
+    return {
+      ...profile,
+      email,
+      name: [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "—",
+    };
+  });
 
   return {
     users: userData as any[],

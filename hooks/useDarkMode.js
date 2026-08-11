@@ -1,22 +1,24 @@
-'use client'
-import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { handleDarkMode } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
+
+const readStoredBoolean = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.localStorage.getItem(key);
+  return stored === null ? fallback : JSON.parse(stored);
+};
 
 const useDarkmode = () => {
-  const dispatch = useDispatch();
-  const isDark = useSelector((state) => state.layout.darkMode);
-
-  const setDarkMode = (mode) => {
-    dispatch(handleDarkMode(mode));
-    localStorage.setItem("darkMode", JSON.stringify(mode));
-  };
+  const [isDark, setIsDark] = useState(themeConfig.layout.darkMode);
 
   useEffect(() => {
-    const storedDarkMode = localStorage.getItem("darkMode");
-    if (storedDarkMode !== null) {
-      dispatch(handleDarkMode(JSON.parse(storedDarkMode)));
-    }
+    setIsDark(readStoredBoolean("darkMode", themeConfig.layout.darkMode));
+  }, []);
+
+  const setDarkMode = useCallback((mode) => {
+    setIsDark(mode);
+    window.localStorage.setItem("darkMode", JSON.stringify(mode));
   }, []);
 
   return [isDark, setDarkMode];

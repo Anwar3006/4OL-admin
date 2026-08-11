@@ -115,7 +115,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
 
       return (
         <div className="flex items-center justify-end gap-2">
-          <button
+          <button aria-label="View Details"
             className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded flex items-center justify-center"
             onClick={(e) => {
               e.stopPropagation();
@@ -125,7 +125,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
             👁️
           </button>
           {!isSubscriptionSourced && (
-            <button
+            <button aria-label="Delete"
               className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded flex items-center justify-center disabled:opacity-50"
               onClick={(e) => {
                 e.stopPropagation();

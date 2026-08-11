@@ -547,6 +547,9 @@ export const useApproveFacility = () => {
       });
       toast.success("Facility approved!");
     },
+    onError: (error: any) => {
+      toast.error("Failed to approve facility: " + error.message);
+    },
   });
 };
 
@@ -608,6 +611,9 @@ export const useRejectFacility = () => {
         queryKey: FACILITY_PROFILE_QUERY_KEYS.all,
       });
       toast.success("Facility rejected!");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to reject facility: " + error.message);
     },
   });
 };

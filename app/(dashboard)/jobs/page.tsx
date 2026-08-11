@@ -62,19 +62,19 @@ export default function JobsPage() {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <AllListingsTab />
           </TabsContent>
-          <TabsContent value="post">
+          <TabsContent className="w-full min-w-0 outline-none" value="post">
             <PostJobTab />
           </TabsContent>
-          <TabsContent value="applicants">
+          <TabsContent className="w-full min-w-0 outline-none" value="applicants">
             <ApplicantsTab />
           </TabsContent>
-          <TabsContent value="cv">
+          <TabsContent className="w-full min-w-0 outline-none" value="cv">
             <DigitalCVsTab />
           </TabsContent>
-          <TabsContent value="premium">
+          <TabsContent className="w-full min-w-0 outline-none" value="premium">
             <PremiumServicesTab />
           </TabsContent>
         </div>

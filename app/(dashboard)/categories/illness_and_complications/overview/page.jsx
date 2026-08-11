@@ -1,11 +1,12 @@
 "use client";
 import { deleteDisease, getAllDiseases } from "@/app/services/diseases-service";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
@@ -249,7 +250,7 @@ const IllnessAndComplicationsPage = () => {
             <Button
               text="+ Add New Disease"
               className="btn-dark max-sm:text-xs font-normal btn-sm"
-              iconClass="text-lg"
+             
               onClick={() =>
                 router.push("/categories/illness_and_complications/form")
               }
@@ -338,14 +339,14 @@ const IllnessAndComplicationsPage = () => {
                     <div className="flex justify-center gap-2">
                       <Button
                         icon="heroicons-outline:pencil-alt"
-                        iconClass="text-green-500 text-lg"
+                       
                         className="p-0 bg-transparent border-none"
                         onClick={() => handleEdit(condition)}
                         tooltip="Edit"
                       />
                       <Button
                         icon="heroicons-outline:trash"
-                        iconClass="text-red-500 text-lg"
+                       
                         className="p-0 bg-transparent border-none"
                         onClick={() => deleteModal(condition)}
                         tooltip="Delete"
@@ -482,9 +483,12 @@ const IllnessAndComplicationsPage = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <img
+                          <Image
                             src={value}
                             alt="image url"
+                            width={64}
+                            height={64}
+                            unoptimized
                             className="w-16 h-16 object-cover rounded-sm"
                           />
                         </a>

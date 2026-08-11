@@ -70,7 +70,7 @@ export const fitnessUserColumns: ColumnDef<any>[] = [
     header: () => <div className="sr-only">Actions</div>,
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50">
+        <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </div>

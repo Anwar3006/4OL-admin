@@ -3,6 +3,7 @@ import Lottie from "lottie-react";
 import medical_care from "@/public/assets/lottie/medical-care.json";
 import { Heart, Shield, Stethoscope } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import RegisterForm from "../_components/RegisterForm";
 
 export default function RegisterPage() {
@@ -15,7 +16,7 @@ export default function RegisterPage() {
         <div className="flex items-center lg:hidden mb-8">
           <Link href="/register" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             <div className="flex items-center justify-center p-1.5 rounded-xl shadow-sm bg-card">
-              <img
+              <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
                 width={36}
@@ -47,7 +48,7 @@ export default function RegisterPage() {
         <div className="relative z-10 flex items-center gap-3">
           <Link href="/login" className="flex items-center gap-3 transition-opacity hover:opacity-80">
             <div className="flex items-center justify-center p-1.5 rounded-xl bg-white/20 backdrop-blur-sm">
-              <img
+              <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
                 width={36}

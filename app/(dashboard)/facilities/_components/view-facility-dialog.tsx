@@ -33,7 +33,7 @@ import {
   useFacilityProfile,
   useRejectFacility,
 } from "@/hooks/supabase-calls/useFacilities";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { FacilityRatingSection } from "./facility-rating";
 import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
@@ -80,8 +80,8 @@ export default function FacilityViewDialog() {
     enabled: isOpen && !!entityId,
   });
 
-  const { mutate: approve, isPending: isApproving } = useApproveFacility();
-  const { mutate: reject, isPending: isRejecting } = useRejectFacility();
+  const { mutate: approve, isPending: isApproving, isSuccess: isApproved } = useApproveFacility();
+  const { mutate: reject, isPending: isRejecting, isSuccess: isRejected } = useRejectFacility();
   const { data: auditData } = useAdminFacilityAudit({
     facilityId: entityId || "",
     adminId: session?.user?.id || "",
@@ -95,6 +95,13 @@ export default function FacilityViewDialog() {
       session?.user?.role === "super_admin" || session?.user?.role === "admin"
     );
   }, [session?.user]);
+
+  // Close the dialog only on confirmed success (not on error or while pending)
+  useEffect(() => {
+    if (isApproved || isRejected) {
+      close();
+    }
+  }, [isApproved, isRejected, close]);
 
   // Guard against empty / null image URLs
   const images = useMemo(() => {

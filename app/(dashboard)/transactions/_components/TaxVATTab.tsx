@@ -2,7 +2,7 @@ import React from "react";
 
 export default function TaxVATTab() {
   return (
-    <div className="space-y-6 mt-4">
+    <div className="w-full min-w-0 space-y-6 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card">
           <h2 className="card-title text-xs mb-4">🧾 GRA Tax Summary</h2>

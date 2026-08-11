@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Card from "@/components/ui/Card";
+import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Select from "react-select";
 import Modal from "@/components/ui/Modal";
 import useDarkMode from "@/hooks/useDarkMode";
@@ -230,10 +231,13 @@ const PeriodTrackerForm = () => {
 
   const formatOptionLabel = ({ label, avatar }) => (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <img
+      <Image
         src={avatar}
         alt="avatar"
-        style={{ width: 24, height: 24, borderRadius: "50%", marginRight: 8 }}
+        width={24}
+        height={24}
+        unoptimized
+        style={{ borderRadius: "50%", marginRight: 8 }}
       />
       <span>{label}</span>
     </div>

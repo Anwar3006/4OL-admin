@@ -1,6 +1,6 @@
 "use client";
 
-import Card from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 
 const Section = ({ title, children }) => (
@@ -30,10 +30,8 @@ const BulletList = ({ items }) => (
 const PrivacyPolicyContent = () => {
   return (
     <div className="space-y-6">
-      <Card
-        className="bg-white dark:bg-slate-800"
-        bodyClass="space-y-8 p-6 sm:p-8 lg:p-10"
-      >
+      <Card className="bg-white dark:bg-slate-800">
+      <CardContent className="space-y-8 p-6 sm:p-8 lg:p-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-center sm:text-left text-slate-900 dark:text-white">
             4 Our Life - Privacy Policy
@@ -368,6 +366,7 @@ const PrivacyPolicyContent = () => {
             <p>Phone: +233 554 506861</p>
           </div>
         </Section>
+      </CardContent>
       </Card>
     </div>
   );

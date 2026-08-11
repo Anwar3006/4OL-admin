@@ -84,7 +84,7 @@ export const discountColumns: ColumnDef<any>[] = [
     header: "",
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-2">
-        <Button
+        <Button aria-label="View Details"
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
@@ -94,7 +94,7 @@ export const discountColumns: ColumnDef<any>[] = [
         >
           <FileText className="h-4 w-4" />
         </Button>
-        <Button
+        <Button aria-label="Delete"
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"

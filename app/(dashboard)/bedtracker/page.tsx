@@ -65,22 +65,22 @@ export default function BedTrackerPage() {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="overview">
+          <TabsContent className="w-full min-w-0 outline-none" value="overview">
             <LiveOverviewTab />
           </TabsContent>
-          <TabsContent value="registry">
+          <TabsContent className="w-full min-w-0 outline-none" value="registry">
             <BedRegistryTab />
           </TabsContent>
-          <TabsContent value="facilities">
+          <TabsContent className="w-full min-w-0 outline-none" value="facilities">
             <BedTrackerFacilitiesTab />
           </TabsContent>
-          <TabsContent value="dispatch">
+          <TabsContent className="w-full min-w-0 outline-none" value="dispatch">
             <AmbulanceDispatchTab />
           </TabsContent>
-          <TabsContent value="analytics">
+          <TabsContent className="w-full min-w-0 outline-none" value="analytics">
             <BedTrackerAnalyticsTab />
           </TabsContent>
-          <TabsContent value="strategy">
+          <TabsContent className="w-full min-w-0 outline-none" value="strategy">
             <DesignStrategyTab />
           </TabsContent>
         </div>

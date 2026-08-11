@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
@@ -31,7 +31,7 @@ const DiseasesPage = () => {
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("dis_page") || "1", 10);
 
-  const { data, isLoading, isFetching } = useConditions({
+  const { data, isLoading, isFetching, isError, error } = useConditions({
     params: { page, limit: 10, search },
     enabled: true,
   });
@@ -45,9 +45,9 @@ const DiseasesPage = () => {
     item: any;
   }>({ isOpen: false, item: null });
 
-  const handleDeleteClick = (condition: any) => {
+  const handleDeleteClick = useCallback((condition: any) => {
     setDeleteModal({ isOpen: true, item: condition });
-  };
+  }, []);
 
   const handleDeleteConfirm = () => {
     if (deleteModal.item) {
@@ -65,7 +65,8 @@ const DiseasesPage = () => {
     setDeleteModal({ isOpen: false, item: null });
   };
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "name",
       header: "Condition",
@@ -203,7 +204,9 @@ const DiseasesPage = () => {
         </div>
       ),
     },
-  ];
+    ],
+    [addCondition, handleDeleteClick, openViewDialog],
+  );
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
@@ -308,7 +311,7 @@ const DiseasesPage = () => {
         <div className="mt-6">
           <TabsContent
             value="all"
-            className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300"
+            className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full min-w-0"
           >
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[300px]">
@@ -351,6 +354,8 @@ const DiseasesPage = () => {
                 data={data?.conditions || []}
                 selectable
                 isLoading={isLoading || isFetching}
+                isError={isError}
+                error={error}
                 onRowClick={(row: any) => openViewDialog(row.id)}
                 pagination={true}
                 urlPersistence={{
@@ -378,7 +383,7 @@ const DiseasesPage = () => {
             <TabsContent
               key={tabId}
               value={tabId}
-              className="outline-none animate-in fade-in zoom-in-95 duration-300"
+              className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
             >
               <div className="card py-32 text-center border-dashed border-2 border-slate-200 bg-slate-50/50">
                 <div className="max-w-md mx-auto space-y-4">

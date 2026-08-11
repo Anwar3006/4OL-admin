@@ -113,13 +113,13 @@ const ChatsPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="groups">
+          <TabsContent className="w-full min-w-0 outline-none" value="groups">
             <GroupsTab />
           </TabsContent>
-          <TabsContent value="support">
+          <TabsContent className="w-full min-w-0 outline-none" value="support">
             <SupportTab />
           </TabsContent>
-          <TabsContent value="flagged">
+          <TabsContent className="w-full min-w-0 outline-none" value="flagged">
             <FlaggedTab />
           </TabsContent>
         </div>

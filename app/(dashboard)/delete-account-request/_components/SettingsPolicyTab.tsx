@@ -2,7 +2,7 @@ import React from "react";
 
 export default function SettingsPolicyTab() {
   return (
-    <div className="space-y-6 mt-4">
+    <div className="w-full min-w-0 space-y-6 mt-4">
       <div className="card">
         <h2 className="card-title text-sm mb-4">⚙️ Deletion Settings & Policy</h2>
         <div className="space-y-4">

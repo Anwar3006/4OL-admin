@@ -2,10 +2,12 @@
 
 import { supabase } from "@/app/utils/supabaseClient";
 import Loading from "@/components/Loading";
-import Card from "@/components/ui/Card";
+import Image from "next/image";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 
 const viewPilldetails = () => {
   const [data, setData] = useState([]);
@@ -47,22 +49,21 @@ const viewPilldetails = () => {
     );
   }
   return (
-    <Card
-      className="min-h-[70vh] bg-white mt-5"
-      title={"Medication Reminder"}
-      headerslot={
-        <>
-          {" "}
+    <Card className="min-h-[70vh] bg-white mt-5">
+      <CardHeader className="flex flex-row justify-between items-center mb-4">
+        <CardTitle>Medication Reminder</CardTitle>
+        <div>
           <Button
-            icon="heroicons-outline:arrow-left"
-            text="Back"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
+            className="max-sm:text-xs font-normal mr-3 max-sm:mt-2 px-3 h-8"
+            variant="default"
             onClick={() => router.back()}
-          />
-        </>
-      }
-    >
+          >
+            <Icon icon="heroicons-outline:arrow-left" className="text-lg mr-2" />
+            Back
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
       {data && (
         <div className=" bg-white flex justify-between lg:w-[50%] md:w-[80%] w-full">
           <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2 text-sm">
@@ -97,9 +98,12 @@ const viewPilldetails = () => {
 
             <div className=" text-black-500 whitespace-nowrap">Image</div>
             <div className="flex items-center">
-              <img
+              <Image
                 src={data.imageUrl}
                 alt="Medication"
+                width={96}
+                height={96}
+                unoptimized
                 className="rounded-md object-cover w-24 h-24"
               />
             </div>
@@ -192,6 +196,7 @@ const viewPilldetails = () => {
           </div> */}
         </div>
       )}
+      </CardContent>
     </Card>
   );
 };

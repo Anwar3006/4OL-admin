@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import DataTable, { Column, RowAction } from "@/components/redesign/DataTable";
+import React, { useMemo, useState } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -36,23 +37,24 @@ export default function LoggedRemindersTab() {
     setPageIndex(1);
   };
 
-  const columns: Column<LoggedReminderRow>[] = [
+  const columns = useMemo<ColumnDef<LoggedReminderRow>[]>(
+    () => [
     {
-      key: "drug_name",
-      label: "Drug Name",
-      render: (val, row) => (
+      accessorKey: "drug_name",
+      header: "Drug Name",
+      cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          {row.drug_color && (
+          {row.original.drug_color && (
             <span
               className="w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ backgroundColor: row.drug_color }}
+              style={{ backgroundColor: row.original.drug_color }}
             />
           )}
           <div>
-            <div className="font-bold text-slate-800">{val}</div>
-            {row.generic_name && (
+            <div className="font-bold text-slate-800">{row.original.drug_name}</div>
+            {row.original.generic_name && (
               <div className="text-[10px] text-slate-400">
-                {row.generic_name}
+                {row.original.generic_name}
               </div>
             )}
           </div>
@@ -60,40 +62,40 @@ export default function LoggedRemindersTab() {
       ),
     },
     {
-      key: "drug_type",
-      label: "Type",
-      render: (val, row) => (
+      accessorKey: "drug_type",
+      header: "Type",
+      cell: ({ row }) => (
         <span className="text-[11px] font-medium text-slate-600 capitalize">
-          {row.drug_type || "—"}
+          {row.original.drug_type || "—"}
         </span>
       ),
     },
     {
-      key: "user_profiles",
-      label: "Logged By",
-      render: (val, row) => (
+      accessorKey: "user_profiles",
+      header: "Logged By",
+      cell: ({ row }) => (
         <span className="font-medium text-slate-700">
-          {row.user_profiles?.name || "Unknown User"}
+          {row.original.user_profiles?.name || "Unknown User"}
         </span>
       ),
     },
     {
-      key: "dosage_amount",
-      label: "Dosage",
-      render: (val, row) => <span>{row.dosage_amount || "—"}</span>,
+      accessorKey: "dosage_amount",
+      header: "Dosage",
+      cell: ({ row }) => <span>{row.original.dosage_amount || "—"}</span>,
     },
     {
-      key: "interval",
-      label: "Interval",
-      render: (val, row) => (
-        <span>{formatReminderInterval(row.interval, row.interval_unit)}</span>
+      accessorKey: "interval",
+      header: "Interval",
+      cell: ({ row }) => (
+        <span>{formatReminderInterval(row.original.interval, row.original.interval_unit)}</span>
       ),
     },
     {
-      key: "is_enabled",
-      label: "Status",
-      render: (val, row) => {
-        const status = getReminderStatus(row);
+      accessorKey: "is_enabled",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = getReminderStatus(row.original);
         const config = {
           complete: { className: "badge-blue", label: "✅ Complete" },
           active: { className: "badge-green", label: "✅ Active" },
@@ -101,43 +103,40 @@ export default function LoggedRemindersTab() {
         }[status];
 
         return (
-          <span className={cn("badge", config.className)}>{config.label}</span>
+          <span className={cn("badge", config?.className)}>{config?.label}</span>
         );
       },
     },
     {
-      key: "created_at",
-      label: "Logged On",
-      render: (val, row) => (
+      accessorKey: "created_at",
+      header: "Logged On",
+      cell: ({ row }) => (
         <span className="text-[10px] font-bold text-slate-400">
-          {new Date(row.created_at).toLocaleDateString()}
+          {new Date(row.original.created_at).toLocaleDateString()}
         </span>
       ),
     },
-
     {
-      key: "actions",
-      label: "Actions",
-      render: (val, row) => (
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
         <div className="flex gap-2 md:gap-6">
           <button
             className="hover:bg-emerald-200 cursor-pointer"
-            onClick={() => openView(row.id)}
+            onClick={() => openView(row.original.id)}
+            aria-label="View Reminder"
           >
             👁️
           </button>
-          <button className="text-red-500 hover:bg-red-700" onClick={() => {}}>
+          <button className="text-red-500 hover:bg-red-700" onClick={() => {}} aria-label="Delete Reminder">
             🗑️
           </button>
         </div>
       ),
     },
-  ];
-
-  // const rowActions: RowAction<LoggedReminderRow>[] = [
-  //   { label: "View", icon: "👁️", onClick: (row) => openView(row.id) },
-  //   { label: "Delete", icon: "🗑️", onClick: () => {}, danger: true },
-  // ];
+    ],
+    [openView],
+  );
 
   return (
     <div className="space-y-4 mt-4">
@@ -154,13 +153,18 @@ export default function LoggedRemindersTab() {
         <DataTable
           columns={columns}
           data={rows}
-          selectable
-          // rowActions={rowActions}
           isLoading={isLoading}
-          pagination
-          externalPage={pageIndex}
-          externalTotalPages={totalPages}
-          onPageChange={setPageIndex}
+          pagination={{
+            currentPage: pageIndex,
+            totalPages: totalPages,
+            totalItems: totalCount,
+            pageSize: PAGE_SIZE,
+            onPageChange: setPageIndex,
+            onNextPage: () => setPageIndex((p) => p + 1),
+            onPreviousPage: () => setPageIndex((p) => Math.max(1, p - 1)),
+            canNextPage: pageIndex < totalPages,
+            canPreviousPage: pageIndex > 1,
+          }}
         />
       </div>
     </div>

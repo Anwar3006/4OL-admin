@@ -1,4 +1,5 @@
 import React, { useEffect, memo } from "react";
+import dynamic from "next/dynamic";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,6 @@ import { nanoid } from "nanoid";
 import { useAddConditionDialog } from "@/stores/dialog-store";
 import { symptomsSchema, TSymptomsInput } from "@/types/symptoms";
 import { TreeMultiSelectForm } from "@/components/TreeMultiSelect";
-import { RichTextEditor } from "@/components/RichTextInput";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import {
   useBodyPartsForSymptoms,
@@ -27,6 +27,11 @@ import {
   useCreateSymptom,
   useUpdateSymptom,
 } from "@/hooks/supabase-calls/useSymptoms";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),
+  { ssr: false },
+);
 
 const AddSymptomDialog = () => {
   const { isOpen, data, isEditMode, close } = useAddConditionDialog();

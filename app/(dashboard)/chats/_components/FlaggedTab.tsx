@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import React, { useCallback, useMemo, useState } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   useFlaggedContent,
   useModerateContent,
@@ -49,22 +50,25 @@ export default function FlaggedTab() {
     return true;
   });
 
-  const handleModerate = (
-    item: FlaggedContentItem,
-    action: "dismiss" | "warn" | "remove" | "ban",
-  ) => {
-    if (action === "dismiss") {
-      // Immediate dismiss without modal
-      moderateMutation.mutate({
-        flag_id: item.flag_id,
-        action,
-        action_notes: "",
-      });
-    } else {
-      setActionModal({ item, action });
-      setNotes("");
-    }
-  };
+  const handleModerate = useCallback(
+    (
+      item: FlaggedContentItem,
+      action: "dismiss" | "warn" | "remove" | "ban",
+    ) => {
+      if (action === "dismiss") {
+        // Immediate dismiss without modal
+        moderateMutation.mutate({
+          flag_id: item.flag_id,
+          action,
+          action_notes: "",
+        });
+      } else {
+        setActionModal({ item, action });
+        setNotes("");
+      }
+    },
+    [moderateMutation],
+  );
 
   const confirmModeration = () => {
     if (!actionModal) return;
@@ -77,133 +81,144 @@ export default function FlaggedTab() {
     setNotes("");
   };
 
-  const columns: Column<FlaggedContentItem>[] = [
+  const columns = useMemo<ColumnDef<FlaggedContentItem>[]>(
+    () => [
     {
-      key: "content_type",
-      label: "Type",
-      render: (val) => (
+      accessorKey: "content_type",
+      header: "Type",
+      cell: ({ row }) => (
         <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase">
-          {val === "message" ? "💬 Msg" : "👥 Group"}
+          {row.original.content_type === "message" ? "💬 Msg" : "👥 Group"}
         </span>
       ),
     },
     {
-      key: "content_preview",
-      label: "Content Preview",
-      render: (val, row) => (
+      accessorKey: "content_preview",
+      header: "Content Preview",
+      cell: ({ row }) => (
         <div className="max-w-[220px]">
           <div className="text-[11px] font-bold text-slate-800 line-clamp-2">
-            {val || "—"}
+            {row.original.content_preview || "—"}
           </div>
-          {row.conversation_name && (
+          {row.original.conversation_name && (
             <div className="text-[9px] text-slate-400 mt-0.5">
-              in {row.conversation_name}
+              in {row.original.conversation_name}
             </div>
           )}
         </div>
       ),
     },
     {
-      key: "sender_first_name",
-      label: "Sender",
-      render: (_, row) => (
+      accessorKey: "sender_first_name",
+      header: "Sender",
+      cell: ({ row }) => (
         <div className="text-[11px] font-bold text-slate-700">
-          {[row.sender_first_name, row.sender_last_name]
+          {[row.original.sender_first_name, row.original.sender_last_name]
             .filter(Boolean)
             .join(" ") || "—"}
         </div>
       ),
     },
     {
-      key: "report_reason",
-      label: "Flag Reason",
-      render: (val, row) => (
+      accessorKey: "report_reason",
+      header: "Flag Reason",
+      cell: ({ row }) => (
         <div>
           <span className="text-[10px] font-bold text-slate-700 capitalize">
-            {val}
+            {row.original.report_reason}
           </span>
-          {row.ai_detected && (
+          {row.original.ai_detected && (
             <span className="ml-1.5 px-1 py-0.5 rounded bg-purple-100 text-purple-700 text-[8px] font-black">
               AI
             </span>
           )}
-          {row.report_detail && (
+          {row.original.report_detail && (
             <div className="text-[9px] text-slate-400 line-clamp-1">
-              {row.report_detail}
+              {row.original.report_detail}
             </div>
           )}
         </div>
       ),
     },
     {
-      key: "reporter_first_name",
-      label: "Reported By",
-      render: (_, row) => (
+      accessorKey: "reporter_first_name",
+      header: "Reported By",
+      cell: ({ row }) => (
         <div className="text-[10px] text-slate-500">
-          {[row.reporter_first_name, row.reporter_last_name]
+          {[row.original.reporter_first_name, row.original.reporter_last_name]
             .filter(Boolean)
             .join(" ") || "System"}
         </div>
       ),
     },
     {
-      key: "moderation_status",
-      label: "Status",
-      render: (val) => (
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-            STATUS_BADGE[val] || "bg-slate-100 text-slate-600"
-          }`}
-        >
-          {val === "pending_review" ? "Pending" : val}
-        </span>
-      ),
+      accessorKey: "moderation_status",
+      header: "Status",
+      cell: ({ row }) => {
+        const val = row.original.moderation_status;
+        return (
+          <span
+            className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+              STATUS_BADGE[val] || "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {val === "pending_review" ? "Pending" : val}
+          </span>
+        );
+      },
     },
     {
-      key: "flagged_at",
-      label: "Flagged",
-      render: (val) => (
+      accessorKey: "flagged_at",
+      header: "Flagged",
+      cell: ({ row }) => (
         <span className="text-[10px] text-slate-400">
-          {val ? new Date(val).toLocaleDateString() : "—"}
+          {row.original.flagged_at
+            ? new Date(row.original.flagged_at).toLocaleDateString()
+            : "—"}
         </span>
       ),
     },
     {
-      key: "actions" as any,
-      label: "Actions",
-      render: (_, row) => (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => handleModerate(row, "dismiss")}
-            disabled={row.moderation_status !== "pending_review"}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Dismiss"
-          >
-            ✅
-          </button>
-          <button
-            onClick={() => handleModerate(row, "warn")}
-            disabled={row.moderation_status !== "pending_review"}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Warn"
-          >
-            ⚠️
-          </button>
-          <button
-            onClick={() => handleModerate(row, "remove")}
-            disabled={row.moderation_status !== "pending_review"}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Remove"
-          >
-            🗑️
-          </button>
-        </div>
-      ),
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const item = row.original;
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleModerate(item, "dismiss")}
+              disabled={item.moderation_status !== "pending_review"}
+              className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Dismiss"
+            >
+              ✅
+            </button>
+            <button
+              onClick={() => handleModerate(item, "warn")}
+              disabled={item.moderation_status !== "pending_review"}
+              className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Warn"
+            >
+              ⚠️
+            </button>
+            <button
+              onClick={() => handleModerate(item, "remove")}
+              disabled={item.moderation_status !== "pending_review"}
+              className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Remove"
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      },
     },
-  ];
+    ],
+    [handleModerate],
+  );
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <select
@@ -241,11 +256,7 @@ export default function FlaggedTab() {
         <DataTable
           columns={columns}
           data={filtered}
-          pagination
-          itemsPerPage={10}
-          externalTotalPages={Math.ceil(filtered.length / 10)}
-          externalPage={page}
-          onPageChange={setPage}
+          pagination={true}
           isLoading={isLoading}
         />
       </div>

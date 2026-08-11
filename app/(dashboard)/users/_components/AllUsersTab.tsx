@@ -11,7 +11,7 @@ import { useViewUserDialog } from "@/stores/dialog-store";
 
 export default function AllUsersTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "users_page" });
-  const { data, isLoading } = useUsers({ admin: false, page, limit: pageSize });
+  const { data, isLoading, isError, error } = useUsers({ admin: false, page, limit: pageSize });
   const viewDialog = useViewUserDialog();
 
   const users = data?.users || [];
@@ -50,7 +50,7 @@ export default function AllUsersTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
           className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
@@ -69,6 +69,8 @@ export default function AllUsersTab() {
           columns={userColumns}
           data={users}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           onRowClick={(row) => viewDialog.open(row.user_id)}
           onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
           cardConfig={cardConfig}

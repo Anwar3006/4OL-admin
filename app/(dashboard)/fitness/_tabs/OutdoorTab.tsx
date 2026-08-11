@@ -28,6 +28,7 @@ import AddOutdoorEventDialog from "../_components/add-outdoor-event-dialog";
 import AddOutdoorReviewDialog from "../_components/add-outdoor-review-dialog";
 import ViewOutdoorReviewDialog from "../_components/view-outdoor-review-dialog";
 import { cn } from "@/lib/utils";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import {
   MapPin,
   Calendar,
@@ -75,25 +76,42 @@ const OutdoorTab = () => {
   const addReviewDialog = useAddOutdoorReviewDialog();
   const viewReviewDialog = useViewOutdoorReviewDialog();
 
+  // Pending delete confirmation (only one of route/event/review at a time)
+  const [confirmDelete, setConfirmDelete] = useState<
+    { type: "route" | "event" | "review"; id: string } | null
+  >(null);
+
   // Queries
-  const { data: routesData, isLoading: routesLoading } =
-    useFitnessOutdoorRoutes({
+  const {
+    data: routesData,
+    isLoading: routesLoading,
+    isError: routesError,
+    error: routesErrorObj,
+  } = useFitnessOutdoorRoutes({
       page: routePage,
       limit,
       search: debouncedRouteSearch,
       difficulty: routeDifficulty,
     });
 
-  const { data: eventsData, isLoading: eventsLoading } =
-    useFitnessOutdoorEvents({
+  const {
+    data: eventsData,
+    isLoading: eventsLoading,
+    isError: eventsError,
+    error: eventsErrorObj,
+  } = useFitnessOutdoorEvents({
       page: eventPage,
       limit,
       search: debouncedEventSearch,
       status: eventStatus,
     });
 
-  const { data: reviewsData, isLoading: reviewsLoading } =
-    useFitnessOutdoorReviews({
+  const {
+    data: reviewsData,
+    isLoading: reviewsLoading,
+    isError: reviewsError,
+    error: reviewsErrorObj,
+  } = useFitnessOutdoorReviews({
       page: reviewPage,
       limit,
       search: debouncedReviewSearch,
@@ -106,36 +124,34 @@ const OutdoorTab = () => {
   const { mutate: deleteReview } = useDeleteFitnessOutdoorReview();
 
   // Handlers
-  const handleDeleteRoute = useCallback(
-    (id: string) => {
-      if (
-        window.confirm(
-          "Are you sure you want to delete this route? This will also cascade delete related events and reviews.",
-        )
-      ) {
-        deleteRoute(id);
-      }
-    },
-    [deleteRoute],
-  );
+  const handleDeleteRoute = useCallback((id: string) => {
+    setConfirmDelete({ type: "route", id });
+  }, []);
 
-  const handleDeleteEvent = useCallback(
-    (id: string) => {
-      if (window.confirm("Are you sure you want to delete this event?")) {
-        deleteEvent(id);
-      }
-    },
-    [deleteEvent],
-  );
+  const handleDeleteEvent = useCallback((id: string) => {
+    setConfirmDelete({ type: "event", id });
+  }, []);
 
-  const handleDeleteReview = useCallback(
-    (id: string) => {
-      if (window.confirm("Are you sure you want to delete this review?")) {
-        deleteReview(id);
-      }
+  const handleDeleteReview = useCallback((id: string) => {
+    setConfirmDelete({ type: "review", id });
+  }, []);
+
+  const confirmDeleteAction = useCallback(() => {
+    if (!confirmDelete) return;
+    if (confirmDelete.type === "route") deleteRoute(confirmDelete.id);
+    else if (confirmDelete.type === "event") deleteEvent(confirmDelete.id);
+    else if (confirmDelete.type === "review") deleteReview(confirmDelete.id);
+    setConfirmDelete(null);
+  }, [confirmDelete, deleteRoute, deleteEvent, deleteReview]);
+
+  const deleteConfirmCopy: Record<string, { title: string; itemType: string }> = {
+    route: {
+      title: "Delete Route",
+      itemType: "route (this will also cascade delete related events and reviews)",
     },
-    [deleteReview],
-  );
+    event: { title: "Delete Event", itemType: "event" },
+    review: { title: "Delete Review", itemType: "review" },
+  };
 
   // Dynamic KPI counts (using metadata from queries or fallback)
   const totalRoutes = routesData?.meta?.total ?? 0;
@@ -143,19 +159,20 @@ const OutdoorTab = () => {
   const totalReviews = reviewsData?.meta?.total ?? 0;
 
   // Render Star Utility
-  const renderStars = (rating: number) => {
+  const renderStars = useCallback((rating: number) => {
     return (
       <div className="text-ek-gold text-[10px] flex gap-0.5">
         {"⭐".repeat(rating || 5)}
         <span className="text-slate-200">{"⭐".repeat(5 - (rating || 5))}</span>
       </div>
     );
-  };
+  }, []);
 
   // -------------------------------------------------------------
   // TABLE COLUMNS CONFIGURATIONS
   // -------------------------------------------------------------
-  const routeColumns = [
+  const routeColumns = useMemo(
+    () => [
     {
       accessorKey: "name",
       header: "Route Details",
@@ -290,9 +307,12 @@ const OutdoorTab = () => {
         );
       },
     },
-  ];
+    ],
+    [addRouteDialog, handleDeleteRoute, viewRouteDialog],
+  );
 
-  const eventColumns = [
+  const eventColumns = useMemo(
+    () => [
     {
       accessorKey: "title",
       header: "Event Details",
@@ -416,9 +436,12 @@ const OutdoorTab = () => {
         );
       },
     },
-  ];
+    ],
+    [addEventDialog, handleDeleteEvent, viewEventDialog],
+  );
 
-  const reviewColumns = [
+  const reviewColumns = useMemo(
+    () => [
     {
       accessorKey: "route",
       header: "Route Details",
@@ -526,7 +549,9 @@ const OutdoorTab = () => {
         );
       },
     },
-  ];
+    ],
+    [addReviewDialog, handleDeleteReview, renderStars, viewReviewDialog],
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -627,7 +652,7 @@ const OutdoorTab = () => {
         {/* -------------------------------------------------------------
             SUB-TAB: ROUTES
             ------------------------------------------------------------- */}
-        <TabsContent value="routes" className="outline-none space-y-4">
+        <TabsContent value="routes" className="outline-none space-y-4 w-full min-w-0">
           <div className="card">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -663,6 +688,8 @@ const OutdoorTab = () => {
               columns={routeColumns}
               data={routesData?.routes || []}
               isLoading={routesLoading}
+              isError={routesError}
+              error={routesErrorObj}
               pagination={true}
               urlPersistence={{
                 pageKey: "out_route_page",
@@ -676,7 +703,7 @@ const OutdoorTab = () => {
         {/* -------------------------------------------------------------
             SUB-TAB: EVENTS
             ------------------------------------------------------------- */}
-        <TabsContent value="events" className="outline-none space-y-4">
+        <TabsContent value="events" className="outline-none space-y-4 w-full min-w-0">
           <div className="card">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -712,6 +739,8 @@ const OutdoorTab = () => {
               columns={eventColumns}
               data={eventsData?.events || []}
               isLoading={eventsLoading}
+              isError={eventsError}
+              error={eventsErrorObj}
               pagination={true}
               urlPersistence={{
                 pageKey: "out_event_page",
@@ -725,7 +754,7 @@ const OutdoorTab = () => {
         {/* -------------------------------------------------------------
             SUB-TAB: REVIEWS
             ------------------------------------------------------------- */}
-        <TabsContent value="reviews" className="outline-none space-y-4">
+        <TabsContent value="reviews" className="outline-none space-y-4 w-full min-w-0">
           <div className="card">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -762,6 +791,8 @@ const OutdoorTab = () => {
               columns={reviewColumns}
               data={reviewsData?.reviews || []}
               isLoading={reviewsLoading}
+              isError={reviewsError}
+              error={reviewsErrorObj}
               pagination={true}
               urlPersistence={{
                 pageKey: "out_review_page",
@@ -782,6 +813,15 @@ const OutdoorTab = () => {
 
       <AddOutdoorReviewDialog />
       <ViewOutdoorReviewDialog />
+
+      <DeleteConfirmationModal
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={confirmDeleteAction}
+        title={confirmDelete ? deleteConfirmCopy[confirmDelete.type].title : ""}
+        itemName=""
+        itemType={confirmDelete ? deleteConfirmCopy[confirmDelete.type].itemType : "item"}
+      />
     </div>
   );
 };

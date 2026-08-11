@@ -3,6 +3,17 @@
 import React, { useState } from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { reviewColumns } from "@/components/Data-Table/columns/reviewColumns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useFacilityRatingsList } from "@/hooks/supabase-calls/useReviews";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
@@ -17,7 +28,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
     usePagination({ key: `reviews_${status || "all"}_page` });
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = useFacilityRatingsList({
+  const { data, isLoading, isError, error } = useFacilityRatingsList({
     pageIndex: page,
     pageSize: pageSize,
     search: search,
@@ -39,10 +50,8 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
   };
 
   const handleDeleteReview = (review: any) => {
-    if (window.confirm("Are you sure you want to delete this review?")) {
-      console.log("Delete review:", review.id);
-      // Add delete mutation here if needed
-    }
+    console.log("Delete review:", review.id);
+    // Add delete mutation here if needed
   };
 
   const cardConfig: MobileCardConfig<any> = {
@@ -68,7 +77,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
   };
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
           className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
@@ -109,15 +118,37 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
                       >
                         ✏️
                       </button>
-                      <button
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteReview(review);
-                        }}
-                      >
-                        🗑️
-                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            🗑️
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this review?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteReview(review);
+                              }}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   );
                 },
@@ -127,6 +158,8 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
           })}
           data={rows}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           onRowClick={(row) => console.log("Row Click", row.id)}
           onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
           cardConfig={cardConfig}

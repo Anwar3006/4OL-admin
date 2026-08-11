@@ -1,6 +1,5 @@
-"use client";
 import React from "react";
-import Card from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import AdsForm from "@/components/redesign/auth/ads_form";
 
 export default function page() {

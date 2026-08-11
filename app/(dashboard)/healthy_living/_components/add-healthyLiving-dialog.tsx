@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,6 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import slugify from "slugify";
 import { useAddHealthyLivingDialog } from "@/stores/dialog-store";
-import { RichTextEditor } from "@/components/RichTextInput";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import ImageDropZone from "@/components/ImageDropZone";
 import { rehydrateHierarchy } from "@/lib/utils";
@@ -32,6 +32,11 @@ import {
   useCreateHealthyLiving,
   useUpdateHealthyLiving,
 } from "@/hooks/supabase-calls/useHealthyLiving";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),
+  { ssr: false },
+);
 
 const emptyForm = () => ({
   name: "",

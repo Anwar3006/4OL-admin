@@ -63,19 +63,19 @@ export default function FacilityScoutPage() {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <AllSubmissionsTab />
           </TabsContent>
-          <TabsContent value="pending">
+          <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <PendingReviewTab />
           </TabsContent>
-          <TabsContent value="rewards">
+          <TabsContent className="w-full min-w-0 outline-none" value="rewards">
             <RewardsQueueTab />
           </TabsContent>
-          <TabsContent value="leaderboard">
+          <TabsContent className="w-full min-w-0 outline-none" value="leaderboard">
             <LeaderboardTab />
           </TabsContent>
-          <TabsContent value="settings">
+          <TabsContent className="w-full min-w-0 outline-none" value="settings">
             <FacilityScoutSettingsTab />
           </TabsContent>
         </div>

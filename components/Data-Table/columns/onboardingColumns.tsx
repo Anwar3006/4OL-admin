@@ -176,7 +176,7 @@ export const createOnboardingColumns = ({
             </DropdownMenu>
           )}
 
-          <Button
+          <Button aria-label="Delete"
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"

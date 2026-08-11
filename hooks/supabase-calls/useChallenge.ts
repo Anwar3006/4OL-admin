@@ -88,6 +88,9 @@ export const useCreateChallenge = () => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
       toast.success("Challenge created successfully!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to create challenge: ${error.message}`);
+    },
   });
 };
 
@@ -110,6 +113,9 @@ export const useUpdateChallenge = () => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
       toast.success("Challenge updated successfully!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to update challenge: ${error.message}`);
+    },
   });
 };
 
@@ -117,12 +123,18 @@ export const useDeleteChallenge = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("fitness_challenges").delete().eq("id", id);
+      const { error } = await supabase
+        .from("fitness_challenges")
+        .delete()
+        .eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_QUERY_KEYS.all });
       toast.success("Challenge deleted!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete challenge: ${error.message}`);
     },
   });
 };

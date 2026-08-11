@@ -1,12 +1,16 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleContentWidth } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useContentWidth = () => {
-  const dispatch = useDispatch();
-  const contentWidth = useSelector((state) => state.layout.contentWidth);
+  const [contentWidth, setContentWidthState] = useState(
+    themeConfig.layout.contentWidth,
+  );
 
-  // ** Toggles Content Width
-  const setContentWidth = (val) => dispatch(handleContentWidth(val));
+  const setContentWidth = useCallback((value) => {
+    setContentWidthState(value);
+  }, []);
 
   return [contentWidth, setContentWidth];
 };

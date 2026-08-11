@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 // import SupportForm from "@/components/redesign/auth/support-form";
 import useDarkMode from "@/hooks/useDarkMode";
 
@@ -14,13 +15,15 @@ const SupportPage = () => {
             <div className="auth-box2 flex flex-col justify-center h-full">
               <div className="mobile-logo text-center mb-6 lg:hidden block">
                 <Link href="/">
-                  <img
+                  <Image
                     src={
                       isDark
                         ? "/assets/images/logo/logo-white.svg"
                         : "/assets/images/logo/logo.svg"
                     }
                     alt=""
+                    width={160}
+                    height={64}
                     className="mx-auto"
                   />
                 </Link>
@@ -69,4 +72,3 @@ const SupportPage = () => {
 };
 
 export default SupportPage;
-

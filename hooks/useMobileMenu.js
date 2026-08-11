@@ -1,13 +1,14 @@
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { handleMobileMenu } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useMobileMenu = () => {
-  const dispatch = useDispatch();
-  const mobileMenu = useSelector((state) => state.layout.mobileMenu);
+  const [mobileMenu, setMobileMenuState] = useState(themeConfig.layout.mobileMenu);
 
-  // ** Toggles Mobile Menu
-  const setMobileMenu = (val) => dispatch(handleMobileMenu(val));
+  const setMobileMenu = useCallback((value) => {
+    setMobileMenuState(value);
+  }, []);
 
   return [mobileMenu, setMobileMenu];
 };

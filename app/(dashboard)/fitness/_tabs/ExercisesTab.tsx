@@ -15,9 +15,11 @@ import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import AddExerciseDialog from "../_components/add-exercise-dialog";
 import ViewExerciseDialog from "../_components/view-exercise-dialog";
 import { useSearchParams } from "next/navigation";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const ExercisesTab = () => {
   const [search, setSearch] = useState("");
+  const [pendingDeleteRows, setPendingDeleteRows] = useState<any[] | null>(null);
   const searchParams = useSearchParams();
 
   // Read page from URL to trigger refetch when pagination changes
@@ -27,7 +29,7 @@ const ExercisesTab = () => {
   const exerciseDialog = useAddExerciseDialog();
   const viewDialog = useViewExerciseDialog();
 
-  const { data, isLoading } = useExercises({ page, limit: pageSize, search });
+  const { data, isLoading, isError, error } = useExercises({ page, limit: pageSize, search });
   const { mutate: deleteExercise } = useDeleteExercise();
 
   const exercises = data?.exercises || [];
@@ -74,12 +76,10 @@ const ExercisesTab = () => {
           columns={exerciseColumns}
           data={exercises}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           onRowClick={(row) => viewDialog.open(row.id)}
-          onDeleteSelected={(rows) => {
-            if (confirm(`Delete ${rows.length} exercises?`)) {
-              rows.forEach((r) => deleteExercise(r.id));
-            }
-          }}
+          onDeleteSelected={(rows) => setPendingDeleteRows(rows)}
           cardConfig={cardConfig}
           pagination={true}
           urlPersistence={{
@@ -92,6 +92,18 @@ const ExercisesTab = () => {
 
       <AddExerciseDialog />
       <ViewExerciseDialog />
+
+      <DeleteConfirmationModal
+        isOpen={!!pendingDeleteRows}
+        onClose={() => setPendingDeleteRows(null)}
+        onConfirm={() => {
+          pendingDeleteRows?.forEach((r) => deleteExercise(r.id));
+          setPendingDeleteRows(null);
+        }}
+        title={`Delete ${pendingDeleteRows?.length || ""} Exercise${pendingDeleteRows?.length === 1 ? "" : "s"}`}
+        itemName=""
+        itemType="exercise"
+      />
     </div>
   );
 };

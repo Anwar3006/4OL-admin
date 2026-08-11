@@ -75,9 +75,9 @@ const UsersPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all"><AllUsersTab /></TabsContent>
-          <TabsContent value="flagged"><FlaggedUsersTab /></TabsContent>
-          <TabsContent value="delete-requests"><DeleteRequestsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="all"><AllUsersTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="flagged"><FlaggedUsersTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="delete-requests"><DeleteRequestsTab /></TabsContent>
         </div>
       </Tabs>
 

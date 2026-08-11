@@ -1,6 +1,7 @@
 "use client";
 
 import React, { memo, useState } from "react";
+import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
   useDeleteHealthyLiving,
   useHealthyLiving,
 } from "@/hooks/supabase-calls/useHealthyLiving";
-import { LexicalRenderer } from "@/components/LexicalRenderer";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
 import {
@@ -31,6 +31,12 @@ import {
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+
+const LexicalRenderer = dynamic(
+  () =>
+    import("@/components/LexicalRenderer").then((mod) => mod.LexicalRenderer),
+  { ssr: false },
+);
 
 /* ───────────────────────────────────────────────────────────
    Types

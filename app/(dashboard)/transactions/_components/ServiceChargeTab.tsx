@@ -1,4 +1,6 @@
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
 
 export interface ServiceChargeRow {
   id: string;
@@ -26,20 +28,23 @@ const transactions: ServiceChargeRow[] = [
 ];
 
 export default function ServiceChargeTab() {
-  const columns: Column<ServiceChargeRow>[] = [
-    { key: "id", label: "Payment ID", render: (val) => <span className="font-mono text-[10px] text-slate-500">{val}</span> },
-    { key: "entity", label: "Entity", render: (val) => <div className="font-bold text-slate-800">{val}</div> },
-    { key: "type", label: "Type", render: (val) => <span className="badge badge-secondary">{val}</span> },
-    { key: "value", label: "Value", render: (val) => <span className="font-bold">{val}</span> },
-    { key: "rate", label: "Rate", render: (val) => <span className="badge badge-blue">{val}</span> },
-    { key: "fee", label: "Fee Collected", render: (val) => <span className="font-black text-ek-blue">{val}</span> },
-    { key: "method", label: "Method" },
-    { key: "date", label: "Date", render: (val) => <span className="text-slate-400 font-medium">{val}</span> },
-    { key: "status", label: "Status", render: (val) => <span className="badge badge-green">✅ {val}</span> },
-  ];
+  const columns = useMemo<ColumnDef<ServiceChargeRow>[]>(
+    () => [
+    { accessorKey: "id", header: "Payment ID", cell: ({ row }) => <span className="font-mono text-[10px] text-slate-500">{row.original.id}</span> },
+    { accessorKey: "entity", header: "Entity", cell: ({ row }) => <div className="font-bold text-slate-800">{row.original.entity}</div> },
+    { accessorKey: "type", header: "Type", cell: ({ row }) => <span className="badge badge-secondary">{row.original.type}</span> },
+    { accessorKey: "value", header: "Value", cell: ({ row }) => <span className="font-bold">{row.original.value}</span> },
+    { accessorKey: "rate", header: "Rate", cell: ({ row }) => <span className="badge badge-blue">{row.original.rate}</span> },
+    { accessorKey: "fee", header: "Fee Collected", cell: ({ row }) => <span className="font-black text-ek-blue">{row.original.fee}</span> },
+    { accessorKey: "method", header: "Method" },
+    { accessorKey: "date", header: "Date", cell: ({ row }) => <span className="text-slate-400 font-medium">{row.original.date}</span> },
+    { accessorKey: "status", header: "Status", cell: ({ row }) => <span className="badge badge-green">✅ {row.original.status}</span> },
+    ],
+    [],
+  );
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="w-full min-w-0 space-y-6 mt-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-0 overflow-hidden">
           <div className="card-header bg-ek-green/5 border-b border-slate-100 flex justify-between items-center px-4 py-3">

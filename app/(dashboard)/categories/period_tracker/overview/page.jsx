@@ -1,5 +1,7 @@
 "use client";
 import {
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
   deletePeriodTrackerLog,
   getPeriodTrackerLogs,
 } from "@/app/services/period_tracker_service";
@@ -8,8 +10,6 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import Icons from "@/components/ui/Icon";
 import moment from "moment";
 import Calendar from "react-calendar";
@@ -215,7 +215,7 @@ const PeriodsTrackerPage = () => {
               </div>
               <Button
                 text="Add Period Tracker"
-                icon="heroicons-outline:plus"
+               
                 className="btn-dark max-sm:text-xs font-normal btn-sm"
                 onClick={() => router.push("/categories/period_tracker/create")}
               />
@@ -225,7 +225,7 @@ const PeriodsTrackerPage = () => {
           {/* <div className="absolute top-2 right-2 justify-end p-4">
             <Button
               text="Add Period Tracker"
-              icon="heroicons-outline:plus"
+             
               className="bg-[#56ce84] text-white rounded-md p-2 text-sm hover:bg-[#46b276] transition-colors"
               onClick={() => router.push("/categories/period_tracker/create")}
             />
@@ -302,10 +302,13 @@ const PeriodsTrackerPage = () => {
                       <td className="text-gray-900 dark:text-slate-200 px-3 py-3 whitespace-nowrap text-left">
                         <div className="flex items-center space-x-3">
                           {log.user_profiles?.avatar_url ? (
-                            <img
+                            <Image
                               className="w-8 h-8 rounded-full object-cover"
                               src={log.user_profiles.avatar_url}
                               alt=""
+                              width={32}
+                              height={32}
+                              unoptimized
                             />
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center">

@@ -9,6 +9,7 @@ import {
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import React, { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -469,9 +470,11 @@ const AddMarketingDialog = () => {
                               onLoadedData={() => setIsImageLoading(false)}
                             />
                           ) : (
-                            <img
+                            <Image
                               src={imageUrl}
                               alt="Campaign preview"
+                              fill
+                              sizes="(min-width: 768px) 520px, 90vw"
                               className={cn(
                                 "w-full h-full object-cover transition-opacity duration-500",
                                 isImageLoading ? "opacity-0" : "opacity-100",

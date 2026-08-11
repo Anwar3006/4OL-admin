@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/select";
 import { Dumbbell, Loader2, X } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
-import { RichTextEditor } from "@/components/RichTextInput";
 import {
   exerciseSchema,
   TExerciseInput,
@@ -47,6 +47,11 @@ import {
 } from "@/hooks/supabase-calls/useExercise";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),
+  { ssr: false },
+);
 
 const AddExerciseDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddExerciseDialog();

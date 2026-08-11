@@ -4,6 +4,16 @@ import React, { useMemo, useState, useCallback } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   useChallenges,
   useDeleteChallenge,
 } from "@/hooks/supabase-calls/useChallenge";
@@ -41,7 +51,7 @@ const ChallengesTab = () => {
 
   const challengeDialog = useAddChallengeDialog();
   const viewDialog = useViewChallengeDialog();
-  const { data, isLoading } = useChallenges({
+  const { data, isLoading, isError, error } = useChallenges({
     page,
     limit,
     search: debouncedSearch,
@@ -62,16 +72,24 @@ const ChallengesTab = () => {
     [viewDialog],
   );
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = useCallback(
     (id: string) => {
-      if (window.confirm("Are you sure you want to delete this challenge?")) {
-        deleteChallenge(id);
-      }
+      setDeleteId(id);
     },
-    [deleteChallenge],
+    [],
   );
 
-  const columns = [
+  const confirmDelete = useCallback(() => {
+    if (deleteId) {
+      deleteChallenge(deleteId);
+      setDeleteId(null);
+    }
+  }, [deleteId, deleteChallenge]);
+
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "title",
       header: "Challenge",
@@ -263,7 +281,9 @@ const ChallengesTab = () => {
         );
       },
     },
-  ];
+    ],
+    [handleDelete, handleEdit, handleView],
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -308,6 +328,8 @@ const ChallengesTab = () => {
           columns={columns}
           data={data?.challenges || []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           pagination={true}
           urlPersistence={{
             pageKey: "fit_chal_page",
@@ -319,6 +341,21 @@ const ChallengesTab = () => {
 
       <AddChallengeDialog />
       <ViewChallengeDialog />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this challenge?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

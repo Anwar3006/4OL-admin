@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +12,6 @@ import {
   useAddExerciseDialog,
 } from "@/stores/dialog-store";
 import { useExercise } from "@/hooks/supabase-calls/useExercise";
-import { LexicalRenderer } from "@/components/LexicalRenderer";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
 import {
   Dumbbell,
@@ -32,6 +32,12 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
+
+const LexicalRenderer = dynamic(
+  () =>
+    import("@/components/LexicalRenderer").then((mod) => mod.LexicalRenderer),
+  { ssr: false },
+);
 
 /* ───────────────────────────────────────────────────────────
    Main Component

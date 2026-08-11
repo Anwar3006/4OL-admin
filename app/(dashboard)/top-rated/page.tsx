@@ -184,11 +184,11 @@ const TopRatedPage = () => {
         </div>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <TopRatedItemsTable module={undefined} />
           </TabsContent>
           {TOP_RATED_MODULES.map((module) => (
-            <TabsContent key={module} value={module}>
+            <TabsContent className="w-full min-w-0 outline-none" key={module} value={module}>
               <TopRatedItemsTable module={module} />
             </TabsContent>
           ))}

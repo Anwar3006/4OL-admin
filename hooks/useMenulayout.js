@@ -1,13 +1,15 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleType } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useMenuLayout = () => {
-  const dispatch = useDispatch();
-  const menuType = useSelector((state) => state.layout.type);
+  const [menuType, setMenuType] = useState(themeConfig.layout.type);
 
-  const setMenuLayout = (value) => {
-    dispatch(handleType(value));
-  };
+  const setMenuLayout = useCallback((value) => {
+    setMenuType(value);
+    window.localStorage.setItem("type", JSON.stringify(value));
+  }, []);
 
   return [menuType, setMenuLayout];
 };

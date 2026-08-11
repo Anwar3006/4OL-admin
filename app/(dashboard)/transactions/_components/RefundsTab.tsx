@@ -1,4 +1,6 @@
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
 
 export interface RefundRow {
   id: string;
@@ -14,18 +16,21 @@ const data: RefundRow[] = [
 ];
 
 export default function RefundsTab() {
-  const columns: Column<RefundRow>[] = [
-    { key: "id", label: "REF ID", render: (val) => <span className="font-mono text-[10px] text-slate-500 font-bold">{val}</span> },
-    { key: "date", label: "Date" },
-    { key: "user", label: "User", render: (val) => <span className="font-black text-slate-800">{val}</span> },
-    { key: "amount", label: "Amount", render: (val) => <span className="font-black text-amber-600">{val}</span> },
-    { key: "status", label: "Status", render: (val) => <span className="badge badge-amber">↩️ {val}</span> },
-  ];
+  const columns = useMemo<ColumnDef<RefundRow>[]>(
+    () => [
+    { accessorKey: "id", header: "REF ID", cell: ({ row }) => <span className="font-mono text-[10px] text-slate-500 font-bold">{row.original.id}</span> },
+    { accessorKey: "date", header: "Date" },
+    { accessorKey: "user", header: "User", cell: ({ row }) => <span className="font-black text-slate-800">{row.original.user}</span> },
+    { accessorKey: "amount", header: "Amount", cell: ({ row }) => <span className="font-black text-amber-600">{row.original.amount}</span> },
+    { accessorKey: "status", header: "Status", cell: ({ row }) => <span className="badge badge-amber">↩️ {row.original.status}</span> },
+    ],
+    [],
+  );
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={data} selectable />
+        <DataTable columns={columns} data={data} />
       </div>
     </div>
   );

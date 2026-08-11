@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
-import Card from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/app/utils/helpers";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 import Loading from "@/components/Loading";
 import { useApproveFacility } from "@/hooks/supabase-calls/useFacilities";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
@@ -50,22 +51,21 @@ export default function Page() {
   };
 
   return (
-    <Card
-      className="min-h-[70vh] bg-white mt-5"
-      title={"Facility Details"}
-      headerslot={
-        <>
-          {" "}
+    <Card className="min-h-[70vh] bg-white mt-5">
+      <CardHeader className="flex flex-row justify-between items-center mb-4">
+        <CardTitle>Facility Details</CardTitle>
+        <div>
           <Button
-            icon="heroicons-outline:arrow-left"
-            text="Back"
-            className="btn-dark max-sm:text-xs font-normal btn-sm mr-3 max-sm:mt-2"
-            iconClass="text-lg"
+            className="max-sm:text-xs font-normal mr-3 max-sm:mt-2 px-3 h-8"
+            variant="default"
             onClick={() => router.back()}
-          />
-        </>
-      }
-    >
+          >
+            <Icon icon="heroicons-outline:arrow-left" className="text-lg mr-2" />
+            Back
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
       {facility && (
         <div className="sm:text-sm text-xs text-gray-600 lg:w-[80%] w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 capitalize">
@@ -136,11 +136,11 @@ export default function Page() {
             <Button
               className="px-6 py-1 text-white bg-secondary-800 border-2 border-secondary-800 hover:text-secondary-800 hover:bg-transparent"
               onClick={() => handleEdit(facility.id)}
-              text="Edit"
-            />
+            >
+              Edit
+            </Button>
             <Button
               className="px-6 py-1 text-secondary-800 bg-transparent border-2 border-secondary-800 hover:text-white hover:bg-secondary-800"
-              text={isApproving ? "Approving..." : "Approve"}
               disabled={isApproving}
               onClick={() => {
                 approveFacility(
@@ -153,10 +153,13 @@ export default function Page() {
                   { onSuccess: () => router.back() }
                 );
               }}
-            />
+              >
+                {isApproving ? "Approving..." : "Approve"}
+              </Button>
           </div>
         </div>
       )}
+      </CardContent>
     </Card>
   );
 }

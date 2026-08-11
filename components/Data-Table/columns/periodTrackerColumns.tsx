@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { Icon } from "@iconify/react";
 import moment from "moment";
@@ -36,10 +37,13 @@ export const periodTrackerColumns: ColumnDef<TPeriodTrackerLog>[] = [
       return (
         <div className="flex items-center space-x-3">
           {user?.image ? (
-            <img
+            <Image
               className="w-8 h-8 rounded-full object-cover"
               src={user.image}
               alt=""
+              width={32}
+              height={32}
+              unoptimized
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-600 flex items-center justify-center">

@@ -1,10 +1,15 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleNavBarType } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useNavbarType = () => {
-  const dispatch = useDispatch();
-  const navbarType = useSelector((state) => state.layout.navBarType);
-  const setNavbarType = (val) => dispatch(handleNavBarType(val));
+  const [navbarType, setNavbarTypeState] = useState(themeConfig.layout.navBarType);
+
+  const setNavbarType = useCallback((value) => {
+    setNavbarTypeState(value);
+  }, []);
+
   return [navbarType, setNavbarType];
 };
 

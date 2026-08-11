@@ -72,11 +72,11 @@ const DeleteAccountRequestPage = () => {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all"><AllRequestsTab /></TabsContent>
-          <TabsContent value="pending"><AllRequestsTab /></TabsContent>
-          <TabsContent value="grace"><AllRequestsTab /></TabsContent>
-          <TabsContent value="completed"><AllRequestsTab /></TabsContent>
-          <TabsContent value="settings"><SettingsPolicyTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="all"><AllRequestsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="pending"><AllRequestsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="grace"><AllRequestsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="completed"><AllRequestsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="settings"><SettingsPolicyTab /></TabsContent>
         </div>
       </Tabs>
     </div>

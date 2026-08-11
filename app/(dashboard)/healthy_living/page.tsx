@@ -61,7 +61,7 @@ const HealthyLivingPage = () => {
     setDeleteModal({ isOpen: false, item: null });
   }, []);
 
-  const { data: healthyLivingData } = useHealthyLivings({
+  const { data: healthyLivingData, isLoading, isError, error } = useHealthyLivings({
     page,
     limit: 10,
     search: search || undefined,
@@ -252,7 +252,7 @@ const HealthyLivingPage = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="all" className="outline-none mt-4">
+        <TabsContent value="all" className="outline-none mt-4 w-full min-w-0">
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center mb-4">
             <div className="relative w-full sm:flex-1 sm:min-w-[240px]">
               <input
@@ -283,6 +283,9 @@ const HealthyLivingPage = () => {
               columns={tableColumns}
               data={healthyLivingData?.healthyLivings || []}
               selectable={false}
+              isLoading={isLoading}
+              isError={isError}
+              error={error}
               onRowClick={(row: any) => viewHealthyLiving.open(row.id)}
               pagination={true}
               urlPersistence={{
@@ -304,7 +307,7 @@ const HealthyLivingPage = () => {
         </TabsContent>
 
         {["categories", "engagement"].map((tabId) => (
-          <TabsContent key={tabId} value={tabId} className="outline-none mt-4">
+          <TabsContent key={tabId} value={tabId} className="outline-none mt-4 w-full min-w-0">
             <div className="card py-20 text-center border border-slate-200 shadow-sm rounded-xl">
               <div className="max-w-md mx-auto space-y-4">
                 <div className="w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center mx-auto text-2xl">

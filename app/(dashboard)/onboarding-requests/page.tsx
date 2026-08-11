@@ -50,7 +50,7 @@ function OnboardingSection() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data, isLoading } = useOnboardingRequests({
+  const { data, isLoading, isError, error } = useOnboardingRequests({
     page,
     limit: PAGE_SIZE,
     search: debouncedSearch || undefined,
@@ -173,6 +173,8 @@ function OnboardingSection() {
         columns={columns}
         data={data?.requests ?? []}
         isLoading={isLoading || updateStatus.isPending || deleteRequest.isPending}
+        isError={isError}
+        error={error}
         pagination={pagination}
         onRowClick={(row) => setSelectedRequest(row)}
       />

@@ -31,12 +31,16 @@ export const useTrainers = ({
 
       let query = supabase
         .from("fitness_trainers")
-        .select("*, user_profiles(first_name, last_name, email, avatar_url)", { count: "exact" })
+        .select("*, user_profiles(first_name, last_name, email, avatar_url)", {
+          count: "exact",
+        })
         .order("created_at", { ascending: false });
 
       if (search) {
         // Search by user profile fields via join
-        query = query.or(`user_profiles.first_name.ilike.%${search}%,user_profiles.last_name.ilike.%${search}%`);
+        query = query.or(
+          `user_profiles.first_name.ilike.%${search}%,user_profiles.last_name.ilike.%${search}%`,
+        );
       }
 
       const { data, count, error } = await query.range(from, to);
@@ -89,6 +93,9 @@ export const useCreateTrainer = () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
       toast.success("Trainer profile created!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to create trainer profile: ${error.message}`);
+    },
   });
 };
 
@@ -111,6 +118,9 @@ export const useUpdateTrainer = () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
       toast.success("Trainer profile updated!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to update trainer profile: ${error.message}`);
+    },
   });
 };
 
@@ -118,12 +128,18 @@ export const useDeleteTrainer = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("fitness_trainers").delete().eq("id", id);
+      const { error } = await supabase
+        .from("fitness_trainers")
+        .delete()
+        .eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
       toast.success("Trainer profile deleted!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete trainer profile: ${error.message}`);
     },
   });
 };

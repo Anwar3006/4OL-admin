@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
+import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -30,7 +31,6 @@ import {
   FolderOpen,
 } from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { LexicalRenderer } from "@/components/LexicalRenderer";
 import {
   useDeleteSymptom,
   useSymptom,
@@ -38,6 +38,12 @@ import {
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+
+const LexicalRenderer = dynamic(
+  () =>
+    import("@/components/LexicalRenderer").then((mod) => mod.LexicalRenderer),
+  { ssr: false },
+);
 
 /* ───────────────────────────────────────────────────────────
    Main Component

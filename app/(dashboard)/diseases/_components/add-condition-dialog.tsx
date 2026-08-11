@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
   TConditionsOutput,
 } from "@/schemas/conditions.schema";
 import { TreeMultiSelectForm } from "@/components/TreeMultiSelect";
-import { RichTextEditor } from "@/components/RichTextInput";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import {
   useBodyPartsForSymptoms,
@@ -34,6 +34,11 @@ import {
   useCreateCondition,
   useUpdateCondition,
 } from "@/hooks/supabase-calls/useCondition";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),
+  { ssr: false },
+);
 
 const AddConditionDialog = () => {
   const {

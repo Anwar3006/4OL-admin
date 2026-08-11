@@ -9,6 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Edit, Trash2 } from "lucide-react";
 import React from "react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   useViewDiscountDialog,
   useAddDiscountDialog,
 } from "@/stores/dialog-store";
@@ -34,10 +45,8 @@ export const ViewDiscountDialog = () => {
 
   const handleDelete = async () => {
     if (!discount?.id) return;
-    if (window.confirm("Are you sure you want to delete this discount?")) {
-      await deleteDiscount.mutateAsync(discount.id);
-      close();
-    }
+    await deleteDiscount.mutateAsync(discount.id);
+    close();
   };
 
   const formatDiscountDisplay = () => {
@@ -168,20 +177,35 @@ export const ViewDiscountDialog = () => {
                 <Edit className="h-4 w-4" />
                 Edit
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDelete}
-                disabled={deleteDiscount.isPending}
-                className="flex items-center gap-2"
-              >
-                {deleteDiscount.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                Delete
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={deleteDiscount.isPending}
+                    className="flex items-center gap-2"
+                  >
+                    {deleteDiscount.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this discount?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         ) : null}

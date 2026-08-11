@@ -36,7 +36,7 @@ const FacilitiesPage = () => {
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("fac_page") || "1", 10);
 
-  const { data, isLoading, isFetching } = useFacilityProfiles({
+  const { data, isLoading, isFetching, isError, error } = useFacilityProfiles({
     page,
     limit: 10,
     status: currentStatus === "all" ? undefined : (currentStatus as any),
@@ -234,6 +234,8 @@ const FacilitiesPage = () => {
               columns={facilityColumns}
               data={data?.facilities || []}
               isLoading={isLoading || isFetching}
+              isError={isError}
+              error={error}
               onRowClick={(row) => viewFacility.open(row.id)}
               onDeleteSelected={(rows) => {
                 if (

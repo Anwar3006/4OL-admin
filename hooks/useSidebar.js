@@ -1,12 +1,20 @@
-import { useSelector, useDispatch } from "react-redux";
-import { handleSidebarCollapsed } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
 
 const useSidebar = () => {
-  const dispatch = useDispatch();
-  const collapsed = useSelector((state) => state.layout.isCollapsed);
+  const [collapsed, setCollapsed] = useState(themeConfig.layout.isCollapsed);
 
-  // ** Toggles Menu Collapsed
-  const setMenuCollapsed = (val) => dispatch(handleSidebarCollapsed(val));
+  useEffect(() => {
+    const stored = window.localStorage.getItem("sidebarCollapsed");
+    if (stored !== null) setCollapsed(JSON.parse(stored));
+  }, []);
+
+  const setMenuCollapsed = useCallback((value) => {
+    setCollapsed(value);
+    window.localStorage.setItem("sidebarCollapsed", JSON.stringify(value));
+  }, []);
 
   return [collapsed, setMenuCollapsed];
 };

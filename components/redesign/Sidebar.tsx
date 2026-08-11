@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { 
   ChevronRight, 
@@ -87,7 +88,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-3.5 py-4 border-b border-white/10 min-h-[60px]">
         <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
-          <img src="/assets/images/all-img/logo.png" alt="4 Our Life" className="w-full h-full object-contain" />
+          <Image src="/assets/images/all-img/logo.png" alt="4 Our Life" width={32} height={32} className="w-full h-full object-contain" />
         </div>
         {!collapsed && (
           <div className="font-extrabold text-sm tracking-tight whitespace-nowrap">

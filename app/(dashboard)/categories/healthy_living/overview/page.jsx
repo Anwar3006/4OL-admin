@@ -3,12 +3,13 @@ import {
   deleteHealthyLivingEntry,
   getAllHealthyLivingEntries,
 } from "@/app/services/healthy-living-service";
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
@@ -176,11 +177,9 @@ const HealthyLivingOverviewPage = () => {
 
   return (
     <div className="mt-5 relative">
-      <Card
-        title="Healthy Living Articles"
-        className=" overflow-hidden relative"
-        bodyClass="p-0"
-        headerslot={
+      <Card className="overflow-hidden relative">
+        <CardHeader className="flex flex-row justify-between items-center bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-6">
+          <CardTitle>Healthy Living Articles</CardTitle>
           <div className="flex items-center gap-3 flex-wrap">
             {/* Search Filter */}
             <div className="relative" ref={searchRef}>
@@ -222,14 +221,16 @@ const HealthyLivingOverviewPage = () => {
               )}
             </div>
             <Button
-              text="+ Add New Article"
-              className="btn-dark max-sm:text-xs font-normal btn-sm"
-              iconClass="text-lg"
+              className="max-sm:text-xs font-normal btn-sm h-8"
+              variant="default"
               onClick={() => router.push("/categories/healthy_living/form")}
-            />
+            >
+              <Icon icon="heroicons-outline:plus" className="text-lg mr-2" />
+              Add New Article
+            </Button>
           </div>
-        }
-      >
+        </CardHeader>
+        <CardContent className="p-0">
         <div ref={scrollContainerRef} className="overflow-x-auto relative">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
@@ -289,19 +290,23 @@ const HealthyLivingOverviewPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-200 align-top">
                     <div className="flex justify-center gap-2">
                       <Button
-                        icon="heroicons-outline:pencil-alt"
-                        iconClass="text-green-500 text-lg"
-                        className="p-0 bg-transparent border-none"
+                        variant="ghost"
+                        size="icon"
+                        className="p-0 bg-transparent border-none text-green-500 hover:text-green-600 hover:bg-green-50"
                         onClick={() => handleEdit(article)}
-                        tooltip="Edit"
-                      />
+                        title="Edit"
+                      >
+                        <Icon icon="heroicons-outline:pencil-alt" className="text-lg" />
+                      </Button>
                       <Button
-                        icon="heroicons-outline:trash"
-                        iconClass="text-red-500 text-lg"
-                        className="p-0 bg-transparent border-none"
+                        variant="ghost"
+                        size="icon"
+                        className="p-0 bg-transparent border-none text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={() => deleteModal(article)}
-                        tooltip="Delete"
-                      />
+                        title="Delete"
+                      >
+                        <Icon icon="heroicons-outline:trash" className="text-lg" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -352,6 +357,7 @@ const HealthyLivingOverviewPage = () => {
             />
           </div>
         )}
+        </CardContent>
       </Card>
 
       {/* Delete Confirmation Modal */}
@@ -439,9 +445,12 @@ const HealthyLivingOverviewPage = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <img
+                          <Image
                             src={value}
                             alt="image url"
+                            width={64}
+                            height={64}
+                            unoptimized
                             className="w-16 h-16 object-cover rounded-sm"
                           />
                         </a>
@@ -475,13 +484,15 @@ const HealthyLivingOverviewPage = () => {
 
               <div className="pt-4 border-t border-gray-200 flex justify-end">
                 <Button
-                  text="Close"
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                  className="px-4 py-2"
+                  variant="secondary"
                   onClick={() => {
                     setShowDetailsModal(false);
                     setViewDetails(null);
                   }}
-                />
+                >
+                  Close
+                </Button>
               </div>
             </div>
           )}

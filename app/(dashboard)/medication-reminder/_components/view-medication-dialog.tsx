@@ -32,11 +32,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const ViewMedicationReminderDialog = () => {
   const { isOpen, close, entityId } = useViewMediactionReminderDialog();
   const { data: session } = useSupabaseSession();
   const adminId = session?.user?.id || "";
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
 
   const { data, isLoading } = useMedicationReminder(entityId!);
   const { mutateAsync: deleteReminder } = useDeleteMedication();
@@ -64,10 +66,9 @@ const ViewMedicationReminderDialog = () => {
   const activeDays = weekDaysList.length ? weekDaysList : selectedDaysList;
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this medication reminder?")) {
-      await deleteReminder({ adminId, reminderId: entityId! });
-      close();
-    }
+    await deleteReminder({ adminId, reminderId: entityId! });
+    setConfirmDeleteOpen(false);
+    close();
   };
 
   return (
@@ -133,7 +134,7 @@ const ViewMedicationReminderDialog = () => {
                   </div>
 
                   <Button
-                    onClick={handleDelete}
+                    onClick={() => setConfirmDeleteOpen(true)}
                     variant="outline"
                     size="icon"
                     className="rounded-full border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
@@ -339,6 +340,15 @@ const ViewMedicationReminderDialog = () => {
           </div>
         )}
       </DialogContent>
+
+      <DeleteConfirmationModal
+        isOpen={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Medication Reminder"
+        itemName={data?.drug_name || ""}
+        itemType="medication reminder"
+      />
     </Dialog>
   );
 };

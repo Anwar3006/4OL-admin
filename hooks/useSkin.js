@@ -1,21 +1,26 @@
-import { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { handleSkin } from "@/store/layoutReducer";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import themeConfig from "@/configs/themeConfig";
+
+const readStoredValue = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.localStorage.getItem(key);
+  return stored === null ? fallback : JSON.parse(stored);
+};
 
 const useSkin = () => {
-  const dispatch = useDispatch();
-  const skin = useSelector((state) => state.layout.skin);
+  const [skin, setSkinState] = useState(themeConfig.layout.skin);
 
-  const setSkin = (mode) => {
-    dispatch(handleSkin(mode));
-    localStorage.setItem("skin", JSON.stringify(mode));
-  };
   useEffect(() => {
-    const storedMode = localStorage.getItem("skin");
-    if (storedMode !== null) {
-      dispatch(handleSkin(JSON.parse(storedMode)));
-    }
+    setSkinState(readStoredValue("skin", themeConfig.layout.skin));
   }, []);
+
+  const setSkin = useCallback((mode) => {
+    setSkinState(mode);
+    window.localStorage.setItem("skin", JSON.stringify(mode));
+  }, []);
+
   return [skin, setSkin];
 };
 

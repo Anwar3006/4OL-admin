@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
@@ -34,7 +34,7 @@ const SymptomsPage = () => {
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("sym_page") || "1", 10);
 
-  const { data, isLoading, isFetching } = useSymptoms({
+  const { data, isLoading, isFetching, isError, error } = useSymptoms({
     limit,
     page,
     search: debouncedSearch,
@@ -47,9 +47,9 @@ const SymptomsPage = () => {
     item: any;
   }>({ isOpen: false, item: null });
 
-  const handleDeleteClick = (symptom: any) => {
+  const handleDeleteClick = useCallback((symptom: any) => {
     setDeleteModal({ isOpen: true, item: symptom });
-  };
+  }, []);
 
   const handleDeleteConfirm = () => {
     if (deleteModal.item) {
@@ -63,7 +63,8 @@ const SymptomsPage = () => {
     setDeleteModal({ isOpen: false, item: null });
   };
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "name",
       header: "Symptom Name",
@@ -195,7 +196,9 @@ const SymptomsPage = () => {
         );
       },
     },
-  ];
+    ],
+    [addSymptom, handleDeleteClick, openViewDialog],
+  );
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
@@ -290,7 +293,7 @@ const SymptomsPage = () => {
         <div className="mt-6">
           <TabsContent
             value="all"
-            className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300"
+            className="outline-none space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 w-full min-w-0"
           >
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[300px]">
@@ -333,6 +336,8 @@ const SymptomsPage = () => {
                 data={data?.symptoms || []}
                 selectable
                 isLoading={isLoading || isFetching}
+                isError={isError}
+                error={error}
                 pagination={true}
                 urlPersistence={{
                   pageKey: "sym_page",
@@ -356,7 +361,7 @@ const SymptomsPage = () => {
             <TabsContent
               key={tabId}
               value={tabId}
-              className="outline-none animate-in fade-in zoom-in-95 duration-300"
+              className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
             >
               <div className="card py-32 text-center border-dashed border-2 border-slate-200 bg-slate-50/50">
                 <div className="max-w-md mx-auto space-y-4">

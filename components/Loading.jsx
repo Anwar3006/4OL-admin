@@ -1,7 +1,6 @@
 import React from "react";
 import useDarkMode from "@/hooks/useDarkMode";
 
-import { useSelector } from "react-redux";
 const Loading = () => {
   const [isDark] = useDarkMode();
 

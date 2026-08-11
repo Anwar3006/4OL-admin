@@ -131,7 +131,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
 
       return (
         <div className="flex items-center justify-end gap-2">
-          <Button
+          <Button aria-label="View Details"
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50"
@@ -142,7 +142,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
           >
             <FileText className="h-4 w-4" />
           </Button>
-          <Button
+          <Button aria-label="Edit"
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
@@ -153,7 +153,7 @@ export const symptomsColumns: ColumnDef<TSymptomsOutput>[] = [
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
+          <Button aria-label="Delete"
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-slate-600 hover:text-red-600 hover:bg-red-50"

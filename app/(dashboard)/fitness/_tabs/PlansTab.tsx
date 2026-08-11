@@ -4,6 +4,16 @@ import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   useFitnessPlans,
   useDeleteFitnessPlan,
 } from "@/hooks/supabase-calls/useFitnessPlan";
@@ -41,7 +51,7 @@ const PlansTab = () => {
   const planDialog = useAddFitnessPlanDialog();
   const viewDialog = useViewFitnessPlanDialog();
   const aiGenerateDialog = useAiGeneratePlanDialog();
-  const { data, isLoading } = useFitnessPlans({
+  const { data, isLoading, isError, error } = useFitnessPlans({
     page,
     limit,
     search: debouncedSearch,
@@ -55,18 +65,24 @@ const PlansTab = () => {
     [planDialog],
   );
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = useCallback(
     (id: string) => {
-      if (
-        window.confirm("Are you sure you want to delete this fitness plan?")
-      ) {
-        deletePlan(id);
-      }
+      setDeleteId(id);
     },
-    [deletePlan],
+    [],
   );
 
-  const columns = [
+  const confirmDelete = useCallback(() => {
+    if (deleteId) {
+      deletePlan(deleteId);
+      setDeleteId(null);
+    }
+  }, [deleteId, deletePlan]);
+
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "title",
       header: "Plan Details",
@@ -201,7 +217,9 @@ const PlansTab = () => {
         );
       },
     },
-  ];
+    ],
+    [handleDelete, handleEdit, viewDialog],
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -254,6 +272,8 @@ const PlansTab = () => {
           columns={columns}
           data={data?.plans || []}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           pagination={true}
           urlPersistence={{
             pageKey: "fit_plan_page",
@@ -266,6 +286,21 @@ const PlansTab = () => {
       <AddFitnessPlanDialog />
       <AiGeneratePlanDialog />
       <ViewFitnessPlanDialog />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this fitness plan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

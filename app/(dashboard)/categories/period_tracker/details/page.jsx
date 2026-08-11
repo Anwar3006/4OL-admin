@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import Loading from "@/components/Loading";
 import moment from "moment";
 import { Icon } from "@iconify/react";
@@ -65,7 +65,7 @@ const PeriodTrackerDetails = () => {
         headerslot={
           <Button
             text="Back to Overview"
-            icon="heroicons-outline:arrow-left"
+           
             className="btn-dark btn-sm"
             onClick={() => router.push("/categories/period_tracker/overview")}
           />

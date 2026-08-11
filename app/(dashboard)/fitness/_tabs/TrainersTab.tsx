@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useMemo, useState, useCallback, useEffect } from "react";
+import Image from "next/image";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   useTrainers,
   useDeleteTrainer,
@@ -35,7 +46,7 @@ const TrainersTab = () => {
 
   const trainerDialog = useAddTrainerDialog();
   const viewTrainer = useViewTrainerDialog();
-  const { data, isLoading } = useTrainers({
+  const { data, isLoading, isError, error } = useTrainers({
     page,
     limit,
     search: debouncedSearch,
@@ -49,16 +60,24 @@ const TrainersTab = () => {
     [trainerDialog],
   );
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = useCallback(
     (id: string) => {
-      if (window.confirm("Are you sure you want to remove this trainer?")) {
-        deleteTrainer(id);
-      }
+      setDeleteId(id);
     },
-    [deleteTrainer],
+    [],
   );
 
-  const columns = [
+  const confirmDelete = useCallback(() => {
+    if (deleteId) {
+      deleteTrainer(deleteId);
+      setDeleteId(null);
+    }
+  }, [deleteId, deleteTrainer]);
+
+  const columns = useMemo(
+    () => [
     {
       accessorKey: "trainer",
       header: "Trainer Profile",
@@ -66,9 +85,12 @@ const TrainersTab = () => {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden">
             {row.original.user_profiles?.avatar_url ? (
-              <img
+              <Image
                 src={row.original.user_profiles.avatar_url}
                 alt=""
+                width={32}
+                height={32}
+                unoptimized
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -143,7 +165,9 @@ const TrainersTab = () => {
         </span>
       ),
     },
-  ];
+    ],
+    [],
+  );
 
   const rowActions = [
     {
@@ -204,6 +228,8 @@ const TrainersTab = () => {
           data={data?.trainers || []}
           rowActions={rowActions}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           pagination={true}
           urlPersistence={{
             pageKey: "fit_train_page",
@@ -215,6 +241,21 @@ const TrainersTab = () => {
 
       <AddTrainerDialog />
       <ViewTrainerDialog />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this trainer?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

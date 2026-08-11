@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import React, { useMemo, useState } from "react";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import {
   useMedicationAdherence,
@@ -42,51 +43,58 @@ export default function AdherenceTab() {
     setPageIndex(1);
   };
 
-  const columns: Column<AdherenceLogRow>[] = [
+  const columns = useMemo<ColumnDef<AdherenceLogRow>[]>(
+    () => [
     {
-      key: "medication_reminders",
-      label: "Drug",
-      render: (val, row) => (
-        <span className="font-bold text-slate-800">{row.medication_reminders?.drug_name || "Unknown Drug"}</span>
-      ),
-    },
-    {
-      key: "user_profiles",
-      label: "User",
-      render: (val, row) => (
-        <span className="font-medium text-slate-700">{row.user_profiles?.name || "Unknown User"}</span>
-      ),
-    },
-    {
-      key: "scheduled_time",
-      label: "Scheduled",
-      render: (val, row) => (
-        <span className="text-[10px] font-bold text-slate-400">
-          {new Date(row.scheduled_time).toLocaleString()}
+      accessorKey: "medication_reminders",
+      header: "Drug",
+      cell: ({ row }) => (
+        <span className="font-bold text-slate-800">
+          {row.original.medication_reminders?.drug_name || "Unknown Drug"}
         </span>
       ),
     },
     {
-      key: "action_time",
-      label: "Actioned",
-      render: (val, row) => (
-        <span className="text-[10px] font-bold text-slate-400">
-          {row.action_time ? new Date(row.action_time).toLocaleString() : "—"}
+      accessorKey: "user_profiles",
+      header: "User",
+      cell: ({ row }) => (
+        <span className="font-medium text-slate-700">
+          {row.original.user_profiles?.name || "Unknown User"}
         </span>
       ),
     },
     {
-      key: "status",
-      label: "Status",
-      render: (val, row) => {
-        const badge = STATUS_BADGE[row.status] || STATUS_BADGE.missed;
+      accessorKey: "scheduled_time",
+      header: "Scheduled",
+      cell: ({ row }) => (
+        <span className="text-[10px] font-bold text-slate-400">
+          {new Date(row.original.scheduled_time).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "action_time",
+      header: "Actioned",
+      cell: ({ row }) => (
+        <span className="text-[10px] font-bold text-slate-400">
+          {row.original.action_time ? new Date(row.original.action_time).toLocaleString() : "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const badge = STATUS_BADGE[row.original.status] || STATUS_BADGE.missed;
         return <span className={badge.className}>{badge.label}</span>;
       },
     },
-  ];
+    ],
+    [],
+  );
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <div className="flex gap-1">
           {STATUS_FILTERS.map((f) => (
@@ -111,10 +119,17 @@ export default function AdherenceTab() {
           columns={columns}
           data={rows}
           isLoading={isLoading}
-          pagination
-          externalPage={pageIndex}
-          externalTotalPages={totalPages}
-          onPageChange={setPageIndex}
+          pagination={{
+            currentPage: pageIndex,
+            totalPages: totalPages,
+            totalItems: totalCount,
+            pageSize: PAGE_SIZE,
+            onPageChange: setPageIndex,
+            onNextPage: () => setPageIndex((p) => p + 1),
+            onPreviousPage: () => setPageIndex((p) => Math.max(1, p - 1)),
+            canNextPage: pageIndex < totalPages,
+            canPreviousPage: pageIndex > 1,
+          }}
         />
       </div>
     </div>

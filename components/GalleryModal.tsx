@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -55,10 +56,12 @@ export function GalleryModal() {
                     className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-500"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={getImageUrl(selectedImage)}
                     alt="Preview"
-                    className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-500"
+                    fill
+                    sizes="(min-width: 768px) 75vw, 95vw"
+                    className="object-contain animate-in fade-in zoom-in duration-500"
                   />
                 )
               ) : (
@@ -97,11 +100,12 @@ export function GalleryModal() {
                             muted
                           />
                         ) : (
-                          <img
+                          <Image
                             src={getImageUrl(img)}
                             alt={`Gallery image ${i + 1}`}
+                            fill
+                            sizes="(min-width: 768px) 260px, 25vw"
                             className="object-cover w-full h-full"
-                            loading="lazy"
                           />
                         )}
                       </AspectRatio>

@@ -17,7 +17,7 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
     usePagination({
       key: `top-rated-${module || "all"}-page`,
     });
-  const { data, isLoading } = useTopRatedItems({
+  const { data, isLoading, isError, error } = useTopRatedItems({
     page,
     limit: pageSize,
     module,
@@ -79,6 +79,8 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
           columns={topRatedItemColumns}
           data={items}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           onRowClick={(row) => console.log("Row Click", row.id)}
           onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
           cardConfig={cardConfig}

@@ -99,7 +99,7 @@ export const menuItems = [
     title: "Period Tracker",
     isHide: false,
     icon: "bi:droplet-fill",
-    link: "period_tracker",
+    link: "categories/period_tracker/overview",
   },
   {
     title: "Medication Reminder",

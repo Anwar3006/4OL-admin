@@ -1,7 +1,5 @@
-"use client";
-
 import React from "react";
-import Card from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import ResetPassword from "@/components/redesign/auth/Admin/resetPassword";
 
 export default function page() {

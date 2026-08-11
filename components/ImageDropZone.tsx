@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Button } from "./ui/button";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { Card, CardContent } from "./ui/card";
@@ -560,14 +561,17 @@ const ImageDropZone = ({
           <div key={file.id} className="relative group">
             {file.fileCategory === "video" ? (
               <video
-                src={file.objectUrl}
+                src={file.objectUrl || ""}
                 className="rounded-xl w-full h-48 object-cover"
                 controls
               />
             ) : (
-              <img
-                src={file.objectUrl}
+              <Image
+                src={file.objectUrl || ""}
                 alt={file.file.name}
+                width={384}
+                height={192}
+                unoptimized
                 className="rounded-xl w-full h-48 object-cover"
               />
             )}

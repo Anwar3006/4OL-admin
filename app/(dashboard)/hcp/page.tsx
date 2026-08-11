@@ -58,13 +58,13 @@ export default function HCPPage() {
         </TabsList>
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
-          <TabsContent value="all">
+          <TabsContent className="w-full min-w-0 outline-none" value="all">
             <AllHCPTab />
           </TabsContent>
-          <TabsContent value="pending">
+          <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <PendingHCPTab />
           </TabsContent>
-          <TabsContent value="chats">
+          <TabsContent className="w-full min-w-0 outline-none" value="chats">
             <GroupChatsHCPTab />
           </TabsContent>
         </div>

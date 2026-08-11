@@ -1,9 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getHealthyLivingEntryById } from "@/app/services/healthy-living-service";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/react";
 import HtmlRenderer from "@/components/ui/HtmlRenderer";
 import Loading from "@/components/Loading";
 
@@ -37,36 +39,40 @@ const HealthyLivingDetails = () => {
       <div className="text-center py-10">
         <p className="text-gray-500">Article not found</p>
         <Button
-          text="Back to Overview"
           onClick={() => router.push("/categories/healthy_living/overview")}
           className="mt-4"
-        />
+        >
+          Back to Overview
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="mt-5">
-      <Card
-        title={article.topic_name || article.headline}
-        className="overflow-hidden lg:w-[90%]"
-        bodyClass="p-6"
-        headerslot={
+      <Card className="overflow-hidden lg:w-[90%]">
+        <CardHeader className="flex flex-row justify-between items-center">
+          <CardTitle>{article.topic_name || article.headline}</CardTitle>
           <Button
-            text="Back to Overview"
-            icon="heroicons-outline:arrow-left"
-            className="btn-dark btn-sm"
+            className="btn-sm px-3 h-8"
+            variant="default"
             onClick={() => router.push("/categories/healthy_living/overview")}
-          />
-        }
-      >
+          >
+            <Icon icon="heroicons-outline:arrow-left" className="text-lg mr-2" />
+            Back to Overview
+          </Button>
+        </CardHeader>
+        <CardContent className="p-6">
         <div className="space-y-6">
           {/* Image */}
           {article.image_url && (
             <div className="flex justify-center">
-              <img
+              <Image
                 src={article.image_url}
                 alt={article.topic_name || article.headline}
+                width={640}
+                height={360}
+                unoptimized
                 className="max-w-xl shadow-lg"
               />
             </div>
@@ -134,6 +140,7 @@ const HealthyLivingDetails = () => {
             </div>
           )}
         </div>
+        </CardContent>
       </Card>
     </div>
   );

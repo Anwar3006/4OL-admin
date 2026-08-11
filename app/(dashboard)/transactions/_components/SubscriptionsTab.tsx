@@ -21,7 +21,7 @@ export default function SubscriptionsTab() {
     usePagination({
       key: "facility-subs-page",
     });
-  const { data, isLoading } = useFacilitySubscriptions({
+  const { data, isLoading, isError, error } = useFacilitySubscriptions({
     page,
     limit: pageSize,
   });
@@ -36,7 +36,7 @@ export default function SubscriptionsTab() {
     .reduce((sum, s) => sum + (s.subscription?.price || 0), 0);
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="w-full min-w-0 space-y-6 mt-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
           icon="✅"
@@ -72,6 +72,8 @@ export default function SubscriptionsTab() {
           columns={facilitySubscriptionColumns}
           data={subscriptions}
           isLoading={isLoading}
+          isError={isError}
+          error={error}
           selectable
         />
       </div>

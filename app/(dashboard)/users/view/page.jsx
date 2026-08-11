@@ -1,11 +1,7 @@
-"use client";
-
 import React from "react";
-import useDarkmode from "@/hooks/useDarkMode";
 // import ViewUserDetails from "@/components/redesign/auth/Users/ViewUserDetials";
 
 export default function page() {
-  const [isDark] = useDarkmode();
   return (
     <>
       <div className="">

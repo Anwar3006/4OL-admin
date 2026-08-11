@@ -1,5 +1,6 @@
 'use client'
 import React from "react";
+import Image from "next/image";
 import useSkin from "@/hooks/useSkin";
 
 const Card = ({
@@ -31,7 +32,7 @@ const Card = ({
     >
      {image && (
       <div className="card-image">
-        <img src={image} alt="logo" className={`object-cover ${imageClass}`} />
+        <Image src={image} alt="logo" width={640} height={360} className={`object-cover ${imageClass}`} />
       </div>  
      )}
       {(title || subtitle) && (

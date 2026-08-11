@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { toast } from "sonner";
-import { TFitnessPlanInput, TFitnessPlanOutput } from "@/schemas/fitness-plan.schema";
+import {
+  TFitnessPlanInput,
+  TFitnessPlanOutput,
+} from "@/schemas/fitness-plan.schema";
 
 const supabase = getSupabaseBrowserClient();
 
@@ -88,13 +91,22 @@ export const useCreateFitnessPlan = () => {
       queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
       toast.success("Fitness plan created!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to create fitness plan: ${error.message}`);
+    },
   });
 };
 
 export const useUpdateFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TFitnessPlanInput }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: TFitnessPlanInput;
+    }) => {
       const payload = { ...data };
       delete payload.id;
       const { data: result, error } = await supabase
@@ -110,6 +122,9 @@ export const useUpdateFitnessPlan = () => {
       queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
       toast.success("Fitness plan updated!");
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to update fitness plan: ${error.message}`);
+    },
   });
 };
 
@@ -117,12 +132,18 @@ export const useDeleteFitnessPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("fitness_plans").delete().eq("id", id);
+      const { error } = await supabase
+        .from("fitness_plans")
+        .delete()
+        .eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FITNESS_PLAN_QUERY_KEYS.all });
       toast.success("Fitness plan deleted!");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete fitness plan: ${error.message}`);
     },
   });
 };

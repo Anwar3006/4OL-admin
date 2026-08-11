@@ -1,4 +1,6 @@
-import DataTable, { Column } from "@/components/redesign/DataTable";
+import { DataTable } from "@/components/Data-Table/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useMemo } from "react";
 
 export interface FailedTransactionRow {
   id: string;
@@ -16,14 +18,33 @@ const data: FailedTransactionRow[] = [
 ];
 
 export default function FailedTransactionsTab() {
-  const columns: Column<FailedTransactionRow>[] = [
-    { key: "id", label: "TXN ID", render: (val) => <span className="font-mono text-[10px] text-slate-500 font-bold">{val}</span> },
-    { key: "date", label: "Date" },
-    { key: "user", label: "User", render: (val) => <span className="font-black text-slate-800">{val}</span> },
-    { key: "type", label: "Type" },
-    { key: "amount", label: "Amount", render: (val) => <span className="font-black text-red-500">{val}</span> },
-    { key: "reason", label: "Failure Reason", render: (val) => <span className="text-[10px] font-bold text-red-400 uppercase tracking-tighter italic">{val}</span> },
-  ];
+  const columns = useMemo<ColumnDef<FailedTransactionRow>[]>(
+    () => [
+    {
+      accessorKey: "id",
+      header: "TXN ID",
+      cell: ({ row }) => <span className="font-mono text-[10px] text-slate-500 font-bold">{row.original.id}</span>,
+    },
+    { accessorKey: "date", header: "Date" },
+    {
+      accessorKey: "user",
+      header: "User",
+      cell: ({ row }) => <span className="font-black text-slate-800">{row.original.user}</span>,
+    },
+    { accessorKey: "type", header: "Type" },
+    {
+      accessorKey: "amount",
+      header: "Amount",
+      cell: ({ row }) => <span className="font-black text-red-500">{row.original.amount}</span>,
+    },
+    {
+      accessorKey: "reason",
+      header: "Failure Reason",
+      cell: ({ row }) => <span className="text-[10px] font-bold text-red-400 uppercase tracking-tighter italic">{row.original.reason}</span>,
+    },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-4 mt-4 text-xs">
@@ -32,7 +53,7 @@ export default function FailedTransactionsTab() {
         <strong>12 failed transactions</strong> detected in the last 24 hours.
       </div>
       <div className="card p-0 overflow-hidden">
-        <DataTable columns={columns} data={data} selectable />
+        <DataTable columns={columns} data={data} />
       </div>
     </div>
   );
