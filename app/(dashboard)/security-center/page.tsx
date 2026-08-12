@@ -1,10 +1,5 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return (
-    <PlaceholderPage
-      title="security center"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+export default function SecurityCenterRedirectPage() {
+  redirect("/security");
 }

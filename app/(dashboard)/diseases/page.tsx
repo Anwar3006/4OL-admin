@@ -228,8 +228,8 @@ const DiseasesPage = () => {
           label="Total Conditions"
           value={data?.meta?.total?.toLocaleString() || "0"}
           variant="blue"
-          delta="+12 month"
-          deltaType="up"
+          delta="Health content database"
+          deltaType="neutral"
         />
         <KpiCard
           icon="📂"
@@ -239,13 +239,12 @@ const DiseasesPage = () => {
           delta="Active database"
         />
         <KpiCard
-          icon="🚩"
-          label="Total Likes"
-          // value={stats?.totalLikes?.toLocaleString() || "0"}
-          value={0}
+          icon="👁️"
+          label="Total Views"
+          value={isStatsLoading ? "..." : (stats?.totalViews ?? 0).toLocaleString()}
           variant="red"
-          delta="High engagement"
-          deltaType="up"
+          delta="Lifetime views"
+          deltaType="neutral"
         />
         <KpiCard
           icon="⏳"
@@ -263,11 +262,11 @@ const DiseasesPage = () => {
         />
         <KpiCard
           icon="✅"
-          label="Avg Engagement"
-          value={0}
+          label="Review Rate"
+          value={isStatsLoading ? "..." : `${stats?.reviewRate ?? 0}%`}
           variant="green"
-          delta="High interest"
-          deltaType="up"
+          delta="Reviewed by an editor"
+          deltaType="neutral"
         />
       </div>
 

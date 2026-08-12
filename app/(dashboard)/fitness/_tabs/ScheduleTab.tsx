@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -25,8 +26,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  useFitnessContentSchedule,
+  type FitnessScheduledContent,
+} from "@/hooks/supabase-calls/useFitnessContentSchedule";
+
+const CONTENT_TYPE_LABEL: Record<FitnessScheduledContent["content_type"], string> = {
+  workout: "Workout",
+  challenge: "Challenge",
+  broadcast: "Broadcast",
+  article: "Article",
+};
+
+function contentLabel(row: FitnessScheduledContent) {
+  const metaTitle = row.metadata?.title;
+  if (typeof metaTitle === "string" && metaTitle.trim()) return metaTitle;
+  return `${CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type} #${row.reference_id?.slice(0, 8) ?? "—"}`;
+}
+
+function formatScheduledAt(value: string) {
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 const ScheduleTab = () => {
+  const { data: scheduledContent, isLoading, isError } = useFitnessContentSchedule();
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Schedule Header & KPIs */}
@@ -118,72 +147,82 @@ const ScheduleTab = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {[
-                {
-                  title: "Morning HIIT Release",
-                  type: "Workout",
-                  target: "All Users",
-                  time: "May 25, 06:00",
-                  status: "scheduled",
-                },
-                {
-                  title: "30-Day Streak Alert",
-                  type: "Broadcast",
-                  target: "Segment: Active",
-                  time: "May 25, 09:00",
-                  status: "pending",
-                },
-                {
-                  title: "Yoga Weekend Prep",
-                  type: "Article",
-                  target: "Premium",
-                  time: "May 26, 14:30",
-                  status: "scheduled",
-                },
-              ].map((row, i) => (
-                <TableRow
-                  key={i}
-                  className="hover:bg-slate-50/50 transition-colors border-slate-50"
-                >
-                  <TableCell className="px-8 font-bold text-slate-700">
-                    {row.title}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-[9px] tracking-widest px-2"
-                    >
-                      {row.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs font-medium text-slate-500">
-                    {row.target}
-                  </TableCell>
-                  <TableCell className="text-xs font-bold text-slate-600">
-                    {row.time}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        row.status === "scheduled"
-                          ? "bg-emerald-100 text-emerald-700 border-none px-3"
-                          : "bg-amber-100 text-amber-700 border-none px-3"
-                      }
-                    >
-                      {row.status.toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right px-8">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+              {isLoading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i} className="border-slate-50">
+                    {Array.from({ length: 6 }).map((__, j) => (
+                      <TableCell key={j} className="px-8">
+                        <Skeleton className="h-4 w-full max-w-32" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+
+              {!isLoading && isError && (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-12 text-center text-sm text-red-600">
+                    Failed to load the content schedule. Try refreshing the page.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
+
+              {!isLoading && !isError && (scheduledContent?.length ?? 0) === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-12 text-center text-sm text-slate-400">
+                    📂 Nothing scheduled yet.
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {!isLoading &&
+                !isError &&
+                scheduledContent?.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="hover:bg-slate-50/50 transition-colors border-slate-50"
+                  >
+                    <TableCell className="px-8 font-bold text-slate-700">
+                      {contentLabel(row)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-[9px] tracking-widest px-2"
+                      >
+                        {CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium text-slate-500">
+                      {row.target_audience ?? "All Users"}
+                    </TableCell>
+                    <TableCell className="text-xs font-bold text-slate-600">
+                      {formatScheduledAt(row.scheduled_at)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          row.status === "sent" || row.status === "completed"
+                            ? "bg-emerald-100 text-emerald-700 border-none px-3"
+                            : row.status === "cancelled" || row.status === "failed"
+                              ? "bg-red-100 text-red-700 border-none px-3"
+                              : "bg-amber-100 text-amber-700 border-none px-3"
+                        }
+                      >
+                        {(row.status ?? "scheduled").toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right px-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400"
+                        aria-label="More actions"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </CardContent>

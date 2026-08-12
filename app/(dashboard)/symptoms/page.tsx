@@ -223,8 +223,8 @@ const SymptomsPage = () => {
               : (stats?.totalSymptoms || 0).toLocaleString()
           }
           variant="blue"
-          delta="+8.4% month"
-          deltaType="up"
+          delta="Independent symptoms database"
+          deltaType="neutral"
         />
         <KpiCard
           icon="📂"
@@ -247,10 +247,10 @@ const SymptomsPage = () => {
         <KpiCard
           icon="✅"
           label="Verification Rate"
-          value="94%"
+          value={isStatsLoading ? "..." : `${stats?.verificationRate ?? 0}%`}
           variant="green"
-          delta="High accuracy"
-          deltaType="up"
+          delta="Reviewed by an editor"
+          deltaType="neutral"
         />
       </div>
 

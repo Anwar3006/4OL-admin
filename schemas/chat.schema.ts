@@ -11,6 +11,14 @@ export const chatSchema = z.object({
   is_deleted: z.boolean().default(false),
   created_at: z.string(),
   updated_at: z.string(),
+  assigned_to: z.string().uuid().nullable().optional(),
+  assigned_at: z.string().nullable().optional(),
+  first_response_at: z.string().nullable().optional(),
+  resolved_at: z.string().nullable().optional(),
+  category: z.string().nullable().optional(),
+  tags: z.array(z.string()).nullable().optional(),
+  response_time_minutes: z.number().nullable().optional(),
+  satisfaction_rating: z.number().nullable().optional(),
   user_profiles: z
     .object({
       first_name: z.string().nullable(),

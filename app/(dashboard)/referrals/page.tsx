@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import SectionHeader from "@/components/SectionHeader";
 import { GitMerge } from "lucide-react";

@@ -22,6 +22,7 @@ import {
   useFacilityProfiles,
   useDeleteFacility,
 } from "@/hooks/supabase-calls/useFacilities";
+import { useFacilityDashboardMetrics } from "@/hooks/supabase-calls/useReviews";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 const FacilitiesPage = () => {
@@ -44,6 +45,8 @@ const FacilitiesPage = () => {
     search,
     includeStatsOnly: false,
   });
+  const { data: metrics, isLoading: isMetricsLoading } =
+    useFacilityDashboardMetrics("30");
 
   const viewFacility = useViewFacilityDialog();
   const addFacility = useAddFacilityDialog();
@@ -144,13 +147,25 @@ const FacilitiesPage = () => {
         <KpiCard
           icon="📊"
           label="Top Rated"
-          value={(data as any)?.topRatedCount || "0"}
+          value={
+            isMetricsLoading
+              ? "..."
+              : metrics?.reviews?.has_review_data
+                ? metrics.reviews.top_rated_count.toLocaleString()
+                : "No reviews"
+          }
           variant="purple"
         />
         <KpiCard
           icon="⭐"
-          label="Rating"
-          value={(data as any)?.avgRating || "0.0"}
+          label="Reviews"
+          value={
+            isMetricsLoading
+              ? "..."
+              : metrics?.reviews?.has_review_data
+                ? `${metrics.reviews.average_rating.toFixed(1)} (${metrics.reviews.total.toLocaleString()})`
+                : "No reviews"
+          }
           variant="teal"
         />
         <KpiCard

@@ -245,11 +245,11 @@ export default function NewAdminDashboardShell({
           <SidebarContent className="pt-2 px-2">
             {dashboardNavSections.map((section) => (
               <SidebarGroup key={section.title} className="py-2">
-                <SidebarGroupLabel className="text-[10px] font-bold text-white/35 uppercase tracking-widest mb-1">
+                <SidebarGroupLabel className="text-[11px] font-bold text-white/35 uppercase tracking-widest">
                   {section.title}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SidebarMenu className="gap-0.5">
+                  <SidebarMenu className="gap-0.1">
                     {section.items.map((item) => {
                       const hasChildren =
                         item.children && item.children.length > 0;

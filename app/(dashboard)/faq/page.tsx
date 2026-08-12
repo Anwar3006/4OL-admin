@@ -14,7 +14,7 @@ const FAQPage = () => {
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
         title="❓ FAQ & Help Centre"
-        subtitle="20 platform FAQs · AI chatbot integrated · Knowledge base"
+        subtitle="Platform FAQ knowledge base"
       >
         <button className="btn btn-secondary btn-sm">📥 Export</button>
         <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]" onClick={() => addFAQ.open()}>+ Add Article</button>

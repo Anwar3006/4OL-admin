@@ -74,7 +74,16 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Administration",
     items: [
-      { title: "Admins", href: "/admins", icon: "👥" },
+      {
+        title: "Admins",
+        href: "/admins",
+        icon: "👥",
+        children: [
+          { title: "All Admins", href: "/admins" },
+          { title: "Roles & Permissions", href: "/admins?tab=roles" },
+          { title: "Activity Logs", href: "/admins?tab=logs" },
+        ],
+      },
       { title: "Users", href: "/users", icon: "👤" },
       { title: "IBP Businesses", href: "/ibp", icon: "🏢" },
       { title: "Task Manager", href: "/tasks", icon: "📋" },
@@ -94,6 +103,17 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Medication Reminder",
         href: "/medication-reminder",
         icon: "💊",
+        children: [
+          { title: "Drug Database", href: "/medication-reminder?tab=database" },
+          {
+            title: "Logged Reminders",
+            href: "/medication-reminder?tab=logged",
+          },
+          {
+            title: "Interactions",
+            href: "/medication-reminder?tab=interactions",
+          },
+        ],
       },
       {
         title: "Healthcare Professionals",

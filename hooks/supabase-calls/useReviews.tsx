@@ -26,11 +26,37 @@ export interface FacilityRatingRow {
 
 export interface ReviewKpiStats {
   total_reviews: number;
-  total_delta: number;
+  total_delta: number | null;
+  average_rating: number;
   pending_reviews: number;
-  pending_delta: number;
-  flagged_reviews: number;
-  flagged_delta: number;
+  pending_delta: number | null;
+  approved_reviews: number;
+  approved_delta: number | null;
+  rejected_reviews: number;
+  rejected_delta: number | null;
+  flagged_reviews: number | null;
+  flagged_delta: number | null;
+}
+
+export interface FacilityDashboardMetrics {
+  facilities: {
+    total: number;
+    active: number;
+    pending: number;
+    rejected: number;
+  };
+  by_type: Array<{ type: string; count: number }>;
+  by_region: Array<{ region: string; count: number }>;
+  reviews: {
+    total: number;
+    approved: number;
+    average_rating: number;
+    top_rated_count: number;
+    has_review_data: boolean;
+  };
+  favorites_total: number;
+  active_offerings_total: number;
+  deltas: Record<string, any>;
 }
 
 // Senior Approach: This replaces the old `fetchFacilityRatings` service.
@@ -132,6 +158,23 @@ export const useReviewKpiStats = () => {
 
       return data as ReviewKpiStats;
     },
+  });
+};
+
+export const useFacilityDashboardMetrics = (timeFilter: "7" | "30" | "90" | "year" = "30") => {
+  return useQuery({
+    queryKey: ["facility-dashboard-metrics", timeFilter],
+    queryFn: async () => {
+      const res = await fetch(`/api/facility-metrics?timeFilter=${timeFilter}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to load facility metrics");
+      }
+
+      const { metrics } = await res.json();
+      return metrics as FacilityDashboardMetrics;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 };
 

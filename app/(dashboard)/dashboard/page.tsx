@@ -1,6 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useCallback, useEffect, useState } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -22,138 +25,218 @@ import RegionalCoverage from "./_components/RegionalCoverage";
 import HealthFeaturesStatus from "./_components/HealthFeaturesStatus";
 import PendingTasks from "./_components/PendingTasks";
 import ComplianceGRA from "./_components/ComplianceGRA";
+import {
+  deltaType,
+  formatCount,
+  formatCurrency,
+  formatDelta,
+  PlatformOverviewMetrics,
+  TimeFilter,
+} from "./_components/dashboard-types";
+
+const filterLabels: Record<TimeFilter, string> = {
+  "7": "Last 7 Days",
+  "30": "Last 30 Days",
+  "90": "Last 90 Days",
+  year: "This Year",
+};
 
 const DashboardPage = () => {
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("30");
+  const [metrics, setMetrics] = useState<PlatformOverviewMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadMetrics = useCallback(async (filter: TimeFilter) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/dashboard/overview?timeFilter=${filter}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Unable to load dashboard metrics.");
+      }
+      const body = await res.json();
+      setMetrics(body.metrics);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to load dashboard metrics.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMetrics(timeFilter);
+  }, [loadMetrics, timeFilter]);
+
+  const kpis = metrics?.kpis;
+
   return (
     <div className="flex flex-col gap-5 animate-in fade-in duration-500">
       <PageHeader
-        title="📊 Platform Dashboard"
-        subtitle="4 Our Life · Real-time overview · Updated: just now"
+        title="Platform Dashboard"
+        subtitle={`4 Our Life overview · ${filterLabels[timeFilter]}`}
       >
-        <Select defaultValue="30">
+        <Select
+          value={timeFilter}
+          onValueChange={(value) => setTimeFilter(value as TimeFilter)}
+        >
           <SelectTrigger size="sm" className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">📅 Last 7 Days</SelectItem>
-            <SelectItem value="30">📅 Last 30 Days</SelectItem>
-            <SelectItem value="90">📅 Last 90 Days</SelectItem>
+            <SelectItem value="7">Last 7 Days</SelectItem>
+            <SelectItem value="30">Last 30 Days</SelectItem>
+            <SelectItem value="90">Last 90 Days</SelectItem>
             <SelectItem value="year">This Year</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm">
-          📥 Export
+        <Button variant="outline" size="sm" disabled>
+          Export
         </Button>
-        <Button variant="outline" size="sm">
-          🔐 Security
+        <Button variant="outline" size="sm" asChild>
+          <a href="/security">Security</a>
         </Button>
-        <Button variant="default" size="sm">
-          📣 Broadcast
+        <Button variant="default" size="sm" asChild>
+          <a href="/notifications">Broadcast</a>
         </Button>
       </PageHeader>
 
-      <CriticalAlerts />
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Dashboard metrics unavailable</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      {/* Row 1: KPI Grid — 1 on mobile, 2 on sm, 4 on lg */}
+      <CriticalAlerts metrics={metrics} loading={loading} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-5">
         <KpiCard
           icon="👥"
           label="Total Users"
-          value={0}
+          value={formatCount(kpis?.total_users)}
           variant="blue"
-          delta="+12.4%"
-          deltaType="up"
+          delta={formatDelta(metrics?.deltas.users)}
+          deltaType={deltaType(metrics?.deltas.users)}
+          isLoading={loading}
+          isError={!!error}
         />
         <KpiCard
           icon="🏥"
           label="Facilities"
-          value={0}
+          value={formatCount(kpis?.facilities)}
           variant="teal"
-          delta="+5.2%"
-          deltaType="up"
+          delta={formatDelta(metrics?.deltas.facilities)}
+          deltaType={deltaType(metrics?.deltas.facilities)}
+          isLoading={loading}
+          isError={!!error}
         />
         <KpiCard
           icon="💰"
           label="Revenue (MTD)"
-          value={0}
+          value={formatCurrency(kpis?.revenue_mtd)}
           variant="green"
-          delta="+18.7%"
-          deltaType="up"
+          delta={metrics?.finance.revenue_status === "live" ? "Live" : "Awaiting pipeline"}
+          deltaType="neutral"
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error && kpis?.revenue_mtd === null}
         />
         <KpiCard
           icon="💳"
           label="Transactions"
-          value={0}
+          value={formatCount(kpis?.transactions)}
           variant="purple"
-          delta="+3.1%"
-          deltaType="up"
+          delta={formatDelta(metrics?.deltas.transactions)}
+          deltaType={deltaType(metrics?.deltas.transactions)}
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error && kpis?.transactions === 0}
+          emptyLabel="0"
         />
         <KpiCard
           icon="🤖"
           label="AI Queries/Day"
-          value={0}
+          value={formatCount(kpis?.ai_queries_last_24h)}
           variant="indigo"
-          delta="+45.2%"
-          deltaType="up"
+          delta={formatDelta(metrics?.deltas.ai_calls)}
+          deltaType={deltaType(metrics?.deltas.ai_calls)}
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error && kpis?.ai_queries_last_24h === 0}
+          emptyLabel="0"
         />
         <KpiCard
           icon="⭐"
           label="Premium Subs"
-          value={0}
+          value={formatCount(kpis?.premium_subscriptions)}
           variant="amber"
-          delta="+8.2%"
-          deltaType="up"
+          delta={formatDelta(metrics?.deltas.subscriptions)}
+          deltaType={deltaType(metrics?.deltas.subscriptions)}
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error && kpis?.premium_subscriptions === 0}
+          emptyLabel="0"
         />
         <KpiCard
           icon="👨‍⚕️"
           label="HCPs"
-          value={0}
+          value={formatCount(kpis?.hcps)}
           variant="pink"
-          delta="+120"
-          deltaType="up"
+          delta={`${metrics?.operations.verified_hcps ?? 0} verified`}
+          deltaType="neutral"
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error && kpis?.hcps === 0}
+          emptyLabel="0"
         />
         <KpiCard
           icon="🔐"
           label="Security Score"
-          value={0}
+          value="Awaiting data"
           variant="red"
-          delta="MFA Issue"
-          deltaType="down"
+          delta={`${metrics?.queues.open_security_threats ?? 0} open threats`}
+          deltaType={metrics?.queues.open_security_threats ? "down" : "neutral"}
+          isLoading={loading}
+          isError={!!error}
+          isEmpty={!loading && !error}
         />
       </div>
 
-      {/* Row 2: Revenue chart + Health + Quick actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
-          <RevenueTrendChart />
+          <RevenueTrendChart metrics={metrics} loading={loading} />
         </div>
         <div className="flex flex-col gap-5">
-          <SystemHealth />
+          <SystemHealth metrics={metrics} loading={loading} />
           <QuickActions />
         </div>
       </div>
 
-      {/* Row 3: Streams + Users + Feature Usage */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <RevenueStreams />
-        <UsersByPlan />
-        <FeatureUsage />
+        <RevenueStreams metrics={metrics} loading={loading} />
+        <UsersByPlan metrics={metrics} loading={loading} />
+        <FeatureUsage loading={loading} />
       </div>
 
-      {/* Row 4: Activity + AI + Regional */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <ActivityFeed />
+        <ActivityFeed metrics={metrics} loading={loading} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <AIHubOverview />
-          <RegionalCoverage />
+          <AIHubOverview metrics={metrics} loading={loading} />
+          <RegionalCoverage metrics={metrics} loading={loading} />
         </div>
       </div>
 
-      {/* Row 5: Health features + Tasks + Compliance */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <HealthFeaturesStatus />
-        <PendingTasks />
-        <ComplianceGRA />
+        <HealthFeaturesStatus metrics={metrics} loading={loading} />
+        <PendingTasks metrics={metrics} loading={loading} />
+        <ComplianceGRA loading={loading} />
       </div>
     </div>
   );

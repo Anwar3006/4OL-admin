@@ -18,6 +18,11 @@ interface KpiCardProps {
   value: string | number;
   delta?: string;
   deltaType?: "up" | "down" | "neutral";
+  isLoading?: boolean;
+  isError?: boolean;
+  isEmpty?: boolean;
+  errorLabel?: string;
+  emptyLabel?: string;
   /** Colour variant — controls icon background + value colour */
   variant?:
     | "blue"
@@ -65,11 +70,23 @@ export default function KpiCard({
   value,
   delta,
   deltaType = "neutral",
+  isLoading = false,
+  isError = false,
+  isEmpty = false,
+  errorLabel = "Unavailable",
+  emptyLabel = "No data",
   variant = "blue",
   menuItems = [],
 }: KpiCardProps) {
+  const displayValue = isError ? errorLabel : isEmpty ? emptyLabel : value;
+
   return (
-    <Card className="flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0 hover:shadow-md transition-shadow">
+    <Card
+      className={cn(
+        "flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0 hover:shadow-md transition-shadow",
+        isError && "border-red-100 bg-red-50/30",
+      )}
+    >
       <CardContent className="p-0 flex flex-col gap-4 h-full">
         {/* ── Top Row: Label + Icon/Menu ── */}
         <div className="flex items-start justify-between w-full gap-2">
@@ -111,17 +128,25 @@ export default function KpiCard({
 
         {/* ── Middle: Value ── */}
         <div className="flex flex-col gap-1.5">
-          <div
-            className={cn(
-              "text-2xl sm:text-3xl font-black tracking-tighter leading-tight",
-              VALUE_CLR[variant],
-            )}
-          >
-            {value}
-          </div>
+          {isLoading ? (
+            <div className="h-8 w-24 animate-pulse rounded-md bg-slate-100" />
+          ) : (
+            <div
+              className={cn(
+                "text-2xl sm:text-3xl font-black tracking-tighter leading-tight",
+                isError
+                  ? "text-red-700"
+                  : isEmpty
+                    ? "text-slate-400"
+                    : VALUE_CLR[variant],
+              )}
+            >
+              {displayValue}
+            </div>
+          )}
 
           {/* ── Bottom: Delta Badge ── */}
-          {delta && (
+          {!isLoading && !isError && delta && (
             <div className="flex items-center">
               <Badge
                 variant={

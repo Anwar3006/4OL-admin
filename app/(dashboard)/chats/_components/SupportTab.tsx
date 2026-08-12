@@ -112,6 +112,15 @@ export default function SupportTab() {
       ),
     },
     {
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }) => (
+        <span className="text-[11px] font-bold text-slate-600">
+          {row.original.category || "Uncategorized"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "priority",
       header: "Priority",
       cell: ({ row }) => (
@@ -128,6 +137,18 @@ export default function SupportTab() {
           {row.original.status}
         </span>
       ),
+    },
+    {
+      accessorKey: "response_time_minutes",
+      header: "First Response",
+      cell: ({ row }) => {
+        const minutes = row.original.response_time_minutes;
+        return (
+          <span className="text-[10px] text-slate-400">
+            {typeof minutes === "number" ? `${minutes}m` : "—"}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "created_at",

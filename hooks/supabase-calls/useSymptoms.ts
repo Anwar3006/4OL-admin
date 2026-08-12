@@ -90,6 +90,10 @@ export const useSymptoms = ({
             symptom_categories?.map((c: any) => c.categories?.name) || [],
           causes: symptom_causes,
           types: symptom_types?.map((t: any) => t.type_name) || [],
+          // The table's "Views" column reads `views`, but the DB column is
+          // `view_count` (already spread in via `...rest`) — alias it so
+          // the column isn't silently always "0".
+          views: rest.view_count ?? 0,
         };
       });
 
@@ -191,6 +195,7 @@ export const useSymptomStats = () => {
         bodyPartsRpc,
         systemicResults,
         totalSymptomsResult,
+        reviewedResult,
       ] = await Promise.all([
         // Total active categories used by symptoms
         (await getSupabaseClient())
@@ -210,16 +215,32 @@ export const useSymptomStats = () => {
         (await getSupabaseClient())
           .from("symptoms")
           .select("id", { count: "exact", head: true }),
+
+        // Reviewed count — real basis for "Verification Rate" (there's no
+        // separate verification table; `reviewed_at` on the row is what
+        // exists, so that's what the rate is computed from).
+        (await getSupabaseClient())
+          .from("symptoms")
+          .select("id", { count: "exact", head: true })
+          .not("reviewed_at", "is", null),
       ]);
 
       if (categoriesResults.error) throw categoriesResults.error;
       if (bodyPartsRpc.error) throw bodyPartsRpc.error;
+      if (reviewedResult.error) throw reviewedResult.error;
+
+      const totalSymptoms = totalSymptomsResult.count ?? 0;
+      const reviewedCount = reviewedResult.count ?? 0;
 
       return {
         totalCategories: categoriesResults.count ?? 0,
         bodyPartDistribution: bodyPartsRpc.data,
         systemicCount: systemicResults.count ?? 0,
-        totalSymptoms: totalSymptomsResult.count ?? 0,
+        totalSymptoms,
+        verificationRate:
+          totalSymptoms === 0
+            ? 0
+            : Math.round((reviewedCount / totalSymptoms) * 100),
         lastUpdated: new Date().toISOString(),
       };
     },

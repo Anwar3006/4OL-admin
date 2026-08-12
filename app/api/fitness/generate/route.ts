@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { generateFitnessPlan } from "@/lib/fitness/generate-plan";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 function calculateAge(birthday: string | null): number | null {
   if (!birthday) return null;
@@ -65,6 +66,21 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = user.id;
+
+  const rateLimit = await checkRateLimit(admin, userId, "fitness/generate", {
+    windowSeconds: 60 * 60,
+    maxRequests: 5,
+  });
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many plan generation requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+      },
+    );
+  }
+
   const body = await req.json().catch(() => null);
 
   if (!body?.selections || !body?.selection_hash) {

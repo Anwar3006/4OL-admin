@@ -1,16 +1,46 @@
 import React from "react";
-export default function CriticalAlerts() {
+import { PlatformOverviewMetrics } from "./dashboard-types";
+
+export default function CriticalAlerts({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
+  const openThreats = metrics?.queues.open_security_threats ?? 0;
+  const bedAlerts = metrics?.queues.active_bed_alerts ?? 0;
+  const moderation = metrics?.queues.pending_moderation_flags ?? 0;
+  const total = openThreats + bedAlerts + moderation;
+
+  if (loading) {
+    return (
+      <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4 text-xs text-slate-500">
+        Checking operational queues...
+      </div>
+    );
+  }
+
+  if (total === 0) {
+    return (
+      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 text-xs">
+        <strong className="text-emerald-700">No critical dashboard alerts.</strong>{" "}
+        Security, BedTracker, and moderation queues are clear.
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-3 text-xs">
-      <div className="text-lg">⚠️</div>
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex items-start gap-3 text-xs">
+      <div className="text-lg">!</div>
       <div className="flex-1">
-        <strong className="text-red-700">2 Critical Alerts:</strong> Admin MFA disabled (Anwar Sadat Mamudu) · API endpoint at 82% capacity.
+        <strong className="text-amber-700">{total} queue items need review:</strong>{" "}
+        {openThreats} security threats · {bedAlerts} bed alerts · {moderation} moderation flags
         <div className="flex gap-2 mt-1">
-          <button className="text-red-700 font-bold hover:underline">Fix MFA →</button>
-          <button className="text-red-700 font-bold hover:underline">Security Center →</button>
+          <a href="/security" className="text-amber-700 font-bold hover:underline">Security Center</a>
+          <a href="/bedtracker" className="text-amber-700 font-bold hover:underline">BedTracker</a>
         </div>
       </div>
-      <span className="text-slate-500 whitespace-nowrap">May 15, 2026</span>
     </div>
   );
 }

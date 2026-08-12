@@ -28,6 +28,16 @@
   --color-input: #e2e8f0;
   --color-ring: #10b981;
 
+  /* Epic 9: shared chart series palette — reuses the existing brand colors
+     (--clr-* below) instead of introducing a second palette, so every
+     shadcn ChartConfig in the app draws from the same 6 tokens. */
+  --color-chart-1: #10b981; /* green */
+  --color-chart-2: #3b82f6; /* blue */
+  --color-chart-3: #f59e0b; /* amber */
+  --color-chart-4: #8b5cf6; /* purple */
+  --color-chart-5: #14b8a6; /* teal */
+  --color-chart-6: #ec4899; /* pink */
+
   /* Sidebar-specific tokens — match existing emerald sidebar */
   --color-sidebar: #064e3b;
   --color-sidebar-foreground: #ffffff;

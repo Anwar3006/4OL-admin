@@ -3,10 +3,12 @@
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { useReviewKpiStats } from "@/hooks/supabase-calls/useReviews";
-import { useSearchParams } from "next/navigation";
 
-function formatDelta(delta: number | undefined, suffix: string): { delta: string; deltaType: "up" | "down" | "neutral" } {
-  const value = delta ?? 0;
+function formatDelta(delta: number | null | undefined, suffix: string): { delta: string; deltaType: "up" | "down" | "neutral" } {
+  if (delta === null || delta === undefined) {
+    return { delta: `No prior ${suffix}`, deltaType: "neutral" };
+  }
+  const value = delta;
   if (value === 0) return { delta: `No change ${suffix}`, deltaType: "neutral" };
   const deltaType = value > 0 ? "up" : "down";
   return { delta: `${value > 0 ? "+" : ""}${value}% ${suffix}`, deltaType };
@@ -14,16 +16,10 @@ function formatDelta(delta: number | undefined, suffix: string): { delta: string
 
 export default function ReviewStats() {
   const { data, isLoading } = useReviewKpiStats();
-  
 
   const total = formatDelta(data?.total_delta, "this month");
   const pending = formatDelta(data?.pending_delta, "this month");
-  // Flagged reviews going up is bad news, so invert the up/down semantics.
-  const flaggedRaw = data?.flagged_delta ?? 0;
-  const flagged = {
-    delta: flaggedRaw === 0 ? "No change this month" : `${flaggedRaw > 0 ? "+" : ""}${flaggedRaw}% this month`,
-    deltaType: (flaggedRaw === 0 ? "neutral" : flaggedRaw > 0 ? "down" : "up") as "up" | "down" | "neutral",
-  };
+  const approved = formatDelta(data?.approved_delta, "this month");
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 mb-4">
@@ -36,12 +32,12 @@ export default function ReviewStats() {
         deltaType={total.deltaType}
       />
       <KpiCard
-        icon="🚩"
-        label="Flagged"
-        value={isLoading ? "..." : (data?.flagged_reviews ?? 0).toLocaleString()}
-        variant="red"
-        delta={isLoading ? undefined : flagged.delta}
-        deltaType={flagged.deltaType}
+        icon="⭐"
+        label="Avg Rating"
+        value={isLoading ? "..." : (data?.average_rating ?? 0).toFixed(1)}
+        variant="teal"
+        delta={isLoading ? undefined : "From facility_reviews"}
+        deltaType="neutral"
       />
       <KpiCard
         icon="⏳"
@@ -50,6 +46,14 @@ export default function ReviewStats() {
         variant="gold"
         delta={isLoading ? undefined : pending.delta}
         deltaType={pending.deltaType}
+      />
+      <KpiCard
+        icon="✅"
+        label="Approved"
+        value={isLoading ? "..." : (data?.approved_reviews ?? 0).toLocaleString()}
+        variant="green"
+        delta={isLoading ? undefined : approved.delta}
+        deltaType={approved.deltaType}
       />
     </div>
   );

@@ -1,37 +1,42 @@
 import React from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendChart } from "@/components/charts/TrendChart";
+import { PlatformOverviewMetrics } from "./dashboard-types";
 
-const data = [
-  { name: 'Jul', sub: 114, fee: 118 },
-  { name: 'Sep', sub: 104, fee: 114 },
-  { name: 'Nov', sub: 86, fee: 108 },
-  { name: 'Jan', sub: 61, fee: 100 },
-  { name: 'Mar', sub: 36, fee: 89 },
-  { name: 'May', sub: 15, fee: 80 },
-];
+export default function RevenueTrendChart({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
+  const hasRevenue = metrics?.finance.revenue_status === "live";
 
-export default function RevenueTrendChart() {
-  return (
-    <div className="card h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="card-title">📈 Revenue Trend</h2>
-        <div className="flex gap-2">
-            <button className="btn btn-sm btn-secondary">Monthly</button>
-            <button className="btn btn-sm btn-primary text-white">Quarterly</button>
+  if (!hasRevenue) {
+    return (
+      <div className="card h-full">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="card-title">Revenue Trend</h2>
+          <span className="badge badge-amber text-[9px]">Awaiting data</span>
+        </div>
+        <div className="h-64 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center px-6 text-center text-sm text-slate-500">
+          {loading
+            ? "Loading dashboard metrics..."
+            : "Revenue trend will appear after payment ingestion starts writing real transaction records."}
         </div>
       </div>
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="name" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
-            <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-            <Area type="monotone" dataKey="sub" stroke="#10B981" fill="#D1FAE5" name="Subscriptions" />
-            <Area type="monotone" dataKey="fee" stroke="#3B82F6" fill="#DBEAFE" name="Transaction Fees" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+    );
+  }
+
+  return (
+    <TrendChart
+      title="Revenue Trend"
+      description="Completed transaction revenue for the selected window"
+      data={[{ period: metrics?.time_filter ?? "selected", revenue: metrics?.finance.revenue ?? 0 }]}
+      xKey="period"
+      series={[{ key: "revenue", label: "Revenue" }]}
+      variant="area"
+      height={256}
+      className="h-full"
+    />
   );
 }

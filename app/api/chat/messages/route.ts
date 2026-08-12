@@ -98,9 +98,104 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Notify other conversation members (push + in-app notification center
+    // + bell badge, all via the shared dispatch_notification primitive).
+    // Never let a notification failure affect the message-send response —
+    // the message already sent successfully, that's the route's contract.
+    try {
+      await notifyConversationMembers({ admin, conversationId: conversation_id, message: data });
+    } catch (notifyError) {
+      console.error("[chat/messages POST] Failed to notify members:", notifyError);
+    }
+
     return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+/**
+ * Notifies every other member of a conversation about a new message, via
+ * the shared `dispatch_notification` Postgres RPC (see mobile repo's
+ * supabase/migrations/20260812000000_notification_dispatch_primitive.sql)
+ * — the same primitive used by the medication/workout reminder cron jobs,
+ * so there is exactly one Expo-push-batching implementation in the whole
+ * system.
+ *
+ * `is_muted` suppresses notification; `is_archived` does not — archiving is
+ * inbox organization, not muting, so an archived-but-not-muted member
+ * should still be notified.
+ */
+async function notifyConversationMembers({
+  admin,
+  conversationId,
+  message,
+}: {
+  admin: ReturnType<typeof getSupabaseAdmin>;
+  conversationId: string;
+  message: { id: string; sender_id: string; content: string | null; sender?: { first_name?: string; last_name?: string } | null };
+}) {
+  const { data: conversation, error: conversationError } = await admin
+    .from("conversations")
+    .select("type")
+    .eq("id", conversationId)
+    .single();
+
+  if (conversationError || !conversation) {
+    console.error("[chat/messages POST] Failed to load conversation for notification:", conversationError?.message);
+    return;
+  }
+
+  const { data: members, error: membersError } = await admin
+    .from("conversation_members")
+    .select("user_id, is_muted, left_at")
+    .eq("conversation_id", conversationId);
+
+  if (membersError || !members) {
+    console.error("[chat/messages POST] Failed to load conversation members:", membersError?.message);
+    return;
+  }
+
+  const recipientUserIds = members
+    .filter((m) => m.user_id !== message.sender_id && !m.left_at && !m.is_muted)
+    .map((m) => m.user_id);
+
+  if (recipientUserIds.length === 0) return;
+
+  // NOTE: not touching conversation_members.unread_count here. A comment
+  // in the mobile app's useDirectMessages.ts implies something already
+  // increments it server-side on message insert, but no trigger definition
+  // for it exists in any committed migration in this repo. Before assuming
+  // either way, run against the live DB:
+  //   SELECT tgname, pg_get_triggerdef(oid) FROM pg_trigger
+  //   WHERE tgrelid = 'public.messages'::regclass;
+  // If nothing shows up, add an explicit UPDATE here
+  // (conversation_id = ? AND user_id != sender AND left_at IS NULL) —
+  // don't add it speculatively alongside a trigger that might already
+  // exist, or unread counts will double-increment.
+
+  const type = conversation.type === "group" ? "group_chat" : "dm";
+  const senderName = [message.sender?.first_name, message.sender?.last_name].filter(Boolean).join(" ") || "Someone";
+  const title = type === "group_chat" ? senderName : senderName;
+  const body = message.content?.trim() ? message.content : "Sent an attachment";
+
+  const recipients = recipientUserIds.map((userId) => ({
+    user_id: userId,
+    title,
+    body,
+    type,
+    metadata: {
+      conversation_id: conversationId,
+      message_id: message.id,
+      sender_id: message.sender_id,
+      sender_name: senderName,
+    },
+    channel_id: "chat-messages",
+  }));
+
+  const { error: dispatchError } = await admin.rpc("dispatch_notification", { p_recipients: recipients });
+  if (dispatchError) {
+    console.error("[chat/messages POST] dispatch_notification error:", dispatchError.message);
   }
 }
 

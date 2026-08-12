@@ -173,6 +173,8 @@ export const useConditionStats = (enabled: boolean) => {
       // Note: For very large datasets, move this logic to a Postgres View
       const { data: analyticsData, error } = await client.from("conditions")
         .select(`
+          view_count,
+          reviewed_at,
           condition_categories (categories (name)),
           condition_body_parts (body_parts (name))
         `);
@@ -181,6 +183,8 @@ export const useConditionStats = (enabled: boolean) => {
 
       const categoryCounts: Record<string, number> = {};
       const bodyPartCounts: Record<string, number> = {};
+      let totalViews = 0;
+      let reviewedCount = 0;
 
       analyticsData?.forEach((row: any) => {
         row.condition_categories?.forEach((c: any) => {
@@ -191,15 +195,28 @@ export const useConditionStats = (enabled: boolean) => {
           const name = b.body_parts?.name;
           if (name) bodyPartCounts[name] = (bodyPartCounts[name] || 0) + 1;
         });
+        totalViews += row.view_count || 0;
+        if (row.reviewed_at) reviewedCount += 1;
       });
 
       const getTop = (counts: Record<string, number>) =>
         Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
 
+      const totalConditions = analyticsData?.length || 0;
+
       return {
         totalCategories: totalCategories || 0,
         mostRecurringCategory: getTop(categoryCounts)[0],
         mostAffectedBodyPart: getTop(bodyPartCounts)[0],
+        // Real replacements for the KPI cards that used to hardcode
+        // "Total Likes" (0) / "Avg Engagement" (0) — there's no likes/
+        // engagement-event table (see Epic 30.1's analytics_events, not
+        // built yet), so these use columns that actually exist instead.
+        totalViews,
+        reviewRate:
+          totalConditions === 0
+            ? 0
+            : Math.round((reviewedCount / totalConditions) * 100),
       };
     },
     enabled,

@@ -17,6 +17,7 @@ async function getRequestUser(req: NextRequest) {
 }
 
 const VALID_PRIORITIES = ["Low", "Medium", "High"];
+const VALID_SATISFACTION_RATINGS = [1, 2, 3, 4, 5];
 
 /**
  * GET /api/chat/support
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest) {
  *   message: string,
  *   priority?: "Low" | "Medium" | "High",   // defaults to "Low"
  *   category?: string,
+ *   tags?: string[],
  * }
  */
 export async function POST(req: NextRequest) {
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { subject, message, priority, category } = await req.json();
+    const { subject, message, priority, category, tags } = await req.json();
 
     if (!subject || typeof subject !== "string") {
       return NextResponse.json(
@@ -120,6 +122,7 @@ export async function POST(req: NextRequest) {
           priority: priority || "Low",
           status: "Open",
           category: category ?? null,
+          tags: Array.isArray(tags) ? tags.filter((tag) => typeof tag === "string") : [],
         },
       ])
       .select()
@@ -131,6 +134,86 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/chat/support
+ *
+ * Lets an authenticated mobile user rate one of their own resolved/closed
+ * support tickets. Admin status/priority edits use the dashboard hooks.
+ *
+ * Body: {
+ *   id: number,
+ *   satisfaction_rating: 1 | 2 | 3 | 4 | 5
+ * }
+ */
+export async function PATCH(req: NextRequest) {
+  const user = await getRequestUser(req);
+  if (!user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { id, satisfaction_rating } = await req.json();
+    const ticketId = Number(id);
+    const rating = Number(satisfaction_rating);
+
+    if (!Number.isInteger(ticketId) || ticketId <= 0) {
+      return NextResponse.json(
+        { error: "id must be a valid support ticket id" },
+        { status: 400 },
+      );
+    }
+
+    if (!VALID_SATISFACTION_RATINGS.includes(rating)) {
+      return NextResponse.json(
+        { error: "satisfaction_rating must be between 1 and 5" },
+        { status: 400 },
+      );
+    }
+
+    const admin = getSupabaseAdmin();
+    const { data: ticket, error: lookupError } = await admin
+      .from("chat_support")
+      .select("id, status, requested_by")
+      .eq("id", ticketId)
+      .eq("requested_by", user.id)
+      .eq("is_deleted", false)
+      .maybeSingle();
+
+    if (lookupError) {
+      return NextResponse.json({ error: lookupError.message }, { status: 500 });
+    }
+
+    if (!ticket) {
+      return NextResponse.json({ error: "Support ticket not found" }, { status: 404 });
+    }
+
+    if (ticket.status !== "Closed") {
+      return NextResponse.json(
+        { error: "Only closed support tickets can be rated" },
+        { status: 400 },
+      );
+    }
+
+    const { data, error } = await admin
+      .from("chat_support")
+      .update({
+        satisfaction_rating: rating,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", ticketId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[chat/support PATCH] Supabase error:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

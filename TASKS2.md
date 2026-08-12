@@ -850,3 +850,233 @@ those land._
   errors, the fix is `rm -rf .next` + restart the dev server — this can
   recur any time the server crashes mid-type-generation (as it currently
   does from Epic 0.1).
+
+---
+
+## Epic 8 — 🔵 `build-ready` audit: real gaps vs. redundant vs. dead scaffolding
+**Status:** [ ] Not started
+
+> **Context:** `build-ready` was pushed to GitHub (`prod/build-ready`,
+> commit `ab33c512`) with a claim that an LLM pass "addressed many fixes."
+> Investigated by diffing `prod/build-ready`'s 2 real unique commits
+> (`def4b246` "build: apply all build fixes...", `ab33c512` "add missing
+> sidebar children..." — everything else in that branch's log is old
+> shared history, not new work) against `clearing`'s current tree,
+> file-by-file, using a throwaway `git worktree` (not just reading diffs).
+> **Verdict: mixed.** Some of it is real, structurally sound feature work
+> `clearing` genuinely lacks. Some of it duplicates work `clearing`
+> already did better (proper React Query/Supabase hooks vs. raw `fetch`
+> calls). Some of it is dead — nav links to pages that were never built,
+> not even on `build-ready` itself. And one part of it is a live
+> credential leak that needs handling **now**, independent of this epic's
+> sequencing (see 8.9).
+>
+> The concrete bug this pass introduced (Epic 1.3's inverted guard in
+> `lib/supabase/indexAdmin.ts`) traces directly to `def4b246` — evidence
+> that "LLM fixed it" claims from this pass need verification, not trust,
+> which is exactly why every story below was independently confirmed
+> against the current tree rather than taken from the commit message.
+> That same discipline caught a mistake **in this epic's own first
+> draft**: 8.10 originally claimed BedTracker/HCP/Jobs/FacilityScout were
+> "already covered" on `clearing` based on their page shells looking
+> properly built — checking one level deeper (each tab's actual content)
+> found every tab across all four is a bare placeholder. Corrected before
+> this ever left draft form; left the correction visible in 8.10 rather
+> than silently editing it, since it's a useful reminder of exactly the
+> failure mode this whole epic exists to catch.
+>
+> **Net count: 11 modules are genuine gaps** (7 fully placeholder pages
+> in 8.1-8.7 + BedTracker/HCP/Jobs/FacilityScout in 8.10, all placeholder
+> at the tab level), **6 are confirmed already real** (8.11), **1 was
+> already broken on both branches** (IBP, 8.8), and **1 has zero coverage
+> anywhere** (map footprints, noted in 8.11).
+
+- [ ] **8.1 Build out the AI Intelligence Hub (`app/(dashboard)/ai/page.tsx`).**
+  Currently a 4-line `PagePlaceholder` stub on `clearing`. `build-ready`
+  has a real 78-line implementation (tabs, fetch-backed, real state/error
+  handling) backed by 4 new API routes: `app/api/ai/{analytics,metrics,
+  moderation-queue,recommendations}/route.ts` (none exist on `clearing`).
+  To port: rebuild the page against `clearing`'s current design system
+  (`PageHeader`/`KpiCard`/shadcn `Tabs`, not `build-ready`'s legacy
+  `"page"/"card"/"tab"` CSS classes), and when porting the 4 routes, apply
+  the same `getSupabaseServerClient()` + `supabase.auth.getUser()` fix
+  from Epic 0.2 (they currently use the dead BetterAuth `auth.api
+  .getSession()` pattern) plus real `onError`/error-surfacing per Epic 2's
+  standard, not the silent `console.error` catches `build-ready` shipped.
+
+- [ ] **8.2 Build out Human Anatomy (`app/(dashboard)/anatomy/page.tsx`).**
+  Same situation: 4-line placeholder on `clearing`, real 82-line
+  implementation on `build-ready` backed by `app/api/anatomy/body-map/
+  route.ts` (missing on `clearing`). Same porting approach as 8.1 (restyle
+  to current kit, fix the auth pattern in the route).
+
+- [ ] **8.3 Build out Security Center — and resolve the duplicate-route problem first.**
+  `clearing` actually has **two** separate placeholder routes for this:
+  `app/(dashboard)/security/page.tsx` (4-line `PagePlaceholder`) *and*
+  `app/(dashboard)/security-center/page.tsx` (a different placeholder
+  component, `PlaceholderPage`). `TASKS.md` Epic 19.4 already flagged
+  this exact duplication and calls for consolidating into one route
+  before building — do that first, don't build the real implementation
+  twice. `build-ready` has a real 155-line tabbed implementation
+  (Threats / Audit Logs / Security Settings) at the `security` path,
+  backed by `app/api/security/{audit-logs,settings,threats}/route.ts`
+  (none exist on `clearing`). This is the most substantive of the
+  missing pages — read through it during this audit and confirmed it's
+  genuinely working code (real fetch/state/tables), not hallucinated
+  filler. Same porting approach as 8.1, decide which route path
+  (`/security` or `/security-center`) survives and redirect/remove the
+  other.
+
+- [ ] **8.4 Build out Platform Settings (`app/(dashboard)/settings/page.tsx`).**
+  4-line placeholder on `clearing` vs. a real 253-line implementation on
+  `build-ready` (the largest of the seven) — global config, API keys,
+  feature flags, integrations, maintenance mode, plans — backed by 6 new
+  routes: `app/api/settings/{route,api-keys,feature-flags,integrations,
+  maintenance,plans}.ts` (none exist on `clearing`). `settings/api-keys`
+  in particular returns third-party secrets (Twilio/Resend/Paystack) to
+  the UI — when porting, re-verify who's allowed to call it now that RLS
+  gaps from Epic 1 are closed, don't just carry the old assumption over.
+  Same porting approach as 8.1.
+
+- [ ] **8.5 Build out Notifications (`app/(dashboard)/notifications/page.tsx`) — blocked on 8.9.**
+  4-line placeholder on `clearing` vs. a real 89-line implementation on
+  `build-ready`, calling `/api/notifications` (a POST-only broadcast/push
+  endpoint). **Do not port `app/api/notifications/route.js` as-is** — see
+  8.9, it's the route entangled with the leaked Firebase credential.
+  Rebuild this route's Firebase Admin init from an environment variable
+  instead of a committed JSON key file before wiring this page up.
+
+- [ ] **8.6 Platform Schematic (`app/(dashboard)/schematic/page.tsx`) — low priority.**
+  4-line placeholder on `clearing` vs. an 84-line implementation on
+  `build-ready` that's mostly static architecture-diagram content; its
+  only live data call is `/api/health` (a generic health-check endpoint,
+  also missing on `clearing`). Lower priority than 8.1-8.4 since the
+  payoff is smaller — mostly documentation-style content, not a
+  data-driven admin surface.
+
+- [ ] **8.7 Period Tracker — do NOT port `build-ready`'s implementation.**
+  `build-ready` has a 59-line real implementation backed by `app/api/
+  period/analytics/route.ts` (missing on `clearing`). **Deliberately not
+  recommending a straight port** — `clearing`'s own `TASKS.md` (the
+  product roadmap, assumption #2) already flags that `tracker_logs` holds
+  zero rows and the whole period-tracker data model is slated for a
+  proper rebuild (`cycles`/`symptoms`/`cycle_statistics`/
+  `prediction_results`/`period_tracker_profiles`), not an extension of the
+  old schema this route queries. Porting the old implementation now would
+  be throwaway work. Revisit only after that schema decision lands (see
+  the merged `TASKS.md` Period Tracker epic once 8.11 is done).
+
+- [ ] **8.8 IBP Businesses (`app/(dashboard)/ibp/page.jsx`) — gap found during this audit, not from `build-ready`.**
+  Discovered while checking `build-ready`'s `ibp/analytics` route (which
+  turned out to be orphaned, see 8.10): `clearing`'s own `ibp/page.jsx` is
+  a near-empty 13-line stub with its real content (`IBPListing`)
+  commented out. `build-ready` doesn't have a working IBP implementation
+  either — this is a gap on both branches, tracked here since it surfaced
+  during this audit. Cross-reference against `TASKS.md`'s own roadmap for
+  whether IBP is already scoped elsewhere before starting fresh.
+
+- [ ] **8.9 🔴 CRITICAL, handle independent of this epic's sequencing: rotate and remove the leaked Firebase service-account key.**
+  `app/api/notifications/serviceAccountKey.json` is a **real, live-looking
+  Firebase Admin SDK private key** (`project_id: healthcare-54909`,
+  `client_email: firebase-adminsdk-qitdd@healthcare-54909.iam
+  .gserviceaccount.com`), currently checked in (not just old history) on
+  `build-ready`, `prod/build-ready`, and `prod/refactor`. Confirmed absent
+  from `main`, `clearing`, and `prod/main`/`prod/prod` — so `clearing` is
+  clean today, but the key is still live wherever those other branches
+  are reachable (GitHub, any CI, any clone). The `.gitignore` entry for
+  it (`# serviceAccountKey.json`) is commented out, so it isn't even
+  protected from being re-added by accident. `clearing`'s own
+  `app/api/notifications/route.txt` (note the `.txt`, not `.js` —
+  someone already renamed it to disable the route) imports this exact
+  file, which is almost certainly *why* it was disabled — a stopgap, not
+  an accident. Action needed, in order: (1) rotate/revoke this service
+  account key in the Firebase console immediately — treat it as
+  compromised regardless of repo visibility; (2) once rotated, decide
+  whether to scrub it from git history on the affected branches (a
+  separate, higher-risk operation needing team coordination — do not do
+  this unilaterally); (3) rebuild the notifications-push feature (8.5) to
+  load Firebase Admin credentials from an environment variable, never a
+  committed file, before re-enabling the route.
+
+- [ ] **8.10 Build out BedTracker, HCP, Jobs, FacilityScout — correction to an earlier pass of this same audit.**
+  ⚠️ An earlier draft of this story claimed these four were "already
+  covered" on `clearing` because their page shells use a proper tabbed,
+  hook-ready architecture. **That was wrong and has been corrected before
+  landing** — checked one level deeper (each tab's actual content, not
+  just the page shell) and every single tab across all four modules
+  renders `TabPlaceholder`/`PlaceholderPage` with zero real data:
+  - **BedTracker** — all 6 tabs (`LiveOverviewTab`, `BedRegistryTab`,
+    `BedTrackerFacilitiesTab`, `AmbulanceDispatchTab`,
+    `BedTrackerAnalyticsTab`, `DesignStrategyTab`) are placeholders.
+    `build-ready`'s `bedtracker/analytics/route.ts` may be a useful
+    reference for `BedTrackerAnalyticsTab` specifically once rebuilt
+    against `clearing`'s kit + fixed auth pattern. Matches `TASKS.md`
+    Epic 14 (`14.1`-`14.6`) — that epic already correctly assumed this
+    needed real backend work; treat `TASKS.md` Epic 14 as the actual spec
+    to build against, this story is just the "here's the current state"
+    confirmation.
+  - **HCP** — all 3 tabs (`AllHCPTab`, `GroupChatsHCPTab`,
+    `PendingHCPTab`) are placeholders. Matches `TASKS.md` Epic 16.
+  - **Jobs** — all 5 tabs (`PostJobTab`, `PremiumServicesTab`,
+    `ApplicantsTab`, `DigitalCVsTab`, `AllListingsTab`) are placeholders.
+    Matches `TASKS.md` Epic 17.
+  - **FacilityScout** — all 5 tabs (`LeaderboardTab`, `RewardsQueueTab`,
+    `FacilityScoutSettingsTab`, `AllSubmissionsTab`, `PendingReviewTab`)
+    are placeholders. Matches `TASKS.md` Epic 15.
+  For all four: don't naively port `build-ready`'s single-file
+  implementations wholesale — `clearing`'s tab-based structure is the
+  better shape to build into, `build-ready`'s flatter versions are at
+  best a reference for what queries/fields each screen needs.
+
+- [ ] **8.11 Confirmed genuinely already covered on `clearing` — do not port `build-ready`'s versions.**
+  Unlike 8.10, these were verified with real Supabase calls found
+  in the actual hook/component code, not just architecture shape:
+  - **Fitness analytics** — `hooks/supabase-calls/
+    useFitnessDashboard.ts` calls `supabase.rpc("get_fitness_dashboard_kpis")`.
+  - **Medication stats** — `MedicationStats.tsx` calls
+    `supabase.rpc("get_medication_kpi_stats")`.
+  - **Diseases** — `hooks/supabase-calls/useCondition.ts` and
+    `diseases/page.tsx` query `.from("conditions")`/`.from("categories")`
+    directly.
+  - **Symptoms** — `symptoms/page.tsx` queries `.from("symptoms")`/
+    `.from("body_parts")`/`.from("categories")` directly.
+  - **Healthy Living** — `hooks/supabase-calls/useHealthyLiving.ts`
+    queries `.from("healthy_living_info")`/`.from("healthy_living_categories")`
+    directly.
+  - **FAQ** — `hooks/supabase-calls/useFAQ.ts` queries `.from("faqs")`/
+    `.from("faq_categories")` directly.
+  `build-ready`'s corresponding routes (`diseases/prevalence`,
+  `healthy-living/analytics`, `symptoms/classifier-stats`, `ibp/analytics`,
+  `faq/search`) are not needed — real coverage already exists.
+  **Exception: IBP** — see 8.8, that one genuinely is still a stub on
+  `clearing` despite living in this "already has hooks" neighborhood.
+  **Exception: Map footprints** — grepped for any `footprint`-related
+  code on `clearing` and found nothing at all (not even a placeholder).
+  Genuinely unimplemented; low priority until it's clear what "footprint"
+  data even means for this product (mobile location history? facility
+  visit tracking?) — clarify the requirement before building.
+
+- [ ] **8.12 Nav wiring — cheap, safe, do this one first.**
+  `ab33c512` added sidebar nav children pointing at `?tab=` query params
+  on pages whose tab components **already exist on `clearing`** (built
+  during our own Epic 3/4 work): `RolesPermissionsTab.tsx`,
+  `ActivityLogsTab.tsx` (under Admins), `DrugDatabaseTab.tsx`,
+  `LoggedRemindersTab.tsx`, `InteractionsTab.tsx` (under Medication
+  Reminder). Wiring these into `app/(dashboard)/_components/admin-shell/
+  navigation.ts` is close to free — everything the links need already
+  exists, just isn't exposed in the sidebar. **Do not port** the
+  "Developer Tools" → "Infrastructure" nav section from the same commit
+  (`Cloud Infra`, `CI/CD Pipeline`, `App Security`, `Rate Limiting`,
+  `Caching & CDN`, `Load Balancing`, `Error Tracking`, `DR & Uptime`) —
+  it links to `/infrastructure?tab=...`, and no `/infrastructure` route
+  exists on `build-ready` either. Confirmed dead scaffolding, not
+  deferred work — the destination was never built anywhere.
+
+- [ ] **8.13 Merge `TASKS.md` (product roadmap) and `TASKS2.md` (this audit) into one unified `TASKS.md`.**
+  Two backlogs currently coexist with unclear precedence. Read both in
+  full, identify overlapping stories (e.g. `TASKS.md`'s "Epic 1 —
+  Analytics & Metrics Foundation" almost certainly overlaps with 8.1-8.6
+  above and with the "mock data" findings already in Epics 2-4), reconcile
+  numbering, and produce one file as the single source of truth. Track
+  progress on this merge here since it's a direct follow-on from this
+  epic's findings.

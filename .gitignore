@@ -4,7 +4,8 @@
 /node_modules
 /.pnp
 .pnp.js
-# serviceAccountKey.json
+serviceAccountKey.json
+app/api/notifications/serviceAccountKey.json
 # testing
 /coverage
 

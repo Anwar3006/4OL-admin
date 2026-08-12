@@ -383,6 +383,57 @@ export interface ChatKpiStats {
   response_delta: number;
 }
 
+export interface SupportAnalytics {
+  groups: {
+    total: number;
+    members: number;
+    delta: {
+      current: number;
+      previous: number;
+      percent: number | null;
+    };
+  };
+  support: {
+    total: number;
+    open: number;
+    closed: number;
+    unread: number;
+    unassigned: number;
+    sla_breaches: number;
+    avg_first_response_minutes: number | null;
+    avg_resolution_minutes: number | null;
+    satisfaction_average: number | null;
+    satisfaction_count: number;
+    delta: {
+      current: number;
+      previous: number;
+      percent: number | null;
+    };
+  };
+  by_status: Array<{ status: string; count: number }>;
+  by_priority: Array<{ priority: string; count: number }>;
+  by_category: Array<{ category: string; count: number }>;
+}
+
+export const useSupportAnalytics = (
+  timeFilter: "7" | "30" | "90" | "year" = "30",
+) => {
+  return useQuery({
+    queryKey: [...CONVERSATION_QUERY_KEYS.all, "support-analytics", timeFilter],
+    queryFn: async () => {
+      const res = await fetch(`/api/chat/analytics?timeFilter=${timeFilter}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to load support analytics");
+      }
+
+      const { analytics } = await res.json();
+      return analytics as SupportAnalytics;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useChatKpiStats = () => {
   return useQuery({
     queryKey: [...CONVERSATION_QUERY_KEYS.all, "kpi-stats"],

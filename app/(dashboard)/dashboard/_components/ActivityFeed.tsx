@@ -1,23 +1,44 @@
 import React from "react";
-const activities = [
-  { title: "Admin MFA Disabled", tag: "CRITICAL", time: "2m ago", icon: "🔒" },
-  { title: "API Rate Limit Warning", tag: "WARN", time: "8m ago", icon: "⚠️" },
-  { title: "AI Flagged 3 Posts", tag: "AI", time: "12m ago", icon: "🤖" },
-];
-export default function ActivityFeed() {
+import { PlatformOverviewMetrics } from "./dashboard-types";
+
+export default function ActivityFeed({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
+  const activities = metrics?.activity ?? [];
+
   return (
     <div className="card">
-      <h2 className="card-title mb-4">🟢 Live Platform Activity</h2>
+      <h2 className="card-title mb-4">Live Platform Activity</h2>
       <div className="space-y-4">
-        {activities.map((a, i) => (
-          <div key={i} className="flex gap-3 text-xs">
-            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">{a.icon}</div>
-            <div>
-              <div className="font-bold">{a.title} <span className="badge badge-red">{a.tag}</span></div>
-              <div className="text-slate-500">{a.time}</div>
+        {loading && <div className="text-xs text-slate-500">Loading activity...</div>}
+        {!loading && activities.length === 0 && (
+          <div className="text-xs text-slate-500">No recent activity logged.</div>
+        )}
+        {!loading &&
+          activities.map((activity) => (
+            <div key={activity.id} className="flex gap-3 text-xs">
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                {activity.action_type?.slice(0, 1).toUpperCase() || "A"}
+              </div>
+              <div>
+                <div className="font-bold text-slate-800">
+                  {activity.action_type.replaceAll("_", " ")}
+                  <span className="badge badge-blue ml-2">{activity.target_table}</span>
+                </div>
+                <div className="text-slate-500">
+                  {activity.actor_name || "System"} ·{" "}
+                  {new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(activity.created_at))}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
