@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { generateFitnessPlan, buildSelectionHash } from "@/lib/fitness/generate-plan";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * Admin AI Plan Generation Endpoint
@@ -50,6 +51,25 @@ export async function POST(req: NextRequest) {
     }
 
     const adminUserId = user.id;
+
+    // This endpoint had zero cost protection at all until now — unlike the
+    // mobile onboarding route (5/hour), an admin could trigger unlimited
+    // generations. Higher ceiling than mobile since admins are trusted,
+    // but not unlimited.
+    const rateLimit = await checkRateLimit(admin, adminUserId, "fitness/generate-admin", {
+      windowSeconds: 60 * 60,
+      maxRequests: 20,
+    });
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many plan generation requests. Please try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        },
+      );
+    }
+
     const body = await req.json().catch(() => null);
 
     if (!body?.selections) {
@@ -104,6 +124,7 @@ export async function POST(req: NextRequest) {
       selection_hash,
       authorId: adminUserId,
       authorType: "admin",
+      userId: adminUserId,
     });
 
     if (result.error) {

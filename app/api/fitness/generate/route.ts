@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
     selection_hash,
     authorId: undefined, // Mobile onboarding - no specific author
     authorType: "ai",
+    userId, // attribute the fitness_ai_calls log row to the requesting user
   });
 
   if (result.error) {

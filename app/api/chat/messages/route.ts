@@ -137,7 +137,7 @@ async function notifyConversationMembers({
 }) {
   const { data: conversation, error: conversationError } = await admin
     .from("conversations")
-    .select("type")
+    .select("type, name, group_name")
     .eq("id", conversationId)
     .single();
 
@@ -174,12 +174,31 @@ async function notifyConversationMembers({
   // don't add it speculatively alongside a trigger that might already
   // exist, or unread counts will double-increment.
 
+  // Notification preferences: exclude anyone who's opted out of chat
+  // notifications (master switch or the chats-specific toggle), same
+  // suppression semantics as is_muted above — opted-out means neither a
+  // push nor an in-app notifications row, not just a silenced push.
+  const { data: prefs } = await admin
+    .from("user_profiles")
+    .select("user_id, push_notifications_enabled, push_chats_enabled")
+    .in("user_id", recipientUserIds);
+
+  const optedIn = new Set(
+    (prefs ?? [])
+      .filter((p) => p.push_notifications_enabled && p.push_chats_enabled)
+      .map((p) => p.user_id),
+  );
+  const finalRecipientIds = recipientUserIds.filter((id) => optedIn.has(id));
+
+  if (finalRecipientIds.length === 0) return;
+
   const type = conversation.type === "group" ? "group_chat" : "dm";
   const senderName = [message.sender?.first_name, message.sender?.last_name].filter(Boolean).join(" ") || "Someone";
-  const title = type === "group_chat" ? senderName : senderName;
+  const groupTitle = conversation.name || conversation.group_name || "Group";
+  const title = type === "group_chat" ? `${senderName} • ${groupTitle}` : senderName;
   const body = message.content?.trim() ? message.content : "Sent an attachment";
 
-  const recipients = recipientUserIds.map((userId) => ({
+  const recipients = finalRecipientIds.map((userId) => ({
     user_id: userId,
     title,
     body,

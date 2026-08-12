@@ -1,73 +1,81 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import OpenAI from "openai";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-// ─── Gemini Schema ────────────────────────────────────────────────────────────
+// ─── OpenAI Structured Outputs Schema ──────────────────────────────────────────
+// Translated from the previous Gemini SchemaType DSL. OpenAI's strict mode
+// (json_schema.strict: true) requires every property in `properties` to
+// also appear in `required` and `additionalProperties: false` on every
+// object level — stricter than Gemini's partial `required` arrays, where
+// e.g. `focus` and `muscles_targeted` were optional. Fields that were
+// optional under Gemini (focus, muscles_targeted) are now always-required
+// but can hold an empty string/array when there's nothing meaningful to
+// say, rather than being omitted — functionally equivalent for this use
+// case, no nullable unions needed.
 
 export const fitnessPlanSchema = {
-  description: "A world-class, periodized personalized fitness plan",
-  type: SchemaType.OBJECT,
+  type: "object",
   properties: {
-    title: { type: SchemaType.STRING },
+    title: { type: "string" },
     summary: {
-      type: SchemaType.STRING,
+      type: "string",
       description: "A highly motivating overview of the plan's methodology.",
     },
-    duration_weeks: { type: SchemaType.NUMBER },
-    days_per_week: { type: SchemaType.NUMBER },
+    duration_weeks: { type: "number" },
+    days_per_week: { type: "number" },
     weekly_schedule: {
-      type: SchemaType.ARRAY,
+      type: "array",
       items: {
-        type: SchemaType.OBJECT,
+        type: "object",
         properties: {
-          week: { type: SchemaType.NUMBER },
+          week: { type: "number" },
           focus: {
-            type: SchemaType.STRING,
+            type: "string",
             description: "The overarching goal of this specific week.",
           },
           days: {
-            type: SchemaType.ARRAY,
+            type: "array",
             items: {
-              type: SchemaType.OBJECT,
+              type: "object",
               properties: {
                 day_name: {
-                  type: SchemaType.STRING,
+                  type: "string",
                   description: "e.g., 'Monday', 'Tuesday', or 'Day 1'",
                 },
                 session_type: {
-                  type: SchemaType.STRING,
+                  type: "string",
                   description:
                     "e.g., 'Upper Body Push', 'Active Recovery', 'Rest'",
                 },
-                duration_minutes: { type: SchemaType.NUMBER },
+                duration_minutes: { type: "number" },
                 exercises: {
-                  type: SchemaType.ARRAY,
+                  type: "array",
                   items: {
-                    type: SchemaType.OBJECT,
+                    type: "object",
                     properties: {
                       id: {
-                        type: SchemaType.STRING,
+                        type: "string",
                         description:
                           "The exact UUID from the provided library.",
                       },
-                      name: { type: SchemaType.STRING },
-                      sets: { type: SchemaType.NUMBER },
+                      name: { type: "string" },
+                      sets: { type: "number" },
                       reps: {
-                        type: SchemaType.STRING,
+                        type: "string",
                         description: "e.g., '8-10', 'To Failure', '30 sec'",
                       },
-                      rest_seconds: { type: SchemaType.NUMBER },
+                      rest_seconds: { type: "number" },
                       coach_notes: {
-                        type: SchemaType.STRING,
+                        type: "string",
                         description:
                           "Pro tip for biomechanics, breathing, or intent.",
                       },
                       met_value: {
-                        type: SchemaType.NUMBER,
+                        type: "number",
                         description: "The MET value provided in the library.",
                       },
                       muscles_targeted: {
-                        type: SchemaType.ARRAY,
-                        items: { type: SchemaType.STRING },
+                        type: "array",
+                        items: { type: "string" },
                       },
                     },
                     required: [
@@ -78,7 +86,9 @@ export const fitnessPlanSchema = {
                       "rest_seconds",
                       "coach_notes",
                       "met_value",
+                      "muscles_targeted",
                     ],
+                    additionalProperties: false,
                   },
                 },
               },
@@ -88,10 +98,12 @@ export const fitnessPlanSchema = {
                 "duration_minutes",
                 "exercises",
               ],
+              additionalProperties: false,
             },
           },
         },
-        required: ["week", "days"],
+        required: ["week", "focus", "days"],
+        additionalProperties: false,
       },
     },
   },
@@ -102,7 +114,61 @@ export const fitnessPlanSchema = {
     "days_per_week",
     "weekly_schedule",
   ],
+  additionalProperties: false,
 };
+
+// Manually-maintained per-1K-token estimate, not billed truth — update if
+// OpenAI's pricing changes or the model changes. USD.
+const OPENAI_PRICING_PER_1K: Record<string, { in: number; out: number }> = {
+  "gpt-4o": { in: 0.0025, out: 0.01 },
+  "gpt-4o-mini": { in: 0.00015, out: 0.0006 },
+};
+
+function estimateCost(
+  modelName: string,
+  promptTokens: number | undefined,
+  completionTokens: number | undefined,
+): number | null {
+  const rates = OPENAI_PRICING_PER_1K[modelName];
+  if (!rates || promptTokens == null || completionTokens == null) return null;
+  return (promptTokens * rates.in + completionTokens * rates.out) / 1000;
+}
+
+async function logAiCall(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  params: {
+    userId?: string;
+    modelName: string;
+    prompt: string;
+    responseTimeMs: number;
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+    status: "success" | "error" | "timeout";
+    errorMessage?: string;
+  },
+) {
+  const { error } = await admin.from("fitness_ai_calls").insert({
+    user_id: params.userId ?? null,
+    model_name: params.modelName,
+    // Truncated — the full prompt includes the entire exercise-library
+    // JSON dump and can be many KB, not useful to store in full.
+    prompt_snippet: params.prompt.slice(0, 500),
+    response_time_ms: params.responseTimeMs,
+    token_usage: params.totalTokens ?? null,
+    estimated_cost: estimateCost(
+      params.modelName,
+      params.promptTokens,
+      params.completionTokens,
+    ),
+    status: params.status,
+    error_message: params.errorMessage ?? null,
+  });
+
+  if (error) {
+    console.error("[fitness-generate] fitness_ai_calls insert error:", error.message);
+  }
+}
 
 // ─── Equipment Mapping ────────────────────────────────────────────────────────
 
@@ -245,6 +311,12 @@ export interface GenerationOptions {
   selection_hash: string;
   authorId?: string; // admin's user_id, undefined for mobile onboarding
   authorType: "ai" | "admin";
+  // Who to attribute this AI call to for fitness_ai_calls logging — distinct
+  // from authorId, which specifically means "admin who authored this plan"
+  // and is intentionally undefined for mobile/AI-originated plans. userId
+  // is always the actual caller (the mobile user, or the admin who
+  // triggered generation) and is always known at both call sites.
+  userId?: string;
 }
 
 export interface GenerationResult {
@@ -263,7 +335,7 @@ export interface GenerationResult {
 export async function generateFitnessPlan(
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const { selections, selection_hash, authorId, authorType } = options;
+  const { selections, selection_hash, authorId, authorType, userId } = options;
   const admin = getSupabaseAdmin();
 
   // ── Cache check ──
@@ -281,15 +353,15 @@ export async function generateFitnessPlan(
     };
   }
 
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  const modelName = process.env.NEXT_PUBLIC_GEMINI_MODEL || "gemini-2.5-flash";
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+  const modelName = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
 
-  if (!geminiApiKey) {
+  if (!openaiApiKey) {
     return {
       planId: null,
       selection_hash,
       cached: false,
-      error: "Gemini API key missing",
+      error: "OpenAI API key missing",
     };
   }
 
@@ -351,15 +423,8 @@ export async function generateFitnessPlan(
     met_value: e.met_value || 5.0, // Fallback MET if null in DB
   }));
 
-  // ── Call Gemini AI ──
-  const genAI = new GoogleGenerativeAI(geminiApiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: fitnessPlanSchema as any,
-    },
-  });
+  // ── Call OpenAI ──
+  const openai = new OpenAI({ apiKey: openaiApiKey });
 
   const workoutWeeks = selections.workout_weeks || 2;
   const sessionMinutes = selections.workout_duration || 45;
@@ -393,24 +458,44 @@ ${JSON.stringify(availableExercisesContext)}
   `.trim();
 
   // ── Retry Logic (Exponential Backoff) ──
-  let result;
+  let completion: OpenAI.Chat.Completions.ChatCompletion | undefined;
   const MAX_RETRIES = 3;
   const BASE_DELAY_MS = 1500;
+  const callStartedAt = Date.now();
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      result = await model.generateContent(userPrompt);
+      completion = await openai.chat.completions.create({
+        model: modelName,
+        messages: [{ role: "user", content: userPrompt }],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "fitness_plan",
+            strict: true,
+            schema: fitnessPlanSchema as any,
+          },
+        },
+      });
       break; // Success!
     } catch (error: any) {
       console.warn(
-        `[fitness-generate] Gemini attempt ${attempt} failed:`,
+        `[fitness-generate] OpenAI attempt ${attempt} failed:`,
         error.message,
       );
 
       if (attempt === MAX_RETRIES) {
         console.error(
-          "[fitness-generate] All Gemini retry attempts exhausted.",
+          "[fitness-generate] All OpenAI retry attempts exhausted.",
         );
+        await logAiCall(admin, {
+          userId,
+          modelName,
+          prompt: userPrompt,
+          responseTimeMs: Date.now() - callStartedAt,
+          status: "error",
+          errorMessage: error.message,
+        });
         return {
           planId: null,
           selection_hash,
@@ -426,7 +511,17 @@ ${JSON.stringify(availableExercisesContext)}
     }
   }
 
-  if (!result) {
+  const responseTimeMs = Date.now() - callStartedAt;
+
+  if (!completion) {
+    await logAiCall(admin, {
+      userId,
+      modelName,
+      prompt: userPrompt,
+      responseTimeMs,
+      status: "error",
+      errorMessage: "AI Generation failed unexpectedly.",
+    });
     return {
       planId: null,
       selection_hash,
@@ -438,9 +533,20 @@ ${JSON.stringify(availableExercisesContext)}
   // ── Parse AI Response ──
   let fitnessPlan: any;
   try {
-    fitnessPlan = JSON.parse(result.response.text());
+    fitnessPlan = JSON.parse(completion.choices[0].message.content ?? "");
   } catch (error: any) {
     console.error("[fitness-generate] JSON Parsing error:", error);
+    await logAiCall(admin, {
+      userId,
+      modelName,
+      prompt: userPrompt,
+      responseTimeMs,
+      promptTokens: completion.usage?.prompt_tokens,
+      completionTokens: completion.usage?.completion_tokens,
+      totalTokens: completion.usage?.total_tokens,
+      status: "error",
+      errorMessage: "Failed to process the AI response.",
+    });
     return {
       planId: null,
       selection_hash,
@@ -448,6 +554,17 @@ ${JSON.stringify(availableExercisesContext)}
       error: "Failed to process the AI response.",
     };
   }
+
+  await logAiCall(admin, {
+    userId,
+    modelName,
+    prompt: userPrompt,
+    responseTimeMs,
+    promptTokens: completion.usage?.prompt_tokens,
+    completionTokens: completion.usage?.completion_tokens,
+    totalTokens: completion.usage?.total_tokens,
+    status: "success",
+  });
 
   const exerciseMap = new Map(dbExercises.map((e: any) => [e.id, e]));
 
