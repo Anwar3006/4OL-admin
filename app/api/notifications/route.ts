@@ -20,7 +20,7 @@ export async function GET() {
   }
 
   const admin = getSupabaseAdmin();
-  const [notificationsResult, campaignsResult, templatesResult, rulesResult] =
+  const [notificationsResult, campaignsResult, templatesResult, rulesResult, analyticsResult] =
     await Promise.all([
       admin
         .from("notifications")
@@ -32,7 +32,7 @@ export async function GET() {
       admin
         .from("notification_campaigns")
         .select(
-          "id, template_id, title, body, type, metadata, segment_filter, scheduled_at, sent_at, failed_at, failure_reason, delivery_stats, created_at",
+          "id, template_id, title, body, type, metadata, segment_filter, scheduled_at, sent_at, failed_at, failure_reason, delivery_stats, created_at, approval_status, submitted_for_approval_at, approved_by, approved_at, rejection_reason",
         )
         .order("created_at", { ascending: false })
         .limit(75),
@@ -50,13 +50,20 @@ export async function GET() {
         )
         .order("created_at", { ascending: false })
         .limit(75),
+      // Real aggregate counts over the full table, not the 75-row page above
+      // — the previous version derived "Campaigns: X" etc. from whatever
+      // page of rows happened to be fetched, silently undercounting once
+      // either table passed 75 rows (same class of bug fixed in Epic 29's
+      // get_ai_analytics).
+      admin.rpc("get_notification_analytics", { time_filter: "30" }),
     ]);
 
   const error =
     notificationsResult.error ||
     campaignsResult.error ||
     templatesResult.error ||
-    rulesResult.error;
+    rulesResult.error ||
+    analyticsResult.error;
   if (error) {
     console.error("[notifications] Supabase error:", error.message);
     return NextResponse.json(
@@ -69,23 +76,24 @@ export async function GET() {
   const campaigns = campaignsResult.data ?? [];
   const templates = templatesResult.data ?? [];
   const rules = rulesResult.data ?? [];
+  const analytics = analyticsResult.data;
 
   return NextResponse.json({
     notifications,
     campaigns,
     templates,
     rules,
+    analytics,
     metrics: {
-      notificationLog: notifications.length,
-      unread: notifications.filter((item) => !item.is_read).length,
-      broadcasts: notifications.filter((item) => item.is_broadcast).length,
-      campaigns: campaigns.length,
-      scheduledCampaigns: campaigns.filter(
-        (item) => item.scheduled_at && !item.sent_at && !item.failed_at,
-      ).length,
-      failedCampaigns: campaigns.filter((item) => item.failed_at).length,
-      activeTemplates: templates.filter((item) => item.is_active).length,
-      activeRules: rules.filter((item) => item.is_active).length,
+      notificationLog: analytics.notifications.total,
+      unread: analytics.notifications.total - analytics.notifications.read,
+      broadcasts: analytics.notifications.broadcasts,
+      campaigns: analytics.campaigns.total,
+      scheduledCampaigns: analytics.campaigns.scheduled,
+      failedCampaigns: analytics.campaigns.failed,
+      pendingApprovalCampaigns: analytics.campaigns.pending_approval,
+      activeTemplates: analytics.templates.active,
+      activeRules: analytics.automation_rules.active,
     },
   });
 }

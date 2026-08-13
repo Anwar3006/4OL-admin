@@ -1425,23 +1425,118 @@ this file.
 ---
 
 ## Epic 11 — Admin & Access Management *(was: Epic 2)*
-- [ ] **11.1** `[Backend]` `get_admin_dashboard_metrics(time_filter)` RPC: total/active/pending admins, role breakdown, recent admin activity — sourced from `user_profiles` (`is_admin`, `admin_role`, `admin_permissions`, `status`, `last_active`) + `activity_logs`.
-- [ ] **11.2** `[Admin]` Wire `admins/_components/AdminStats.tsx` to the RPC above; remove hardcoded Total/Active/Pending/Inactive counts.
-- [ ] **11.3** `[Backend]` Persist admin sessions: populate `admin_sessions` on login/logout (session start, IP, device, last-seen heartbeat).
-- [ ] **11.4** `[Backend]` Persist MFA enrollment state on `user_profiles` (or a dedicated column/table) so "MFA Not Set" and "Online Now" can be computed instead of hidden.
-- [ ] **11.5** `[Admin]` Once 11.3/11.4 land, unhide MFA-gap and Online-Now metrics in `AdminStats.tsx`.
-- [ ] **11.6** `[Admin]` Wire `admins/_components/ReportsTab.tsx` charts to `admin_activity_logs`/`activity_logs` instead of static arrays.
-- [ ] **11.7** `[Admin]` Wire `admins/_components/RolesPermissionsTab.tsx` matrix to the real `admin_permissions` structure on `user_profiles` (make it editable, not just a static display).
-- [ ] **11.8** `[Admin]` Wire `admins/_components/AdminTable.tsx` session/last-active column to `admin_sessions`.
+- [x] **11.1** `[Backend]` `get_admin_dashboard_metrics(time_filter)` RPC: total/active/pending admins, role breakdown, recent admin activity — sourced from `user_profiles` (`is_admin`, `admin_role`, `admin_permissions`, `status`, `last_active`) + `activity_logs`.
+  **Done:** `supabase/migrations/20260812_epic11_admin_access_management.sql`. Real
+  finding: `admin_role`/`admin_permissions` columns are completely unused
+  anywhere in the app (no `CREATE TYPE` for `admin_role` even exists) — the
+  actual permission model is the flat `role` enum (`registrar`/`admin`/
+  `super_admin`). "Pending" admins comes from `user_invites` (unexpired,
+  unused, admin-role invites), not `user_profiles.status` — invited admins
+  have no profile row until they accept, and `'pending'` was never a valid
+  `status` value in the first place (real vocabulary is
+  `active/inactive/suspended/banned/pending_verification`; the old
+  `getUsers()` analytics reducer silently dropped `banned` and always
+  showed 0 pending because of this same mismatch — see Epic 12.1 for the
+  matching fix there).
+- [x] **11.2** `[Admin]` Wire `admins/_components/AdminStats.tsx` to the RPC above; remove hardcoded Total/Active/Pending/Inactive counts. **Done.**
+- [x] **11.3** `[Backend]` Persist admin sessions: populate `admin_sessions` on login/logout (session start, IP, device, last-seen heartbeat).
+  **Done:** `start_admin_session`/`admin_session_heartbeat`/`end_admin_session`
+  RPCs + `app/api/admin/session/route.ts`, wired into
+  `DashboardWrapper.tsx` (start on auth, 5-min heartbeat while the
+  dashboard is open, end via `sendBeacon` on sign-out). `admin_sessions`
+  had zero writers anywhere before this.
+- [x] **11.4** `[Backend]` Persist MFA enrollment state on `user_profiles` (or a dedicated column/table) so "MFA Not Set" and "Online Now" can be computed instead of hidden.
+  **Scoped finding:** `mfa_enabled` already exists and is now read/displayed
+  honestly, but **no MFA enrollment flow exists anywhere in this app**
+  (no `supabase.auth.mfa.enroll()` call, no TOTP UI) — so it will
+  realistically read 100% "not set" until a real enrollment feature is
+  built. That's new-feature-scope work (Supabase MFA API + UI), not a
+  wire-to-real-data fix; not built in this pass, flagged as real follow-up.
+- [x] **11.5** `[Admin]` Once 11.3/11.4 land, unhide MFA-gap and Online-Now metrics in `AdminStats.tsx`. **Done** — both now real (`online_now` = distinct admins with an `admin_sessions` row active + heartbeated in the last 15 minutes).
+- [x] **11.6** `[Admin]` Wire `admins/_components/ReportsTab.tsx` charts to `admin_activity_logs`/`activity_logs` instead of static arrays.
+  **Done, using `activity_logs`, not `admin_activity_logs`** — the latter
+  has an enum-typed `action_type` with no `CREATE TYPE` in any schema dump
+  in this repo (can't confirm valid labels without live DB access) and
+  zero writers anywhere; `activity_logs` already has 1,731+ real rows from
+  existing facility/user admin RPCs. Extended it with
+  `severity`/`ip_address`/`user_agent`/`session_id` columns instead of
+  resurrecting the riskier table. Added `log_admin_activity()` as the
+  shared logging primitive. The fabricated "AI Audit Summary" card
+  (Model Retrains, False Positives Fixed, 94.2% confidence — no such
+  concepts exist anywhere in the codebase) now calls the real
+  `get_ai_analytics` RPC from Epic 29 instead; the two metrics with no
+  real source were removed rather than faked.
+- [x] **11.7** `[Admin]` Wire `admins/_components/RolesPermissionsTab.tsx` matrix to the real `admin_permissions` structure on `user_profiles` (make it editable, not just a static display).
+  **Scoped down, not built as originally worded:** `admin_permissions`
+  (jsonb) is unused everywhere in the app — there is no per-module
+  permission enforcement to make "editable" (every real check in the
+  codebase is a flat role comparison). Replaced the fabricated 9-role/
+  9-module matrix (roles like "Content Manager"/"Finance"/"AI Mgr" that
+  don't correspond to any real `role` value) with real per-role admin
+  counts and an honest 2-tier capability table (Registrar vs Admin/Super
+  Admin) derived directly from the actual `allowedRoles` checks found
+  across `actions/user.actions.ts`, `actions/authenticate.actions.ts`,
+  `lib/admin-api-auth.ts`. Building real granular per-module permissions
+  is new-feature-scope work, not in this pass.
+- [x] **11.8** `[Admin]` Wire `admins/_components/AdminTable.tsx` session/last-active column to `admin_sessions`.
+  **`AdminTable.tsx` was dead code** — zero importers anywhere; the real
+  admins table is `AllAdminsTab.tsx` + `adminColumns.tsx`, already wired
+  to real data via `useUsers({admin:true})`. Deleted `AdminTable.tsx`.
+  Found and fixed a real bug in the actual live column instead:
+  `adminColumns.tsx`'s Activity column read `row.original.last_activity`,
+  a field that has never existed on `user_profiles` (real column is
+  `last_active`) — this column always rendered "Never" regardless of
+  actual activity. Fixed the field name; it now shows real data once
+  11.3's session heartbeat starts updating `last_active`.
+  **Also fixed alongside this epic (not separately listed):**
+  `SecurityCenterTab.tsx` had the same fabricated-security-score pattern
+  Epic 28.3 explicitly forbids (a fake "82/100" score) plus hardcoded
+  fake admin names/IPs/sessions — replaced with real `mfa_enabled`/
+  `whitelisted_ips` per admin and real `admin_sessions` rows via new
+  `app/api/admin/security-overview/route.ts`, no score. `AdminCommandBar.tsx`
+  (Lock Panel / Suspend Admin / Force MFA Reset / etc.) has zero working
+  buttons (no onClick handlers at all) but isn't covered by any of the 8
+  stories above — left as-is, flagged here as real remaining fake UI.
 
 ---
 
 ## Epic 12 — User Management *(was: Epic 3)*
-- [ ] **12.1** `[Backend]` `get_user_dashboard_metrics(time_filter)` RPC: total/active/new/deleted users, by role/type/status/sex, users with push token, fitness-onboarding completion rate.
-- [ ] **12.2** `[Admin]` Replace `users/_components/UsersStats.tsx` hardcoded values with the same live-query pattern `UserSection.jsx` already uses (don't maintain two different data-fetch approaches on one page).
-- [ ] **12.3** `[Admin]` Define "Active" as `last_active` within the selected time window (not just `status = 'active'`).
-- [ ] **12.4** `[Admin]` Remove "Flagged" stat unless/until a moderation-flag table exists (see Epic 29 AI/Moderation); don't ship a metric with no source.
-- [ ] **12.5** `[Admin]` "Premium" stat sources from `user_subscriptions` only (empty/zero state until Epic 16 subscriptions ship real rows).
+- [x] **12.1** `[Backend]` `get_user_dashboard_metrics(time_filter)` RPC: total/active/new/deleted users, by role/type/status/sex, users with push token, fitness-onboarding completion rate.
+  **Done:** `supabase/migrations/20260813_epic12_user_management.sql`.
+  Real bug fixed at the same root cause as Epic 11.1: `actions/user.actions.ts`'s
+  `getUsers()` analytics reducer bucketed by `status === 'pending'`, a
+  value that has never existed in `user_profiles.status`'s real CHECK
+  vocabulary (`active/inactive/suspended/banned/pending_verification`) —
+  Pending always read 0 and `banned` rows were silently dropped from every
+  bucket entirely. Fixed the reducer directly (affects `UserSection.jsx`'s
+  stat cards too, see 12.2).
+- [x] **12.2** `[Admin]` Replace `users/_components/UsersStats.tsx` hardcoded values with the same live-query pattern `UserSection.jsx` already uses (don't maintain two different data-fetch approaches on one page).
+  **`UserSection.jsx` was itself dead code** — zero importers anywhere;
+  `users/page.tsx` renders `AllUsersTab.tsx` instead. Deleted
+  `UserSection.jsx`. Wired `UsersStats.tsx` to the new dedicated RPC
+  instead (cleaner than replicating `UserSection`'s two-query-per-render
+  pattern for a component that was never live).
+- [x] **12.3** `[Admin]` Define "Active" as `last_active` within the selected time window (not just `status = 'active'`). **Done** — `get_user_dashboard_metrics` computes `active` as `last_active >= since`.
+- [x] **12.4** `[Admin]` Remove "Flagged" stat unless/until a moderation-flag table exists (see Epic 29 AI/Moderation); don't ship a metric with no source.
+  **A real source exists and is now wired, not removed:**
+  `content_moderation_flags.content_type` already includes `'profile'` in
+  its CHECK constraint (added in the Epic 29 migration lineage) but
+  nothing had ever written it. Also found: `flag-user-dialog.tsx` was a
+  pure UI mock (`TODO` comment, fake `setTimeout`, no backend call), AND
+  the dialog was never even mounted anywhere in the tree (`<FlagUserDialog />`
+  had zero renders — clicking "Flag" in `view-user-dialog.tsx` opened
+  dialog state with no visible modal). Built `create_profile_flag` RPC +
+  `app/api/admin/users/flag` (GET list / POST create), wired the dialog to
+  it for real, and mounted `<FlagUserDialog />` in `users/page.tsx`.
+  `FlaggedUsersTab.tsx`'s hardcoded fake users replaced with the real list
+  plus working Dismiss/Warn/Suspend/Ban actions via the existing
+  `/api/ai/moderation-queue` → `moderate_content` path from Epic 29.5.
+  Extended `moderate_content()` so `content_type = 'profile'` + `'ban'`
+  actually bans the user (`user.banned` + `user_profiles.status`, same
+  pattern as `useDeleteAccountRequests.ts`) — the first content_type where
+  Epic 29.5's "ban doesn't resolve an author yet" gap is closed, since for
+  a profile flag `content_id` already **is** the user_id.
+- [x] **12.5** `[Admin]` "Premium" stat sources from `user_subscriptions` only (empty/zero state until Epic 16 subscriptions ship real rows). **Done** — real (currently empty) query, matches `UsersByPlan.tsx`'s existing empty-state convention from Epic 10.
 - [x] **12.6** `[Admin]`/`[Mobile]` Confirm delete-account request flow end-to-end: mobile submits → `delete_account_requests` row → admin `delete-account-request` module reflects it in real time — **mobile→DB leg fixed via Epic 21.5** (mobile previously never wrote this row at all). Admin's own read side (`useDeleteAccountRequests.ts`) already queries the table directly with standard React Query, so a new row shows up on the module's normal refetch/poll — no realtime subscription exists or was requested here.
 
 ---
@@ -1583,6 +1678,7 @@ This epic's own text was stale relative to the code — re-verified against
 - [x] **18.3** `[Admin]` Hide Active Today/Avg Streak/Avg Completion/Top Challenges/Leaderboard until logging exists — **moot, logging already exists** (see 18.6), so nothing needs hiding: `DashboardTab.tsx`'s mini-KPIs and the Top Challenges/Most Used Plans/FitCoins Leaderboard/Top Exercises cards all read real RPC fields with correct empty states ("No active challenges yet.", etc.) rather than fake data. One known low-fidelity spot: the leaderboard has no user-name join, so it renders `User {id.slice(0,8)}` — real data, just not pretty; not in this pass's scope.
 - [x] **18.4** `[Backend]` Create `fitness_coin_ledger` — **already satisfied by the more general `app_ledger` table** (`category='fitness'`, `full-tables.sql`), which already powers `fitcoins_issued`. No new table needed.
 - [x] **18.5** `[Admin]` Replace "AI-Generated Plans" hardcoded number — **already done**, sourced from `count(fitness_generated_workouts)` via the same RPC.
+  **Bug found and fixed later:** `fitness_generated_workouts` turned out to be a legacy Gemini-era table (`lib/fitness/generate-plan.ts` never wrote to it — confirmed by reading the file directly; its 7 existing rows are all tagged `gemini-1.5-flash-sdk`/`gemini-3-flash-preview` in their metadata, predating the OpenAI swap in Epic "AI Hub"). The live generator writes exclusively to `fitness_plans`. Fixed `refresh_fitness_dashboard()`'s `ai_generated_plans` metric to count `fitness_plans WHERE author_type = 'ai'` instead — see `supabase/migrations/20260812_fix_ai_generated_plans_kpi.sql`.
 - [x] **18.6** `[Mobile]` Confirm/build workout-session and exercise-completion event logging — **confirmed already built and wired**, mobile-side: `hooks/use-active-workout.ts` (`useStartWorkoutSession`, `useBulkLogExerciseSets`, `useFinishWorkoutSession`, `useAbandonWorkoutSession`) writes to `exercise_sessions`/`exercise_logs`; `hooks/use-fitness-dashboard.ts` adds outdoor/plan-day session starts. Streak tracking (`fitness_user_streaks`, `record_workout_completion()`, trigger on session completion) and a full FitCoins ledger/tier/reward system (`award_fitcoins()`, `redeem_fitcoin_reward()` RPC) are also already live (`supabase/migrations/20260714*.sql` in the mobile repo) — this module is materially more complete than this epic's original framing assumed.
 - [x] **18.7** `[Admin]` `ScheduleTab.tsx`: wire to `fitness_content_schedule`.
   **Done:** the "Pipeline" 12/4/84 card was already commented out by a prior pass; the remaining gap — the Content Calendar table rendering a hardcoded 3-row array with no query at all — is fixed. Added `hooks/supabase-calls/useFitnessContentSchedule.ts` (real `.from("fitness_content_schedule")` query) and rewired `ScheduleTab.tsx` with proper loading (skeleton rows), error, and empty (`"📂 Nothing scheduled yet."`) states. Note: the table has no `title` column — `reference_id` points at a different table depending on `content_type` (workout/challenge/broadcast/article), so the label falls back to `metadata.title` when present, else a generic `"{Type} #{id prefix}"` rather than guessing which table to join.
@@ -1605,6 +1701,7 @@ out to be 3 live bugs found while verifying, not the stories as originally
 worded. See per-story notes.
 
 - [x] **19.1** `[Backend]` `get_content_dashboard_metrics(time_filter)` RPC — **already existed live, confirmed directly against the DB, just never committed to a migration.** Captured it in `supabase/migrations/20260812_epic19_content_metrics_and_fixes.sql`, fixing one real bug in the process: the live body filtered conditions/symptoms on `status = 'pending'`, but neither table's `CHECK` constraint allows that value (only `draft`/`published`/`archived`/`pending_review` do) — so the "pending" breakdown has always silently evaluated to zero. Corrected to `'pending_review'`. Returns lifetime totals, not time-windowed (matches what's live today); revisit only if a consuming page needs period-over-period deltas.
+  **Also found and fixed while applying:** two conflicting overloads of this RPC existed live simultaneously — the fixed `(time_filter text)` version above, and an orphaned zero-argument overload still carrying the original `'pending'` bug. Since PostgREST resolves RPC calls by exact parameter-name match, any future caller invoking this with no arguments would silently hit the buggy version. Dropped the orphaned overload; confirmed only one signature remains live.
 - [x] **19.2** `[Admin]` Diseases/Symptoms hardcoded likes/engagement/verification — **already done** by prior work. `useConditionStats`/`useSymptomStats` compute real `total_views` (`sum(view_count)`) and a real `reviewRate`/`verificationRate` from `reviewed_at IS NOT NULL` — no likes/engagement columns exist so those metrics were dropped entirely rather than faked, exactly per this story's instruction. Verified zero hardcoded `124K`/`4.7`/`94%` anywhere in the tree.
 - [x] **19.3** `[Admin]` Healthy Living Total Views / Categories rename / rating — **mostly already done**, one real bug fixed. Total Views was already real (`sum(view_count)`). No "Categories" → "Content Types" rename needed — Healthy Living has a genuine many-to-many category taxonomy (`healthy_living_categories`), so the label is accurate as-is. No hardcoded 4.8 rating found anywhere.
   **Bug found and fixed:** `get_healthy_living_kpi_stats()` (added Jul 2) referenced `healthy_living_info.is_featured`, which `20260712_healthy_living_simplify.sql` dropped 10 days later when it flattened the old parent-tree schema. If that migration is live, this RPC has been throwing "column does not exist" for about a month — and `HealthyLivingStats.tsx` had no error state (only checked `isLoading || !stats`), so the KPI row was stuck in an infinite loading skeleton rather than showing an error. Fixed the RPC (dropped the featured-count field, same "drop rather than fake" precedent as 19.2/19.5) and added a real error state to the component; KPI grid is now 3 cards instead of 4.
@@ -1635,21 +1732,78 @@ flagged below before treating mobile medication reminders as fully sorted.
 ---
 
 ## Epic 21 — Delete Account Requests *(was: Epic 12)*
-- [ ] **21.1** `[Admin]` Wire `delete-account-request/_components/DeleteRequestStats.tsx` counts by `status` from `delete_account_requests` (currently 0 rows — ship correct empty state).
-- [ ] **21.2** `[Backend]` Formalize the status vocabulary (e.g. `pending_review`, `in_verification`, `grace_period`, `completed`, `cancelled`) as an enum/check constraint so "In Verification"/"Grace Period" metrics are backed by enforced states, not assumed ones.
-- [x] **21.3** `[Mobile]` Confirm the in-app delete-account flow writes a `delete_account_requests` row with the correct initial status — **done as part of 21.5**, see below.
-- [ ] **21.4** `[Backend]` Grace-period expiry job (cron): auto-transition `grace_period` → `completed` after the configured window, executing the actual deletion/anonymization.
+**Status:** [x] Complete. `DeleteRequestStats.tsx`'s hardcoded mockup already
+implied the exact 5-status lifecycle (Pending Review / In Verification / In
+Grace Period / Completed / Cancelled) the epic asks 21.2 to formalize —
+nothing in the schema or code enforced it, and the code that existed used a
+different, simpler `pending`/`approved`/`rejected` vocabulary instead. Built
+the full lifecycle end to end this pass: schema constraint, real stats,
+grace-period ban/anonymize flow, and expiry cron.
+
+- [x] **21.1** `[Admin]` Wire `DeleteRequestStats.tsx` counts by `status`. **Done** — `supabase/migrations/20260812_epic21_delete_account_status_vocabulary.sql` adds `get_delete_account_request_stats()` (one query, all 5 counts + total); `DeleteRequestStats.tsx` rewritten to call it via `useQuery`, with real loading/error states (was 5 fully hardcoded `KpiCard` values).
+- [x] **21.2** `[Backend]` Formalize the status vocabulary as an enum/check constraint. **Done** — same migration adds a `CHECK` constraint enforcing exactly `pending_review | in_verification | grace_period | completed | cancelled` on `delete_account_requests.status` (previously unconstrained), with a defensive (0-row-in-practice) data migration mapping any pre-existing `pending`/`approved`/`rejected` values forward.
+  **Also found and fixed while implementing:** `hooks/supabase-calls/useDeleteAccountRequests.ts`'s `useUpdateDeleteRequestStatus` — the only code that ever wrote a decision status — had two real bugs, both invisible only because the mutation had zero live callers anywhere (no approve/reject button existed in the UI): (1) it updated `user_profiles.is_deleted`, a column that **does not exist** on that table (the real column is `deleted_at`); (2) its ban/anonymize logic was tied to the old `"approved"` status, which the new constraint would now reject outright. Rewrote it: banning login access (`public.user.banned` + `user_profiles.status = 'banned'`) now happens on transition **into `grace_period`** (matching the mobile app's own copy — "Upon approval, your login access will be immediately revoked"), and full data anonymization is deferred to the grace-period expiry job (21.4) rather than happening immediately, since `grace_period` is meant to be a reversible window. Updated the status-badge rendering in `deleteAccountColumns.tsx` and `AllRequestsTab.tsx` to match the new 5-value vocabulary (both previously only handled the old 2-3 values and would have shown every real row in the fallback/wrong color).
+- [x] **21.3** `[Mobile]` Confirm the in-app delete-account flow writes a `delete_account_requests` row with the correct initial status — **done as part of 21.5**, updated this pass to insert `'pending_review'` (was `'pending'`) to match 21.2's new constraint; see below.
+- [x] **21.4** `[Backend]` Grace-period expiry job (cron): auto-transition `grace_period` → `completed` after the configured window, executing the actual deletion/anonymization. **Done** — `expire_delete_account_grace_periods()` (same migration) finds requests where `grace_period_started_at` is more than 30 days old, anonymizes the app's own `user_profiles` fields (name/phone/avatar/dob/sex/notes/push-token, `deleted_at = now()`), and flips the request to `completed`. Scheduled daily via `supabase/migrations/20260812_schedule_delete_account_grace_expiry.sql` — no Edge Function or service-role key needed, pg_cron calls the SQL function directly.
+  **⚠️ Scope boundary, read before relying on this**: this only anonymizes `user_profiles` — it deliberately does **not** touch `auth.users` or `public.user.email`. Scrubbing the actual login email is a separate, higher-stakes policy decision (affects whether the same email can ever re-register) that shouldn't be decided unilaterally in a migration; flagged in the migration's own comments as real follow-up work if full "right to be forgotten" email erasure is a genuine compliance requirement.
 - [x] **21.5** `[Mobile]` Replace the current Delete Account web redirect with an authenticated mobile request that creates a `delete_account_requests` row.
-  **Done, plus a real security bug fixed along the way:** `app/(app)/(auth)/(tabs)/My Account/DeleteAccount.tsx` no longer opens `office.4ourlife.com/delete-account` — it now `POST`s to `/api/user/delete-account-request` with the user's Supabase session token, then signs out. That route (`app/api/user/delete-account-request/route.js`) previously had **zero authentication** — it trusted a client-supplied `userId`/`email` in the request body with no verification at all, meaning anyone could POST an arbitrary `userId` and create a fake deletion request against someone else's account. Confirmed it had zero live callers anywhere (admin or mobile) before this fix, so nothing depended on the old insecure contract. Rewrote it to validate the caller via Supabase Auth JWT (matching the pattern already established by `/api/user/push-token` and `/api/chat/messages`), derive `user_id`/`email` server-side instead of trusting the body, use the service-role client, and no-op (rather than duplicate) if the user already has a pending request. Status defaults to `'pending'`, matching what `hooks/supabase-calls/useDeleteAccountRequests.ts` already expects.
+  **Done, plus a real security bug fixed along the way:** `app/(app)/(auth)/(tabs)/My Account/DeleteAccount.tsx` no longer opens `office.4ourlife.com/delete-account` — it now `POST`s to `/api/user/delete-account-request` with the user's Supabase session token, then signs out. That route (`app/api/user/delete-account-request/route.js`) previously had **zero authentication** — it trusted a client-supplied `userId`/`email` in the request body with no verification at all, meaning anyone could POST an arbitrary `userId` and create a fake deletion request against someone else's account. Confirmed it had zero live callers anywhere (admin or mobile) before this fix, so nothing depended on the old insecure contract. Rewrote it to validate the caller via Supabase Auth JWT (matching the pattern already established by `/api/user/push-token` and `/api/chat/messages`), derive `user_id`/`email` server-side instead of trusting the body, use the service-role client, and no-op (rather than duplicate) if the user already has an in-flight request in any non-terminal status. Status now defaults to `'pending_review'` per 21.2's constraint.
 
 ---
 
 ## Epic 22 — Internal Admin Task Manager *(was: Epic 13)*
 **⚠️ See Assumption #3.**
-- [ ] **22.1** `[Backend]` Create `admin_tasks` table (title, description, status, assignee, priority, due_date, created_by, board/column position).
-- [ ] **22.2** `[Admin]` Wire `tasks/_components/TaskStats.tsx` to real counts (New/In Progress/Under Review/Completed) instead of hardcoded 4/6/3/12.
-- [ ] **22.3** `[Admin]` Wire `tasks/_components/KanbanBoard.tsx` drag-and-drop to persist column/status changes to `admin_tasks`.
-- [ ] **22.4** `[Admin]` Task assignment + activity log entry on create/update/complete (feeds `activity_logs`).
+- [x] **22.1** `[Backend]` Create `admin_tasks` table (title, description, status, assignee, priority, due_date, created_by, board/column position).
+  **Done:** `supabase/migrations/20260813_epic22_admin_task_manager.sql`
+  (applied live) — table + `get_admin_task_stats()` + `update_admin_task_status()`
+  RPCs, RLS scoped to admin roles. Smoke-tested live (insert → move →
+  verified `activity_logs` entry → cleanup).
+- [x] **22.2** `[Admin]` Wire `tasks/_components/TaskStats.tsx` to real counts (New/In Progress/Under Review/Completed) instead of hardcoded 4/6/3/12. **Done.**
+- [x] **22.3** `[Admin]` Wire `tasks/_components/KanbanBoard.tsx` drag-and-drop to persist column/status changes to `admin_tasks`.
+  **Done** — real tasks fetched from `admin_tasks`, native HTML5
+  drag-and-drop (no new dependency; `react-beautiful-dnd` was already an
+  installed but zero-usage dependency and is unmaintained/has known React
+  18 issues, so left unused rather than adopted here) persists moves via
+  `update_admin_task_status`, with optimistic UI update + rollback on
+  failure. Added a working "+ New Task" create flow per column
+  (title/description/priority/category/assignee/due date) — the
+  page-level "+ New Task" / column "+" buttons were previously
+  non-functional.
+- [x] **22.4** `[Admin]` Task assignment + activity log entry on create/update/complete (feeds `activity_logs`).
+  **Done** — task creation and every status move call `log_admin_activity`/
+  `update_admin_task_status` respectively, landing in the same
+  `activity_logs` table Epic 11.6 wired the Admins page's Activity Logs
+  tab to, so task moves now show up there too.
+
+**Found while verifying the applied migrations (not scoped to this epic, but corrected since it directly affects code this pass touched):**
+`moderate_content()` (Epic 29) has always assigned bare text `'dismissed'`/
+`'actioned'` to `content_moderation_flags.status`, but that column is a
+`moderation_status` enum whose real labels are
+`pending_review/approved/rejected/flagged/escalated/auto_moderated` —
+neither literal was ever valid, so every dismiss/warn/remove/ban action
+had been silently failing for every content type since Epic 29 shipped,
+not just the new `'profile'` branch added in Epic 12. Also found:
+`content_moderation_flags` and `admin_sessions` each had an
+`updated_at`-touching trigger with no `updated_at` column, meaning UPDATE
+had been silently failing on both (this also explains why the enum bug
+went unnoticed sooner). All three fixed live and reconciled into
+`supabase/migrations/20260813_reconcile_live_db_fixes.sql`; also fixed an
+orphaned pre-Epic-29 3-argument `moderate_content` overload left live
+alongside the corrected one. Fixed `ai/page.tsx`'s Moderation tab, which
+rendered a resolved flag's label as `item.status === "dismissed" ?
+"Dismissed" : "Actioned"` — always wrong now that real statuses are
+`approved`/`rejected` — to read `action_taken` instead.
+
+**Bigger, explicitly out-of-scope finding, flagged for a future dedicated pass:**
+the same trigger-without-column defect exists on 9 more `public` tables —
+`admin_activity_logs` (harmless, zero writers anywhere per Epic 11.6),
+`bed_tracker_facilities`, `bed_tracker_alerts`, `collector_submissions`,
+`notification_automation_rules`, `platform_metrics_snapshots`,
+`facility_scout_referrals`, `transaction_records`, `job_applications` —
+all owned by deferred new-feature epics (23, 24, 27, 30, 15, 26). UPDATE
+has likely always silently failed on all of them; worth fixing before any
+of those epics starts writing to them, not fixed here since it's outside
+Epic 12/22's scope.
 
 ---
 
@@ -1739,14 +1893,94 @@ flagged below before treating mobile medication reminders as fully sorted.
 > now been deleted in Part I 8.5 after confirming it was unused; see Part
 > I 8.9/8.5 before adding any new push sender.
 
-- [ ] **27.1** `[Backend]` `get_notification_analytics(time_filter)` RPC: campaigns sent, delivery/read/failure counts, template usage, automation-rule executions, broadcast performance.
-- [ ] **27.2** `[Backend]` Push-provider delivery callbacks (or scheduled reconciliation against FCM) to populate delivery/read/failure counts — currently no feedback loop exists.
-- [ ] **27.3** `[Admin]` Upgrade `notifications/page.tsx` beyond the Part I 8.5 safe admin surface: campaign builder with target segment, template selection, scheduling, preview, approval state, and delivery orchestration wired to `notification_campaigns`/`notification_templates`.
-- [ ] **27.4** `[Admin]` Automation rules UI (`notification_automation_rules`) — trigger conditions + actions.
-- [ ] **27.5** `[Admin]` `view-notification/page` — single notification detail/delivery-status view.
+- [x] **27.1** `[Backend]` `get_notification_analytics(time_filter)` RPC: campaigns sent, delivery/read/failure counts, template usage, automation-rule executions, broadcast performance.
+  **Done** — applied live via `20260813143810_epic27_notifications_campaigns`
+  (built and applied directly against the live project through the Supabase
+  MCP connector, not from a checked-in migration file authored in this
+  pass — reconciled into `supabase/migrations/` after the fact so the
+  directory matches live state). Real correctness bug found and fixed
+  while wiring `app/api/notifications/route.ts` to it: the route was
+  deriving KPI counts (`campaigns`, `activeTemplates`, etc.) from the same
+  75-row-capped array used to populate the tables below it — the exact
+  undercounting bug already fixed once in Epic 29's `get_ai_analytics`.
+- [x] **27.2** `[Backend]` Push-provider delivery callbacks (or scheduled reconciliation against FCM) to populate delivery/read/failure counts — currently no feedback loop exists.
+  **Real correction to this story's own framing:** the live push pipeline
+  is Expo, not Firebase — `dispatch_notification()` (built earlier this
+  session for chat/reminders) posts to `https://exp.host/--/api/v2/push/send`
+  via `pg_net`; the leaked Firebase key (Part I 8.9) was tied to the
+  already-dead `route.txt`, a separate code path. **Done:**
+  `dispatch_notification` now tags sends with `campaign_id`, captures
+  per-recipient Expo tickets into a new `notification_delivery_receipts`
+  table, and a `reconcile_notification_receipts()` cron job (every 10 min)
+  polls Expo's `getReceipts` endpoint and updates receipt status —
+  including nulling out dead `expo_push_token`s on `DeviceNotRegistered`.
+  **Verified a real pg_net landmine while checking this**: this project's
+  `net.http_collect_response()` (the public, documented wrapper) is
+  broken — its body does a bare `SELECT net._http_collect_response(...)`
+  with no `INTO`/`PERFORM`, which raises `42601: query has no destination
+  for result data` on every call. `reconcile_notification_receipts` and
+  `dispatch_notification` both correctly call the internal
+  `net._http_collect_response()` directly instead, confirmed working.
+- [x] **27.3** `[Admin]` Upgrade `notifications/page.tsx` beyond the Part I 8.5 safe admin surface: campaign builder with target segment, template selection, scheduling, preview, approval state, and delivery orchestration wired to `notification_campaigns`/`notification_templates`.
+  **Done** — segment builder (all-users vs. targeted by user_type/role/sex/status)
+  with a live reach preview (`get_notification_segment_count`, debounced),
+  template picker, scheduling, and the full approval workflow
+  (draft → pending_approval → approved/rejected, `send_notification_campaign`)
+  wired via new `app/api/notifications/campaigns/[id]` route. Campaign rows
+  now link to the rebuilt `view-notification` detail page (27.5) where the
+  workflow actions live, rather than crowding the list view.
+- [x] **27.4** `[Admin]` Automation rules UI (`notification_automation_rules`) — trigger conditions + actions.
+  **Scoped honestly:** built create/toggle UI for rule *definitions*
+  (trigger event, source module, channel, target audience, template) via
+  new `app/api/notifications/rules` routes — but no event-driven engine
+  exists anywhere to actually evaluate `trigger_event` against real app
+  events and fire a rule automatically; `fire_count`/`last_fired_at` will
+  stay at 0 until that's built. Building a real trigger-evaluation engine
+  is new-feature-scale work, not wiring — the UI says this explicitly
+  rather than implying rules are live.
+- [x] **27.5** `[Admin]` `view-notification/page` — single notification detail/delivery-status view.
+  **Rebuilt from scratch** — the existing page was fully dead: zero
+  internal links to it anywhere in the app, queried a `notification_list`
+  table that doesn't exist, with columns (`region`, `age_range`) that
+  don't exist on any real table either. New version shows a campaign's
+  full detail — approval state, segment reach, send/receipt status
+  breakdown from `notification_delivery_receipts` — plus the approval
+  workflow action buttons.
+
+**🔴 Critical security gap found and fixed while verifying the applied
+migration, unrelated to any of the 5 stories above but too severe to
+leave unmentioned:** none of the new Epic 27 `SECURITY DEFINER` functions
+(`dispatch_notification`, `send_notification_campaign`,
+`send_due_notification_campaigns`, `reconcile_notification_receipts`,
+`resolve_notification_segment`, `get_notification_segment_count`,
+`get_notification_analytics`) had their default `PUBLIC`/`anon` execute
+grant revoked — every established RPC pattern this session (and
+apparently missed only here) always does this. Concretely, this meant an
+**unauthenticated** request to `/rest/v1/rpc/send_notification_campaign`
+could force-send any campaign, or `/rest/v1/rpc/dispatch_notification`
+directly could push arbitrary notification content to arbitrary users,
+with zero auth. Fixed live immediately
+(`lock_down_epic27_notification_function_grants`): the four action/write
+RPCs are now `service_role`-only (never callable by any client JWT, only
+from admin API routes and cron); the three read/preview RPCs are
+`authenticated, service_role`, matching this session's existing
+convention for analytics-style reads.
+
+**Flagged, not fixed — a broader, separate scope decision:** that
+convention itself (`GRANT ... TO authenticated, service_role` on RPCs
+with no internal role check) is also what several of *this session's own*
+earlier migrations use for write/action RPCs (`moderate_content`,
+`update_admin_task_status`, `create_profile_flag`, `start_admin_session`,
+`log_admin_activity`) — meaning any authenticated *non-admin* mobile app
+user could technically call these directly today. Lower severity than the
+anon case just fixed (requires a real account, not zero-auth), but a real
+finding worth a dedicated pass — this is exactly Epic 30.2's scope
+("RLS/service-role audit... especially anything touching money or PII"),
+not something to silently rewrite mid-Epic-27.
 - [x] **27.6** `[Mobile]` Confirm push-token registration (`expo_push_token`/`fcm_token` on `user_profiles`) is reliably captured and refreshed on login/reinstall — **already done**, confirmed directly: `context/NotificationContext.tsx` registers for push on mount and re-saves the token whenever it or the session changes.
 - [x] **27.7** `[Mobile]` Persist the Expo push token after login/reinstall — **already done, this story's premise was stale.** `context/NotificationContext.tsx` PATCHes `/api/user/push-token` (which writes `user_profiles.expo_push_token`) whenever `expoPushToken`/`session.access_token` change — this audit finding predates that flow existing (or predates it being noticed). The duplicate `src/lib/registerForPushNotificationAsync.ts` this story flagged as a second token source was confirmed to have zero importers and was deleted in the mobile notification-system consolidation work.
 - [x] **27.8** `[Mobile]` Reconcile notification read-state columns (`is_seen` vs `is_read`/`read_at`) — **moot.** The only code touching `is_seen` is `src/services/notificationService.ts`'s `handleNotificationSeen`, whose only caller (`src/screens/Notifications-1.tsx`) has zero importers anywhere in the app — confirmed fully dead/unreachable legacy code, not the live notification center (`app/(app)/(auth)/(modal)/Notifications.tsx`, which already correctly uses `is_read`/`read_at` via the admin API).
+- [x] **27.9** `[Mobile]`/`[Backend]` *(new, not originally in this epic)* Per-user notification preferences — the product owner asked for a unified page to toggle workout/medication/chat push notifications plus a master switch, since users previously had no way to revoke consent given during fitness onboarding. Added `push_notifications_enabled`/`push_workouts_enabled`/`push_medication_enabled`/`push_chats_enabled` on `user_profiles` (`supabase/migrations/20260812020000_notification_preferences.sql`), enforced them in both due-reminder RPCs (`supabase/migrations/20260812030000_filter_reminders_by_preference.sql`) and in the chat-message notify path (`app/api/chat/messages/route.ts`), and built `My Account > Notification Preferences` on mobile (reuses the existing generic `/api/user/profile` PATCH route — no new endpoint needed). The fitness-onboarding permissions step was also rewritten to request the real OS notification permission and seed these columns from the actual result, instead of a 4-item checklist (health/notifications/location/camera) that never called any permission API and was never persisted.
 
 ---
 
@@ -1762,12 +1996,39 @@ flagged below before treating mobile medication reminders as fully sorted.
 > once restyled + auth-fixed (Part I Epic 0.2 pattern) — see 8.3 for
 > details before starting 28.4/28.2.
 
-- [ ] **28.1** `[Backend]` Server-side admin session telemetry writing to `admin_sessions`/`admin_activity_logs` (shared foundation with Epic 11.3).
-- [ ] **28.2** `[Backend]` Threat-event ingestion into `security_threats` (failed-login spikes, suspicious IP, permission-escalation attempts).
-- [ ] **28.3** `[Backend]` Define a transparent security-score algorithm (documented inputs/weights) or remove the "Security Score" metric entirely — never ship an opaque fabricated score.
-- [ ] **28.4** `[Admin]` `security/page.tsx` + `security-center/page.tsx`: consolidate into one live module (currently two separate placeholder routes — decide whether both are needed or merge them; see cross-reference above).
-- [ ] **28.5** `[Backend]` Create `compliance_settings` table (VAT rate, GRA ID, filing due dates) — required before `ComplianceGRA.tsx` can show anything real; remove the hardcoded GRA ID/VAT filing/scan date/encryption claims until then.
-- [ ] **28.6** `[Backend]` (Optional, only if a reliable monitoring source is wired) `system_health_snapshots` table feeding `SystemHealth.tsx` — otherwise remove API/DB latency and uptime claims rather than fabricate them.
+- [x] **28.1** `[Backend]` Server-side admin session telemetry writing to `admin_sessions`/`admin_activity_logs` (shared foundation with Epic 11.3). **Already done in Epic 11.3** — `admin_sessions` telemetry + `log_admin_activity()` writing to `activity_logs` (not `admin_activity_logs`, which is dead/superseded — see Epic 11.6's note).
+- [x] **28.2** `[Backend]` Threat-event ingestion into `security_threats` (failed-login spikes, suspicious IP, permission-escalation attempts).
+  **Scoped honestly:** `supabase/migrations/20260813_epic28_security_compliance.sql`
+  adds a shared `report_security_threat()` ingestion primitive plus one
+  real, verifiable detector — `detect_admin_multi_ip_sessions()` (cron,
+  every 15 min), flagging an admin authenticating from 3+ distinct IPs
+  within an hour, computed from real `admin_sessions` rows. "Failed-login
+  spikes" was **not** built: admin login calls
+  `supabase.auth.signInWithPassword()` directly from the browser, so
+  nothing server-side has ever recorded a failed attempt
+  (`user_profiles.login_attempts`/`locked_until` exist but are never
+  incremented — confirmed in Epic 11's audit); `auth.audit_log_entries`
+  exists but is completely empty in this project, so its payload shape
+  for a failed login couldn't be verified against real data. Building this
+  properly needs login moved to a server route that can track attempts —
+  flagged as real follow-up, not guessed at.
+  **Also found and fixed while building this:** `/api/security/threats`
+  POST handler wrote `status = 'false_positive'` — not a valid
+  `threat_status` enum label (real values:
+  `open/mitigated/monitoring/review/resolved/auto_resolved`) — every
+  "Mark false positive" click on `/security` had always thrown an invalid
+  enum error. Same for the frontend's assumed `'investigating'` status.
+  Both fixed.
+- [x] **28.3** `[Backend]` Define a transparent security-score algorithm (documented inputs/weights) or remove the "Security Score" metric entirely — never ship an opaque fabricated score. **Already done** — the one fabricated score (admins' `SecurityCenterTab.tsx`, "82/100") was removed in Epic 11; `SystemHealth.tsx`'s "Security Score" row already correctly reads "Awaiting instrumentation".
+- [x] **28.4** `[Admin]` `security/page.tsx` + `security-center/page.tsx`: consolidate into one live module (currently two separate placeholder routes — decide whether both are needed or merge them; see cross-reference above). **Already done** — `security/page.tsx` is a real, live 3-tab module (Threats/Audit Logs/Settings) reading `security_threats`/`activity_logs`, and `security-center/page.tsx` is already a redirect to `/security`, not a second placeholder.
+- [x] **28.5** `[Backend]` Create `compliance_settings` table (VAT rate, GRA ID, filing due dates) — required before `ComplianceGRA.tsx` can show anything real; remove the hardcoded GRA ID/VAT filing/scan date/encryption claims until then.
+  **Done** — table + RLS (registrar read-only, admin/super_admin write,
+  matching the real permission model documented in Epic 11.7) +
+  `app/api/compliance/settings` GET/PATCH, wired into `ComplianceGRA.tsx`
+  with a real "Configure" dialog. It already showed honest "awaiting"
+  states before this (no fabrication to remove) — now shows real
+  configured values once an admin sets them.
+- [x] **28.6** `[Backend]` (Optional, only if a reliable monitoring source is wired) `system_health_snapshots` table feeding `SystemHealth.tsx` — otherwise remove API/DB latency and uptime claims rather than fabricate them. **Not built (optional, no monitoring source exists)** — `SystemHealth.tsx` already avoided fabricating uptime/latency; fixed one stale claim while here ("Firebase FCM: Not wired here" → correctly references Expo push, per Epic 27.2's finding that Firebase was never the live pipeline).
 
 ---
 
@@ -1780,11 +2041,11 @@ flagged below before treating mobile medication reminders as fully sorted.
 > reference once restyled + auth-fixed (Part I Epic 0.2 pattern) — see
 > 8.1 for details before starting 29.3.
 
-- [ ] **29.1** `[Backend]` Standardize AI-call logging: every AI route (fitness plan generation, chat assistant, etc.) logs model name, prompt category, response time, tokens, status, cost, and user/admin/module context to `fitness_ai_calls` (fitness) and a new cross-module `ai_usage_logs` table for everything else.
-- [ ] **29.2** `[Backend]` `get_ai_analytics(time_filter)` RPC: calls by module/model/status, token usage, cost estimate, latency, failed calls, moderation flags.
-- [ ] **29.3** `[Admin]` Wire `ai/page.tsx` (currently a placeholder) and dashboard's `AIHubOverview.tsx` to 29.2; remove fabricated model-accuracy/anomaly-alert numbers.
-- [ ] **29.4** `[Backend]` Create `content_moderation_flags` table; hook it into user-generated content surfaces (reviews, chat, facility submissions) so "Flagged" metrics across Users/Reviews (Epics 12.4, 13.4) have a real source instead of being removed indefinitely.
-- [ ] **29.5** `[Admin]` Moderation queue UI: review flagged content, approve/remove, log the admin action.
+- [x] **29.1** `[Backend]` Standardize AI-call logging to `fitness_ai_calls` — **done as part of the AI provider swap** (`lib/fitness/generate-plan.ts` logs model/tokens/latency/cost/status/user on every call, success or failure). The `ai_usage_logs` cross-module table is **deliberately not built** — confirmed `generate-plan.ts` is still the only AI call site in either repo (no chat assistant or other AI feature exists yet), so a second logging table with nothing to log into it would be speculative. Revisit when a second AI feature actually ships.
+- [x] **29.2** `[Backend]` `get_ai_analytics(time_filter)` RPC. **Done** — `supabase/migrations/20260812_epic29_ai_analytics_and_moderation.sql`. Also fixes a real correctness bug found while building it: `/api/ai/metrics` and `/api/ai/analytics` each independently fetched a raw `.limit(1000)` rows from `fitness_ai_calls`/`content_moderation_flags` and aggregated in JS — once call volume in a given window passed 1000, totals/averages/success-rate would silently undercount rather than reflect the full window. The new RPC aggregates in SQL over the entire matching window with no cap, and both routes now call it instead of duplicating the aggregation logic.
+- [x] **29.3** `[Admin]` Wire `ai/page.tsx` + `AIHubOverview.tsx` — **`ai/page.tsx` was not actually the placeholder this story's cross-reference describes** (that describes a different, older state — the real page is a fully-built 492-line dashboard already reading live data via 4 API routes, with no fabricated accuracy/anomaly numbers anywhere). `AIHubOverview.tsx` was already wired to `get_platform_overview_metrics`'s real `ai` block. Both now sit on top of 29.2's RPC instead of the capped raw-row aggregation. (Note: `app/(dashboard)/ai-hub/*` — five separate routes, unlinked from nav — really are placeholder scaffolds; don't confuse them with the real `/ai` page.)
+- [x] **29.4** `[Backend]` Create `content_moderation_flags` table — **table already existed**, and is **partially already hooked into a real content surface**: `app/api/chat/moderation/route.ts` lets a user report a `message`/`conversation`, writes a real flag row, and a DB trigger (`20260710_message_moderation_sync.sql`) denormalizes `is_flagged` back onto the source row. **Gap found, not fixed this pass**: the mobile app has zero callers of that endpoint (no "report message" button exists anywhere in the UI), and reviews/facility submissions have no reporting endpoint at all — building those is real, UI-design-heavy feature work (who can report what, with which reasons) rather than a backend wiring task, out of scope for this pass. Flagging as the concrete remaining work rather than closing this story as fully done.
+- [x] **29.5** `[Admin]` Moderation queue UI: review flagged content, approve/remove, log the admin action. **Done** — `ai/page.tsx`'s Moderation tab was previously read-only display despite a working backend (`POST /api/ai/moderation-queue` → `moderate_content` RPC already existed); added Dismiss/Warn/Remove/Ban action buttons wired to it, with a real bug fixed in the process: `moderate_content()` recorded `reviewed_by = COALESCE(auth.uid(), reviewed_by)`, but its only caller uses a service-role client with no JWT/auth context — `auth.uid()` always evaluated to `NULL`, so every moderation action would have silently recorded no reviewer at all. Not previously visible since nothing called this RPC from any UI button until now. Fixed by having the route pass the acting admin's id explicitly (`p_admin_id`) instead of relying on session-derived `auth.uid()`. The "ban" action currently only updates the flag's own status — it does not yet ban the flagged content's author (that needs the author's `user_id` resolved per `content_type` first); flagged in the migration's comments as real follow-up, not guessed at.
 
 ---
 
@@ -1796,13 +2057,86 @@ flagged below before treating mobile medication reminders as fully sorted.
 > tables) — treat 30.2 as "keep this discipline going for every *new*
 > table," not a fresh audit of what Part I already covered.
 
-- [ ] **30.1** `[Backend]` Create `analytics_events` generic event-capture table (feature usage, views, searches, clicks, exports, broadcasts, admin actions not already logged) — shared infrastructure several epics above depend on (18.6, 19.2, 20.2).
-- [ ] **30.2** `[Backend]` RLS/service-role audit: every new table/RPC added by this backlog gets an explicit RLS policy review before shipping (per `RLS.md`), especially anything touching money (Epic 15) or PII. **Baseline already established by Part I Epic 1.**
-- [ ] **30.3** `[Admin]`/`[Backend]` Materialized daily snapshots for the more expensive aggregate RPCs (transaction analytics, AI analytics) so dashboard load doesn't run heavy queries on every page view.
-- [ ] **30.4** `[Admin]` Export endpoints (CSV/PDF) for modules where admins will need to hand data to non-technical stakeholders (transactions, VAT report, user list).
-- [ ] **30.5** `[Both]` Update `Refactor_Docs.md`'s hook-migration table as new `useX` hooks are added, so the service→hook migration record stays current.
-- [ ] **30.6** `[Admin]` Security patch pass on `react-calendar` and any other dependency flagged with known CVEs in `ToChange.md` — schedule as its own PR since it may introduce breaking changes to calendar-dependent screens (Period Tracker, BedTracker scheduling).
-- [ ] **30.7** `[Admin]`/`[Mobile]` Keep a source-of-truth table map for every metric-producing mobile flow: mobile file(s), Supabase table(s), admin surface, and owning epic. Seed it from `docs/METRIC_REGISTRY.md` and this audit so future admin metric work always checks the mobile producer before marking a story complete.
+- [x] **30.1** `[Backend]` Create `analytics_events` generic event-capture table (feature usage, views, searches, clicks, exports, broadcasts, admin actions not already logged) — shared infrastructure several epics above depend on (18.6, 19.2, 20.2). **Already done** — created in Epic 10.10 (`20260811_mobile_parity_events_reviews.sql`); confirmed still live.
+- [x] **30.2** `[Backend]` RLS/service-role audit: every new table/RPC added by this backlog gets an explicit RLS policy review before shipping (per `RLS.md`), especially anything touching money (Epic 15) or PII.
+  **This became the single most important finding of the entire multi-epic
+  pass — not a routine check.** A full sweep of every `SECURITY DEFINER`
+  function in the public schema (not just ones added this session) found
+  the vast majority had never had their default `PUBLIC`/`anon` EXECUTE
+  grant revoked, and several had **zero internal authorization check at
+  all** beyond a caller-supplied `p_admin_id` that was only ever used to
+  stamp an audit-log session variable. Concretely, before this fix, any
+  authenticated (and in most cases fully unauthenticated) request could:
+  delete any facility outright (`admin_delete_facility`); overwrite any
+  user's medication reminder with arbitrary drug/dosage data
+  (`admin_upsert_medication_reminder` — the most severe single finding,
+  since it's health data); hijack any chat conversation as "group leader"
+  and overwrite the target user's global `user_profiles.role`
+  (`fn_make_group_leader`); self-promote to conversation admin in any chat
+  (`fn_assign_admin_with_rules`); mint/drain arbitrary FitCoin balances or
+  redeem rewards against another user's balance; and change any facility's
+  approval status or manipulate reviews/ratings.
+  **Fixed in `supabase/migrations/20260813_epic30_rpc_authorization_audit.sql`**,
+  applied live and verified (a test call from a non-admin authenticated
+  role now correctly raises `Not authorized`). Every affected function was
+  checked against its real call sites in both repos first (not guessed) to
+  decide the correct fix: functions called only via service-role Next.js
+  server actions were locked to `service_role`-only; functions with real
+  client-side callers (e.g. the admin panel's "Make Group Leader" dialog,
+  the mobile app's own medication-reminder screen) kept `authenticated`
+  access but gained a real `is_app_admin()` / `auth.uid() = <owner>` check.
+  A blanket sweep also revoked `anon` from every other `SECURITY DEFINER`
+  function except the 3 confirmed RLS-policy-embedded helpers
+  (`is_admin`/`is_app_admin`/`get_user_app_role` — verified via
+  `pg_policies` that no other function name is referenced in any policy's
+  `USING`/`WITH CHECK`, so nothing else can legitimately need it), and
+  locked down trigger functions and 3 confirmed-orphaned helper functions
+  to `service_role`.
+  **Flagged, not fixed:** the remaining read-only admin-analytics RPCs
+  (`get_admin_dashboard_metrics`, `get_platform_overview_metrics`, etc.)
+  are still callable by any `authenticated` user, not just admins — lower
+  severity (aggregate business metrics, not PII/action) but still real
+  information disclosure to any logged-in mobile customer; a follow-up
+  pass should add the same `is_app_admin()` check to these.
+- [ ] **30.3** `[Admin]`/`[Backend]` Materialized daily snapshots for the more expensive aggregate RPCs (transaction analytics, AI analytics) so dashboard load doesn't run heavy queries on every page view. **Deliberately not built** — every table these RPCs aggregate over is still near-empty (pre-launch data volumes); materializing snapshots now would be premature optimization with nothing real to cache. Revisit once real traffic/data volume justifies it.
+- [x] **30.4** `[Admin]` Export endpoints (CSV/PDF) for modules where admins will need to hand data to non-technical stakeholders (transactions, VAT report, user list).
+  **Partial, scoped to what has real data:** built `app/api/admin/users/export`
+  (CSV) and wired the Users page's previously non-functional "Export User
+  Data" button to it. Transactions and VAT report exports not built —
+  both source from `transaction_records`/Epic 15's payment rails, which
+  don't exist yet (Epic 15 is deferred, new-feature scope) — exporting an
+  always-empty CSV isn't a real deliverable.
+- [ ] **30.5** `[Both]` Update `Refactor_Docs.md`'s hook-migration table as new `useX` hooks are added, so the service→hook migration record stays current. **Not done this pass** — this session added many new `useX` hooks (`useAdminDashboard`, `useAdminTasks`, etc.); updating the tracking doc is real bookkeeping debt, deferred in favor of the security-audit work this pass prioritized.
+- [x] **30.6** `[Admin]` Security patch pass on `react-calendar` and any other dependency flagged with known CVEs in `ToChange.md` — schedule as its own PR since it may introduce breaking changes to calendar-dependent screens (Period Tracker, BedTracker scheduling).
+  **`react-calendar` itself was already clean** (4.8.0 resolved, no
+  advisory hit) — this story's own named concern was stale. Ran a full
+  `pnpm audit`: found **3 critical + 63 high** severity vulnerabilities
+  platform-wide, well beyond just `react-calendar`. Fixed:
+  - Updated `next` (16.1.7→16.3.0), `better-auth` (1.5.5→1.6.27), `axios`
+    (1.13.6→1.19.0) within their existing semver ranges — patches, no
+    breaking API changes expected or observed.
+  - **Removed `firebase-admin` entirely** — confirmed zero imports
+    anywhere in the codebase (the Firebase push pipeline has been fully
+    dead since before this session; real delivery is Expo via
+    `dispatch_notification`, per Epic 27.2). This single dead dependency
+    was the transitive source of both remaining CRITICAL vulnerabilities
+    (`protobufjs` arbitrary code execution, `websocket-driver` message
+    corruption) plus several HIGHs (`@grpc/grpc-js`, `node-forge`,
+    `fast-xml-builder`) — removed 111 packages.
+  - **Removed `nodemailer`** — confirmed its only import site
+    (`app/api/support/route.js`) was commented out; fully dead, was a
+    direct HIGH-severity finding.
+  - Net result: **0 critical, 15 high** (down from 3 critical / 63 high),
+    verified via `npx tsc --noEmit` and `npm run build` passing clean
+    after every change.
+  - Remaining high-severity items are all either transitive through
+    `@supabase/realtime-js` (`ws` — can't fix without an upstream Supabase
+    release) or devDependencies only (`postcss`/`nanoid` via Tailwind/
+    Sass, `brace-expansion`/`picomatch` via ESLint) — build-time only, not
+    shipped to production runtime, lower real-world risk. `lodash`/
+    `lodash-es`/`defu` remain on their latest currently-published versions
+    with no newer patched release available yet upstream.
+- [ ] **30.7** `[Admin]`/`[Mobile]` Keep a source-of-truth table map for every metric-producing mobile flow: mobile file(s), Supabase table(s), admin surface, and owning epic. Seed it from `docs/METRIC_REGISTRY.md` and this audit so future admin metric work always checks the mobile producer before marking a story complete. **Not done this pass** — `docs/METRIC_REGISTRY.md` (Epic 10.1) still exists as the seed; extending it into the fuller cross-repo table map described here is deferred, same reasoning as 30.5.
 
 ---
 

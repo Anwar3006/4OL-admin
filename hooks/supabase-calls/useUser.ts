@@ -82,6 +82,37 @@ export const useUser = ({ id, enabled }: { id: string; enabled: boolean }) => {
   });
 };
 
+export interface UserDashboardMetrics {
+  time_filter: string;
+  total: number;
+  active: number;
+  new_users: number;
+  deleted: number;
+  pending_verification: number;
+  suspended: number;
+  banned: number;
+  with_push_token: number;
+  fitness_onboarding_rate: number;
+  premium: number;
+  flagged: number;
+  delete_requests_pending: number;
+  by_type: Record<string, number>;
+  by_sex: Record<string, number>;
+}
+
+export const useUserDashboardMetrics = (period: "24h" | "7d" | "30d" | "90d" = "30d") => {
+  return useQuery<UserDashboardMetrics, Error>({
+    queryKey: ["user-dashboard-metrics", period],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/dashboard-metrics/users?period=${period}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error("Failed to load user dashboard metrics.");
+      return res.json();
+    },
+  });
+};
+
 export const useGetInvitedAdmin = ({ token }: { token: string }) => {
   return useQuery<any, Error>({
     queryKey: USER_QUERY_KEYS.invites,

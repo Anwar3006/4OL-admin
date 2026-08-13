@@ -36,7 +36,10 @@ export async function POST(request) {
     .from("delete_account_requests")
     .select("id, status")
     .eq("user_id", user.id)
-    .eq("status", "pending")
+    // Any non-terminal status counts as "already has a request in
+    // flight" — not just pending_review. completed/cancelled are
+    // terminal, so a new request is allowed after either of those.
+    .in("status", ["pending_review", "in_verification", "grace_period"])
     .maybeSingle();
 
   if (existingError) {
@@ -44,7 +47,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Failed to submit request" }, { status: 500 });
   }
 
-  // Already has a pending request — don't create a duplicate row.
+  // Already has an in-flight request — don't create a duplicate row.
   if (existing) {
     return NextResponse.json({ success: true, id: existing.id, alreadyPending: true });
   }
@@ -56,7 +59,7 @@ export async function POST(request) {
         user_id: user.id,
         email: user.email,
         reason,
-        status: "pending",
+        status: "pending_review",
       },
     ])
     .select("id")

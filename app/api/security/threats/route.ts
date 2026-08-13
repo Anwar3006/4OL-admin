@@ -86,10 +86,17 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = getSupabaseAdmin();
+  // threat_status's real enum labels are open/mitigated/monitoring/review/
+  // resolved/auto_resolved — 'false_positive' has never been a valid value
+  // (nor was the frontend's other assumed status, 'investigating'). There's
+  // no dedicated "not a real threat" enum state, so both UI actions close
+  // the threat as 'resolved', distinguished by resolution_notes — this was
+  // silently throwing "invalid input value for enum threat_status" on every
+  // "False positive" click before this fix.
   const { data, error } = await admin
     .from("security_threats")
     .update({
-      status: parsed.data.action,
+      status: "resolved",
       resolved_at: new Date().toISOString(),
       resolved_by: user.id,
       resolution_notes:

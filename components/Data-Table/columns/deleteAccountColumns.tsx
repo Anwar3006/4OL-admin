@@ -40,18 +40,21 @@ export const deleteAccountColumns: ColumnDef<any>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.original.status || 'pending';
+      const status = row.original.status || 'pending_review';
+      const styles: Record<string, string> = {
+        pending_review: "bg-amber-50 text-amber-700 border-amber-100",
+        in_verification: "bg-blue-50 text-blue-700 border-blue-100",
+        grace_period: "bg-purple-50 text-purple-700 border-purple-100",
+        completed: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        cancelled: "bg-red-50 text-red-700 border-red-100",
+      };
       return (
         <span className={cn(
           "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          status === 'approved'
-            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-            : status === 'pending'
-            ? "bg-amber-50 text-amber-700 border-amber-100"
-            : "bg-red-50 text-red-700 border-red-100"
+          styles[status] ?? "bg-slate-50 text-slate-700 border-slate-100"
         )}>
-          {status === 'pending' ? <Clock className="h-3 w-3 mr-1" /> : null}
-          {status}
+          {status === 'pending_review' ? <Clock className="h-3 w-3 mr-1" /> : null}
+          {status.replace(/_/g, ' ')}
         </span>
       );
     },

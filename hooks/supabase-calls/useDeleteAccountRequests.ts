@@ -4,7 +4,15 @@ import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type DeleteRequestStatus = "pending" | "approved" | "rejected";
+// Formalized in supabase/migrations/20260812_epic21_delete_account_status_vocabulary.sql
+// as a CHECK constraint — the column previously had none. See that file for
+// the full lifecycle description.
+export type DeleteRequestStatus =
+  | "pending_review"
+  | "in_verification"
+  | "grace_period"
+  | "completed"
+  | "cancelled";
 
 export interface DeleteAccountRequest {
   // From delete_account_requests table
@@ -165,41 +173,56 @@ export const useUpdateDeleteRequestStatus = () => {
       newStatus,
     }: UpdateStatusPayload) => {
       const supabase = await getSupabaseClient();
-      // 1. Update request status
+
+      const updatePayload: Record<string, unknown> = { status: newStatus };
+      if (newStatus === "grace_period") {
+        // Needed by expire_delete_account_grace_periods() to compute when
+        // the 30-day window elapses — created_at is when the request was
+        // first submitted, not when it entered grace_period, and those
+        // can be arbitrarily far apart if in_verification takes a while.
+        updatePayload.grace_period_started_at = new Date().toISOString();
+      }
+
       const { error: reqError } = await supabase
         .from("delete_account_requests")
-        .update({ status: newStatus })
+        .update(updatePayload)
         .eq("id", requestId);
 
       if (reqError) throw new Error(reqError.message);
 
-      // 2. If approving: ban user in BetterAuth + soft-delete profile
-      if (newStatus === "approved") {
+      // Revoke login access as soon as the request enters its grace
+      // period — matches the mobile app's own copy ("Upon approval, your
+      // login access will be immediately revoked"). Actual data
+      // anonymization/deletion happens later, automatically, once the
+      // grace period elapses (expire_delete_account_grace_periods()) —
+      // not here, since grace_period is meant to be a reversible window.
+      if (newStatus === "grace_period") {
         const [{ error: banError }, { error: profileError }] =
           await Promise.all([
             supabase.from("user").update({ banned: true }).eq("id", userId),
             supabase
               .from("user_profiles")
-              .update({ is_deleted: true })
+              .update({ status: "banned" })
               .eq("user_id", userId),
           ]);
 
         if (banError) console.warn("Could not ban user:", banError.message);
         if (profileError)
-          console.warn("Could not soft-delete profile:", profileError.message);
+          console.warn("Could not update profile status:", profileError.message);
       }
 
       return { requestId, userId, newStatus };
     },
     onSuccess: ({ newStatus }) => {
       queryClient.invalidateQueries({ queryKey: DELETE_REQUEST_KEYS.all });
-      const msg =
-        newStatus === "approved"
-          ? "Request approved — user access revoked."
-          : newStatus === "rejected"
-            ? "Request rejected."
-            : "Status updated.";
-      toast.success(msg);
+      const messages: Record<DeleteRequestStatus, string> = {
+        pending_review: "Marked as pending review.",
+        in_verification: "Marked as in verification.",
+        grace_period: "Grace period started — user access revoked.",
+        completed: "Request marked completed.",
+        cancelled: "Request cancelled.",
+      };
+      toast.success(messages[newStatus] ?? "Status updated.");
     },
     onError: (err: Error) => {
       toast.error(`Failed to update status: ${err.message}`);

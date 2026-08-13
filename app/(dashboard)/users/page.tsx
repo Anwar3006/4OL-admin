@@ -9,6 +9,7 @@ import AllUsersTab from "./_components/AllUsersTab";
 import FlaggedUsersTab from "./_components/FlaggedUsersTab";
 import DeleteRequestsTab from "./_components/DeleteRequestsTab";
 import ViewUserDialog from "./_components/view-user-dialog";
+import FlagUserDialog from "./_components/flag-user-dialog";
 import { cn } from "@/lib/utils";
 
 const UserTabs = [
@@ -42,7 +43,12 @@ const UsersPage = () => {
         title="👥 User Management"
         subtitle="Manage user accounts, monitor activity, and handle requests"
       >
-        <button className="btn btn-secondary">📥 Export User Data</button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => window.open("/api/admin/users/export", "_blank")}
+        >
+          📥 Export User Data
+        </button>
         <button className="btn btn-primary text-white">➕ Add User</button>
       </PageHeader>
 
@@ -82,6 +88,7 @@ const UsersPage = () => {
       </Tabs>
 
       <ViewUserDialog />
+      <FlagUserDialog />
     </div>
   );
 };

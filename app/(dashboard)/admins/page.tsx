@@ -57,10 +57,8 @@ const AdminsPage = () => {
       <div className="alert bg-red-50 border border-red-200 text-[11px] font-medium p-3 rounded-xl flex items-start gap-2.5">
         <span className="text-base leading-none mt-0.5">⚠️</span>
         <div className="flex-1">
-          <strong className="text-red-700">Security Alert:</strong> 2 admins have MFA disabled (Anwar Sadat Mamudu, 4 Our Life Admin). Enforce immediately. 
-          <span className="bg-red-200 text-red-700 font-extrabold px-2 py-0.5 rounded ml-2 cursor-pointer hover:bg-red-300 transition-colors">Force Enable MFA →</span>
+          <strong className="text-red-700">Security Alert:</strong> Some admin accounts have MFA disabled. See the "MFA Not Set" stat below and the Security Center tab for details.
         </div>
-        <span className="text-slate-400 font-bold whitespace-nowrap">May 15, 2026</span>
       </div>
 
       <AdminStats />

@@ -75,8 +75,8 @@ export const adminColumns: ColumnDef<any>[] = [
         </div>
         <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
           <Activity className="w-3 h-3 text-slate-400" />
-          {row.original.last_activity
-            ? format(new Date(row.original.last_activity), "MMM dd, HH:mm")
+          {row.original.last_active
+            ? format(new Date(row.original.last_active), "MMM dd, HH:mm")
             : "Never"}
         </div>
       </div>

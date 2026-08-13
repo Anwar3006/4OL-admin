@@ -4,13 +4,18 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   BarChart3,
+  Ban,
   Bot,
   CheckCircle2,
+  MessageSquareWarning,
   RefreshCw,
   Shield,
   Sparkles,
+  Trash2,
+  XCircle,
   Zap,
 } from "lucide-react";
+import { toast } from "sonner";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -67,6 +72,7 @@ type ModerationItem = {
   ai_confidence: number | null;
   ai_reason: string | null;
   status: string;
+  action_taken: string | null;
   created_at: string;
 };
 
@@ -236,7 +242,11 @@ export default function AIPage() {
           <ModelsTable loading={loading} rows={modelRows} />
         </TabsContent>
         <TabsContent value="moderation" className="mt-5 outline-none">
-          <ModerationTable loading={loading} items={moderationItems} />
+          <ModerationTable
+            loading={loading}
+            items={moderationItems}
+            onActionComplete={loadAIHub}
+          />
         </TabsContent>
         <TabsContent value="recommendations" className="mt-5 outline-none">
           <RecommendationsPanel
@@ -299,13 +309,58 @@ function ModelsTable({
   );
 }
 
+type ModerationAction = "dismiss" | "warn" | "remove" | "ban";
+
+const ACTION_LABEL: Record<string, string> = {
+  dismiss: "Dismissed",
+  warn: "Warned",
+  remove: "Removed",
+  ban: "Banned",
+};
+
 function ModerationTable({
   loading,
   items,
+  onActionComplete,
 }: {
   loading: boolean;
   items: ModerationItem[];
+  onActionComplete: () => void;
 }) {
+  const [actingOnId, setActingOnId] = useState<string | null>(null);
+
+  const handleAction = useCallback(
+    async (id: string, action: ModerationAction) => {
+      setActingOnId(id);
+      try {
+        const res = await fetch("/api/ai/moderation-queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, action }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(json.error || "Failed to update moderation item.");
+        }
+        toast.success(
+          action === "dismiss"
+            ? "Flag dismissed."
+            : action === "warn"
+              ? "Content warned."
+              : action === "remove"
+                ? "Content removed."
+                : "Author banned.",
+        );
+        onActionComplete();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Action failed.");
+      } finally {
+        setActingOnId(null);
+      }
+    },
+    [onActionComplete],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -322,51 +377,102 @@ function ModerationTable({
               <TableHead>AI Signal</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Flagged</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading && <EmptyRow colSpan={5} label="Loading moderation queue..." />}
+            {loading && <EmptyRow colSpan={6} label="Loading moderation queue..." />}
             {!loading && items.length === 0 && (
-              <EmptyRow colSpan={5} label="No moderation flags found." />
+              <EmptyRow colSpan={6} label="No moderation flags found." />
             )}
             {!loading &&
-              items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <div className="font-bold text-slate-800">
-                      {item.content_type}
-                    </div>
-                    <div className="mt-1 font-mono text-[11px] text-slate-400">
-                      {item.content_id}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-sm whitespace-normal text-xs text-slate-500">
-                    <span className="font-bold text-slate-700">
-                      {item.report_reason}
-                    </span>
-                    {item.report_detail ? ` - ${item.report_detail}` : ""}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={item.ai_detected ? "purple" : "secondary"}>
-                      {item.ai_detected
-                        ? `${Math.round(Number(item.ai_confidence ?? 0))}%`
-                        : "Manual"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        item.status === "pending_review" ? "amber" : "emerald"
-                      }
-                    >
-                      {item.status.replace(/_/g, " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-slate-500">
-                    {formatDate(item.created_at)}
-                  </TableCell>
-                </TableRow>
-              ))}
+              items.map((item) => {
+                const isPending = item.status === "pending_review";
+                const isActing = actingOnId === item.id;
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div className="font-bold text-slate-800">
+                        {item.content_type}
+                      </div>
+                      <div className="mt-1 font-mono text-[11px] text-slate-400">
+                        {item.content_id}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-sm whitespace-normal text-xs text-slate-500">
+                      <span className="font-bold text-slate-700">
+                        {item.report_reason}
+                      </span>
+                      {item.report_detail ? ` - ${item.report_detail}` : ""}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={item.ai_detected ? "purple" : "secondary"}>
+                        {item.ai_detected
+                          ? `${Math.round(Number(item.ai_confidence ?? 0))}%`
+                          : "Manual"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={isPending ? "amber" : "emerald"}>
+                        {item.status.replaceAll("_", " ")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-500">
+                      {formatDate(item.created_at)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {isPending ? (
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            aria-label="Dismiss"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                            disabled={isActing}
+                            onClick={() => handleAction(item.id, "dismiss")}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            aria-label="Warn"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                            disabled={isActing}
+                            onClick={() => handleAction(item.id, "warn")}
+                          >
+                            <MessageSquareWarning className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            aria-label="Remove content"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            disabled={isActing}
+                            onClick={() => handleAction(item.id, "remove")}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            aria-label="Ban author"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-700 hover:bg-red-50"
+                            disabled={isActing}
+                            onClick={() => handleAction(item.id, "ban")}
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">
+                          {item.action_taken ? ACTION_LABEL[item.action_taken] ?? item.action_taken : item.status}
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
         </Table>
       </CardContent>

@@ -7,13 +7,6 @@ const AnalyticsQuerySchema = z.object({
   period: z.enum(["1h", "24h", "7d", "30d"]).default("7d"),
 });
 
-const periodHours = {
-  "1h": 1,
-  "24h": 24,
-  "7d": 24 * 7,
-  "30d": 24 * 30,
-};
-
 export async function GET(req: NextRequest) {
   const user = await getAdminApiUser();
   if (!user) {
@@ -31,82 +24,38 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const since = new Date(
-    Date.now() - periodHours[parsed.data.period] * 60 * 60 * 1000,
-  ).toISOString();
-
   const admin = getSupabaseAdmin();
-  const [callsResult, flagsResult] = await Promise.all([
-    admin
-      .from("fitness_ai_calls")
-      .select("model_name, status, token_usage, response_time_ms, created_at, user_id")
-      .gte("created_at", since)
-      .order("created_at", { ascending: false })
-      .limit(1000),
-    admin
-      .from("content_moderation_flags")
-      .select("id, content_type, status, ai_detected, ai_confidence, created_at")
-      .gte("created_at", since)
-      .order("created_at", { ascending: false })
-      .limit(1000),
-  ]);
+  // get_ai_analytics aggregates in SQL over the full matching window — the
+  // previous version of this route fetched two raw `.limit(1000)` row sets
+  // and aggregated in JS, which silently undercounted once volume in a
+  // window exceeded 1000, and duplicated the same aggregation logic that
+  // /api/ai/metrics also implemented independently.
+  const { data, error } = await admin.rpc("get_ai_analytics", {
+    time_filter: parsed.data.period,
+  });
 
-  if (callsResult.error) {
-    console.error("[ai/analytics] AI calls error:", callsResult.error.message);
+  if (error) {
+    console.error("[ai/analytics] Supabase error:", error.message);
     return NextResponse.json(
-      { error: "Failed to load AI call analytics." },
+      { error: "Failed to load AI analytics." },
       { status: 500 },
     );
   }
-
-  if (flagsResult.error) {
-    console.error(
-      "[ai/analytics] moderation flags error:",
-      flagsResult.error.message,
-    );
-    return NextResponse.json(
-      { error: "Failed to load moderation analytics." },
-      { status: 500 },
-    );
-  }
-
-  const calls = callsResult.data ?? [];
-  const flags = flagsResult.data ?? [];
-  const uniqueUsers = new Set(calls.map((call) => call.user_id).filter(Boolean));
-  const aiDetectedFlags = flags.filter((flag) => flag.ai_detected);
-  const pendingFlags = flags.filter((flag) => flag.status === "pending_review");
 
   return NextResponse.json({
     period: parsed.data.period,
     usage: {
-      requests: calls.length,
-      uniqueUsers: uniqueUsers.size,
-      errors: calls.filter((call) => call.status && call.status !== "success")
-        .length,
-      tokens: calls.reduce((sum, call) => sum + Number(call.token_usage ?? 0), 0),
-      avgLatency:
-        calls.length > 0
-          ? Math.round(
-              calls.reduce(
-                (sum, call) => sum + Number(call.response_time_ms ?? 0),
-                0,
-              ) / calls.length,
-            )
-          : 0,
+      requests: data.total_requests,
+      uniqueUsers: data.unique_users,
+      errors: data.errors,
+      tokens: data.total_tokens,
+      avgLatency: data.avg_latency,
     },
     moderation: {
-      flags: flags.length,
-      aiDetected: aiDetectedFlags.length,
-      pending: pendingFlags.length,
-      avgConfidence:
-        aiDetectedFlags.length > 0
-          ? Math.round(
-              aiDetectedFlags.reduce(
-                (sum, flag) => sum + Number(flag.ai_confidence ?? 0),
-                0,
-              ) / aiDetectedFlags.length,
-            )
-          : 0,
+      flags: data.moderation.flags,
+      aiDetected: data.moderation.ai_detected,
+      pending: data.moderation.pending,
+      avgConfidence: data.moderation.avg_confidence,
     },
   });
 }

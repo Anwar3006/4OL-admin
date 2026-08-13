@@ -38,7 +38,7 @@ type Threat = {
   source_module: string | null;
   source_ip: string | null;
   affected_users: number | null;
-  status: "open" | "investigating" | "resolved" | "false_positive";
+  status: "open" | "mitigated" | "monitoring" | "review" | "resolved" | "auto_resolved";
   created_at: string;
   resolved_at: string | null;
 };
@@ -80,9 +80,11 @@ const severityBadge = {
 
 const statusBadge = {
   open: "destructive",
-  investigating: "amber",
+  review: "amber",
+  monitoring: "amber",
+  mitigated: "emerald",
   resolved: "emerald",
-  false_positive: "secondary",
+  auto_resolved: "secondary",
 } as const;
 
 const auditBadge = {

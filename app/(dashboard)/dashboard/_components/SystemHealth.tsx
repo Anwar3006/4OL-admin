@@ -30,8 +30,8 @@ export default function SystemHealth({
       color: "text-slate-500",
     },
     {
-      label: "Firebase FCM",
-      value: "Not wired here",
+      label: "Expo Push Delivery",
+      value: "See Notifications > Campaigns",
       color: "text-slate-500",
     },
   ];

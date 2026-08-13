@@ -12,12 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFlagUserDialog } from "@/stores/dialog-store";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export default function FlagUserDialog() {
   const { isOpen, entityId, data, close } = useFlagUserDialog();
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleSubmit = async () => {
     if (!entityId || !reason.trim()) {
@@ -27,22 +29,24 @@ export default function FlagUserDialog() {
 
     setIsSubmitting(true);
     try {
-      // TODO: Implement the actual flag user mutation
-      // This should call a server action or API endpoint
-      console.log("Flagging user:", {
-        userId: entityId,
-        reason: reason.trim(),
-        userData: data,
+      const res = await fetch("/api/admin/users/flag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: entityId, reason: reason.trim() }),
       });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to flag user");
+      }
 
+      queryClient.invalidateQueries({ queryKey: ["admin-flagged-users"] });
+      queryClient.invalidateQueries({ queryKey: ["user-dashboard-metrics"] });
       toast.success("User flagged successfully");
       setReason("");
       close();
-    } catch (error) {
-      toast.error("Failed to flag user");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to flag user");
       console.error("Error flagging user:", error);
     } finally {
       setIsSubmitting(false);

@@ -90,6 +90,11 @@ export async function POST(req: NextRequest) {
   const { error } = await admin.rpc("moderate_content", {
     p_flag_id: parsed.data.id,
     p_action: parsed.data.action,
+    // Passed explicitly — this route calls via a service-role client,
+    // which has no JWT/auth context, so the RPC's own auth.uid() fallback
+    // always evaluates to NULL. Without this, moderation actions taken
+    // through the admin UI would silently record no reviewer at all.
+    p_admin_id: user.id,
     p_action_notes: parsed.data.notes ?? null,
   });
 

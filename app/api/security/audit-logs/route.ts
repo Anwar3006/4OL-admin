@@ -33,10 +33,16 @@ export async function GET(req: NextRequest) {
   }
 
   const admin = getSupabaseAdmin();
+  // Reads from activity_logs, not admin_activity_logs — admin_activity_logs
+  // has zero writers anywhere in the codebase (a dead parallel table); this
+  // route previously queried it and would have always returned empty.
+  // activity_logs is the table admin mutations actually write to, extended
+  // with severity/ip_address/user_agent columns for this exact use case
+  // (see 20260812_epic11_admin_access_management.sql).
   let query = admin
-    .from("admin_activity_logs")
+    .from("activity_logs")
     .select(
-      "id, admin_id, admin_email, action_type, target_table, record_id, description, severity, ip_address, created_at",
+      "id, actor_id, actor_name, action_type, target_table, record_id, new_data, severity, ip_address, created_at",
       { count: "exact" },
     );
 
@@ -44,7 +50,7 @@ export async function GET(req: NextRequest) {
   if (parsed.data.actionType) {
     query = query.eq("action_type", parsed.data.actionType);
   }
-  if (parsed.data.userId) query = query.eq("admin_id", parsed.data.userId);
+  if (parsed.data.userId) query = query.eq("actor_id", parsed.data.userId);
 
   const { data, error, count } = await query
     .order("created_at", { ascending: false })
@@ -59,7 +65,18 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    logs: data ?? [],
+    logs: (data ?? []).map((row) => ({
+      id: row.id,
+      admin_id: row.actor_id,
+      admin_email: row.actor_name,
+      action_type: row.action_type,
+      target_table: row.target_table,
+      record_id: row.record_id,
+      description: (row.new_data as { description?: string } | null)?.description ?? null,
+      severity: row.severity,
+      ip_address: row.ip_address,
+      created_at: row.created_at,
+    })),
     total: count ?? 0,
     limit: parsed.data.limit,
     offset: parsed.data.offset,

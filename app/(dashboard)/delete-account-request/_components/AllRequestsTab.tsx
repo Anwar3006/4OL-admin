@@ -19,13 +19,22 @@ export default function AllRequestsTab() {
     header: {
       title: (data) => `${data.first_name} ${data.last_name}`,
       subtitle: (data) => data.email,
-      badge: (data) => (
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-          data.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
-        }`}>
-          {data.status}
-        </span>
-      ),
+      badge: (data) => {
+        const styles: Record<string, string> = {
+          pending_review: "bg-amber-50 text-amber-700 border-amber-100",
+          in_verification: "bg-blue-50 text-blue-700 border-blue-100",
+          grace_period: "bg-purple-50 text-purple-700 border-purple-100",
+          completed: "bg-emerald-50 text-emerald-700 border-emerald-100",
+          cancelled: "bg-red-50 text-red-700 border-red-100",
+        };
+        return (
+          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+            styles[data.status] ?? "bg-slate-50 text-slate-700 border-slate-100"
+          }`}>
+            {String(data.status).replace(/_/g, ' ')}
+          </span>
+        );
+      },
     },
     fields: [
       { id: "reason", label: "Reason", render: (data) => data.reason || "No reason provided" },

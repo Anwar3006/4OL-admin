@@ -7,13 +7,6 @@ const MetricsQuerySchema = z.object({
   period: z.enum(["1h", "24h", "7d", "30d"]).default("24h"),
 });
 
-const periodHours = {
-  "1h": 1,
-  "24h": 24,
-  "7d": 24 * 7,
-  "30d": 24 * 30,
-};
-
 export async function GET(req: NextRequest) {
   const user = await getAdminApiUser();
   if (!user) {
@@ -31,17 +24,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const since = new Date(
-    Date.now() - periodHours[parsed.data.period] * 60 * 60 * 1000,
-  ).toISOString();
-
   const admin = getSupabaseAdmin();
-  const { data, error } = await admin
-    .from("fitness_ai_calls")
-    .select("model_name, response_time_ms, token_usage, estimated_cost, status, created_at")
-    .gte("created_at", since)
-    .order("created_at", { ascending: false })
-    .limit(1000);
+  // get_ai_analytics aggregates in SQL over the full matching window — the
+  // previous version of this route fetched a raw `.limit(1000)` rows and
+  // aggregated in JS, which silently undercounted once call volume in a
+  // window exceeded 1000.
+  const { data, error } = await admin.rpc("get_ai_analytics", {
+    time_filter: parsed.data.period,
+  });
 
   if (error) {
     console.error("[ai/metrics] Supabase error:", error.message);
@@ -51,58 +41,13 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const calls = data ?? [];
-  const totalRequests = calls.length;
-  const totalTokens = calls.reduce(
-    (sum, call) => sum + Number(call.token_usage ?? 0),
-    0,
-  );
-  const totalCost = calls.reduce(
-    (sum, call) => sum + Number(call.estimated_cost ?? 0),
-    0,
-  );
-  const successful = calls.filter((call) => call.status === "success").length;
-  const avgLatency =
-    totalRequests > 0
-      ? Math.round(
-          calls.reduce(
-            (sum, call) => sum + Number(call.response_time_ms ?? 0),
-            0,
-          ) / totalRequests,
-        )
-      : 0;
-
-  const byModel = calls.reduce<
-    Record<string, { requests: number; tokens: number; latencyTotal: number }>
-  >((acc, call) => {
-    const model = call.model_name || "unknown";
-    acc[model] ??= { requests: 0, tokens: 0, latencyTotal: 0 };
-    acc[model].requests += 1;
-    acc[model].tokens += Number(call.token_usage ?? 0);
-    acc[model].latencyTotal += Number(call.response_time_ms ?? 0);
-    return acc;
-  }, {});
-
   return NextResponse.json({
     period: parsed.data.period,
-    totalRequests,
-    totalTokens,
-    totalCost,
-    avgLatency,
-    successRate:
-      totalRequests > 0 ? Math.round((successful / totalRequests) * 100) : 0,
-    byModel: Object.fromEntries(
-      Object.entries(byModel).map(([model, value]) => [
-        model,
-        {
-          requests: value.requests,
-          tokens: value.tokens,
-          avgLatency:
-            value.requests > 0
-              ? Math.round(value.latencyTotal / value.requests)
-              : 0,
-        },
-      ]),
-    ),
+    totalRequests: data.total_requests,
+    totalTokens: data.total_tokens,
+    totalCost: data.total_cost,
+    avgLatency: data.avg_latency,
+    successRate: data.success_rate,
+    byModel: data.by_model,
   });
 }

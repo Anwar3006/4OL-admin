@@ -366,10 +366,15 @@ export async function getUsers(params: {
 
   const { data: statsData } = await statsQuery;
 
+  // user_profiles.status's real CHECK vocabulary is
+  // active/inactive/suspended/banned/pending_verification — 'pending' has
+  // never been a valid value, so this reducer always undercounted (pending
+  // stuck at 0) and silently dropped 'banned' rows from every bucket.
   const analytics = (statsData || []).reduce(
     (acc, curr) => {
-      const key = curr.status as keyof typeof acc;
-      if (key in acc) acc[key]++;
+      if (curr.status === "pending_verification") acc.pending++;
+      else if (curr.status === "banned") acc.suspended++;
+      else if (curr.status in acc) acc[curr.status as keyof typeof acc]++;
       return acc;
     },
     { active: 0, pending: 0, inactive: 0, suspended: 0 },
