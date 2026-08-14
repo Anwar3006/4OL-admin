@@ -1664,7 +1664,7 @@ this file.
 - [ ] **17.24** `[Mobile]` Pregnancy mode (gestation-week tracking) — not built.
 - [ ] **17.25** `[Mobile]` Partner sync (read-only cycle-status sharing) — not built.
 - [ ] **17.26** `[Mobile]` Health-app export (Apple Health / Google Fit) — not built.
-- [ ] **17.27** `[Mobile]` **Still open, now a bigger decision than originally scoped.** The legacy `src/screens/periodsTrackerScreens/*` implementation (`SelectDateOfPeriod`, `YourPeriodFlow`, `TrackPeriod`, `DashboardPeriods`, `DashboardCalenderView`) still reads/writes `tracker_logs` and runs in parallel with the new Plasence module — the Plasence branch deliberately left it untouched rather than replacing it. Needs a product decision: retire the legacy flow in favor of Plasence (and migrate/delete `tracker_logs`), or reconcile the two into one entry point. Not done in either direction.
+- [x] **17.27** `[Mobile]` Retired (2026-08-14). Turned out the legacy `src/screens/periodsTrackerScreens/*` implementation was already unregistered dead code — no navigator anywhere referenced it, so it wasn't actually reachable by users. Deleted the 11 screens, `src/services/tracker_logs/`, `OvulationStatusModal.tsx` (only ever imported by the deleted `DashboardPeriods.tsx`), the `periodTracker` Redux slice, and the now-unused `PeriodTrackerData`/`TrackerLog`/`FlowType` interfaces. Dropped `tracker_logs` (0 rows, `supabase/migrations/20260814_drop_legacy_tracker_logs.sql`) and removed the dead `/api/cron/tracker`/`/api/cron/ovulation` entries from `vercel.json` (neither route file existed). Plasence is now the only period-tracking implementation.
 
 ---
 
