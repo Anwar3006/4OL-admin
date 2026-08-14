@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getPeriodRequestClient } from "@/lib/period-request-auth";
+import { DEFAULT_CYCLE_LENGTH, DEFAULT_PERIOD_LENGTH, predictNextPeriod, type CycleInput } from "@/lib/period-calculator";
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support"]);
@@ -166,26 +167,49 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "confirm_period_start") {
-    const { data: settings } = await supabase.from("period_user_settings").select("typical_cycle_length,typical_period_length").eq("user_id", user.id).maybeSingle();
-    const cycleLength = settings?.typical_cycle_length ?? 28;
-    const periodLength = settings?.typical_period_length ?? 5;
-    const startDate = new Date(`${input.periodStartDate}T00:00:00Z`);
-    const nextPeriodForecast = new Date(startDate);
-    nextPeriodForecast.setUTCDate(nextPeriodForecast.getUTCDate() + cycleLength);
-    const ovulationForecast = new Date(nextPeriodForecast);
-    ovulationForecast.setUTCDate(ovulationForecast.getUTCDate() - 14);
-    const { data, error } = await supabase.from("period_cycles").upsert({
+    const [{ data: settings }, { data: history }] = await Promise.all([
+      supabase.from("period_user_settings").select("typical_cycle_length,typical_period_length").eq("user_id", user.id).maybeSingle(),
+      supabase.from("period_cycles").select("period_start_date,period_length").eq("user_id", user.id).order("period_start_date", { ascending: false }).limit(12),
+    ]);
+    const typicalCycleLength = settings?.typical_cycle_length ?? DEFAULT_CYCLE_LENGTH;
+    const typicalPeriodLength = settings?.typical_period_length ?? DEFAULT_PERIOD_LENGTH;
+
+    const cycleHistory: CycleInput[] = [
+      ...(history ?? []),
+      { period_start_date: input.periodStartDate, period_length: typicalPeriodLength },
+    ];
+    const prediction = predictNextPeriod(cycleHistory, input.periodStartDate, typicalPeriodLength);
+
+    const { data: cycle, error: cycleError } = await supabase.from("period_cycles").upsert({
       user_id: user.id,
       period_start_date: input.periodStartDate,
       period_end_date: input.periodEndDate ?? null,
-      cycle_length: cycleLength,
-      period_length: periodLength,
-      next_period_forecast: nextPeriodForecast.toISOString().slice(0, 10),
-      ovulation_forecast: ovulationForecast.toISOString().slice(0, 10),
+      cycle_length: typicalCycleLength,
+      period_length: typicalPeriodLength,
+      next_period_forecast: prediction.predictedPeriodStart,
+      ovulation_forecast: prediction.predictedOvulationDate,
       source: "user",
-    }, { onConflict: "user_id,period_start_date" }).select("id,next_period_forecast,ovulation_forecast").single();
-    if (error) return NextResponse.json({ error: "Unable to confirm the period start date" }, { status: 500 });
-    return NextResponse.json({ ok: true, data }, { status: 201 });
+    }, { onConflict: "user_id,period_start_date" }).select("id").single();
+    if (cycleError) return NextResponse.json({ error: "Unable to confirm the period start date" }, { status: 500 });
+
+    // Retire any prior active forecast before writing the new one — keeps
+    // forecast-accuracy history (absolute_error_days) intact for later
+    // comparison instead of overwriting it in place.
+    await supabase.from("period_forecasts").update({ superseded_at: new Date().toISOString() }).eq("user_id", user.id).is("superseded_at", null);
+    const { data: forecast, error: forecastError } = await supabase.from("period_forecasts").insert({
+      user_id: user.id,
+      cycle_id: cycle.id,
+      model_key: prediction.modelKey,
+      model_version: "1.0.0",
+      predicted_period_start: prediction.predictedPeriodStart,
+      predicted_ovulation_date: prediction.predictedOvulationDate,
+      fertile_window: `[${prediction.fertileWindowStart},${prediction.fertileWindowEnd}]`,
+      confidence: prediction.confidence,
+      explanation_code: prediction.conservativeOvulationDate ? "irregular_conservative_available" : null,
+    }).select("id,predicted_period_start,predicted_ovulation_date,confidence").single();
+    if (forecastError) return NextResponse.json({ error: "Unable to generate a forecast" }, { status: 500 });
+
+    return NextResponse.json({ ok: true, data: { cycleId: cycle.id, forecast } }, { status: 201 });
   }
 
   if (input.action === "request_correction") {
