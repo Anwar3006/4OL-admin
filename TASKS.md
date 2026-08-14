@@ -1333,7 +1333,7 @@ this file.
 | # | Assumption | Why |
 |---|---|---|
 | 1 | **Payment providers**: Paystack (cards + bank) and MTN MoMo (mobile money) are the two rails implemented for Ghana. | Not specified by product owner yet. These are the two dominant, developer-friendly rails for Ghanaian consumer fintech; both have first-class Node/React Native SDKs. Swap freely — the epic is written so the webhook/ledger layer is provider-agnostic. |
-| 2 | **Period tracker data model**: `tracker_logs` currently holds **0 rows**, so it's being retired rather than extended. **Decision**: audit the `cycles` / `symptoms` / `cycle_statistics` / `prediction_results` / `period_tracker_profiles` schema proposed in `4-Our-Life-App/Period-tracker/PERIODS_TRACKER_IMPLEMENTATION.md` against a production checklist (normalization, data types, indexes, constraints, RLS). If it passes, adopt it as-is. If it doesn't, keep its intent but optimize/normalize it before building on it. Either way, `tracker_logs` is dropped, not kept in parallel — see Epic 17a for the concrete review + migration steps. | With zero live rows there's no migration cost and no reason to keep a table's shape just for continuity — free to build whichever schema is actually right for production. |
+| 2 | **Period tracker data model — SUPERSEDED, see Epic 17a.** Originally: `tracker_logs` (0 rows) retired in favor of the `cycles`/`symptoms`/`cycle_statistics`/`prediction_results`/`period_tracker_profiles` schema proposed in `4-Our-Life-App/Period-tracker/PERIODS_TRACKER_IMPLEMENTATION.md`. **What actually shipped instead (2026-08-14):** a much larger `period_*`-prefixed schema (34 tables — cycles, daily logs, forecasts, safety flags, consent, notes review queue, notification prefs, Library publishing, Friday Trivia, AI content jobs, source-document indexing) branded "Plasence," built to support a full admin CMS (Period/Library/AI-Hub) rather than a standalone tracker. Confirmed as the intended direction, not a mistake — TASKS.md just hadn't caught up. `tracker_logs` is **not yet dropped**: the legacy mobile screens (`SelectDateOfPeriod`, `YourPeriodFlow`, `TrackPeriod`, etc.) still read/write it and were deliberately left untouched by the Plasence mobile branch (additive-only, see 17c). Retiring `tracker_logs` and the legacy screens is a separate, not-yet-scheduled decision. | Decision made and implemented across two sessions before TASKS.md was updated to match; documented here after the fact so the task list stops contradicting the live schema. |
 | 3 | **Admin task manager** gets a real `admin_tasks` table (not a generic project-management integration like Jira/Asana). | Roadmap doc flags this as needed; no external PM tool was named, so the simplest self-hosted option is assumed. |
 | 4 | **New analytics/event tables** (`analytics_events`, `ai_usage_logs`, `payment_webhook_events`, `fitness_coin_ledger`, `compliance_settings`, `system_health_snapshots`) are added incrementally, only immediately before the epic that needs them — not all up front. | Avoids speculative schema that might not match real usage patterns once features ship. |
 | 5 | **Time zone**: all cron/reminder logic (medication, period tracker) assumes Africa/Accra (GMT, no DST) unless a per-user timezone field says otherwise. | Matches existing `*_utc` columns already present in `tracker_logs` and `medications`. |
@@ -1615,54 +1615,56 @@ this file.
 
 ---
 
-## Epic 17 — Period Tracker (Schema Migration + Mobile Build) *(was: Epic 8)*
-*`tracker_logs` holds 0 rows and is being retired (Assumption #2). This epic starts with a schema review/migration, then builds mobile from scratch against the new tables, then ports the admin CRUD/calendar screens over.*
+## Epic 17 — Period Tracker / Plasence (Schema + Admin + Mobile) *(was: Epic 8)*
+*`tracker_logs` holds 0 rows in the legacy mobile flow. As of 2026-08-14 this epic's scope expanded beyond the original standalone-tracker proposal (Assumption #2) into "Plasence": a full period-tracking + content Library + AI-generated Trivia/content + campaigns + consent/privacy-compliance platform, built and shipped across two sessions before this section was updated to match. This section now documents what's actually live, not the original 5-table plan.*
 
 > **Cross-reference:** Part I Epic 2.7 confirmed `app/(dashboard)/period/
-> page.tsx` is currently a bare `PagePlaceholder` (the old raw-`fetch`
-> analytics implementation was pulled entirely, not fixed) — consistent
-> with this epic's premise that the whole module needs a from-scratch
-> rebuild against the new schema, not a patch of the old one. Part I
-> Epic 8.7 also found a real, if old-schema, implementation on
-> `build-ready` — explicitly **not** recommended for porting until 17a's
-> schema decision lands, to avoid throwaway work.
+> page.tsx` was a bare `PagePlaceholder` before this epic's admin page
+> was built. Part I Epic 8.7 flagged a real, old-schema implementation
+> on `build-ready` as **not recommended for porting** until a schema
+> decision landed — the schema that actually landed is a superset of
+> that `build-ready` implementation, reconciled against main's real
+> auth/schema rather than ported as-is (see `supabase/migrations/
+> 20260814_period_tracker_full_schema.sql` and
+> `20260814_period_tracker_rls_hardening.sql`).
 
 ### 17a. Schema Decision & Migration (Backend)
-- [ ] **17.1** `[Backend]` Review the schema proposed in `Period-tracker/PERIODS_TRACKER_IMPLEMENTATION.md` (`cycles`, `symptoms`, `cycle_statistics`, `prediction_results`, `period_tracker_profiles`) against a production checklist: normalization (it's already an improvement on `tracker_logs`'s denormalized `flow_types`/`fertile_window_dates` JSON-array-per-row design — one row per cycle, one row per symptom-per-day), correct/consistent data types (`DATE` vs `TIMESTAMP`), indexes on `user_id` + date columns, sensible `UNIQUE` constraints (e.g. `(user_id, start_date)` on `cycles`, `(user_id, date, symptom_type)` on `symptoms`), foreign keys with `ON DELETE CASCADE`, and per-table RLS.
-- [ ] **17.2** `[Backend]` Fix/optimize anything that doesn't pass 17.1 — e.g. confirm `symptoms` should stay one-row-per-symptom-per-day (recommended: normalized and easy to aggregate per symptom type) rather than a single `jsonb` blob per day; add any missing `updated_at` triggers and `CHECK` constraints (`flow_intensity IN ('light','normal','heavy','spotting')`, `intensity BETWEEN 1 AND 10`); decide if a `deleted_at` soft-delete column is needed for recoverable history.
-- [ ] **17.3** `[Backend]` Create the finalized tables with RLS enabled (`auth.uid() = user_id` policies per the implementation doc, adjusted for anything changed in 17.2).
-- [ ] **17.4** `[Backend]` Drop `tracker_logs` (0 rows — no backfill needed) and remove/retire `app/services/period_tracker_service.js`'s references to it.
-- [ ] **17.5** `[Admin]` Rebuild the period-tracker data-access layer (service or hook, per `Refactor_Docs.md`'s migration pattern) against the new tables.
-- [ ] **17.6** `[Admin]` Update the Period Tracker overview/details/create pages' columns to the new schema (e.g. `cycles.start_date`/`end_date`/`flow_intensity` instead of `tracker_logs.period_start_date`/`flow_types`; symptom summaries pulled from `symptoms` instead of an embedded JSON array).
+- [x] **17.1**/**17.2**/**17.3** `[Backend]` Schema decided and built: 34 `period_*` tables (`period_cycles`, `period_daily_logs`, `period_forecasts`, `period_safety_flags`, `period_consent_events`, `period_notes`, `period_notification_preferences`, `period_content`/`period_content_publications`/`period_content_collections`, `period_trivia_events`/`period_trivia_questions`/`period_trivia_submissions`/`period_trivia_leads`, `period_campaigns`, `period_ai_jobs`, `period_source_documents`/`period_source_chunks`, `period_privacy_requests`, `period_feature_flags`, etc.) — `supabase/migrations/20260814_period_tracker_full_schema.sql`. RLS completed and hardened across every table (7 tables that shipped with RLS fully disabled, 10 with RLS-enabled-but-no-policy, 13 policies re-evaluating `auth.uid()` per row, and 12 tables with overlapping permissive policies were all found live via Supabase's own advisors and fixed) plus 50 missing FK-covering indexes — `20260814_period_tracker_rls_hardening.sql`. Verified: security advisor findings 18 → 0, performance findings 116 → 0 actionable.
+- [x] **17.4** (partial) `[Backend]` `tracker_logs` is **not** dropped — see the coexistence note under 17c below. Nothing new was built against it.
+- [x] **17.5**/**17.6** `[Admin]` Period Tracker admin page rebuilt from scratch: 12-tab `/period` page (`app/(dashboard)/period/page.tsx`) — Overview, Users & Cycles, Daily Logs, Corrections, Safety Review, Calendar Notes, Consent & Privacy, Content, Engagement, Trivia, Forecasts, App Quality — backed by `/api/period/data`, plus an AI generation workspace at `/ai-hub/period` and `/ai-hub/period/content` backed by `/api/ai-hub/period` (OpenAI, not the Gemini SDK the source material assumed — this codebase already standardized on OpenAI via `lib/fitness/generate-plan.ts`).
 
 ### 17b. Prediction Calculator (shared logic, correct this time)
-- [ ] **17.7** `[Backend]`/`[Mobile]` Implement `PeriodCalculator` (cycle-length averaging, ovulation = cycle length − 14, fertile window = ovulation −7 to +2, confidence scoring) against the new `cycles`/`cycle_statistics` tables, using the corrected formula from `ToChange.md`: **Next Period Start = Most Recent Period Start + Average Cycle Length** (period length only affects bleed duration, not the next start date — the old `tracker_logs`-era draft had this backwards, plus a syntax error in `moment.(period_start_date)`).
-- [ ] **17.8** `[Backend]`/`[Mobile]` `DEFAULT_CYCLE_LENGTH = 28` cold-start fallback for fewer than 2 recorded cycles; drop once `cycle_statistics.cycle_count` is sufficient.
+**Status: not built — this is real remaining work, not just a stale checklist.** A `confirm_period_start` action (`/api/period/me`, commit `7cfd3b44`) writes one `period_cycles` row and a *simple* traceable forecast (`next_period_start = start + typical_cycle_length`, `ovulation = that − 14 days`) so onboarding has somewhere to land — that is explicitly not the calculator below.
+- [ ] **17.7** `[Backend]`/`[Mobile]` Implement `PeriodCalculator` (cycle-length averaging, ovulation = cycle length − 14, fertile window = ovulation −7 to +2, confidence scoring), using the corrected formula from `ToChange.md`: **Next Period Start = Most Recent Period Start + Average Cycle Length** (period length only affects bleed duration, not the next start date).
+- [ ] **17.8** `[Backend]`/`[Mobile]` `DEFAULT_CYCLE_LENGTH = 28` cold-start fallback for fewer than 2 recorded cycles.
 - [ ] **17.9** `[Backend]`/`[Mobile]` Return a predicted **date range**, not a single date: `start = last_cycle_start + avg_cycle_length`, `end = start + avg_period_length − 1`.
-- [ ] **17.10** `[Backend]`/`[Mobile]` Sliding-window average (last 3 cycles), refreshed into `cycle_statistics` whenever a new cycle is logged.
-- [ ] **17.11** `[Admin]` Wire the admin calendar view's tile helpers to the new calculator/tables so fertile-window / flow / ovulation / next-period indicators render off real, correctly-computed dates.
-- [ ] **17.12** `[Backend]`/`[Mobile]` Unit tests for the calculator (cycle averaging, cold-start fallback, range calculation, irregular-cycle conservative estimate) — mirror the same test cases on both admin and mobile since the two implementations must agree. **Ties to Part I Epic 6.1 (no test framework exists yet — this may be the first real test suite in the repo).**
+- [ ] **17.10** `[Backend]`/`[Mobile]` Sliding-window average (last 3 cycles), refreshed whenever a new cycle is logged (`period_ai_model_metrics`/forecast-quality tracking already exists in the admin Forecasts tab; the calculator feeding it does not).
+- [x] **17.11** `[Admin]` Admin Forecasts tab renders whatever's in `period_forecasts`/`period_ai_model_metrics` (mean error, confidence coverage, drift) — will show real numbers automatically once 17.7–17.10 actually generate forecasts.
+- [ ] **17.12** `[Backend]`/`[Mobile]` Unit tests for the calculator (cycle averaging, cold-start fallback, range calculation, irregular-cycle conservative estimate), mirrored on admin and mobile.
 
 ### 17c. Mobile: Core Tracking (MVP)
-- [ ] **17.13** `[Mobile]` Add "Period Tracker" entry point to the app's category/home navigation (matches existing pattern for Fitness/Reminders).
-- [ ] **17.14** `[Mobile]` Period logging screen: start date, end date (optional), flow intensity — writes to `cycles`.
-- [ ] **17.15** `[Mobile]` `usePeriodTracker` React Query hook: fetch user's `cycles`, derive statistics/prediction/current-cycle-status via 17.7's calculator.
-- [ ] **17.16** `[Mobile]` Dashboard/home card: current cycle day, phase (menstrual/follicular/ovulation/luteal), days until next period, confidence %.
-- [ ] **17.17** `[Mobile]` Calendar view (react-native-calendars, already a dependency) color-coded by phase.
-- [ ] **17.18** `[Mobile]` Onboarding/settings screen: typical cycle length, typical period length, tracking goal, reminder opt-in — writes to `period_tracker_profiles`.
-- [ ] **17.19** `[Backend]` Reminder notifications: reuse the existing `/app/api/cron/tracker/route.js` + FCM pattern, updated to query `cycles`/`period_tracker_profiles` instead of `tracker_logs`. **⚠️ Do this only after Part I Epic 8.9's Firebase key rotation — don't wire new FCM sends through credentials that need rotating.**
+**Status: built as a separate, additive "Plasence" module** (`4-Our-Life-App` branch `codex/plasence-period-tracker`, merged to `main` at commit `70dd6c6`), not as new screens bolted onto the existing category/home navigation as originally scoped. `src/features/plasence/` — see its own `Task.md` for full detail (PLM-001 through PLM-009).
+- [ ] **17.13** `[Mobile]` Still open: Plasence has **no Home/menu entry point** anywhere in the app yet — reachable only by direct route (`/plasence`). Wiring it into navigation is explicitly deferred pending product-owner sign-off on placement (Plasence `Task.md`'s Definition of Done).
+- [x] **17.14** `[Mobile]` `LogScreen` — flow, moods, symptoms, temperature, exercise, medication, encrypted note; writes to `period_daily_logs` via `save_daily_log`, not a `cycles` table.
+- [x] **17.15** `[Mobile]` `usePlasence.ts` — React Query + encrypted offline cache + optimistic writes, equivalent role to the originally-scoped `usePeriodTracker` hook.
+- [x] **17.16** `[Mobile]` `TodayScreen` — current cycle day, estimated phase, streak, next-period estimate.
+- [x] **17.17** `[Mobile]` `CalendarScreen` — six-week grid, logged-day/flow indicators, local-date-safe (no UTC drift).
+- [x] **17.18** `[Mobile]` `OnboardingScreen` — goal, typical cycle/period length, timezone, reminder opt-in; writes to `period_user_settings` (not `period_tracker_profiles`, which doesn't exist in the shipped schema).
+- [ ] **17.19** `[Backend]` Reminder notifications not wired yet. Still blocked on Part I Epic 8.9's Firebase key rotation as originally noted.
+
+**Backend contract gaps found and fixed while wiring this up** (commit `7cfd3b44`, admin repo): the admin Period routes (`/api/period/me`, `/library`, `/trivia`) authenticated via cookies only and would have 401'd every native mobile request; the Library API used a signed-in user's symptoms/cycle phase for content ranking with no consent check; and nothing created a `period_cycles` row from onboarding's start-date input. All three fixed — see that commit for detail.
 
 ### 17d. Mobile: V1 Enhancements
-- [ ] **17.20** `[Mobile]` Symptom logging (cramps, headache, acne, bloating, mood, cervical mucus) — writes to `symptoms`.
-- [ ] **17.21** `[Mobile]` Irregular-cycle detection: coefficient-of-variation check per `PERIODS_TRACKER_ARCHITECTURE.md` §4; show a conservative estimate + "track 3+ more cycles for better accuracy" instead of false confidence.
-- [ ] **17.22** `[Mobile]`/`[Backend]` Prediction-accuracy feedback loop: when actual period arrives, compare to prediction, write to `prediction_results`, feed the error back into the confidence score.
-- [ ] **17.23** `[Mobile]` FDA-style disclaimer ("not a form of contraception") at onboarding and in settings.
+- [x] **17.20** `[Mobile]` Symptom logging is part of `LogScreen` (17.14), not a separate screen — multi-select symptoms/moods writing to `period_daily_logs`.
+- [ ] **17.21** `[Mobile]` Irregular-cycle detection (coefficient-of-variation check) — depends on 17b's calculator, not built.
+- [ ] **17.22** `[Mobile]`/`[Backend]` Prediction-accuracy feedback loop against `period_forecasts` — depends on 17b, not built.
+- [x] **17.23** `[Mobile]` Medical/fertility-estimate disclaimers present at onboarding and in `PrivacyScreen`/`InsightsScreen` (Plasence `Task.md` PLM-001, PLM-007).
 
 ### 17e. Mobile: V2 (Later)
-- [ ] **17.24** `[Mobile]` Pregnancy mode (gestation-week tracking).
-- [ ] **17.25** `[Mobile]` Partner sync (read-only cycle-status sharing).
-- [ ] **17.26** `[Mobile]` Health-app export (Apple Health / Google Fit) if/when prioritized.
-- [ ] **17.27** `[Mobile]` Retire the old mobile `tracker_logs` implementation before wiring new admin metrics. Audit findings: `src/services/tracker_logs/index.ts`, `DashboardPeriods.tsx`, `DashboardCalenderView.tsx`, and `TrackPeriod.tsx` still read/write `tracker_logs`, and multiple screens calculate future cycles with `cycle_length + period_length`; replace these with the finalized `cycles` / `symptoms` / `cycle_statistics` / `prediction_results` / `period_tracker_profiles` model from 17a and the corrected calculator from 17b.
+- [ ] **17.24** `[Mobile]` Pregnancy mode (gestation-week tracking) — not built.
+- [ ] **17.25** `[Mobile]` Partner sync (read-only cycle-status sharing) — not built.
+- [ ] **17.26** `[Mobile]` Health-app export (Apple Health / Google Fit) — not built.
+- [ ] **17.27** `[Mobile]` **Still open, now a bigger decision than originally scoped.** The legacy `src/screens/periodsTrackerScreens/*` implementation (`SelectDateOfPeriod`, `YourPeriodFlow`, `TrackPeriod`, `DashboardPeriods`, `DashboardCalenderView`) still reads/writes `tracker_logs` and runs in parallel with the new Plasence module — the Plasence branch deliberately left it untouched rather than replacing it. Needs a product decision: retire the legacy flow in favor of Plasence (and migrate/delete `tracker_logs`), or reconcile the two into one entry point. Not done in either direction.
 
 ---
 
