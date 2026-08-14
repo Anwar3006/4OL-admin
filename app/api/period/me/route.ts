@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getPeriodRequestClient } from "@/lib/period-request-auth";
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support"]);
@@ -38,10 +38,15 @@ const ActionSchema = z.discriminatedUnion("action", [
   }),
   z.object({
     action: z.literal("record_consent"),
-    consentType: z.enum(["tracking", "notifications", "marketing", "research_analytics"]),
+    consentType: z.enum(["tracking", "notifications", "marketing", "research_analytics", "personalization"]),
     granted: z.boolean(),
     policyVersion: z.string().trim().min(1).max(50),
     source: z.enum(["onboarding", "settings", "privacy_center"]),
+  }),
+  z.object({
+    action: z.literal("confirm_period_start"),
+    periodStartDate: DateString,
+    periodEndDate: DateString.nullable().optional(),
   }),
   z.object({
     action: z.literal("request_correction"),
@@ -84,14 +89,8 @@ const ActionSchema = z.discriminatedUnion("action", [
   }),
 ]);
 
-async function ownerClient() {
-  const supabase = await getSupabaseServerClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { supabase, user: error ? null : user };
-}
-
-export async function GET() {
-  const { supabase, user } = await ownerClient();
+export async function GET(request: NextRequest) {
+  const { supabase, user } = await getPeriodRequestClient(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const [settings, cycles, logs, forecasts, consents, preferences, content, trivia, flags] = await Promise.all([
@@ -142,7 +141,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const { supabase, user } = await ownerClient();
+  const { supabase, user } = await getPeriodRequestClient(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const parsed = ActionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -164,6 +163,29 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.from("period_consent_events").insert({ user_id: user.id, consent_type: input.consentType, granted: input.granted, policy_version: input.policyVersion, source: input.source });
     if (error) return NextResponse.json({ error: "Unable to record consent" }, { status: 500 });
     return NextResponse.json({ ok: true }, { status: 201 });
+  }
+
+  if (input.action === "confirm_period_start") {
+    const { data: settings } = await supabase.from("period_user_settings").select("typical_cycle_length,typical_period_length").eq("user_id", user.id).maybeSingle();
+    const cycleLength = settings?.typical_cycle_length ?? 28;
+    const periodLength = settings?.typical_period_length ?? 5;
+    const startDate = new Date(`${input.periodStartDate}T00:00:00Z`);
+    const nextPeriodForecast = new Date(startDate);
+    nextPeriodForecast.setUTCDate(nextPeriodForecast.getUTCDate() + cycleLength);
+    const ovulationForecast = new Date(nextPeriodForecast);
+    ovulationForecast.setUTCDate(ovulationForecast.getUTCDate() - 14);
+    const { data, error } = await supabase.from("period_cycles").upsert({
+      user_id: user.id,
+      period_start_date: input.periodStartDate,
+      period_end_date: input.periodEndDate ?? null,
+      cycle_length: cycleLength,
+      period_length: periodLength,
+      next_period_forecast: nextPeriodForecast.toISOString().slice(0, 10),
+      ovulation_forecast: ovulationForecast.toISOString().slice(0, 10),
+      source: "user",
+    }, { onConflict: "user_id,period_start_date" }).select("id,next_period_forecast,ovulation_forecast").single();
+    if (error) return NextResponse.json({ error: "Unable to confirm the period start date" }, { status: 500 });
+    return NextResponse.json({ ok: true, data }, { status: 201 });
   }
 
   if (input.action === "request_correction") {

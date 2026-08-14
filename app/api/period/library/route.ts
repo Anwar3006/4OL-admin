@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getPeriodRequestUserId } from "@/lib/period-request-auth";
 
 export const runtime = "nodejs";
 
@@ -28,14 +28,6 @@ function limited(key: string) {
   return item.count > 60;
 }
 
-async function optionalUserId() {
-  try {
-    const supabase = await getSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    return data.user?.id ?? null;
-  } catch { return null; }
-}
-
 function stripHtml(value: string) {
   return value.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -57,7 +49,7 @@ function rankContent(content: any[], latestLog: any, latestCycle: any, bookmarks
 
 export async function GET(request: NextRequest) {
   const admin = getSupabaseAdmin();
-  const userId = await optionalUserId();
+  const userId = await getPeriodRequestUserId(request);
   const now = Date.now();
   const search = (request.nextUrl.searchParams.get("q") ?? "").trim().toLowerCase();
   const topic = (request.nextUrl.searchParams.get("topic") ?? "").trim().toLowerCase();
@@ -74,14 +66,21 @@ export async function GET(request: NextRequest) {
   const ids = active.map((row) => row.content_id);
   if (!ids.length) return NextResponse.json({ content: [], recommendations: [], collections: [], bookmarks: [], progress: [], serverTime: new Date().toISOString() });
 
+  // PLB-002: cycle phase / symptom inputs may only be queried and used for
+  // ranking once the user has explicitly granted personalization consent —
+  // separate from marketing/research consent, and absent-by-default.
+  const personalizationConsented = userId
+    ? (await admin.from("period_consent_events").select("granted").eq("user_id", userId).eq("consent_type", "personalization").order("created_at", { ascending: false }).limit(1).maybeSingle()).data?.granted === true
+    : false;
+
   const [{ data: contentRows, error: contentError }, { data: sourceRows }, { data: collectionRows }, bookmarksResult, progressResult, logResult, cycleResult] = await Promise.all([
     admin.from("period_content").select("id,title,slug,summary,topic,content_type,locale,tags,media_url,cover_image_url,reading_minutes,reading_level,featured,version,body_html,reads,helpful_count,not_helpful_count,clinical_reviewed_at,published_at,curation_type").in("id", ids).eq("status", "published").eq("locale", locale).order("published_at", { ascending: false }),
     admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").in("period_content_id", ids),
     admin.from("period_content_collections").select("id,title,slug,description,cover_image_url,curation_type,display_order,starts_at,ends_at,period_content_collection_items(content_id,display_order,reason)").eq("status", "published").order("display_order"),
     userId ? admin.from("period_content_bookmarks").select("content_id,created_at").eq("user_id", userId) : Promise.resolve({ data: [] as any[] }),
     userId ? admin.from("period_content_progress").select("content_id,progress_percent,last_position,completed_at,updated_at").eq("user_id", userId) : Promise.resolve({ data: [] as any[] }),
-    userId ? admin.from("period_daily_logs").select("symptoms,logged_on").eq("user_id", userId).order("logged_on", { ascending: false }).limit(1).maybeSingle() : Promise.resolve({ data: null }),
-    userId ? admin.from("period_cycles").select("current_phase,period_start_date").eq("user_id", userId).order("period_start_date", { ascending: false }).limit(1).maybeSingle() : Promise.resolve({ data: null }),
+    personalizationConsented ? admin.from("period_daily_logs").select("symptoms,logged_on").eq("user_id", userId).order("logged_on", { ascending: false }).limit(1).maybeSingle() : Promise.resolve({ data: null }),
+    personalizationConsented ? admin.from("period_cycles").select("current_phase,period_start_date").eq("user_id", userId).order("period_start_date", { ascending: false }).limit(1).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   if (contentError) return NextResponse.json({ error: "Unable to load published Library content" }, { status: 500 });
 
@@ -104,7 +103,7 @@ export async function POST(request: NextRequest) {
   const parsed = EventSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid Library activity" }, { status: 400 });
   const input = parsed.data;
-  const userId = await optionalUserId();
+  const userId = await getPeriodRequestUserId(request);
   const admin = getSupabaseAdmin();
   const { data: publication } = await admin.from("period_content_publications").select("status,starts_at,ends_at").eq("content_id", input.contentId).eq("channel", "plasence_library").in("status", ["live", "scheduled"]).maybeSingle();
   const now = Date.now();

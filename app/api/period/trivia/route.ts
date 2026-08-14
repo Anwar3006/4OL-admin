@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getPeriodRequestUserId } from "@/lib/period-request-auth";
 import { encryptLead, normalizeMobile, privacyHash } from "@/lib/period-trivia-security";
 
 export const runtime = "nodejs";
@@ -23,11 +23,6 @@ function eventState(event: any, now = new Date()) {
   if (now < new Date(event.starts_at)) return "upcoming";
   if (now > new Date(event.ends_at)) return "ended";
   return event.status === "ready" || event.status === "live" ? "live" : "unavailable";
-}
-
-async function optionalUserId() {
-  try { const client = await getSupabaseServerClient(); return (await client.auth.getUser()).data.user?.id ?? null; }
-  catch { return null; }
 }
 
 export async function GET(request: NextRequest) {
@@ -81,7 +76,7 @@ export async function POST(request: NextRequest) {
     const mobile = normalizeMobile(input.lead.mobile);
     const deviceHash = privacyHash(deviceToken, "device");
     const mobileHash = privacyHash(mobile, "mobile");
-    const userId = await optionalUserId();
+    const userId = await getPeriodRequestUserId(request);
     const { error } = await admin.rpc("submit_period_trivia", {
       p_event_id: input.eventId, p_user_id: userId, p_device_hash: deviceHash, p_mobile_hash: mobileHash,
       p_score: score, p_answers: input.answers, p_duration_seconds: input.durationSeconds ?? null,
