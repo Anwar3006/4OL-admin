@@ -267,16 +267,16 @@ export async function GET(request: NextRequest) {
       admin.from("period_feature_flags").select("*").order("key"),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load app quality" }, { status: 500 });
-    const grouped = new Map<string, { id: string; eventName: string; platform: string; appVersion: string; success: number; failure: number; warning: number; averageDuration: number | null; latestAt: string }>();
+    const grouped = new Map<string, { id: string; eventName: string; platform: string; appVersion: string; success: number; failure: number; warning: number; durations: number[]; latestAt: string }>();
     for (const event of events ?? []) {
       const id = `${event.event_name}:${event.platform ?? "unknown"}:${event.app_version ?? "unknown"}`;
-      const row = grouped.get(id) ?? { id, eventName: event.event_name, platform: event.platform ?? "Unknown", appVersion: event.app_version ?? "Unknown", success: 0, failure: 0, warning: 0, averageDuration: null, latestAt: event.occurred_at };
+      const row = grouped.get(id) ?? { id, eventName: event.event_name, platform: event.platform ?? "Unknown", appVersion: event.app_version ?? "Unknown", success: 0, failure: 0, warning: 0, durations: [] as number[], latestAt: event.occurred_at };
       row[event.status as "success" | "failure" | "warning"] += 1;
-      const durations = (events ?? []).filter((item) => `${item.event_name}:${item.platform ?? "unknown"}:${item.app_version ?? "unknown"}` === id).map((item) => item.duration_ms);
-      row.averageDuration = average(durations);
+      if (event.duration_ms != null) row.durations.push(event.duration_ms);
       grouped.set(id, row);
     }
-    return NextResponse.json({ ...pageRows([...grouped.values()].filter((row) => !query || JSON.stringify(row).toLowerCase().includes(query)), page, pageSize), featureFlags: flags ?? [] });
+    const rows = [...grouped.values()].map(({ durations, ...row }) => ({ ...row, averageDuration: average(durations) }));
+    return NextResponse.json({ ...pageRows(rows.filter((row) => !query || JSON.stringify(row).toLowerCase().includes(query)), page, pageSize), featureFlags: flags ?? [] });
   }
 
   if (tab === "logs") {
