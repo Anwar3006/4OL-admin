@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminStats from "./_components/AdminStats";
 import AdminCommandBar from "./_components/AdminCommandBar";
 import AllAdminsTab from "./_components/AllAdminsTab";
+import InvitationsTab from "./_components/InvitationsTab";
 import RolesPermissionsTab from "./_components/RolesPermissionsTab";
 import ActivityLogsTab from "./_components/ActivityLogsTab";
 import SecurityCenterTab from "./_components/SecurityCenterTab";
@@ -17,6 +18,7 @@ import AddAdminDialog from "./_components/add-admin-dialog";
 
 const AdminTabs = [
   { id: "all", label: "👥 All Admins" },
+  { id: "invitations", label: "✉️ Invitations" },
   { id: "roles", label: "🔑 Roles & Permissions" },
   { id: "logs", label: "📋 Activity Logs" },
   { id: "security", label: "🔐 Security Center" },
@@ -93,6 +95,7 @@ const AdminsPage = () => {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent className="w-full min-w-0 outline-none" value="all"><AllAdminsTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="invitations"><InvitationsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="roles"><RolesPermissionsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="logs"><ActivityLogsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="security"><SecurityCenterTab /></TabsContent>

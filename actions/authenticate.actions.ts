@@ -35,7 +35,9 @@ async function getSessionUserWithRole() {
 }
 
 // ── createAdminInvite — uses admin client, safe in server actions ─────────────
-const createAdminInvite = async (input: TAdminInviteSchema) => {
+const createAdminInvite = async (
+  input: TAdminInviteSchema & { invited_by?: string },
+) => {
   const admin = getSupabaseAdmin();
 
   // 1. Check if user already exists in the user table by email
@@ -69,6 +71,7 @@ const createAdminInvite = async (input: TAdminInviteSchema) => {
       role: input.role,
       token: input.token,
       expires_at: input.expires_at,
+      invited_by: input.invited_by,
     })
     .select()
     .single();
@@ -112,6 +115,7 @@ export async function inviteAdminAction(email: string, role: string) {
       role: role as TUserProfile["role"],
       token,
       expires_at: expiresAt,
+      invited_by: sessionUser.id,
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;

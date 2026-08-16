@@ -213,3 +213,96 @@ export const useUpdateProfile = () => {
     },
   });
 };
+
+// ── Admin invitations ─────────────────────────────────────────────────────
+// user_invites is shared between admin invites and any other invite_type,
+// so every query here is scoped to admin/super_admin/registrar roles —
+// matching get_admin_dashboard_metrics's own admin_roles filter.
+const ADMIN_INVITE_ROLES = ["admin", "super_admin", "registrar"];
+
+export interface AdminInvite {
+  id: string;
+  email: string;
+  role: string;
+  created_at: string;
+  expires_at: string;
+  invited_by: string | null;
+  used_at: string | null;
+  used_by: string | null;
+  is_revoked: boolean | null;
+  revoked_at: string | null;
+  revoked_by: string | null;
+}
+
+interface AdminInvitesPagination {
+  page?: number;
+  limit?: number;
+}
+
+interface AdminInvitesResponse {
+  invites: AdminInvite[];
+  meta: {
+    total: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
+export const useAdminInvites = (params: AdminInvitesPagination = {}) => {
+  const page = params.page || 1;
+  const limit = params.limit || 10;
+
+  return useQuery<AdminInvitesResponse, Error>({
+    queryKey: [...USER_QUERY_KEYS.invites, "list", page, limit],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      const { data, error, count } = await supabase
+        .from("user_invites")
+        .select("*", { count: "exact" })
+        .in("role", ADMIN_INVITE_ROLES)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw new Error(error.message);
+
+      const total = count || 0;
+      return {
+        invites: (data || []) as AdminInvite[],
+        meta: {
+          total,
+          totalPages: Math.ceil(total / limit),
+          currentPage: page,
+        },
+      };
+    },
+  });
+};
+
+export const useRevokeAdminInvite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { id: string; revokedBy: string }>({
+    mutationFn: async ({ id, revokedBy }) => {
+      const supabase = await getSupabaseClient();
+      const { error } = await supabase
+        .from("user_invites")
+        .update({
+          is_revoked: true,
+          revoked_at: new Date().toISOString(),
+          revoked_by: revokedBy,
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.invites });
+      toast.success("Invitation revoked.");
+    },
+    onError: (error) => {
+      toast.error(`Failed to revoke invitation: ${error.message}`);
+    },
+  });
+};
