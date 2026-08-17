@@ -6,6 +6,7 @@ import Link from "next/link";
 import DataTable, { type Column } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
+import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
 import { cn } from "@/lib/utils";
 
 type Row = Record<string, any>;
@@ -201,10 +202,14 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
               ))}
             </select>
           </label>
-          <label className="form-label">
-            Topic (optional)
-            <input name="topic" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="e.g. luteal phase nutrition" />
-          </label>
+          {scope === "content" ? (
+            <TopicCategorySelect name="topic" label="Topic (optional)" />
+          ) : (
+            <label className="form-label">
+              Topic (optional)
+              <input name="topic" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="e.g. luteal phase nutrition" />
+            </label>
+          )}
         </div>
 
         <fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-3">
