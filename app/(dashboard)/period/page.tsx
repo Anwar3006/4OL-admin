@@ -36,6 +36,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
 import { cn } from "@/lib/utils";
 import { PERIOD_TAB_IDS, type PeriodTabId } from "@/lib/period-tracker";
+import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
 
 type Row = Record<string, any>;
 type Tab = {
@@ -141,6 +142,23 @@ const bool = (value: boolean) => (
     {value ? "Yes" : "No"}
   </span>
 );
+// Marketing/research consent: distinguishes "never asked" from an actual
+// decline -- the mobile app doesn't offer these yet, so every user is
+// "not_asked" today, and that's not the same thing as "No".
+const consentState = (value: "granted" | "declined" | "not_asked") => (
+  <span
+    className={cn(
+      "badge",
+      value === "granted"
+        ? "badge-green"
+        : value === "declined"
+          ? "badge-blue"
+          : "badge-slate",
+    )}
+  >
+    {value === "granted" ? "Yes" : value === "declined" ? "No" : "Not asked"}
+  </span>
+);
 const status = (value: string, row?: Row) => (
   <span
     className={cn(
@@ -196,8 +214,8 @@ const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
     { key: "user", label: "User" },
     { key: "region", label: "Region" },
     { key: "flow", label: "Flow", render: (value) => value || "Not logged" },
-    { key: "moodCount", label: "Moods" },
-    { key: "symptomCount", label: "Symptoms" },
+    { key: "moodsText", label: "Moods" },
+    { key: "symptomsText", label: "Symptoms" },
     {
       key: "basal_body_temperature",
       label: "BBT",
@@ -212,11 +230,6 @@ const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
       render: (value) => value?.replaceAll("_", " ") || "—",
     },
     { key: "source", label: "Source" },
-    {
-      key: "app_version",
-      label: "App Version",
-      render: (value) => value || "—",
-    },
     { key: "sync_status", label: "Sync", render: status },
   ],
   corrections: [
@@ -266,8 +279,8 @@ const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
     { key: "region", label: "Region" },
     { key: "tracking", label: "Tracking", render: bool },
     { key: "notifications", label: "Notifications", render: bool },
-    { key: "marketing", label: "Marketing", render: bool },
-    { key: "research", label: "Research", render: bool },
+    { key: "marketing", label: "Marketing", render: consentState },
+    { key: "research", label: "Research", render: consentState },
     { key: "policyVersion", label: "Policy" },
     { key: "lastChanged", label: "Last Changed", render: dateTime },
     {
@@ -1777,15 +1790,19 @@ function CreateForm({
                 maxLength={200}
               />
             </label>
-            <label className="form-label">
-              {campaign ? "Campaign type" : "Topic"}
-              <input
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                name={campaign ? "campaignType" : "topic"}
-                required
-                maxLength={100}
-              />
-            </label>
+            {campaign ? (
+              <label className="form-label">
+                Campaign type
+                <input
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  name="campaignType"
+                  required
+                  maxLength={100}
+                />
+              </label>
+            ) : (
+              <TopicCategorySelect name="topic" required />
+            )}
             {campaign ? (
               <>
                 <label className="form-label">

@@ -158,8 +158,19 @@ function profileMaps(profiles: Array<Record<string, any>>) {
 
 async function loadProfiles(admin: ReturnType<typeof getSupabaseAdmin>, userIds: string[]) {
   if (!userIds.length) return [];
-  const { data } = await admin.from("user_profiles").select("user_id,first_name,last_name,region").in("user_id", userIds);
-  return data ?? [];
+  // region lives on period_user_settings (period-tracker-specific), not
+  // user_profiles -- there's no user-level region anywhere else on the
+  // platform to join against instead.
+  const [{ data: profiles, error: profilesError }, { data: settings }] = await Promise.all([
+    admin.from("user_profiles").select("user_id,first_name,last_name").in("user_id", userIds),
+    admin.from("period_user_settings").select("user_id,region").in("user_id", userIds),
+  ]);
+  if (profilesError) {
+    console.error("[period/loadProfiles] user_profiles error:", profilesError.message);
+    return [];
+  }
+  const regionByUser = new Map((settings ?? []).map((row) => [row.user_id, row.region]));
+  return (profiles ?? []).map((profile) => ({ ...profile, region: regionByUser.get(profile.user_id) ?? null }));
 }
 
 function pageRows<T>(rows: T[], page: number, pageSize: number) {
@@ -288,8 +299,11 @@ export async function GET(request: NextRequest) {
       ...row,
       user: maskName(profiles.get(row.user_id)?.first_name, profiles.get(row.user_id)?.last_name),
       region: profiles.get(row.user_id)?.region ?? "Not supplied",
-      moodCount: row.moods?.length ?? 0,
-      symptomCount: Array.isArray(row.symptoms) ? row.symptoms.length : 0,
+      moodsText: (Array.isArray(row.moods) ? row.moods : []).join(", ") || "—",
+      symptomsText: (Array.isArray(row.symptoms) ? row.symptoms : [])
+        .map((symptom: any) => (typeof symptom === "string" ? symptom : symptom?.name))
+        .filter(Boolean)
+        .join(", ") || "—",
     })).filter((row) => (!status || row.sync_status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
     return NextResponse.json(pageRows(rows, page, pageSize));
   }
@@ -345,8 +359,11 @@ export async function GET(request: NextRequest) {
         region: profiles.get(userId)?.region ?? "Not supplied",
         tracking: user.get("tracking")?.granted ?? false,
         notifications: user.get("notifications")?.granted ?? false,
-        marketing: user.get("marketing")?.granted ?? false,
-        research: user.get("research_analytics")?.granted ?? false,
+        // Marketing/research consent aren't offered anywhere in the mobile
+        // app yet -- "not_asked" is the honest state for every user until
+        // that changes, not a fabricated "declined".
+        marketing: !user.has("marketing") ? "not_asked" : user.get("marketing")!.granted ? "granted" : "declined",
+        research: !user.has("research_analytics") ? "not_asked" : user.get("research_analytics")!.granted ? "granted" : "declined",
         policyVersion: [...user.values()].map((value) => value.policy_version).sort().at(-1) ?? "—",
         lastChanged: [...user.values()].map((value) => value.created_at).sort().at(-1),
         privacyRequests: rowRequests.length,

@@ -724,6 +724,10 @@
     background: var(--clr-gold-muted);
     color: var(--clr-gold);
   }
+  .badge-slate {
+    background: var(--clr-slate-100);
+    color: var(--clr-slate-600);
+  }
   .badge-pink {
     background: var(--clr-pink-muted);
     color: var(--clr-pink);
