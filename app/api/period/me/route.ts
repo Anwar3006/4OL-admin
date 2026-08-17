@@ -14,6 +14,7 @@ const ActionSchema = z.discriminatedUnion("action", [
     typicalPeriodLength: z.number().int().min(1).max(14),
     timezone: z.string().trim().min(1).max(100),
     locale: z.string().trim().min(2).max(12).default("en"),
+    region: z.string().trim().max(60).nullable().optional(),
     onboardingVersion: z.string().trim().max(30).optional(),
     onboardingComplete: z.boolean().default(true),
     remindersEnabled: z.boolean().default(false),
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
   const input = parsed.data;
 
   if (input.action === "save_settings") {
-    const { error } = await supabase.from("period_user_settings").upsert({ user_id: user.id, tracking_goal: input.goal, typical_cycle_length: input.typicalCycleLength, typical_period_length: input.typicalPeriodLength, timezone: input.timezone, locale: input.locale, onboarding_version: input.onboardingVersion ?? null, onboarding_completed_at: input.onboardingComplete ? new Date().toISOString() : null, reminders_enabled: input.remindersEnabled }, { onConflict: "user_id" });
+    const { error } = await supabase.from("period_user_settings").upsert({ user_id: user.id, tracking_goal: input.goal, typical_cycle_length: input.typicalCycleLength, typical_period_length: input.typicalPeriodLength, timezone: input.timezone, locale: input.locale, region: input.region ?? null, onboarding_version: input.onboardingVersion ?? null, onboarding_completed_at: input.onboardingComplete ? new Date().toISOString() : null, reminders_enabled: input.remindersEnabled }, { onConflict: "user_id" });
     if (error) return NextResponse.json({ error: "Unable to save settings" }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
