@@ -827,18 +827,30 @@ those land._
 ## Epic 6 — 🟢 testing & CI foundations
 **Status:** [ ] In progress
 
-- [ ] **6.1 Stand up a test framework.** Zero `*.test.ts(x)`/`*.spec.ts(x)`
+- [x] **6.1 Stand up a test framework.** Zero `*.test.ts(x)`/`*.spec.ts(x)`
   files and no Jest/Vitest config exist anywhere in the repo. Start with
   Vitest + React Testing Library (fastest to wire into a Next.js/Turbopack
   setup); prioritize coverage of Epic 1/2's fixes first (auth gating,
   the hook layer) since those are the highest-risk areas to regress
   silently.
+  **Done (2026-08-17):** Vitest 3 wired up (`vitest.config.ts`,
+  `pnpm test` / `pnpm test:watch` scripts). The orphan
+  `lib/period-calculator.test.ts` (previously node:test, no runner) was
+  converted to Vitest; new suites added for the RBAC core —
+  `lib/admin-roles.test.ts` (role vocabulary) and
+  `lib/permissions.test.ts` (catalog integrity, role defaults,
+  grant/revoke resolution semantics mirroring `has_4ol_permission`).
+  26 tests, all passing.
 
-- [ ] **6.2 Add a CI pipeline.** No `.github/workflows` (or equivalent)
+- [x] **6.2 Add a CI pipeline.** No `.github/workflows` (or equivalent)
   exists. At minimum: `tsc --noEmit`, `next lint`, and `next build` on
   every PR, so Epic 0-class breakage (dead imports, conflicting
   middleware/proxy) is caught before merge instead of discovered by
   running the app.
+  **Done (2026-08-17):** `.github/workflows/ci.yml` — pnpm + Node 22,
+  `type-check`, `lint`, and `test` on push/PR. `next build` is
+  deliberately NOT in CI (it requires runtime env vars the repo
+  doesn't commit); run it locally before releases.
 
 - [x] **6.3 Add route-level `error.tsx` / `loading.tsx` / `not-found.tsx`.**
   Zero exist anywhere under `app/`. A thrown error in any server
@@ -2139,6 +2151,68 @@ not something to silently rewrite mid-Epic-27.
     `lodash-es`/`defu` remain on their latest currently-published versions
     with no newer patched release available yet upstream.
 - [ ] **30.7** `[Admin]`/`[Mobile]` Keep a source-of-truth table map for every metric-producing mobile flow: mobile file(s), Supabase table(s), admin surface, and owning epic. Seed it from `docs/METRIC_REGISTRY.md` and this audit so future admin metric work always checks the mobile producer before marking a story complete. **Not done this pass** — `docs/METRIC_REGISTRY.md` (Epic 10.1) still exists as the seed; extending it into the fuller cross-repo table map described here is deferred, same reasoning as 30.5.
+
+---
+
+## Epic 31 — RBAC & Role Vocabulary (implemented 2026-08-17)
+
+> Implemented per the RBAC design proposal: one primary platform role per
+> admin on `user_profiles.role`, a `resource.action` permission catalog,
+> role defaults + per-user overrides (revokes win), super_admin bypass,
+> deny-by-default. Financial pipeline work (Epic 15/16 territory) was
+> explicitly out of scope for this pass.
+
+- [x] **31.1** `[Backend]` Permission catalog migration:
+  `supabase/migrations/20260817_rbac_permission_catalog.sql` —
+  `admin_platform_roles` (9 roles), `admin_permissions` (~80 keys),
+  `admin_role_permissions` defaults, `admin_user_overrides`
+  (grant/revoke), and the enforcement RPCs `is_platform_admin`,
+  `has_4ol_permission` (super_admin short-circuit; grants require an
+  active platform admin role — closes a privilege-escalation path),
+  `get_effective_admin_permissions`. All four tables are
+  service-role-only (RLS on, everything revoked from anon/authenticated).
+  Application mirror: `lib/permissions.ts` (used as graceful fallback
+  when the migration hasn't been applied yet).
+- [x] **31.2** `[Backend]` Canonical role vocabulary: `lib/admin-roles.ts`
+  (9 roles incl. `registrar`; `group_leader` is chat-scoped only).
+  `proxy.ts`, `lib/admin-api-auth.ts` and the security route now import
+  from it instead of keeping private copies.
+- [x] **31.3** `[Backend]` Server enforcement: `lib/admin-api-auth.ts`
+  rewritten around `requireAdminApiUser(permission?)` +
+  `adminAuthErrorResponse` (401/403 with denial audit logging to
+  `activity_logs`). All 17 admin/notification API routes retrofitted
+  with fine-grained permission keys; new management endpoints
+  `app/api/admin/me`, `app/api/admin/rbac` (GET/PUT),
+  `app/api/admin/rbac/overrides` (POST/DELETE).
+- [x] **31.4** `[Admin]` UI enforcement: `PermissionsProvider` resolves
+  effective permissions server-side; `NewAdminDashboardShell` filters
+  navigation by permission; `/admins?tab=roles` hosts a live Roles &
+  Permissions matrix editor (`RolesPermissionsTab`) wired to the RBAC
+  endpoints, read-only without `roles.edit`.
+- [x] **31.5** `[Backend]` Role vocabulary leak fixes:
+  `supabase/migrations/20260817_role_vocabulary_fix.sql` —
+  `handle_new_user()` now ALWAYS creates `role = 'user'` (previously
+  accepted `admin`/`super_admin` straight from signup metadata =
+  privilege escalation); `fn_make_group_leader()` no longer stamps the
+  global `user_profiles.role` (chat-scoped role stays in
+  `conversation_members`). Supersedes
+  `supabase/migrations/fix_handle_new_user_trigger.sql`'s allowlist
+  approach.
+- [x] **31.6** `[Backend]` Epic 27 migration reconciliation:
+  `supabase/migrations/20260813000000_epic27_notifications_campaigns.sql`
+  was a 44-byte placeholder ("will overwrite via copy step"); it is now
+  the full reconciled schema (tables + 7 RPCs + grant lockdown) matching
+  what was applied live on 2026-08-13.
+- [x] **31.7** `[Both]` Tests for the RBAC core: `lib/admin-roles.test.ts`,
+  `lib/permissions.test.ts` (see Epic 6.1) + GitHub Actions CI
+  (see Epic 6.2).
+- [ ] **31.8** `[Ops]` Apply `20260817_rbac_permission_catalog.sql` and
+  `20260817_role_vocabulary_fix.sql` to the live Supabase project
+  (both are additive/re-runnable). Until applied, the app degrades
+  gracefully to the static `ROLE_DEFAULTS` mirror, so this doesn't
+  block deploying the admin panel itself. Review legacy
+  `user_profiles.role = 'group_leader'` rows per the migration header
+  before/after applying.
 
 ---
 

@@ -32,6 +32,8 @@ import {
 export type DashboardNavChild = {
   title: string;
   href: string;
+  /** Permission key; when omitted the parent item's permission applies. */
+  permission?: string;
 };
 
 export type DashboardNavItem = {
@@ -39,6 +41,12 @@ export type DashboardNavItem = {
   href: string;
   icon: string; // Emoji string
   badge?: string;
+  /**
+   * Permission key required to see (and reach) this item. Omitted items
+   * (Logout, Settings) are always visible to any authenticated admin.
+   * The sidebar filters on this; the API enforces the same keys.
+   */
+  permission?: string;
   children?: DashboardNavChild[];
 };
 
@@ -51,11 +59,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Core",
     items: [
-      { title: "Dashboard", href: "/dashboard", icon: "🏠" },
+      { title: "Dashboard", href: "/dashboard", icon: "🏠", permission: "dashboard.view" },
       {
         title: "Transactions",
         href: "/transactions",
         icon: "💳",
+        permission: "transactions.view",
         children: [
           { title: "Recent Transactions", href: "/transactions?tab=recent" },
           {
@@ -74,45 +83,55 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Administration",
     items: [
-      { title: "Admins", href: "/admins", icon: "👥" },
-      { title: "Users", href: "/users", icon: "👤" },
-      { title: "IBP Businesses", href: "/ibp", icon: "🏢" },
-      { title: "Task Manager", href: "/tasks", icon: "📋" },
+      { title: "Admins", href: "/admins", icon: "👥", permission: "admins.view" },
+      {
+        title: "Roles & Permissions",
+        href: "/admins?tab=roles",
+        icon: "🛡️",
+        permission: "roles.view",
+      },
+      { title: "Users", href: "/users", icon: "👤", permission: "users.view" },
+      { title: "IBP Businesses", href: "/ibp", icon: "🏢", permission: "ibp.view" },
+      { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },
     ],
   },
   {
     title: "Health Services",
     items: [
-      { title: "Facilities", href: "/facilities", icon: "🏥" },
-      { title: "Diseases & Conditions", href: "/diseases", icon: "🦠" },
-      { title: "Human Anatomy", href: "/anatomy", icon: "🫁" },
-      { title: "Symptoms", href: "/symptoms", icon: "🩺" },
-      { title: "Healthy Living", href: "/healthy_living", icon: "🥗" },
-      { title: "Fitness", href: "/fitness", icon: "💪" },
-      { title: "Period Tracker", href: "/period", icon: "📅" },
-      { title: "Medication Reminder", href: "/medication-reminder", icon: "💊" },
+      { title: "Facilities", href: "/facilities", icon: "🏥", permission: "facilities.view" },
+      { title: "Diseases & Conditions", href: "/diseases", icon: "🦠", permission: "diseases.view" },
+      { title: "Human Anatomy", href: "/anatomy", icon: "🫁", permission: "anatomy.view" },
+      { title: "Symptoms", href: "/symptoms", icon: "🩺", permission: "symptoms.view" },
+      { title: "Healthy Living", href: "/healthy_living", icon: "🥗", permission: "healthyliving.view" },
+      { title: "Fitness", href: "/fitness", icon: "💪", permission: "fitness.view" },
+      { title: "Period Tracker", href: "/period", icon: "📅", permission: "period.view" },
+      { title: "Medication Reminder", href: "/medication-reminder", icon: "💊", permission: "medication.view" },
       {
         title: "Healthcare Professionals",
         href: "/hcp",
         icon: "🧑‍⚕️",
+        permission: "hcp.view",
       },
       {
         title: "Jobs",
         href: "/jobs",
         icon: "💼",
+        permission: "jobs.view",
       },
       {
         title: "Medication Enquiry",
         href: "/medenquiry",
         icon: "🔬",
+        permission: "medication.view",
       },
       {
         title: "BedTracker (PKM)",
         href: "/bedtracker",
         icon: "🛏️",
         badge: "LIVE",
+        permission: "bedtracker.view",
       },
-      { title: "Top Rated", href: "/top-rated", icon: "🏆" },
+      { title: "Top Rated", href: "/top-rated", icon: "🏆", permission: "reviews.view" },
     ],
   },
   {
@@ -122,29 +141,33 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Reviews & Ratings",
         href: "/reviews",
         icon: "⭐",
+        permission: "reviews.view",
       },
-      { title: "Map", href: "/map", icon: "🗺️" },
+      { title: "Map", href: "/map", icon: "🗺️", permission: "facilities.view" },
     ],
   },
   {
     title: "Growth",
     items: [
-      { title: "Marketing", href: "/marketing", icon: "📣" },
+      { title: "Marketing", href: "/marketing", icon: "📣", permission: "marketing.view" },
       {
         title: "Chats",
         href: "/chats",
         icon: "💬",
+        permission: "chats.view",
       },
       {
         title: "FacilityScout",
         href: "/facilityscout",
         icon: "🔍",
+        permission: "facilityscout.view",
       },
-      { title: "FAQ", href: "/faq", icon: "❓" },
+      { title: "FAQ", href: "/faq", icon: "❓", permission: "faq.view" },
       {
         title: "Notifications",
         href: "/notifications",
         icon: "🔔",
+        permission: "notifications.view",
       },
     ],
   },
@@ -155,6 +178,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "AI Hub",
         href: "/ai",
         icon: "🤖",
+        permission: "ai.view",
         children: [
           { title: "AI Models", href: "/ai?tab=models" },
           { title: "AI Moderation", href: "/ai?tab=moderation" },
@@ -167,13 +191,14 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Platform",
     items: [
-      { title: "Security Center", href: "/security", icon: "🔐" },
-      { title: "Platform Schematic", href: "/schematic", icon: "🗂️" },
+      { title: "Security Center", href: "/security", icon: "🔐", permission: "security.view" },
+      { title: "Platform Schematic", href: "/schematic", icon: "🗂️", permission: "dashboard.view" },
       { title: "Settings", href: "/settings", icon: "⚙️" },
       {
         title: "Delete Account Requests",
         href: "/delete-account-request",
         icon: "🗑️",
+        permission: "deleteaccount.view",
         children: [
           { title: "All Requests", href: "/delete-account-request?tab=all" },
           {

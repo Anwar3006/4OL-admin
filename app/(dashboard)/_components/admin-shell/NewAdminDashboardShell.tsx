@@ -17,6 +17,7 @@ import {
 import { dashboardNavSections } from "./navigation";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { usePermissionContext } from "@/stores/permission-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -69,6 +70,34 @@ export default function NewAdminDashboardShell({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { hasPermission } = usePermissionContext();
+
+  // RBAC nav filtering: drop items/children the caller lacks a permission
+  // for, then drop emptied sections. Items without a permission key (Logout,
+  // Settings) stay visible for every authenticated admin.
+  const navSections = useMemo(
+    () =>
+      dashboardNavSections
+        .map((section) => ({
+          ...section,
+          items: section.items
+            .filter((item) => !item.permission || hasPermission(item.permission))
+            .map((item) =>
+              item.children
+                ? {
+                    ...item,
+                    children: item.children.filter(
+                      (child) =>
+                        hasPermission(child.permission ?? item.permission ?? ""),
+                    ),
+                  }
+                : item,
+            )
+            .filter((item) => !item.children || item.children.length > 0),
+        }))
+        .filter((section) => section.items.length > 0),
+    [hasPermission],
+  );
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {},
   );
@@ -125,7 +154,7 @@ export default function NewAdminDashboardShell({
   // Initialize expanded items
   useEffect(() => {
     const initial: Record<string, boolean> = {};
-    dashboardNavSections.forEach((section) => {
+    navSections.forEach((section) => {
       section.items.forEach((item) => {
         if (item.children) {
           const hasActiveChild = item.children.some((c) => {
@@ -160,7 +189,7 @@ export default function NewAdminDashboardShell({
   };
 
   const pageTitle = useMemo(() => {
-    for (const section of dashboardNavSections) {
+    for (const section of navSections) {
       for (const item of section.items) {
         if (isActivePath(item.href)) return item.title;
         if (item.children?.some((child) => isActivePath(child.href)))
@@ -182,7 +211,7 @@ export default function NewAdminDashboardShell({
   };
 
   const isItemExpanded = (
-    item: (typeof dashboardNavSections)[0]["items"][0],
+    item: (typeof navSections)[0]["items"][0],
   ) => {
     if (!item.children) return false;
     const hasActiveChild = item.children.some((c) => isLinkActive(c.href));
@@ -243,7 +272,7 @@ export default function NewAdminDashboardShell({
 
           {/* ── Content: Navigation ── */}
           <SidebarContent className="pt-2 px-2">
-            {dashboardNavSections.map((section) => (
+            {navSections.map((section) => (
               <SidebarGroup key={section.title} className="py-2">
                 <SidebarGroupLabel className="text-[11px] font-bold text-white/35 uppercase tracking-widest">
                   {section.title}

@@ -1,5 +1,4 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
+import { expect, test } from "vitest";
 import {
   DEFAULT_CYCLE_LENGTH,
   calculateCycleStatistics,
@@ -9,9 +8,9 @@ import {
 
 test("cold start (fewer than 2 cycles) falls back to DEFAULT_CYCLE_LENGTH", () => {
   const stats = calculateCycleStatistics([{ period_start_date: "2026-01-01" }]);
-  assert.equal(stats.averageCycleLength, DEFAULT_CYCLE_LENGTH);
-  assert.equal(stats.regularity, "insufficient_data");
-  assert.equal(stats.stdDeviation, null);
+  expect(stats.averageCycleLength).toBe(DEFAULT_CYCLE_LENGTH);
+  expect(stats.regularity).toBe("insufficient_data");
+  expect(stats.stdDeviation).toBeNull();
 });
 
 test("regular cycles (identical 28-day gaps) classify as regular with zero deviation", () => {
@@ -21,10 +20,10 @@ test("regular cycles (identical 28-day gaps) classify as regular with zero devia
     { period_start_date: "2026-02-26" },
   ];
   const stats = calculateCycleStatistics(cycles);
-  assert.equal(stats.averageCycleLength, 28);
-  assert.equal(stats.stdDeviation, 0);
-  assert.equal(stats.coefficientOfVariation, 0);
-  assert.equal(stats.regularity, "regular");
+  expect(stats.averageCycleLength).toBe(28);
+  expect(stats.stdDeviation).toBe(0);
+  expect(stats.coefficientOfVariation).toBe(0);
+  expect(stats.regularity).toBe("regular");
 });
 
 test("cycle averaging: next period start = most recent start + average cycle length", () => {
@@ -35,15 +34,15 @@ test("cycle averaging: next period start = most recent start + average cycle len
   ];
   const prediction = predictNextPeriod(cycles, "2026-02-26", 5);
   // 2026-02-26 + 28 days = 2026-03-26
-  assert.equal(prediction.predictedPeriodStart, "2026-03-26");
+  expect(prediction.predictedPeriodStart).toBe("2026-03-26");
   // ovulation = predicted start - 14 days = 2026-03-12
-  assert.equal(prediction.predictedOvulationDate, "2026-03-12");
+  expect(prediction.predictedOvulationDate).toBe("2026-03-12");
   // fertile window = ovulation -7 / +2
-  assert.equal(prediction.fertileWindowStart, "2026-03-05");
-  assert.equal(prediction.fertileWindowEnd, "2026-03-14");
+  expect(prediction.fertileWindowStart).toBe("2026-03-05");
+  expect(prediction.fertileWindowEnd).toBe("2026-03-14");
   // period length falls back to the passed typical length (5) since no
   // recorded cycle has a period_length
-  assert.equal(prediction.predictedPeriodEnd, "2026-03-30");
+  expect(prediction.predictedPeriodEnd).toBe("2026-03-30");
 });
 
 test("date-range calculation: predicted end = predicted start + period length - 1", () => {
@@ -55,7 +54,7 @@ test("date-range calculation: predicted end = predicted start + period length - 
   const start = new Date(prediction.predictedPeriodStart);
   const end = new Date(prediction.predictedPeriodEnd);
   const spanDays = Math.round((end.getTime() - start.getTime()) / 86_400_000);
-  assert.equal(spanDays, 5); // 6-day period = start + 5
+  expect(spanDays).toBe(5); // 6-day period = start + 5
 });
 
 test("irregular cycle: coefficient of variation buckets and conservative estimate", () => {
@@ -67,28 +66,27 @@ test("irregular cycle: coefficient of variation buckets and conservative estimat
     { period_start_date: "2026-03-24" }, // +26
   ];
   const stats = calculateCycleStatistics(cycles);
-  assert.equal(stats.regularity, "moderately_irregular");
-  assert.equal(stats.minCycleLength, 24);
+  expect(stats.regularity).toBe("moderately_irregular");
+  expect(stats.minCycleLength).toBe(24);
 
   const prediction = predictNextPeriod(cycles, "2026-03-24");
-  assert.notEqual(prediction.conservativeOvulationDate, null);
+  expect(prediction.conservativeOvulationDate).not.toBeNull();
   // conservative estimate must be earlier than (or equal to) the point
   // estimate, since it uses the shortest recorded cycle
-  assert.ok(
-    new Date(prediction.conservativeOvulationDate!).getTime() <=
-      new Date(prediction.predictedOvulationDate).getTime(),
-  );
+  expect(
+    new Date(prediction.conservativeOvulationDate!).getTime(),
+  ).toBeLessThanOrEqual(new Date(prediction.predictedOvulationDate).getTime());
 });
 
 test("confidence is always clamped to [0.25, 0.95]", () => {
-  assert.equal(calculateConfidence(0, null), 0.25);
-  assert.equal(calculateConfidence(1, null), Math.max(0.25, 1 / 6));
-  assert.ok(calculateConfidence(20, 0) <= 0.95);
-  assert.ok(calculateConfidence(20, 0) >= 0.25);
+  expect(calculateConfidence(0, null)).toBe(0.25);
+  expect(calculateConfidence(1, null)).toBe(Math.max(0.25, 1 / 6));
+  expect(calculateConfidence(20, 0)).toBeLessThanOrEqual(0.95);
+  expect(calculateConfidence(20, 0)).toBeGreaterThanOrEqual(0.25);
 });
 
 test("more confirmed cycles and lower variation increase confidence", () => {
   const lowData = calculateConfidence(1, 0.2);
   const highData = calculateConfidence(6, 0.05);
-  assert.ok(highData > lowData);
+  expect(highData).toBeGreaterThan(lowData);
 });
