@@ -12,8 +12,12 @@ const SubmitSchema = z.object({
   answers: z.array(z.object({ questionId: z.string().uuid(), option: z.number().int().min(-1).max(5) })).length(10),
   durationSeconds: z.number().int().min(0).max(86400).optional(),
   lead: z.object({
-    fullName: z.string().trim().min(2).max(120), mobile: z.string().trim().min(7).max(24),
-    socialHandle: z.string().trim().min(2).max(120), consent: z.literal(true), consentVersion: z.literal("trivia-lead-v1"),
+    // Full name and mobile are no longer collected on this form -- Plasence
+    // is sign-in only, so the account's own profile is the source of truth
+    // (see the userId lookup in POST below). Social handle stays optional
+    // until a "share your score" feature actually needs it.
+    socialHandle: z.string().trim().max(120).optional(),
+    consent: z.literal(true), consentVersion: z.literal("trivia-lead-v1"),
   }),
   attribution: z.object({ campaignCode: z.string().max(80).optional(), utmSource: z.string().max(120).optional(), utmMedium: z.string().max(120).optional(), utmCampaign: z.string().max(120).optional() }).optional(),
 });
@@ -72,15 +76,19 @@ export async function POST(request: NextRequest) {
   const answerMap = new Map(input.answers.map((answer) => [answer.questionId, answer.option]));
   if (new Set(input.answers.map((answer) => answer.questionId)).size !== 10 || questions!.some((question) => !answerMap.has(question.id))) return NextResponse.json({ error: "Answer set does not match this Trivia." }, { status: 400 });
   const score = questions!.filter((question) => answerMap.get(question.id) === question.correct_option).length;
+  const userId = await getPeriodRequestUserId(request);
+  if (!userId) return NextResponse.json({ error: "Sign in to submit your Trivia entry." }, { status: 401 });
+  const { data: profile } = await admin.from("user_profiles").select("first_name,last_name,phone_number").eq("user_id", userId).maybeSingle();
+  if (!profile?.phone_number) return NextResponse.json({ error: "Add a phone number to your profile before entering Trivia." }, { status: 409 });
+  const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() || "Not provided";
   try {
-    const mobile = normalizeMobile(input.lead.mobile);
+    const mobile = normalizeMobile(profile.phone_number);
     const deviceHash = privacyHash(deviceToken, "device");
     const mobileHash = privacyHash(mobile, "mobile");
-    const userId = await getPeriodRequestUserId(request);
     const { error } = await admin.rpc("submit_period_trivia", {
       p_event_id: input.eventId, p_user_id: userId, p_device_hash: deviceHash, p_mobile_hash: mobileHash,
       p_score: score, p_answers: input.answers, p_duration_seconds: input.durationSeconds ?? null,
-      p_full_name_ciphertext: encryptLead(input.lead.fullName), p_mobile_ciphertext: encryptLead(mobile), p_social_handle_ciphertext: encryptLead(input.lead.socialHandle),
+      p_full_name_ciphertext: encryptLead(fullName), p_mobile_ciphertext: encryptLead(mobile), p_social_handle_ciphertext: encryptLead(input.lead.socialHandle?.trim() || ""),
       p_consent_version: input.lead.consentVersion, p_campaign_code: input.attribution?.campaignCode ?? null,
       p_utm_source: input.attribution?.utmSource ?? null, p_utm_medium: input.attribution?.utmMedium ?? null, p_utm_campaign: input.attribution?.utmCampaign ?? null,
     });
