@@ -56,6 +56,8 @@ const WriteSchema = z.discriminatedUnion("action", [
     correctOption: z.number().int().min(0).max(5),
     explanation: z.string().trim().min(5).max(2000),
     difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+    eventId: z.string().uuid().optional(),
+    rewardId: z.string().uuid().optional(),
   }).refine((value) => value.correctOption < value.options.length, { message: "Correct option is outside the option list", path: ["correctOption"] }),
   z.object({
     action: z.literal("create_trivia_event"),
@@ -63,6 +65,15 @@ const WriteSchema = z.discriminatedUnion("action", [
     startsAt: z.string().datetime(),
     endsAt: z.string().datetime(),
     timezone: z.string().trim().min(3).max(80).default("Africa/Accra"),
+    rewardId: z.string().uuid().optional(),
+  }),
+  z.object({
+    action: z.literal("create_trivia_reward"),
+    name: z.string().trim().min(2).max(120),
+    description: z.string().trim().min(2).max(500),
+    icon: z.string().trim().min(1).max(8).default("🏆"),
+    rewardType: z.enum(["points", "badge", "discount", "prize"]).default("points"),
+    value: z.string().trim().max(120).optional(),
   }),
   z.object({ action: z.literal("review_trivia_event"), id: z.string().uuid() }),
   z.object({
@@ -238,11 +249,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (tab === "trivia") {
-    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }] = await Promise.all([
+    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }] = await Promise.all([
       admin.from("period_trivia_questions").select("id,event_id,position,topic,question,difficulty,status,validation_status,ai_job_id,source_refs,reviewed_by,published_at,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").gte("submitted_at", new Date(Date.now() - 30 * 86400000).toISOString()).limit(5000),
-      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at").order("starts_at", { ascending: false }).limit(100),
+      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
+      admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load trivia" }, { status: 500 });
     const rows = (questions ?? []).filter((row) => (!status || row.status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
@@ -257,7 +269,7 @@ export async function GET(request: NextRequest) {
           name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialHandle: `${handle.slice(0, 2)}••••` };
       } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialHandle: "Protected" }; }
     });
-    return NextResponse.json({ ...pageRows(rows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
+    return NextResponse.json({ ...pageRows(rows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
   }
 
   if (tab === "forecasts") {
@@ -541,9 +553,24 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "create_trivia_question") {
-    const { data, error } = await admin.from("period_trivia_questions").insert({ topic: input.topic, question: input.question, options: input.options, correct_option: input.correctOption, explanation: input.explanation, difficulty: input.difficulty, status: "draft", created_by: user.id }).select("id").single();
+    let position: number | null = null;
+    if (input.eventId) {
+      const { count } = await admin.from("period_trivia_questions").select("id", { count: "exact", head: true }).eq("event_id", input.eventId);
+      position = (count ?? 0) + 1;
+    }
+    const { data, error } = await admin.from("period_trivia_questions").insert({ topic: input.topic, question: input.question, options: input.options, correct_option: input.correctOption, explanation: input.explanation, difficulty: input.difficulty, status: "draft", created_by: user.id, event_id: input.eventId ?? null, position }).select("id").single();
     if (error) return NextResponse.json({ error: "Unable to create trivia question" }, { status: 500 });
+    if (input.eventId && input.rewardId) {
+      await admin.from("period_trivia_events").update({ reward_id: input.rewardId }).eq("id", input.eventId);
+    }
     await writeAudit(user.id, "create", "period_trivia_question", data.id);
+    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "create_trivia_reward") {
+    const { data, error } = await admin.from("period_trivia_rewards").insert({ name: input.name, description: input.description, icon: input.icon, reward_type: input.rewardType, value: input.value ?? null, created_by: user.id }).select("id").single();
+    if (error) return NextResponse.json({ error: "Unable to create reward" }, { status: 500 });
+    await writeAudit(user.id, "create", "period_trivia_reward", data.id);
     return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
   }
 
@@ -554,7 +581,7 @@ export async function POST(request: NextRequest) {
     const formatter = new Intl.DateTimeFormat("en-US", { timeZone: input.timezone, weekday: "short" });
     if (formatter.format(startsAt) !== "Fri") return NextResponse.json({ error: "Friday Trivia must start on Friday in the selected timezone" }, { status: 400 });
     const slug = `${input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80)}-${startsAt.toISOString().slice(0, 10)}`;
-    const { data, error } = await admin.from("period_trivia_events").insert({ title: input.title, slug, starts_at: input.startsAt, ends_at: input.endsAt, timezone: input.timezone, leaderboard_publish_at: input.endsAt, created_by: user.id }).select("id").single();
+    const { data, error } = await admin.from("period_trivia_events").insert({ title: input.title, slug, starts_at: input.startsAt, ends_at: input.endsAt, timezone: input.timezone, leaderboard_publish_at: input.endsAt, created_by: user.id, reward_id: input.rewardId ?? null }).select("id").single();
     if (error) return NextResponse.json({ error: "Unable to create Trivia schedule" }, { status: 500 });
     await writeAudit(user.id, "create", "period_trivia_event", data.id, { startsAt: input.startsAt, endsAt: input.endsAt });
     return NextResponse.json({ ok: true, id: data.id }, { status: 201 });

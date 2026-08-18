@@ -32,6 +32,7 @@ const ActionSchema = z.discriminatedUnion("action", [
     sexualActivity: z.enum(["none", "protected", "unprotected", "prefer_not_to_say"]).nullable().optional(),
     exerciseMinutes: z.number().int().min(0).max(1440).nullable().optional(),
     medicationLogged: z.boolean().default(false),
+    medicationName: z.string().trim().max(120).nullable().optional(),
     noteCiphertext: z.string().max(20_000).optional(),
     noteCategory: z.string().trim().max(80).optional(),
     clientEventId: z.string().trim().min(8).max(200),
@@ -72,15 +73,6 @@ const ActionSchema = z.discriminatedUnion("action", [
     appVersion: z.string().trim().max(40).optional(),
   }),
   z.object({
-    action: z.literal("trivia_attempt"),
-    quizKey: z.string().trim().min(2).max(100),
-    questionCount: z.number().int().min(1).max(100),
-    correctCount: z.number().int().min(0).max(100),
-    points: z.number().int().min(0).max(100_000),
-    durationSeconds: z.number().int().min(0).max(86_400).optional(),
-    appVersion: z.string().trim().max(40).optional(),
-  }).refine((value) => value.correctCount <= value.questionCount, { message: "Correct answers cannot exceed the question count", path: ["correctCount"] }),
-  z.object({
     action: z.literal("app_event"),
     eventName: z.enum(["onboarding_complete", "log_save", "sync", "forecast_view", "calendar_correction", "content_search"]),
     platform: z.string().trim().max(40).optional(),
@@ -98,7 +90,7 @@ export async function GET(request: NextRequest) {
   const [settings, cycles, logs, forecasts, consents, preferences, content, trivia, flags] = await Promise.all([
     supabase.from("period_user_settings").select("tracking_goal,typical_cycle_length,typical_period_length,timezone,locale,onboarding_version,onboarding_completed_at,reminders_enabled,quiet_hours_start,quiet_hours_end,updated_at").eq("user_id", user.id).maybeSingle(),
     supabase.from("period_cycles").select("id,period_start_date,period_end_date,cycle_length,period_length,next_period_forecast,ovulation_forecast,fertile_window,current_phase,source,created_at,updated_at").eq("user_id", user.id).order("period_start_date", { ascending: false }).limit(24),
-    supabase.from("period_daily_logs").select("id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,sexual_activity,exercise_minutes,medication_logged,note_ciphertext,note_category,source,client_event_id,app_version,sync_status,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(400),
+    supabase.from("period_daily_logs").select("id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,sexual_activity,exercise_minutes,medication_logged,medication_name,note_ciphertext,note_category,source,client_event_id,app_version,sync_status,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(400),
     supabase.from("period_forecasts").select("id,cycle_id,model_key,model_version,predicted_period_start,predicted_ovulation_date,fertile_window,confidence,explanation_code,generated_at,superseded_at").eq("user_id", user.id).is("superseded_at", null).order("generated_at", { ascending: false }).limit(12),
     supabase.from("period_consent_events").select("consent_type,granted,policy_version,source,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
     supabase.from("period_notification_preferences").select("period_reminders,fertile_window_reminders,content_reminders,quiet_hours_start,quiet_hours_end,timezone,updated_at").eq("user_id", user.id).maybeSingle(),
@@ -156,7 +148,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "save_daily_log") {
-    const { data, error } = await supabase.from("period_daily_logs").upsert({ user_id: user.id, cycle_id: input.cycleId ?? null, logged_on: input.loggedOn, flow: input.flow ?? null, moods: input.moods, symptoms: input.symptoms, basal_body_temperature: input.basalBodyTemperature ?? null, temperature_unit: input.temperatureUnit, cervical_mucus: input.cervicalMucus ?? null, sexual_activity: input.sexualActivity ?? null, exercise_minutes: input.exerciseMinutes ?? null, medication_logged: input.medicationLogged, note_ciphertext: input.noteCiphertext ?? null, note_category: input.noteCategory ?? null, client_event_id: input.clientEventId, app_version: input.appVersion ?? null, source: input.source, sync_status: "synced" }, { onConflict: "user_id,logged_on" }).select("id,updated_at").single();
+    const { data, error } = await supabase.from("period_daily_logs").upsert({ user_id: user.id, cycle_id: input.cycleId ?? null, logged_on: input.loggedOn, flow: input.flow ?? null, moods: input.moods, symptoms: input.symptoms, basal_body_temperature: input.basalBodyTemperature ?? null, temperature_unit: input.temperatureUnit, cervical_mucus: input.cervicalMucus ?? null, sexual_activity: input.sexualActivity ?? null, exercise_minutes: input.exerciseMinutes ?? null, medication_logged: input.medicationLogged, medication_name: input.medicationLogged ? (input.medicationName?.trim() || null) : null, note_ciphertext: input.noteCiphertext ?? null, note_category: input.noteCategory ?? null, client_event_id: input.clientEventId, app_version: input.appVersion ?? null, source: input.source, sync_status: "synced" }, { onConflict: "user_id,logged_on" }).select("id,updated_at").single();
     if (error) return NextResponse.json({ error: "Unable to save daily log" }, { status: 500 });
     return NextResponse.json({ ok: true, data });
   }
@@ -231,12 +223,6 @@ export async function POST(request: NextRequest) {
   if (input.action === "content_event") {
     const { error } = await supabase.from("period_content_events").insert({ user_id: user.id, content_id: input.contentId, event_type: input.eventType, app_version: input.appVersion ?? null });
     if (error) return NextResponse.json({ error: "Unable to record content activity" }, { status: 500 });
-    return NextResponse.json({ ok: true }, { status: 201 });
-  }
-
-  if (input.action === "trivia_attempt") {
-    const { error } = await supabase.from("period_trivia_attempts").insert({ user_id: user.id, quiz_key: input.quizKey, question_count: input.questionCount, correct_count: input.correctCount, points: input.points, duration_seconds: input.durationSeconds ?? null, app_version: input.appVersion ?? null });
-    if (error) return NextResponse.json({ error: "Unable to save trivia attempt" }, { status: 500 });
     return NextResponse.json({ ok: true }, { status: 201 });
   }
 

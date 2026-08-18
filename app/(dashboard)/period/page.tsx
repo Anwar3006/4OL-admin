@@ -551,6 +551,8 @@ function PeriodWorkspace() {
           correctOption: Number(form.get("correctOption")) - 1,
           explanation: form.get("explanation"),
           difficulty: form.get("difficulty"),
+          eventId: form.get("eventId") || undefined,
+          rewardId: form.get("rewardId") || undefined,
         },
         "Trivia question created for editorial and clinical review.",
       );
@@ -1073,6 +1075,8 @@ function PeriodWorkspace() {
       {showCreate && (
         <CreateForm
           activeTab={activeTab}
+          events={payload.events ?? []}
+          rewards={payload.rewards ?? []}
           saving={saving}
           onSubmit={createRecord}
           onCancel={() => setShowCreate(false)}
@@ -1687,11 +1691,15 @@ function LibraryOperations({
 
 function CreateForm({
   activeTab,
+  events,
+  rewards,
   saving,
   onSubmit,
   onCancel,
 }: {
   activeTab: PeriodTabId;
+  events: Row[];
+  rewards: Row[];
   saving: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
@@ -1777,6 +1785,40 @@ function CreateForm({
               className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className="form-label">
+              Attach to event (optional)
+              <select
+                name="eventId"
+                defaultValue=""
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">Unattached draft</option>
+                {events
+                  .filter((item) => item.status === "draft")
+                  .map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.title}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label className="form-label">
+              Reward for that event (optional)
+              <select
+                name="rewardId"
+                defaultValue=""
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">No reward set</option>
+                {rewards.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.icon} {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </>
       ) : (
         <>

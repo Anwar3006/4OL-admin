@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   try { deviceHash = privacyHash(deviceToken, "device"); }
   catch { return NextResponse.json({ error: "Trivia security is not configured" }, { status: 503 }); }
 
-  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
+  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:period_trivia_rewards(name,description,icon)").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
   const current = (events ?? []).find((event) => new Date(event.starts_at) <= new Date(now) && new Date(event.ends_at) >= new Date(now));
   const upcoming = (events ?? []).find((event) => new Date(event.starts_at) > new Date(now));
   const ended = [...(events ?? [])].reverse().find((event) => new Date(event.ends_at) < new Date(now));

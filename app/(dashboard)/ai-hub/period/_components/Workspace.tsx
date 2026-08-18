@@ -49,10 +49,12 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
   const [jobs, setJobs] = useState<Row[]>([]);
   const [events, setEvents] = useState<Row[]>([]);
   const [leads, setLeads] = useState<Row[]>([]);
+  const [rewards, setRewards] = useState<Row[]>([]);
   const [sourceLinks, setSourceLinks] = useState(0);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [schedulingEvent, setSchedulingEvent] = useState(false);
+  const [creatingReward, setCreatingReward] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [lastOutput, setLastOutput] = useState<any>(null);
@@ -67,6 +69,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
       setJobs(result.jobs ?? []);
       setEvents(result.events ?? []);
       setLeads(result.leads ?? []);
+      setRewards(result.rewards ?? []);
       setSourceLinks(result.sourceLinks ?? 0);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load the AI workspace");
@@ -113,6 +116,8 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           body.answerCount = Number(form.get("answerCount"));
           const eventId = form.get("eventId");
           if (eventId) body.eventId = eventId;
+          const rewardId = form.get("rewardId");
+          if (rewardId) body.rewardId = rewardId;
         }
       } else {
         body.contentFormat = form.get("contentFormat");
@@ -155,7 +160,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
       const response = await fetch("/api/period/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "create_trivia_event", title: form.get("title"), startsAt, endsAt, timezone: form.get("timezone") || "Africa/Accra" }),
+        body: JSON.stringify({ action: "create_trivia_event", title: form.get("title"), startsAt, endsAt, timezone: form.get("timezone") || "Africa/Accra", rewardId: form.get("rewardId") || undefined }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "Unable to schedule this event");
@@ -166,6 +171,37 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
       setError(cause instanceof Error ? cause.message : "Unable to schedule this event");
     } finally {
       setSchedulingEvent(false);
+    }
+  };
+
+  const createReward = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setCreatingReward(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/period/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_trivia_reward",
+          name: form.get("name"),
+          description: form.get("description"),
+          icon: form.get("icon") || "🏆",
+          rewardType: form.get("rewardType") || "points",
+          value: form.get("value") || undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "Unable to create this reward");
+      setMessage("Reward added to the catalog — pick it above when scheduling or generating Trivia.");
+      (event.target as HTMLFormElement).reset();
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to create this reward");
+    } finally {
+      setCreatingReward(false);
     }
   };
 
@@ -223,7 +259,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
         </fieldset>
 
         {scope === "trivia" && jobType === "trivia_generation" && (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <label className="form-label">
               Difficulty
               <select name="difficulty" defaultValue="intermediate" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
@@ -242,6 +278,15 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
                 <option value="">Unattached draft</option>
                 {events.filter((item) => item.status === "draft").map((item) => (
                   <option key={item.id} value={item.id}>{item.title}</option>
+                ))}
+              </select>
+            </label>
+            <label className="form-label">
+              Reward for that event (optional)
+              <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                <option value="">No reward set</option>
+                {rewards.map((item) => (
+                  <option key={item.id} value={item.id}>{item.icon} {item.name}</option>
                 ))}
               </select>
             </label>
@@ -334,10 +379,61 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
                 Timezone
                 <input name="timezone" defaultValue="Africa/Accra" maxLength={80} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
               </label>
+              <label className="form-label sm:col-span-2">
+                Reward (optional)
+                <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                  <option value="">No reward set</option>
+                  {rewards.map((item) => (
+                    <option key={item.id} value={item.id}>{item.icon} {item.name}</option>
+                  ))}
+                </select>
+              </label>
               <button type="submit" className="btn btn-primary btn-sm sm:col-span-2" disabled={schedulingEvent}>
                 {schedulingEvent ? "Scheduling…" : "Schedule event"}
               </button>
             </form>
+          </section>
+
+          <section className="card p-4" aria-labelledby="reward-catalog-heading">
+            <h3 id="reward-catalog-heading" className="card-title">Reward catalog</h3>
+            <p className="mt-1 text-xs text-slate-500">Add a reusable reward here, then attach it to an event above or from the Trivia tab&apos;s question form.</p>
+            <form className="mt-3 grid gap-3 sm:grid-cols-2" onSubmit={createReward} aria-label="Add a reward">
+              <label className="form-label">
+                Name
+                <input name="name" required minLength={2} maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="e.g. Top scorer voucher" />
+              </label>
+              <label className="form-label">
+                Icon
+                <input name="icon" defaultValue="🏆" maxLength={8} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+              </label>
+              <label className="form-label sm:col-span-2">
+                Description
+                <textarea name="description" required minLength={2} maxLength={500} className="mt-1 min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+              </label>
+              <label className="form-label">
+                Type
+                <select name="rewardType" defaultValue="points" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                  <option value="points">Points</option>
+                  <option value="badge">Badge</option>
+                  <option value="discount">Discount</option>
+                  <option value="prize">Prize</option>
+                </select>
+              </label>
+              <label className="form-label">
+                Value (optional)
+                <input name="value" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" placeholder="e.g. 500 pts, 10% off" />
+              </label>
+              <button type="submit" className="btn btn-primary btn-sm sm:col-span-2" disabled={creatingReward}>
+                {creatingReward ? "Adding…" : "Add reward"}
+              </button>
+            </form>
+            {rewards.length > 0 && (
+              <ul className="mt-4 space-y-1 text-sm text-slate-600">
+                {rewards.map((item) => (
+                  <li key={item.id}>{item.icon} <span className="font-medium text-slate-800">{item.name}</span> — {item.description}</li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section className="card overflow-hidden" aria-labelledby="leads-heading">

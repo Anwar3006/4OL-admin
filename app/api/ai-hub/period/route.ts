@@ -16,6 +16,7 @@ const GenerateSchema = z.object({
   answerCount: z.number().int().min(2).max(6).default(4),
   questionCount: z.literal(10).default(10),
   eventId: z.string().uuid().optional(),
+  rewardId: z.string().uuid().optional(),
   topic: z.string().trim().max(120).optional(),
   contentFormat: ContentFormat.default("quick_read"),
   audience: z.enum(["general", "teens", "adults", "caregivers"]).default("general"),
@@ -30,7 +31,7 @@ type Source = { id: string; menu: z.infer<typeof SourceMenu>; title: string; exc
 async function loadSources(menus: z.infer<typeof SourceMenu>[]): Promise<Source[]> {
   const admin = getSupabaseAdmin();
   const configs = {
-    healthy_living: { table: "healthy_living_info", title: "name", hasStatus: false, fields: "id,name,description,content_sections" },
+    healthy_living: { table: "healthy_living_info", title: "name", hasStatus: true, fields: "id,name,description,content,status" },
     conditions: { table: "conditions", title: "name", hasStatus: true, fields: "id,name,description,status" },
     symptoms: { table: "symptoms", title: "name", hasStatus: true, fields: "id,name,description,status" },
   } as const;
@@ -40,7 +41,7 @@ async function loadSources(menus: z.infer<typeof SourceMenu>[]): Promise<Source[
     const { data, error } = config.hasStatus ? await base.or("status.eq.published,status.eq.active,status.is.null") : await base;
     if (error) throw new Error(`SOURCE_${menu.toUpperCase()}_UNAVAILABLE`);
     return (data ?? []).map((row: any) => {
-      const body = [row.description, row.content_sections ? JSON.stringify(row.content_sections) : ""].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const body = [row.description, row.content ? JSON.stringify(row.content) : ""].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
       return {
       id: String(row.id), menu, title: String(row[config.title] ?? "Untitled"),
       excerpt: body.slice(0, 1200), body: body.slice(0, 12000),
@@ -112,13 +113,14 @@ export async function GET() {
   const user = await getAdminApiUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const admin = getSupabaseAdmin();
-  const [{ data: jobs }, { data: events }, { data: leads }, { count: sourceLinks }] = await Promise.all([
+  const [{ data: jobs }, { data: events }, { data: leads }, { count: sourceLinks }, { data: rewards }] = await Promise.all([
     admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,model_key,prompt_version,validation,error_code,created_at,completed_at").order("created_at", { ascending: false }).limit(50),
-    admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at").order("starts_at", { ascending: false }).limit(20),
+    admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(20),
     admin.from("period_trivia_leads").select("id,event_id,user_id,status,acquisition_source,campaign_code,created_at,last_contacted_at").order("created_at", { ascending: false }).limit(100),
     admin.from("period_content_sources").select("id", { count: "exact", head: true }),
+    admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
   ]);
-  return NextResponse.json({ jobs: jobs ?? [], events: events ?? [], leads: leads ?? [], sourceLinks: sourceLinks ?? 0 });
+  return NextResponse.json({ jobs: jobs ?? [], events: events ?? [], leads: leads ?? [], sourceLinks: sourceLinks ?? 0, rewards: rewards ?? [] });
 }
 
 export async function POST(request: NextRequest) {
@@ -190,6 +192,9 @@ SOURCE_RECORDS=${JSON.stringify(sourceContext)}`;
       }));
       const { error } = await admin.from("period_trivia_questions").insert(rows);
       if (error) throw new Error("TRIVIA_DRAFT_INSERT_FAILED");
+      if (input.eventId && input.rewardId) {
+        await admin.from("period_trivia_events").update({ reward_id: input.rewardId }).eq("id", input.eventId);
+      }
     } else if (input.jobType !== "engagement_copy") {
       const readingMinutes = { short: 3, medium: 6, long: 10 }[input.readingLength];
       const escapeHtml = (value: unknown) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
