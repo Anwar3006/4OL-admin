@@ -34,6 +34,7 @@ import DataTable, {
 } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
+import Modal from "@/components/redesign/Modal";
 import { cn } from "@/lib/utils";
 import { PERIOD_TAB_IDS, type PeriodTabId } from "@/lib/period-tracker";
 import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
@@ -339,14 +340,28 @@ const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
     { key: "status", label: "Status", render: status },
   ],
   trivia: [
-    { key: "position", label: "#", render: (value) => value ?? "—" },
-    { key: "question", label: "Question" },
-    { key: "topic", label: "Topic" },
-    { key: "difficulty", label: "Difficulty" },
-    { key: "validation_status", label: "Validation", render: status },
-    { key: "status", label: "Status", render: status },
-    { key: "published_at", label: "Published", render: date },
-    { key: "created_at", label: "Created", render: date },
+    {
+      key: "source",
+      label: "Source",
+      render: (value) => (
+        <span className={cn("badge", value === "ai" ? "badge-blue" : "badge-green")}>
+          {value === "ai" ? "AI" : "Manual"}
+        </span>
+      ),
+    },
+    { key: "questionCount", label: "Questions" },
+    { key: "createdAt", label: "Created", render: dateTime },
+    { key: "validSummary", label: "Validation" },
+    { key: "statusSummary", label: "Status", render: (value) => status(value) },
+    {
+      key: "rewardAttached",
+      label: "Reward",
+      render: (value) => (
+        <span className={cn("badge", value ? "badge-green" : "badge-blue")}>
+          {value ? "Attached" : "None"}
+        </span>
+      ),
+    },
   ],
   forecasts: [
     { key: "model_key", label: "Model" },
@@ -427,7 +442,11 @@ function PeriodWorkspace() {
   const [showCreate, setShowCreate] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const triviaBatch =
+    (payload.data ?? []).find((row: Row) => row.batchId === triviaBatchId) ??
+    null;
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -475,6 +494,7 @@ function PeriodWorkspace() {
     setQuery("");
     setShowCreate(false);
     setShowExport(false);
+    setTriviaBatchId(null);
     setMessage(null);
   }, [activeTab]);
 
@@ -774,41 +794,8 @@ function PeriodWorkspace() {
     if (activeTab === "trivia")
       return [
         {
-          label: "Send to review",
-          onClick: (row) =>
-            mutate(
-              {
-                action: "update_trivia_question_status",
-                id: row.id,
-                status: "review",
-              },
-              "Question sent to review.",
-            ),
-        },
-        {
-          label: "Publish as reviewed",
-          onClick: (row) =>
-            mutate(
-              {
-                action: "update_trivia_question_status",
-                id: row.id,
-                status: "published",
-              },
-              "Question validated and published for its scheduled event.",
-            ),
-        },
-        {
-          label: "Archive",
-          danger: true,
-          onClick: (row) =>
-            mutate(
-              {
-                action: "update_trivia_question_status",
-                id: row.id,
-                status: "archived",
-              },
-              "Question archived.",
-            ),
+          label: "View questions",
+          onClick: (row) => setTriviaBatchId(row.batchId),
         },
       ];
     if (activeTab === "forecasts")
@@ -1177,13 +1164,21 @@ function PeriodWorkspace() {
                 externalPage={payload.pagination?.page ?? page}
                 externalTotalPages={payload.pagination?.totalPages ?? 1}
                 onPageChange={setPage}
-                getRowId={(row, index) => row.id ?? `${activeTab}-${index}`}
+                getRowId={(row, index) =>
+                  row.batchId ?? row.id ?? `${activeTab}-${index}`
+                }
                 rowActions={rowActions}
               />
             </div>
           </div>
         )}
       </section>
+      <TriviaBatchModal
+        batch={triviaBatch}
+        mutate={mutate}
+        saving={saving}
+        onClose={() => setTriviaBatchId(null)}
+      />
     </div>
   );
 }
@@ -1453,6 +1448,172 @@ function TriviaOperations({
         </div>
       </section>
     </div>
+  );
+}
+
+function TriviaBatchModal({
+  batch,
+  mutate,
+  saving,
+  onClose,
+}: {
+  batch: Row | null;
+  mutate: (body: any, message: string) => Promise<void>;
+  saving: boolean;
+  onClose: () => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [batch?.batchId]);
+
+  if (!batch) return null;
+  const questions: Row[] = batch.questions ?? [];
+  const allIds = questions.map((question) => question.id);
+
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const bulkStatus = (ids: string[], nextStatus: string, message: string) =>
+    mutate(
+      { action: "bulk_update_trivia_question_status", ids, status: nextStatus },
+      message,
+    );
+
+  return (
+    <Modal
+      isOpen={Boolean(batch)}
+      onClose={onClose}
+      title={`${batch.source === "ai" ? "AI-generated" : "Manual"} batch — ${questions.length} question${questions.length === 1 ? "" : "s"}`}
+      footer={
+        <div className="flex w-full flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={saving || !selectedIds.size}
+              onClick={() =>
+                bulkStatus(
+                  [...selectedIds],
+                  "review",
+                  "Selected questions sent to review.",
+                )
+              }
+            >
+              Submit selected for review
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={saving || !selectedIds.size}
+              onClick={() =>
+                bulkStatus(
+                  [...selectedIds],
+                  "published",
+                  "Selected questions marked ready.",
+                )
+              }
+            >
+              Mark selected as ready
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={saving || !selectedIds.size}
+              onClick={() =>
+                bulkStatus(
+                  [...selectedIds],
+                  "archived",
+                  "Selected questions archived.",
+                )
+              }
+            >
+              Archive selected
+            </button>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            disabled={saving || !allIds.length}
+            onClick={() =>
+              bulkStatus(
+                allIds,
+                "published",
+                "All questions in this batch marked ready.",
+              )
+            }
+          >
+            Mark all as ready
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-3">
+        {questions.map((question) => (
+          <div
+            key={question.id}
+            className="rounded-lg border border-slate-200 p-3"
+          >
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={selectedIds.has(question.id)}
+                onChange={() => toggle(question.id)}
+                aria-label={`Select question: ${question.question}`}
+              />
+              <div className="flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  {status(question.status)}
+                  <span className="text-xs text-slate-500">
+                    validation: {question.validation_status}
+                  </span>
+                  {question.position != null && (
+                    <span className="text-xs text-slate-400">
+                      #{question.position}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm font-medium">{question.question}</p>
+                <ul className="mt-1 space-y-0.5 text-xs text-slate-600">
+                  {(question.options ?? []).map(
+                    (option: string, index: number) => (
+                      <li
+                        key={index}
+                        className={cn(
+                          index === question.correct_option &&
+                            "font-semibold text-emerald-700",
+                        )}
+                      >
+                        {String.fromCharCode(65 + index)}. {option}
+                        {index === question.correct_option ? " ✓" : ""}
+                      </li>
+                    ),
+                  )}
+                </ul>
+                {question.explanation && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    {question.explanation}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+        {!questions.length && (
+          <p className="text-sm text-slate-500">
+            This batch has no questions.
+          </p>
+        )}
+      </div>
+    </Modal>
   );
 }
 

@@ -81,6 +81,11 @@ const WriteSchema = z.discriminatedUnion("action", [
     status: z.enum(["draft", "review", "published", "archived"]),
   }),
   z.object({
+    action: z.literal("bulk_update_trivia_question_status"),
+    ids: z.array(z.string().uuid()).min(1).max(50),
+    status: z.enum(["draft", "review", "published", "archived"]),
+  }),
+  z.object({
     action: z.literal("review_safety"),
     id: z.string().uuid(),
     resolution: z.enum(["in_review", "escalated", "resolved", "dismissed"]),
@@ -250,14 +255,55 @@ export async function GET(request: NextRequest) {
 
   if (tab === "trivia") {
     const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }] = await Promise.all([
-      admin.from("period_trivia_questions").select("id,event_id,position,topic,question,difficulty,status,validation_status,ai_job_id,source_refs,reviewed_by,published_at,created_at").order("created_at", { ascending: false }).limit(1000),
+      admin.from("period_trivia_questions").select("id,event_id,position,topic,question,options,correct_option,explanation,difficulty,status,validation_status,ai_job_id,manual_batch_id,source_refs,reviewed_by,published_at,created_by,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").gte("submitted_at", new Date(Date.now() - 30 * 86400000).toISOString()).limit(5000),
       admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load trivia" }, { status: 500 });
-    const rows = (questions ?? []).filter((row) => (!status || row.status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
+
+    // One row per question is unreadable once a batch has 10 rows in it --
+    // group by generation session instead: AI batches share ai_job_id
+    // (set together, in one request); manual batches share manual_batch_id
+    // (the rolling 1-hour window in create_trivia_question above). Any
+    // question with neither (legacy rows from before batching existed)
+    // falls back to being its own single-question batch.
+    const eventById = new Map((events ?? []).map((event) => [event.id, event]));
+    type QuestionRow = NonNullable<typeof questions>[number];
+    const batches = new Map<string, { batchId: string; source: "manual" | "ai"; createdAt: string; eventId: string | null; questions: QuestionRow[] }>();
+    for (const question of questions ?? []) {
+      const batchId = question.ai_job_id ?? question.manual_batch_id ?? question.id;
+      const existing = batches.get(batchId);
+      if (existing) {
+        existing.questions.push(question);
+        if (question.created_at < existing.createdAt) existing.createdAt = question.created_at;
+        if (!existing.eventId && question.event_id) existing.eventId = question.event_id;
+      } else {
+        batches.set(batchId, { batchId, source: question.ai_job_id ? "ai" : "manual", createdAt: question.created_at, eventId: question.event_id ?? null, questions: [question] });
+      }
+    }
+    const batchRows = [...batches.values()].map((batch) => {
+      const statusCounts = batch.questions.reduce<Record<string, number>>((acc, q) => { acc[q.status] = (acc[q.status] ?? 0) + 1; return acc; }, {});
+      const validCount = batch.questions.filter((q) => q.validation_status === "valid").length;
+      const event = batch.eventId ? eventById.get(batch.eventId) : null;
+      return {
+        batchId: batch.batchId,
+        source: batch.source,
+        createdAt: batch.createdAt,
+        questionCount: batch.questions.length,
+        statusCounts,
+        statusSummary: Object.keys(statusCounts).length === 1 ? Object.keys(statusCounts)[0] : Object.entries(statusCounts).map(([key, count]) => `${count} ${key}`).join(", "),
+        validSummary: `${validCount}/${batch.questions.length}`,
+        eventId: batch.eventId,
+        eventTitle: event?.title ?? null,
+        rewardAttached: Boolean(event?.reward_id),
+        questions: batch.questions,
+      };
+    })
+      .filter((batch) => (!status || Object.keys(batch.statusCounts).includes(status)) && (!query || JSON.stringify(batch).toLowerCase().includes(query)))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
     const answers = (submissions ?? []).reduce((sum, item) => sum + Number(item.question_count), 0);
     const correct = (submissions ?? []).reduce((sum, item) => sum + Number(item.score), 0);
     const maskedLeads = (leads ?? []).map((lead) => {
@@ -269,7 +315,7 @@ export async function GET(request: NextRequest) {
           name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialHandle: `${handle.slice(0, 2)}••••` };
       } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialHandle: "Protected" }; }
     });
-    return NextResponse.json({ ...pageRows(rows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
+    return NextResponse.json({ ...pageRows(batchRows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
   }
 
   if (tab === "forecasts") {
@@ -558,7 +604,20 @@ export async function POST(request: NextRequest) {
       const { count } = await admin.from("period_trivia_questions").select("id", { count: "exact", head: true }).eq("event_id", input.eventId);
       position = (count ?? 0) + 1;
     }
-    const { data, error } = await admin.from("period_trivia_questions").insert({ topic: input.topic, question: input.question, options: input.options, correct_option: input.correctOption, explanation: input.explanation, difficulty: input.difficulty, status: "draft", created_by: user.id, event_id: input.eventId ?? null, position }).select("id").single();
+    // Group manual questions into one reviewable batch: reuse the admin's
+    // most recent manual batch if it was started within the last hour,
+    // otherwise start a new one. AI-generated batches use ai_job_id instead
+    // (set at insert time in /api/ai-hub/period), so this only applies here.
+    const { data: recentBatch } = await admin.from("period_trivia_questions")
+      .select("manual_batch_id")
+      .eq("created_by", user.id)
+      .is("ai_job_id", null)
+      .gte("created_at", new Date(Date.now() - 60 * 60000).toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const manualBatchId = recentBatch?.manual_batch_id ?? crypto.randomUUID();
+    const { data, error } = await admin.from("period_trivia_questions").insert({ topic: input.topic, question: input.question, options: input.options, correct_option: input.correctOption, explanation: input.explanation, difficulty: input.difficulty, status: "draft", created_by: user.id, event_id: input.eventId ?? null, position, manual_batch_id: manualBatchId }).select("id").single();
     if (error) return NextResponse.json({ error: "Unable to create trivia question" }, { status: 500 });
     if (input.eventId && input.rewardId) {
       await admin.from("period_trivia_events").update({ reward_id: input.rewardId }).eq("id", input.eventId);
@@ -600,6 +659,14 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: "Unable to update Trivia question" }, { status: 500 });
     await writeAudit(user.id, `status:${input.status}`, "period_trivia_question", input.id);
     return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "bulk_update_trivia_question_status") {
+    const published = input.status === "published";
+    const { error } = await admin.from("period_trivia_questions").update({ status: input.status, validation_status: published ? "valid" : undefined, reviewed_by: published ? user.id : undefined, published_at: published ? new Date().toISOString() : null }).in("id", input.ids);
+    if (error) return NextResponse.json({ error: "Unable to update Trivia questions" }, { status: 500 });
+    await Promise.all(input.ids.map((id) => writeAudit(user.id, `status:${input.status}`, "period_trivia_question", id)));
+    return NextResponse.json({ ok: true, count: input.ids.length });
   }
 
   if (input.action === "review_safety") {

@@ -8,6 +8,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
 import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
 import { cn } from "@/lib/utils";
+import { useAiJobContext } from "@/stores/ai-job-context";
 
 type Row = Record<string, any>;
 type Scope = "trivia" | "content";
@@ -52,12 +53,12 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
   const [rewards, setRewards] = useState<Row[]>([]);
   const [sourceLinks, setSourceLinks] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
   const [schedulingEvent, setSchedulingEvent] = useState(false);
   const [creatingReward, setCreatingReward] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [lastOutput, setLastOutput] = useState<any>(null);
+  const { runningJobTypes, startJob } = useAiJobContext();
+  const generating = runningJobTypes.has(jobType);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,51 +98,43 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
     setSourceMenus((current) => (current.includes(value) ? current.filter((item) => item !== value) : [...current, value]));
   };
 
-  const generate = async (event: React.FormEvent<HTMLFormElement>) => {
+  const generate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!sourceMenus.length) {
       setError("Select at least one source menu.");
       return;
     }
+    if (generating) return;
     const form = new FormData(event.currentTarget);
-    setGenerating(true);
     setError(null);
     setMessage(null);
-    setLastOutput(null);
-    try {
-      const body: Record<string, unknown> = { jobType, sourceMenus, topic: form.get("topic") || undefined };
-      if (scope === "trivia") {
-        if (jobType === "trivia_generation") {
-          body.difficulty = form.get("difficulty");
-          body.answerCount = Number(form.get("answerCount"));
-          const eventId = form.get("eventId");
-          if (eventId) body.eventId = eventId;
-          const rewardId = form.get("rewardId");
-          if (rewardId) body.rewardId = rewardId;
-        }
-      } else {
-        body.contentFormat = form.get("contentFormat");
-        body.audience = form.get("audience");
-        body.tone = form.get("tone");
-        body.readingLength = form.get("readingLength");
-        body.locale = form.get("locale") || "en";
-        body.suggestionCount = Number(form.get("suggestionCount"));
+    const body: Record<string, unknown> = { jobType, sourceMenus, topic: form.get("topic") || undefined };
+    if (scope === "trivia") {
+      if (jobType === "trivia_generation") {
+        body.difficulty = form.get("difficulty");
+        body.answerCount = Number(form.get("answerCount"));
+        const eventId = form.get("eventId");
+        if (eventId) body.eventId = eventId;
+        const rewardId = form.get("rewardId");
+        if (rewardId) body.rewardId = rewardId;
       }
-      const response = await fetch("/api/ai-hub/period", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "Generation failed");
-      setLastOutput(result);
-      setMessage(`Draft ready for review: ${result.itemCount} item${result.itemCount === 1 ? "" : "s"} generated.`);
-      await load();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Generation failed");
-    } finally {
-      setGenerating(false);
+    } else {
+      body.contentFormat = form.get("contentFormat");
+      body.audience = form.get("audience");
+      body.tone = form.get("tone");
+      body.readingLength = form.get("readingLength");
+      body.locale = form.get("locale") || "en";
+      body.suggestionCount = Number(form.get("suggestionCount"));
     }
+    // Fire-and-forget: the context (mounted at the dashboard layout, above
+    // this page) owns the request from here, so it keeps running and shows
+    // a toast on completion even if the admin navigates away from AI Hub
+    // before it resolves.
+    void startJob({
+      body,
+      label: String(jobType).replaceAll("_", " "),
+      reviewPath: scope === "trivia" ? "/period?tab=trivia" : "/period?tab=content",
+    });
   };
 
   const scheduleEvent = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -341,21 +334,18 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-2">
+          {generating && (
+            <span className="text-xs text-slate-500">
+              Running in the background — you can navigate away, we&apos;ll toast you when it&apos;s done.
+            </span>
+          )}
           <button type="submit" className="btn btn-primary btn-sm" disabled={generating}>
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {generating ? "Generating…" : "Generate draft"}
           </button>
         </div>
       </form>
-
-      {lastOutput && (
-        <div className="card p-4 text-sm text-slate-700">
-          <div className="card-title">{lastOutput.output?.title ?? "Generation result"}</div>
-          <p className="mt-1 text-xs text-slate-500">{lastOutput.output?.rationale}</p>
-          <p className="mt-2">{lastOutput.itemCount} item(s) saved as drafts — review and publish them from the Period Tracker admin tabs.</p>
-        </div>
-      )}
 
       {scope === "trivia" && (
         <div className="grid gap-4 xl:grid-cols-2">
