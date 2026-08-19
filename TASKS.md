@@ -2206,13 +2206,20 @@ not something to silently rewrite mid-Epic-27.
 - [x] **31.7** `[Both]` Tests for the RBAC core: `lib/admin-roles.test.ts`,
   `lib/permissions.test.ts` (see Epic 6.1) + GitHub Actions CI
   (see Epic 6.2).
-- [ ] **31.8** `[Ops]` Apply `20260817_rbac_permission_catalog.sql` and
+- [x] **31.8** `[Ops]` Applied `20260817_rbac_permission_catalog.sql` and
   `20260817_role_vocabulary_fix.sql` to the live Supabase project
-  (both are additive/re-runnable). Until applied, the app degrades
-  gracefully to the static `ROLE_DEFAULTS` mirror, so this doesn't
-  block deploying the admin panel itself. Review legacy
-  `user_profiles.role = 'group_leader'` rows per the migration header
-  before/after applying.
+  (`rhbbxttxnvcziyqzptqs`, 2026-08-19) — this closed a live privilege-
+  escalation hole: `handle_new_user()` had still been accepting `role`
+  straight from signup metadata since the migration had never been run.
+  Applying it surfaced two more gaps, fixed and applied alongside it:
+  `is_platform_admin`/`has_4ol_permission`/`get_effective_admin_permissions`
+  were callable by the unauthenticated `anon` role (this project grants
+  `anon` direct EXECUTE on new functions, so `revoke ... from public`
+  alone didn't cover it — see `20260819_rbac_revoke_anon_execute.sql`),
+  and a ported `is_app_admin()` had a `uuid = text` cast bug caught by
+  Postgres at `CREATE FUNCTION` time before it could apply (see
+  `20260819_backfill_untracked_top_rated_objects.sql`). Legacy
+  `user_profiles.role = 'group_leader'` rows were not present to review.
 
 ---
 
