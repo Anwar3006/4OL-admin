@@ -222,7 +222,7 @@ export default function RolesPermissionsTab() {
           Super Admin bypasses the catalog entirely and is not editable. Per-user grants and
           revokes (below) layer on top of these defaults; revokes always win.
         </p>
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="p-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
           {PERMISSION_RESOURCES.map((resource) => {
             const defs = PERMISSION_CATALOG.filter((p) => p.resource === resource);
             return (
