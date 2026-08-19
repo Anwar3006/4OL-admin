@@ -31,6 +31,7 @@ type DataTableProps<T> = {
   externalTotalPages?: number;
   onPageChange?: (page: number) => void;
   getRowId: (row: T, index: number) => string;
+  onRowClick?: (row: T) => void;
   rowActions?: RowAction<T>[];
   isLoading?: boolean;
 };
@@ -44,6 +45,7 @@ export default function DataTable<T extends Record<string, any>>({
   externalTotalPages,
   onPageChange,
   getRowId,
+  onRowClick,
   rowActions = [],
   isLoading = false,
 }: DataTableProps<T>) {
@@ -76,41 +78,68 @@ export default function DataTable<T extends Record<string, any>>({
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
-            <tr key={getRowId(row, index)} className="border-b last:border-0">
-              {columns.map((column) => (
-                <td key={column.key} className="p-3 align-top">
-                  {column.render ? column.render(row[column.key], row) : (row[column.key] ?? "—")}
-                </td>
-              ))}
-              {rowActions.length > 0 && (
-                <td className="p-3 text-right align-top">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        aria-label="Row actions"
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {rowActions.map((action) => (
-                        <DropdownMenuItem
-                          key={action.label}
-                          onClick={() => action.onClick(row)}
-                          className={cn(action.danger && "text-red-600 focus:text-red-600")}
+          {data.map((row, index) => {
+            const isClickable = !!onRowClick;
+            return (
+              <tr
+                key={getRowId(row, index)}
+                className={cn(
+                  "border-b last:border-0",
+                  isClickable && "cursor-pointer hover:bg-slate-50",
+                )}
+                role={isClickable ? "button" : undefined}
+                tabIndex={isClickable ? 0 : undefined}
+                onClick={() => onRowClick?.(row)}
+                onKeyDown={(event) => {
+                  if (!isClickable) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onRowClick?.(row);
+                  }
+                }}
+              >
+                {columns.map((column) => (
+                  <td key={column.key} className="p-3 align-top">
+                    {column.render
+                      ? column.render(row[column.key], row)
+                      : (row[column.key] ?? "—")}
+                  </td>
+                ))}
+                {rowActions.length > 0 && (
+                  <td
+                    className="p-3 text-right align-top"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          aria-label="Row actions"
                         >
-                          {action.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              )}
-            </tr>
-          ))}
+                          <MoreHorizontal className="size-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {rowActions.map((action) => (
+                          <DropdownMenuItem
+                            key={action.label}
+                            onClick={() => action.onClick(row)}
+                            className={cn(
+                              action.danger &&
+                                "text-red-600 focus:text-red-600",
+                            )}
+                          >
+                            {action.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
           {!data.length && (
             <tr>
               <td colSpan={columns.length + (rowActions.length > 0 ? 1 : 0)} className="p-6 text-center text-slate-500">

@@ -258,7 +258,7 @@ export async function GET(request: NextRequest) {
       admin.from("period_trivia_questions").select("id,event_id,position,topic,question,options,correct_option,explanation,difficulty,status,validation_status,ai_job_id,manual_batch_id,source_refs,reviewed_by,published_at,created_by,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").gte("submitted_at", new Date(Date.now() - 30 * 86400000).toISOString()).limit(5000),
       admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(100),
-      admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
+      admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_platform,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load trivia" }, { status: 500 });
@@ -312,8 +312,8 @@ export async function GET(request: NextRequest) {
         const mobile = decryptLead(lead.mobile_ciphertext);
         const handle = decryptLead(lead.social_handle_ciphertext);
         return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined,
-          name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialHandle: `${handle.slice(0, 2)}••••` };
-      } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialHandle: "Protected" }; }
+          name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialPlatform: lead.social_platform ?? "Social", socialHandle: `${handle.slice(0, 2)}••••` };
+      } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialPlatform: lead.social_platform ?? "Social", socialHandle: "Protected" }; }
     });
     return NextResponse.json({ ...pageRows(batchRows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
   }

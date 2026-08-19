@@ -116,7 +116,7 @@ export async function GET() {
   const [{ data: jobs }, { data: events }, { data: leads }, { count: sourceLinks }, { data: rewards }] = await Promise.all([
     admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,model_key,prompt_version,validation,error_code,created_at,completed_at").order("created_at", { ascending: false }).limit(50),
     admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(20),
-    admin.from("period_trivia_leads").select("id,event_id,user_id,status,acquisition_source,campaign_code,created_at,last_contacted_at").order("created_at", { ascending: false }).limit(100),
+    admin.from("period_trivia_leads").select("id,event_id,user_id,status,social_platform,acquisition_source,campaign_code,created_at,last_contacted_at").order("created_at", { ascending: false }).limit(100),
     admin.from("period_content_sources").select("id", { count: "exact", head: true }),
     admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
   ]);

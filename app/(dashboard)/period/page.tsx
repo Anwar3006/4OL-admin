@@ -791,13 +791,7 @@ function PeriodWorkspace() {
             ),
         },
       ];
-    if (activeTab === "trivia")
-      return [
-        {
-          label: "View questions",
-          onClick: (row) => setTriviaBatchId(row.batchId),
-        },
-      ];
+    if (activeTab === "trivia") return [];
     if (activeTab === "forecasts")
       return [
         {
@@ -1167,6 +1161,13 @@ function PeriodWorkspace() {
                 getRowId={(row, index) =>
                   row.batchId ?? row.id ?? `${activeTab}-${index}`
                 }
+                onRowClick={
+                  activeTab === "trivia"
+                    ? (row) => {
+                        if (row.batchId) setTriviaBatchId(row.batchId);
+                      }
+                    : undefined
+                }
                 rowActions={rowActions}
               />
             </div>
@@ -1420,7 +1421,15 @@ function TriviaOperations({
                 <tr key={lead.id} className="border-b">
                   <td className="p-3">{lead.name}</td>
                   <td className="p-3">{lead.mobile}</td>
-                  <td className="p-3">{lead.socialHandle}</td>
+                  <td className="p-3">
+                    <span className="font-medium text-slate-700">
+                      {lead.socialPlatform ?? "Social"}
+                    </span>
+                    <br />
+                    <span className="text-xs text-slate-500">
+                      {lead.socialHandle}
+                    </span>
+                  </td>
                   <td className="p-3">
                     <code className="text-xs">
                       {lead.user_id ? shortId(lead.user_id) : "Guest"}
