@@ -29,6 +29,7 @@ create or replace function public.request_user_id()
 returns text
 language sql
 stable
+set search_path = public
 as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::text
 $$;
@@ -43,7 +44,7 @@ as $$
   select exists (
     select 1
     from public.user_profiles up
-    where up.user_id = public.request_user_id()
+    where up.user_id::text = public.request_user_id()
       and up.role in ('admin', 'super_admin')
   );
 $$;
