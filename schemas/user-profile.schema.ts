@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ROLE_ENUM, SEX_ENUM, USER_TYPE_ENUM } from "../types/formInput";
+import { ADMIN_ROLES } from "../lib/admin-roles";
 
 // User registration schema - single source of truth
 // For input validation
@@ -49,14 +50,14 @@ export type UserLoginSchema = z.infer<typeof userLoginSchema>;
 
 export const adminInviteSchema = z.object({
   email: z.email("Invalid email address"),
-  role: z.enum(ROLE_ENUM),
+  role: z.enum(ADMIN_ROLES),
   token: z.string(),
   expires_at: z.date(),
 });
 export type TAdminInviteSchema = z.infer<typeof adminInviteSchema>;
 
 export const adminInviteInputSchema = z.object({
-  role: z.enum(ROLE_ENUM),
+  role: z.enum(ADMIN_ROLES),
   email: z.email(),
 });
 export type TAdminInviteInputSchema = z.infer<typeof adminInviteInputSchema>;
@@ -74,7 +75,7 @@ export type TUserProfile = {
   sex: "male" | "female" | "other";
   dob: string;
   user_type: "customer" | "business_provider" | "both";
-  role: "user" | "registrar" | "admin" | "super_admin";
+  role: "user" | (typeof ADMIN_ROLES)[number];
   status: "active" | "pending" | "inactive" | "suspended";
   phone_number: string;
   image: string;
@@ -90,7 +91,7 @@ export type TUserProfileWithUser = {
   sex: "male" | "female" | "other";
   dob: string;
   userType: "customer" | "business_provider" | "both";
-  role: "user" | "registrar" | "admin" | "super_admin";
+  role: "user" | (typeof ADMIN_ROLES)[number];
   status: "active" | "pending" | "inactive" | "suspended";
   phoneNumber: string;
 };

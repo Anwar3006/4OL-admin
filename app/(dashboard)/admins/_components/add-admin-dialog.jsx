@@ -8,7 +8,7 @@ import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { useAddAdminDialog } from "@/stores/dialog-store";
 import { adminInviteInputSchema } from "@/schemas/user-profile.schema";
-import { ROLE_OPTIONS } from "@/types/formInput";
+import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
 // @ts-expect-error package exports typing issue in this repo
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
@@ -74,7 +74,7 @@ const AddAdminDialog = () => {
             <CustomSelect
               name="role"
               label="Role"
-              options={ROLE_OPTIONS}
+              options={ADMIN_ROLE_OPTIONS}
               control={form.control}
               description="Role to assign to the invited admin."
             />

@@ -30,3 +30,21 @@ export type AdminRole = (typeof ADMIN_ROLES)[number];
 export function isAdminRole(role: unknown): role is AdminRole {
   return typeof role === "string" && (ADMIN_ROLES as readonly string[]).includes(role);
 }
+
+/** Mirrors admin_platform_roles.label from the RBAC migration seed. */
+export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Operations Admin",
+  registrar: "Registrar",
+  content_manager: "Content Manager",
+  moderator: "Moderator",
+  support_agent: "Support Agent",
+  finance_admin: "Finance Admin",
+  compliance_officer: "Compliance Officer",
+  analyst: "Analyst",
+};
+
+export const ADMIN_ROLE_OPTIONS = ADMIN_ROLES.map((role) => ({
+  value: role,
+  label: ADMIN_ROLE_LABELS[role],
+}));

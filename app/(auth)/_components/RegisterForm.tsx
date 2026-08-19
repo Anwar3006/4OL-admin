@@ -15,7 +15,8 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomSelect from "@/components/CustomSelect";
 import CustomDatePicker from "@/components/CustomDatePicker";
-import { ROLE_OPTIONS, SEX_OPTIONS } from "@/types/formInput";
+import { PUBLIC_ROLE_OPTIONS, SEX_OPTIONS } from "@/types/formInput";
+import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -177,10 +178,10 @@ const RegisterForm = ({
           <CustomSelect
             name="role"
             label="Your Role"
-            options={ROLE_OPTIONS}
+            options={isInvited ? ADMIN_ROLE_OPTIONS : PUBLIC_ROLE_OPTIONS}
             control={form.control}
             description="Assigned by the Administrator."
-            disabled={isInvited}
+            disabled
           />
 
           <div className="grid grid-cols-2 gap-5 2xl:gap-8">

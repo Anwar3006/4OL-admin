@@ -15,11 +15,12 @@ import ReportsTab from "./_components/ReportsTab";
 import { cn } from "@/lib/utils";
 import { useAddAdminDialog } from "@/stores/dialog-store";
 import AddAdminDialog from "./_components/add-admin-dialog";
+import { usePermissionContext } from "@/stores/permission-context";
 
 const AdminTabs = [
   { id: "all", label: "👥 All Admins" },
   { id: "invitations", label: "✉️ Invitations" },
-  { id: "roles", label: "🔑 Roles & Permissions" },
+  { id: "roles", label: "🔑 Roles & Permissions", permission: "roles.view" },
   { id: "logs", label: "📋 Activity Logs" },
   { id: "security", label: "🔐 Security Center" },
   { id: "reports", label: "📊 Reports" },
@@ -29,6 +30,10 @@ const AdminsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const addAdmin = useAddAdminDialog();
+  const { hasPermission } = usePermissionContext();
+  // Mirrors the sidebar's own RBAC filtering (see NewAdminDashboardShell.tsx)
+  // now that Roles & Permissions lives only as a tab here, not its own nav item.
+  const visibleTabs = AdminTabs.filter((tab) => !tab.permission || hasPermission(tab.permission));
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
 
@@ -37,6 +42,12 @@ const AdminsPage = () => {
       setActiveTab(tabParam);
     }
   }, [tabParam, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "roles" && !hasPermission("roles.view")) {
+      setActiveTab("all");
+    }
+  }, [activeTab, hasPermission]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -52,7 +63,9 @@ const AdminsPage = () => {
         subtitle="Manage admin accounts, roles, permissions and platform security"
       >
         <button className="btn btn-secondary">🛡️ SA Commands</button>
-        <button className="btn btn-secondary">🔑 Manage Roles</button>
+        {hasPermission("roles.view") && (
+          <button className="btn btn-secondary" onClick={() => handleTabChange("roles")}>🔑 Manage Roles</button>
+        )}
         <button className="btn btn-primary text-white" onClick={() => addAdmin.open()}>✉️ Invite Admin</button>
       </PageHeader>
 
@@ -73,7 +86,7 @@ const AdminsPage = () => {
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
           >
-            {AdminTabs.map((tab) => (
+            {visibleTabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}

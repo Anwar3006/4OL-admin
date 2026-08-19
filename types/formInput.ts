@@ -1,4 +1,5 @@
 import { BusinessDay } from "../schemas/facility-profile.schema";
+import { ADMIN_ROLES, ADMIN_ROLE_OPTIONS } from "../lib/admin-roles";
 
 // Define the sex options
 export const SEX_OPTIONS = [
@@ -9,13 +10,19 @@ export const SEX_OPTIONS = [
 // For database enum
 export const SEX_ENUM = ["male", "female", "other"] as const;
 
-export const ROLE_OPTIONS = [
-  { value: "user", label: "User" },
-  { value: "registrar", label: "Registrar" },
-  { value: "admin", label: "Admin" },
-  { value: "super_admin", label: "Super Admin" },
-];
-export const ROLE_ENUM = ["user", "registrar", "admin", "super_admin"] as const;
+// Full platform role vocabulary ("user" plus every admin role) — needed so
+// the registration form's schema can accept an invited admin role. This is
+// NOT the list to render as public, user-selectable options; see
+// PUBLIC_ROLE_OPTIONS below.
+export const ROLE_OPTIONS = [{ value: "user", label: "User" }, ...ADMIN_ROLE_OPTIONS];
+export const ROLE_ENUM = ["user", ...ADMIN_ROLES] as const;
+
+// What a not-yet-invited visitor is allowed to pick on the public
+// registration form: "user" only. Platform admin roles are assigned solely
+// through the admin invite flow (RegisterForm renders this field disabled
+// either way) — never render ADMIN_ROLE_OPTIONS as public, selectable
+// choices, or a public signup could request a platform role directly.
+export const PUBLIC_ROLE_OPTIONS = [{ value: "user", label: "User" }];
 
 export const USER_TYPE_OPTIONS = [
   { value: "customer", label: "Customer" },

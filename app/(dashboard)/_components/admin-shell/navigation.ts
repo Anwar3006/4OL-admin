@@ -84,12 +84,6 @@ export const dashboardNavSections: DashboardNavSection[] = [
     title: "Administration",
     items: [
       { title: "Admins", href: "/admins", icon: "👥", permission: "admins.view" },
-      {
-        title: "Roles & Permissions",
-        href: "/admins?tab=roles",
-        icon: "🛡️",
-        permission: "roles.view",
-      },
       { title: "Users", href: "/users", icon: "👤", permission: "users.view" },
       { title: "IBP Businesses", href: "/ibp", icon: "🏢", permission: "ibp.view" },
       { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },

@@ -2,10 +2,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import type {
-  TAdminInviteSchema,
-  TUserProfile,
-} from "@/schemas/user-profile.schema";
+import type { TAdminInviteSchema } from "@/schemas/user-profile.schema";
 import { nanoid } from "nanoid";
 import sgMail from "@sendgrid/mail";
 import { render } from "@react-email/render";
@@ -151,7 +148,7 @@ export async function inviteAdminAction(email: string, role: string) {
 
     const invite = await createAdminInvite({
       email,
-      role: role as TUserProfile["role"],
+      role: role as TAdminInviteSchema["role"],
       token,
       expires_at: expiresAt,
       invited_by: sessionUser.id,
