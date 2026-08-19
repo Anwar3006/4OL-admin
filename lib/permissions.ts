@@ -244,3 +244,20 @@ export function hasPermission(subject: PermissionSubject, key: string): boolean 
 export function isValidPermissionKey(key: string): boolean {
   return PERMISSION_KEYS.includes(key);
 }
+
+/**
+ * True only when a Supabase/Postgres error means the RBAC migration
+ * (20260817_rbac_permission_catalog.sql) hasn't been applied yet — the one
+ * case where degrading to the static ROLE_DEFAULTS mirror is safe. Any other
+ * error (timeout, dropped connection, transient DB issue) must fail closed:
+ * the mirror has no concept of DB-side per-user overrides, so silently
+ * falling back to it on an arbitrary error could re-grant a permission that
+ * was explicitly revoked in the database.
+ */
+export function isRbacMigrationMissing(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  // 42883 = undefined_function, 42P01 = undefined_table (Postgres error codes)
+  if (error.code === "42883" || error.code === "42P01") return true;
+  const message = error.message?.toLowerCase() ?? "";
+  return message.includes("could not find the function") || message.includes("does not exist");
+}

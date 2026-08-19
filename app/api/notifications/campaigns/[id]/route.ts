@@ -3,8 +3,6 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_WRITE_ROLES = ["admin", "super_admin"];
-
 const ActionSchema = z.object({
   action: z.enum(["update", "submit", "approve", "reject", "revise", "send", "cancel"]),
   title: z.string().trim().min(1).max(160).optional(),
@@ -15,11 +13,6 @@ const ActionSchema = z.object({
   segmentFilter: z.record(z.string(), z.unknown()).optional(),
   rejectionReason: z.string().trim().max(500).optional(),
 });
-
-async function getRole(admin: ReturnType<typeof getSupabaseAdmin>, userId: string) {
-  const { data } = await admin.from("user_profiles").select("role").eq("user_id", userId).maybeSingle();
-  return data?.role ?? null;
-}
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdminApiUser("notifications.view");
@@ -85,15 +78,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const admin = getSupabaseAdmin();
-  const role = await getRole(admin, user.id);
-  const canWrite = role ? ADMIN_WRITE_ROLES.includes(role) : false;
-
-  if (!canWrite) {
-    return NextResponse.json(
-      { error: "Only Admin or Super Admin can manage campaigns." },
-      { status: 403 },
-    );
-  }
 
   const { data: existing } = await admin
     .from("notification_campaigns")

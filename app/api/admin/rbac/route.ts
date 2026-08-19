@@ -72,25 +72,16 @@ export async function PUT(req: NextRequest) {
   const admin = getSupabaseAdmin();
   const { role, permissionKeys } = parsed.data;
 
-  const { error: deleteError } = await admin
-    .from("admin_role_permissions")
-    .delete()
-    .eq("role", role);
+  // Delete-then-insert inside one plpgsql function so a mid-write failure
+  // can't leave the role with zero permissions (see 20260819_atomic_role_defaults_replace.sql).
+  const { error: replaceError } = await admin.rpc("replace_role_permissions", {
+    p_role: role,
+    p_permission_keys: permissionKeys,
+  });
 
-  if (deleteError) {
-    console.error("[admin/rbac PUT] delete error:", deleteError.message);
+  if (replaceError) {
+    console.error("[admin/rbac PUT] replace_role_permissions error:", replaceError.message);
     return NextResponse.json({ error: "Failed to update role defaults." }, { status: 500 });
-  }
-
-  if (permissionKeys.length > 0) {
-    const { error: insertError } = await admin
-      .from("admin_role_permissions")
-      .insert(permissionKeys.map((permission_key) => ({ role, permission_key })));
-
-    if (insertError) {
-      console.error("[admin/rbac PUT] insert error:", insertError.message);
-      return NextResponse.json({ error: "Failed to update role defaults." }, { status: 500 });
-    }
   }
 
   await admin.from("activity_logs").insert({

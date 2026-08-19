@@ -15,7 +15,7 @@
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { SUPER_ADMIN_ROLE, isAdminRole, type AdminRole } from "@/lib/admin-roles";
-import { ROLE_DEFAULTS } from "@/lib/permissions";
+import { ROLE_DEFAULTS, isRbacMigrationMissing } from "@/lib/permissions";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -122,13 +122,20 @@ async function checkPermission(ctx: AdminApiContext, permission: string): Promis
   });
 
   if (error) {
-    // RPC absent (migration not applied yet) — degrade to the static mirror.
-    console.warn(
-      `[admin-api-auth] has_4ol_permission RPC unavailable (${error.message}); ` +
-        "falling back to ROLE_DEFAULTS. Apply 20260817_rbac_permission_catalog.sql.",
-    );
-    const defaults = ROLE_DEFAULTS[ctx.role as Exclude<AdminRole, typeof SUPER_ADMIN_ROLE>] ?? [];
-    return defaults.includes(permission);
+    if (isRbacMigrationMissing(error)) {
+      // RPC absent (migration not applied yet) — degrade to the static mirror.
+      console.warn(
+        `[admin-api-auth] has_4ol_permission RPC unavailable (${error.message}); ` +
+          "falling back to ROLE_DEFAULTS. Apply 20260817_rbac_permission_catalog.sql.",
+      );
+      const defaults = ROLE_DEFAULTS[ctx.role as Exclude<AdminRole, typeof SUPER_ADMIN_ROLE>] ?? [];
+      return defaults.includes(permission);
+    }
+    // Any other failure (timeout, dropped connection, ...) must fail closed —
+    // the static mirror can't see DB-side revokes, so silently degrading to
+    // it here could re-grant an explicitly revoked permission.
+    console.error(`[admin-api-auth] has_4ol_permission RPC failed (${error.message}); denying.`);
+    return false;
   }
 
   return data === true;
@@ -150,11 +157,15 @@ export async function getSessionPermissions(
   });
 
   if (error) {
-    console.warn(
-      `[admin-api-auth] get_effective_admin_permissions RPC unavailable (${error.message}); ` +
-        "falling back to ROLE_DEFAULTS.",
-    );
-    return ROLE_DEFAULTS[ctx.role as Exclude<AdminRole, typeof SUPER_ADMIN_ROLE>] ?? [];
+    if (isRbacMigrationMissing(error)) {
+      console.warn(
+        `[admin-api-auth] get_effective_admin_permissions RPC unavailable (${error.message}); ` +
+          "falling back to ROLE_DEFAULTS.",
+      );
+      return ROLE_DEFAULTS[ctx.role as Exclude<AdminRole, typeof SUPER_ADMIN_ROLE>] ?? [];
+    }
+    console.error(`[admin-api-auth] get_effective_admin_permissions RPC failed (${error.message}); denying.`);
+    return [];
   }
 
   return (data ?? []).map((row: { key: string }) => row.key);
