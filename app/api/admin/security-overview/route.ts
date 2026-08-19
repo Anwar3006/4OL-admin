@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
+import { ADMIN_ROLES } from "@/lib/admin-roles";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const ADMIN_ROLES = ["super_admin", "admin", "registrar"];
-
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("security.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
 

@@ -1,13 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isAdminRole } from "@/lib/admin-roles";
 
 /**
  * Roles allowed into the admin web app. Everyone else — critically, the
  * "customer" role used by the mobile app — is bounced back to /login even
  * if they hold a perfectly valid Supabase session (e.g. because they're
  * already logged into the mobile app in the same browser).
+ *
+ * The list itself lives in lib/admin-roles.ts (single source of truth) so
+ * this proxy can never drift from the permission catalog.
  */
-const ADMIN_ROLES = ["super_admin", "admin", "registrar"];
 
 // Routes that must stay reachable without a session: the auth flow itself,
 // plus a couple of genuinely public pages.
@@ -100,7 +103,7 @@ export async function proxy(request: NextRequest) {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!profile?.role || !ADMIN_ROLES.includes(profile.role)) {
+  if (!profile?.role || !isAdminRole(profile.role)) {
     return denyToLogin("Forbidden");
   }
 

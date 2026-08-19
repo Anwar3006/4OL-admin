@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-
-const ADMIN_WRITE_ROLES = ["admin", "super_admin"];
 
 const ActionSchema = z.object({
   action: z.enum(["update", "submit", "approve", "reject", "revise", "send", "cancel"]),
@@ -16,16 +14,9 @@ const ActionSchema = z.object({
   rejectionReason: z.string().trim().max(500).optional(),
 });
 
-async function getRole(admin: ReturnType<typeof getSupabaseAdmin>, userId: string) {
-  const { data } = await admin.from("user_profiles").select("role").eq("user_id", userId).maybeSingle();
-  return data?.role ?? null;
-}
-
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
   const admin = getSupabaseAdmin();
@@ -73,10 +64,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.edit");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const { id } = await params;
   const parsed = ActionSchema.safeParse(await req.json().catch(() => null));
@@ -88,15 +78,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const admin = getSupabaseAdmin();
-  const role = await getRole(admin, user.id);
-  const canWrite = role ? ADMIN_WRITE_ROLES.includes(role) : false;
-
-  if (!canWrite) {
-    return NextResponse.json(
-      { error: "Only Admin or Super Admin can manage campaigns." },
-      { status: 403 },
-    );
-  }
 
   const { data: existing } = await admin
     .from("notification_campaigns")

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const UpdateTemplateSchema = z.object({
@@ -11,10 +11,8 @@ const UpdateTemplateSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.edit");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
   const parsed = UpdateTemplateSchema.safeParse(await req.json().catch(() => null));
@@ -46,10 +44,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.delete");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
   const admin = getSupabaseAdmin();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const MoveTaskSchema = z.object({
@@ -9,10 +9,9 @@ const MoveTaskSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("tasks.edit");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const { id } = await params;
   const parsed = MoveTaskSchema.safeParse(await req.json().catch(() => null));

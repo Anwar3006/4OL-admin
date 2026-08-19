@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 function getClientMeta(req: NextRequest) {
@@ -13,10 +13,9 @@ const HeartbeatSchema = z.object({ sessionToken: z.string().min(1) });
 const EndSchema = z.object({ sessionToken: z.string().min(1) });
 
 export async function POST(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser();
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const { ip, userAgent } = getClientMeta(req);
   const admin = getSupabaseAdmin();
@@ -36,10 +35,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser();
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const parsed = HeartbeatSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -60,10 +58,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser();
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const parsed = EndSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

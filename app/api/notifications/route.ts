@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const CampaignSchema = z.object({
@@ -14,10 +14,8 @@ const CampaignSchema = z.object({
 });
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
   const [notificationsResult, campaignsResult, templatesResult, rulesResult, analyticsResult] =
@@ -99,10 +97,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("notifications.create");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const parsed = CampaignSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
