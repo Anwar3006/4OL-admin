@@ -163,6 +163,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
         icon: "🔔",
         permission: "notifications.view",
       },
+      {
+        title: "Devices",
+        href: "/notifications/devices",
+        icon: "📱",
+        permission: "notifications.view",
+      },
     ],
   },
   {

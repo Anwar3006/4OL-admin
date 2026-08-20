@@ -407,3 +407,112 @@ export async function getUsers(params: {
     analytics,
   } as any;
 }
+
+// ── setUserAuthBan ────────────────────────────────────────────────────────────
+/**
+ * Revokes (or restores) a user's ability to sign in, at the Supabase Auth layer.
+ *
+ * This is the only place that actually works. The delete-account flow used to
+ * "ban" by setting `banned: true` on the BetterAuth `user` table — a table
+ * nothing reads any more — so approved deletion requests never revoked access
+ * despite the mobile app promising "your login access will be immediately
+ * revoked". Setting `user_profiles.status = 'banned'` alongside it isn't
+ * enough either: that status is only consulted by the admin panel
+ * (lib/admin-api-auth.ts, PermissionsProvider), never by the mobile client.
+ *
+ * `ban_duration` is enforced by GoTrue itself, so it blocks every client —
+ * mobile included — and invalidates existing sessions.
+ *
+ * Requires service-role, hence a server action rather than a client-side call.
+ */
+export async function setUserAuthBan(targetId: string, banned: boolean) {
+  const user = await getSessionUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const admin = getSupabaseAdmin();
+
+  const { data: callerProfile, error: callerError } = await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
+    return { error: "Unauthorized: Admin access required" };
+  }
+
+  // GoTrue expects a Go duration string; "none" lifts the ban. There is no
+  // "forever", so this is ~100 years — the grace period is reversible, and a
+  // completed deletion removes the account outright, so nothing relies on the
+  // ban outliving that.
+  const { error } = await admin.auth.admin.updateUserById(targetId, {
+    ban_duration: banned ? "876000h" : "none",
+  });
+
+  if (error) {
+    console.error("[setUserAuthBan] Supabase error:", error.message);
+    return { error: error.message };
+  }
+
+  return { error: null };
+}
+
+// ── getDeviceAnalytics ────────────────────────────────────────────────────────
+
+export interface DevicePlatformStat {
+  platform: string;
+  devices: number;
+  users: number;
+}
+
+export interface DeviceModelStat {
+  platform: string;
+  device_name: string;
+  devices: number;
+  users: number;
+}
+
+export interface DeviceAnalytics {
+  total_devices: number;
+  total_users: number;
+  active_30d: number;
+  multi_device_users: number;
+  by_platform: DevicePlatformStat[];
+  by_model: DeviceModelStat[];
+  devices_per_user: { device_count: number; users: number }[];
+}
+
+/**
+ * Aggregate view of the push-device registry (public.user_push_tokens).
+ *
+ * Goes through the get_device_analytics() RPC rather than selecting the table,
+ * so the browser never receives raw Expo push tokens just to draw a chart.
+ */
+export async function getDeviceAnalytics(): Promise<{
+  data: DeviceAnalytics | null;
+  error: string | null;
+}> {
+  const user = await getSessionUser();
+  if (!user) return { data: null, error: "Unauthorized" };
+
+  const admin = getSupabaseAdmin();
+
+  const { data: callerProfile, error: callerError } = await admin
+    .from("user_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (callerError || !["super_admin", "admin"].includes(callerProfile?.role)) {
+    return { data: null, error: "Unauthorized: Admin access required" };
+  }
+
+  const { data, error } = await admin.rpc("get_device_analytics");
+
+  if (error) {
+    console.error("[getDeviceAnalytics] Supabase error:", error.message);
+    return { data: null, error: error.message };
+  }
+
+  return { data: data as DeviceAnalytics, error: null };
+}

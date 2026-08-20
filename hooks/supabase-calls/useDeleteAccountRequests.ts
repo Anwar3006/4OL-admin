@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
+import { setUserAuthBan } from "@/actions/user.actions";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -197,16 +198,40 @@ export const useUpdateDeleteRequestStatus = () => {
       // grace period elapses (expire_delete_account_grace_periods()) —
       // not here, since grace_period is meant to be a reversible window.
       if (newStatus === "grace_period") {
+        // setUserAuthBan hits GoTrue's own ban_duration, which blocks every
+        // client including mobile. The previous version wrote `banned: true`
+        // to the BetterAuth `user` table, which nothing reads — so access was
+        // never actually revoked. user_profiles.status is still set because
+        // the admin panel reads it (lib/admin-api-auth.ts), but on its own it
+        // has no effect on the mobile app.
         const [{ error: banError }, { error: profileError }] =
           await Promise.all([
-            supabase.from("user").update({ banned: true }).eq("id", userId),
+            setUserAuthBan(userId, true),
             supabase
               .from("user_profiles")
               .update({ status: "banned" })
               .eq("user_id", userId),
           ]);
 
-        if (banError) console.warn("Could not ban user:", banError.message);
+        if (banError) console.warn("Could not ban user:", banError);
+        if (profileError)
+          console.warn("Could not update profile status:", profileError.message);
+      }
+
+      // The grace period is explicitly reversible, so cancelling has to undo
+      // the revocation — otherwise a cancelled request left the user
+      // permanently locked out with no way back.
+      if (newStatus === "cancelled") {
+        const [{ error: unbanError }, { error: profileError }] =
+          await Promise.all([
+            setUserAuthBan(userId, false),
+            supabase
+              .from("user_profiles")
+              .update({ status: "active" })
+              .eq("user_id", userId),
+          ]);
+
+        if (unbanError) console.warn("Could not restore access:", unbanError);
         if (profileError)
           console.warn("Could not update profile status:", profileError.message);
       }

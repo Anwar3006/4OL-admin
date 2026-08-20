@@ -43,16 +43,21 @@ const createAdminInvite = async (
 ) => {
   const admin = getSupabaseAdmin();
 
-  // 1. Check if user already exists in the user table by email
-  const { data: existingUser, error: userError } = await admin
-    .from("user")
-    .select("id")
-    .eq("email", input.email)
-    .maybeSingle();
+  // 1. Check if an account already exists for this email.
+  //
+  // This used to read the BetterAuth `user` table, which stopped being written
+  // to in March and holds 2 stale rows against the real user base — so the
+  // check never matched and duplicate invites went out to people who already
+  // had accounts. user_profiles can't answer it either (no email column);
+  // email lives only in auth.users, hence the SECURITY DEFINER RPC.
+  const { data: userExists, error: userError } = await admin.rpc(
+    "auth_user_exists_by_email",
+    { p_email: input.email },
+  );
 
   if (userError)
     throw new Error("Error checking existing user: " + userError.message);
-  if (existingUser)
+  if (userExists)
     throw new Error("A user with this email already has an account.");
 
   // 2. Check for an existing invite row (unique per email regardless of status)
