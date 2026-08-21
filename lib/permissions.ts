@@ -122,6 +122,7 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("security", "settings", "Change platform security settings"),
   p("map", "export", "Export map, footprint and coverage data"),
   p("integrations", "keys", "Manage external integration credentials"),
+  p("engagement", "view", "View content engagement analytics"),
 ];
 
 export const PERMISSION_KEYS = PERMISSION_CATALOG.map((def) => def.key);
@@ -161,6 +162,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "settings.view", "settings.manage",
     "whatsapp.view",
     "map.export",
+    "engagement.view",
   ]),
   registrar: D([
     "dashboard.view",
@@ -180,6 +182,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "fitness.view", "fitness.create", "fitness.edit", "fitness.delete",
     "period.view", "period.content",
     "medication.view",
+    "engagement.view",
   ]),
   moderator: D([
     "dashboard.view",

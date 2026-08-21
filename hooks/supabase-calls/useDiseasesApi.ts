@@ -17,6 +17,7 @@ export const DISEASES_API_KEYS = {
   list: (params: DiseasesListParams) =>
     [...DISEASES_API_KEYS.lists(), { ...params }] as const,
   stats: () => [...DISEASES_API_KEYS.all, "stats"] as const,
+  engagement: () => [...DISEASES_API_KEYS.all, "engagement"] as const,
   linkages: () => [...DISEASES_API_KEYS.all, "linkages"] as const,
 };
 
@@ -48,6 +49,21 @@ export interface DiseaseStats {
   topSaved: { id: string; name: string; value: number }[];
   categoryBreakdown: { name: string; count: number }[];
   engagementPipelineLive: boolean;
+}
+
+export interface DiseaseEngagement {
+  totals: {
+    views: number;
+    likes: number;
+    saves: number;
+    uniqueEngagers: number;
+    saveRate: number;
+    likeRate: number;
+  };
+  trend: { date: string; likes: number; saves: number }[];
+  topLiked: { id: string; name: string; contentType: string; value: number }[];
+  topSaved: { id: string; name: string; contentType: string; value: number }[];
+  byType: { type: string; likes: number; saves: number }[];
 }
 
 export interface DiseaseLinkage {
@@ -86,6 +102,16 @@ export const useDiseasesStatsApi = (enabled: boolean) => {
   return useQuery<DiseaseStats, Error>({
     queryKey: DISEASES_API_KEYS.stats(),
     queryFn: () => apiFetch<DiseaseStats>("/api/diseases/stats"),
+    enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/** Pipeline-wide likes/saves analytics (Mapping Audit Part 4, engagement.view). */
+export const useDiseasesEngagementApi = (enabled: boolean) => {
+  return useQuery<DiseaseEngagement, Error>({
+    queryKey: DISEASES_API_KEYS.engagement(),
+    queryFn: () => apiFetch<DiseaseEngagement>("/api/diseases/engagement"),
     enabled,
     staleTime: 1000 * 60 * 5,
   });

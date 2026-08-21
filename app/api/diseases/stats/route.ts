@@ -28,6 +28,13 @@ export async function GET() {
   }
 
   const rows = data ?? [];
+
+  // Pipeline liveness: content_engagement landed with the Mapping Audit
+  // Part 4 migration. Its absence (42P01) means the migration is unapplied.
+  const { error: engagementProbeError } = await admin
+    .from("content_engagement")
+    .select("id", { count: "exact", head: true });
+  const engagementPipelineLive = !engagementProbeError;
   const totalConditions = rows.length;
   const totalViews = rows.reduce((s, r: any) => s + (r.view_count ?? 0), 0);
   const totalLikes = rows.reduce((s, r: any) => s + (r.like_count ?? 0), 0);
@@ -72,8 +79,8 @@ export async function GET() {
     categoryBreakdown: Object.entries(categoryCounts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count),
-    // Likes/Saves arrive with the content_engagement pipeline
+    // Likes/Saves are maintained by the content_engagement counter trigger
     // (MOBILE_NAVIGATION_AND_ADMIN_MAPPING_AUDIT.md Part 4).
-    engagementPipelineLive: totalLikes + totalSaves > 0,
+    engagementPipelineLive,
   });
 }
