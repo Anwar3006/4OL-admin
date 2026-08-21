@@ -902,7 +902,9 @@ Also still open:
 - Local `main` fast-forwarded to `95857bb`; local `epic-31-rbac-permissions` branch remains (fully merged — safe to delete with `git branch -d` when desired; left in place per no-deletion protocol).
 - This gap-analysis document is untracked on `main`; commit it when the implementation epic starts.
 
-## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured) (✅ Implemented)
+## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured) (⚠️ Discussion-only — not implemented)
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the H-Phase plan below was never executed — no H migrations, no new `/api/facilities*` management routes, no Top Rated/Featured tab wiring were committed. Treat this part as an open implementation backlog (same correction applied to Parts I/J/K; Part I was subsequently implemented on 2026-08-21).
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-facilities` (L3454–3738), `m-add-facility` (L11837–11941), `m-approve-facility` (L11944–12151), sidebar L1547–1553.
 
@@ -971,7 +973,9 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part I — Diseases & Conditions menu (✅ Implemented)
+## Part I — Diseases & Conditions menu (✅ Implemented — 2026-08-21)
+
+> **Implementation evidence (2026-08-21):** I-Phase 1–4 executed on branch `feat/gap-analysis-parts-lmn-security`. Migration `20260821_conditions_management_extension.sql` (severity/NHIS/like/save counters; reuses `icd11_code` from the anatomy extension; `diseases.export` key seeded for admin + content_manager; `diseases.feature` pre-existed). Seven RBAC-guarded routes under `app/api/diseases/` (list/create, `[id]` detail/update/delete, `[id]/status`, `[id]/feature` with the 12-slot cap, `stats`, `linkages`, `export`). Route-backed hooks in `hooks/supabase-calls/useDiseasesApi.ts` replace client-side CRUD (incl. add/view dialogs). All four tabs live: status/featured filters, ICD-11/Severity/Likes/Saves columns, bulk Feature/Publish/Delete + CSV export; Carousel (occupancy + slot management), Engagement (computable metrics, counters at 0 pending the content_engagement pipeline per I-D5) and Linkages (read-only counts + deep links per I-D6) tabs replaced the "Coming Soon" placeholders. Gates: tsc/vitest/eslint/build clean. I-Phase 5 interconnections remain open (mobile carousel contract, symptom-checker deep links).
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-diseases` (L3738–3904), `m-add-condition` (L11806–11819), `m-feature-carousel` (L11822–11834), sidebar L1567 (flat item — matches codebase nav, no change needed).
 
@@ -1032,7 +1036,9 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part J — Healthcare Professionals menu (✅ Implemented)
+## Part J — Healthcare Professionals menu (⚠️ Discussion-only — not implemented)
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the J-Phase plan below was never executed — no HCP migrations (professional IDs, license verification, regulatory-body catalog) and no `/api/hcp` management routes exist. Open implementation backlog.
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-hcp` (L6768–7010), `m-hcp-onboard` (L12449–12489), sidebar L1579–1584.
 
@@ -1096,7 +1102,9 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part K — Jobs menu (✅ Implemented)
+## Part K — Jobs menu (⚠️ Discussion-only — not implemented)
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the K-Phase plan below was never executed — no Jobs migrations (applicant documents, digital CVs, placements) and no `/api/jobs` management routes exist. Open implementation backlog.
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-jobs` (L9270–9671), sidebar L1585–1590 (children: All Listings, Post a Job, Applicants (24), Digital CVs). No Jobs-specific modals in the mockup — Post a Job is an inline tab form.
 

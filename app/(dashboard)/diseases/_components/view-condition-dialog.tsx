@@ -33,10 +33,8 @@ import {
 } from "@/stores/dialog-store";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
-import {
-  useCondition,
-  useDeleteCondition,
-} from "@/hooks/supabase-calls/useCondition";
+import { useCondition } from "@/hooks/supabase-calls/useCondition";
+import { useDeleteConditionApi } from "@/hooks/supabase-calls/useDiseasesApi";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
@@ -74,7 +72,7 @@ export function ViewConditionDialog() {
     enabled: isOpen && !!entityId,
   });
 
-  const { mutateAsync: deleteCondition } = useDeleteCondition();
+  const { mutateAsync: deleteCondition } = useDeleteConditionApi();
 
   // ── Filter out empty / null / undefined URLs so src is never "" ──
   const rawImages = Array.isArray(condition?.image_url)
@@ -103,7 +101,7 @@ export function ViewConditionDialog() {
   };
 
   const handleDeleteConfirm = async () => {
-    await deleteCondition({ id: condition?.id!, imagePath: images });
+    await deleteCondition({ id: condition?.id!, imagePaths: images });
     setShowDeleteModal(false);
     close();
   };

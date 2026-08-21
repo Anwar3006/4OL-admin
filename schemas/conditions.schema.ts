@@ -12,6 +12,17 @@ export const conditionsSchema = z.object({
   image_url: z.string().optional().or(z.literal("")),
   is_systemic: z.boolean().default(false).optional(),
 
+  // 1b. Classification (Gap Analysis Part I, I-Phase 1 migration)
+  icd11_code: z.string().optional().or(z.literal("")),
+  severity: z
+    .enum(["low", "moderate", "high", "critical"])
+    .optional()
+    .or(z.literal("")),
+  nhis_coverage: z
+    .enum(["covered", "partial", "not_covered"])
+    .optional()
+    .or(z.literal("")),
+
   // 2. Rich Text Fields (JSONB)
   about: richTextSchema,
   diagnosis: richTextSchema,
@@ -59,6 +70,11 @@ export type TConditionsOutput = {
   slug: string;
   nhs_link: string | null;
   image_url: string | null;
+
+  // 1b. Classification (Gap Analysis Part I)
+  icd11_code?: string | null;
+  severity?: "low" | "moderate" | "high" | "critical" | null;
+  nhis_coverage?: "covered" | "partial" | "not_covered" | null;
 
   // 3. Relational Links (Many-to-Many)
   categories: string[];

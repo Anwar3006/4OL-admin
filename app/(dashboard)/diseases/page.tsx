@@ -1,18 +1,33 @@
 "use client";
 
+/**
+ * Diseases & Conditions (Gap Analysis Part I, I-Phase 4).
+ * All tab is route-backed (/api/diseases) with status/featured filters,
+ * ICD-11 + Likes/Saves columns, bulk Feature/Publish/Delete and CSV export.
+ * Carousel / Engagement / Linkages tabs render real data via dedicated
+ * server routes — no "Coming Soon" placeholders remain.
+ */
+
 import React, { useCallback, useMemo, useState } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useConditionStats } from "@/hooks/supabase-calls/useCondition";
 import {
-  useConditions,
-  useDeleteCondition,
-  useConditionStats,
-} from "@/hooks/supabase-calls/useCondition";
+  downloadConditionsCsv,
+  useDeleteConditionApi,
+  useDiseasesList,
+  useFeatureCondition,
+  useUpdateConditionStatus,
+} from "@/hooks/supabase-calls/useDiseasesApi";
 
 import AddConditionDialog from "./_components/add-condition-dialog";
+import CarouselTab from "./_components/carousel-tab";
+import EngagementTab from "./_components/engagement-tab";
+import LinkagesTab from "./_components/linkages-tab";
 import {
   useAddConditionDialog,
   useViewConditionDialog,
@@ -21,48 +36,78 @@ import { ViewConditionDialog } from "./_components/view-condition-dialog";
 import { useSearchParams } from "next/navigation";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
+const SEVERITY_BADGE: Record<string, string> = {
+  low: "badge-green",
+  moderate: "badge-amber",
+  high: "badge-orange",
+  critical: "badge-red",
+};
+
 const DiseasesPage = () => {
   const addCondition = useAddConditionDialog();
   const { open: openViewDialog } = useViewConditionDialog();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [featuredFilter, setFeaturedFilter] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
   const searchParams = useSearchParams();
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("dis_page") || "1", 10);
 
-  const { data, isLoading, isFetching, isError, error } = useConditions({
-    params: { page, limit: 10, search },
+  const { data, isLoading, isFetching, isError, error } = useDiseasesList({
+    params: {
+      page,
+      limit: 10,
+      search,
+      status: statusFilter,
+      featured: featuredFilter,
+    },
     enabled: true,
   });
 
   const { data: stats, isLoading: isStatsLoading } = useConditionStats(true);
 
-  const { mutate: deleteCondition } = useDeleteCondition();
+  const { mutate: deleteConditionApi } = useDeleteConditionApi();
+  const { mutate: setStatus } = useUpdateConditionStatus();
+  const { mutate: setFeatured } = useFeatureCondition();
 
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
-    item: any;
-  }>({ isOpen: false, item: null });
+    items: any[];
+  }>({ isOpen: false, items: [] });
 
   const handleDeleteClick = useCallback((condition: any) => {
-    setDeleteModal({ isOpen: true, item: condition });
+    setDeleteModal({ isOpen: true, items: [condition] });
   }, []);
 
   const handleDeleteConfirm = () => {
-    if (deleteModal.item) {
-      const images = Array.isArray(deleteModal.item.image_url)
-        ? deleteModal.item.image_url
-        : deleteModal.item.image_url
-          ? [deleteModal.item.image_url]
+    deleteModal.items.forEach((item) => {
+      const images = Array.isArray(item.image_url)
+        ? item.image_url
+        : item.image_url
+          ? [item.image_url]
           : [];
-      deleteCondition({ id: deleteModal.item.id, imagePath: images });
-      setDeleteModal({ isOpen: false, item: null });
-    }
+      deleteConditionApi({ id: item.id, imagePaths: images });
+    });
+    setDeleteModal({ isOpen: false, items: [] });
   };
 
   const handleDeleteCancel = () => {
-    setDeleteModal({ isOpen: false, item: null });
+    setDeleteModal({ isOpen: false, items: [] });
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await downloadConditionsCsv();
+      toast.success("Conditions exported.");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const columns = useMemo(
@@ -83,15 +128,35 @@ const DiseasesPage = () => {
         </div>
       ),
     },
-    // {
-    //   accessorKey: "icd_11",
-    //   header: "ICD-11",
-    //   cell: ({ row }: any) => (
-    //     <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-    //       {row.original.icd_11 || "BA80"}
-    //     </span>
-    //   ),
-    // },
+    {
+      accessorKey: "icd11_code",
+      header: "ICD-11",
+      cell: ({ row }: any) =>
+        row.original.icd11_code ? (
+          <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+            {row.original.icd11_code}
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-300 italic">—</span>
+        ),
+    },
+    {
+      accessorKey: "severity",
+      header: "Severity",
+      cell: ({ row }: any) =>
+        row.original.severity ? (
+          <span
+            className={cn(
+              "badge",
+              SEVERITY_BADGE[row.original.severity] ?? "badge-amber",
+            )}
+          >
+            {row.original.severity}
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-300 italic">—</span>
+        ),
+    },
     {
       accessorKey: "categories",
       header: "Category",
@@ -137,13 +202,31 @@ const DiseasesPage = () => {
       ),
     },
     {
+      accessorKey: "like_count",
+      header: "❤️ Likes",
+      cell: ({ row }: any) => (
+        <span className="font-black text-slate-700 text-[11px]">
+          {row.original.like_count?.toLocaleString() || "0"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "save_count",
+      header: "🔖 Saves",
+      cell: ({ row }: any) => (
+        <span className="font-black text-slate-700 text-[11px]">
+          {row.original.save_count?.toLocaleString() || "0"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "is_featured",
       header: "Carousel",
       cell: ({ row }: any) => (
         <div className="text-center">
           {row.original.is_featured ? (
             <span className="badge badge-green shadow-sm shadow-green-100 border border-green-200">
-              ⭐ Featured
+              ⭐ #{row.original.featured_order ?? "–"}
             </span>
           ) : (
             <span className="text-[10px] text-slate-300 font-bold tracking-widest uppercase">
@@ -214,8 +297,19 @@ const DiseasesPage = () => {
         title="🦠 Diseases & Conditions"
         subtitle="Health content database · ICD-11 indexed · Managed by Content Manager"
       >
-        <button className="btn btn-secondary">📥 Export CSV</button>
-        <button className="btn btn-secondary">🎠 Manage Carousel</button>
+        <button
+          className="btn btn-secondary"
+          onClick={handleExport}
+          disabled={isExporting}
+        >
+          {isExporting ? "Exporting…" : "📥 Export CSV"}
+        </button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => setActiveTab("carousel")}
+        >
+          🎠 Manage Carousel
+        </button>
         <button className="btn btn-primary" onClick={() => addCondition.open()}>
           + Add Condition
         </button>
@@ -336,14 +430,32 @@ const DiseasesPage = () => {
                   </svg>
                 </div>
               </div>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
-                <option>All Categories</option>
+              <select
+                className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="pending_review">Pending Review</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
               </select>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
-                <option>All Status</option>
+              <select
+                className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                value={featuredFilter}
+                onChange={(e) => setFeaturedFilter(e.target.value)}
+              >
+                <option value="">Featured: All</option>
+                <option value="yes">Featured Only</option>
+                <option value="no">Not Featured</option>
               </select>
-              <button className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-[10px]">
-                📥 Export
+              <button
+                className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-[10px]"
+                onClick={handleExport}
+                disabled={isExporting}
+              >
+                {isExporting ? "Exporting…" : "📥 Export"}
               </button>
             </div>
 
@@ -356,6 +468,30 @@ const DiseasesPage = () => {
                 isError={isError}
                 error={error}
                 onRowClick={(row: any) => openViewDialog(row.id)}
+                bulkActions={[
+                  {
+                    label: "⭐ Feature Selected",
+                    onClick: (rows: any[]) =>
+                      setFeatured({
+                        id: rows[0].id,
+                        ids: rows.map((r) => r.id),
+                        featured: true,
+                      }),
+                  },
+                  {
+                    label: "✅ Publish",
+                    onClick: (rows: any[]) =>
+                      setStatus({
+                        id: rows[0].id,
+                        ids: rows.map((r) => r.id),
+                        status: "published",
+                      }),
+                  },
+                ]}
+                onDeleteSelected={(rows: any[]) =>
+                  setDeleteModal({ isOpen: true, items: rows })
+                }
+                deleteLabel="🗑️ Delete"
                 pagination={true}
                 urlPersistence={{
                   pageKey: "dis_page",
@@ -364,51 +500,28 @@ const DiseasesPage = () => {
                 totalItems={data?.meta?.total || 0}
               />
             </div>
-
-            <div className="flex gap-2 pt-2">
-              <button className="btn btn-secondary text-[10px] font-black uppercase tracking-widest">
-                ⭐ Feature Selected
-              </button>
-              <button className="btn btn-secondary text-[10px] font-black uppercase tracking-widest">
-                ✅ Publish
-              </button>
-              <button className="btn btn-danger text-[10px] font-black uppercase tracking-widest">
-                🗑️ Delete
-              </button>
-            </div>
           </TabsContent>
 
-          {["carousel", "engagement", "linkages"].map((tabId) => (
-            <TabsContent
-              key={tabId}
-              value={tabId}
-              className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
-            >
-              <div className="card py-32 text-center border-dashed border-2 border-slate-200 bg-slate-50/50">
-                <div className="max-w-md mx-auto space-y-4">
-                  <div className="w-20 h-20 bg-white rounded-3xl border border-slate-100 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-slate-200/50 animate-bounce">
-                    {tabId === "carousel"
-                      ? "🎠"
-                      : tabId === "engagement"
-                        ? "📊"
-                        : "🔗"}
-                  </div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
-                    {tabId} Module
-                  </h3>
-                  <p className="text-[13px] text-slate-500 font-bold leading-relaxed px-6">
-                    We're building a high-fidelity dashboard for this module.
-                    Real-time data visualization and linkages are coming soon.
-                  </p>
-                  <div className="pt-4">
-                    <span className="badge bg-slate-900 text-white px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-slate-200">
-                      Coming Soon
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          ))}
+          <TabsContent
+            value="carousel"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <CarouselTab />
+          </TabsContent>
+
+          <TabsContent
+            value="engagement"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <EngagementTab />
+          </TabsContent>
+
+          <TabsContent
+            value="linkages"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <LinkagesTab />
+          </TabsContent>
         </div>
       </Tabs>
 
@@ -419,7 +532,11 @@ const DiseasesPage = () => {
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         title="Delete Condition"
-        itemName={deleteModal.item?.name || ""}
+        itemName={
+          deleteModal.items.length > 1
+            ? `${deleteModal.items.length} selected conditions`
+            : deleteModal.items[0]?.name || ""
+        }
         itemType="condition"
       />
     </div>

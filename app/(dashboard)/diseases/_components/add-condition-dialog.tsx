@@ -31,9 +31,9 @@ import {
   useCategoriesForSymptoms,
 } from "@/hooks/supabase-calls/useSymptoms";
 import {
-  useCreateCondition,
-  useUpdateCondition,
-} from "@/hooks/supabase-calls/useCondition";
+  useCreateConditionApi,
+  useUpdateConditionApi,
+} from "@/hooks/supabase-calls/useDiseasesApi";
 
 const RichTextEditor = dynamic(
   () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),
@@ -53,9 +53,9 @@ const AddConditionDialog = () => {
   const { data: categories = [], isLoading: loadingCats } =
     useCategoriesForSymptoms();
 
-  const { mutateAsync, isPending } = useCreateCondition();
+  const { mutateAsync, isPending } = useCreateConditionApi();
   const { mutateAsync: mutateAsyncEdit, isPending: submittingEdit } =
-    useUpdateCondition();
+    useUpdateConditionApi();
 
   const isLoadingForm = loadingParts || loadingCats;
   const isSubmitting = isPending || submittingEdit;
@@ -80,6 +80,9 @@ const AddConditionDialog = () => {
       specialist: "",
       nhs_link: "",
       image_url: "",
+      icd11_code: "",
+      severity: "",
+      nhis_coverage: "",
       types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
       causes: [{ cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE }],
     },
@@ -135,6 +138,9 @@ const AddConditionDialog = () => {
           nhs_link: condition.nhs_link ?? "",
           image_url: condition.image_url ?? "",
           specialist: condition.specialist ?? "",
+          icd11_code: condition.icd11_code ?? "",
+          severity: condition.severity ?? "",
+          nhis_coverage: condition.nhis_coverage ?? "",
         });
       } else {
         form.reset({
@@ -155,6 +161,9 @@ const AddConditionDialog = () => {
           specialist: "",
           nhs_link: "",
           image_url: "",
+          icd11_code: "",
+          severity: "",
+          nhis_coverage: "",
           types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
           causes: [
             { cause_name: "", other_possible_causes: EMPTY_LEXICAL_STATE },
@@ -274,6 +283,46 @@ const AddConditionDialog = () => {
                       control={form.control}
                       rawParts={categories}
                     />
+                  </div>
+                </div>
+
+                {/* Classification (Gap Analysis Part I, I-D1 / m-add-condition) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <CustomInput
+                    type="text"
+                    name="icd11_code"
+                    control={form.control}
+                    label="ICD-11 Code"
+                    readOnly={false}
+                  />
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">
+                      Severity
+                    </label>
+                    <select
+                      {...form.register("severity")}
+                      className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+                    >
+                      <option value="">Not set</option>
+                      <option value="low">Low</option>
+                      <option value="moderate">Moderate</option>
+                      <option value="high">High</option>
+                      <option value="critical">Critical</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">
+                      NHIS Coverage
+                    </label>
+                    <select
+                      {...form.register("nhis_coverage")}
+                      className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+                    >
+                      <option value="">Not set</option>
+                      <option value="covered">Covered</option>
+                      <option value="partial">Partial</option>
+                      <option value="not_covered">Not covered</option>
+                    </select>
                   </div>
                 </div>
               </section>
