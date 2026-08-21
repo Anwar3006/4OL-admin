@@ -11,7 +11,7 @@
 | # | Decision | Resolution |
 |---|----------|------------|
 | D1 | Notification bell | **Reuses the main app notification system** — no parallel fitness inbox. Bell opens `(modal)/Notifications.tsx` (same unread count, filters, deep links). Server-driven fitness alerts insert into the shared `notifications` table with new types (`workout_reminder`, `challenge`, `streak_alert`, `billing`, `recovery`, `nutrition`). |
-| D2 | Gear icon | Stays on the fitness header → **Fitness Profile** (view current selections + update/regenerate via the existing `FitnessOptionsModal`). |
+| D2 | Gear icon | Stays on the fitness header → **Fitness Profile** (view current selections + update/regenerate via the existing `FitnessOptionsModal`). **Implementation note:** `FitnessOptionsModal` was verified to already BE the Fitness Profile (titled as such, shows selections, "Update Profile & Regenerate") — no new modal was built; its cross-navigator `router.replace` was fixed to dismiss+navigate per `NAVIGATION_RULES.md`. |
 | D3 | Theme | Brand **#47BE7D** remains the primary/action color on every Fitness page. Only **layout + motion** are taken from the mockup; **card and button colors** keep the mockup's pastel palette (green/peach/blue/lavender accents). |
 | D4 | Social proof | **Real aggregate** — count of `fitness_users` rows created in the last 7 days (+ total members), served by `get_fitness_social_proof()`. |
 | D5 | Notifications delivery | **Server-driven feed** — pg_cron scheduled SQL functions write challenge-deadline / streak-at-risk / subscription-renewal rows into `notifications` (push dispatch rides the existing token pipeline). |

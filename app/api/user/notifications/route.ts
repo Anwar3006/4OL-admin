@@ -90,7 +90,14 @@ export async function GET(req: NextRequest) {
     : DEFAULT_PAGE_SIZE;
 
   const typeParam = searchParams.get("type");
-  if (typeParam && !isValidType(typeParam)) {
+  // A comma-separated list is allowed on the read path so one filter chip
+  // can cover the whole fitness family (decision D1 — shared inbox), e.g.
+  // type=workout_reminder,challenge,streak_alert,billing,recovery,nutrition.
+  // Every member is validated against VALID_TYPES before touching the query.
+  const typeList = typeParam
+    ? typeParam.split(",").map(t => t.trim()).filter(Boolean)
+    : [];
+  if (typeParam && (typeList.length === 0 || !typeList.every(isValidType))) {
     return NextResponse.json(
       { error: `Invalid type. Must be one of: ${VALID_TYPES.join(", ")}` },
       { status: 400 }
@@ -111,7 +118,8 @@ export async function GET(req: NextRequest) {
     // exists without a second round-trip.
     .limit(limit + 1);
 
-  if (typeParam) query = query.eq("type", typeParam);
+  if (typeList.length === 1) query = query.eq("type", typeList[0]);
+  else if (typeList.length > 1) query = query.in("type", typeList);
   if (unreadOnly) query = query.eq("is_read", false);
   if (search) {
     // ilike across both columns. Fine at moderate per-user notification
