@@ -64,6 +64,7 @@ const AddFitnessPlanDialog = () => {
     is_featured: false,
     status: "published",
     author_type: "admin",
+    coach_display_name: "",
     tags: [],
   };
 
@@ -87,6 +88,9 @@ const AddFitnessPlanDialog = () => {
   }, [isOpen, isEditMode, data]);
 
   const onSubmit = (values: TFitnessPlanInput) => {
+    // Store an empty coach name as NULL so the mobile grid falls back to
+    // the default attribution copy.
+    values.coach_display_name = values.coach_display_name?.trim() || null;
     if (isEditMode && data?.id) {
       updatePlan({ id: data.id, data: values }, { onSuccess: close });
     } else {
@@ -177,6 +181,30 @@ const AddFitnessPlanDialog = () => {
                         value={field.value ?? ""}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Coach attribution — public display name, never the admin's
+                  real account name (FITNESS_MOCKUP_GAP_ANALYSIS.md, D7) */}
+              <FormField
+                control={form.control}
+                name="coach_display_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Coach Display Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Coach Ama"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Shown as &quot;by &lt;name&gt;&quot; on the mobile Generated For You
+                      grid. This is a public alias — never your real name.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -21,6 +21,8 @@ import {
   AiStudioTab,
   AiLogTab,
   HealthTab,
+  SubscriptionsTab,
+  FitCoinsTab,
 } from "./_tabs";
 
 const fitnessTabs = [
@@ -35,6 +37,8 @@ const fitnessTabs = [
   { id: "ai_studio", label: "AI Studio", icon: "🤖" },
   { id: "ai_log", label: "AI Log", icon: "📝" },
   { id: "health", label: "Health Integrations", icon: "📱" },
+  { id: "subscriptions", label: "Subscriptions", icon: "💳" },
+  { id: "fitcoins", label: "FitCoins", icon: "🪙" },
   { id: "whatsapp", label: "WhatsApp", icon: "💬" },
 ];
 
@@ -200,6 +204,12 @@ const FitnessPage = () => {
           </TabsContent>
           <TabsContent value="health" className="outline-none w-full min-w-0">
             <HealthTab />
+          </TabsContent>
+          <TabsContent value="subscriptions" className="outline-none w-full min-w-0">
+            <SubscriptionsTab />
+          </TabsContent>
+          <TabsContent value="fitcoins" className="outline-none w-full min-w-0">
+            <FitCoinsTab />
           </TabsContent>
         </div>
       </Tabs>

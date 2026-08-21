@@ -176,6 +176,12 @@ function DetailView({
             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-black leading-tight">
               {data.title}
             </h2>
+            {data.coach_display_name && (
+              <p className="text-sm font-bold text-slate-500 flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" />
+                Public attribution: &quot;by {data.coach_display_name}&quot;
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto pt-2 md:pt-0">

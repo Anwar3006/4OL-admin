@@ -20,6 +20,10 @@ export const fitnessPlanSchema = z.object({
   status: z.enum(PLAN_STATUS).default("published"),
   author_id: z.string().optional().nullable(),
   author_type: z.enum(AUTHOR_TYPES).default("admin"),
+  // Admin-entered display name shown as "by <name>" on curated plans in the
+  // mobile Generated For You grid — never derived from the admin's real
+  // account name (FITNESS_MOCKUP_GAP_ANALYSIS.md, D7).
+  coach_display_name: z.string().trim().max(60).optional().nullable(),
   tags: z.array(z.string()).default([]),
 });
 

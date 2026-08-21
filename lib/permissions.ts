@@ -123,6 +123,11 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("map", "export", "Export map, footprint and coverage data"),
   p("integrations", "keys", "Manage external integration credentials"),
   p("engagement", "view", "View content engagement analytics"),
+  p("subscriptions", "view", "View subscription tiers and entitlements"),
+  p("subscriptions", "manage", "Grant or revoke premium/lifetime subscriptions"),
+  p("fitcoins", "view", "View FitCoins tiers, rewards and ledger"),
+  p("fitcoins", "manage", "Edit FitCoins reward tiers and redemption catalog"),
+  p("fitness_notifications", "send", "Send fitness alerts (streak, challenge, billing) to users"),
 ];
 
 export const PERMISSION_KEYS = PERMISSION_CATALOG.map((def) => def.key);
@@ -163,6 +168,9 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "whatsapp.view",
     "map.export",
     "engagement.view",
+    "subscriptions.view", "subscriptions.manage",
+    "fitcoins.view", "fitcoins.manage",
+    "fitness_notifications.send",
   ]),
   registrar: D([
     "dashboard.view",
@@ -183,6 +191,8 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "period.view", "period.content",
     "medication.view",
     "engagement.view",
+    "fitcoins.view",
+    "fitness_notifications.send",
   ]),
   moderator: D([
     "dashboard.view",
@@ -203,6 +213,8 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "users.view",
     "transactions.view", "transactions.manage", "transactions.export",
     "marketing.view",
+    "subscriptions.view",
+    "fitcoins.view",
   ]),
   compliance_officer: D([
     "dashboard.view",

@@ -7,7 +7,15 @@ const DEFAULT_PAGE_SIZE = 20;
 // Keep this in sync with the mobile app's filter chips. Anything outside
 // this list is rejected rather than silently passed through to the query
 // builder, since `type` ends up in an `.eq()` filter.
-const VALID_TYPES = ["dm", "group_chat", "reminder", "marketing", "ad", "system"] as const;
+// Fitness types (workout_reminder, challenge, streak_alert, billing,
+// recovery, nutrition) are written by the server-driven fitness alert
+// pipeline (fn_fitness_* cron functions + /api/fitness/notifications) into
+// the SAME notifications table the main app inbox reads — the mobile bell
+// has no parallel feed (FITNESS_MOCKUP_GAP_ANALYSIS.md, decision D1).
+const VALID_TYPES = [
+  "dm", "group_chat", "reminder", "marketing", "ad", "system",
+  "workout_reminder", "challenge", "streak_alert", "billing", "recovery", "nutrition",
+] as const;
 type NotificationType = (typeof VALID_TYPES)[number];
 
 function isValidType(value: string | null): value is NotificationType {
