@@ -11,6 +11,7 @@ const CreateTaskSchema = z.object({
   category: z.string().trim().max(80).optional(),
   assigneeId: z.uuid().optional().nullable(),
   dueDate: z.string().trim().optional().nullable(),
+  progressPercent: z.number().int().min(0).max(100).optional(),
 });
 
 export async function GET() {
@@ -20,7 +21,7 @@ export async function GET() {
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
     .from("admin_tasks")
-    .select("id, title, description, status, priority, category, assignee_id, due_date, board_position, completed_at, created_at")
+    .select("id, title, description, status, priority, category, assignee_id, due_date, board_position, task_seq, progress_percent, completed_at, created_at")
     .order("status", { ascending: true })
     .order("board_position", { ascending: true });
 
@@ -50,6 +51,8 @@ export async function GET() {
       assigneeName: t.assignee_id ? nameById.get(t.assignee_id) || "Unknown" : null,
       dueDate: t.due_date,
       boardPosition: t.board_position,
+      taskSeq: t.task_seq,
+      progressPercent: t.progress_percent ?? 0,
       completedAt: t.completed_at,
       createdAt: t.created_at,
     })),
@@ -86,6 +89,7 @@ export async function POST(req: NextRequest) {
       category: parsed.data.category ?? null,
       assignee_id: parsed.data.assigneeId ?? null,
       due_date: parsed.data.dueDate ?? null,
+      progress_percent: parsed.data.progressPercent ?? 0,
       board_position: count ?? 0,
       created_by: user.id,
     })

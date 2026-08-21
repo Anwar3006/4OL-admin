@@ -180,6 +180,44 @@ const PlansTab = () => {
       ),
     },
     {
+      // Part V: mockup asks for Profile Hash + AI Cost. The schema stores
+      // selection_hash (profile hash) and author_type ('ai' marks AI-created
+      // plans); per-plan AI cost is not modeled, so cost lives in the AI Log
+      // tab's budget card instead.
+      accessorKey: "author_type",
+      header: "Origin",
+      cell: ({ row }: any) => (
+        <span
+          className={cn(
+            "badge uppercase tracking-wider text-[10px]",
+            row.original.author_type === "ai"
+              ? "badge-purple"
+              : row.original.author_type === "admin"
+                ? "badge-blue"
+                : "bg-slate-100 text-slate-600",
+          )}
+        >
+          {row.original.author_type === "ai"
+            ? "🤖 AI"
+            : row.original.author_type || "trainer"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "selection_hash",
+      header: "Profile Hash",
+      cell: ({ row }: any) => (
+        <span
+          className="text-[10px] font-mono text-slate-500"
+          title={row.original.selection_hash ?? undefined}
+        >
+          {row.original.selection_hash
+            ? `#${row.original.selection_hash.slice(0, 8)}`
+            : "—"}
+        </span>
+      ),
+    },
+    {
       id: "actions",
       header: "",
       cell: ({ row }: any) => {

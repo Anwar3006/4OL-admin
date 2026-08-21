@@ -6,7 +6,10 @@ import {
   Database,
   GitBranch,
   LayoutGrid,
+  Lock,
+  Package,
   RefreshCw,
+  ScrollText,
   Server,
   ShieldCheck,
   XCircle,
@@ -18,11 +21,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-type HealthResponse = {
+type HealthPayload = {
   status: "healthy" | "degraded" | "unhealthy";
   timestamp: string;
   latencyMs: number;
   services?: Record<string, string>;
+};
+
+type SchematicResponse = {
+  health: HealthPayload;
+  stack: { app: string; node?: string; deps: { name: string; version: string }[] };
+  migrations: { count: number; latest: string | null };
+  rbac: { permissionCount: number; roleCount: number; roles: string[] };
+  build: { commit: string | null; env: string; generatedAt: string };
 };
 
 const architecture = [
@@ -50,33 +61,41 @@ const architecture = [
 
 export default function SchematicPage() {
   const [loading, setLoading] = useState(true);
-  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [schematic, setSchematic] = useState<SchematicResponse | null>(null);
+  const [denied, setDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadHealth = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setDenied(false);
 
     try {
-      const res = await fetch("/api/health", { cache: "no-store" });
-      const body = await res.json().catch(() => null);
+      const res = await fetch("/api/admin/schematic", { cache: "no-store" });
 
-      if (!res.ok) {
-        setHealth(body);
-        throw new Error(body?.status || "Health check failed.");
+      if (res.status === 401 || res.status === 403) {
+        setDenied(true);
+        setSchematic(null);
+        return;
       }
 
-      setHealth(body);
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body) {
+        throw new Error(body?.error || "Schematic check failed.");
+      }
+      setSchematic(body as SchematicResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Health check failed.");
+      setError(err instanceof Error ? err.message : "Schematic check failed.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadHealth();
-  }, [loadHealth]);
+    load();
+  }, [load]);
+
+  const health = schematic?.health ?? null;
 
   const services = useMemo(
     () => Object.entries(health?.services ?? {}),
@@ -85,6 +104,25 @@ export default function SchematicPage() {
   const configuredServices = services.filter(([, status]) =>
     ["healthy", "configured"].includes(status),
   ).length;
+
+  if (denied) {
+    return (
+      <div className="animate-in fade-in duration-500 space-y-6">
+        <PageHeader
+          title="Platform Schematic"
+          subtitle="System architecture, service health, and dependency map"
+        />
+        <Alert>
+          <Lock className="h-4 w-4" />
+          <AlertTitle>Access restricted</AlertTitle>
+          <AlertDescription>
+            The platform schematic is limited to super administrators because it
+            exposes infrastructure configuration details.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
@@ -96,7 +134,7 @@ export default function SchematicPage() {
           type="button"
           variant="outline"
           size="sm"
-          onClick={loadHealth}
+          onClick={load}
           disabled={loading}
         >
           <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
@@ -107,7 +145,7 @@ export default function SchematicPage() {
       {error && (
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Health check issue</AlertTitle>
+          <AlertTitle>Schematic issue</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -210,6 +248,141 @@ export default function SchematicPage() {
                   </Badge>
                 </div>
               ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Auto-derived sections (Part Y-D3): values are computed server-side at
+          request time from package.json, the RBAC catalog, the migrations
+          directory, and the build environment — nothing is hard-coded. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+              <Package className="h-4 w-4" /> Tech Stack
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {loading && !schematic && (
+              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+                Loading...
+              </div>
+            )}
+            {schematic && (
+              <>
+                {schematic.stack.deps.map((dep) => (
+                  <div
+                    key={dep.name}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="font-medium text-slate-700">{dep.name}</span>
+                    <span className="font-mono text-xs text-slate-500">
+                      v{dep.version}
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+              <ShieldCheck className="h-4 w-4" /> RBAC Model
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {loading && !schematic && (
+              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+                Loading...
+              </div>
+            )}
+            {schematic && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-slate-200 p-3 text-center">
+                    <div className="text-2xl font-black text-slate-800">
+                      {schematic.rbac.roleCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase text-slate-500">
+                      Roles
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 p-3 text-center">
+                    <div className="text-2xl font-black text-slate-800">
+                      {schematic.rbac.permissionCount}
+                    </div>
+                    <div className="text-xs font-semibold uppercase text-slate-500">
+                      Permissions
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {schematic.rbac.roles.map((role) => (
+                    <Badge key={role} variant="outline" className="text-xs">
+                      {role}
+                    </Badge>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+              <ScrollText className="h-4 w-4" /> Platform Build
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {loading && !schematic && (
+              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+                Loading...
+              </div>
+            )}
+            {schematic && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">App version</span>
+                  <span className="font-mono text-xs text-slate-700">
+                    v{schematic.stack.app}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Migrations</span>
+                  <span className="font-semibold text-slate-700">
+                    {schematic.migrations.count} applied
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Latest migration</span>
+                  <span
+                    className="max-w-[180px] truncate font-mono text-xs text-slate-700"
+                    title={schematic.migrations.latest ?? undefined}
+                  >
+                    {schematic.migrations.latest ?? "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Environment</span>
+                  <Badge variant="outline">{schematic.build.env}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Commit</span>
+                  <span className="font-mono text-xs text-slate-700">
+                    {schematic.build.commit ?? "local"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Generated</span>
+                  <span className="text-xs text-slate-700">
+                    {new Date(schematic.build.generatedAt).toLocaleTimeString()}
+                  </span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

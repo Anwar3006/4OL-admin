@@ -147,6 +147,26 @@ const ChallengesTab = () => {
       },
     },
     {
+      // Part V: mockup Origin column. fitness_challenges has no explicit
+      // origin flag, so derive it: created_by set → Admin-authored,
+      // otherwise System/seeded. AI-generated challenges are authored by
+      // admins through the AI Studio flow, same as plans.
+      accessorKey: "origin",
+      header: "Origin",
+      cell: ({ row }: any) => (
+        <span
+          className={cn(
+            "badge uppercase tracking-wider text-[10px]",
+            row.original.created_by
+              ? "badge-blue"
+              : "bg-slate-100 text-slate-600",
+          )}
+        >
+          {row.original.created_by ? "Admin" : "System"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }: any) => {

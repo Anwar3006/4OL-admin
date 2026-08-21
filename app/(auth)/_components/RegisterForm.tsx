@@ -18,6 +18,7 @@ import CustomDatePicker from "@/components/CustomDatePicker";
 import { PUBLIC_ROLE_OPTIONS, SEX_OPTIONS } from "@/types/formInput";
 import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { isHoneypotTripped } from "@/lib/auth-guard";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Shield, AlertCircle } from "lucide-react";
@@ -48,8 +49,16 @@ const RegisterForm = ({
   });
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Honeypot trap field — hidden from humans, bots tend to fill it.
+  const [honeypot, setHoneypot] = useState("");
 
   const handleSubmit = async (data: TUserProfileRegistrationInput) => {
+    // Bot trap: a filled honeypot means this isn't a human — bail out
+    // with a generic error and never touch Supabase.
+    if (isHoneypotTripped(honeypot)) {
+      form.setError("root", { message: "Registration failed. Please try again." });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const supabase = getSupabaseBrowserClient();
@@ -149,6 +158,18 @@ const RegisterForm = ({
             <CustomInput type="text" name="firstName" label="First Name" placeholder="Francis" control={form.control} />
             <CustomInput type="text" name="lastName" label="Last Name" placeholder="Mensah" control={form.control} />
           </div>
+
+          {/* Honeypot trap — visually hidden, excluded from tab order. */}
+          <input
+            type="text"
+            name="company_website"
+            value={honeypot}
+            onChange={(event) => setHoneypot(event.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="absolute -left-[9999px] h-px w-px opacity-0"
+          />
 
           <div className="grid grid-cols-2 gap-5 2xl:gap-8">
             <CustomSelect name="sex" label="Sex" placeholder="Select sex" options={SEX_OPTIONS} control={form.control} description="Your biological sex" />

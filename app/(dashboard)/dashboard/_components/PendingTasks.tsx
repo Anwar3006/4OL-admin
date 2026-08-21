@@ -39,6 +39,31 @@ export default function PendingTasks({
       href: "/security",
       count: metrics?.queues.open_security_threats ?? 0,
     },
+    // Extended queues (Gap Analysis Part D) — merge-ins from the API.
+    {
+      label: `${metrics?.queues.admins_missing_mfa ?? 0} admins without MFA`,
+      variant: "red",
+      href: "/admins",
+      count: metrics?.queues.admins_missing_mfa ?? 0,
+    },
+    {
+      label: `${metrics?.queues.pending_job_posts ?? 0} job posts pending`,
+      variant: "blue",
+      href: "/jobs",
+      count: metrics?.queues.pending_job_posts ?? 0,
+    },
+    {
+      label: `${metrics?.queues.pending_ai_flags ?? 0} AI-detected flags to review`,
+      variant: "purple",
+      href: "/users?tab=flagged",
+      count: metrics?.queues.pending_ai_flags ?? 0,
+    },
+    {
+      label: `${metrics?.queues.flagged_reviews ?? 0} flagged reviews`,
+      variant: "amber",
+      href: "/reviews",
+      count: metrics?.queues.flagged_reviews ?? 0,
+    },
   ];
   const total = tasks.reduce((sum, task) => sum + task.count, 0);
 

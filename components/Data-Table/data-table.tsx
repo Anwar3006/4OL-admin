@@ -66,6 +66,8 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   onDeleteSelected?: (selectedRows: TData[]) => void;
   deleteLabel?: string;
+  /** Extra bulk-bar buttons shown while rows are selected (Gap Analysis E/F). */
+  bulkActions?: { label: string; onClick: (selectedRows: TData[]) => void }[];
   selectable?: boolean;
   rowActions?: RowAction<TData>[];
   /** Enable URL persistence for pagination (uses "page" and "pageSize" params by default) */
@@ -94,6 +96,7 @@ const DataTableComponent = <TData, TValue>({
   onRowClick,
   onDeleteSelected,
   deleteLabel = "Delete Selected",
+  bulkActions,
   selectable = true,
   rowActions = [],
   urlPersistence = false,
@@ -206,6 +209,11 @@ const DataTableComponent = <TData, TValue>({
     }
   };
 
+  const handleBulkAction = (action: { onClick: (rows: TData[]) => void }) => {
+    action.onClick(selectedRows.map((r) => r.original));
+    setRowSelection({});
+  };
+
   const renderRowActions = (row: TData) => {
     if (!rowActions || rowActions.length === 0) return null;
     return (
@@ -242,22 +250,35 @@ const DataTableComponent = <TData, TValue>({
   return (
     <div className="space-y-4 relative">
       {/* Floating Bulk Actions Bar */}
-      {hasSelection && onDeleteSelected && (
+      {hasSelection && (onDeleteSelected || bulkActions?.length) && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate/50 text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <span className="text-sm font-medium">
             {selectedRows.length} item{selectedRows.length > 1 ? "s" : ""}{" "}
             selected
           </span>
           <div className="w-px h-4 bg-slate-700" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-[10px]"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {deleteLabel}
-          </Button>
+          {bulkActions?.map((action) => (
+            <Button
+              key={action.label}
+              variant="ghost"
+              size="sm"
+              onClick={() => handleBulkAction(action)}
+              className="text-slate-200 hover:text-white hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-[10px]"
+            >
+              {action.label}
+            </Button>
+          ))}
+          {onDeleteSelected && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-[10px]"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {deleteLabel}
+            </Button>
+          )}
         </div>
       )}
 

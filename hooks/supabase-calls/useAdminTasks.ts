@@ -12,6 +12,8 @@ export interface AdminTask {
   assigneeName: string | null;
   dueDate: string | null;
   boardPosition: number;
+  taskSeq: number | null;
+  progressPercent: number;
   completedAt: string | null;
   createdAt: string;
 }
@@ -56,6 +58,7 @@ interface CreateTaskInput {
   category?: string;
   assigneeId?: string | null;
   dueDate?: string | null;
+  progressPercent?: number;
 }
 
 export const useCreateAdminTask = () => {
@@ -117,5 +120,58 @@ export const useMoveAdminTask = () => {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY });
       queryClient.invalidateQueries({ queryKey: STATS_KEY });
     },
+  });
+};
+
+export interface UpdateTaskInput {
+  title?: string;
+  description?: string | null;
+  status?: AdminTask["status"];
+  priority?: AdminTask["priority"];
+  category?: string | null;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  progressPercent?: number;
+}
+
+export const useUpdateAdminTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { id: string } & UpdateTaskInput>({
+    mutationFn: async ({ id, ...fields }) => {
+      const res = await fetch(`/api/admin/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to update task.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY });
+      queryClient.invalidateQueries({ queryKey: STATS_KEY });
+      toast.success("Task updated");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useDeleteAdminTask = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { id: string }>({
+    mutationFn: async ({ id }) => {
+      const res = await fetch(`/api/admin/tasks/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to delete task.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY });
+      queryClient.invalidateQueries({ queryKey: STATS_KEY });
+      toast.success("Task deleted");
+    },
+    onError: (error) => toast.error(error.message),
   });
 };

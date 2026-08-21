@@ -11,14 +11,23 @@ import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import {
+  clearLoginFailures,
+  getLoginLock,
+  isHoneypotTripped,
+  recordLoginFailure,
+} from "@/lib/auth-guard";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Loader2, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Honeypot trap field — hidden from humans, bots tend to fill it.
+  const [honeypot, setHoneypot] = useState("");
+  const [lockedFor, setLockedFor] = useState(0);
 
   const form = useForm<zod.infer<typeof userLoginSchema>>({
     resolver: zodResolver(userLoginSchema),
@@ -35,12 +44,38 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
           "This account doesn't have access to the admin dashboard.",
       });
     }
+    const lock = getLoginLock();
+    if (lock.locked) setLockedFor(lock.retryAfterSeconds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (lockedFor <= 0) return;
+    const timer = window.setInterval(() => {
+      setLockedFor((remaining) => (remaining > 1 ? remaining - 1 : 0));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [lockedFor]);
 
   const { isSubmitting } = form.formState;
 
   const handleSubmit = async (data: zod.infer<typeof userLoginSchema>) => {
+    // Bot trap: a filled honeypot means this isn't a human — bail out
+    // with a generic error and never touch Supabase.
+    if (isHoneypotTripped(honeypot)) {
+      form.setError("root", { message: "Invalid login credentials." });
+      return;
+    }
+
+    const lock = getLoginLock();
+    if (lock.locked) {
+      setLockedFor(lock.retryAfterSeconds);
+      form.setError("root", {
+        message: `Too many failed attempts. Try again in ${lock.retryAfterSeconds}s.`,
+      });
+      return;
+    }
+
     try {
       const supabase = getSupabaseBrowserClient();
       
@@ -50,9 +85,14 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       });
 
       if (supabaseError) {
+        recordLoginFailure();
+        const after = getLoginLock();
+        if (after.locked) setLockedFor(after.retryAfterSeconds);
         form.setError("root", { message: supabaseError.message });
         return;
       }
+
+      clearLoginFailures();
 
       const { data: userProfile, error: profileError } = await supabase
         .from('user_profiles')
@@ -112,6 +152,17 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
           )}
 
           <div className="space-y-4 2xl:space-y-6">
+            {/* Honeypot trap — visually hidden, excluded from tab order. */}
+            <input
+              type="text"
+              name="company_website"
+              value={honeypot}
+              onChange={(event) => setHoneypot(event.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px] h-px w-px opacity-0"
+            />
             <CustomInput
               type="email"
               name="email"
@@ -136,13 +187,15 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
             <Button
               type="submit"
               className="w-full py-6 2xl:py-8 2xl:text-xl bg-emerald-500 hover:bg-[#47a669] text-white transition-colors"
-              disabled={isSubmitting}
+              disabled={isSubmitting || lockedFor > 0}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 2xl:w-6 2xl:h-6 animate-spin" />
                   Authenticating...
                 </>
+              ) : lockedFor > 0 ? (
+                `Locked — retry in ${lockedFor}s`
               ) : (
                 "Log in to Account"
               )}

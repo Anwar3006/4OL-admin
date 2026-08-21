@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
+import { useHasPermission } from "@/stores/permission-context";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +44,16 @@ const filterLabels: Record<TimeFilter, string> = {
 };
 
 const DashboardPage = () => {
+  const router = useRouter();
+  const canExport = useHasPermission("dashboard.export");
+  const canViewUsers = useHasPermission("users.view");
+  const canBroadcast = useHasPermission("notifications.create");
+  const canExportUsers = useHasPermission("users.export");
+  const canViewAi = useHasPermission("ai.view");
+  const canViewTransactions = useHasPermission("transactions.view");
+  const canViewFacilities = useHasPermission("facilities.view");
+  const canViewHcp = useHasPermission("hcp.view");
+  const canViewSecurity = useHasPermission("security.view");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("30");
   const [metrics, setMetrics] = useState<PlatformOverviewMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +108,13 @@ const DashboardPage = () => {
             <SelectItem value="year">This Year</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" disabled>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!canExport}
+          title={canExport ? "Download dashboard CSV" : "Requires dashboard.export permission"}
+          onClick={() => window.open("/api/dashboard/export", "_blank")}
+        >
           Export
         </Button>
         <Button variant="outline" size="sm" asChild>
@@ -126,6 +144,13 @@ const DashboardPage = () => {
           deltaType={deltaType(metrics?.deltas.users)}
           isLoading={loading}
           isError={!!error}
+          href={canViewUsers ? "/users" : undefined}
+          menuItems={[
+            ...(canViewUsers ? [{ label: "View Users", onClick: () => router.push("/users") }] : []),
+            ...(canBroadcast ? [{ label: "Send Broadcast", onClick: () => router.push("/notifications") }] : []),
+            ...(canExportUsers ? [{ label: "Export CSV", onClick: () => window.open("/api/admin/users/export", "_blank") }] : []),
+            ...(canViewAi ? [{ label: "View Flags", onClick: () => router.push("/users?tab=flagged") }] : []),
+          ]}
         />
         <KpiCard
           icon="🏥"
@@ -136,6 +161,15 @@ const DashboardPage = () => {
           deltaType={deltaType(metrics?.deltas.facilities)}
           isLoading={loading}
           isError={!!error}
+          href={canViewFacilities ? "/facilities" : undefined}
+          menuItems={[
+            ...(canViewFacilities
+              ? [
+                  { label: "View Facilities", onClick: () => router.push("/facilities") },
+                  { label: "Pending Approvals", onClick: () => router.push("/facilities?status=pending") },
+                ]
+              : []),
+          ]}
         />
         <KpiCard
           icon="💰"
@@ -147,6 +181,7 @@ const DashboardPage = () => {
           isLoading={loading}
           isError={!!error}
           isEmpty={!loading && !error && kpis?.revenue_mtd === null}
+          href={canViewTransactions ? "/transactions" : undefined}
         />
         <KpiCard
           icon="💳"
@@ -159,6 +194,7 @@ const DashboardPage = () => {
           isError={!!error}
           isEmpty={!loading && !error && kpis?.transactions === 0}
           emptyLabel="0"
+          href={canViewTransactions ? "/transactions" : undefined}
         />
         <KpiCard
           icon="🤖"
@@ -171,6 +207,15 @@ const DashboardPage = () => {
           isError={!!error}
           isEmpty={!loading && !error && kpis?.ai_queries_last_24h === 0}
           emptyLabel="0"
+          href={canViewAi ? "/ai" : undefined}
+          menuItems={[
+            ...(canViewAi
+              ? [
+                  { label: "AI Hub", onClick: () => router.push("/ai") },
+                  { label: "Moderation Queue", onClick: () => router.push("/users?tab=flagged") },
+                ]
+              : []),
+          ]}
         />
         <KpiCard
           icon="⭐"
@@ -183,6 +228,7 @@ const DashboardPage = () => {
           isError={!!error}
           isEmpty={!loading && !error && kpis?.premium_subscriptions === 0}
           emptyLabel="0"
+          href={canViewUsers ? "/users?tab=premium" : undefined}
         />
         <KpiCard
           icon="👨‍⚕️"
@@ -195,17 +241,22 @@ const DashboardPage = () => {
           isError={!!error}
           isEmpty={!loading && !error && kpis?.hcps === 0}
           emptyLabel="0"
+          href={canViewHcp ? "/hcp" : undefined}
         />
         <KpiCard
           icon="🔐"
           label="Security Score"
-          value="Awaiting data"
+          value={kpis?.security_score != null ? `${kpis.security_score}/100` : "Awaiting data"}
           variant="red"
           delta={`${metrics?.queues.open_security_threats ?? 0} open threats`}
           deltaType={metrics?.queues.open_security_threats ? "down" : "neutral"}
           isLoading={loading}
           isError={!!error}
-          isEmpty={!loading && !error}
+          isEmpty={!loading && kpis?.security_score == null}
+          href={canViewSecurity ? "/security" : undefined}
+          menuItems={[
+            ...(canViewSecurity ? [{ label: "Security Center", onClick: () => router.push("/security") }] : []),
+          ]}
         />
       </div>
 

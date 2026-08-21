@@ -1,8 +1,16 @@
 "use client";
-import { GoogleMap, useJsApiLoader, Data } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Data,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
 import React, { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGetFacilitiesMapData } from "@/hooks/supabase-calls/useFacilities";
 import { useRegistrarTrails } from "@/hooks/supabase-calls/useUser";
+import { useIbpPins, useOutdoorRoutePins } from "@/hooks/supabase-calls/useMap";
 import { getColorForId } from "@/lib/utils";
 
 const containerStyle = {
@@ -16,7 +24,21 @@ const center = {
 };
 
 
-const GoogleMapContainer = ({ filters }) => {
+/**
+ * @param {{
+ *   filters: any,
+ *   layers?: { facilities: boolean, footprints: boolean, ibp: boolean, outdoorRoutes: boolean },
+ *   focusRouteId?: string | null,
+ *   selectedCollectorId?: string | null,
+ * }} props
+ */
+const GoogleMapContainer = ({
+  filters,
+  layers = { facilities: true, footprints: true, ibp: false, outdoorRoutes: false },
+  focusRouteId = null,
+  selectedCollectorId = null,
+}) => {
+  const router = useRouter();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -25,6 +47,8 @@ const GoogleMapContainer = ({ filters }) => {
   const [map, setMap] = useState(null);
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(11);
+  const [selectedRoutePin, setSelectedRoutePin] = useState(null);
+  const [selectedIbpPin, setSelectedIbpPin] = useState(null);
 
   const { data: geojson, isLoading } = useGetFacilitiesMapData({
     minLng: bounds?.[0] ?? 0,
@@ -32,9 +56,24 @@ const GoogleMapContainer = ({ filters }) => {
     maxLng: bounds?.[2] ?? 0,
     maxLat: bounds?.[3] ?? 0,
     zoom: Math.round(zoom),
-    enabled: !!bounds,
+    enabled: !!bounds && layers.facilities,
     filters: filters,
   });
+
+  // Secondary pin layers (Gap Analysis Part F, phases 2-3).
+  const { data: ibpPins } = useIbpPins();
+  const { data: routePins } = useOutdoorRoutePins();
+
+  // Deep-link focus: /map?tab=map-view&route=<id> pans to the route start.
+  useEffect(() => {
+    if (!map || !focusRouteId || !routePins?.length) return;
+    const pin = routePins.find((p) => p.id === focusRouteId);
+    if (pin) {
+      map.panTo({ lat: pin.start_lat, lng: pin.start_lng });
+      map.setZoom(14);
+      setSelectedRoutePin(pin);
+    }
+  }, [map, focusRouteId, routePins]);
 
 
   const onLoad = useCallback(function callback(currentMap) {
@@ -100,20 +139,35 @@ const GoogleMapContainer = ({ filters }) => {
   const { data: trails } = useRegistrarTrails(1);
 
   useEffect(() => {
-    if (data && trails) {
-      trails.forEach((item) => {
-        const feature = {
-          type: "Feature",
-          geometry: item.trail,
-          properties: {
-            registrar_id: item.registrar_id,
-            type: "trail",
-          },
-        };
-        data.addGeoJson(feature);
-      });
+    if (!data) return;
+    // Remove stale trail features before re-adding (layer toggle aware).
+    const stale = [];
+    data.forEach((feature) => {
+      if (feature.getProperty("type") === "trail") stale.push(feature);
+    });
+    stale.forEach((feature) => data.remove(feature));
+
+    if (layers.footprints && trails) {
+      trails
+        .filter(
+          (item) =>
+            !selectedCollectorId ||
+            selectedCollectorId === "all" ||
+            item.registrar_id === selectedCollectorId,
+        )
+        .forEach((item) => {
+          const feature = {
+            type: "Feature",
+            geometry: item.trail,
+            properties: {
+              registrar_id: item.registrar_id,
+              type: "trail",
+            },
+          };
+          data.addGeoJson(feature);
+        });
     }
-  }, [data, trails]);
+  }, [data, trails, layers.footprints, selectedCollectorId]);
 
   const mapOptions = {
     zoomControl: true,
@@ -221,11 +275,25 @@ const GoogleMapContainer = ({ filters }) => {
   useEffect(() => {
     if (data && geojson) {
       data.forEach((feature) => {
-        data.remove(feature);
+        if (feature.getProperty("type") !== "trail") data.remove(feature);
       });
       data.addGeoJson(geojson);
     }
   }, [data, geojson]);
+
+  const pinPath =
+    "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z";
+
+  const makePinIcon = (fillColor) => ({
+    path: pinPath,
+    fillColor,
+    fillOpacity: 1,
+    strokeWeight: 1.5,
+    strokeColor: "#ffffff",
+    scale: 1.5,
+    anchor: isLoaded ? new window.google.maps.Point(12, 22) : undefined,
+    labelOrigin: isLoaded ? new window.google.maps.Point(12, 9) : undefined,
+  });
 
   return isLoaded ? (
     <div className="h-full w-full overflow-hidden rounded-xl border bg-slate-50 shadow-inner">
@@ -301,6 +369,85 @@ const GoogleMapContainer = ({ filters }) => {
               </span>
             </div>
           </div>
+        )}
+
+        {/* IBP business pins (purple, decision F-D3) */}
+        {layers.ibp &&
+          (ibpPins ?? []).map((pin) => (
+            <Marker
+              key={`ibp-${pin.id}`}
+              position={{ lat: pin.latitude, lng: pin.longitude }}
+              icon={makePinIcon("#8b5cf6")}
+              onClick={() => {
+                setSelectedIbpPin(pin);
+                setSelectedRoutePin(null);
+              }}
+            />
+          ))}
+
+        {/* Outdoor workout route pins (green, start of GPS track — F-D4) */}
+        {layers.outdoorRoutes &&
+          (routePins ?? []).map((pin) => (
+            <Marker
+              key={`route-${pin.id}`}
+              position={{ lat: pin.start_lat, lng: pin.start_lng }}
+              icon={makePinIcon("#22c55e")}
+              onClick={() => {
+                setSelectedRoutePin(pin);
+                setSelectedIbpPin(null);
+              }}
+            />
+          ))}
+
+        {selectedIbpPin && (
+          <InfoWindow
+            position={{ lat: selectedIbpPin.latitude, lng: selectedIbpPin.longitude }}
+            onCloseClick={() => setSelectedIbpPin(null)}
+          >
+            <div className="text-xs space-y-1 min-w-[160px]">
+              <div className="font-bold text-slate-800">🏪 {selectedIbpPin.business_name}</div>
+              <div className="text-slate-500 capitalize">{selectedIbpPin.business_category}</div>
+              <div className="text-slate-400">
+                {selectedIbpPin.district}, {selectedIbpPin.region}
+              </div>
+              <button
+                className="mt-1 text-emerald-700 font-bold hover:underline"
+                onClick={() => router.push("/ibp")}
+              >
+                View Business →
+              </button>
+            </div>
+          </InfoWindow>
+        )}
+
+        {selectedRoutePin && (
+          <InfoWindow
+            position={{ lat: selectedRoutePin.start_lat, lng: selectedRoutePin.start_lng }}
+            onCloseClick={() => setSelectedRoutePin(null)}
+          >
+            <div className="text-xs space-y-1 min-w-[180px]">
+              <div className="font-bold text-slate-800">🌳 {selectedRoutePin.name}</div>
+              <div className="text-slate-500 capitalize">
+                {selectedRoutePin.category || "Trail"} · {selectedRoutePin.difficulty}
+              </div>
+              <div className="text-slate-400">
+                {selectedRoutePin.distance_km ? `${selectedRoutePin.distance_km} km` : ""}
+                {selectedRoutePin.rating ? ` · ⭐ ${selectedRoutePin.rating}` : ""}
+              </div>
+              <div className="text-slate-400">
+                {selectedRoutePin.route_class === "official" ? "🏅 Official" : "👥 Community"}
+                {!selectedRoutePin.has_gps && " · ⚠️ No GPS"}
+              </div>
+              <button
+                className="mt-1 text-emerald-700 font-bold hover:underline"
+                onClick={() =>
+                  router.push(`/fitness?tab=outdoor&route=${selectedRoutePin.id}`)
+                }
+              >
+                View Route →
+              </button>
+            </div>
+          </InfoWindow>
         )}
       </GoogleMap>
     </div>

@@ -137,7 +137,10 @@ module.exports = {
       },
 
       fontFamily: {
-        inter: ["Inter", "sans-serif"],
+        // Part Q: Inter is now actually loaded via next/font (root layout).
+        // The CSS variable comes first; "Inter" stays as a local fallback.
+        inter: ["var(--font-inter)", "Inter", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       boxShadow: {
         base: "0px 0px 1px rgba(40, 41, 61, 0.08), 0px 0.5px 2px rgba(96, 97, 112, 0.16)",

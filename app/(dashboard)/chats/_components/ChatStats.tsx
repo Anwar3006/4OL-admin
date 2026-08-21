@@ -23,9 +23,16 @@ export default function ChatStats() {
   const groupDelta = analytics?.groups?.delta?.percent;
   const supportDelta = analytics?.support?.delta?.percent;
   const avgResponseMinutes = analytics?.support?.avg_first_response_minutes;
+  // satisfaction_average is avg(rating) on a 1–5 scale — display as %.
+  const satisfaction = analytics?.support?.satisfaction_average;
+  const satisfactionPercent =
+    satisfaction === null || satisfaction === undefined
+      ? null
+      : Math.round((satisfaction / 5) * 100);
+  const satisfactionCount = analytics?.support?.satisfaction_count ?? 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5 mb-6">
       <KpiCard
         icon="📊"
         label="Total Groups"
@@ -63,6 +70,26 @@ export default function ChatStats() {
         variant="green"
         delta={isLoading ? "" : `${analytics?.support?.unassigned ?? 0} unassigned`}
         deltaType={(analytics?.support?.unassigned ?? 0) > 0 ? "down" : "neutral"}
+      />
+      <KpiCard
+        icon="😊"
+        label="Satisfaction"
+        value={
+          isLoading
+            ? "..."
+            : satisfactionPercent === null
+              ? "No data"
+              : `${satisfactionPercent}%`
+        }
+        variant="purple"
+        delta={
+          isLoading
+            ? ""
+            : satisfactionCount > 0
+              ? `${satisfactionCount} ratings`
+              : "No ratings yet"
+        }
+        deltaType="neutral"
       />
     </div>
   );

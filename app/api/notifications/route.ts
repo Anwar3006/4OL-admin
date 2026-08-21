@@ -23,14 +23,14 @@ export async function GET() {
       admin
         .from("notifications")
         .select(
-          "id, user_id, title, body, type, metadata, is_read, is_broadcast, campaign_id, read_at, created_at",
+          "id, user_id, title, body, type, channel, metadata, is_read, is_broadcast, campaign_id, read_at, delivered_at, opened_at, sent_by, created_at",
         )
         .order("created_at", { ascending: false })
         .limit(75),
       admin
         .from("notification_campaigns")
         .select(
-          "id, template_id, title, body, type, metadata, segment_filter, scheduled_at, sent_at, failed_at, failure_reason, delivery_stats, created_at, approval_status, submitted_for_approval_at, approved_by, approved_at, rejection_reason",
+          "id, template_id, title, body, type, metadata, segment_filter, scheduled_at, sent_at, failed_at, failure_reason, delivery_stats, created_at, created_by, approval_status, submitted_for_approval_at, approved_by, approved_at, rejection_reason",
         )
         .order("created_at", { ascending: false })
         .limit(75),

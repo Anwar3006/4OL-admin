@@ -1,49 +1,21 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
+import { getPlatformHealth } from "@/lib/service-health";
 
-function envStatus(name: string) {
-  return Boolean(process.env[name]) ? "configured" : "missing";
-}
-
+/**
+ * Service/env-configuration map. Previously unguarded — any visitor could
+ * read which integrations are configured (Gap Analysis Part Y-D2). Now
+ * requires schematic.view, which is super_admin-only in ROLE_DEFAULTS.
+ * Probe logic lives in lib/service-health.ts, shared with /api/admin/schematic.
+ */
 export async function GET() {
-  const started = Date.now();
+  const auth = await requireAdminApiUser("schematic.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   try {
-    const admin = getSupabaseAdmin();
-    const { error } = await admin
-      .from("user_profiles")
-      .select("user_id", { count: "exact", head: true });
-
-    if (error) {
-      console.error("[health] Supabase ping failed:", error.message);
-      return NextResponse.json(
-        {
-          status: "degraded",
-          timestamp: new Date().toISOString(),
-          latencyMs: Date.now() - started,
-          services: {
-            api: "healthy",
-            supabase: "unhealthy",
-          },
-        },
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      latencyMs: Date.now() - started,
-      services: {
-        api: "healthy",
-        supabase: "healthy",
-        firebase: envStatus("FIREBASE_SERVICE_ACCOUNT_JSON"),
-        twilio: envStatus("TWILIO_AUTH_TOKEN"),
-        resend: envStatus("RESEND_API_KEY"),
-        paystack: envStatus("PAYSTACK_SECRET_KEY"),
-        googleMaps: envStatus("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),
-        gemini: envStatus("GEMINI_API_KEY"),
-      },
+    const health = await getPlatformHealth();
+    return NextResponse.json(health, {
+      status: health.status === "healthy" ? 200 : 503,
     });
   } catch (err) {
     console.error("[health] Unexpected error:", err);
@@ -51,7 +23,7 @@ export async function GET() {
       {
         status: "unhealthy",
         timestamp: new Date().toISOString(),
-        latencyMs: Date.now() - started,
+        latencyMs: 0,
       },
       { status: 503 },
     );

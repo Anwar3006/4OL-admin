@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const MetricsQuerySchema = z.object({
@@ -8,10 +8,8 @@ const MetricsQuerySchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("ai.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const parsed = MetricsQuerySchema.safeParse({
     period: req.nextUrl.searchParams.get("period") || "24h",

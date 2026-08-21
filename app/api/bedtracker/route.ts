@@ -1,40 +1,76 @@
+/**
+ * GET /api/bedtracker — BedTracker (PKM) overview feed.
+ * Gap Analysis Part L: wards grid (L-D1), facilities, ambulance fleet
+ * (L-D2), alerts and dispatches behind bedtracker.view. Writes live on
+ * /api/bedtracker/{wards,facilities,dispatches,alerts} sub-routes behind
+ * bedtracker.manage.
+ */
+
 import { NextResponse } from "next/server";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("bedtracker.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
-  const [facilitiesResult, alertsResult, dispatchesResult] = await Promise.all([
-    admin
-      .from("bed_tracker_facilities")
-      .select(
-        "id, facility_id, total_beds, available_beds, occupied_beds, emergency_beds, icu_beds, icu_available, general_ward_beds, general_ward_available, maternity_beds, maternity_available, pediatric_beds, pediatric_available, last_updated_at, is_tracking_enabled, alert_threshold, auto_alert_enabled, facility_profile(facility_name, facility_type, area, region, status)",
-      )
-      .order("last_updated_at", { ascending: false })
-      .limit(50),
-    admin
-      .from("bed_tracker_alerts")
-      .select(
-        "id, facility_id, alert_type, severity, message, bed_type, beds_available, beds_total, is_resolved, created_at",
-      )
-      .order("created_at", { ascending: false })
-      .limit(50),
-    admin
-      .from("ambulance_dispatches")
-      .select(
-        "id, dispatch_reference, emergency_type, caller_name, caller_phone, pickup_address, pickup_area, pickup_region, destination_address, status, priority, eta_minutes, created_at, destination_facility_id, facility_profile(facility_name, area, region)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(50),
-  ]);
+  const [facilitiesResult, wardsResult, fleetResult, alertsResult, dispatchesResult] =
+    await Promise.all([
+      admin
+        .from("bed_tracker_facilities")
+        .select(
+          "id, facility_id, total_beds, available_beds, occupied_beds, emergency_beds, " +
+            "ghs_facility_code, gps_coordinates, facility_admin_name, facility_admin_phone, " +
+            "hardware_option, subscription_tier, tablet_online, last_ping_at, " +
+            "last_updated_at, updated_by, is_tracking_enabled, alert_threshold, auto_alert_enabled, " +
+            "facility_profile(facility_name, facility_type, area, region, status)",
+        )
+        .order("last_updated_at", { ascending: false })
+        .limit(100),
+      admin
+        .from("bed_tracker_wards")
+        .select(
+          "id, bed_tracker_facility_id, ward_type, total_beds, occupied_beds, " +
+            "available_beds, last_updated_at, update_source, " +
+            "bed_tracker_facilities(facility_id, facility_profile(facility_name, region))",
+        )
+        .order("last_updated_at", { ascending: false })
+        .limit(500),
+      admin
+        .from("ambulances")
+        .select("*")
+        .eq("is_active", true)
+        .order("ambulance_code", { ascending: true })
+        .limit(100),
+      admin
+        .from("bed_tracker_alerts")
+        .select(
+          "id, facility_id, alert_type, severity, message, bed_type, beds_available, " +
+            "beds_total, is_resolved, resolved_at, created_at, " +
+            "bed_tracker_facilities(facility_id, facility_profile(facility_name))",
+        )
+        .order("created_at", { ascending: false })
+        .limit(50),
+      admin
+        .from("ambulance_dispatches")
+        .select(
+          "id, dispatch_reference, emergency_type, caller_name, pickup_address, " +
+            "pickup_region, pickup_area, pickup_gps, required_ward, patient_age_group, " +
+            "status, priority, eta_minutes, ai_routing_used, created_at, " +
+            "destination_facility_id, ambulance_id, " +
+            "facility_profile(facility_name, area, region)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
 
   const error =
-    facilitiesResult.error || alertsResult.error || dispatchesResult.error;
+    facilitiesResult.error ||
+    wardsResult.error ||
+    fleetResult.error ||
+    alertsResult.error ||
+    dispatchesResult.error;
   if (error) {
     console.error("[bedtracker] Supabase error:", error.message);
     return NextResponse.json(
@@ -44,28 +80,42 @@ export async function GET() {
   }
 
   const facilities = facilitiesResult.data ?? [];
+  const wards = wardsResult.data ?? [];
+  const fleet = fleetResult.data ?? [];
   const alerts = alertsResult.data ?? [];
   const dispatches = dispatchesResult.data ?? [];
 
-  const totalBeds = facilities.reduce(
-    (sum, facility) => sum + Number(facility.total_beds ?? 0),
+  const totalBeds = wards.reduce(
+    (sum: number, ward: any) => sum + Number(ward.total_beds ?? 0),
     0,
   );
-  const availableBeds = facilities.reduce(
-    (sum, facility) => sum + Number(facility.available_beds ?? 0),
+  const availableBeds = wards.reduce(
+    (sum: number, ward: any) => sum + Number(ward.available_beds ?? 0),
     0,
   );
 
   return NextResponse.json({
     facilities,
+    wards,
+    fleet,
     alerts,
     dispatches,
     metrics: {
       trackedFacilities: facilities.length,
+      facilitiesOnline: facilities.filter((f: any) => f.tablet_online).length,
       totalBeds,
       availableBeds,
-      activeAlerts: alerts.filter((alert) => !alert.is_resolved).length,
-      activeDispatches: dispatches.filter((dispatch) =>
+      occupancyPct:
+        totalBeds > 0
+          ? Math.round(((totalBeds - availableBeds) / totalBeds) * 100)
+          : 0,
+      criticalWards: wards.filter((ward: any) => Number(ward.available_beds) === 0 && Number(ward.total_beds) > 0).length,
+      ambulances: fleet.length,
+      ambulancesActive: fleet.filter((unit: any) =>
+        ["en_route", "responding"].includes(String(unit.status)),
+      ).length,
+      activeAlerts: alerts.filter((alert: any) => !alert.is_resolved).length,
+      activeDispatches: dispatches.filter((dispatch: any) =>
         ["pending", "assigned", "en_route", "in_progress"].includes(
           String(dispatch.status),
         ),

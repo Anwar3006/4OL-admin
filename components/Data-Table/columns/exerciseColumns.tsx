@@ -133,6 +133,24 @@ export const exerciseColumns: ColumnDef<any>[] = [
     ),
   },
   {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <span
+        className={cn(
+          "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+          row.original.status === "published"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            : row.original.status === "archived"
+              ? "bg-slate-100 text-slate-500 border-slate-200"
+              : "bg-amber-50 text-amber-700 border-amber-100",
+        )}
+      >
+        {row.original.status || "published"}
+      </span>
+    ),
+  },
+  {
     id: "actions",
     header: "",
     cell: ({ row }) => {

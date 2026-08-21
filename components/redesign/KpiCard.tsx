@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +37,8 @@ interface KpiCardProps {
     | "red"
     | "pink";
   menuItems?: { label: string; onClick?: () => void }[];
+  /** Optional deep link — makes the whole card clickable (dashboard hub). */
+  href?: string;
 }
 
 const ICON_BG: Record<string, string> = {
@@ -77,21 +80,25 @@ export default function KpiCard({
   emptyLabel = "No data",
   variant = "blue",
   menuItems = [],
+  href,
 }: KpiCardProps) {
   const displayValue = isError ? errorLabel : isEmpty ? emptyLabel : value;
 
-  return (
+  const card = (
     <Card
       className={cn(
         "flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0 hover:shadow-md transition-shadow",
         isError && "border-red-100 bg-red-50/30",
+        href && "cursor-pointer hover:border-emerald-200",
       )}
     >
       <CardContent className="p-0 flex flex-col gap-4 h-full">
         {/* ── Top Row: Label + Icon/Menu ── */}
         <div className="flex items-start justify-between w-full gap-2">
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 truncate">
+            {/* Part S/S-D3: sentence-case 12px medium label — the old 10px
+                black uppercase micro-labels broke Part Q's legibility floor. */}
+            <div className="text-xs font-medium text-slate-500 truncate">
               {label}
             </div>
           </div>
@@ -110,7 +117,11 @@ export default function KpiCard({
             {menuItems.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent">
+                  <button
+                    className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+                    // Prevent navigation when the card itself is a link.
+                    onClick={(e) => e.preventDefault()}
+                  >
                     <MoreHorizontal className="size-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -133,7 +144,10 @@ export default function KpiCard({
           ) : (
             <div
               className={cn(
-                "text-2xl sm:text-3xl font-black tracking-tighter leading-tight",
+                // Part S/S-D5: fixed 22px semibold (no responsive jump),
+                // tabular figures + break-words so values never escape the
+                // card boundary (S-D4).
+                "text-[22px] font-semibold leading-tight tracking-tight tabular-nums break-words",
                 isError
                   ? "text-red-700"
                   : isEmpty
@@ -156,7 +170,7 @@ export default function KpiCard({
                       ? "destructive"
                       : "secondary"
                 }
-                className="font-extrabold"
+                className="font-medium"
               >
                 {deltaType === "up" && <span className="text-[12px]">↑</span>}
                 {deltaType === "down" && <span className="text-[12px]">↓</span>}
@@ -168,4 +182,13 @@ export default function KpiCard({
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block h-full">
+        {card}
+      </Link>
+    );
+  }
+  return card;
 }

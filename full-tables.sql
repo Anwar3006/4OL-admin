@@ -506,6 +506,8 @@ CREATE TABLE public.ibp (
   campaign_budget numeric DEFAULT 0,
   total_spend numeric DEFAULT 0,
   admin_notes text,
+  latitude double precision, -- added by 20260820_map_footprint_extension.sql
+  longitude double precision, -- added by 20260820_map_footprint_extension.sql
   CONSTRAINT ibp_pkey PRIMARY KEY (id),
   CONSTRAINT ibp_user_id_user_id_fk FOREIGN KEY (user_id) REFERENCES public.user(id),
   CONSTRAINT ibp_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.user_profiles(user_id)
@@ -596,7 +598,7 @@ CREATE TABLE public.chat_support (
   subject text,
   message text,
   priority text DEFAULT 'Low'::text CHECK (priority = ANY (ARRAY['Low'::text, 'Medium'::text, 'High'::text])),
-  status text DEFAULT 'Open'::text CHECK (status = ANY (ARRAY['Open'::text, 'Closed'::text])),
+  status text DEFAULT 'Open'::text CHECK (status = ANY (ARRAY['Open'::text, 'Unread'::text, 'Pending'::text, 'Resolved'::text, 'Escalated'::text])),
   is_deleted boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
@@ -651,6 +653,11 @@ CREATE TABLE public.conversations (
   group_category text,
   is_verified_only boolean DEFAULT false,
   max_members integer DEFAULT 500,
+  status text NOT NULL DEFAULT 'active'::text CHECK (status = ANY (ARRAY['active'::text, 'inactive'::text, 'archived'::text])),
+  group_type text NOT NULL DEFAULT 'open'::text CHECK (group_type = ANY (ARRAY['open'::text, 'verified'::text, 'hcp_verified'::text, 'premium'::text, 'admin'::text])),
+  region_restriction text,
+  group_permissions jsonb NOT NULL DEFAULT '{}'::jsonb,
+  group_rules text,
   is_flagged boolean DEFAULT false,
   flagged_reason text,
   flagged_at timestamp with time zone,
@@ -1495,6 +1502,11 @@ CREATE TABLE public.fitness_outdoor_routes (
   features ARRAY NOT NULL DEFAULT '{}'::text[],
   fitcoins_reward integer NOT NULL DEFAULT 50,
   registered_by text,
+  start_lat double precision, -- added by 20260820_map_footprint_extension.sql (synced from gps_data.points[0])
+  start_lng double precision, -- added by 20260820_map_footprint_extension.sql
+  route_class text CHECK (route_class = ANY (ARRAY['official'::text, 'community'::text])), -- added by 20260820_map_footprint_extension.sql
+  verification_note text, -- added by 20260820_map_footprint_extension.sql
+  verified_at timestamp with time zone, -- added by 20260820_map_footprint_extension.sql
   CONSTRAINT fitness_outdoor_routes_pkey PRIMARY KEY (id),
   CONSTRAINT fitness_outdoor_routes_verified_by_fkey FOREIGN KEY (verified_by) REFERENCES public.user_profiles(user_id),
   CONSTRAINT fitness_outdoor_routes_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.user_profiles(user_id)
@@ -1747,4 +1759,63 @@ CREATE TABLE public.fitness_challenge_teams (
   CONSTRAINT fitness_challenge_teams_pkey PRIMARY KEY (id),
   CONSTRAINT fitness_challenge_teams_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES public.fitness_challenges(id),
   CONSTRAINT fitness_challenge_teams_captain_id_fkey FOREIGN KEY (captain_id) REFERENCES public.user_profiles(user_id)
+);
+
+-- =====================================================================
+-- GAP ANALYSIS PART F EXTENSION TABLES
+-- Source of truth: supabase/migrations/20260820_map_footprint_extension.sql
+-- =====================================================================
+CREATE TABLE public.map_collectors (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id uuid NOT NULL UNIQUE,
+  assigned_region text,
+  gps_status text NOT NULL DEFAULT 'inactive' CHECK (gps_status = ANY (ARRAY['active'::text, 'weak'::text, 'inactive'::text])),
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT map_collectors_pkey PRIMARY KEY (id),
+  CONSTRAINT map_collectors_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(user_id)
+);
+CREATE TABLE public.collector_footprints (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  collector_id bigint NOT NULL,
+  facility_id uuid,
+  region text,
+  district text,
+  area text,
+  lat double precision NOT NULL,
+  lng double precision NOT NULL,
+  gps_accuracy double precision,
+  activity text NOT NULL DEFAULT 'registered' CHECK (activity = ANY (ARRAY['registered'::text, 'survey'::text, 'documented'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT collector_footprints_pkey PRIMARY KEY (id),
+  CONSTRAINT collector_footprints_collector_id_fkey FOREIGN KEY (collector_id) REFERENCES public.map_collectors(id),
+  CONSTRAINT collector_footprints_facility_id_fkey FOREIGN KEY (facility_id) REFERENCES public.facility_profile(id)
+);
+CREATE TABLE public.map_priority_regions (
+  region text NOT NULL,
+  prioritized_by uuid,
+  prioritized_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT map_priority_regions_pkey PRIMARY KEY (region)
+);
+CREATE TABLE public.fitness_outdoor_event_registrations (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  event_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'registered' CHECK (status = ANY (ARRAY['registered'::text, 'attended'::text, 'cancelled'::text])),
+  registered_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT fitness_outdoor_event_registrations_pkey PRIMARY KEY (id),
+  CONSTRAINT fitness_outdoor_event_registrations_event_id_user_id_key UNIQUE (event_id, user_id),
+  CONSTRAINT fitness_outdoor_event_registrations_event_id_fkey FOREIGN KEY (event_id) REFERENCES public.fitness_outdoor_events(id),
+  CONSTRAINT fitness_outdoor_event_registrations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(user_id)
+);
+CREATE TABLE public.fitness_outdoor_incentives (
+  id boolean NOT NULL DEFAULT true CHECK (id),
+  base_fitcoins integer NOT NULL DEFAULT 50,
+  per_km_fitcoins integer NOT NULL DEFAULT 10,
+  verification_bonus integer NOT NULL DEFAULT 25,
+  event_bonus integer NOT NULL DEFAULT 20,
+  notes text,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT fitness_outdoor_incentives_pkey PRIMARY KEY (id)
 );

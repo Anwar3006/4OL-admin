@@ -1,4 +1,11 @@
-import { getSupabaseClient } from "@/lib/supabase";
+/**
+ * Marketing campaign hooks — Gap Analysis Part M Phase 3 retrofit.
+ * All data access now goes through RBAC-guarded /api/marketing/campaigns
+ * routes (marketing.view/create/edit/delete) instead of client-side
+ * Supabase, which bypassed permission checks entirely.
+ */
+
+import { apiFetch } from "@/lib/api-fetch";
 import {
   TMarketingProfileInput,
   TMarketingProfileOutput,
@@ -19,6 +26,8 @@ interface PaginatedResponse {
     live: number;
     paused: number;
     ended: number;
+    pending_review: number;
+    rejected: number;
   };
 }
 
@@ -28,6 +37,7 @@ type MarketingPaginationInput = {
   search?: string;
   status?: string;
 };
+
 export const MARKETING_PROFILE_QUERY_KEYS = {
   all: ["marketing-profiles"] as const,
   lists: () => [...MARKETING_PROFILE_QUERY_KEYS.all, "lists"] as const,
@@ -36,6 +46,17 @@ export const MARKETING_PROFILE_QUERY_KEYS = {
   details: () => [...MARKETING_PROFILE_QUERY_KEYS.all, "details"] as const,
   detail: (id: string) =>
     [...MARKETING_PROFILE_QUERY_KEYS.details(), id] as const,
+};
+
+const toLinksArray = (links: unknown): string[] | undefined => {
+  if (!links) return undefined;
+  if (Array.isArray(links)) return links.filter((l): l is string => typeof l === "string" && l.length > 0);
+  if (typeof links === "object") {
+    return Object.values(links as Record<string, unknown>).filter(
+      (link): link is string => typeof link === "string" && link.length > 0,
+    );
+  }
+  return undefined;
 };
 
 export const useMarketingProfiles = ({
@@ -52,53 +73,13 @@ export const useMarketingProfiles = ({
       status,
     }),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      const supabase = await getSupabaseClient();
-      let query = supabase
-        .from("marketing_profile")
-        .select("*", { count: "exact" });
-
-      if (search) {
-        query = query.or(
-          `headline.ilike.%${search}%,description.ilike.%${search}%,organization.ilike.%${search}%`,
-        );
-      }
-
-      if (status) {
-        query = query.eq("status", status);
-      }
-
-      const [campaignsResult, statsResult] = await Promise.all([
-        query.order("createdAt", { ascending: false }).range(from, to),
-        supabase.from("marketing_profile").select("status"),
-      ]);
-
-      if (campaignsResult.error) throw campaignsResult.error;
-      if (statsResult.error) throw statsResult.error;
-
-      //Process Stats (Client-side aggregation is faster than a 3rd query)
-      const rawStats = statsResult.data;
-      const statsMap = {
-        draft: rawStats.filter((s) => s.status === "draft").length,
-        scheduled: rawStats.filter((s) => s.status === "scheduled").length,
-        live: rawStats.filter((s) => s.status === "live").length,
-        paused: rawStats.filter((s) => s.status === "paused").length,
-        ended: rawStats.filter((s) => s.status === "ended").length,
-      };
-
-      const totalCount = campaignsResult.count ?? 0;
-
-      return {
-        data: campaignsResult.data as TMarketingProfileOutput[],
-        meta: {
-          totalPages: Math.ceil(totalCount / limit),
-          total: totalCount,
-          currentPage: page,
-        },
-        analytics: statsMap,
-      };
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) params.set("search", search);
+      if (status) params.set("status", status);
+      return apiFetch<PaginatedResponse>(`/api/marketing/campaigns?${params.toString()}`);
     },
   });
 };
@@ -113,14 +94,10 @@ export const useMarketingProfile = ({
   return useQuery<TMarketingProfileOutput, Error>({
     queryKey: MARKETING_PROFILE_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const { data, error } = await (await getSupabaseClient())
-        .from("marketing_profile")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw new Error(error.message);
-      return data as TMarketingProfileOutput;
+      const result = await apiFetch<{ data: TMarketingProfileOutput }>(
+        `/api/marketing/campaigns/${id}`,
+      );
+      return result.data;
     },
     enabled: enabled,
   });
@@ -131,25 +108,21 @@ export const useMarketingProfile = ({
 export const useCreateMarketingProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<TMarketingProfileOutput, Error, TMarketingProfileInput>({
-    mutationFn: async (data: TMarketingProfileInput) => {
-      const linksArray: string[] = Object.values(data.links).filter(
-        (link): link is string => typeof link === "string" && link.length > 0,
-      );
-
+  return useMutation<TMarketingProfileOutput, Error, TMarketingProfileInput & Record<string, unknown>>({
+    mutationFn: async (data) => {
       const inputData = {
         ...data,
-        links: linksArray,
+        links: toLinksArray(data.links) ?? [],
       };
-
-      const { data: result, error } = await (await getSupabaseClient())
-        .from("marketing_profile")
-        .insert(inputData)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return result as TMarketingProfileOutput;
+      const result = await apiFetch<{ data: TMarketingProfileOutput }>(
+        "/api/marketing/campaigns",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(inputData),
+        },
+      );
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -169,30 +142,23 @@ export const useUpdateMarketingProfile = () => {
   return useMutation<
     TMarketingProfileOutput,
     Error,
-    { id: string; data: Partial<TMarketingProfileOutput & { status: string }> }
+    { id: string; data: Partial<Omit<TMarketingProfileOutput, "status"> & { status: string }> }
   >({
     mutationFn: async ({ id, data: input }) => {
-      let inputData = { ...input };
-
-      if (input.links) {
-        const linksArray: string[] = Object.values(input.links).filter(
-          (link): link is string => typeof link === "string" && link.length > 0,
-        );
-        inputData = {
-          ...inputData,
-          links: linksArray,
-        };
+      let inputData: Record<string, unknown> = { ...input };
+      if ("links" in inputData) {
+        inputData.links = toLinksArray(inputData.links) ?? [];
       }
 
-      const { data: result, error } = await (await getSupabaseClient())
-        .from("marketing_profile")
-        .update(inputData)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return result as TMarketingProfileOutput;
+      const result = await apiFetch<{ data: TMarketingProfileOutput }>(
+        `/api/marketing/campaigns/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(inputData),
+        },
+      );
+      return result.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -209,27 +175,12 @@ export const useUpdateMarketingProfile = () => {
 export const useDeleteMarketingProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { id: string; imageUrl: string }>({
-    mutationFn: async ({ id, imageUrl }) => {
-      const supabase = await getSupabaseClient();
-      // 1. Delete from Storage
-      if (imageUrl) {
-        const { error: storageError } = await supabase.storage
-          .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!)
-          .remove([imageUrl]);
-
-        if (storageError) {
-          console.warn("Storage deletion failed:", storageError);
-        }
-      }
-
-      // 2. Delete from DB
-      const { error } = await (await getSupabaseClient())
-        .from("marketing_profile")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
+  return useMutation<void, Error, { id: string; imageUrl?: string }>({
+    mutationFn: async ({ id }) => {
+      // Storage cleanup now happens server-side alongside the row delete.
+      await apiFetch<{ ok: boolean }>(`/api/marketing/campaigns/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -239,6 +190,70 @@ export const useDeleteMarketingProfile = () => {
     },
     onError: (error) => {
       toast.error(`Failed to delete marketing profile: ${error.message}`);
+    },
+  });
+};
+
+// =============== Review + Bulk (M3/M4) ============
+
+export const useReviewMarketingProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    { id: string; status: string },
+    Error,
+    {
+      id: string;
+      decision: "approve" | "reject";
+      review_notes?: string;
+      approved_start_date?: string;
+      approved_end_date?: string;
+    }
+  >({
+    mutationFn: async ({ id, ...payload }) => {
+      const result = await apiFetch<{ data: { id: string; status: string } }>(
+        `/api/marketing/campaigns/${id}/review`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      return result.data;
+    },
+    onSuccess: (_, { decision }) => {
+      queryClient.invalidateQueries({
+        queryKey: MARKETING_PROFILE_QUERY_KEYS.all,
+      });
+      toast.success(
+        decision === "approve" ? "Campaign approved & launched!" : "Campaign rejected.",
+      );
+    },
+    onError: (error) => {
+      toast.error(`Review failed: ${error.message}`);
+    },
+  });
+};
+
+export const useBatchMarketingProfiles = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { ids: string[]; action: "launch" | "pause" | "end" }>({
+    mutationFn: async (payload) => {
+      await apiFetch<{ ok: boolean }>("/api/marketing/campaigns/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: (_, { action, ids }) => {
+      queryClient.invalidateQueries({
+        queryKey: MARKETING_PROFILE_QUERY_KEYS.all,
+      });
+      toast.success(`${ids.length} campaign(s) ${action}ed successfully!`);
+    },
+    onError: (error) => {
+      toast.error(`Bulk action failed: ${error.message}`);
     },
   });
 };

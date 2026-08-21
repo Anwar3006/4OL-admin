@@ -1,0 +1,166 @@
+"use client";
+
+import React, { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import GoogleMapContainer from "./GoogleMapContainer";
+import FilterDropdown from "./FilterDropdown";
+import ghanaLocations from "@/constant/ghana-locations.json";
+import { FACILITY_TYPE_OPTIONS } from "@/types/formInput";
+import { cn } from "@/lib/utils";
+import { useMapCollectors } from "@/hooks/supabase-calls/useMap";
+import { useHasPermission } from "@/stores/permission-context";
+
+interface MapViewTabProps {
+  fullScreen?: boolean;
+}
+
+const LAYER_DEFS = [
+  { key: "facilities", label: "Facilities", color: "bg-emerald-500" },
+  { key: "footprints", label: "Footprints", color: "bg-orange-400" },
+  { key: "ibp", label: "IBP Businesses", color: "bg-violet-500" },
+  { key: "outdoorRoutes", label: "Outdoor Routes", color: "bg-green-500" },
+] as const;
+
+const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
+  const searchParams = useSearchParams();
+  const focusRouteId = searchParams.get("route");
+
+  const [filters, setFilters] = useState<{
+    region: string | null;
+    district: string | null;
+    facilityType: string | null;
+    status: string | null;
+  }>({ region: null, district: null, facilityType: null, status: null });
+
+  const [layers, setLayers] = useState({
+    facilities: true,
+    footprints: true,
+    ibp: false,
+    outdoorRoutes: true,
+  });
+
+  // Collector filter is staff PII — only offered with users.view (F-D6).
+  const canViewFootprints = useHasPermission("users.view");
+  const [collectorFilter, setCollectorFilter] = useState("all");
+  const { data: collectorsData } = useMapCollectors();
+
+  const regions = useMemo(() => Object.keys(ghanaLocations), []);
+  const districts = useMemo(() => {
+    if (!filters.region) return [];
+    return (ghanaLocations as Record<string, string[]>)[filters.region] || [];
+  }, [filters.region]);
+
+  const handleRegionChange = (val: string | null) => {
+    setFilters((prev) => ({ ...prev, region: val, district: null }));
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Filters + layer toggles */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div className="flex flex-wrap gap-4 items-end">
+          <FilterDropdown
+            label="Region"
+            value={filters.region}
+            options={regions}
+            onChange={handleRegionChange}
+          />
+          <FilterDropdown
+            label="District"
+            value={filters.district}
+            options={districts}
+            onChange={(val) => setFilters((prev) => ({ ...prev, district: val }))}
+          />
+          <FilterDropdown
+            label="Facility Type"
+            value={filters.facilityType}
+            options={FACILITY_TYPE_OPTIONS.map((opt) => opt.label)}
+            onChange={(val) => setFilters((prev) => ({ ...prev, facilityType: val }))}
+          />
+          <FilterDropdown
+            label="Status"
+            value={filters.status}
+            options={["Active", "Pending", "Suspended"]}
+            onChange={(val) => setFilters((prev) => ({ ...prev, status: val }))}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Layers
+          </span>
+          {LAYER_DEFS.map((layer) => (
+            <button
+              key={layer.key}
+              onClick={() =>
+                setLayers((prev) => ({ ...prev, [layer.key]: !prev[layer.key] }))
+              }
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all",
+                layers[layer.key]
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600",
+              )}
+            >
+              <span className={cn("h-2 w-2 rounded-full", layer.color)} />
+              {layer.label}
+              <span className="text-[9px]">{layers[layer.key] ? "ON" : "OFF"}</span>
+            </button>
+          ))}
+
+          {canViewFootprints && layers.footprints && (
+            <select
+              className="px-3 py-1.5 text-[11px] font-bold border border-slate-200 rounded-full bg-white text-slate-600 cursor-pointer"
+              value={collectorFilter}
+              onChange={(e) => setCollectorFilter(e.target.value)}
+            >
+              <option value="all">👣 All Collectors</option>
+              {(collectorsData?.collectors ?? []).map((c) => (
+                <option key={c.id} value={c.user_id}>
+                  {`${c.user?.first_name ?? ""} ${c.user?.last_name ?? ""}`.trim() ||
+                    c.user_id.slice(0, 8)}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      {/* Map + legend */}
+      <div
+        className={cn(
+          "rounded-2xl border border-slate-200 overflow-hidden shadow-xl bg-white relative",
+          fullScreen ? "h-[calc(100vh-260px)]" : "h-[calc(100vh-380px)] min-h-[420px]",
+        )}
+      >
+        <GoogleMapContainer
+          filters={filters}
+          layers={layers}
+          focusRouteId={focusRouteId}
+          selectedCollectorId={canViewFootprints ? collectorFilter : null}
+        />
+
+        {/* Legend overlay */}
+        <div className="absolute bottom-4 left-4 z-40 bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-lg p-3 space-y-1.5">
+          <div className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+            Legend
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-600">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Facility (by status)
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-600">
+            <span className="h-2.5 w-2.5 rounded-full bg-violet-500" /> IBP Business
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-600">
+            <span className="h-2.5 w-2.5 rounded-full bg-green-500" /> Outdoor Route
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-600">
+            <span className="h-1 w-4 rounded bg-orange-400" /> Collector Trail
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MapViewTab;

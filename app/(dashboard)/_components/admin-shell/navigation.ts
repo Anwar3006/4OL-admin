@@ -192,7 +192,13 @@ export const dashboardNavSections: DashboardNavSection[] = [
     title: "Platform",
     items: [
       { title: "Security Center", href: "/security", icon: "🔐", permission: "security.view" },
-      { title: "Platform Schematic", href: "/schematic", icon: "🗂️", permission: "dashboard.view" },
+      // Gap Analysis Part U: hidden by default — devops.view is granted to no
+      // role in ROLE_DEFAULTS, so only super_admin sees this entry.
+      { title: "DevOps", href: "/devops", icon: "🖥️", permission: "devops.view" },
+      // Gap Analysis Part Y: super_admin-only. schematic.view is granted to no
+      // role in ROLE_DEFAULTS, so only super_admin sees this entry (mirrors the
+      // mockup's Platform Schematic matrix, which is Super Admin only).
+      { title: "Platform Schematic", href: "/schematic", icon: "🗂️", permission: "schematic.view" },
       { title: "Settings", href: "/settings", icon: "⚙️" },
       {
         title: "Delete Account Requests",

@@ -1,10 +1,6 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import { redirect } from "next/navigation";
 
+// O-D6: the live AI Hub is the single tabbed page at /ai.
 export default function Page() {
-  return (
-    <PlaceholderPage
-      title="ai hub"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+  redirect("/ai");
 }

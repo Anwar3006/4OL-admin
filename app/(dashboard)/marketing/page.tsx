@@ -14,6 +14,7 @@ import DiscountsTab from "./_components/DiscountsTab";
 import { ViewMarketingDialog } from "./_components/view-marketing-dialog";
 import { cn } from "@/lib/utils";
 import AddMarketingDialog from "./_components/add-marketing-dialog";
+import { useAddMarketingDialog } from "@/stores/dialog-store";
 
 const MktTabs = [
   { id: "all", label: "📣 All Campaigns" },
@@ -28,6 +29,7 @@ const MarketingPage = () => {
   const router = useRouter();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
+  const { open: openAddCampaign } = useAddMarketingDialog();
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -46,9 +48,28 @@ const MarketingPage = () => {
         title="📣 Marketing Campaigns"
         subtitle="Campaigns, promotions and user acquisition managed by Marketing Manager"
       >
-        <button className="btn btn-secondary btn-sm">📋 Analytics Report</button>
-        <button className="btn btn-secondary btn-sm">📋 Review Submissions</button>
-        <button className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]">+ New Campaign</button>
+        {/* Gap Analysis Part M (M2): header buttons wired */}
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => handleTabChange("analytics")}
+        >
+          📋 Analytics Report
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => {
+            handleTabChange("all");
+            router.push("/marketing?tab=all&status=pending_review", { scroll: false });
+          }}
+        >
+          📋 Review Submissions
+        </button>
+        <button
+          className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
+          onClick={() => openAddCampaign()}
+        >
+          + New Campaign
+        </button>
       </PageHeader>
 
       <MarketingStats />

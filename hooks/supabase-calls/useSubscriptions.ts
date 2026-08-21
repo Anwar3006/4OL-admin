@@ -1,4 +1,13 @@
-import { getSupabaseClient } from "@/lib/supabase";
+/**
+ * Marketing subscription hooks — Gap Analysis Part M Phase 3 retrofit.
+ *
+ * `useMarketingSubscriptions` etc. manage the PLAN CATALOG
+ * (marketing_subscriptions) via /api/marketing/plans. The new subscriber
+ * hooks (user_subscriptions, M-D5) use /api/marketing/subscribers.
+ * Everything is RBAC-guarded server-side now — no client Supabase.
+ */
+
+import { apiFetch } from "@/lib/api-fetch";
 import {
   TMarketingSubscriptionInput,
   TMarketingSubscriptionOutput,
@@ -29,6 +38,8 @@ type MarketingSubscriptionRow = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  subscribers?: number;
+  active_subscribers?: number;
 };
 
 type SubscriptionPaginationInput = {
@@ -46,6 +57,8 @@ export const MARKETING_SUBSCRIPTION_QUERY_KEYS = {
   details: () => [...MARKETING_SUBSCRIPTION_QUERY_KEYS.all, "details"] as const,
   detail: (id: string) =>
     [...MARKETING_SUBSCRIPTION_QUERY_KEYS.details(), id] as const,
+  subscribers: (params: Record<string, unknown>) =>
+    [...MARKETING_SUBSCRIPTION_QUERY_KEYS.all, "subscribers", params] as const,
 };
 
 const mapSubscriptionRow = (
@@ -81,11 +94,11 @@ const buildSubscriptionPayload = (
 });
 
 export const useMarketingSubscriptions = ({
-  page,
-  limit,
+  page = 1,
+  limit = 100,
   search,
   activeOnly = false,
-}: SubscriptionPaginationInput) => {
+}: Partial<SubscriptionPaginationInput> = {}) => {
   return useQuery<PaginatedResponse, Error>({
     queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.list({
       page,
@@ -94,39 +107,27 @@ export const useMarketingSubscriptions = ({
       activeOnly,
     }),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      const supabase = await getSupabaseClient();
-      let query = supabase
-        .from("marketing_subscriptions")
-        .select("*", { count: "exact" });
-
+      const result = await apiFetch<{ data: MarketingSubscriptionRow[] }>(
+        "/api/marketing/plans",
+      );
+      let rows = result.data ?? [];
       if (search) {
-        query = query.or(
-          `name.ilike.%${search}%,description.ilike.%${search}%`,
+        const needle = search.toLowerCase();
+        rows = rows.filter(
+          (row) =>
+            row.name.toLowerCase().includes(needle) ||
+            (row.description ?? "").toLowerCase().includes(needle),
         );
       }
+      if (activeOnly) rows = rows.filter((row) => row.is_active !== false);
 
-      if (activeOnly) {
-        query = query.eq("is_active", true);
-      }
-
-      const result = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (result.error) throw result.error;
-
-      const totalCount = result.count ?? 0;
-
+      const total = rows.length;
+      const from = (page - 1) * limit;
       return {
-        data: ((result.data || []) as MarketingSubscriptionRow[]).map(
-          mapSubscriptionRow,
-        ),
+        data: rows.slice(from, from + limit).map(mapSubscriptionRow),
         meta: {
-          totalPages: Math.ceil(totalCount / limit),
-          total: totalCount,
+          totalPages: Math.max(1, Math.ceil(total / limit)),
+          total,
           currentPage: page,
         },
       };
@@ -144,15 +145,10 @@ export const useMarketingSubscription = ({
   return useQuery<TMarketingSubscriptionOutput, Error>({
     queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
-      const { data, error } = await supabase
-        .from("marketing_subscriptions")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw new Error(error.message);
-      return mapSubscriptionRow(data as MarketingSubscriptionRow);
+      const result = await apiFetch<{ data: MarketingSubscriptionRow }>(
+        `/api/marketing/plans/${id}`,
+      );
+      return mapSubscriptionRow(result.data);
     },
     enabled: enabled,
   });
@@ -168,16 +164,16 @@ export const useCreateMarketingSubscription = () => {
     Error,
     TMarketingSubscriptionInput
   >({
-    mutationFn: async (data: TMarketingSubscriptionInput) => {
-      const supabase = await getSupabaseClient();
-      const { data: result, error } = await supabase
-        .from("marketing_subscriptions")
-        .insert(buildSubscriptionPayload(data))
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return mapSubscriptionRow(result as MarketingSubscriptionRow);
+    mutationFn: async (data) => {
+      const result = await apiFetch<{ data: MarketingSubscriptionRow }>(
+        "/api/marketing/plans",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildSubscriptionPayload(data)),
+        },
+      );
+      return mapSubscriptionRow(result.data);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -200,16 +196,15 @@ export const useUpdateMarketingSubscription = () => {
     { id: string; data: Partial<TMarketingSubscriptionInput> }
   >({
     mutationFn: async ({ id, data: input }) => {
-      const supabase = await getSupabaseClient();
-      const { data: result, error } = await supabase
-        .from("marketing_subscriptions")
-        .update(buildSubscriptionPayload(input))
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return mapSubscriptionRow(result as MarketingSubscriptionRow);
+      const result = await apiFetch<{ data: MarketingSubscriptionRow }>(
+        `/api/marketing/plans/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildSubscriptionPayload(input)),
+        },
+      );
+      return mapSubscriptionRow(result.data);
     },
     onSuccess: async (result) => {
       await Promise.all([
@@ -233,13 +228,9 @@ export const useDeleteMarketingSubscription = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const supabase = await getSupabaseClient();
-      const { error } = await supabase
-        .from("marketing_subscriptions")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
+      await apiFetch<{ ok: boolean }>(`/api/marketing/plans/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: async (_, id) => {
       await Promise.all([
@@ -254,6 +245,89 @@ export const useDeleteMarketingSubscription = () => {
     },
     onError: (error) => {
       toast.error(`Failed to delete subscription: ${error.message}`);
+    },
+  });
+};
+
+// =============== Subscribers (user_subscriptions — M-D5) ============
+
+export type TUserSubscriptionRow = {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: "active" | "at_risk" | "cancelled" | "expired";
+  subscribed_at: string;
+  next_renewal_at: string | null;
+  payment_method: string | null;
+  auto_renew: boolean;
+  risk_reason: string | null;
+  last_reminded_at: string | null;
+  cancelled_at: string | null;
+  marketing_subscriptions: {
+    id: string;
+    name: string;
+    price: number;
+    billing_cycle: string;
+  } | null;
+  user_profiles: {
+    user_id: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone_number: string | null;
+  } | null;
+};
+
+export const useMarketingSubscribers = ({
+  page,
+  limit,
+  status,
+  plan,
+}: {
+  page: number;
+  limit: number;
+  status?: string;
+  plan?: string;
+}) => {
+  return useQuery<
+    {
+      data: TUserSubscriptionRow[];
+      meta: { totalPages: number; total: number; currentPage: number };
+    },
+    Error
+  >({
+    queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.subscribers({ page, limit, status, plan }),
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (status) params.set("status", status);
+      if (plan) params.set("plan", plan);
+      return apiFetch(`/api/marketing/subscribers?${params.toString()}`);
+    },
+  });
+};
+
+export const useRemindSubscribers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { ids?: string[]; at_risk?: boolean }>({
+    mutationFn: async (payload) => {
+      await apiFetch<{ ok: boolean }>("/api/marketing/subscribers/remind", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: MARKETING_SUBSCRIPTION_QUERY_KEYS.all,
+      });
+      toast.success("Reminders queued!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to send reminders: ${error.message}`);
     },
   });
 };

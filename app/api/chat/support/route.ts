@@ -191,9 +191,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Support ticket not found" }, { status: 404 });
     }
 
-    if (ticket.status !== "Closed") {
+    if (ticket.status !== "Resolved") {
       return NextResponse.json(
-        { error: "Only closed support tickets can be rated" },
+        { error: "Only resolved support tickets can be rated" },
         { status: 400 },
       );
     }

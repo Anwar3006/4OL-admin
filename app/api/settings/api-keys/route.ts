@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const envKeyMap = [
@@ -18,10 +18,8 @@ function maskEnvValue(value: string | undefined) {
 }
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("settings.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
   const { data, error } = await admin

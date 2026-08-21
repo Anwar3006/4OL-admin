@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const SettingsSchema = z.object({
@@ -19,10 +19,8 @@ const defaults = {
 };
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("settings.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
@@ -43,10 +41,8 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("settings.manage");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const parsed = SettingsSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

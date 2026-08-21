@@ -6,6 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useHasPermission } from "@/stores/permission-context";
 
 interface FlaggedUserRow {
   id: string;
@@ -14,11 +15,14 @@ interface FlaggedUserRow {
   userStatus: string;
   reason: string;
   status: string;
+  flaggedBy: string;
+  reportedBy: string | null;
   createdAt: string;
 }
 
 export default function FlaggedUsersTab() {
   const queryClient = useQueryClient();
+  const canModerate = useHasPermission("ai.manage");
 
   const { data, isLoading, isError } = useQuery<{ items: FlaggedUserRow[]; total: number }, Error>({
     queryKey: ["admin-flagged-users"],
@@ -65,6 +69,15 @@ export default function FlaggedUsersTab() {
         cell: ({ row }) => <span className="text-red-500 text-xs">{row.original.reason}</span>,
       },
       {
+        id: "flaggedBy",
+        header: "Flagged By",
+        cell: ({ row }) => (
+          <span className={row.original.flaggedBy === "AI Moderation" ? "badge badge-purple" : "badge badge-blue"}>
+            {row.original.flaggedBy === "AI Moderation" ? "🤖 AI Moderation" : "👤 User Reports"}
+          </span>
+        ),
+      },
+      {
         accessorKey: "createdAt",
         header: "Date Flagged",
         cell: ({ row }) => format(new Date(row.original.createdAt), "MMM dd, yyyy"),
@@ -74,13 +87,16 @@ export default function FlaggedUsersTab() {
   );
 
   const rowActions = useMemo(
-    () => [
-      { label: "Dismiss", onClick: (row: FlaggedUserRow) => takeAction(row.id, "dismiss") },
-      { label: "Warn", onClick: (row: FlaggedUserRow) => takeAction(row.id, "warn") },
-      { label: "Suspend", onClick: (row: FlaggedUserRow) => takeAction(row.id, "remove") },
-      { label: "Ban", onClick: (row: FlaggedUserRow) => takeAction(row.id, "ban") },
-    ],
-    [],
+    () =>
+      canModerate
+        ? [
+            { label: "Dismiss", onClick: (row: FlaggedUserRow) => takeAction(row.id, "dismiss") },
+            { label: "Warn", onClick: (row: FlaggedUserRow) => takeAction(row.id, "warn") },
+            { label: "Suspend", onClick: (row: FlaggedUserRow) => takeAction(row.id, "remove") },
+            { label: "Ban", onClick: (row: FlaggedUserRow) => takeAction(row.id, "ban") },
+          ]
+        : [],
+    [canModerate],
   );
 
   return (

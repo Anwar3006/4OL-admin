@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   let query = admin
     .from("content_moderation_flags")
     .select(
-      "id, content_id, report_reason, report_detail, status, action_taken, created_at",
+      "id, content_id, report_reason, report_detail, status, action_taken, ai_detected, reported_by, created_at",
       { count: "exact" },
     )
     .eq("content_type", "profile");
@@ -71,6 +71,9 @@ export async function GET(req: NextRequest) {
         detail: row.report_detail,
         status: row.status,
         actionTaken: row.action_taken,
+        // "Flagged By" column (mockup): AI Moderation vs User Reports.
+        flaggedBy: row.ai_detected ? "AI Moderation" : "User Reports",
+        reportedBy: row.reported_by,
         createdAt: row.created_at,
       };
     }),

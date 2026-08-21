@@ -12,6 +12,9 @@ import {
   useDeleteFitnessOutdoorEvent,
   useFitnessOutdoorReviews,
   useDeleteFitnessOutdoorReview,
+  usePendingOutdoorRoutes,
+  useOutdoorIncentives,
+  useUpdateOutdoorIncentives,
 } from "@/hooks/supabase-calls/useFitnessOutdoor";
 import {
   useAddOutdoorRouteDialog,
@@ -27,8 +30,12 @@ import AddOutdoorEventDialog from "../_components/add-outdoor-event-dialog";
 
 import AddOutdoorReviewDialog from "../_components/add-outdoor-review-dialog";
 import ViewOutdoorReviewDialog from "../_components/view-outdoor-review-dialog";
+import VerifyOutdoorRouteDialog from "../_components/verify-outdoor-route-dialog";
+import EventParticipantsDialog from "../_components/event-participants-dialog";
+import ChallengesTab from "./ChallengesTab";
 import { cn } from "@/lib/utils";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { useHasPermission } from "@/stores/permission-context";
 import {
   MapPin,
   Calendar,
@@ -40,13 +47,28 @@ import {
   Clock,
   Star,
   ShieldAlert,
+  Trophy,
+  Coins,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ViewOutdoorEventDialog } from "../_components/view-outdoor-event-dialog";
+
+const INCENTIVE_FIELDS = [
+  { key: "base_fitcoins", label: "Base Reward (per verified route)" },
+  { key: "per_km_fitcoins", label: "Per-Kilometre Bonus" },
+  { key: "verification_bonus", label: "Verification Bonus" },
+  { key: "event_bonus", label: "Event Attendance Bonus" },
+] as const;
 
 const OutdoorTab = () => {
   const [activeSubTab, setActiveSubTab] = useState("routes");
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const canEditFitness = useHasPermission("fitness.edit");
+
+  // Phase 5 (Gap Analysis Part F): verify queue + participants modal targets
+  const [verifyTarget, setVerifyTarget] = useState<any | null>(null);
+  const [participantsEvent, setParticipantsEvent] = useState<any | null>(null);
 
   // Search & Pagination States
   const [routeSearch, setRouteSearch] = useState("");
@@ -75,6 +97,15 @@ const OutdoorTab = () => {
   const viewEventDialog = useViewOutdoorEventDialog();
   const addReviewDialog = useAddOutdoorReviewDialog();
   const viewReviewDialog = useViewOutdoorReviewDialog();
+
+  // Deep link from the Map page: /fitness?tab=outdoor&route=<id>
+  useEffect(() => {
+    const routeParam = searchParams.get("route");
+    if (routeParam) {
+      viewRouteDialog.open(routeParam);
+      router.replace("/fitness?tab=outdoor", { scroll: false });
+    }
+  }, [searchParams, viewRouteDialog, router]);
 
   // Pending delete confirmation (only one of route/event/review at a time)
   const [confirmDelete, setConfirmDelete] = useState<
@@ -117,6 +148,28 @@ const OutdoorTab = () => {
       search: debouncedReviewSearch,
       rating: reviewRating,
     });
+
+  // Pending verification queue + incentive config (Gap Analysis Part F)
+  const { data: pendingRoutes } = usePendingOutdoorRoutes();
+  const { data: incentives } = useOutdoorIncentives();
+  const updateIncentives = useUpdateOutdoorIncentives();
+  const [incentiveForm, setIncentiveForm] = useState<Record<string, number>>({
+    base_fitcoins: 50,
+    per_km_fitcoins: 10,
+    verification_bonus: 25,
+    event_bonus: 20,
+  });
+
+  useEffect(() => {
+    if (incentives) {
+      setIncentiveForm({
+        base_fitcoins: incentives.base_fitcoins ?? 50,
+        per_km_fitcoins: incentives.per_km_fitcoins ?? 10,
+        verification_bonus: incentives.verification_bonus ?? 25,
+        event_bonus: incentives.event_bonus ?? 20,
+      });
+    }
+  }, [incentives]);
 
   // Mutations
   const { mutate: deleteRoute } = useDeleteFitnessOutdoorRoute();
@@ -286,6 +339,16 @@ const OutdoorTab = () => {
               👁️
             </button>
             <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              title="View on Map"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/map?tab=map-view&route=${route.id}`);
+              }}
+            >
+              🗺️
+            </button>
+            <button
               className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
@@ -308,7 +371,7 @@ const OutdoorTab = () => {
       },
     },
     ],
-    [addRouteDialog, handleDeleteRoute, viewRouteDialog],
+    [addRouteDialog, handleDeleteRoute, router, viewRouteDialog],
   );
 
   const eventColumns = useMemo(
@@ -413,6 +476,16 @@ const OutdoorTab = () => {
               }}
             >
               👁️
+            </button>
+            <button
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              title="View Participants"
+              onClick={(e) => {
+                e.stopPropagation();
+                setParticipantsEvent(event);
+              }}
+            >
+              👥
             </button>
             <button
               className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
@@ -618,6 +691,26 @@ const OutdoorTab = () => {
               <MessageSquare className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
               Reviews
             </TabsTrigger>
+            <TabsTrigger
+              value="challenges"
+              className={cn(
+                "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
+                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+              )}
+            >
+              <Trophy className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
+              Challenges
+            </TabsTrigger>
+            <TabsTrigger
+              value="incentives"
+              className={cn(
+                "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
+                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+              )}
+            >
+              <Coins className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
+              Incentives
+            </TabsTrigger>
           </TabsList>
 
           {/* Dynamic addition trigger button */}
@@ -653,6 +746,65 @@ const OutdoorTab = () => {
             SUB-TAB: ROUTES
             ------------------------------------------------------------- */}
         <TabsContent value="routes" className="outline-none space-y-4 w-full min-w-0">
+          {/* Pending Verification Queue (Gap Analysis Part F, m-verify-route) */}
+          {pendingRoutes && pendingRoutes.length > 0 && (
+            <div className="card border-amber-200/70 bg-amber-50/40">
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-500" />
+                  <h3 className="text-sm font-black text-slate-800">
+                    Pending Verification Queue
+                  </h3>
+                  <span className="badge badge-amber">{pendingRoutes.length}</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-medium">
+                  Community-submitted routes waiting for GPS review
+                </p>
+              </div>
+              <div className="space-y-2">
+                {pendingRoutes.map((pr: any) => {
+                  const hasGps =
+                    Array.isArray(pr.gps_data?.points) &&
+                    pr.gps_data.points.length > 0;
+                  return (
+                    <div
+                      key={pr.id}
+                      className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-xl px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-slate-800 truncate">
+                          {pr.name}
+                        </div>
+                        <div className="text-[10px] text-slate-500 capitalize truncate">
+                          {pr.area}
+                          {pr.region ? `, ${pr.region}` : ""} · {pr.difficulty}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span
+                          className={cn(
+                            "badge text-[8px] font-black uppercase",
+                            hasGps ? "badge-green" : "badge-amber",
+                          )}
+                        >
+                          {hasGps ? "✅ GPS" : "⚠️ No GPS"}
+                        </span>
+                        {canEditFitness && (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => setVerifyTarget(pr)}
+                          >
+                            🛡️ Verify
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -802,6 +954,67 @@ const OutdoorTab = () => {
             />
           </div>
         </TabsContent>
+
+        {/* -------------------------------------------------------------
+            SUB-TAB: CHALLENGES (reused top-level module)
+            ------------------------------------------------------------- */}
+        <TabsContent value="challenges" className="outline-none space-y-4 w-full min-w-0">
+          <ChallengesTab />
+        </TabsContent>
+
+        {/* -------------------------------------------------------------
+            SUB-TAB: INCENTIVES (m-route-incentives)
+            ------------------------------------------------------------- */}
+        <TabsContent value="incentives" className="outline-none space-y-4 w-full min-w-0">
+          <div className="card max-w-2xl">
+            <h3 className="text-sm font-black text-slate-800 mb-1">
+              🪙 FitCoins Route Incentives
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Global reward formula applied when outdoor routes are verified
+              and events are attended. Changes take effect immediately for the
+              mobile app.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {INCENTIVE_FIELDS.map((field) => (
+                <div key={field.key} className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    {field.label}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+                    value={incentiveForm[field.key]}
+                    disabled={!canEditFitness}
+                    onChange={(e) =>
+                      setIncentiveForm((prev) => ({
+                        ...prev,
+                        [field.key]: parseInt(e.target.value || "0", 10),
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+            {canEditFitness && (
+              <button
+                className="btn btn-primary mt-5"
+                disabled={updateIncentives.isPending}
+                onClick={() =>
+                  updateIncentives.mutate({
+                    baseFitcoins: incentiveForm.base_fitcoins,
+                    perKmFitcoins: incentiveForm.per_km_fitcoins,
+                    verificationBonus: incentiveForm.verification_bonus,
+                    eventBonus: incentiveForm.event_bonus,
+                  })
+                }
+              >
+                {updateIncentives.isPending ? "Saving…" : "💾 Save Incentive Formula"}
+              </button>
+            )}
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Render Dialog forms and Side sheets */}
@@ -813,6 +1026,15 @@ const OutdoorTab = () => {
 
       <AddOutdoorReviewDialog />
       <ViewOutdoorReviewDialog />
+
+      <VerifyOutdoorRouteDialog
+        route={verifyTarget}
+        onClose={() => setVerifyTarget(null)}
+      />
+      <EventParticipantsDialog
+        event={participantsEvent}
+        onClose={() => setParticipantsEvent(null)}
+      />
 
       <DeleteConfirmationModal
         isOpen={!!confirmDelete}

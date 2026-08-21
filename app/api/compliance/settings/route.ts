@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-
-const ADMIN_WRITE_ROLES = ["admin", "super_admin"];
 
 const UpdateSchema = z.object({
   graTaxId: z.string().trim().max(80).optional().nullable(),
@@ -14,10 +12,8 @@ const UpdateSchema = z.object({
 });
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("settings.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
@@ -44,16 +40,12 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // GRA/VAT compliance writes are billing-tier: settings.billing is held only
+  // by super_admin in ROLE_DEFAULTS (Part P least-privilege split).
+  const auth = await requireAdminApiUser("settings.billing");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
-  const { data: profile } = await admin.from("user_profiles").select("role").eq("user_id", user.id).maybeSingle();
-  if (!profile?.role || !ADMIN_WRITE_ROLES.includes(profile.role)) {
-    return NextResponse.json({ error: "Only Admin or Super Admin can update compliance settings." }, { status: 403 });
-  }
 
   const parsed = UpdateSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -70,7 +62,7 @@ export async function PATCH(req: NextRequest) {
     ...(parsed.data.vatFilingFrequency !== undefined && { vat_filing_frequency: parsed.data.vatFilingFrequency }),
     ...(parsed.data.nextFilingDueDate !== undefined && { next_filing_due_date: parsed.data.nextFilingDueDate }),
     ...(parsed.data.lastFiledAt !== undefined && { last_filed_at: parsed.data.lastFiledAt }),
-    updated_by: user.id,
+    updated_by: auth.user.id,
   });
 
   if (error) {

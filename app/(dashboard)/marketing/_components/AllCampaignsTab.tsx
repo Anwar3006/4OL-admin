@@ -1,27 +1,104 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { marketingColumns } from "@/components/Data-Table/columns/marketingColumns";
-import { useMarketingProfiles } from "@/hooks/supabase-calls/useMarketing";
+import {
+  useBatchMarketingProfiles,
+  useMarketingProfiles,
+} from "@/hooks/supabase-calls/useMarketing";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { useViewMarketingDialog } from "@/stores/dialog-store";
+import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
 
+const STATUS_OPTIONS = [
+  { value: "", label: "All Statuses" },
+  { value: "draft", label: "Draft" },
+  { value: "live", label: "Live" },
+  { value: "paused", label: "Paused" },
+  { value: "ended", label: "Ended" },
+  { value: "scheduled", label: "Scheduled" },
+  { value: "pending_review", label: "Pending Review" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const TYPE_OPTIONS = [
+  { value: "", label: "All Types" },
+  { value: "app_promotion", label: "App Promotion" },
+  { value: "feature_launch", label: "Feature Launch" },
+  { value: "seasonal", label: "Seasonal" },
+  { value: "business_submitted", label: "Business Submitted" },
+  { value: "referral", label: "Referral" },
+];
+
+const CHANNEL_OPTIONS = [
+  { value: "", label: "All Channels" },
+  { value: "push", label: "Push" },
+  { value: "sms", label: "SMS" },
+  { value: "email", label: "Email" },
+  { value: "in_app_banner", label: "In-App Banner" },
+  { value: "social", label: "Social" },
+];
+
+const selectClass =
+  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[10px] font-black uppercase tracking-widest text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all";
+
+/**
+ * Gap Analysis Part M (M3): full filter bar (search/status/type/channel),
+ * bulk Launch/Pause/End over the DataTable selection, and deep-link
+ * support (?status=pending_review from the Review Submissions header
+ * button).
+ */
 export default function AllCampaignsTab() {
+  const searchParams = useSearchParams();
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
     usePagination({ key: "campaigns_page" });
+
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState(searchParams.get("status") ?? "");
+  const [type, setType] = useState("");
+  const [channel, setChannel] = useState("");
+
+  // Follow header-button deep links while the tab stays mounted.
+  useEffect(() => {
+    const linkedStatus = searchParams.get("status");
+    if (linkedStatus && linkedStatus !== status) setStatus(linkedStatus);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounce the search box into the query param.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { data, isLoading, isError, error } = useMarketingProfiles({
     page,
     limit: pageSize,
+    search: search || undefined,
+    status: status || undefined,
   });
-  const campaigns = data?.data || [];
+  const campaigns = (data?.data || []).filter(
+    (campaign) =>
+      !type || campaign.campaign_type === type || campaign.marketingType === type,
+  );
+  const filtered = channel
+    ? campaigns.filter((campaign) =>
+        (campaign.channels ?? []).includes(channel),
+      )
+    : campaigns;
 
   const totalPages = data?.meta?.totalPages || 1;
-
   const { open: openView } = useViewMarketingDialog();
+  const batch = useBatchMarketingProfiles();
 
-  const cardConfig: MobileCardConfig<any> = {
+  const runBatch = (action: "launch" | "pause" | "end") =>
+    (rows: TMarketingProfileOutput[]) =>
+      batch.mutate({ ids: rows.map((row) => row.id), action });
+
+  const cardConfig: MobileCardConfig<TMarketingProfileOutput> = {
     header: {
       title: (data) => data.headline,
       subtitle: (data) => data.marketingType,
@@ -52,23 +129,65 @@ export default function AllCampaignsTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search campaigns..."
+          value={searchInput}
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+            onPageChange(1);
+          }}
         />
-        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
-          📥 Export Data
-        </button>
+        <select
+          className={selectClass}
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            onPageChange(1);
+          }}
+        >
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <select
+          className={selectClass}
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          {TYPE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <select
+          className={selectClass}
+          value={channel}
+          onChange={(e) => setChannel(e.target.value)}
+        >
+          {CHANNEL_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <DataTable
           columns={marketingColumns}
-          data={campaigns}
+          data={filtered}
           isLoading={isLoading}
           isError={isError}
           error={error}
           onRowClick={(row) => openView(row.id)}
-          onDeleteSelected={(rows) => console.log("Deleting rows:", rows)}
+          bulkActions={[
+            { label: "🚀 Launch Selected", onClick: runBatch("launch") },
+            { label: "⏸️ Pause Selected", onClick: runBatch("pause") },
+            { label: "🏁 End Selected", onClick: runBatch("end") },
+          ]}
           cardConfig={cardConfig}
           pagination={{
             currentPage: page,

@@ -2,27 +2,33 @@
 
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
+import { apiFetch } from "@/lib/api-fetch";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 
+type Stats = {
+  draft: number;
+  scheduled: number;
+  live: number;
+  paused: number;
+  ended: number;
+  pending_review: number;
+  rejected: number;
+};
+
+/**
+ * Gap Analysis Part M (M4): Pending Review KPI joins the status row; data
+ * comes from the RBAC-guarded campaigns endpoint instead of client-side
+ * Supabase.
+ */
 export default function MarketingStats() {
   const { data: stats } = useQuery({
     queryKey: ["marketing-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("marketing_profile")
-        .select("status");
-      if (error) throw error;
-      
-      const counts = {
-        draft: data.filter(r => r.status === 'draft').length,
-        live: data.filter(r => r.status === 'live').length,
-        paused: data.filter(r => r.status === 'paused').length,
-        ended: data.filter(r => r.status === 'ended').length,
-        total: data.length
-      };
-      return counts;
-    }
+      const result = await apiFetch<{ analytics: Stats }>(
+        "/api/marketing/campaigns?page=1&limit=1",
+      );
+      return result.analytics;
+    },
   });
 
   return (
@@ -31,7 +37,7 @@ export default function MarketingStats() {
       <KpiCard icon="✅" label="Live" value={stats?.live || 0} variant="green" delta="Running now" deltaType="up" />
       <KpiCard icon="⏸️" label="Paused" value={stats?.paused || 0} variant="blue" delta="Manually paused" deltaType="neutral" />
       <KpiCard icon="📊" label="Ended" value={stats?.ended || 0} variant="teal" delta="Completed" deltaType="neutral" />
-      <KpiCard icon="📢" label="Total" value={stats?.total || 0} variant="indigo" delta="All time" deltaType="neutral" />
+      <KpiCard icon="🔍" label="Pending Review" value={stats?.pending_review || 0} variant="indigo" delta="Business submissions" deltaType="neutral" />
     </div>
   );
 }

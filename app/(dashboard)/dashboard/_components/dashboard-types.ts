@@ -76,6 +76,11 @@ export type PlatformOverviewMetrics = {
     active_bed_alerts: number;
     open_security_threats: number;
     pending_moderation_flags: number;
+    // Extended queues merged in by /api/dashboard/overview (Part D).
+    admins_missing_mfa?: number;
+    pending_job_posts?: number;
+    pending_ai_flags?: number;
+    flagged_reviews?: number;
   };
   operations: {
     notification_campaigns: number;

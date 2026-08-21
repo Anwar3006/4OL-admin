@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const BodyMapQuerySchema = z.object({
@@ -17,6 +17,11 @@ type BodyPartRow = {
   mesh_id: string | null;
   path: string;
   level: number | null;
+  body_system?: string | null;
+  gender_scope?: string | null;
+  icon?: string | null;
+  description?: string | null;
+  display_order?: number | null;
 };
 
 const systemKeywords: Record<string, string[]> = {
@@ -40,11 +45,13 @@ function inferSystem(part: BodyPartRow) {
   return "general";
 }
 
+const EXTENDED_COLUMNS =
+  "id, name, parent_id, mesh_id, path, level, body_system, gender_scope, icon, description, display_order";
+const BASE_COLUMNS = "id, name, parent_id, mesh_id, path, level";
+
 export async function GET(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("anatomy.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const parsed = BodyMapQuerySchema.safeParse({
     bodySystem: req.nextUrl.searchParams.get("bodySystem") || "all",
@@ -59,20 +66,39 @@ export async function GET(req: NextRequest) {
   }
 
   const admin = getSupabaseAdmin();
-  const [partsResult, symptomLinksResult, conditionLinksResult] =
-    await Promise.all([
-      admin
-        .from("body_parts")
-        .select("id, name, parent_id, mesh_id, path, level")
-        .order("level", { ascending: true })
-        .order("name", { ascending: true })
-        .limit(parsed.data.limit),
-      admin.from("symptom_body_parts").select("body_part_id"),
-      admin.from("condition_body_parts").select("body_part_id"),
-    ]);
+  // Prefer the anatomy_extension columns; fall back to the base select when
+  // the migration hasn't been applied yet (fresh environments).
+  let partsData: BodyPartRow[] | null = null;
+  let partsLoadError: { message: string } | null = null;
 
-  if (partsResult.error) {
-    console.error("[anatomy/body-map] body parts error:", partsResult.error.message);
+  const extendedResult = await admin
+    .from("body_parts")
+    .select(EXTENDED_COLUMNS)
+    .order("display_order", { ascending: true, nullsFirst: false })
+    .order("level", { ascending: true })
+    .order("name", { ascending: true })
+    .limit(parsed.data.limit);
+
+  if (extendedResult.error) {
+    const baseResult = await admin
+      .from("body_parts")
+      .select(BASE_COLUMNS)
+      .order("level", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(parsed.data.limit);
+    partsData = (baseResult.data ?? []) as BodyPartRow[];
+    partsLoadError = baseResult.error;
+  } else {
+    partsData = (extendedResult.data ?? []) as BodyPartRow[];
+  }
+
+  const [symptomLinksResult, conditionLinksResult] = await Promise.all([
+    admin.from("symptom_body_parts").select("body_part_id"),
+    admin.from("condition_body_parts").select("body_part_id"),
+  ]);
+
+  if (partsLoadError) {
+    console.error("[anatomy/body-map] body parts error:", partsLoadError.message);
     return NextResponse.json(
       { error: "Failed to load body parts." },
       { status: 500 },
@@ -107,10 +133,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const parts = ((partsResult.data ?? []) as BodyPartRow[])
+  const parts = (partsData ?? [])
     .map((part) => ({
       ...part,
-      body_system: inferSystem(part),
+      body_system: part.body_system || inferSystem(part),
       symptom_count: symptomCounts.get(part.id) ?? 0,
       condition_count: conditionCounts.get(part.id) ?? 0,
     }))
@@ -125,4 +151,56 @@ export async function GET(req: NextRequest) {
     total: parts.length,
     system: parsed.data.bodySystem,
   });
+}
+
+const CreateBodyPartSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  parent_id: z.uuid().optional().nullable(),
+  body_system: z.string().trim().max(60).optional(),
+  gender_scope: z
+    .enum(["female", "male", "shared", "unspecified"])
+    .default("unspecified"),
+  icon: z.string().trim().max(16).optional(),
+  description: z.string().trim().max(2000).optional(),
+  display_order: z.number().int().min(0).max(10000).optional(),
+});
+
+export async function POST(req: NextRequest) {
+  const auth = await requireAdminApiUser("anatomy.edit");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+
+  const parsed = CreateBodyPartSchema.safeParse(
+    await req.json().catch(() => null),
+  );
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid body part payload", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data, error } = await admin
+    .from("body_parts")
+    .insert({
+      name: parsed.data.name,
+      parent_id: parsed.data.parent_id ?? null,
+      body_system: parsed.data.body_system ?? null,
+      gender_scope: parsed.data.gender_scope,
+      icon: parsed.data.icon ?? null,
+      description: parsed.data.description ?? null,
+      display_order: parsed.data.display_order ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[anatomy/body-map] create error:", error.message);
+    return NextResponse.json(
+      { error: "Failed to create body part." },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ part: data }, { status: 201 });
 }

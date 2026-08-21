@@ -1,52 +1,237 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { userColumns } from "@/components/Data-Table/columns/userColumns";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
-import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { User, Mail, Phone } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
 import { useViewUserDialog } from "@/stores/dialog-store";
+import { useHasPermission } from "@/stores/permission-context";
+import {
+  AdminUserRow,
+  useAdminUsers,
+  useUpdateUserStatus,
+} from "@/hooks/supabase-calls/useAdminUsers";
+import { useRouter } from "next/navigation";
+import BulkUserActionsDialog from "./BulkUserActionsDialog";
+
+// ── Display helpers ─────────────────────────────────────────────────────────
+
+const PLAN_BADGES: Record<string, string> = {
+  free: "badge badge-slate",
+  standard: "badge badge-blue",
+  premium: "badge badge-purple",
+  featured: "badge badge-amber",
+};
+
+const STATUS_BADGES: Record<string, string> = {
+  active: "badge badge-green",
+  inactive: "badge badge-slate",
+  suspended: "badge badge-amber",
+  banned: "badge badge-red",
+};
+
+const displayName = (row: AdminUserRow) =>
+  row.full_name ||
+  `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim() ||
+  "Unknown User";
+
+const formatDate = (value: string | null) =>
+  value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
+
+const relativeTime = (value: string | null) => {
+  if (!value) return "Never";
+  const diffMs = Date.now() - new Date(value).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return formatDate(value);
+};
+
+const selectClass =
+  "h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20";
 
 export default function AllUsersTab() {
-  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "users_page" });
-  const { data, isLoading, isError, error } = useUsers({ admin: false, page, limit: pageSize });
+  const router = useRouter();
   const viewDialog = useViewUserDialog();
+  const canEdit = useHasPermission("users.edit");
+  const { page, pageSize, onPageChange, onNextPage, onPreviousPage } =
+    usePagination({ key: "users_page" });
 
-  const users = data?.users || [];
-  const totalItems = data?.meta?.total ?? 0;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [plan, setPlan] = useState("");
+  const [status, setStatus] = useState("");
+  const [nhis, setNhis] = useState<"" | "linked" | "unlinked">("");
+  const [sort, setSort] = useState<"" | "newest" | "oldest" | "last_active">("");
+  const [bulkRows, setBulkRows] = useState<AdminUserRow[]>([]);
+  const updateStatus = useUpdateUserStatus();
 
-  const cardConfig: MobileCardConfig<any> = {
+  // Debounce the search box so we don't fire a request per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const { data, isLoading, isError, error } = useAdminUsers({
+    search: search || undefined,
+    plan: plan || undefined,
+    status: status || undefined,
+    nhis: nhis || undefined,
+    sort: sort || undefined,
+    page,
+    limit: pageSize,
+  });
+
+  const users = data?.users ?? [];
+  const totalItems = data?.total ?? 0;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        id: "user",
+        header: "User",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => {
+          const user = row.original;
+          return (
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-bold text-slate-800">
+                  {displayName(user)}
+                </span>
+                {user.public_id && (
+                  <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    {user.public_id}
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] text-slate-400">{user.email ?? "—"}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "phone",
+        header: "Phone",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className="text-[11px] font-semibold text-slate-600">
+            {row.original.phone_number ?? "—"}
+          </span>
+        ),
+      },
+      {
+        id: "plan",
+        header: "Plan",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className={PLAN_BADGES[row.original.plan] ?? "badge badge-slate"}>
+            {row.original.plan}
+          </span>
+        ),
+      },
+      {
+        id: "nhis",
+        header: "NHIS",
+        cell: ({ row }: { row: { original: AdminUserRow } }) =>
+          row.original.nhis_linked ? (
+            <span className="badge badge-green">✓ {row.original.nhis_number}</span>
+          ) : (
+            <span className="text-[11px] text-slate-400">Not linked</span>
+          ),
+      },
+      {
+        id: "region",
+        header: "Region",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className="text-[11px] text-slate-600">{row.original.region ?? "—"}</span>
+        ),
+      },
+      {
+        id: "engagement",
+        header: "Engagement",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-emerald-500"
+                style={{ width: `${row.original.engagement_score}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-bold text-slate-500">
+              {row.original.engagement_score}%
+            </span>
+          </div>
+        ),
+      },
+      {
+        id: "joined",
+        header: "Joined",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className="text-[11px] text-slate-500">{formatDate(row.original.created_at)}</span>
+        ),
+      },
+      {
+        id: "last_active",
+        header: "Last Active",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className="text-[11px] text-slate-500">{relativeTime(row.original.last_active)}</span>
+        ),
+      },
+      {
+        id: "status",
+        header: "Status",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => {
+          const value = row.original.status ?? "active";
+          return (
+            <span className={STATUS_BADGES[value] ?? "badge badge-slate"}>{value}</span>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
+  const rowActions = useMemo(() => {
+    const actions: { label: string; onClick: (row: AdminUserRow) => void; danger?: boolean }[] = [
+      { label: "View Profile", onClick: (row) => viewDialog.open(row.user_id) },
+      { label: "Send Message", onClick: () => router.push("/chats") },
+    ];
+    if (canEdit) {
+      actions.push({
+        label: "Change Plan",
+        onClick: (row) => setBulkRows([row]),
+      });
+      actions.push({
+        label: "Suspend",
+        danger: true,
+        onClick: (row) =>
+          updateStatus.mutate({ userId: row.user_id, status: "suspended" }),
+      });
+    }
+    return actions;
+  }, [canEdit, router, updateStatus, viewDialog]);
+
+  const cardConfig: MobileCardConfig<AdminUserRow> = {
     header: {
-      title: (data) => data.name,
-      subtitle: (data) => data.email,
+      title: (data) => displayName(data),
+      subtitle: (data) => data.email ?? "—",
       badge: (data) => (
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-          data.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'
-        }`}>
-          {data.status || 'active'}
-        </span>
+        <span className={PLAN_BADGES[data.plan] ?? "badge badge-slate"}>{data.plan}</span>
       ),
     },
     fields: [
+      { id: "phone", label: "Phone", render: (data) => data.phone_number ?? "—" },
+      { id: "region", label: "Region", render: (data) => data.region ?? "—" },
       {
-        id: "phone",
-        label: "Phone",
-        icon: <Phone className="w-3 h-3" />,
-        render: (data) => data.phone_number || 'N/A',
+        id: "status",
+        label: "Status",
+        render: (data) => data.status ?? "active",
       },
-      {
-        id: "type",
-        label: "Type",
-        render: (data) => data.user_type,
-      }
     ],
-    actions: [
-      { label: "View User", onClick: (data) => viewDialog.open(data.user_id) },
-      { label: "Edit User", onClick: (data) => console.log('Edit', data.user_id) },
-    ]
+    actions: [{ label: "View User", onClick: (data) => viewDialog.open(data.user_id) }],
   };
 
   return (
@@ -54,31 +239,62 @@ export default function AllUsersTab() {
       <div className="flex flex-wrap gap-2 items-center">
         <input
           className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-          placeholder="🔍 Search users..."
+          placeholder="🔍 Search name, email, phone, NHIS…"
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
         />
-        <select className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20">
-          <option>All Plans</option>
+        <select className={selectClass} value={plan} onChange={(e) => setPlan(e.target.value)}>
+          <option value="">All Plans</option>
+          <option value="free">Free</option>
+          <option value="standard">Standard</option>
+          <option value="premium">Premium</option>
+          <option value="featured">Featured</option>
         </select>
-        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
-          📥 Export CSV
-        </button>
+        <select className={selectClass} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="suspended">Suspended</option>
+          <option value="banned">Banned</option>
+        </select>
+        <select
+          className={selectClass}
+          value={nhis}
+          onChange={(e) => setNhis(e.target.value as "" | "linked" | "unlinked")}
+        >
+          <option value="">NHIS: All</option>
+          <option value="linked">NHIS Linked</option>
+          <option value="unlinked">Not Linked</option>
+        </select>
+        <select
+          className={selectClass}
+          value={sort}
+          onChange={(e) => setSort(e.target.value as "" | "newest" | "oldest" | "last_active")}
+        >
+          <option value="">Sort: Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="last_active">Last Active</option>
+        </select>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <DataTable
-          columns={userColumns}
+          columns={columns}
           data={users}
           isLoading={isLoading}
           isError={isError}
           error={error}
+          selectable={canEdit}
           onRowClick={(row) => viewDialog.open(row.user_id)}
-          onDeleteSelected={(rows) => console.log('Delete Rows', rows)}
+          onDeleteSelected={canEdit ? (rows) => setBulkRows(rows) : undefined}
+          deleteLabel="Bulk Actions"
+          rowActions={rowActions}
           cardConfig={cardConfig}
           pagination={{
             currentPage: page,
-            totalPages: totalPages || 1,
-            totalItems: totalItems,
-            pageSize: pageSize,
+            totalPages,
+            totalItems,
+            pageSize,
             onPageChange,
             onNextPage,
             onPreviousPage,
@@ -87,6 +303,8 @@ export default function AllUsersTab() {
           }}
         />
       </div>
+
+      <BulkUserActionsDialog rows={bulkRows} onClose={() => setBulkRows([])} />
     </div>
   );
 }

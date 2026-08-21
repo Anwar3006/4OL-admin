@@ -16,7 +16,7 @@ export const marketingProfileSchema = z.object({
 export type TMarketingProfileInput = z.infer<typeof marketingProfileSchema>;
 
 export type TMarketingProfileOutput = {
-  marketingType: "ads" | "events" | "news" | "health" | "other";
+  marketingType: "ads" | "events" | "news" | "health" | "other" | string;
   headline: string;
   description: string;
   imageUrl: string;
@@ -26,5 +26,24 @@ export type TMarketingProfileOutput = {
   endDate: string;
   cta: string;
   id: string;
-  status: "draft" | "scheduled" | "live" | "paused" | "ended";
+  status:
+    | "draft"
+    | "scheduled"
+    | "live"
+    | "paused"
+    | "ended"
+    | "pending_review"
+    | "rejected";
+  // Gap Analysis Part M extension columns (nullable until populated).
+  campaign_type?: string | null;
+  channels?: string[];
+  target_segment?: string | null;
+  budget?: number | null;
+  impressions?: number;
+  clicks?: number;
+  conversions?: number;
+  submitted_by_business?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_notes?: string | null;
 };

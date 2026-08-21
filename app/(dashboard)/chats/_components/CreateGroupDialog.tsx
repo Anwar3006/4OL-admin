@@ -7,13 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,51 +17,41 @@ import {
   useCreateConversation,
   useUpdateConversation,
 } from "@/hooks/supabase-calls/useConversation";
-import { Loader2, Users, ShieldCheck } from "lucide-react";
-
-const CATEGORY_OPTIONS = [
-  {
-    value: "general",
-    label: "💬 General",
-    description:
-      "A group where anyone and everyone can join with no specific topic.",
-  },
-  {
-    value: "specialty",
-    label: "🩺 Specialty",
-    description:
-      "Discussions focused on specific medical fields or specialties.",
-  },
-  {
-    value: "facility",
-    label: "🏥 Facility",
-    description: "A private group dedicated to staff of a specific facility.",
-  },
-  {
-    value: "support",
-    label: "🎧 Peer Support",
-    description: "A safe space for peer-to-peer advice and support.",
-  },
-  {
-    value: "announcements",
-    label: "📣 Announcements",
-    description: "Broadcast important updates to community members.",
-  },
-];
+import { useUsers } from "@/hooks/supabase-calls/useUser";
+import { GHANA_REGIONS } from "@/lib/shared-constants";
+import {
+  GROUP_CATEGORIES,
+  GROUP_TYPES,
+  GROUP_PERMISSION_OPTIONS,
+  GROUP_PERMISSION_DEFAULTS,
+  normalizeGroupCategory,
+  type GroupPermissionKey,
+} from "@/lib/chats-constants";
+import { Loader2 } from "lucide-react";
 
 const MAX_MEMBERS_DEFAULT = 500;
 
+// Full m-create-group form (Gap Analysis Part E): category (E-D4 vocabulary),
+// group type, max members, region restriction (E-D6: all 16 regions),
+// 6 permission checkboxes, group rules, optional second group admin.
 export default function CreateGroupDialog() {
   const { isOpen, close, data, isEditMode } = useAddGroupDialog();
   const group = data as any;
   const createMutation = useCreateConversation();
   const updateMutation = useUpdateConversation();
+  const { data: adminsData } = useUsers({ admin: true, page: 1, limit: 100 });
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("general");
-  const [isVerifiedOnly, setIsVerifiedOnly] = useState(false);
+  const [category, setCategory] = useState("community_support");
+  const [groupType, setGroupType] = useState("open");
   const [maxMembers, setMaxMembers] = useState(String(MAX_MEMBERS_DEFAULT));
+  const [regionRestriction, setRegionRestriction] = useState("");
+  const [permissions, setPermissions] = useState<Record<GroupPermissionKey, boolean>>(
+    { ...GROUP_PERMISSION_DEFAULTS },
+  );
+  const [groupRules, setGroupRules] = useState("");
+  const [assignAdminId, setAssignAdminId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   // Populate form when editing an existing group
@@ -76,24 +59,34 @@ export default function CreateGroupDialog() {
     if (isEditMode && group) {
       setName(group.name || "");
       setDescription(group.description || "");
-      setCategory(group.group_category || "general");
-      setIsVerifiedOnly(group.is_verified_only ?? false);
+      setCategory(normalizeGroupCategory(group.group_category));
+      setGroupType(group.group_type || (group.is_verified_only ? "hcp_verified" : "open"));
       setMaxMembers(
-        group.max_members
-          ? String(group.max_members)
-          : String(MAX_MEMBERS_DEFAULT),
+        group.max_members ? String(group.max_members) : String(MAX_MEMBERS_DEFAULT),
       );
+      setRegionRestriction(group.region_restriction || "");
+      setPermissions({
+        ...GROUP_PERMISSION_DEFAULTS,
+        ...((group.group_permissions ?? {}) as Record<GroupPermissionKey, boolean>),
+      });
+      setGroupRules(group.group_rules || "");
+      setAssignAdminId("");
     } else {
       resetForm();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, group]);
 
   const resetForm = () => {
     setName("");
     setDescription("");
-    setCategory("general");
-    setIsVerifiedOnly(false);
+    setCategory("community_support");
+    setGroupType("open");
     setMaxMembers(String(MAX_MEMBERS_DEFAULT));
+    setRegionRestriction("");
+    setPermissions({ ...GROUP_PERMISSION_DEFAULTS });
+    setGroupRules("");
+    setAssignAdminId("");
     setError(null);
   };
 
@@ -101,6 +94,9 @@ export default function CreateGroupDialog() {
     resetForm();
     close();
   };
+
+  const togglePermission = (key: GroupPermissionKey) =>
+    setPermissions((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,23 +106,25 @@ export default function CreateGroupDialog() {
     }
     setError(null);
 
+    const shared = {
+      name: name.trim(),
+      description: description.trim() || undefined,
+      group_category: category,
+      is_verified_only: groupType === "hcp_verified" || groupType === "verified",
+      max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
+      group_type: groupType,
+      region_restriction: regionRestriction || null,
+      group_permissions: permissions,
+      group_rules: groupRules.trim() || null,
+    };
+
     try {
       if (isEditMode && group?.id) {
-        await updateMutation.mutateAsync({
-          id: group.id,
-          name: name.trim(),
-          description: description.trim() || undefined,
-          group_category: category,
-          is_verified_only: isVerifiedOnly,
-          max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
-        });
+        await updateMutation.mutateAsync({ id: group.id, ...shared });
       } else {
         await createMutation.mutateAsync({
-          name: name.trim(),
-          description: description.trim() || undefined,
-          group_category: category,
-          is_verified_only: isVerifiedOnly,
-          max_members: Number(maxMembers) || MAX_MEMBERS_DEFAULT,
+          ...shared,
+          assign_admin_id: assignAdminId || null,
         });
       }
       resetForm();
@@ -137,6 +135,8 @@ export default function CreateGroupDialog() {
   };
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const selectClass =
+    "h-10 w-full px-3 rounded-md border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none";
 
   return (
     <Dialog
@@ -145,7 +145,7 @@ export default function CreateGroupDialog() {
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 bg-gradient-to-br from-emerald-500 to-emerald-600">
           <DialogTitle className="flex items-center gap-3 text-white">
@@ -165,17 +165,13 @@ export default function CreateGroupDialog() {
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {/* Group Name */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="new-group-name"
-              className="text-[10px] font-black uppercase tracking-wider text-slate-400"
-            >
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
               Group Name <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="new-group-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Diabetes Support Circle"
@@ -185,91 +181,134 @@ export default function CreateGroupDialog() {
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="new-group-description"
-              className="text-[10px] font-black uppercase tracking-wider text-slate-400"
-            >
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
               Description
             </Label>
             <Textarea
-              id="new-group-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What's this group about?"
-              rows={3}
+              rows={2}
               className="text-sm resize-none focus-visible:ring-emerald-500/20"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Category Dropdown (Shadcn) */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                 Category
               </Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="w-full h-14! px-3 rounded-md border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent className="p-1.5 bg-white">
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <SelectItem
-                      key={opt.value}
-                      value={opt.value}
-                      className="py-3 px-3 mb-1 last:mb-0 cursor-pointer items-start rounded-md transition-colors"
-                    >
-                      <div className="flex flex-col gap-1 text-left pr-2">
-                        <span className="font-semibold text-sm text-slate-800">
-                          {opt.label}
-                        </span>
-                        <span className="text-[11px] text-slate-500 whitespace-normal leading-relaxed">
-                          {opt.description}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Max Members */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="new-group-max-members"
-                className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1"
+              <select
+                className={selectClass}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
               >
-                <Users className="w-3 h-3" /> Max Members
+                {GROUP_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Group Type
+              </Label>
+              <select
+                className={selectClass}
+                value={groupType}
+                onChange={(e) => setGroupType(e.target.value)}
+              >
+                {GROUP_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Max Members (0 = unlimited)
               </Label>
               <Input
-                id="new-group-max-members"
                 type="number"
-                min={1}
+                min={0}
                 value={maxMembers}
                 onChange={(e) => setMaxMembers(e.target.value)}
                 className="h-10 text-sm focus-visible:ring-emerald-500/20"
               />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Region Restriction
+              </Label>
+              <select
+                className={selectClass}
+                value={regionRestriction}
+                onChange={(e) => setRegionRestriction(e.target.value)}
+              >
+                <option value="">Nationwide (all regions)</option>
+                {GHANA_REGIONS.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Verified-only toggle */}
-          <label className="flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer rounded-xl px-4 py-3 border border-slate-100">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-slate-700">
-                  Verified HCPs only
-                </p>
-                <p className="text-[10px] text-slate-400 leading-snug pr-4">
-                  Restrict membership to verified healthcare professionals
-                </p>
-              </div>
+          {!isEditMode && (
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Assign Group Admin (optional)
+              </Label>
+              <select
+                className={selectClass}
+                value={assignAdminId}
+                onChange={(e) => setAssignAdminId(e.target.value)}
+              >
+                <option value="">None — I will be the only admin</option>
+                {(adminsData?.users ?? []).map((a: any) => (
+                  <option key={a.user_id} value={a.user_id}>
+                    {a.name || a.email}
+                  </option>
+                ))}
+              </select>
             </div>
-            <Checkbox
-              checked={isVerifiedOnly}
-              onCheckedChange={(checked) => setIsVerifiedOnly(!!checked)}
+          )}
+
+          {/* Group permissions */}
+          <div className="space-y-2">
+            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Group Permissions
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {GROUP_PERMISSION_OPTIONS.map((opt) => (
+                <label
+                  key={opt.key}
+                  className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer rounded-lg px-3 py-2 border border-slate-100"
+                >
+                  <Checkbox
+                    checked={permissions[opt.key]}
+                    onCheckedChange={() => togglePermission(opt.key)}
+                  />
+                  <span className="text-[11px] font-bold text-slate-600">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Group rules */}
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Group Rules
+            </Label>
+            <Textarea
+              value={groupRules}
+              onChange={(e) => setGroupRules(e.target.value)}
+              placeholder="Shown to members on join (e.g. no medical advice without sources, be respectful…)"
+              rows={3}
+              className="text-sm resize-none focus-visible:ring-emerald-500/20"
             />
-          </label>
+          </div>
 
           {error && (
             <p className="text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
@@ -278,7 +317,7 @@ export default function CreateGroupDialog() {
           )}
 
           {/* Actions */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-2 gap-3 pt-1">
             <Button
               type="button"
               variant="outline"

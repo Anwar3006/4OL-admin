@@ -30,6 +30,7 @@ import {
   useFitnessContentSchedule,
   type FitnessScheduledContent,
 } from "@/hooks/supabase-calls/useFitnessContentSchedule";
+import { useFitnessScheduleStats } from "@/hooks/supabase-calls/useFitnessAnalytics";
 
 const CONTENT_TYPE_LABEL: Record<FitnessScheduledContent["content_type"], string> = {
   workout: "Workout",
@@ -52,6 +53,99 @@ function formatScheduledAt(value: string) {
     minute: "2-digit",
   });
 }
+
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/**
+ * Workout activity heatmap (Gap Analysis Part V, V-D3) — real completed
+ * sessions from get_fitness_schedule_stats (8-week weekday x week grid),
+ * replacing the mockup's hard-coded intensity grid.
+ */
+const WorkoutHeatmap = () => {
+  const { data, isLoading } = useFitnessScheduleStats();
+
+  const weeks = Array.from(new Set((data?.heatmap ?? []).map((c) => c.week))).sort();
+  const maxSessions = Math.max(1, ...(data?.heatmap ?? []).map((c) => c.sessions));
+  const cellCount = (week: string, weekday: number) =>
+    data?.heatmap.find((c) => c.week === week && c.weekday === weekday)?.sessions ?? 0;
+
+  const shade = (count: number) => {
+    if (count === 0) return "bg-slate-100";
+    const ratio = count / maxSessions;
+    if (ratio <= 0.25) return "bg-emerald-200";
+    if (ratio <= 0.5) return "bg-emerald-400";
+    if (ratio <= 0.75) return "bg-emerald-600";
+    return "bg-emerald-800";
+  };
+
+  return (
+    <Card className="border-none shadow-sm rounded-[2rem] bg-white">
+      <CardHeader className="p-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle className="text-xl font-black">
+            🔥 Workout Activity Heatmap
+          </CardTitle>
+          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
+            Low <span className="w-3 h-3 rounded bg-slate-100" />
+            <span className="w-3 h-3 rounded bg-emerald-200" />
+            <span className="w-3 h-3 rounded bg-emerald-400" />
+            <span className="w-3 h-3 rounded bg-emerald-600" />
+            <span className="w-3 h-3 rounded bg-emerald-800" /> High
+          </div>
+        </div>
+        <p className="text-slate-500 font-medium mt-1 text-xs">
+          Completed sessions, last 8 weeks — derived live from exercise_sessions
+        </p>
+      </CardHeader>
+      <CardContent className="px-8 pb-8">
+        {isLoading ? (
+          <div className="h-32 flex items-center justify-center text-sm text-slate-400">
+            Loading heatmap...
+          </div>
+        ) : weeks.length === 0 ? (
+          <div className="h-24 flex items-center justify-center text-sm text-slate-400">
+            No completed sessions in the last 8 weeks.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="inline-grid gap-1" style={{ gridTemplateColumns: `2.5rem repeat(${weeks.length}, 1.5rem)` }}>
+              <div />
+              {weeks.map((week) => (
+                <div key={week} className="text-[8px] font-black uppercase text-slate-400 text-center [writing-mode:vertical-rl] rotate-180 h-14">
+                  {week}
+                </div>
+              ))}
+              {WEEKDAY_LABELS.map((day, dayIndex) => (
+                <React.Fragment key={day}>
+                  <div className="text-[9px] font-black uppercase text-slate-400 flex items-center">
+                    {day}
+                  </div>
+                  {weeks.map((week) => {
+                    const count = cellCount(week, dayIndex + 1);
+                    return (
+                      <div
+                        key={`${week}-${day}`}
+                        className={`w-6 h-6 rounded ${shade(count)}`}
+                        title={`${week} ${day}: ${count} sessions`}
+                      />
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        )}
+        {data && (
+          <div className="mt-4 flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest">
+            <span className="text-emerald-700">✅ {data.this_week.completed.toLocaleString()} completed this week</span>
+            <span className="text-blue-600">🔄 {data.this_week.in_progress.toLocaleString()} in progress</span>
+            <span className="text-red-500">⛔ {data.this_week.abandoned.toLocaleString()} abandoned</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const ScheduleTab = () => {
   const { data: scheduledContent, isLoading, isError } = useFitnessContentSchedule();
@@ -94,6 +188,9 @@ const ScheduleTab = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Live workout heatmap (Part V) */}
+        <WorkoutHeatmap />
 
         {/* <Card className="border-none shadow-sm rounded-[2rem] bg-emerald-500 text-white p-8">
            <CardTitle className="text-lg font-black mb-6">📊 Pipeline</CardTitle>

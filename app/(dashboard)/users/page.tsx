@@ -1,28 +1,36 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useHasPermission } from "@/stores/permission-context";
 import UsersStats from "./_components/UsersStats";
 import AllUsersTab from "./_components/AllUsersTab";
+import ActiveUsersTab from "./_components/ActiveUsersTab";
+import PremiumUsersTab from "./_components/PremiumUsersTab";
 import FlaggedUsersTab from "./_components/FlaggedUsersTab";
 import DeleteRequestsTab from "./_components/DeleteRequestsTab";
+import InviteUserDialog from "./_components/InviteUserDialog";
 import ViewUserDialog from "./_components/view-user-dialog";
 import FlagUserDialog from "./_components/flag-user-dialog";
 import { cn } from "@/lib/utils";
 
 const UserTabs = [
   { id: "all", label: "👥 All Users" },
+  { id: "active", label: "📈 Active" },
+  { id: "premium", label: "⭐ Premium" },
   { id: "flagged", label: "🚩 Flagged" },
   { id: "delete-requests", label: "🗑️ Delete Requests" },
 ];
 
 const UsersPage = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const canEdit = useHasPermission("users.edit");
+  const canExport = useHasPermission("users.export");
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -43,14 +51,29 @@ const UsersPage = () => {
         title="👥 User Management"
         subtitle="Manage user accounts, monitor activity, and handle requests"
       >
-        <button
-          className="btn btn-secondary"
-          onClick={() => window.open("/api/admin/users/export", "_blank")}
-        >
-          📥 Export User Data
-        </button>
-        <button className="btn btn-primary text-white">➕ Add User</button>
+        {canExport && (
+          <button
+            className="btn btn-secondary"
+            onClick={() => window.open("/api/admin/users/export", "_blank")}
+          >
+            📥 Export User Data
+          </button>
+        )}
+        {canEdit && (
+          <button className="btn btn-primary text-white" onClick={() => setInviteOpen(true)}>
+            ➕ Add User / Invite
+          </button>
+        )}
       </PageHeader>
+
+      <div className="alert al-ic flex items-start gap-3">
+        <span>🔐</span>
+        <div className="text-[11px] leading-relaxed">
+          <strong>PHI protection (GH-DPA 2012).</strong> Health data is encrypted
+          at rest (AES-256); names, phones, emails and NHIS numbers shown here
+          are masked per your role. Access is logged and exports watermarked.
+        </div>
+      </div>
 
       <UsersStats />
 
@@ -82,11 +105,14 @@ const UsersPage = () => {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent className="w-full min-w-0 outline-none" value="all"><AllUsersTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="active"><ActiveUsersTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="premium"><PremiumUsersTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="flagged"><FlaggedUsersTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="delete-requests"><DeleteRequestsTab /></TabsContent>
         </div>
       </Tabs>
 
+      <InviteUserDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <ViewUserDialog />
       <FlagUserDialog />
     </div>

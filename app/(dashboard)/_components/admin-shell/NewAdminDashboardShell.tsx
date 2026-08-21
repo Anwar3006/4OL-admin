@@ -13,6 +13,8 @@ import {
   LogOut,
   User,
   Settings,
+  Rows3,
+  StretchHorizontal,
 } from "lucide-react";
 import { dashboardNavSections } from "./navigation";
 import { cn } from "@/lib/utils";
@@ -51,6 +53,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ProfileModal from "@/components/redesign/modals/ProfileModal";
 import AdminSearchDialog from "./AdminSearchDialog";
+import { useDensity } from "@/hooks/use-density";
 
 interface NewAdminDashboardShellProps {
   children: React.ReactNode;
@@ -105,6 +108,7 @@ export default function NewAdminDashboardShell({
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isMac, setIsMac] = useState(false);
+  const { effective, cycleMode, hydrated } = useDensity();
 
   // Detect platform client-side only, to avoid SSR/client markup mismatch
   useEffect(() => {
@@ -536,6 +540,23 @@ export default function NewAdminDashboardShell({
                   <MessageSquare className="size-4" />
                   <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
                 </Button>
+                {/* Part X: density toggle (mockup ts-density-btn). Cycles
+                    auto → comfortable → compact; auto resolves to compact
+                    on viewports ≤ 1024px (iPad). */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground"
+                  title={`Density: ${hydrated ? effective : "auto"} (click to change)`}
+                  aria-label="Toggle display density"
+                  onClick={cycleMode}
+                >
+                  {hydrated && effective === "compact" ? (
+                    <Rows3 className="size-4" />
+                  ) : (
+                    <StretchHorizontal className="size-4" />
+                  )}
+                </Button>
               </div>
 
               <Separator
@@ -543,11 +564,21 @@ export default function NewAdminDashboardShell({
                 className="mx-1 h-6 hidden sm:block"
               />
 
-              <Avatar className="size-8 cursor-pointer border border-border">
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+              {/* Part W: top-bar avatar is the mockup's profile-modal trigger
+                  (tb-user); previously inert. */}
+              <button
+                type="button"
+                aria-label="Open admin profile"
+                title="Admin profile"
+                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setProfileOpen(true)}
+              >
+                <Avatar className="size-8 cursor-pointer border border-border">
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
             </div>
           </header>
 

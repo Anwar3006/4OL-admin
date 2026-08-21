@@ -135,11 +135,11 @@ export const menuItems = [
       },
       {
         childtitle: "Subscriptions",
-        childlink: "marketing/subscriptions",
+        childlink: "marketing?tab=subscriptions",
       },
       {
         childtitle: "Discounts",
-        childlink: "marketing/discounts",
+        childlink: "marketing?tab=discounts",
       },
     ],
   },

@@ -98,7 +98,7 @@ const AddOutdoorRouteDialog = () => {
       region: "Greater Accra",
       surface_type: "Paved",
       description: "",
-      verification_status: "official_business",
+      verification_status: "pending_review",
       registered_by: "",
       fitcoins_reward: 50,
       features: [],
@@ -119,7 +119,7 @@ const AddOutdoorRouteDialog = () => {
           region: data.region ?? "Greater Accra",
           surface_type: data.surface_type ?? "Paved",
           description: data.description ?? "",
-          verification_status: data.verification_status ?? "official_business",
+          verification_status: data.verification_status ?? "pending_review",
           registered_by: (data as any).registered_by ?? "",
           fitcoins_reward: (data as any).fitcoins_reward ?? 50,
           features: (data as any).features ?? [],
@@ -192,6 +192,8 @@ const AddOutdoorRouteDialog = () => {
       surface_type: values.surface_type,
       description: values.description,
       verification_status: values.verification_status,
+      // Class mirrors the verification type: admin-published = official
+      route_class: values.verification_status === "approved" ? "official" : "community",
       image_url: values.image_url,
       is_active: true,
       // Real columns as of the latest schema -- no longer nested inside gps_data

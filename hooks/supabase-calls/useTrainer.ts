@@ -124,6 +124,47 @@ export const useUpdateTrainer = () => {
   });
 };
 
+/**
+ * Trainer verification (Gap Analysis Part V, m-review-trainer). Approving
+ * documents flips is_verified + status; revoking reverses both.
+ */
+export const useVerifyTrainer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      verify,
+    }: {
+      id: string;
+      verify: boolean;
+    }) => {
+      const { data: result, error } = await supabase
+        .from("fitness_trainers")
+        .update(
+          verify
+            ? { is_verified: true, verified_at: new Date().toISOString(), status: "active" }
+            : { is_verified: false, verified_at: null, status: "pending" },
+        )
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return result;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: TRAINER_QUERY_KEYS.all });
+      toast.success(
+        variables.verify
+          ? "Trainer verified and activated!"
+          : "Trainer verification revoked.",
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update verification: ${error.message}`);
+    },
+  });
+};
+
 export const useDeleteTrainer = () => {
   const queryClient = useQueryClient();
   return useMutation({

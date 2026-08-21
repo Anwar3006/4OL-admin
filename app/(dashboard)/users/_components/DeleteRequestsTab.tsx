@@ -1,37 +1,163 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { deleteAccountColumns } from "@/components/Data-Table/columns/deleteAccountColumns";
-import { useDeleteAccountRequests } from "@/hooks/supabase-calls/useDeleteAccountRequests";
+import {
+  DeleteAccountRequest,
+  useDeleteAccountRequests,
+  useUpdateDeleteRequestStatus,
+} from "@/hooks/supabase-calls/useDeleteAccountRequests";
 import { usePagination } from "@/hooks/use-pagination";
-import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
+import { useHasPermission } from "@/stores/permission-context";
+
+const STATUS_BADGES: Record<string, string> = {
+  pending_review: "badge badge-amber",
+  in_verification: "badge badge-blue",
+  grace_period: "badge badge-purple",
+  completed: "badge badge-green",
+  cancelled: "badge badge-slate",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_review: "Pending Review",
+  in_verification: "In Verification",
+  grace_period: "Grace Period",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+// GH-DPA 2012 §34: erasure requests must be actioned within 30 days.
+const daysRemaining = (createdAt: string): number =>
+  30 - Math.floor((Date.now() - new Date(createdAt).getTime()) / 86_400_000);
 
 export default function DeleteRequestsTab() {
-  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } = usePagination({ key: "user_delete_req_page" });
-  const { data, isLoading, isError, error } = useDeleteAccountRequests({ page, limit: pageSize, status: 'pending' });
+  const canApprove = useHasPermission("deleteaccount.approve");
+  const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
+    usePagination({ key: "user_delete_req_page" });
+  // No status filter — the old 'pending' value no longer exists (Epic 21
+  // vocabulary). Show the full lifecycle, pending first per the hook order.
+  const { data, isLoading, isError, error } = useDeleteAccountRequests({
+    page,
+    limit: pageSize,
+  });
+  const updateStatus = useUpdateDeleteRequestStatus();
 
-  const requests = data?.requests || [];
+  const requests = data?.requests ?? [];
   const totalItems = data?.meta?.total ?? 0;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const urgentCount = requests.filter(
+    (r) => r.status === "pending_review" && daysRemaining(r.created_at) <= 7,
+  ).length;
 
-  const cardConfig: MobileCardConfig<any> = {
-    header: {
-      title: (data) => `${data.first_name} ${data.last_name}`,
-      subtitle: (data) => data.email,
-      badge: (data) => (
-        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-100">
-          {data.status}
-        </span>
-      ),
-    },
-    fields: [
-      { id: "reason", label: "Reason", render: (data) => data.reason || "Privacy Concerns" },
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        id: "user",
+        header: "User",
+        cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
+          <div className="flex flex-col">
+            <span className="text-[12px] font-bold text-slate-800">
+              {row.original.first_name} {row.original.last_name}
+            </span>
+            <span className="text-[11px] text-slate-400">{row.original.email}</span>
+          </div>
+        ),
+      },
+      {
+        id: "reason",
+        header: "Reason",
+        cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
+          <span className="text-[11px] text-slate-600">
+            {row.original.reason || "Privacy concerns"}
+          </span>
+        ),
+      },
+      {
+        id: "requested",
+        header: "Requested",
+        cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
+          <span className="text-[11px] text-slate-500">
+            {new Date(row.original.created_at).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+        ),
+      },
+      {
+        id: "days_remaining",
+        header: "Days Remaining",
+        cell: ({ row }: { row: { original: DeleteAccountRequest } }) => {
+          const days = daysRemaining(row.original.created_at);
+          if (row.original.status === "completed" || row.original.status === "cancelled") {
+            return <span className="text-[11px] text-slate-400">—</span>;
+          }
+          const cls =
+            days <= 0
+              ? "badge badge-red"
+              : days <= 7
+                ? "badge badge-amber"
+                : "badge badge-green";
+          return <span className={cls}>{days <= 0 ? "Overdue" : `${days}d`}</span>;
+        },
+      },
+      {
+        id: "status",
+        header: "Status",
+        cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
+          <span className={STATUS_BADGES[row.original.status] ?? "badge badge-slate"}>
+            {STATUS_LABELS[row.original.status] ?? row.original.status}
+          </span>
+        ),
+      },
     ],
-    actions: [
-      { label: "View Details", onClick: (data) => console.log('View', data.id) },
-    ]
-  };
+    [],
+  );
+
+  const rowActions = useMemo(() => {
+    if (!canApprove) return [];
+    return [
+      {
+        label: "Start Verification",
+        onClick: (row: DeleteAccountRequest) =>
+          updateStatus.mutate({
+            requestId: row.id,
+            userId: row.user_id,
+            newStatus: "in_verification",
+          }),
+      },
+      {
+        label: "Approve → Grace Period",
+        danger: true,
+        onClick: (row: DeleteAccountRequest) =>
+          updateStatus.mutate({
+            requestId: row.id,
+            userId: row.user_id,
+            newStatus: "grace_period",
+          }),
+      },
+      {
+        label: "Mark Completed",
+        onClick: (row: DeleteAccountRequest) =>
+          updateStatus.mutate({
+            requestId: row.id,
+            userId: row.user_id,
+            newStatus: "completed",
+          }),
+      },
+      {
+        label: "Cancel Request",
+        onClick: (row: DeleteAccountRequest) =>
+          updateStatus.mutate({
+            requestId: row.id,
+            userId: row.user_id,
+            newStatus: "cancelled",
+          }),
+      },
+    ];
+  }, [canApprove, updateStatus]);
 
   return (
     <div className="w-full min-w-0 space-y-4">
@@ -40,27 +166,34 @@ export default function DeleteRequestsTab() {
           ⚠️
         </div>
         <div>
-          <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-900 mb-1">Attention Required</h4>
+          <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-900 mb-1">
+            Attention Required
+          </h4>
           <p className="text-xs text-amber-700 leading-relaxed font-medium">
-            <strong>{totalItems} pending deletion requests</strong> – must be processed within 30 days per Ghana Data Protection Act 2012 (Section 34).
+            <strong>{totalItems} deletion request{totalItems === 1 ? "" : "s"}</strong> –
+            must be processed within 30 days per Ghana Data Protection Act 2012
+            (Section 34).
+            {urgentCount > 0 && (
+              <strong className="text-red-600"> {urgentCount} due within 7 days.</strong>
+            )}
           </p>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <DataTable
-          columns={deleteAccountColumns}
+          columns={columns}
           data={requests}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          onRowClick={(row) => console.log('Row Click', row.id)}
-          cardConfig={cardConfig}
+          selectable={false}
+          rowActions={rowActions}
           pagination={{
             currentPage: page,
-            totalPages: totalPages || 1,
-            totalItems: totalItems,
-            pageSize: pageSize,
+            totalPages,
+            totalItems,
+            pageSize,
             onPageChange,
             onNextPage,
             onPreviousPage,

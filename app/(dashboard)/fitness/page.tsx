@@ -17,6 +17,10 @@ import {
   TrainersTab,
   ScheduleTab,
   OutdoorTab,
+  WhatsAppTab,
+  AiStudioTab,
+  AiLogTab,
+  HealthTab,
 } from "./_tabs";
 
 const fitnessTabs = [
@@ -183,43 +187,20 @@ const FitnessPage = () => {
           <TabsContent value="outdoor" className="outline-none w-full min-w-0">
             <OutdoorTab />
           </TabsContent>
-
-          {/* Placeholder panels for in-progress tabs */}
-          {["ai_studio", "ai_log", "health", "whatsapp"].map((tabId) => (
-            <TabsContent
-              key={tabId}
-              value={tabId}
-              className="outline-none w-full min-w-0"
-            >
-              <div className="card text-center py-16 w-full">
-                <div className="max-w-md mx-auto space-y-5">
-                  <div
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 border border-slate-100
-                                  flex items-center justify-center mx-auto text-3xl sm:text-4xl shadow-sm"
-                  >
-                    {fitnessTabs.find((t) => t.id === tabId)?.icon}
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-lg sm:text-xl font-extrabold text-slate-800 capitalize">
-                      {tabId.replace("_", " ")} Management
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium">
-                      This module is being optimised for the new high-fidelity
-                      architecture.
-                    </p>
-                  </div>
-                  <div className="flex justify-center gap-2 pt-2">
-                    <span className="badge badge-amber uppercase tracking-wider">
-                      Coming Soon
-                    </span>
-                    <span className="badge badge-green uppercase tracking-wider">
-                      V2 Ready
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          ))}
+          <TabsContent value="whatsapp" className="outline-none w-full min-w-0">
+            <WhatsAppTab />
+          </TabsContent>
+          {/* Part V: AI Studio / AI Log / Health Integrations are now live
+              (previously placeholder panels). */}
+          <TabsContent value="ai_studio" className="outline-none w-full min-w-0">
+            <AiStudioTab />
+          </TabsContent>
+          <TabsContent value="ai_log" className="outline-none w-full min-w-0">
+            <AiLogTab />
+          </TabsContent>
+          <TabsContent value="health" className="outline-none w-full min-w-0">
+            <HealthTab />
+          </TabsContent>
         </div>
       </Tabs>
     </div>

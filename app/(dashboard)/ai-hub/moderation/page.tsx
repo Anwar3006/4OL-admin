@@ -1,10 +1,6 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import { redirect } from "next/navigation";
 
+// O-D6: deep link into the tabbed AI Hub at /ai.
 export default function Page() {
-  return (
-    <PlaceholderPage
-      title="ai hub moderation"
-      description="This module is scaffolded as a placeholder and is ready for implementation."
-    />
-  );
+  redirect("/ai?tab=moderation");
 }

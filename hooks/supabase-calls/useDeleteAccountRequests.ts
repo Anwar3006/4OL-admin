@@ -254,3 +254,98 @@ export const useUpdateDeleteRequestStatus = () => {
     },
   });
 };
+
+// ── Part Z: server-guarded lifecycle actions ────────────────────────────────
+// The PATCH route enforces deleteaccount.approve + the Epic 21 state machine
+// (including the GoTrue ban on grace start); the legacy client mutation above
+// predates RBAC enforcement and stays for reference only.
+
+export type DeleteRequestAction =
+  | "verify"
+  | "begin_grace"
+  | "process_now"
+  | "cancel"
+  | "remind_download"
+  | "resend_otp";
+
+export const useDeleteRequestAction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      action,
+      rejection_reason,
+    }: {
+      requestId: string;
+      action: DeleteRequestAction;
+      rejection_reason?: string;
+    }) => {
+      const res = await fetch(`/api/admin/delete-account-requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, rejection_reason }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Action failed (${res.status})`);
+      return json;
+    },
+    onSuccess: (_data, { action }) => {
+      queryClient.invalidateQueries({ queryKey: DELETE_REQUEST_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["delete-account-request-stats"] });
+      const messages: Record<DeleteRequestAction, string> = {
+        verify: "Request moved to verification.",
+        begin_grace: "Grace period started — user access revoked.",
+        process_now: "Request processed — account data anonymized.",
+        cancel: "Request cancelled — user access restored.",
+        remind_download: "Data-download reminder recorded.",
+        resend_otp: "OTP re-trigger recorded.",
+      };
+      toast.success(messages[action]);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
+// Live per-status counts for the tab labels (shares the stats KPI cache).
+export const useDeleteRequestStatsQuery = () =>
+  useQuery({
+    queryKey: ["delete-account-request-stats"],
+    queryFn: async () => {
+      const supabase = await getSupabaseClient();
+      const { data, error } = await supabase.rpc("get_delete_account_request_stats");
+      if (error) throw error;
+      return data as {
+        pending_review: number;
+        in_verification: number;
+        grace_period: number;
+        completed: number;
+        cancelled: number;
+        total: number;
+      };
+    },
+    staleTime: 30 * 1000,
+  });
+
+// Manual entry (mockup "+ Manual Entry") behind deleteaccount.approve.
+export const useCreateManualDeleteRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ email, reason }: { email: string; reason?: string }) => {
+      const res = await fetch("/api/admin/delete-account-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, reason }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Create failed (${res.status})`);
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DELETE_REQUEST_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["delete-account-request-stats"] });
+      toast.success("Deletion request recorded.");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};

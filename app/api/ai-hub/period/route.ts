@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import OpenAI from "openai";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export const runtime = "nodejs";
@@ -110,8 +110,9 @@ const responseSchema = {
 };
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminApiUser("ai.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
   const admin = getSupabaseAdmin();
   const [{ data: jobs }, { data: events }, { data: leads }, { count: sourceLinks }, { data: rewards }] = await Promise.all([
     admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,model_key,prompt_version,validation,error_code,created_at,completed_at").order("created_at", { ascending: false }).limit(50),
@@ -124,8 +125,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminApiUser("ai.manage");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
   const parsed = GenerateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid AI generation request", details: parsed.error.flatten() }, { status: 400 });
 

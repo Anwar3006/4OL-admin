@@ -8,8 +8,19 @@ const supabase = getSupabaseBrowserClient();
 export const EXERCISE_QUERY_KEYS = {
   all: ["fitness_exercises"] as const,
   lists: () => [...EXERCISE_QUERY_KEYS.all, "list"] as const,
-  list: (params: { page: number; limit: number; search?: string }) =>
-    [...EXERCISE_QUERY_KEYS.lists(), { ...params }] as const,
+  list: (
+    params: {
+      page: number;
+      limit: number;
+      search?: string;
+      category?: string;
+      muscleGroup?: string;
+      difficulty?: string;
+      tier?: string;
+      status?: string;
+      goalTag?: string;
+    },
+  ) => [...EXERCISE_QUERY_KEYS.lists(), { ...params }] as const,
   details: () => [...EXERCISE_QUERY_KEYS.all, "detail"] as const,
   detail: (id: string) => [...EXERCISE_QUERY_KEYS.details(), id] as const,
 };
@@ -20,13 +31,36 @@ export const useExercises = ({
   page,
   limit,
   search,
+  category,
+  muscleGroup,
+  difficulty,
+  tier,
+  status,
+  goalTag,
 }: {
   page: number;
   limit: number;
   search?: string;
+  // Part V 6-filter toolbar — all optional, map to fitness_exercises columns.
+  category?: string;
+  muscleGroup?: string;
+  difficulty?: string;
+  tier?: string;
+  status?: string;
+  goalTag?: string;
 }) => {
   return useQuery({
-    queryKey: EXERCISE_QUERY_KEYS.list({ page, limit, search }),
+    queryKey: EXERCISE_QUERY_KEYS.list({
+      page,
+      limit,
+      search,
+      category,
+      muscleGroup,
+      difficulty,
+      tier,
+      status,
+      goalTag,
+    }),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
@@ -40,6 +74,12 @@ export const useExercises = ({
       if (search) {
         query = query.ilike("exercise_name", `%${search}%`);
       }
+      if (category) query = query.eq("category", category);
+      if (muscleGroup) query = query.ilike("primary_muscle_group", `%${muscleGroup}%`);
+      if (difficulty) query = query.eq("difficulty_level", difficulty);
+      if (tier) query = query.eq("tier", tier);
+      if (status) query = query.eq("status", status);
+      if (goalTag) query = query.contains("tags", [goalTag]);
 
       const { data, count, error } = await query.range(from, to);
 

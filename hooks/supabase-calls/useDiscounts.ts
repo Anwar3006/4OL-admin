@@ -1,4 +1,11 @@
-import { getSupabaseClient } from "@/lib/supabase";
+/**
+ * Marketing discount hooks — Gap Analysis Part M Phase 3 retrofit.
+ * Migrated off client-side Supabase onto /api/marketing/discounts
+ * (marketing.view/create/edit/delete). Row shapes stay snake_case to match
+ * the previous runtime behaviour of the dialogs/tables.
+ */
+
+import { apiFetch } from "@/lib/api-fetch";
 import {
   TMarketingDiscountInput,
   TMarketingDiscountOutput,
@@ -12,6 +19,11 @@ interface PaginatedResponse {
     totalPages: number;
     total: number;
     currentPage: number;
+  };
+  analytics?: {
+    active_codes: number;
+    total_uses: number;
+    avg_discount_pct: number;
   };
 }
 
@@ -46,40 +58,13 @@ export const useMarketingDiscounts = ({
       activeOnly,
     }),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      const supabase = await getSupabaseClient();
-      let query = supabase
-        .from("marketing_discounts")
-        .select("*", { count: "exact" });
-
-      if (search) {
-        query = query.or(
-          `name.ilike.%${search}%,code.ilike.%${search}%,description.ilike.%${search}%`,
-        );
-      }
-
-      if (activeOnly) {
-        query = query.eq("is_active", true);
-      }
-
-      const result = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (result.error) throw result.error;
-
-      const totalCount = result.count ?? 0;
-
-      return {
-        data: result.data as TMarketingDiscountOutput[],
-        meta: {
-          totalPages: Math.ceil(totalCount / limit),
-          total: totalCount,
-          currentPage: page,
-        },
-      };
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) params.set("search", search);
+      if (activeOnly) params.set("status", "active");
+      return apiFetch<PaginatedResponse>(`/api/marketing/discounts?${params.toString()}`);
     },
   });
 };
@@ -94,15 +79,10 @@ export const useMarketingDiscount = ({
   return useQuery<TMarketingDiscountOutput, Error>({
     queryKey: MARKETING_DISCOUNT_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
-      const { data, error } = await supabase
-        .from("marketing_discounts")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw new Error(error.message);
-      return data as TMarketingDiscountOutput;
+      const result = await apiFetch<{ data: TMarketingDiscountOutput }>(
+        `/api/marketing/discounts/${id}`,
+      );
+      return result.data;
     },
     enabled: enabled,
   });
@@ -110,12 +90,8 @@ export const useMarketingDiscount = ({
 
 // =============== Mutation Hooks ============
 
-export const useCreateMarketingDiscount = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<TMarketingDiscountOutput, Error, TMarketingDiscountInput>({
-    mutationFn: async (data: TMarketingDiscountInput) => {
-      const {
+const buildCreatePayload = (data: TMarketingDiscountInput & Record<string, unknown>) => {
+  const {
     discountValue,
     discountType,
     maxUses,
@@ -127,9 +103,8 @@ export const useCreateMarketingDiscount = () => {
     ...rest
   } = data;
 
-  // 3. Assemble the final object using only the keys Postgres expects
-  const inputData = {
-    ...rest, // This includes name, description, code
+  return {
+    ...rest, // name, description, code (+ any new segmentation fields)
     discount_value: discountValue,
     discount_type: discountType,
     max_uses: maxUses,
@@ -139,17 +114,22 @@ export const useCreateMarketingDiscount = () => {
     applies_to: appliesTo,
     applicable_items: applicableItems,
   };
+};
 
-      console.log("Input: ", inputData)
-      const supabase = await getSupabaseClient();
-      const { data: result, error } = await supabase
-        .from("marketing_discounts")
-        .insert(inputData)
-        .select()
-        .single();
+export const useCreateMarketingDiscount = () => {
+  const queryClient = useQueryClient();
 
-      if (error) throw new Error(error.message);
-      return result as TMarketingDiscountOutput;
+  return useMutation<TMarketingDiscountOutput, Error, TMarketingDiscountInput & Record<string, unknown>>({
+    mutationFn: async (data) => {
+      const result = await apiFetch<{ data: TMarketingDiscountOutput }>(
+        "/api/marketing/discounts",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildCreatePayload(data)),
+        },
+      );
+      return result.data;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -169,31 +149,37 @@ export const useUpdateMarketingDiscount = () => {
   return useMutation<
     TMarketingDiscountOutput,
     Error,
-    { id: string; data: Partial<TMarketingDiscountInput> }
+    { id: string; data: Partial<TMarketingDiscountInput> & Record<string, unknown> }
   >({
     mutationFn: async ({ id, data: input }) => {
-      const inputData = {
-        ...input,
-        discount_value: input.discountValue,
-        discount_type: input.discountType,
-        max_uses: input.maxUses,
-        valid_from: input.validFrom,
-        valid_until: input.validUntil,
-        is_active: input.isActive,
-        applies_to: input.appliesTo,
-        applicable_items: input.applicableItems,
-      };
-      const supabase = await getSupabaseClient();
+      const inputData: Record<string, unknown> = { ...input };
+      // Map any camelCase keys the dialogs still emit onto column names.
+      if ("discountValue" in inputData) inputData.discount_value = inputData.discountValue;
+      if ("discountType" in inputData) inputData.discount_type = inputData.discountType;
+      if ("maxUses" in inputData) inputData.max_uses = inputData.maxUses;
+      if ("validFrom" in inputData) inputData.valid_from = inputData.validFrom;
+      if ("validUntil" in inputData) inputData.valid_until = inputData.validUntil;
+      if ("isActive" in inputData) inputData.is_active = inputData.isActive;
+      if ("appliesTo" in inputData) inputData.applies_to = inputData.appliesTo;
+      if ("applicableItems" in inputData) inputData.applicable_items = inputData.applicableItems;
+      delete inputData.discountValue;
+      delete inputData.discountType;
+      delete inputData.maxUses;
+      delete inputData.validFrom;
+      delete inputData.validUntil;
+      delete inputData.isActive;
+      delete inputData.appliesTo;
+      delete inputData.applicableItems;
 
-      const { data: result, error } = await supabase
-        .from("marketing_discounts")
-        .update(inputData)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return result as TMarketingDiscountOutput;
+      const result = await apiFetch<{ data: TMarketingDiscountOutput }>(
+        `/api/marketing/discounts/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(inputData),
+        },
+      );
+      return result.data;
     },
     onSuccess: async (result) => {
       await Promise.all([
@@ -217,13 +203,9 @@ export const useDeleteMarketingDiscount = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const supabase = await getSupabaseClient();
-      const { error } = await supabase
-        .from("marketing_discounts")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw new Error(error.message);
+      await apiFetch<{ ok: boolean }>(`/api/marketing/discounts/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: async (_, id) => {
       await Promise.all([

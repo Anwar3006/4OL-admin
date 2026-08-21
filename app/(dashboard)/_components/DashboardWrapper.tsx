@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import NewAdminDashboardShell from "./admin-shell/NewAdminDashboardShell";
+import LoginAlertGuard from "./LoginAlertGuard";
 
 export default function DashboardWrapper({
   children,
@@ -105,5 +106,12 @@ export default function DashboardWrapper({
 
   if (isPending || !isAuthed) return null;
 
-  return <NewAdminDashboardShell>{children}</NewAdminDashboardShell>;
+  return (
+    <>
+      <NewAdminDashboardShell>{children}</NewAdminDashboardShell>
+      {/* Concurrent-login countdown modal for the super admin (no-op for
+          everyone else — alerts are only ever raised for super_admin). */}
+      <LoginAlertGuard />
+    </>
+  );
 }

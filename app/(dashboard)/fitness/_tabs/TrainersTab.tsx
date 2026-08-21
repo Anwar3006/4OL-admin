@@ -17,6 +17,7 @@ import {
 import {
   useTrainers,
   useDeleteTrainer,
+  useVerifyTrainer,
 } from "@/hooks/supabase-calls/useTrainer";
 import {
   useAddTrainerDialog,
@@ -52,6 +53,7 @@ const TrainersTab = () => {
     search: debouncedSearch,
   });
   const { mutate: deleteTrainer } = useDeleteTrainer();
+  const { mutate: verifyTrainer } = useVerifyTrainer();
 
   const handleEdit = useCallback(
     (row: any) => {
@@ -142,6 +144,30 @@ const TrainersTab = () => {
       ),
     },
     {
+      accessorKey: "certifications",
+      header: "Documents",
+      cell: ({ row }: any) => (
+        <div className="flex flex-wrap gap-1">
+          {row.original.certifications?.length ? (
+            <>
+              {row.original.certifications.slice(0, 2).map((c: string, i: number) => (
+                <span key={i} className="badge badge-blue uppercase text-[9px]">
+                  📄 {c}
+                </span>
+              ))}
+              {row.original.certifications.length > 2 && (
+                <span className="text-[9px] text-slate-400">
+                  +{row.original.certifications.length - 2}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-[10px] text-slate-400">None on file</span>
+          )}
+        </div>
+      ),
+    },
+    {
       accessorKey: "rating",
       header: "Rating",
       cell: ({ row }: any) => (
@@ -176,6 +202,22 @@ const TrainersTab = () => {
       onClick: (row: any) => viewTrainer.open(row.id),
     },
     { label: "Edit", icon: "✏️", onClick: handleEdit },
+    {
+      label: "Verify / Revoke",
+      icon: "🛡️",
+      onClick: (row: any) => {
+        const verify = !row.is_verified;
+        if (
+          globalThis.confirm(
+            verify
+              ? `Verify ${row.user_profiles?.first_name ?? "this trainer"}'s documents and activate their profile?`
+              : `Revoke verification for ${row.user_profiles?.first_name ?? "this trainer"}? Their status returns to pending.`,
+          )
+        ) {
+          verifyTrainer({ id: row.id, verify });
+        }
+      },
+    },
     {
       label: "Delete",
       icon: "🗑️",

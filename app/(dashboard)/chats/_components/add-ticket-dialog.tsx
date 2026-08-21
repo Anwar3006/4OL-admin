@@ -38,7 +38,10 @@ const PRIORITY_META: Record<string, { emoji: string; badge: string }> = {
 
 const STATUS_META: Record<string, { emoji: string; badge: string }> = {
   Open: { emoji: "🟢", badge: "badge-green" },
-  Closed: { emoji: "⚪", badge: "badge-gray" },
+  Unread: { emoji: "🔵", badge: "badge-blue" },
+  Pending: { emoji: "🟡", badge: "badge-amber" },
+  Resolved: { emoji: "✅", badge: "badge-green" },
+  Escalated: { emoji: "🔺", badge: "badge-red" },
 };
 
 const AddTicketDialog = () => {
@@ -213,7 +216,10 @@ const AddTicketDialog = () => {
                       </FormControl>
                       <SelectContent className="bg-white">
                         <SelectItem value="Open">🟢 Open</SelectItem>
-                        <SelectItem value="Closed">⚪ Closed</SelectItem>
+                        <SelectItem value="Unread">🔵 Unread</SelectItem>
+                        <SelectItem value="Pending">🟡 Pending</SelectItem>
+                        <SelectItem value="Resolved">✅ Resolved</SelectItem>
+                        <SelectItem value="Escalated">🔺 Escalated</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

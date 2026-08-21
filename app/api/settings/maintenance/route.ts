@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { logSettingsChange } from "@/lib/settings-audit";
 
 const MaintenanceSchema = z.object({
   enabled: z.boolean(),
@@ -20,10 +21,8 @@ const defaultMaintenance = {
 };
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("settings.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
@@ -57,10 +56,11 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Maintenance mode is a security-tier control: settings.security is held
+  // only by super_admin in ROLE_DEFAULTS (Part P least-privilege split).
+  const auth = await requireAdminApiUser("settings.security");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const parsed = MaintenanceSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -95,6 +95,22 @@ export async function PUT(req: NextRequest) {
       { status: 500 },
     );
   }
+
+  // P10: actor + history trail for every activate/lift (best-effort).
+  await admin.from("maintenance_history").insert({
+    enabled: parsed.data.enabled,
+    message: parsed.data.message || defaultMaintenance.message,
+    toggled_by: user.id,
+  });
+
+  await logSettingsChange(
+    admin,
+    user.id,
+    "maintenance",
+    "maintenance_mode",
+    null,
+    { enabled: parsed.data.enabled, message: parsed.data.message ?? null },
+  );
 
   return NextResponse.json({
     maintenance: {

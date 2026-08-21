@@ -1833,10 +1833,10 @@ Epic 12/22's scope.
 > `BedTrackerAnalyticsTab` specifically (after fixing its auth pattern
 > per Part I Epic 0.2's fix, and restyling to `clearing`'s kit).
 
-- [ ] **23.1** `[Backend]` Define facility-side update contract: how does a facility report bed availability (API endpoint, or a facility-portal mobile/web screen)?
-- [ ] **23.2** `[Backend]` `get_bedtracker_analytics(time_filter)` RPC: occupancy rate, alerts, ambulance dispatch status, coverage — from `bed_tracker_facilities`, `bed_tracker_alerts`, `ambulance_dispatches`.
-- [ ] **23.3** `[Backend]` Alert-threshold automation (e.g. auto-flag when a facility's available beds drop below N).
-- [ ] **23.4** `[Admin]` Wire `bedtracker/page.tsx`'s tabs (currently all `TabPlaceholder`) to live data + real-time updates (Supabase Realtime channel).
+- [x] **23.1** `[Backend]` Define facility-side update contract: how does a facility report bed availability (API endpoint, or a facility-portal mobile/web screen)? **Admin-side contract implemented 2026-08-21** — `POST /api/bedtracker/facilities` (register facility + wards), `PATCH /api/bedtracker/facilities/[id]`, `PATCH /api/bedtracker/wards/[id]` (bed counts, raises alert on critical drop) behind `requireAdminApiUser("bedtracker.*")`, schema in `supabase/migrations/20260821_bedtracker_extension.sql`. Facility-staff-facing portal/mobile entry point remains open (see 23.5).
+- [x] **23.2** `[Backend]` `get_bedtracker_analytics(time_filter)` RPC: occupancy rate, alerts, ambulance dispatch status, coverage — from `bed_tracker_facilities`, `bed_tracker_alerts`, `ambulance_dispatches`. **Implemented 2026-08-21** — extension migration adds the module RPCs (incl. `get_bedtracker_route_suggestions` haversine routing); `GET /api/bedtracker` aggregates occupancy/alerts/fleet/dispatch metrics in one overview payload consumed by the analytics tab.
+- [x] **23.3** `[Backend]` Alert-threshold automation (e.g. auto-flag when a facility's available beds drop below N). **Implemented 2026-08-21** — ward bed-count updates auto-raise `bed_tracker_alerts` when availability goes critical (`alertRaised` surfaced in the PATCH response); Live Overview tab lists alerts with Resolve action.
+- [x] **23.4** `[Admin]` Wire `bedtracker/page.tsx`'s tabs (currently all `TabPlaceholder`) to live data + real-time updates (Supabase Realtime channel). **Implemented 2026-08-21** — dedicated page shell with 6 working tabs (Live Overview, Bed Registry, Facilities, Ambulance Dispatch, Analytics, Design Strategy) fed by `useBedTrackerOverview` + `useRouteSuggestions`, register-facility and emergency-dispatch dialogs. Supabase Realtime channel not wired (polling via TanStack Query invalidation instead) — flagged as remaining.
 - [ ] **23.5** `[Mobile]` Facility-side bed-count update UI (if facility staff use the consumer app rather than a separate portal — confirm which).
 - [ ] **23.6** `[Mobile]` Consumer-side bed-availability display on facility profile / map.
 
@@ -1851,12 +1851,12 @@ Epic 12/22's scope.
 > found for this module (unlike BedTracker/HCP/Jobs) — build from this
 > epic's spec directly.
 
-- [ ] **24.1** `[Backend]` Submission review workflow (collector submits → admin approves/rejects → status change).
-- [ ] **24.2** `[Backend]` Reward ledger/payment-status tracking for collectors (`collector_submissions` → payout via Epic 15's payment rails once monetary).
-- [ ] **24.3** `[Backend]` `get_facilityscout_analytics(time_filter)` RPC: collector activity, submissions by status, rewards owed/paid, approval rate, leaderboard.
-- [ ] **24.4** `[Admin]` Wire `facilityscout/page.tsx`'s tabs (currently all `TabPlaceholder`) to live data.
+- [x] **24.1** `[Backend]` Submission review workflow (collector submits → admin approves/rejects → status change). **Implemented 2026-08-21** — `app/api/facilityscout/**`: assign (single + bulk, SLA priorities), reject (bulk-capable, duplicate flag), register; submitter names masked for non-super_admins; audited via `log_admin_activity`.
+- [x] **24.2** `[Backend]` Reward ledger/payment-status tracking for collectors (`collector_submissions` → payout via Epic 15's payment rails once monetary). **Implemented 2026-08-21** — rewards queue with data-bundle tiers (MB) and disbursement endpoint recording paid status; actual MNO payout integration deferred (disbursement marks sent only).
+- [x] **24.3** `[Backend]` `get_facilityscout_analytics(time_filter)` RPC: collector activity, submissions by status, rewards owed/paid, approval rate, leaderboard. **Implemented 2026-08-21** — `get_facility_scout_leaderboard` RPC + overview aggregation (submissions/duplicates/facilities added/data rewarded) in `supabase/migrations/20260821_facilityscout_extension.sql`.
+- [x] **24.4** `[Admin]` Wire `facilityscout/page.tsx`'s tabs (currently all `TabPlaceholder`) to live data. **Implemented 2026-08-21** — 5 working tabs (All Submissions, Pending Review with bulk assign/reject, Rewards Queue, Leaderboard, Settings tier/rules editor) fed by `useFacilityScoutOverview`; `_deprecated/` sub-pages deleted.
 - [ ] **24.5** `[Mobile]` Collector-facing submission flow (if collectors use the mobile app) — capture facility details/photos, submit for review.
-- [ ] **24.6** `[Backend]` Basic anti-fraud scoring before rewards become real money (duplicate-submission detection at minimum).
+- [x] **24.6** `[Backend]` Basic anti-fraud scoring before rewards become real money (duplicate-submission detection at minimum). **Implemented 2026-08-21** — submissions carry `match_status` (new/duplicate) computed against existing facilities; admins can flag duplicates on reject (optionally linking the matched facility). Deeper scoring remains open.
 
 ---
 
@@ -2043,6 +2043,18 @@ not something to silently rewrite mid-Epic-27.
   states before this (no fabrication to remove) — now shows real
   configured values once an admin sets them.
 - [x] **28.6** `[Backend]` (Optional, only if a reliable monitoring source is wired) `system_health_snapshots` table feeding `SystemHealth.tsx` — otherwise remove API/DB latency and uptime claims rather than fabricate them. **Not built (optional, no monitoring source exists)** — `SystemHealth.tsx` already avoided fabricating uptime/latency; fixed one stale claim while here ("Firebase FCM: Not wired here" → correctly references Expo push, per Epic 27.2's finding that Firebase was never the live pipeline).
+
+> **2026-08-21 security follow-ups landed:** (a) response security headers
+> in `next.config.ts` (X-Frame-Options, X-Content-Type-Options,
+> Referrer-Policy, X-XSS-Protection, Permissions-Policy; CSP intentionally
+> omitted — Next.js inline scripts + Supabase assets would break); (b)
+> progressive login lockout — `lib/auth-guard.ts`, 5 failures → 30s lock,
+> doubling to 10-min cap, wired into `LoginForm`; (c) bot honeypots on
+> `LoginForm`/`RegisterForm` (filled trap aborts before any auth call);
+> (d) dependency scanning — `npm run security:audit`,
+> `.github/workflows/dependency-audit.yml` + Dependabot config. Server-side
+> failed-login telemetry (28.2's note) is still open: login remains a direct
+> browser call to Supabase Auth.
 
 ---
 

@@ -4,6 +4,7 @@ import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useDrugKpiStats } from "@/hooks/supabase-calls/useDrugs";
 
 interface MedKpiData {
   total_reminders: number;
@@ -27,6 +28,9 @@ export default function MedicationStats() {
     }
   });
 
+  // Drug catalog KPIs (Gap Analysis B.7) — drugs in DB, categories, flags.
+  const { data: drugStats, isLoading: drugLoading } = useDrugKpiStats();
+
   if (isLoading || !stats) {
     return <div className="h-24 animate-pulse bg-slate-100 rounded-xl mb-6 w-full"></div>;
   }
@@ -47,7 +51,7 @@ export default function MedicationStats() {
   const adherenceDelta = formatDelta(stats.adherence_delta, true);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5 mb-6">
       <KpiCard 
         icon="💊" 
         label="Total Reminders" 
@@ -71,6 +75,27 @@ export default function MedicationStats() {
         variant="gold" 
         delta={adherenceDelta.text} 
         deltaType={adherenceDelta.type} 
+      />
+      <KpiCard
+        icon="💊"
+        label="Drugs in Database"
+        value={drugStats?.drugs_in_db.toLocaleString() ?? "—"}
+        variant="teal"
+        isLoading={drugLoading}
+      />
+      <KpiCard
+        icon="🚩"
+        label="Interaction Flags (30d)"
+        value={drugStats?.interaction_flags_30d.toLocaleString() ?? "—"}
+        variant="red"
+        isLoading={drugLoading}
+      />
+      <KpiCard
+        icon="🗂️"
+        label="Drug Categories"
+        value={drugStats?.drug_categories.toLocaleString() ?? "—"}
+        variant="indigo"
+        isLoading={drugLoading}
       />
     </div>
   );

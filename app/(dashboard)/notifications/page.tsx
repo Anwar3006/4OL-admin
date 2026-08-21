@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bell,
+  Download,
   FileText,
   Megaphone,
   RefreshCw,
@@ -12,7 +13,12 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import BedTrackerTab from "./_components/BedTrackerTab";
+import BestTimeTab from "./_components/BestTimeTab";
+import PharmacyTab from "./_components/PharmacyTab";
+import ScheduledTab from "./_components/ScheduledTab";
 import KpiCard from "@/components/redesign/KpiCard";
+import KpiGrid from "@/components/redesign/KpiGrid";
 import PageHeader from "@/components/redesign/PageHeader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -52,10 +58,14 @@ type NotificationRow = {
   title: string;
   body: string;
   type: string;
+  channel: string | null;
   is_read: boolean;
   is_broadcast: boolean;
   campaign_id: string | null;
   read_at: string | null;
+  delivered_at: string | null;
+  opened_at: string | null;
+  sent_by: string | null;
   created_at: string;
 };
 
@@ -101,10 +111,16 @@ type RuleRow = {
 
 const tabs = [
   { id: "campaigns", label: "Campaigns" },
-  { id: "logs", label: "Notification Log" },
+  { id: "logs", label: "All Log" },
+  { id: "scheduled", label: "Scheduled" },
+  { id: "pharmacy", label: "Pharmacy Marketing" },
+  { id: "bedtracker", label: "BedTracker Alerts" },
   { id: "templates", label: "Templates" },
   { id: "automation", label: "Automation Rules" },
+  { id: "best-time", label: "Best Time" },
 ];
+
+const VALID_TABS = new Set(tabs.map((tab) => tab.id));
 
 const USER_TYPES = ["customer", "business_provider", "both"];
 const ROLES = ["user"];
@@ -267,6 +283,21 @@ export default function NotificationsPage() {
     loadData();
   }, [loadData]);
 
+  // Gap R9: ?tab= URL sync so sidebar deep links land on the right tab.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("tab");
+    if (param && VALID_TABS.has(param)) setActiveTab(param);
+  }, []);
+
+  const changeTab = (tab: string) => {
+    setActiveTab(tab);
+    router.replace(`/notifications?tab=${tab}`);
+  };
+
+  const exportLog = () => {
+    window.open("/api/notifications/export", "_blank");
+  };
+
   useEffect(() => {
     let cancelled = false;
     setPreviewLoading(true);
@@ -338,6 +369,10 @@ export default function NotificationsPage() {
         title="Notifications"
         subtitle="Campaign builder, notification logs, templates, and automation rules"
       >
+        <Button type="button" variant="outline" size="sm" onClick={exportLog}>
+          <Download className="h-4 w-4" />
+          Export Log
+        </Button>
         <Button type="button" variant="outline" size="sm" onClick={loadData} disabled={loading}>
           <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
           Refresh
@@ -352,13 +387,13 @@ export default function NotificationsPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <KpiCard icon={<Megaphone className="h-5 w-5" />} label="Campaigns" value={loading ? "..." : metrics.campaigns ?? 0} variant="blue" delta={`${metrics.scheduledCampaigns ?? 0} scheduled`} deltaType="neutral" />
-        <KpiCard icon={<ShieldAlert className="h-5 w-5" />} label="Pending Approval" value={loading ? "..." : metrics.pendingApprovalCampaigns ?? 0} variant="amber" delta="Needs review" deltaType="neutral" />
-        <KpiCard icon={<Bell className="h-5 w-5" />} label="Notifications" value={loading ? "..." : metrics.notificationLog ?? 0} variant="purple" delta={`${metrics.unread ?? 0} unread`} deltaType="neutral" />
-        <KpiCard icon={<FileText className="h-5 w-5" />} label="Templates" value={loading ? "..." : metrics.activeTemplates ?? 0} variant="green" delta="Active" deltaType="up" />
-        <KpiCard icon={<Settings2 className="h-5 w-5" />} label="Automation" value={loading ? "..." : metrics.activeRules ?? 0} variant="amber" delta="Active rules" deltaType="neutral" />
-      </div>
+      <KpiGrid variant="six">
+        <KpiCard icon={<Megaphone className="size-4" />} label="Campaigns" value={loading ? "..." : metrics.campaigns ?? 0} variant="blue" delta={`${metrics.scheduledCampaigns ?? 0} scheduled`} deltaType="neutral" />
+        <KpiCard icon={<ShieldAlert className="size-4" />} label="Pending Approval" value={loading ? "..." : metrics.pendingApprovalCampaigns ?? 0} variant="amber" delta="Needs review" deltaType="neutral" />
+        <KpiCard icon={<Bell className="size-4" />} label="Notifications" value={loading ? "..." : metrics.notificationLog ?? 0} variant="purple" delta={`${metrics.unread ?? 0} unread`} deltaType="neutral" />
+        <KpiCard icon={<FileText className="size-4" />} label="Templates" value={loading ? "..." : metrics.activeTemplates ?? 0} variant="green" delta="Active" deltaType="up" />
+        <KpiCard icon={<Settings2 className="size-4" />} label="Automation" value={loading ? "..." : metrics.activeRules ?? 0} variant="amber" delta="Active rules" deltaType="neutral" />
+      </KpiGrid>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
         <Card>
@@ -457,14 +492,14 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+        <Tabs value={activeTab} onValueChange={changeTab}>
+          <TabsList className="bg-transparent border-b border-slate-200 dark:border-slate-700 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
                 className={cn(
-                  "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                  "px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
                 )}
               >
@@ -478,6 +513,15 @@ export default function NotificationsPage() {
           </TabsContent>
           <TabsContent value="logs" className="outline-none">
             <NotificationsTable notifications={data.notifications} loading={loading} />
+          </TabsContent>
+          <TabsContent value="scheduled" className="outline-none">
+            <ScheduledTab campaigns={data.campaigns} loading={loading} onRefresh={loadData} />
+          </TabsContent>
+          <TabsContent value="pharmacy" className="outline-none">
+            <PharmacyTab />
+          </TabsContent>
+          <TabsContent value="bedtracker" className="outline-none">
+            <BedTrackerTab />
           </TabsContent>
           <TabsContent value="templates" className="outline-none">
             <TemplatesTable
@@ -508,6 +552,9 @@ export default function NotificationsPage() {
                 loadData();
               }}
             />
+          </TabsContent>
+          <TabsContent value="best-time" className="outline-none">
+            <BestTimeTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -577,22 +624,36 @@ function NotificationsTable({
             <TableRow>
               <TableHead>Notification</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Channel</TableHead>
               <TableHead>Audience</TableHead>
+              <TableHead>By</TableHead>
+              <TableHead className="text-right">Delivered</TableHead>
+              <TableHead className="text-right">Opened</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading && <EmptyRow colSpan={5} label="Loading notification log..." />}
-            {!loading && notifications.length === 0 && <EmptyRow colSpan={5} label="No notifications found." />}
+            {loading && <EmptyRow colSpan={9} label="Loading notification log..." />}
+            {!loading && notifications.length === 0 && <EmptyRow colSpan={9} label="No notifications found." />}
             {!loading && notifications.map((notification) => (
               <TableRow key={notification.id}>
                 <TableCell className="min-w-[260px] whitespace-normal">
-                  <div className="font-bold text-slate-800">{notification.title}</div>
+                  <div className="font-medium text-slate-800 dark:text-slate-100">{notification.title}</div>
                   <div className="mt-1 line-clamp-2 text-xs text-slate-500">{notification.body}</div>
                 </TableCell>
                 <TableCell className="capitalize">{labelize(notification.type)}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="capitalize">{notification.channel ?? "push"}</Badge>
+                </TableCell>
                 <TableCell>{notification.is_broadcast ? "Broadcast" : notification.user_id.slice(0, 8)}</TableCell>
+                <TableCell>{notification.sent_by ? notification.sent_by.slice(0, 8) : "System (Auto)"}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {notification.delivered_at ? formatDate(notification.delivered_at) : "—"}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {notification.opened_at ? formatDate(notification.opened_at) : "—"}
+                </TableCell>
                 <TableCell><StatusBadge value={notification.is_read ? "read" : "unread"} /></TableCell>
                 <TableCell>{formatDate(notification.created_at)}</TableCell>
               </TableRow>

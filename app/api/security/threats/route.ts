@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const ThreatQuerySchema = z.object({
@@ -17,10 +17,8 @@ const ThreatActionSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("security.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const parsed = ThreatQuerySchema.safeParse({
     threatLevel: req.nextUrl.searchParams.get("threatLevel") || undefined,
@@ -72,10 +70,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("security.settings");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const parsed = ThreatActionSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

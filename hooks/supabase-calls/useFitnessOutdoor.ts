@@ -33,6 +33,11 @@ export const OUTDOOR_QUERY_KEYS = {
     [...OUTDOOR_QUERY_KEYS.reviewLists(), { ...params }] as const,
   reviewDetails: () => [...OUTDOOR_QUERY_KEYS.allReviews, "detail"] as const,
   reviewDetail: (id: string) => [...OUTDOOR_QUERY_KEYS.reviewDetails(), id] as const,
+
+  pendingRoutes: ["fitness_outdoor_routes", "pending"] as const,
+  eventRegistrations: (eventId: string) =>
+    ["fitness_outdoor_event_registrations", eventId] as const,
+  incentives: ["fitness_outdoor_incentives"] as const,
 };
 
 // =============================================================================
@@ -461,5 +466,139 @@ export const useDeleteFitnessOutdoorReview = () => {
     onError: (error: Error) => {
       toast.error(`Failed to delete review: ${error.message}`);
     },
+  });
+};
+
+// =============================================================================
+// VERIFICATION QUEUE + EVENT PARTICIPANTS + INCENTIVES (Gap Analysis Part F)
+// =============================================================================
+
+// Pending Verification Queue — routes awaiting the m-verify-route flow.
+export const usePendingOutdoorRoutes = () => {
+  return useQuery({
+    queryKey: OUTDOOR_QUERY_KEYS.pendingRoutes,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fitness_outdoor_routes")
+        .select(`
+          *,
+          creator:user_profiles!fitness_outdoor_routes_created_by_fkey(first_name, last_name)
+        `)
+        .eq("verification_status", "pending_review")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (data || []) as TFitnessOutdoorRouteOutput[];
+    },
+  });
+};
+
+export interface VerifyOutdoorRouteInput {
+  id: string;
+  action: "approve" | "reject";
+  routeClass?: "official" | "community";
+  fitcoinsReward?: number;
+  note?: string;
+}
+
+// m-verify-route flow — enforced server route (fitness.edit).
+export const useVerifyOutdoorRoute = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, VerifyOutdoorRouteInput>({
+    mutationFn: async ({ id, ...fields }) => {
+      const res = await fetch(`/api/fitness/outdoor-routes/${id}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to update route verification.");
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: OUTDOOR_QUERY_KEYS.allRoutes });
+      queryClient.invalidateQueries({ queryKey: OUTDOOR_QUERY_KEYS.pendingRoutes });
+      toast.success(
+        variables.action === "approve"
+          ? "Route verified & published"
+          : "Route rejected",
+      );
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+// Participants modal (m-view-participants).
+export const useOutdoorEventRegistrations = (eventId: string | null) => {
+  return useQuery({
+    queryKey: OUTDOOR_QUERY_KEYS.eventRegistrations(eventId ?? "none"),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fitness_outdoor_event_registrations")
+        .select(`
+          id, user_id, status, registered_at,
+          user:user_profiles(first_name, last_name, phone_number)
+        `)
+        .eq("event_id", eventId!)
+        .order("registered_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled: !!eventId,
+  });
+};
+
+// FitCoins incentive formula (m-route-incentives).
+export interface OutdoorIncentives {
+  base_fitcoins: number;
+  per_km_fitcoins: number;
+  verification_bonus: number;
+  event_bonus: number;
+  notes: string | null;
+}
+
+export const useOutdoorIncentives = () => {
+  return useQuery<OutdoorIncentives, Error>({
+    queryKey: OUTDOOR_QUERY_KEYS.incentives,
+    queryFn: async () => {
+      const res = await fetch("/api/fitness/outdoor-incentives");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to load incentive config.");
+      }
+      const json = await res.json();
+      return json.incentives as OutdoorIncentives;
+    },
+  });
+};
+
+export interface UpdateOutdoorIncentivesInput {
+  baseFitcoins: number;
+  perKmFitcoins: number;
+  verificationBonus: number;
+  eventBonus: number;
+  notes?: string | null;
+}
+
+export const useUpdateOutdoorIncentives = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, UpdateOutdoorIncentivesInput>({
+    mutationFn: async (input) => {
+      const res = await fetch("/api/fitness/outdoor-incentives", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to save incentive config.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OUTDOOR_QUERY_KEYS.incentives });
+      toast.success("Incentive formula saved");
+    },
+    onError: (error) => toast.error(error.message),
   });
 };

@@ -11,6 +11,8 @@ import FlaggedTab from "./_components/FlaggedTab";
 import ViewGroupDialog from "./_components/ViewGroupDialog";
 import CreateGroupDialog from "./_components/CreateGroupDialog";
 import { useChatTabCounts } from "@/hooks/supabase-calls/useConversation";
+import { useAddGroupDialog } from "@/stores/dialog-store";
+import { useHasPermission } from "@/stores/permission-context";
 import { cn } from "@/lib/utils";
 
 const ChatsPage = () => {
@@ -20,6 +22,8 @@ const ChatsPage = () => {
   const [activeTab, setActiveTab] = useState(tabParam || "groups");
 
   const { data: counts } = useChatTabCounts();
+  const addGroupDialog = useAddGroupDialog();
+  const canModerate = useHasPermission("chats.moderate");
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -59,9 +63,17 @@ const ChatsPage = () => {
         title="💬 Chats"
         subtitle="Group chats management · User support tickets · Platform communication"
       >
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">
-          + New Group
-        </button>
+        {canModerate && (
+          <button
+            className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]"
+            onClick={() => {
+              setActiveTab("groups");
+              addGroupDialog.open();
+            }}
+          >
+            + New Group
+          </button>
+        )}
       </PageHeader>
 
       {/* KPI stats */}

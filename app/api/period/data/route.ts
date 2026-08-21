@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { decryptLead, maskMobile } from "@/lib/period-trivia-security";
 import {
@@ -198,8 +198,9 @@ function pageRows<T>(rows: T[], page: number, pageSize: number) {
 }
 
 export async function GET(request: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminApiUser("period.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
 
   const tabResult = TabSchema.safeParse(request.nextUrl.searchParams.get("tab") ?? "overview");
   if (!tabResult.success) return NextResponse.json({ error: "Invalid tab" }, { status: 400 });
@@ -547,8 +548,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getAdminApiUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAdminApiUser("period.edit");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+  const user = auth.user;
   const parsed = WriteSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   const admin = getSupabaseAdmin();

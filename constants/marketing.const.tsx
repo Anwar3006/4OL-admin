@@ -31,4 +31,14 @@ export const MarketingStatusMap: Record<
       Ended
     </span>
   ),
+  pending_review: (
+    <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+      Pending Review
+    </span>
+  ),
+  rejected: (
+    <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800">
+      Rejected
+    </span>
+  ),
 };

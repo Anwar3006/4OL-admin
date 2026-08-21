@@ -2,11 +2,12 @@ import { describe, expect, test } from "vitest";
 import { ADMIN_ROLES, SUPER_ADMIN_ROLE, isAdminRole } from "./admin-roles";
 
 describe("ADMIN_ROLES", () => {
-  test("contains the 9 canonical platform roles", () => {
-    expect(ADMIN_ROLES).toHaveLength(9);
+  test("contains the 10 canonical platform roles", () => {
+    expect(ADMIN_ROLES).toHaveLength(10);
     expect([...ADMIN_ROLES].sort()).toEqual(
       [
         "admin",
+        "ai_manager",
         "analyst",
         "compliance_officer",
         "content_manager",

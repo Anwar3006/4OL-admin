@@ -23,6 +23,7 @@ export const ADMIN_ROLES = [
   "finance_admin",
   "compliance_officer",
   "analyst",
+  "ai_manager",
 ] as const;
 
 export type AdminRole = (typeof ADMIN_ROLES)[number];
@@ -42,6 +43,7 @@ export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
   finance_admin: "Finance Admin",
   compliance_officer: "Compliance Officer",
   analyst: "Analyst",
+  ai_manager: "AI Manager",
 };
 
 export const ADMIN_ROLE_OPTIONS = ADMIN_ROLES.map((role) => ({

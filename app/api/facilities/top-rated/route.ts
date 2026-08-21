@@ -1,7 +1,11 @@
-import { supabase } from "@/lib/supabase";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const auth = await requireAdminApiUser("facilities.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -9,6 +13,7 @@ export async function GET(request: NextRequest) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
+    const supabase = getSupabaseAdmin();
     const { data, count, error } = await supabase
       .from("facility_profile")
       .select(

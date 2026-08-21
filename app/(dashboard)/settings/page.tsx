@@ -1,18 +1,26 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
+  Bell,
   Check,
   CreditCard,
+  FileCheck2,
   KeyRound,
   Loader2,
   Plug,
   RefreshCw,
   Save,
   Settings,
+  ShieldCheck,
   ToggleLeft,
 } from "lucide-react";
+import BillingTab from "./_components/BillingTab";
+import ComplianceTab from "./_components/ComplianceTab";
+import NotificationsTab from "./_components/NotificationsTab";
+import SecurityTab from "./_components/SecurityTab";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -94,10 +102,16 @@ const tabList = [
   { id: "general", label: "General", icon: Settings },
   { id: "plans", label: "Plans", icon: CreditCard },
   { id: "features", label: "Feature Flags", icon: ToggleLeft },
+  { id: "security", label: "Security", icon: ShieldCheck },
   { id: "api-keys", label: "API Keys", icon: KeyRound },
+  { id: "notifications", label: "Notifications", icon: Bell },
   { id: "integrations", label: "Integrations", icon: Plug },
+  { id: "billing", label: "Billing & GRA", icon: CreditCard },
+  { id: "compliance", label: "Compliance", icon: FileCheck2 },
   { id: "maintenance", label: "Maintenance", icon: AlertTriangle },
 ];
+
+const VALID_TABS = new Set(tabList.map((tab) => tab.id));
 
 function formatMoney(value: number | null, currency = "GHS") {
   return new Intl.NumberFormat(undefined, {
@@ -116,6 +130,7 @@ function formatDate(value: string | null) {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -195,6 +210,18 @@ export default function SettingsPage() {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  // Gap P3: ?tab= URL sync — deep links (sidebar, docs) land on the right
+  // tab, and tab changes update the URL without a full navigation.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("tab");
+    if (param && VALID_TABS.has(param)) setActiveTab(param);
+  }, []);
+
+  const changeTab = (tab: string) => {
+    setActiveTab(tab);
+    router.replace(`/settings?tab=${tab}`);
+  };
 
   const saveGeneral = async () => {
     if (!settings) return;
@@ -355,14 +382,14 @@ export default function SettingsPage() {
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="border-b border-slate-200">
+      <Tabs value={activeTab} onValueChange={changeTab} className="w-full">
+        <div className="border-b border-slate-200 dark:border-slate-700">
           <TabsList className="h-auto w-full justify-start gap-0 overflow-x-auto rounded-none bg-transparent p-0">
             {tabList.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
               >
                 <tab.icon className="mr-2 h-4 w-4" />
                 {tab.label}
@@ -386,11 +413,23 @@ export default function SettingsPage() {
         <TabsContent value="features" className="mt-5 outline-none">
           <FeatureFlags loading={loading} flags={flags} onToggle={toggleFlag} />
         </TabsContent>
+        <TabsContent value="security" className="mt-5 outline-none">
+          <SecurityTab />
+        </TabsContent>
         <TabsContent value="api-keys" className="mt-5 outline-none">
           <ApiKeysTable loading={loading} keys={apiKeys} />
         </TabsContent>
+        <TabsContent value="notifications" className="mt-5 outline-none">
+          <NotificationsTab />
+        </TabsContent>
         <TabsContent value="integrations" className="mt-5 outline-none">
           <IntegrationsList loading={loading} integrations={integrations} />
+        </TabsContent>
+        <TabsContent value="billing" className="mt-5 outline-none">
+          <BillingTab />
+        </TabsContent>
+        <TabsContent value="compliance" className="mt-5 outline-none">
+          <ComplianceTab />
         </TabsContent>
         <TabsContent value="maintenance" className="mt-5 outline-none">
           <MaintenanceSettings

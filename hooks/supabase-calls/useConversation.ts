@@ -3,6 +3,8 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { TConversationOutput } from "@/schemas/conversation.schema";
 import { toast } from "sonner";
 import { assignAdminWithRulesAction } from "@/actions/conversation.actions";
+import { GROUP_CATEGORY_LEGACY_MAP } from "@/lib/chats-constants";
+import { CHAT_QUERY_KEYS } from "./useChat";
 
 export const CONVERSATION_QUERY_KEYS = {
   all: ["conversations"] as const,
@@ -140,6 +142,11 @@ export const useCreateConversation = () => {
       group_category?: string;
       is_verified_only?: boolean;
       max_members?: number;
+      group_type?: string;
+      region_restriction?: string | null;
+      group_permissions?: Record<string, boolean>;
+      group_rules?: string | null;
+      assign_admin_id?: string | null;
     }) => {
       const supabase = await getSupabaseClient();
 
@@ -160,6 +167,12 @@ export const useCreateConversation = () => {
           group_category: params.group_category || null,
           is_verified_only: params.is_verified_only ?? false,
           max_members: params.max_members ?? 500,
+          group_type:
+            params.group_type ??
+            (params.is_verified_only ? "hcp_verified" : "open"),
+          region_restriction: params.region_restriction ?? null,
+          group_permissions: params.group_permissions ?? {},
+          group_rules: params.group_rules ?? null,
           created_by: user.id,
         })
         .select()
@@ -178,6 +191,18 @@ export const useCreateConversation = () => {
         });
 
       if (memberError) throw new Error(memberError.message);
+
+      // Optional second group admin (m-create-group "Assign Group Admin").
+      if (params.assign_admin_id && params.assign_admin_id !== user.id) {
+        const { error: adminError } = await supabase
+          .from("conversation_members")
+          .insert({
+            conversation_id: conversation.id,
+            user_id: params.assign_admin_id,
+            role: "admin",
+          });
+        if (adminError) throw new Error(adminError.message);
+      }
 
       return conversation;
     },
@@ -202,6 +227,11 @@ export const useUpdateConversation = () => {
       group_category,
       is_verified_only,
       max_members,
+      group_type,
+      region_restriction,
+      group_permissions,
+      group_rules,
+      status,
     }: {
       id: string;
       name?: string;
@@ -209,6 +239,11 @@ export const useUpdateConversation = () => {
       group_category?: string;
       is_verified_only?: boolean;
       max_members?: number;
+      group_type?: string;
+      region_restriction?: string | null;
+      group_permissions?: Record<string, boolean>;
+      group_rules?: string | null;
+      status?: string;
     }) => {
       const supabase = await getSupabaseClient();
       const payload: Record<string, any> = {};
@@ -224,6 +259,13 @@ export const useUpdateConversation = () => {
       if (is_verified_only !== undefined)
         payload.is_verified_only = is_verified_only;
       if (max_members !== undefined) payload.max_members = max_members;
+      if (group_type !== undefined) payload.group_type = group_type;
+      if (region_restriction !== undefined)
+        payload.region_restriction = region_restriction;
+      if (group_permissions !== undefined)
+        payload.group_permissions = group_permissions;
+      if (group_rules !== undefined) payload.group_rules = group_rules;
+      if (status !== undefined) payload.status = status;
       payload.updated_at = new Date().toISOString();
 
       const { error } = await supabase
@@ -255,16 +297,18 @@ export const useAdminConversations = ({
   limit,
   search,
   status,
+  category,
 }: {
   page: number;
   limit: number;
   search?: string;
   status?: string;
+  category?: string;
 }) => {
   return useQuery({
     queryKey: [
       ...CONVERSATION_QUERY_KEYS.adminGroups(),
-      { page, limit, search, status },
+      { page, limit, search, status, category },
     ],
     queryFn: async () => {
       const from = (page - 1) * limit;
@@ -308,6 +352,14 @@ export const useAdminConversations = ({
         query = query.eq("status", status.toLowerCase());
       }
 
+      if (category) {
+        // Match the E-D4 value plus any legacy values that map onto it.
+        const legacy = Object.entries(GROUP_CATEGORY_LEGACY_MAP)
+          .filter(([, target]) => target === category)
+          .map(([legacyValue]) => legacyValue);
+        query = query.in("group_category", [category, ...legacy]);
+      }
+
       const {
         data: conversations,
         count,
@@ -329,9 +381,22 @@ export const useAdminConversations = ({
                 )
               : null;
 
+          // Messages in the trailing 7 days + per-member throughput
+          // (Gap Analysis Part E — Groups tab columns).
+          const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+          const messages7d = messages.filter(
+            (m: any) => new Date(m.created_at).getTime() >= sevenDaysAgo,
+          ).length;
+          const memberCount = c.conversation_members?.[0]?.count ?? 0;
+
           return {
             ...c,
-            member_count: c.conversation_members?.[0]?.count ?? 0,
+            member_count: memberCount,
+            messages_7d: messages7d,
+            msgs_per_member:
+              memberCount > 0
+                ? Math.round((messages7d / memberCount) * 10) / 10
+                : 0,
             last_message: lastMsg
               ? {
                   content: lastMsg.content,
@@ -556,5 +621,92 @@ export const useMakeGroupLeader = () => {
     onError: (error) => {
       toast.error(`Failed to promote: ${error.message}`);
     },
+  });
+};
+
+// =============================================================================
+// Support Ticket Triage Hooks (Gap Analysis Part E — server-side, chats.moderate)
+// =============================================================================
+
+export interface UpdateSupportTicketInput {
+  id: number | string;
+  status?: "Open" | "Unread" | "Pending" | "Resolved" | "Escalated";
+  assignedTo?: string | null;
+  resolutionNotes?: string | null;
+}
+
+export const useUpdateSupportTicket = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, UpdateSupportTicketInput>({
+    mutationFn: async ({ id, ...fields }) => {
+      const res = await fetch(`/api/chat/support/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to update ticket.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: CONVERSATION_QUERY_KEYS.all });
+      toast.success("Ticket updated");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useDeleteSupportTicket = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { id: number | string }>({
+    mutationFn: async ({ id }) => {
+      const res = await fetch(`/api/chat/support/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Failed to delete ticket.");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: CONVERSATION_QUERY_KEYS.all });
+      toast.success("Ticket deleted");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+// =============================================================================
+// Global Message Search (super_admin only — PHI, decision E-D5)
+// =============================================================================
+
+export interface GlobalMessageSearchResult {
+  id: string;
+  content: string;
+  createdAt: string;
+  conversationId: string;
+  conversationName: string;
+  groupCategory: string | null;
+  senderName: string;
+}
+
+export const useGlobalMessageSearch = () => {
+  return useMutation<
+    { results: GlobalMessageSearchResult[]; total: number },
+    Error,
+    string
+  >({
+    mutationFn: async (q: string) => {
+      const res = await fetch(
+        `/api/chat/global-search?q=${encodeURIComponent(q)}`,
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || "Search failed.");
+      }
+      return res.json();
+    },
+    onError: (error) => toast.error(error.message),
   });
 };

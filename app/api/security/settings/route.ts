@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminApiUser } from "@/lib/admin-api-auth";
+import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 
 const defaultSecuritySettings = {
   password_policy: {
@@ -18,10 +18,8 @@ const defaultSecuritySettings = {
 };
 
 export async function GET() {
-  const user = await getAdminApiUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdminApiUser("security.view");
+  if (!auth.ok) return adminAuthErrorResponse(auth);
 
   return NextResponse.json({
     security: defaultSecuritySettings,

@@ -6,4 +6,8 @@ export { default as UsersTab } from "./UsersTab";
 export { default as TrainersTab } from "./TrainersTab";
 export { default as ScheduleTab } from "./ScheduleTab";
 export { default as OutdoorTab } from "./OutdoorTab";
+export { default as WhatsAppTab } from "./WhatsAppTab";
+export { default as AiStudioTab } from "./AiStudioTab";
+export { default as AiLogTab } from "./AiLogTab";
+export { default as HealthTab } from "./HealthTab";
 

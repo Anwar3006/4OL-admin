@@ -1,257 +1,194 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  Brain,
-  Bone,
-  HeartPulse,
-  RefreshCw,
-  ScanLine,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Bone, HeartPulse, MapPin, ScanLine } from "lucide-react";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAnatomyOverview } from "@/hooks/supabase-calls/useAnatomy";
+import BodyMapTab from "./_components/BodyMapTab";
+import ConditionsLinkedTab from "./_components/ConditionsLinkedTab";
+import SymptomsLinkedTab from "./_components/SymptomsLinkedTab";
+import HealthyTipsTab from "./_components/HealthyTipsTab";
+import ConnectedModulesTab from "./_components/ConnectedModulesTab";
+import BusinessStrategyTab from "./_components/BusinessStrategyTab";
+import AddBodyPartDialog from "./_components/AddBodyPartDialog";
 
-type BodySystem = "all" | "cardiovascular" | "nervous" | "skeletal" | "respiratory";
+import { cn } from "@/lib/utils";
 
-type BodyPart = {
-  id: string;
-  name: string;
-  parent_id: string | null;
-  mesh_id: string | null;
-  path: string;
-  level: number | null;
-  body_system: string;
-  symptom_count: number;
-  condition_count: number;
-};
-
-const systems: Array<{
-  id: BodySystem;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = [
-  { id: "all", label: "All Parts", icon: ScanLine },
-  { id: "cardiovascular", label: "Cardiovascular", icon: HeartPulse },
-  { id: "nervous", label: "Nervous", icon: Brain },
-  { id: "skeletal", label: "Skeletal", icon: Bone },
-  { id: "respiratory", label: "Respiratory", icon: Activity },
+const AnatomyTabs = [
+  { id: "body-map",   label: "🪴 Body Map" },
+  { id: "conditions", label: "🦠 Linked Conditions" },
+  { id: "symptoms",   label: "🩺 Linked Symptoms" },
+  { id: "tips",       label: "🌿 Healthy Tips" },
+  { id: "modules",    label: "🔗 Connected Modules" },
+  { id: "strategy",   label: "💼 Business Strategy" },
 ];
 
 export default function AnatomyPage() {
-  const [activeSystem, setActiveSystem] = useState<BodySystem>("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [parts, setParts] = useState<BodyPart[]>([]);
-
-  const loadBodyParts = useCallback(async (system: BodySystem) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/anatomy/body-map?bodySystem=${system}`, {
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error || "Unable to load anatomy data.");
-      }
-
-      const body = await res.json();
-      setParts(body.parts ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load anatomy.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "body-map");
+  const [gender, setGender] = useState<"female" | "male">("female");
+  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
-    loadBodyParts(activeSystem);
-  }, [activeSystem, loadBodyParts]);
+    if (tabParam && tabParam !== activeTab) setActiveTab(tabParam);
+  }, [tabParam]);                                                    // eslint-disable-line
 
-  const linkedSymptoms = useMemo(
-    () => parts.reduce((sum, part) => sum + part.symptom_count, 0),
-    [parts],
-  );
-  const linkedConditions = useMemo(
-    () => parts.reduce((sum, part) => sum + part.condition_count, 0),
-    [parts],
-  );
-  const mappedMeshes = useMemo(
-    () => parts.filter((part) => Boolean(part.mesh_id)).length,
-    [parts],
-  );
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", value);
+    window.history.pushState(null, "", `?${params.toString()}`);
+  };
+
+  const { data: overview, isLoading: overviewLoading } = useAnatomyOverview();
+  const stats = overview?.stats;
 
   return (
-    <div className="animate-in fade-in duration-500 space-y-6">
+    <div className="animate-in fade-in duration-500 space-y-5">
       <PageHeader
-        title="Human Anatomy"
-        subtitle="Body-part taxonomy, symptom mapping, and condition relationships"
+        title="🧍 Human Anatomy"
+        subtitle="Interactive body map · symptom & condition mapping · gender-aware content"
       >
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => loadBodyParts(activeSystem)}
-          disabled={loading}
-        >
-          <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-          Refresh
-        </Button>
+        {/* Header actions (mockup): gender toggle · Export · + Add Body Part */}
+        <div className="flex rounded-lg border border-slate-200 overflow-hidden">
+          <button
+            className={cn(
+              "px-3 py-2 text-xs font-bold transition",
+              gender === "female"
+                ? "bg-emerald-600 text-white"
+                : "bg-white text-slate-500 hover:bg-slate-50",
+            )}
+            onClick={() => setGender("female")}
+          >
+            ♀ Female
+          </button>
+          <button
+            className={cn(
+              "px-3 py-2 text-xs font-bold transition",
+              gender === "male"
+                ? "bg-emerald-600 text-white"
+                : "bg-white text-slate-500 hover:bg-slate-50",
+            )}
+            onClick={() => setGender("male")}
+          >
+            ♂ Male
+          </button>
+        </div>
+        <button className="btn btn-secondary" onClick={() => handleTabChange("body-map")}>
+          📥 Export
+        </button>
+        <button className="btn btn-primary" onClick={() => setAddOpen(true)}>
+          + Add Body Part
+        </button>
       </PageHeader>
 
-      {error && (
-        <Alert variant="destructive">
-          <Activity className="h-4 w-4" />
-          <AlertTitle>Anatomy data unavailable</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {/* Mobile integration notice */}
+      <div className="alert al-ok">
+        <div className="al-ic">📱</div>
+        <div className="flex-1 text-xs">
+          <strong>Mobile integration:</strong> body-part taps are tracked via
+          <code className="mx-1 rounded bg-slate-100 px-1 font-mono">anatomy_interactions</code>
+          and feed the <strong>Map Interactions 30d</strong> KPI. Hotspot geometry is seeded in
+          <code className="mx-1 rounded bg-slate-100 px-1 font-mono">anatomy_hotspots</code>
+          (see migration <code className="rounded bg-slate-100 px-1 font-mono">anatomy_extension</code>).
+        </div>
+      </div>
 
+      {/* KPI row */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={<ScanLine className="h-5 w-5" />}
-          label="Body Parts"
-          value={loading ? "..." : parts.length}
+          label="Body Parts Mapped"
+          value={stats?.body_parts_mapped ?? "..."}
           variant="blue"
-          delta={systems.find((system) => system.id === activeSystem)?.label}
+          delta={`${stats?.hotspots ?? 0} hotspots`}
           deltaType="neutral"
-        />
-        <KpiCard
-          icon={<Activity className="h-5 w-5" />}
-          label="Symptom Links"
-          value={loading ? "..." : linkedSymptoms}
-          variant="purple"
-          delta="Mapped links"
-          deltaType="neutral"
+          isLoading={overviewLoading}
+          isError={false}
         />
         <KpiCard
           icon={<HeartPulse className="h-5 w-5" />}
           label="Condition Links"
-          value={loading ? "..." : linkedConditions}
+          value={stats?.condition_links ?? "..."}
           variant="teal"
           delta="Mapped links"
           deltaType="neutral"
+          isLoading={overviewLoading}
         />
         <KpiCard
           icon={<Bone className="h-5 w-5" />}
-          label="3D Mesh IDs"
-          value={loading ? "..." : mappedMeshes}
-          variant="green"
-          delta="Body model ready"
+          label="Symptom Links"
+          value={stats?.symptom_links ?? "..."}
+          variant="purple"
+          delta={`${stats?.healthy_tip_links ?? 0} healthy tips`}
           deltaType="neutral"
+          isLoading={overviewLoading}
+        />
+        <KpiCard
+          icon={<MapPin className="h-5 w-5" />}
+          label="Map Interactions 30d"
+          value={stats?.map_interactions_30d ?? "..."}
+          variant="green"
+          delta="Mobile taps"
+          deltaType="neutral"
+          isLoading={overviewLoading}
         />
       </div>
 
-      <Tabs value={activeSystem} onValueChange={(value) => setActiveSystem(value as BodySystem)}>
-        <div className="border-b border-slate-200">
-          <TabsList className="h-auto w-full justify-start gap-0 overflow-x-auto rounded-none bg-transparent p-0">
-            {systems.map((system) => (
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {AnatomyTabs.map((tab) => (
               <TabsTrigger
-                key={system.id}
-                value={system.id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                )}
               >
-                <system.icon className="mr-2 h-4 w-4" />
-                {system.label}
+                {tab.label}
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
 
-        {systems.map((system) => (
-          <TabsContent key={system.id} value={system.id} className="mt-5 outline-none">
-            <BodyPartsTable loading={loading} parts={parts} />
+        <div className="animate-in slide-in-from-bottom-2 duration-300">
+          <TabsContent className="w-full min-w-0 outline-none" value="body-map">
+            <BodyMapTab gender={gender} />
           </TabsContent>
-        ))}
+          <TabsContent className="w-full min-w-0 outline-none" value="conditions">
+            <ConditionsLinkedTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="symptoms">
+            <SymptomsLinkedTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="tips">
+            <HealthyTipsTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="modules">
+            <ConnectedModulesTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="strategy">
+            <BusinessStrategyTab />
+          </TabsContent>
+        </div>
       </Tabs>
+
+      <AddBodyPartDialog open={addOpen} onOpenChange={setAddOpen} />
     </div>
-  );
-}
-
-function BodyPartsTable({
-  loading,
-  parts,
-}: {
-  loading: boolean;
-  parts: BodyPart[];
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
-          Body Map
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>System</TableHead>
-              <TableHead>Path</TableHead>
-              <TableHead>Mesh</TableHead>
-              <TableHead>Symptoms</TableHead>
-              <TableHead>Conditions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading && <EmptyRow colSpan={6} label="Loading body map..." />}
-            {!loading && parts.length === 0 && (
-              <EmptyRow colSpan={6} label="No body-part records found for this system." />
-            )}
-            {!loading &&
-              parts.map((part) => (
-                <TableRow key={part.id}>
-                  <TableCell className="font-bold text-slate-800">
-                    {part.name}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={part.body_system === "general" ? "secondary" : "blue"}>
-                      {part.body_system}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-slate-500">
-                    {part.path}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {part.mesh_id || "Not mapped"}
-                  </TableCell>
-                  <TableCell>{part.symptom_count}</TableCell>
-                  <TableCell>{part.condition_count}</TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EmptyRow({ colSpan, label }: { colSpan: number; label: string }) {
-  return (
-    <TableRow>
-      <TableCell
-        colSpan={colSpan}
-        className="h-32 text-center text-sm font-medium text-slate-400"
-      >
-        {label}
-      </TableCell>
-    </TableRow>
   );
 }

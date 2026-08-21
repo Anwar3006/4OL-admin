@@ -39,15 +39,31 @@ const MedicationReminderPage = () => {
     window.history.pushState(null, "", `?${params.toString()}`);
   };
 
+  const goToAddDrug = () => {
+    handleTabChange("database");
+    // DrugDatabaseTab listens for this event to open its Add Drug dialog.
+    window.setTimeout(
+      () => window.dispatchEvent(new CustomEvent("medication:add-drug")),
+      0,
+    );
+  };
+
   return (
     <div className="animate-in fade-in duration-500 space-y-5">
       <PageHeader
         title="💊 Medication Reminder"
         subtitle="Drug database · Interaction checker · Dosage reminders · Prescription tracking"
       >
-        {/* <button className="btn btn-secondary">📥 Export</button> */}
-        {/* <button className="btn btn-secondary">🤖 AI Settings</button> */}
-        {/* <button className="btn btn-primary">+ Add Drug</button> */}
+        {/* Header actions (mockup): Export · AI Settings · + Add Drug */}
+        <button className="btn btn-secondary" onClick={() => handleTabChange("database")}>
+          📥 Export
+        </button>
+        <button className="btn btn-secondary" onClick={() => handleTabChange("ai")}>
+          🤖 AI Settings
+        </button>
+        <button className="btn btn-primary" onClick={goToAddDrug}>
+          + Add Drug
+        </button>
       </PageHeader>
 
       {/* AI status banner - Completely remove, serves no purpose*/}

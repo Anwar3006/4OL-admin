@@ -7,7 +7,7 @@ export const chatSchema = z.object({
   subject: z.string().nullable(),
   message: z.string().nullable(),
   priority: z.enum(["Low", "Medium", "High"]).default("Low"),
-  status: z.enum(["Open", "Closed"]).default("Open"),
+  status: z.enum(["Open", "Unread", "Pending", "Resolved", "Escalated"]).default("Open"),
   is_deleted: z.boolean().default(false),
   created_at: z.string(),
   updated_at: z.string(),
@@ -19,6 +19,10 @@ export const chatSchema = z.object({
   tags: z.array(z.string()).nullable().optional(),
   response_time_minutes: z.number().nullable().optional(),
   satisfaction_rating: z.number().nullable().optional(),
+  escalated_at: z.string().nullable().optional(),
+  escalated_to: z.string().uuid().nullable().optional(),
+  resolution_notes: z.string().nullable().optional(),
+  resolved_by: z.string().uuid().nullable().optional(),
   user_profiles: z
     .object({
       first_name: z.string().nullable(),

@@ -1,24 +1,16 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { format } from "date-fns";
+import { format, isToday, isPast, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   useAdminTasks,
-  useCreateAdminTask,
   useMoveAdminTask,
   type AdminTask,
 } from "@/hooks/supabase-calls/useAdminTasks";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { useHasPermission } from "@/stores/permission-context";
+import NewTaskDialog from "./NewTaskDialog";
+import TaskDetailDialog from "./TaskDetailDialog";
 
 const COLUMNS: { status: AdminTask["status"]; title: string; color: string }[] = [
   { status: "new", title: "New Task", color: "bg-ek-blue" },
@@ -44,105 +36,24 @@ function initials(name: string | null) {
     .join("");
 }
 
-function NewTaskDialog({
-  open,
-  status,
-  onClose,
-}: {
-  open: boolean;
-  status: AdminTask["status"] | null;
-  onClose: () => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<AdminTask["priority"]>("medium");
-  const [category, setCategory] = useState("");
-  const [assigneeId, setAssigneeId] = useState<string>("");
-  const [dueDate, setDueDate] = useState("");
-  const createTask = useCreateAdminTask();
-  const { data: adminsData } = useUsers({ admin: true, page: 1, limit: 100 });
+function seqLabel(task: AdminTask) {
+  return task.taskSeq ? `T-${String(task.taskSeq).padStart(3, "0")}` : task.id.slice(0, 8);
+}
 
-  const reset = () => {
-    setTitle("");
-    setDescription("");
-    setPriority("medium");
-    setCategory("");
-    setAssigneeId("");
-    setDueDate("");
-  };
-
-  const handleSubmit = async () => {
-    if (!title.trim() || !status) return;
-    await createTask.mutateAsync({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      status,
-      priority,
-      category: category.trim() || undefined,
-      assigneeId: assigneeId || null,
-      dueDate: dueDate || null,
-    });
-    reset();
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>New Task</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <Input placeholder="Task title" value={title} onChange={(e) => setTitle(e.target.value)} />
-          <Textarea
-            placeholder="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="min-h-20 resize-none"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as AdminTask["priority"])}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-            <Input placeholder="Category (e.g. Dev, Security)" value={category} onChange={(e) => setCategory(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-            >
-              <option value="">Unassigned</option>
-              {(adminsData?.users ?? []).map((a: any) => (
-                <option key={a.user_id} value={a.user_id}>{a.name || a.email}</option>
-              ))}
-            </select>
-            <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={!title.trim() || createTask.isPending}>
-              {createTask.isPending ? "Creating…" : "Create Task"}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+// Due badge is red when the due date is today or already past (Gap D.3).
+function isDueUrgent(task: AdminTask) {
+  if (!task.dueDate || task.status === "completed") return false;
+  const due = startOfDay(new Date(task.dueDate));
+  return isToday(due) || isPast(due);
 }
 
 export default function KanbanBoard() {
   const { data, isLoading, isError } = useAdminTasks();
   const moveTask = useMoveAdminTask();
+  const canEdit = useHasPermission("tasks.edit");
   const [dialogStatus, setDialogStatus] = useState<AdminTask["status"] | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<AdminTask | null>(null);
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<string, AdminTask[]> = { new: [], in_progress: [], under_review: [], completed: [] };
@@ -181,13 +92,15 @@ export default function KanbanBoard() {
                   <span className="text-[11px] font-black uppercase tracking-widest text-slate-700">{col.title}</span>
                   <span className="badge badge-secondary text-[9px] font-black">{isLoading ? "…" : tasks.length}</span>
                 </div>
-                <button
-                  className="w-6 h-6 rounded-lg bg-slate-50 text-slate-400 hover:text-slate-600 transition-all font-bold"
-                  onClick={() => setDialogStatus(col.status)}
-                  aria-label={`Add task to ${col.title}`}
-                >
-                  +
-                </button>
+                {canEdit && (
+                  <button
+                    className="w-6 h-6 rounded-lg bg-slate-50 text-slate-400 hover:text-slate-600 transition-all font-bold"
+                    onClick={() => setDialogStatus(col.status)}
+                    aria-label={`Add task to ${col.title}`}
+                  >
+                    +
+                  </button>
+                )}
               </div>
               <div className="p-2 space-y-3 flex-1">
                 {isLoading && <div className="text-center text-xs text-slate-400 py-6">Loading…</div>}
@@ -197,10 +110,12 @@ export default function KanbanBoard() {
                 {tasks.map((t) => (
                   <div
                     key={t.id}
-                    draggable
+                    draggable={canEdit}
                     onDragStart={() => setDraggingId(t.id)}
+                    onClick={() => setSelectedTask(t)}
                     className={cn(
-                      "bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group",
+                      "bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-pointer group",
+                      canEdit && "cursor-grab active:cursor-grabbing",
                       t.status === "completed" && "opacity-60",
                     )}
                   >
@@ -209,7 +124,7 @@ export default function KanbanBoard() {
                         {t.priority}
                       </span>
                       <span className="text-[9px] font-mono font-bold text-slate-300 group-hover:text-slate-500">
-                        {t.id.slice(0, 8)}
+                        {seqLabel(t)}
                       </span>
                     </div>
                     <h4 className={cn("text-xs font-bold text-slate-800 leading-snug mb-1", t.status === "completed" && "line-through text-slate-400")}>
@@ -217,6 +132,17 @@ export default function KanbanBoard() {
                     </h4>
                     {t.description && (
                       <p className="text-[10px] text-slate-400 font-medium leading-relaxed mb-3">{t.description}</p>
+                    )}
+                    {t.status === "in_progress" && (
+                      <div className="mb-2">
+                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-ek-gold to-amber-500 transition-all"
+                            style={{ width: `${t.progressPercent ?? 0}%` }}
+                          />
+                        </div>
+                        <span className="text-[8px] font-black text-slate-400">{t.progressPercent ?? 0}% complete</span>
+                      </div>
                     )}
                     <div className="flex items-center gap-2 border-t border-slate-50 pt-2.5">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-ek-green to-ek-teal flex items-center justify-center text-[8px] font-black text-white">
@@ -230,8 +156,15 @@ export default function KanbanBoard() {
                           ✅ {format(new Date(t.completedAt), "MMM yyyy")}
                         </span>
                       ) : t.dueDate ? (
-                        <span className="ml-auto text-[9px] font-black text-slate-400">
-                          Due: {format(new Date(t.dueDate), "MMM d")}
+                        <span
+                          className={cn(
+                            "ml-auto text-[9px] font-black",
+                            isDueUrgent(t)
+                              ? "text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md"
+                              : "text-slate-400",
+                          )}
+                        >
+                          {isDueUrgent(t) ? "⚠ " : ""}Due: {format(new Date(t.dueDate), "MMM d")}
                         </span>
                       ) : null}
                     </div>
@@ -243,6 +176,7 @@ export default function KanbanBoard() {
         })}
       </div>
       <NewTaskDialog open={dialogStatus !== null} status={dialogStatus} onClose={() => setDialogStatus(null)} />
+      <TaskDetailDialog task={selectedTask} canEdit={canEdit} onClose={() => setSelectedTask(null)} />
     </>
   );
 }
