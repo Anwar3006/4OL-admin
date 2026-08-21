@@ -81,6 +81,36 @@ payout API for scout rewards; Supabase Realtime channel for BedTracker
 
 ---
 
+# Fitness Mockup Parity — Monetization, FitCoins & Mobile Connectivity (implemented 2026-08)
+
+> Source: `FITNESS_MOCKUP_GAP_ANALYSIS.md` (decisions D1–D10, locked by the
+> user). Implemented on branch `feat/gap-analysis-parts-lmn-security` —
+> commits `5400f08` (15 files, +2360) and `0a6b990` (comma-separated
+> notification type filter + doc sync), both pushed. Mobile counterpart
+> lives on `4OurLife-MobileApp` branch `feat/fitness-mockup-parity`
+> (commit `837fa13`); its task log is `NAVIGATION_RULES.md` + the Fitness
+> section of that repo's tracking docs.
+
+| Item | Scope | Status | Evidence |
+|---|---|---|---|
+| Subscriptions & entitlement (D6) | `subscription_tiers`, `user_subscriptions`, `get_my_entitlement()`, `get_subscription_tiers()` | ✅ Implemented | `supabase/migrations/20260822_fitness_monetization_fitcoins.sql`; `/api/user/entitlement` (JWT-scoped, server resolves `auth.uid()` — no caller-supplied user id); `/api/subscriptions/admin` (super-admin-only grant/revoke, incl. lifetime premium); `SubscriptionsTab.tsx` |
+| Paystack | Payment rail deliberately deferred — schema is data-only so manual Paystack wiring later plugs into `user_subscriptions` | ⏸ Deferred by user decision | Paywall note in mobile `premium.tsx` + info note in `SubscriptionsTab` |
+| FitCoins admin (D8) | `fitcoin_activity_tiers` (reward tiers per activity), rebuilt `handle_exercise_session_completed` trigger, coins purpose/usage management | ✅ Implemented | same migration; `/api/fitness/fitcoins` (RBAC `fitcoins.view`/`fitcoins.manage`); `FitCoinsTab.tsx` |
+| Server-driven fitness notifications (D5) | `notify_fitness(p_user_id, p_type, p_title, p_body, p_metadata)` RPC + `fn_fitness_*` pg_cron functions for challenge/streak/billing alerts (guarded block) | ✅ Implemented | same migration; `/api/fitness/notifications` (`fitness_notifications.send`); notification composer in `SubscriptionsTab` |
+| Coach attribution (D7) | `fitness_plans.coach_display_name` — admin-entered display name, never the admin's real name | ✅ Implemented | same migration; coach-name input in plan create/edit dialogs; mobile shows it on dashboard + `generated-for-you` |
+| Social proof aggregate (D4) | `get_fitness_social_proof()` — real `joined_last_7_days` / `total_members` from `fitness_users` (IDOR-guarded) | ✅ Implemented | same migration; consumed by mobile `SocialProofBanner` (renders nothing when zero) |
+| IDOR hardening | `get_fitness_week`, `get_fitness_activity_history`, `get_fitness_social_proof`, rebuilt `get_fitness_dashboard` all enforce `p_user_id = auth.uid()` | ✅ Implemented | same migration (closes the Part-I IDOR finding on `get_fitness_dashboard`) |
+| Notifications type filter | `/api/user/notifications` GET accepts comma-separated `type` list, member-by-member validated → `.eq()`/`.in()` | ✅ Implemented | `0a6b990` |
+| RBAC | `subscriptions.view`/`subscriptions.manage`, `fitcoins.view`/`fitcoins.manage`, `fitness_notifications.send` added to `lib/permissions.ts` | ✅ Implemented | `5400f08` |
+
+**Open follow-ups (not blocking):** apply
+`20260822_fitness_monetization_fitcoins.sql` to the live Supabase DB
+(user-manual, per the deployment-skip mandate); wire Paystack into
+`user_subscriptions` when the user schedules it; leaderboard user-name
+join (18.3 note) still open.
+
+---
+
 # PART I — Reliability, Security & Tech-Debt Audit
 
 *Generated from a full-codebase scrutiny pass (TypeScript compiler, and
