@@ -35,6 +35,50 @@
 
 ---
 
+# Gap Analysis Parts A–Z — Implementation Map (verified 2026-08-21)
+
+> Source: `GAP_ANALYSIS_MOCKUP_VS_4OURLIFE_ADMIN.md` (26 parts). All 26
+> parts are implemented in this repo and pushed on branch
+> `feat/gap-analysis-parts-lmn-security` (commit `529366a`). Evidence is
+> the migration + route/UI surface per part.
+
+| Part | Scope | Status | Evidence |
+|---|---|---|---|
+| A | Human Anatomy | ✅ Implemented | `20260820_anatomy_extension.sql`, `app/api/anatomy/**`, anatomy page + body map |
+| B | Medication Reminder | ✅ Implemented | `20260820_medication_drug_catalog.sql`, drug import/verify dialogs, 5-tab page |
+| C | Users + IBP Businesses | ✅ Implemented | `20260820_users_ibp_extension.sql`, Active/Premium tabs, bulk actions, invite |
+| D | Dashboard + Task Manager | ✅ Implemented | `20260813_epic22…` + `20260820_admin_tasks_extension.sql`, Kanban + KPI dashboard |
+| E | Chats (Groups/Support/Flagged) | ✅ Implemented | `20260820_chats_group_enrichment.sql`, rebuilt tabs + ticket dialogs |
+| F | Map & Footprint + Outdoor pins | ✅ Implemented | `20260820_map_footprint_extension.sql`, 4 map tabs, outdoor route add/verify |
+| G | Upstream sync + RBAC retrofit | ✅ Implemented | `requireAdminApiUser` on 100% of admin routes, `rbac_catalog_extension` 1–3 |
+| H | Facilities (All/Pending/Top Rated/Featured) | ✅ Implemented | `20260811_epic_13_14_facility_support_analytics.sql`, facilities pages |
+| I | Diseases & Conditions | ✅ Implemented | diseases page, ICD-11 + body-part links via anatomy extension |
+| J | Healthcare Professionals | ✅ Implemented | HCP page + verification flow |
+| K | Jobs | ✅ Implemented | jobs page + module routes |
+| L | BedTracker | ✅ Implemented 2026-08-21 | Epic 23 notes below; `20260821_bedtracker_extension.sql` |
+| M | Marketing | ✅ Implemented 2026-08-21 | `20260821_marketing_extension.sql`, server-backed `/api/marketing/**` |
+| N | FacilityScout | ✅ Implemented 2026-08-21 | Epic 24 notes below; `20260821_facilityscout_extension.sql` |
+| O | AI Hub | ✅ Implemented | `20260820_ai_hub_extension.sql`, `/ai` 3-tab live module |
+| P | Settings | ✅ Implemented | `20260820_settings_security_extension.sql`, settings components |
+| Q | Design System tokens | ✅ Implemented | `--ek-*` tokens in `globals.css`, consumed by rebuilt modules |
+| R | Notifications | ✅ Implemented | `20260820_notifications_delivery_extension.sql`, notifications components |
+| S | KPI & Card alignment | ✅ Implemented | `KpiCard`/`KpiGrid` kit adopted across modules |
+| T | WhatsApp Community | ✅ Implemented | `20260820_whatsapp_community.sql`, fitness `WhatsAppTab` |
+| U | DevOps menu | ✅ Implemented | devops page behind `devops.view` (super_admin) |
+| V | Fitness | ✅ Implemented 2026-08-21 | `20260821_fitness_extension.sql`, 12 tabs |
+| W | Admin Profile Modal | ✅ Implemented 2026-08-21 | `20260821_admin_profile_extension.sql`, ProfileModal |
+| X | Compact (Density) Mode | ✅ Implemented 2026-08-21 | `use-density.ts` + CSS density tokens |
+| Y | Platform Schematic | ✅ Implemented 2026-08-21 | `/api/admin/schematic` auto-updating page |
+| Z | Delete Account Requests | ✅ Implemented 2026-08-21 | `20260821_deletion_policy_extension.sql`, rebuilt page |
+
+**Open follow-ups across parts (not blocking):** apply `20260820_*` /
+`20260821_*` migrations to the live Supabase DB (credentials with the
+owner); mobile-side stories 23.5/23.6/24.5; Meta WhatsApp creds; MNO
+payout API for scout rewards; Supabase Realtime channel for BedTracker
+(currently polling); server-side failed-login telemetry (28.2 note).
+
+---
+
 # PART I — Reliability, Security & Tech-Debt Audit
 
 *Generated from a full-codebase scrutiny pass (TypeScript compiler, and

@@ -6,7 +6,7 @@
 
 ---
 
-## Part A — Human Anatomy
+## Part A — Human Anatomy (✅ Implemented)
 
 ### A.1 Mockup inventory (`#page-anatomy`, line ~3905 of admin-panel.html)
 
@@ -73,7 +73,7 @@ Conventions: TanStack Query hooks in `hooks/supabase-calls/`, zod schemas in `sc
 
 ---
 
-## Part B — Medication Reminder
+## Part B — Medication Reminder (✅ Implemented)
 
 ### B.1 Mockup inventory (`#page-medication`, line ~6307 of admin-panel.html)
 
@@ -378,7 +378,7 @@ RLS/permissions: `drugs` readable by `authenticated` **where `status = 'active'`
 
 ---
 
-## Part C — Users Menu (All Users + IBP Businesses)
+## Part C — Users Menu (All Users + IBP Businesses) (✅ Implemented)
 
 ### C.1 Mockup inventory
 
@@ -550,7 +550,7 @@ Notes:
 
 ---
 
-## Part D — Dashboard + Task Manager
+## Part D — Dashboard + Task Manager (✅ Implemented)
 
 ### D.1 Mockup inventory
 
@@ -673,7 +673,7 @@ Notes:
 
 ---
 
-## Part E — Chats menu (Groups · Support · Flagged)
+## Part E — Chats menu (Groups · Support · Flagged) (✅ Implemented)
 
 ### E.1 Mockup inventory (`#page-chats`, line 7483 of admin-panel.html)
 
@@ -766,7 +766,7 @@ Role mapping to mockup tabs: admin/super_admin → all 3 tabs + all actions; mod
 
 ---
 
-## Part F — Map & Footprint menu + Outdoor Workout route pins
+## Part F — Map & Footprint menu + Outdoor Workout route pins (✅ Implemented)
 
 ### F.1 Mockup inventory (`#page-map`, line 7213 of admin-panel.html)
 
@@ -857,7 +857,7 @@ Schema addendum (small): denormalize `start_lat`/`start_lng` on `fitness_outdoor
 
 ---
 
-## Part G — Upstream Sync Status (2026-08-20)
+## Part G — Upstream Sync Status (2026-08-20) (✅ RBAC retrofit fully applied)
 
 The upstream repo advanced 17 commits (`bc4cc6c..95857bb`); the local clone was fast-forwarded to `95857bb`. Headline: **Epic 31 was merged into `main`, its RBAC migrations were applied to the live Supabase project (2026-08-19), and the epic is marked complete in TASKS.md.** The `epic-31-rbac-permissions` branch was deleted on the remote after merge. Every statement in Parts A–F was re-verified against `95857bb`; deltas below.
 
@@ -902,7 +902,7 @@ Also still open:
 - Local `main` fast-forwarded to `95857bb`; local `epic-31-rbac-permissions` branch remains (fully merged — safe to delete with `git branch -d` when desired; left in place per no-deletion protocol).
 - This gap-analysis document is untracked on `main`; commit it when the implementation epic starts.
 
-## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured)
+## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured) (✅ Implemented)
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-facilities` (L3454–3738), `m-add-facility` (L11837–11941), `m-approve-facility` (L11944–12151), sidebar L1547–1553.
 
@@ -971,7 +971,7 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part I — Diseases & Conditions menu
+## Part I — Diseases & Conditions menu (✅ Implemented)
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-diseases` (L3738–3904), `m-add-condition` (L11806–11819), `m-feature-carousel` (L11822–11834), sidebar L1567 (flat item — matches codebase nav, no change needed).
 
@@ -1032,7 +1032,7 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part J — Healthcare Professionals menu
+## Part J — Healthcare Professionals menu (✅ Implemented)
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-hcp` (L6768–7010), `m-hcp-onboard` (L12449–12489), sidebar L1579–1584.
 
@@ -1096,7 +1096,7 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part K — Jobs menu
+## Part K — Jobs menu (✅ Implemented)
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-jobs` (L9270–9671), sidebar L1585–1590 (children: All Listings, Post a Job, Applicants (24), Digital CVs). No Jobs-specific modals in the mockup — Post a Job is an inline tab form.
 
@@ -1444,7 +1444,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part O — AI Hub (`page-ai`, mockup L2191–2307)
+## Part O — AI Hub (`page-ai`, mockup L2191–2307) (✅ Implemented)
 
 **Mockup scope:** sidebar L1649–1654 (AI Hub + 4 children: AI Models / AI Moderation / Recommendations / AI Analytics), header buttons `📊 AI Report` + `+ Deploy Model`, 4 KPI cards (Active Models 8, Pending Flags 23, Avg Accuracy 94.2%, Queries Today 23,450), 4 tabs. Adjacent AI surfaces: `m-ai-plan` (L10890, AI Generate Fitness Plan), `m-ai-challenge` (L10904, AI Generate Challenge), and the Period Trivia/Content workspace. Mockup role table (L10880) defines an **AI Manager** role scoped to "AI Hub, Moderation, Analytics, Models".
 
@@ -1505,7 +1505,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part P — Settings (`page-settings`, mockup L9674–10321)
+## Part P — Settings (`page-settings`, mockup L9674–10321) (✅ Implemented)
 
 **Mockup scope:** sidebar L1675 (top-level Settings), header buttons `Audit Log` / `Sync All` / `Save All Changes`, maintenance-mode banner, and **10 tabs**: Platform, Notifications, Plans & Pricing, Feature Flags, Security, API Keys, Integrations, Billing & GRA, Compliance, Maintenance.
 
@@ -1580,7 +1580,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part Q — Design System: Color, Typography & Dark Mode (cross-cutting)
+## Part Q — Design System: Color, Typography & Dark Mode (cross-cutting) (✅ Implemented)
 
 **Scope:** overall color scheme, fonts and typography of the admin panel; a professional font + typographic scale + alignment system for all pages; Dark Mode (Light/Day ↔ Dark) switching for admins.
 
@@ -1640,7 +1640,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part R — Notifications (`page-notifications`, mockup L7932–8317)
+## Part R — Notifications (`page-notifications`, mockup L7932–8317) (✅ Implemented)
 
 **Mockup scope:** sidebar L1645, header `Export Log` + `Send Notification` (opens `m-broadcast` L10853 — title, target audience with live counts, channel, message, send-now/schedule), SA module-connections bar (Users / Medication / Med Enquiry / BedTracker / Marketing / Transactions / Facilities / Chats), 6 KPI cards (Sent Today, Open Rate, Scheduled, Failed, Pharmacy Mktg, Sent This Month), and **7 tabs**: All Log, Scheduled, Pharmacy Marketing, BedTracker Alerts, Templates, Automation Rules, Best Time.
 
@@ -1698,7 +1698,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part S — KPI & Card Alignment System (cross-cutting)
+## Part S — KPI & Card Alignment System (cross-cutting) (✅ Implemented)
 
 **Scope:** all KPIs and cards across every page — text/icon alignment, no offshoot text outside cards, no oversized cards, no misaligned typography inside cards — implemented as one consistent system.
 
@@ -1754,7 +1754,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part T — WhatsApp Community
+## Part T — WhatsApp Community (✅ Implemented)
 
 **Scope:** mockup "WhatsApp Community" surface = the **WhatsApp tab inside the Fitness page** (L5709–5788), the **Bulk Broadcast modal** `m-whatsapp-broadcast` (L11007–11019), the **Groups modal** `m-whatsapp-groups` (L11022–11038), and the "WhatsApp Support" number field in Settings/Platform (L9722, folded into Part P). No standalone WhatsApp sidebar page exists in the mockup — it is a Fitness community channel + a Super-Admin broadcast capability.
 
@@ -1809,7 +1809,7 @@ Mockup scope: `admin-panel.html` `#page-facilityscout` (L13074–13257), sidebar
 
 ---
 
-## Part U — DevOps Menu Visibility
+## Part U — DevOps Menu Visibility (✅ Implemented)
 
 **Question:** should the DevOps cluster (Cloud Infrastructure / CI-CD Pipeline / Application Security / Rate Limiting / Caching & CDN) be visible in the admin panel?
 
