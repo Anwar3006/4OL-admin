@@ -14,8 +14,6 @@ import {
   adminDeleteFacilityOfferings,
   adminInsertFacilityOfferings,
   adminRegisterFacilityWithProfile,
-  adminToggleFacilityFeatured,
-  adminToggleFacilityTopRated,
   adminUpdateFacilityProfile,
 } from "@/actions/facility-admin.actions";
 
@@ -336,39 +334,10 @@ export const useTopRatedFacilities = (params: FeaturedTopRatedParams) => {
   });
 };
 
-export const useToggleFacilityFeatured = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
-      await adminToggleFacilityFeatured(id, value);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FEATURED_QUERY_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
-      toast.success("Featured status updated!");
-    },
-    onError: (error: any) => {
-      toast.error(`Failed to update: ${error.message}`);
-    },
-  });
-};
-
-export const useToggleFacilityTopRated = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
-      await adminToggleFacilityTopRated(id, value);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: TOP_RATED_QUERY_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
-      toast.success("Top Rated status updated!");
-    },
-    onError: (error: any) => {
-      toast.error(`Failed to update: ${error.message}`);
-    },
-  });
-};
+// NOTE: useToggleFacilityFeatured / useToggleFacilityTopRated were retired
+// in Gap Analysis Part H (H-Phase 3). Client-side writes bypassed server
+// RBAC; the supported path is the route-backed useSetFeaturedApi /
+// useSetTopRatedApi / useRemoveTopRatedApi in useFacilitiesApi.ts.
 
 
 //=================== Mutation Hooks ================

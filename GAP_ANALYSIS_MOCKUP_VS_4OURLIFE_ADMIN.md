@@ -902,9 +902,11 @@ Also still open:
 - Local `main` fast-forwarded to `95857bb`; local `epic-31-rbac-permissions` branch remains (fully merged — safe to delete with `git branch -d` when desired; left in place per no-deletion protocol).
 - This gap-analysis document is untracked on `main`; commit it when the implementation epic starts.
 
-## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured) (⚠️ Discussion-only — not implemented)
+## Part H — Facilities menu (All Facilities · Pending Approval · Top Rated · Featured) (✅ Implemented — 2026-08-21)
 
-> **Status correction (2026-08-21):** despite the earlier ✅ marker, the H-Phase plan below was never executed — no H migrations, no new `/api/facilities*` management routes, no Top Rated/Featured tab wiring were committed. Treat this part as an open implementation backlog (same correction applied to Parts I/J/K; Part I was subsequently implemented on 2026-08-21).
+> **Implementation evidence (2026-08-21):** H-Phase 1–4 executed on branch `feat/gap-analysis-parts-lmn-security`. Migration `20260821_facilities_management_extension.sql` (HEFRA number, top-rated rank/setter columns, feature window + pause, status reason trail, `facility_reviews.is_anonymous`; `facilities.feature` key pre-existed — no catalog change). Six RBAC-guarded routes under `app/api/facilities/` (list, `[id]/status` bulk-capable, `[id]/top-rated` with the 10-slot cap, `[id]/featured` PUT/PATCH pause, `stats`, `export`). Route-backed hooks in `hooks/supabase-calls/useFacilitiesApi.ts`; client-side `adminToggleFacilityFeatured/TopRated` hooks retired. Facilities page rebuilt: registry with status tabs + type pills + KPI stats + CSV export + bulk approve/suspend; Top Rated tab (rank board, reorder, cap guard) and Featured tab (Paid/Admin badges, window, pause/resume, honest "—" CTR per H-D4) live; Review Facility dialog ports m-approve-facility (3-day SLA banner, evidence cards, approve/reject with reason). Legacy `/facilities/featured|top-rated` jsx pages now redirect to `?tab=` (H-D1). Gates: tsc/vitest/eslint/build clean. H-D6 anonymous review composer deferred (column landed).
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the H-Phase plan below was never executed — no H migrations, no new `/api/facilities*` management routes, no Top Rated/Featured tab wiring were committed. Treat this part as an open implementation backlog (same correction applied to Parts I/J/K; Part I was subsequently implemented on 2026-08-21). *(Superseded by the implementation evidence above.)*
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-facilities` (L3454–3738), `m-add-facility` (L11837–11941), `m-approve-facility` (L11944–12151), sidebar L1547–1553.
 
@@ -1036,9 +1038,11 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part J — Healthcare Professionals menu (⚠️ Discussion-only — not implemented)
+## Part J — Healthcare Professionals menu (✅ Implemented — 2026-08-21)
 
-> **Status correction (2026-08-21):** despite the earlier ✅ marker, the J-Phase plan below was never executed — no HCP migrations (professional IDs, license verification, regulatory-body catalog) and no `/api/hcp` management routes exist. Open implementation backlog.
+> **Implementation evidence (2026-08-21):** J-Phase 1–4 executed on branch `feat/gap-analysis-parts-lmn-security`. Migration `20260821_hcp_management_extension.sql` (profession_type with 14 Ghana-regulated professions, facility affiliation, region, group-chat assignment, enquiry opt-in; `hcp.create`/`hcp.verify` keys pre-existed — no catalog change). Five RBAC-guarded routes under `app/api/hcp/` (list+onboard, `[id]/verify`, `[id]` edit/suspend/reactivate, `bulk` approve/suspend, `export`). Route-backed hooks in `hooks/supabase-calls/useHcpApi.ts` + onboarding dialog (m-hcp-onboard port; submissions land pending per J-D2/J-D7 — licence checks against MDC/PCG/NMC/AHPC/GPC remain manual). HCP page rebuilt from the OperationsModuleDashboard shell: profession tabs over one registry (J-D1), regulatory-body alerts, licence queue with approve/reject, suspend/reactivate, bulk bar, derived `4OL-XXXXXX` display IDs (no new column), group-chat cards deep-linking to Chats. Gates: tsc/vitest/eslint/build clean. J-D4 med-enquiry responder counters show "—" until a responder column exists.
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the J-Phase plan below was never executed — no HCP migrations (professional IDs, license verification, regulatory-body catalog) and no `/api/hcp` management routes exist. Open implementation backlog. *(Superseded by the implementation evidence above.)*
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-hcp` (L6768–7010), `m-hcp-onboard` (L12449–12489), sidebar L1579–1584.
 
@@ -1102,9 +1106,11 @@ Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mocku
 
 ---
 
-## Part K — Jobs menu (⚠️ Discussion-only — not implemented)
+## Part K — Jobs menu (✅ Implemented — 2026-08-21)
 
-> **Status correction (2026-08-21):** despite the earlier ✅ marker, the K-Phase plan below was never executed — no Jobs migrations (applicant documents, digital CVs, placements) and no `/api/jobs` management routes exist. Open implementation backlog.
+> **Implementation evidence (2026-08-21):** K-Phase 1–4 executed on branch `feat/gap-analysis-parts-lmn-security`. Migration `20260821_jobs_management_extension.sql` (qualification/licence/experience/radius/demographics fields, featured window, approval trail, widened job_type incl. locum/volunteer + status incl. pending_review CHECKs rebuilt, metadata-only `hcp_digital_cvs` per K-D3; `jobs.view`/`jobs.manage` keys pre-existed — no catalog change). Nine RBAC-guarded routes under `app/api/jobs/` (list+create, `[id]` edit/close/repost/feature, `[id]/review` approve→published / reject→draft with reason, `applicants` with licence-badge merge, `applications/[id]` status transitions, `bulk` close/repost, `export`, `cvs`). Route-backed hooks in `hooks/supabase-calls/useJobsApi.ts` (incl. masked-name helper per K-D7). Jobs page rebuilt from the OperationsModuleDashboard shell: All Listings (filters, bulk close/repost, feature toggle), Post a Job (draft vs submit-for-review) + Pending Requests approval queue, Applicants (masked names, licence badges, pipeline select), Digital CVs (vault-aspirational alert), Premium Services and Business Strategy static cards with honest "—" revenue (K-D1/K-D2). Gates: tsc/vitest/eslint/build clean. K-D4 geo radius stored but live matching awaits the geolocation pipeline.
+
+> **Status correction (2026-08-21):** despite the earlier ✅ marker, the K-Phase plan below was never executed — no Jobs migrations (applicant documents, digital CVs, placements) and no `/api/jobs` management routes exist. Open implementation backlog. *(Superseded by the implementation evidence above.)*
 
 Discussion-only analysis, 2026-08-20, verified against `95857bb`. Sources: mockup `page-jobs` (L9270–9671), sidebar L1585–1590 (children: All Listings, Post a Job, Applicants (24), Digital CVs). No Jobs-specific modals in the mockup — Post a Job is an inline tab form.
 

@@ -39,7 +39,9 @@
 
 > Source: `GAP_ANALYSIS_MOCKUP_VS_4OURLIFE_ADMIN.md` (26 parts). All 26
 > parts are implemented in this repo and pushed on branch
-> `feat/gap-analysis-parts-lmn-security` (commit `529366a`). Evidence is
+> `feat/gap-analysis-parts-lmn-security` (claim from commit `529366a`
+> corrected 2026-08-21: Parts H/J/K were discussion-only and were
+> implemented for real on 2026-08-21; Part I the same day). Evidence is
 > the migration + route/UI surface per part.
 
 | Part | Scope | Status | Evidence |
@@ -51,10 +53,10 @@
 | E | Chats (Groups/Support/Flagged) | ✅ Implemented | `20260820_chats_group_enrichment.sql`, rebuilt tabs + ticket dialogs |
 | F | Map & Footprint + Outdoor pins | ✅ Implemented | `20260820_map_footprint_extension.sql`, 4 map tabs, outdoor route add/verify |
 | G | Upstream sync + RBAC retrofit | ✅ Implemented | `requireAdminApiUser` on 100% of admin routes, `rbac_catalog_extension` 1–3 |
-| H | Facilities (All/Pending/Top Rated/Featured) | ⚠️ Discussion-only (corrected 2026-08-21) | H-Phase plan never executed; `20260811_epic_13_14_facility_support_analytics.sql` is chat-support analytics, not the Facilities menu — Top Rated/Featured tabs, m-add/approve-facility remain open |
+| H | Facilities (All/Pending/Top Rated/Featured) | ✅ Implemented 2026-08-21 | `20260821_facilities_management_extension.sql`, 6 RBAC-guarded `/api/facilities` routes, `useFacilitiesApi.ts`, registry + Top Rated (10-slot cap) + Featured tabs, Review Facility dialog; H-D6 anonymous composer deferred |
 | I | Diseases & Conditions | ✅ Implemented 2026-08-21 | `20260821_conditions_management_extension.sql`, 7 RBAC-guarded `/api/diseases` routes, `useDiseasesApi.ts`, all 4 tabs live (Carousel/Engagement/Linkages); I-Phase 5 interconnections still open |
-| J | Healthcare Professionals | ⚠️ Discussion-only (corrected 2026-08-21) | J-Phase plan never executed — no HCP migrations (professional IDs, license verification) or `/api/hcp` management routes |
-| K | Jobs | ⚠️ Discussion-only (corrected 2026-08-21) | K-Phase plan never executed — no Jobs migrations (applicant documents, digital CVs) or `/api/jobs` management routes |
+| J | Healthcare Professionals | ✅ Implemented 2026-08-21 | `20260821_hcp_management_extension.sql`, 5 RBAC-guarded `/api/hcp` routes, `useHcpApi.ts`, 7-tab registry + onboarding dialog (manual licence check per J-D2/J-D7); J-D4 med-enquiry counters "—" |
+| K | Jobs | ✅ Implemented 2026-08-21 | `20260821_jobs_management_extension.sql`, 9 RBAC-guarded `/api/jobs` routes, `useJobsApi.ts`, 6-tab page (listings/post+approval queue/applicants/CVs/premium/strategy); K-D3 vault metadata-only, K-D4 geo radius stored |
 | L | BedTracker | ✅ Implemented 2026-08-21 | Epic 23 notes below; `20260821_bedtracker_extension.sql` |
 | M | Marketing | ✅ Implemented 2026-08-21 | `20260821_marketing_extension.sql`, server-backed `/api/marketing/**` |
 | N | FacilityScout | ✅ Implemented 2026-08-21 | Epic 24 notes below; `20260821_facilityscout_extension.sql` |

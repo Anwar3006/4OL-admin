@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { facilityColumns } from "@/components/Data-Table/columns/facilityColumns";
 import KpiCard from "@/components/redesign/KpiCard";
@@ -18,24 +18,36 @@ import AddFacilityDialog from "./_components/add-facility-dialog";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Phone, MapPin } from "lucide-react";
 import FacilityViewDialog from "./_components/view-facility-dialog";
+import ReviewFacilityDialog from "./_components/review-facility-dialog";
+import TopRatedTab from "./_components/top-rated-tab";
+import FeaturedTab from "./_components/featured-tab";
 import {
   useFacilityProfiles,
   useDeleteFacility,
 } from "@/hooks/supabase-calls/useFacilities";
-import { useFacilityDashboardMetrics } from "@/hooks/supabase-calls/useReviews";
+import {
+  downloadFacilitiesCsv,
+  useFacilityStatsApi,
+  useUpdateFacilityStatusApi,
+} from "@/hooks/supabase-calls/useFacilitiesApi";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
+import { FACILITY_TYPE_ENUM } from "@/types/formInput";
+import { toast } from "sonner";
 
 const FacilitiesPage = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
+  const activeTab = searchParams.get("tab") || "registry";
   const currentStatus = searchParams.get("status") || "all";
   const selectedType = searchParams.get("type") || "all";
   const search = searchParams.get("search") || "";
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("fac_page") || "1", 10);
+
+  const [reviewFacilityId, setReviewFacilityId] = useState<string | null>(null);
 
   const { data, isLoading, isFetching, isError, error } = useFacilityProfiles({
     page,
@@ -45,12 +57,12 @@ const FacilitiesPage = () => {
     search,
     includeStatsOnly: false,
   });
-  const { data: metrics, isLoading: isMetricsLoading } =
-    useFacilityDashboardMetrics("30");
+  const { data: stats } = useFacilityStatsApi();
 
   const viewFacility = useViewFacilityDialog();
   const addFacility = useAddFacilityDialog();
   const { mutate: deleteFacility } = useDeleteFacility();
+  const updateStatus = useUpdateFacilityStatusApi();
   const { data: session } = useSupabaseSession();
 
   const updateParams = (updates: Record<string, string | undefined>) => {
@@ -62,6 +74,8 @@ const FacilitiesPage = () => {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  const handleTabChange = (tab: string) =>
+    updateParams({ tab: tab === "registry" ? undefined : tab });
   const handleStatusChange = (status: string) =>
     updateParams({ status, fac_page: "1" });
   const handleTypeChange = (type: string) =>
@@ -71,10 +85,20 @@ const FacilitiesPage = () => {
 
   const facilityTypes = useMemo(() => {
     const counts = data?.typeCounts || {};
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count: count as number }))
-      .sort((a, b) => a.value.localeCompare(b.value));
+    return FACILITY_TYPE_ENUM.map((value) => ({
+      value,
+      count: (counts as Record<string, number>)[value] ?? 0,
+    }));
   }, [data?.typeCounts]);
+
+  const handleExport = async () => {
+    try {
+      await downloadFacilitiesCsv();
+      toast.success("Facilities CSV exported");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Export failed");
+    }
+  };
 
   const cardConfig: MobileCardConfig<any> = {
     header: {
@@ -116,7 +140,18 @@ const FacilitiesPage = () => {
         title="🏥 Facilities Management"
         subtitle="Healthcare facilities registry · HEFRA validated · Live database records"
       >
-        <button className="btn btn-secondary btn-sm">📥 Export CSV</button>
+        <button className="btn btn-secondary btn-sm" onClick={handleExport}>
+          📥 Export CSV
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => {
+            handleTabChange("registry");
+            updateParams({ status: "pending", fac_page: "1" });
+          }}
+        >
+          ⏳ Review Pending{stats ? ` (${stats.pending})` : ""}
+        </button>
         <button
           className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
           onClick={() => addFacility.open()}
@@ -129,67 +164,48 @@ const FacilitiesPage = () => {
         <KpiCard
           icon="📊"
           label="Total"
-          value={data?.totalRegistered?.toLocaleString() ?? "0"}
+          value={stats?.total?.toLocaleString() ?? "0"}
           variant="blue"
         />
         <KpiCard
           icon="✅"
           label="Active"
-          value={data?.analytics?.active?.toLocaleString() ?? "0"}
+          value={stats?.active?.toLocaleString() ?? "0"}
           variant="green"
         />
         <KpiCard
           icon="⏳"
           label="Pending"
-          value={data?.analytics?.pending?.toLocaleString() ?? "0"}
+          value={stats?.pending?.toLocaleString() ?? "0"}
           variant="gold"
         />
         <KpiCard
-          icon="📊"
+          icon="🏆"
           label="Top Rated"
-          value={
-            isMetricsLoading
-              ? "..."
-              : metrics?.reviews?.has_review_data
-                ? metrics.reviews.top_rated_count.toLocaleString()
-                : "No reviews"
-          }
+          value={stats?.topRated?.toLocaleString() ?? "0"}
           variant="purple"
         />
         <KpiCard
           icon="⭐"
-          label="Reviews"
-          value={
-            isMetricsLoading
-              ? "..."
-              : metrics?.reviews?.has_review_data
-                ? `${metrics.reviews.average_rating.toFixed(1)} (${metrics.reviews.total.toLocaleString()})`
-                : "No reviews"
-          }
+          label="Avg Rating"
+          value={stats?.averageRating != null ? `${stats.averageRating}` : "No ratings"}
           variant="teal"
         />
         <KpiCard
           icon="🚩"
-          label="Rejected"
-          value={data?.analytics?.rejected?.toLocaleString() ?? "0"}
+          label="Rejected/Susp."
+          value={((stats?.rejected ?? 0) + (stats?.suspended ?? 0)).toLocaleString()}
           variant="red"
         />
       </div>
 
-      <Tabs
-        value={currentStatus}
-        className="w-full"
-        onValueChange={handleStatusChange}
-      >
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+      <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
+        <div className="border-b border-slate-200 w-full overflow-hidden">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden">
             {[
-              { id: "all", label: "All Facilities" },
-              { id: "pending", label: "Pending Approval" },
-              { id: "active", label: "Active" },
-              { id: "inactive", label: "Inactive" },
-              { id: "suspended", label: "Suspended" },
-              { id: "rejected", label: "Rejected" },
+              { id: "registry", label: "📋 Registry" },
+              { id: "top-rated", label: "⭐ Top Rated" },
+              { id: "featured", label: "🌟 Featured" },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.id}
@@ -207,18 +223,25 @@ const FacilitiesPage = () => {
           </TabsList>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2 items-center">
-            <input
-              className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-              placeholder="🔍 Search facilities..."
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-            />
-            <div className="flex gap-2">
+        <TabsContent value="registry" className="mt-5 space-y-4">
+          <Tabs
+            value={currentStatus}
+            className="w-full"
+            onValueChange={handleStatusChange}
+          >
+            <div className="flex flex-wrap gap-2 items-center">
+              <input
+                className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                placeholder="🔍 Search facilities, HEFRA no..."
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-1">
               <button
                 className={cn(
-                  "h-9 px-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all",
+                  "h-9 px-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                   selectedType === "all"
                     ? "bg-slate-900 text-white border-slate-900"
                     : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
@@ -227,7 +250,7 @@ const FacilitiesPage = () => {
               >
                 All Types
               </button>
-              {facilityTypes.slice(0, 3).map(({ value }) => (
+              {facilityTypes.map(({ value, count }) => (
                 <button
                   key={value}
                   className={cn(
@@ -238,11 +261,37 @@ const FacilitiesPage = () => {
                   )}
                   onClick={() => handleTypeChange(value)}
                 >
-                  {value.replace(/_/g, " ")}
+                  {value.replace(/_/g, " ")} ({count})
                 </button>
               ))}
             </div>
-          </div>
+
+            <div className="border-b border-slate-100 mb-4 w-full overflow-x-auto">
+              <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-max">
+                {[
+                  { id: "all", label: "All Facilities" },
+                  { id: "pending", label: "⏳ Pending Approval" },
+                  { id: "active", label: "Active" },
+                  { id: "inactive", label: "Inactive" },
+                  { id: "suspended", label: "Suspended" },
+                  { id: "rejected", label: "Rejected" },
+                ].map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={cn(
+                      "shrink-0 whitespace-nowrap px-4 py-2.5 text-[9px] font-black uppercase tracking-widest",
+                      "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
+                      "hover:text-emerald-700 hover:bg-emerald-50/40",
+                      "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                    )}
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </Tabs>
 
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <DataTable
@@ -251,7 +300,32 @@ const FacilitiesPage = () => {
               isLoading={isLoading || isFetching}
               isError={isError}
               error={error}
-              onRowClick={(row) => viewFacility.open(row.id)}
+              onRowClick={(row) =>
+                row.status === "pending"
+                  ? setReviewFacilityId(row.id)
+                  : viewFacility.open(row.id)
+              }
+              bulkActions={[
+                {
+                  label: "✅ Approve Selected",
+                  onClick: (rows: any[]) =>
+                    updateStatus.mutate({
+                      id: rows[0].id,
+                      ids: rows.map((r) => r.id),
+                      status: "active",
+                    }),
+                },
+                {
+                  label: "⏸ Suspend Selected",
+                  onClick: (rows: any[]) =>
+                    updateStatus.mutate({
+                      id: rows[0].id,
+                      ids: rows.map((r) => r.id),
+                      status: "suspended",
+                      reason: "Suspended via admin bulk action",
+                    }),
+                },
+              ]}
               onDeleteSelected={(rows) => {
                 if (
                   globalThis.confirm(
@@ -275,11 +349,23 @@ const FacilitiesPage = () => {
               totalItems={data?.totalRegistered || 0}
             />
           </div>
-        </div>
+        </TabsContent>
+
+        <TabsContent value="top-rated" className="mt-5">
+          <TopRatedTab />
+        </TabsContent>
+
+        <TabsContent value="featured" className="mt-5">
+          <FeaturedTab />
+        </TabsContent>
       </Tabs>
 
       <AddFacilityDialog />
       <FacilityViewDialog />
+      <ReviewFacilityDialog
+        facilityId={reviewFacilityId}
+        onClose={() => setReviewFacilityId(null)}
+      />
     </div>
   );
 };
