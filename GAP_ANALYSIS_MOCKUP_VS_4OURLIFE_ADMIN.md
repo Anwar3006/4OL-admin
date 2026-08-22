@@ -2433,6 +2433,33 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AJ — Screen Sizing & Rendering (AJ-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build (mobile repo only): tablet containment was ad-hoc — ~20 screens hand-rolled `isLargeScreen ? width * 0.2 : 24` gutters with no cap, while the busiest surfaces (Home hub, Chats list/thread, Fitness hub + sub-screens, FitnessOnboarding, the new Part AI screens, IBP dashboard) had none and stretched edge-to-edge on 11"/12.9" canvases; `generated-for-you` and `active-exercise` captured `Dimensions` at module level (stale on split-screen/Fold window changes) and the Fitness hub carried a dead `SCREEN_WIDTH`; the Home carousel shell stayed 200dp tall while CampaignBox/ContentSlideBox scale to 270dp on tablets (visible clip); FitnessTransitionModal's 320×320 loader ring touched the edge on 320dp devices; the My Account hub used interpolated NativeWind arbitrary values `bg-[${themeColors?.lightGray}]` that the compiler cannot see (background silently dropped to transparent); the three encyclopedia detail modals rendered article text full-width on tablets.*
+
+### What was built
+
+1. **Shared responsive primitives** — new `responsive/breakpoints.ts`: `TABLET_BREAKPOINT = 600`, `MAX_CONTENT_WIDTH = 680`, `MAX_TEXT_MEASURE = 720`, `useIsTablet()`, and `useContentPadding(base)` which returns the phone gutter unchanged below 600dp and a capped, centered column above it (reactive to window changes — split-screen, Fold unfold, iPad Stage Manager).
+2. **Tablet containment rollout** — Home hub (column-capped carousel + quick sections; carousel height now mirrors the box scale formula), Chats list (`ChatsScreenContent`) + chat thread (message list + composer), Fitness hub ScrollView, `generated-for-you` grid (live-width card sizing inside the capped column), `active-exercise` (live window height for the 55% video split), FitnessOnboarding (welcome / plan / questionnaire containers), IBP dashboard (extra-gutter cap that keeps its inner `px-6` sections intact), and the four Part AI screens + My Account hub.
+3. **Small-screen & rendering fixes** — FitnessTransitionModal loader ring now `min(320, width − 96)`; FitnessOnboarding primary CTA `h-[56px]` → `min-h-[56px]` so scaled fonts don't clip; My Account hub background moved to the `style` prop (kills the interpolated-class bug); the three encyclopedia detail modals cap their article card at `MAX_TEXT_MEASURE` centered, image headers stay full-width.
+
+### Decisions applied (AJ-D1–AJ-D8 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|--------|
+| AJ-D1 | Shared primitives | `responsive/breakpoints.ts` (`useContentPadding`, `useIsTablet`, caps) |
+| AJ-D2 | Containment rollout | Home, Chats/thread, Fitness hub + subs, Onboarding, Part AI screens, IBP |
+| AJ-D3 | Static Dimensions | layout-critical captures moved to `useWindowDimensions`; dead `SCREEN_WIDTH` removed; font helpers stay module-level |
+| AJ-D4 | Small-screen guardrails | loader ring fits 320dp; carousel height tracks box scale; CTA `minHeight` |
+| AJ-D5 | NativeWind interpolation bug | My Account hub bg moved to `style` prop; sweep found no other interpolated arbitrary values |
+| AJ-D6 | Tablet modals | article card capped at 720dp centered; image headers full-width |
+| AJ-D7 | Orientation | portrait lock kept on all devices; Split View/Stage Manager supported via adaptive widths (no `requiresFullScreen`) |
+| AJ-D8 | Verification matrix | 320×568 / 360×800 / 390×844 / 430×932 / 673 Fold / 834 / 1024, default + large font scale |
+
+**Out of scope (documented):** landscape layouts, RTL, font-scale capping (native accessibility kept; guarded with `minHeight` instead).
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

@@ -2506,3 +2506,30 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [x] Docs: GAP_ANALYSIS Part AI section.
 - [ ] Apply `20260823_my_account_platform.sql` to the live Supabase DB
       (user-manual; all mobile features degrade gracefully until applied).
+
+## Screen sizing & rendering pass (Part AJ, 2026-08-22)
+
+- [x] Confirm decisions AJ-D1…AJ-D8 (user, 2026-08-22 — "Proceed and
+      implement").
+- [x] Mobile (4OurLife-MobileApp): new `responsive/breakpoints.ts`
+      (`TABLET_BREAKPOINT 600`, `MAX_CONTENT_WIDTH 680`,
+      `MAX_TEXT_MEASURE 720`, `useIsTablet`, `useContentPadding`).
+- [x] Tablet containment: Home hub (capped column + carousel height tracking
+      CampaignBox scale), Chats list + chat thread, Fitness hub,
+      generated-for-you, active-exercise (live window height),
+      FitnessOnboarding (welcome/plan/questionnaire), IBP dashboard
+      (extra-gutter cap), My Account hub + Security Center + Privacy & Data +
+      About + Subscription.
+- [x] Static `Dimensions.get` captures converted to `useWindowDimensions`
+      (generated-for-you, active-exercise); dead `SCREEN_WIDTH` removed from
+      the Fitness hub.
+- [x] Small-screen guardrails: FitnessTransitionModal loader ring
+      `min(320, width − 96)`; FitnessOnboarding CTA `min-h-[56px]`.
+- [x] NativeWind interpolated arbitrary-value fix: My Account hub background
+      moved to the `style` prop.
+- [x] Tablet modals: Disease/Symptom/HealthyLiving detail cards capped at
+      720dp centered (image headers stay full-width).
+- [x] Docs: GAP_ANALYSIS Part AJ section.
+- [ ] Device-matrix visual pass (AJ-D8): 320×568, 360×800, 390×844, 430×932,
+      673 Fold inner, 834, 1024 — default and large font scale (user-manual
+      on physical devices/emulators).
