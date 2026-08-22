@@ -2533,3 +2533,48 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [ ] Device-matrix visual pass (AJ-D8): 320×568, 360×800, 390×844, 430×932,
       673 Fold inner, 834, 1024 — default and large font scale (user-manual
       on physical devices/emulators).
+
+## Anti screen-reading & anti-AI-scraping protocol (Part AK, 2026-08-22)
+
+- [x] Confirm decisions AK-D1…AK-D10 (user, 2026-08-22 — "Proceed and
+      implement").
+- [x] Mobile (4OurLife-MobileApp) AK-D1: `plugins/withFlagSecure.js`
+      (Android FLAG_SECURE) registered in app.config.ts;
+      `components/security/PrivacyBlur.tsx` (iOS app-switcher snapshot
+      cover); `hooks/use-screenshot-detection.ts` telemetry hook; mounted in
+      `app/_layout.tsx`.
+- [x] Mobile AK-D2: `context/DeviceTrustContext.tsx` — per-session device
+      profile + emulator detection + screen-reader state, reported via
+      `report_device_signal` (telemetry-only; accessibility never gated).
+- [x] Mobile AK-D3: `services/deviceAttestation.ts` — fail-open Play
+      Integrity / App Attest plumbing + `log_device_attestation` telemetry.
+- [x] Mobile AK-D4: `components/security/MaskedValue.tsx` — mask-by-default
+      email/phone on the My Account hub, biometric step-up reveal, 12s
+      auto-mask, reveal telemetry.
+- [x] Backend: `supabase/migrations/20260822_anti_screen_reading_ak.sql` —
+      security_device_signals, device_attestation_log, bot_signals,
+      admin_read_audit, security_canaries + RPCs (report_device_signal,
+      log_device_attestation, report_bot_signal, log_admin_read with
+      200/hr anomaly trip, issue_canary, report_canary_hit,
+      enforce_read_quota).
+- [x] Admin AK-D6/D7: `components/security/ForensicWatermark.tsx` +
+      `SecurityCanary.tsx`; `lib/security-audit.ts` canary issuance;
+      `_c` canary field in `/api/admin/users` payloads.
+- [x] Admin AK-D8/D9/D10: `BotSignalCollector.tsx` +
+      `/api/admin/security/signals`; `IdleSessionGuard.tsx` (30-min idle);
+      `auditAdminRead()` on `/api/admin/users` + `/api/admin/users/export`;
+      `AdminSecurityLayer.tsx` mounted via new `app/(dashboard)/layout.tsx`;
+      CSP `frame-ancestors 'none'` header.
+- [x] Docs: GAP_ANALYSIS Part AK section.
+- [ ] Apply `20260822_anti_screen_reading_ak.sql` to the live Supabase DB
+      (user-manual; all AK features degrade gracefully until applied).
+- [ ] AK-D1.3: iOS screenshot-detection native emitter (EAS config plugin
+      follow-up — hook is already listening, inert until linked).
+- [ ] AK-D3.2: native Play Integrity / App Attest module in the EAS build;
+      flip device_attestation_log from telemetry to enforcement.
+- [ ] AK-D5.2: add `enforce_read_quota` guard calls inside the sensitive
+      mobile RPCs (chats, profile reads) once the migration is applied.
+- [ ] AK-D8.2: Cloudflare Turnstile on /login + OTP step-up challenge for
+      sessions that trip headless indicators (reuses device-sign-in OTP).
+- [ ] Verify watermark visibility + idle sign-out on a staging admin session
+      (user-manual).

@@ -4,6 +4,7 @@ import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { applyUserMasking } from "@/lib/masking";
+import { auditAdminRead, issueCanaryFor } from "@/lib/security-audit";
 
 // Admin user list with server-side PHI masking (Gap Analysis Part C.5).
 // Full phone/email/NHIS only for super_admin; everyone else masked.
@@ -112,6 +113,16 @@ export async function GET(req: NextRequest) {
   const rows = data ?? [];
   const userIds = rows.map((r) => r.user_id);
 
+  // Part AK (AK-D9/D7): log the read (server-side anomaly trip is computed
+  // inside) and attach this admin's canary token so a scraped copy of this
+  // payload is attributable to the session that received it.
+  void auditAdminRead(auth.user.id, "admin/users", rows.length, {
+    search: parsed.data.search ?? null,
+    plan: parsed.data.plan ?? null,
+    offset: parsed.data.offset,
+  });
+  const canary = await issueCanaryFor(auth.user.id, "api_admin_users");
+
   // Best-effort enrichment: emails (better-auth users table) + plans.
   let emailById = new Map<string, string>();
   let planByUser = new Map<string, string>();
@@ -149,6 +160,8 @@ export async function GET(req: NextRequest) {
     total: count ?? 0,
     limit: parsed.data.limit,
     offset: parsed.data.offset,
+    // AK-D7 canary — invisible to the UI, present in any exfiltrated copy.
+    ...(canary ? { _c: canary } : {}),
   });
 }
 

@@ -2460,6 +2460,42 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AK — Anti Screen-Reading & Anti-AI-Scraping Security Protocol (AK-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Threat model: AI computer-use agents driving real UIs via screenshots + multimodal LLMs, headless/automated scrapers (Playwright against the panel; Appium/adb screencap + OCR against mobile), infostealer malware capturing an admin's screen, and insiders feeding screenshots to AI for bulk extraction. Honest scoping: pixel-level reading of a legitimately displayed screen cannot be fully prevented — the protocol layers capture prevention, automation detection, exposure minimization, leak attribution and server-side enforcement so automated screen-reading becomes expensive, traceable and low-yield. Pre-build state: mobile had biometric app-lock and SecureStore sessions but zero capture defenses (no FLAG_SECURE, no background blur); the admin panel had the proxy role gate, RLS and PHI masking but no watermarks, canaries, headless detection, read auditing or idle timeout.*
+
+### What was built
+
+1. **Mobile capture prevention & telemetry (AK-D1)** — new `plugins/withFlagSecure.js` config plugin sets Android `FLAG_SECURE` (screenshots black-out, recording/casting blocked, recents thumbnail blank); new `components/security/PrivacyBlur.tsx` covers the iOS app-switcher snapshot the moment AppState leaves active; new `hooks/use-screenshot-detection.ts` telemetry channel (subscribes to a `ScreenshotTaken` native event when the follow-up native emitter is linked — inert until then).
+2. **Mobile device trust + attestation plumbing (AK-D2/D3)** — new `context/DeviceTrustContext.tsx` collects per-session environment signals (`Device.isDevice` emulator detection, device type/hardware profile, screen-reader state — telemetry only, never a gate, accessibility users protected) and reports via `report_device_signal`; new `services/deviceAttestation.ts` is the single Play Integrity / App Attest acquisition point — phase 1 fail-open plumbing with `log_device_attestation` telemetry until the native module is added to the EAS build.
+3. **Mobile PII masking (AK-D4)** — new `components/security/MaskedValue.tsx`: email/phone render redacted by default on the My Account hub; eye-toggle reveal requires a fresh biometric when one is enrolled+enabled, auto-masks after 12s, every reveal/denial reported through the trust channel.
+4. **Backend protocol tables & RPCs** — migration `supabase/migrations/20260822_anti_screen_reading_ak.sql`: `security_device_signals`, `device_attestation_log`, `bot_signals`, `admin_read_audit`, `security_canaries` (all RLS-enabled, writes only via SECURITY DEFINER RPCs keyed to `auth.uid()`): `report_device_signal`, `log_device_attestation`, `report_bot_signal`, `log_admin_read` (with in-function 200-reads/hour anomaly trip), `issue_canary` / `report_canary_hit`, and `enforce_read_quota` — an authenticated wrapper over `check_and_increment_rate_limit` for sensitive mobile RPCs (per-RPC wiring tracked as AK-D5.2).
+5. **Admin attribution layer (AK-D6/D7)** — new `components/security/ForensicWatermark.tsx` tiles the admin email + per-tab nonce + date at 4.5% opacity across every dashboard page (every screenshot is attributable); new `components/security/SecurityCanary.tsx` renders an invisible canary token; `lib/security-audit.ts` issues/attaches the same token family to `/api/admin/users` JSON (`_c` field).
+6. **Admin detection & enforcement (AK-D8/D9/D10)** — new `components/security/BotSignalCollector.tsx` (webdriver/headless/CDP fingerprints + copy-event telemetry, length-only) posting to new `/api/admin/security/signals`; new `components/security/IdleSessionGuard.tsx` (30-min idle sign-out); `auditAdminRead()` wired into `/api/admin/users` and the bulk `/api/admin/users/export` route (the mass-exfiltration vector) with server-side anomaly trip; all five composed by `components/security/AdminSecurityLayer.tsx` mounted from the new `app/(dashboard)/layout.tsx` (fragment-rendered, no layout side-effects); CSP `frame-ancestors 'none'` added to the existing hardened header set.
+
+### Decisions applied (AK-D1–AK-D10 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|--------|
+| AK-D1 | Capture prevention | Android FLAG_SECURE plugin + iOS PrivacyBlur + screenshot telemetry hook |
+| AK-D2 | Device trust signals | DeviceTrustProvider; emulator/screen-reader telemetry; accessibility never gated |
+| AK-D3 | App attestation | fail-open plumbing + telemetry; native Play Integrity/App Attest activation documented |
+| AK-D4 | Mask-by-default PII | MaskedValue on My Account hub; biometric step-up reveal; 12s auto-mask |
+| AK-D5 | Read quotas | `enforce_read_quota` RPC (wraps rate_limit_counters); per-RPC wiring = AK-D5.2 |
+| AK-D6 | Forensic watermark | tiled identity overlay on every dashboard page |
+| AK-D7 | Canary tokens | DOM canary + `_c` in users API payload + `report_canary_hit` attribution |
+| AK-D8 | Headless/agent detection | fingerprint probe + copy telemetry + signals endpoint; Turnstile/OTP step-up = AK-D8.2 |
+| AK-D9 | Read audit + idle | admin_read_audit + 200/hr anomaly trip on users & export routes; 30-min idle sign-out |
+| AK-D10 | Headers & guards | CSP frame-ancestors added; response shaping via existing PHI masking + `_c`; canvas-rendering & glyph-scrambling rejected as ineffective vs multimodal AI |
+
+**Explicitly rejected (documented):** canvas-rendered tables (breaks accessibility for marginal gain), custom-font glyph scrambling (defeated by multimodal LLMs), hard-blocking automation accessibility services (excludes disabled users), DRM for web content.
+
+**Residual risk:** a compromised, legitimate, attested session operated slowly by a human-guided AI can still read what it is authorized to see — mitigated by attribution (watermarks/canaries) and anomaly detection, not eliminated.
+
+**User-manual activation steps:** apply `20260822_anti_screen_reading_ak.sql`; AK-D1.3 iOS screenshot-detection native emitter (EAS plugin follow-up); AK-D3.2 native attestation module; AK-D5.2 quota calls inside sensitive mobile RPCs; AK-D8.2 Turnstile/OTP step-up on login.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

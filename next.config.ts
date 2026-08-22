@@ -12,15 +12,23 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    // Conservative hardening set. CSP is intentionally omitted: Next.js
-    // injects inline scripts/styles and the app loads Supabase assets,
-    // so a strict CSP would break the panel without adding real value
-    // over the existing RLS + service-role architecture.
+    // Conservative hardening set. A full CSP (script-src etc.) is
+    // intentionally omitted: Next.js injects inline scripts/styles and the
+    // app loads Supabase assets, so a strict CSP would break the panel
+    // without adding real value over the existing RLS + service-role
+    // architecture. The single `frame-ancestors` directive below (Part AK,
+    // AK-D10) is exempt from that concern — it only governs embedding and
+    // stops automation frameworks from loading the panel inside an
+    // iframe-driven agent harness.
     return [
       {
         source: "/(.*)",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'none'",
+          },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-DNS-Prefetch-Control", value: "on" },

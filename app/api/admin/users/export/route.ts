@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { auditAdminRead } from "@/lib/security-audit";
 
 function csvEscape(value: unknown) {
   const str = value === null || value === undefined ? "" : String(value);
@@ -23,6 +24,11 @@ export async function GET() {
     console.error("[admin/users/export] Supabase error:", error.message);
     return NextResponse.json({ error: "Failed to export users." }, { status: 500 });
   }
+
+  // Part AK (AK-D9): bulk export is THE mass-exfiltration vector — every
+  // export is audited with its row count; repeated exports inside an hour
+  // trip the read-anomaly signal server-side.
+  void auditAdminRead(auth.user.id, "admin/users/export", (data ?? []).length);
 
   const headers = ["User ID", "First Name", "Last Name", "Type", "Status", "Phone", "Sex", "Created At", "Last Active"];
   const rows = (data ?? []).map((u) =>
