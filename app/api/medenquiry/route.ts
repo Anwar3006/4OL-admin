@@ -5,6 +5,7 @@
  * GET → medenquiry.view
  *   Filters: q (medication/user/pharmacy), type (with_rx/otc/hcp_request),
  *   status (mockup vocabulary), tier (free/premium via user_subscriptions),
+ *   pharmacy (facility_id — cross-link from the Facilities menu),
  *   page/limit. Rows embed the submitter (privacy-masked for non-SA),
  *   matched pharmacy, escrow state and pharmacy responses; best-price and
  *   response counts are derived server-side.
@@ -19,6 +20,8 @@ const STATUSES = [
   "pending_match", "matched", "in_escrow", "pickup_ready",
   "delivery_in_progress", "completed", "cancelled",
 ];
+
+const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 type EnquiryRow = any;
 
@@ -39,6 +42,7 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const status = url.searchParams.get("status");
   const tier = url.searchParams.get("tier");
+  const pharmacy = url.searchParams.get("pharmacy");
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1") || 1);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? "25") || 25));
 
@@ -66,11 +70,11 @@ export async function GET(request: Request) {
         delivery_status, delivery_address, delivery_gps, courier_name,
         tracking_number, delivery_distance_km, payment_amount, prescription_url,
         pickup_confirmation_code, notify_on_availability, search_radius_km,
-        custom_area, drug_id, user_id,
+        custom_area, drug_id, user_id, pharmacy_id,
         user:user_profiles!medication_enquiries_user_id_fkey(first_name, last_name, region),
-        pharmacy:facility_profile!medication_enquiries_pharmacy_id_fkey(facility_name, area, region),
+        pharmacy:facility_profile!medication_enquiries_pharmacy_id_fkey(id, facility_name, area, region),
         escrow:escrow_transactions!medication_enquiries_escrow_id_fkey(id, amount, status, dispute_reason, dispute_raised_at),
-        responses:enquiry_responses(id, price, available, status, responder_kind, responded_at, facility:facility_profile(facility_name, area))
+        responses:enquiry_responses(id, price, available, status, responder_kind, responded_at, facility:facility_profile(id, facility_name, area))
         `,
         { count: "exact" },
       )
@@ -80,6 +84,7 @@ export async function GET(request: Request) {
     if (q) query = query.or(`medication_name.ilike.%${q}%,medication_description.ilike.%${q}%`);
     if (type && ["with_rx", "otc", "hcp_request"].includes(type)) query = query.eq("enquiry_type", type);
     if (status && STATUSES.includes(status)) query = query.eq("status", status);
+    if (pharmacy && UUID_RE.test(pharmacy)) query = query.eq("pharmacy_id", pharmacy);
     if (tier === "premium" && tierUserIds) {
       if (!tierUserIds.length) return NextResponse.json({ ok: true, rows: [], total: 0, page, limit });
       query = query.in("user_id", tierUserIds.slice(0, 200));

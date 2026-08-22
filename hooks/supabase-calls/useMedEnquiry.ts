@@ -38,7 +38,7 @@ export interface EnquiryResponseRow {
   responded_at: string | null;
   notes?: string | null;
   currency?: string;
-  facility?: { facility_name: string | null; area: string | null } | null;
+  facility?: { id: string; facility_name: string | null; area: string | null } | null;
 }
 
 export interface MedEnquiryRow {
@@ -67,6 +67,7 @@ export interface MedEnquiryRow {
   custom_area: string | null;
   drug_id: string | null;
   user_id: string | null;
+  pharmacy_id: string | null;
   // Server-derived fields
   submitter_name: string;
   submitter_region: string | null;
@@ -79,7 +80,7 @@ export interface MedEnquiryRow {
   best_pharmacy: string | null;
   responses?: EnquiryResponseRow[];
   user?: { first_name: string | null; last_name: string | null; region?: string | null } | null;
-  pharmacy?: { facility_name: string | null; area?: string | null; region?: string | null } | null;
+  pharmacy?: { id: string; facility_name: string | null; area?: string | null; region?: string | null } | null;
   escrow?: {
     id: string;
     amount: number | null;
@@ -160,6 +161,8 @@ export type MedEnquiryListParams = {
   type?: string;
   status?: string;
   tier?: string;
+  /** Facility id — cross-link from the Facilities menu (Part AB linkage). */
+  pharmacy?: string;
 };
 
 export const useMedEnquiries = (params: MedEnquiryListParams = {}) => {

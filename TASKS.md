@@ -73,7 +73,7 @@
 | Y | Platform Schematic | ✅ Implemented 2026-08-21 | `/api/admin/schematic` auto-updating page |
 | Z | Delete Account Requests | ✅ Implemented 2026-08-21 | `20260821_deletion_policy_extension.sql`, rebuilt page |
 | AA | Transactions menu depth | ✅ Implemented 2026-08-22 | `20260822_transactions_ledger.sql`, 10 RBAC-guarded `/api/transactions*` routes, `useTransactions.ts`, all 7 tabs live |
-| AB | Medication Enquiry (admin depth + mobile rollout design) | ✅ Admin depth implemented 2026-08-22 | `20260822_med_enquiry_depth.sql`, 8 RBAC-guarded `/api/medenquiry*` routes, `useMedEnquiry.ts`, all 6 tabs live; mobile screens deferred (M-D9) |
+| AB | Medication Enquiry (admin depth + mobile rollout design) | ✅ Admin depth implemented 2026-08-22 | `20260822_med_enquiry_depth.sql`, 8 RBAC-guarded `/api/medenquiry*` routes, `useMedEnquiry.ts`, all 6 tabs live; Facilities ↔ MedEnquiry cross-links; mobile screens deferred (M-D9) |
 
 **Open follow-ups across parts (not blocking):** apply `20260820_*` /
 `20260821_*` / `20260822_*` migrations to the live Supabase DB (credentials

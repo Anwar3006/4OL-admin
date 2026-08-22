@@ -34,6 +34,7 @@ import {
   useRejectFacility,
 } from "@/hooks/supabase-calls/useFacilities";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { FacilityRatingSection } from "./facility-rating";
 import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
@@ -74,6 +75,8 @@ export default function FacilityViewDialog() {
   const { open: openEdit } = useAddFacilityDialog();
   const { open: openGallery } = useGalleryModal();
   const { data: session } = useSupabaseSession();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const { data: facility, isLoading } = useFacilityProfile({
     id: entityId || "",
@@ -163,6 +166,18 @@ export default function FacilityViewDialog() {
                 featured_image_url: facility.featured_image_url,
               })
             }
+            onMedEnquiries={() => {
+              // Part AB linkage: pharmacies/IBP wholesalers respond to
+              // medication enquiries — jump to enquiries filtered by this
+              // facility. On the medenquiry page itself, apply the filter
+              // in place and keep the dialog open.
+              if (pathname.startsWith("/medenquiry")) {
+                router.push(`/medenquiry?pharmacy=${facility.id}`, { scroll: false });
+              } else {
+                close();
+                router.push(`/medenquiry?pharmacy=${facility.id}`);
+              }
+            }}
             getImageUrl={getPublicImageUrl}
           />
         ) : (
@@ -250,6 +265,7 @@ function DetailView({
   isRejecting,
   onApprove,
   onReject,
+  onMedEnquiries,
   getImageUrl,
   session,
 }: {
@@ -267,12 +283,16 @@ function DetailView({
   isRejecting: boolean;
   onApprove: () => void;
   onReject: () => void;
+  onMedEnquiries: () => void;
   getImageUrl: (path: string) => string;
   session: any;
 }) {
   const currentImageSrc = images[activeImage]
     ? getImageUrl(images[activeImage])
     : "";
+
+  // Only pharmacies / IBP wholesalers participate in medication enquiries.
+  const isEnquiryResponder = /pharmacy|ibp/i.test(facility.facility_type ?? "");
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-slate-50">
@@ -317,6 +337,16 @@ function DetailView({
               .join(", ")}
             imageUrl={facility.featured_image_url}
           />
+
+          {isEnquiryResponder && (
+            <Button
+              variant="outline"
+              onClick={onMedEnquiries}
+              className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all"
+            >
+              🔬 Med Enquiries
+            </Button>
+          )}
 
           <Button
             onClick={onEdit}

@@ -193,6 +193,7 @@ begin
       from (
         select jsonb_build_object(
           'responder_kind', er.responder_kind,
+          'pharmacy_id', er.facility_id,
           'pharmacy_name', coalesce(fp.facility_name, ib.business_name, 'Unknown'),
           'location', coalesce(nullif(fp.area || ' — ' || fp.region::text, ' — '), ib.city),
           'total_responses', count(er.id),

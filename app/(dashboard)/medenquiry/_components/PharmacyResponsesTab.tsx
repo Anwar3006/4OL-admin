@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { usePharmacyPerformance, type PharmacyPerfRow } from "@/hooks/supabase-calls/useMedEnquiry";
+import { useViewFacilityDialog } from "@/stores/dialog-store";
 import { cn } from "@/lib/utils";
 
 const formatMinutes = (minutes: number | null) =>
@@ -27,6 +29,8 @@ const StarRating = ({ rating }: { rating: number | null }) => {
  * enquiry detail dialog until the Phase-2 responses UI).
  */
 export default function PharmacyResponsesTab() {
+  const router = useRouter();
+  const viewFacility = useViewFacilityDialog();
   const { data, isLoading, isError, error } = usePharmacyPerformance();
   const rows = data?.rows ?? [];
   const empty = Boolean(data?.empty);
@@ -36,11 +40,26 @@ export default function PharmacyResponsesTab() {
       {
         id: "pharmacy",
         header: "Pharmacy / IBP",
-        cell: ({ row }) => (
-          <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
-            {row.original.pharmacy_name}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const perf = row.original;
+          // Facilities linkage: responder with a facility profile opens it.
+          return perf.pharmacy_id ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                viewFacility.open(perf.pharmacy_id!);
+              }}
+              className="font-black text-slate-800 text-[11px] uppercase tracking-tight text-left hover:text-emerald-700 transition-all"
+              title="Open facility profile"
+            >
+              {perf.pharmacy_name} <span className="text-[9px] text-emerald-500">🏥</span>
+            </button>
+          ) : (
+            <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+              {perf.pharmacy_name}
+            </span>
+          );
+        },
       },
       {
         id: "total_responses",
@@ -108,8 +127,25 @@ export default function PharmacyResponsesTab() {
           </span>
         ),
       },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) =>
+          row.original.pharmacy_id ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/medenquiry?pharmacy=${row.original.pharmacy_id}`, { scroll: false });
+              }}
+              className="h-7 px-2 rounded-lg border border-emerald-200 text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
+              title="Filter the enquiry ledger by this pharmacy"
+            >
+              🔬 Enquiries
+            </button>
+          ) : null,
+      },
     ],
-    [],
+    [router, viewFacility],
   );
 
   const cardConfig: MobileCardConfig<PharmacyPerfRow> = {
@@ -126,7 +162,16 @@ export default function PharmacyResponsesTab() {
       { id: "avg", label: "Avg Response", render: (row) => formatMinutes(row.avg_response_minutes) },
       { id: "availability", label: "Availability", render: (row) => `${Math.round(row.availability_rate)}%` },
     ],
-    actions: [],
+    actions: [
+      {
+        label: "🔬 View Enquiries",
+        onClick: (row) => {
+          if (row.pharmacy_id) {
+            router.push(`/medenquiry?pharmacy=${row.pharmacy_id}`, { scroll: false });
+          }
+        },
+      },
+    ],
   };
 
   return (

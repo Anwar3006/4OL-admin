@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import {
@@ -19,6 +20,7 @@ import {
   useMedEnquiryAction,
   type MedEnquiryRow,
 } from "@/hooks/supabase-calls/useMedEnquiry";
+import { useViewFacilityDialog } from "@/stores/dialog-store";
 import EnquiryDetailDialog from "./EnquiryDetailDialog";
 
 const TYPES = [
@@ -36,7 +38,11 @@ const TIERS = [
 
 const OPEN_STATUSES = ["pending_match", "matched", "in_escrow", "pickup_ready", "delivery_in_progress"];
 
-export default function AllEnquiriesTab() {
+export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | null }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const viewFacility = useViewFacilityDialog();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [type, setType] = useState("");
@@ -60,7 +66,18 @@ export default function AllEnquiriesTab() {
     type: type || undefined,
     status: status || undefined,
     tier: tier || undefined,
+    pharmacy: pharmacyId || undefined,
   });
+
+  const clearPharmacyFilter = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("pharmacy");
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
+  const pharmacyFilterName =
+    data?.rows?.find((r) => r.pharmacy_name)?.pharmacy_name ?? "Selected pharmacy";
 
   const action = useMedEnquiryAction();
 
@@ -174,6 +191,32 @@ export default function AllEnquiriesTab() {
 
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
+      {pharmacyId && (
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
+          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+            🏥 Linked from Facilities — filtering enquiries for:
+          </span>
+          <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-emerald-200 text-[10px] font-black uppercase tracking-widest text-emerald-700">
+            {pharmacyFilterName}
+            <button
+              onClick={() => viewFacility.open(pharmacyId)}
+              className="text-emerald-500 hover:text-emerald-800 font-black"
+              aria-label="View pharmacy profile"
+              title="Open pharmacy profile (Facilities)"
+            >
+              🏥
+            </button>
+            <button
+              onClick={clearPharmacyFilter}
+              className="text-emerald-400 hover:text-emerald-700 font-black"
+              aria-label="Clear pharmacy filter"
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2 items-center">
         <input
           value={search}

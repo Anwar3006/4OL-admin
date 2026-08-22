@@ -10,11 +10,13 @@ import {
   formatSubmittedAt,
 } from "@/components/Data-Table/columns/medEnquiryColumns";
 import type { MedEnquiryRow } from "@/hooks/supabase-calls/useMedEnquiry";
+import { useViewFacilityDialog } from "@/stores/dialog-store";
 
 /**
  * Read-only detail sheet for a medication enquiry — Part AB.
  * Shows medication, submitter (masked server-side), fulfilment, escrow and
- * every pharmacy response with its price.
+ * every pharmacy response with its price. Pharmacy names open the shared
+ * Facilities profile dialog (Facilities ↔ Medication Enquiry linkage).
  */
 export default function EnquiryDetailDialog({
   enquiry,
@@ -23,6 +25,7 @@ export default function EnquiryDetailDialog({
   enquiry: MedEnquiryRow | null;
   onClose: () => void;
 }) {
+  const viewFacility = useViewFacilityDialog();
   return (
     <Dialog open={Boolean(enquiry)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -78,6 +81,30 @@ export default function EnquiryDetailDialog({
               </div>
             )}
 
+            {enquiry.pharmacy && (
+              <button
+                onClick={() => viewFacility.open(enquiry.pharmacy!.id)}
+                className="w-full flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-left hover:bg-emerald-100 transition-all"
+              >
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-0.5">
+                    🏥 Matched Pharmacy
+                  </div>
+                  <div className="text-[11px] font-black text-emerald-800">
+                    {enquiry.pharmacy.facility_name ?? "Unknown pharmacy"}
+                  </div>
+                  {(enquiry.pharmacy.area || enquiry.pharmacy.region) && (
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">
+                      {[enquiry.pharmacy.area, enquiry.pharmacy.region].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">
+                  View Profile →
+                </span>
+              </button>
+            )}
+
             <div>
               <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Pharmacy Responses ({enquiry.responses?.length ?? enquiry.response_count})
@@ -87,11 +114,16 @@ export default function EnquiryDetailDialog({
                   {enquiry.responses.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                      className={`flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 ${
+                        r.facility?.id ? "hover:bg-slate-50 transition-all" : ""
+                      }`}
+                      onClick={r.facility?.id ? () => viewFacility.open(r.facility!.id) : undefined}
+                      role={r.facility?.id ? "button" : undefined}
                     >
                       <div>
                         <div className="text-[11px] font-black text-slate-700">
                           {r.facility?.facility_name ?? (r.responder_kind === "wholesaler" ? "Wholesaler" : "Pharmacy")}
+                          {r.facility?.id && <span className="ml-1 text-[9px] text-emerald-500">🏥</span>}
                         </div>
                         <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
                           {r.status} · {r.available ? "Available" : "Unavailable"}

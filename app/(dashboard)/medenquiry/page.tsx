@@ -11,6 +11,7 @@ import { apiFetch } from "@/lib/api-fetch";
 import { toast } from "sonner";
 import { useMedEnquiryOverview } from "@/hooks/supabase-calls/useMedEnquiry";
 import { STATUS_LABELS, TYPE_LABELS, formatEnqId, formatSubmittedAt } from "@/components/Data-Table/columns/medEnquiryColumns";
+import FacilityViewDialog from "../facilities/_components/view-facility-dialog";
 import AllEnquiriesTab from "./_components/AllEnquiriesTab";
 import PendingEnquiriesTab from "./_components/PendingEnquiriesTab";
 import EscrowTab from "./_components/EscrowTab";
@@ -50,6 +51,8 @@ export default function MedEnquiryPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
+  // ?pharmacy=<facility_id> arrives from the Facilities menu cross-link.
+  const pharmacyParam = searchParams.get("pharmacy");
   // URL is the single source of truth; handleTabChange pushes the new tab param.
   const activeTab = tabParam || "all";
   const [exporting, setExporting] = useState(false);
@@ -79,7 +82,12 @@ export default function MedEnquiryPage() {
   ];
 
   const handleTabChange = (value: string) => {
-    router.push(value === "all" ? "/medenquiry" : `/medenquiry?tab=${value}`, { scroll: false });
+    // Preserve the Facilities cross-link (?pharmacy=<id>) across tab switches.
+    const params = new URLSearchParams();
+    if (value !== "all") params.set("tab", value);
+    if (pharmacyParam) params.set("pharmacy", pharmacyParam);
+    const qs = params.toString();
+    router.push(qs ? `/medenquiry?${qs}` : "/medenquiry", { scroll: false });
   };
 
   const handleExport = async () => {
@@ -217,7 +225,7 @@ export default function MedEnquiryPage() {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent className="w-full min-w-0 outline-none" value="all">
-            <AllEnquiriesTab />
+            <AllEnquiriesTab pharmacyId={pharmacyParam} />
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <PendingEnquiriesTab />
@@ -236,6 +244,10 @@ export default function MedEnquiryPage() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Shared Facilities profile dialog — pharmacy names across this menu
+          open the same rich profile used by the Facilities menu. */}
+      <FacilityViewDialog />
     </div>
   );
 }
