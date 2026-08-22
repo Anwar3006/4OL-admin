@@ -6,12 +6,14 @@ import PageHeader from "@/components/redesign/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReviewStats from "./_components/ReviewStats";
 import ReviewsDataTab from "./_components/AllReviewsTab";
+import AppReviewsTab from "./_components/AppReviewsTab";
 import { cn } from "@/lib/utils";
 
 const TabsConfig = [
   { id: "all", label: "All Reviews" },
   { id: "flagged", label: "🚩 Flagged" },
   { id: "pending", label: "⏳ Pending" },
+  { id: "app", label: "📱 App Reviews" },
 ];
 
 const ReviewsPage = () => {
@@ -36,7 +38,7 @@ const ReviewsPage = () => {
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
         title="⭐ Reviews & Ratings"
-        subtitle="User reviews for facilities, doctors and services · Moderated by Support Agents"
+        subtitle="User reviews for facilities, doctors, services and the app itself · Moderated by Support Agents"
       >
         {/* <button className="btn btn-secondary btn-sm font-bold">📥 Export PDF</button> */}
         {/* <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]">🛡️ Moderate</button> */}
@@ -79,6 +81,9 @@ const ReviewsPage = () => {
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="pending">
             <ReviewsDataTab status="pending" />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="app">
+            <AppReviewsTab />
           </TabsContent>
         </div>
       </Tabs>

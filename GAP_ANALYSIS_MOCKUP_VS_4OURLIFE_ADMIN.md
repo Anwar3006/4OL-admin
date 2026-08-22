@@ -2255,6 +2255,36 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AC — App Reviews & Periodic Rating Popup (Reviews menu "App" target, mockup L6674–6767) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22 as part of the Reviews & Ratings menu mapping. Mockup: `page-reviews` filter bar includes **Target: All / Facility / Doctor / Service / App** and explicit "4OL App · App Review" rows; Flagged tab shows Flag Reason / Flagged By; Pending tab shows account-age auto-approval rules. Codebase pre-build: `/reviews` had 3 facility-only tabs, 4 KPI cards via `get_review_kpi_stats`, and **all row actions were `console.log` stubs**; the mobile app had facility reviews (`CommentInput.tsx` star flow → direct client insert into `facility_reviews`, no RLS) and a manual Settings "Rate App" store deep-link with placeholder store IDs — no table, no RPC, no periodic prompt on either side.*
+
+### What was built (Strategy A — "Gate & Route" in-app modal)
+
+1. **Migration `20260822_app_reviews.sql`** (additive, re-runnable): `app_reviews` table (rating 1–5 CHECK, optional comment, `app_version`, `platform`, `prompt_source`, `status review_status default 'pending'`, `admin_note`, `reviewed_at`); `user_profiles.last_review_prompt_at` throttle column; RLS enabled with admin-only SELECT/UPDATE policies (user write path is RPC-only); 5 SECURITY DEFINER RPCs — `get_app_review_prompt_state()` (account ≥30 days + no prompt/review in 30 days), `submit_app_review()` (server-enforced 30-day re-review cap), `record_app_review_prompt('shown'|'dismissed'|'submitted')`, `admin_moderate_app_review()` (epic30 `is_app_admin()` gate), `get_app_review_kpi_stats()` (30-day deltas). All REVOKE-public + granted to authenticated/service_role.
+2. **Admin UI — 📱 App Reviews tab** on `/reviews` (`?tab=app`, existing `reviews.view` permission, no new catalog keys): 4 KPI cards (Total + monthly delta / Avg Rating / Pending / Low ≤2★ support pool), status filter pills + feedback search, DataTable with reviewer, stars, feedback, platform/version badge, status, date; **live moderation actions** (✅ Approve / 🚩 Reject with confirm dialog) wired to `admin_moderate_app_review` — the first real mutations on the Reviews menu. Pre-migration shows a dedicated "apply 20260822_app_reviews.sql" error card (graceful degradation, `retry: false`). Hooks in `hooks/supabase-calls/useAppReviews.tsx`.
+3. **Mobile — periodic monthly popup** (4OL Mobile Plasence): `lib/store-links.ts` extracts the Settings store deep-link into one shared helper (`openAppStoreReview`, env-driven store IDs with web fallback); Settings "Rate App" refactored onto it. `components/rate-app/RateAppModal.tsx` — stars + comment → `submit_app_review` RPC → sentiment routing: **≥4★ thank-you + store deep-link** (public store stays the real review surface), **≤3★ comment becomes required and routes to the internal support funnel** (Contact Support mailto). `components/rate-app/RateAppPromptController.tsx` — mounted in `app/(app)/_layout.tsx` next to PromotionModal; evaluates once per session per user, 8s settle delay, AsyncStorage mirror (`4ol_last_review_prompt_at`) skips the RPC within the month, server is authoritative, stamps the throttle clock on show (dismissed modal still counts as the month's prompt), `analytics_events` tracking (`rate_prompt_shown/dismissed`, `review_submitted`), silent degradation offline/pre-migration. Guardrails: never during onboarding/auth (enabled only after profile load, no forced password change).
+
+### Decisions applied (R-D1–R-D5 confirmed by product owner 2026-08-22 — "Proceed and implement")
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| R-D1 | Popup strategy | Strategy A — in-app gate-and-route modal (Strategy B OS-native + C remote-config deferred as complements) |
+| R-D2 | Throttle authority | Server-side (`user_profiles.last_review_prompt_at` + `app_reviews` history); AsyncStorage mirror only for offline skip |
+| R-D3 | ≤3★ routing | In-app feedback funnel — required comment stored in `app_reviews` + Contact Support mailto; never pushed to the store |
+| R-D4 | Admin scope | App-slice first — 📱 App Reviews tab with real moderation; Doctor/Service targets + facility-stub wiring + flag reasons deferred |
+| R-D5 | Re-review cadence | Allowed every 30 days (matches popup cadence); server enforces the cap |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260822_app_reviews.sql` to the live Supabase DB — admin tab shows an explanatory error card until then; mobile popup simply never fires.
+- Set real store IDs in mobile env: `EXPO_PUBLIC_APPLE_APP_ID`, `EXPO_PUBLIC_ANDROID_APP_ID` (currently placeholders; the ≥4★ store CTA falls back to the web store page until set).
+
+### Remaining gaps (documented, not blocking)
+- Facility-review row actions on the other tabs remain `console.log` stubs (no moderation RPC for `facility_reviews`); `facility_reviews` still has **no RLS** and mobile inserts client-side (RBAC-bypass pattern to close later).
+- Mockup's Doctor/Service targets, bulk actions, Flag Reason/Flagged By audit columns, account-age auto-approval banner, and the `get_review_kpi_stats` average-rating drift between `KPIs.sql` and the migration version are still open.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)
