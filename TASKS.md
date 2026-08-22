@@ -2381,3 +2381,40 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
       into the Home carousel after marketing campaigns.
 - [ ] Apply migration `20260822_content_analytics_carousel_extension.sql`
       to the live Supabase DB (user-manual, deployment-skip mandate).
+
+## Marketing mockup-parity depth build (Part M addendum, 2026-08-22)
+
+> Closes the remaining depth gap between `admin-panel.html` Marketing pages
+> and the admin Marketing tabs, and ships the mobile delivery/telemetry/
+> redemption rails. Admin work on `feat/gap-analysis-parts-lmn-security`;
+> mobile counterparts on `feat/fitness-mockup-parity`. Everything degrades
+> gracefully until the migration is applied.
+
+- [x] Migration `20260822_marketing_unification.sql` — resolves the
+      triple-definition collision on `user_subscriptions` (fitness/entitlement
+      shape = source of truth), widens + seeds `subscription_tiers`
+      (Starter/Pro/Elite), re-points `get_marketing_overview()`, adds
+      `analytics_events` + `log_marketing_event` / `get_campaign_event_stats`
+      RPCs, `discount_redemptions`, and `push_promotions_enabled` on
+      `user_profiles`. Additive + re-runnable.
+- [x] Admin Phase 1: plans/subscribers/remind/overview routes rebased on
+      tiers; `SubscriptionsTab` (KPIs, plan cards, All/At-Risk/Billing
+      sub-tabs, export, remind-all); `DiscountsTab` (KPIs, filters, create/
+      edit dialog parity with `m-create-discount`, clone/bulk); campaigns
+      telemetry columns (Impressions/Clicks/CTR), date + channel filters,
+      CSV export, dialog fields (type/budget/channels/target segment).
+- [x] Mobile Phase 2: `in_app_banner` channel filter on the home carousel;
+      Promotions opt-in toggle (`push_promotions_enabled`); marketing
+      notification routing (reminders/premium → paywall, else inbox).
+- [x] Phase 3 telemetry loop: mobile `lib/marketing-telemetry.ts` emits
+      clicks (CampaignBox) + impressions (active carousel slide, per-session
+      dedupe) via `log_marketing_event`; admin routes merge event stats.
+- [x] Phase 4 promo redemption: `POST /api/user/redeem-promo` (JWT identity,
+      service-role writes, per-user/eligible-user/eligible-plan validation,
+      free_trial/partner only) + paywall plan selection and promo-code field
+      in `premium.tsx`.
+- [x] Phase 5 deep-link CTAs: `upgrade_now` / `refer_friend` added to
+      `MARKETING_CTA_OPTIONS` + `CTA_CONFIG`; mobile `cta-actions.ts` upgrade
+      (in-app paywall) and referral (link, else share sheet) handlers.
+- [ ] Apply migration `20260822_marketing_unification.sql` to the live
+      Supabase DB (user-manual, deployment-skip mandate).

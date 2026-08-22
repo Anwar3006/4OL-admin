@@ -30,6 +30,26 @@ export async function GET() {
   }
 
   const campaigns = campaignsResult.data ?? [];
+
+  // Merge mobile telemetry (analytics_events via get_campaign_event_stats)
+  // into the manual column values. Degrades to columns-only when the
+  // unification migration hasn't been applied yet.
+  const campaignIds = campaigns.map((c) => c.id);
+  if (campaignIds.length > 0) {
+    const { data: eventStats, error: eventError } = await admin.rpc(
+      "get_campaign_event_stats",
+      { p_campaign_ids: campaignIds },
+    );
+    if (!eventError && eventStats) {
+      for (const campaign of campaigns) {
+        const stats = eventStats[campaign.id as keyof typeof eventStats];
+        if (!stats) continue;
+        campaign.impressions = (campaign.impressions ?? 0) + (stats.impressions ?? 0);
+        campaign.clicks = (campaign.clicks ?? 0) + (stats.clicks ?? 0);
+      }
+    }
+  }
+
   const impressions = campaigns.reduce((sum, c) => sum + (c.impressions ?? 0), 0);
   const clicks = campaigns.reduce((sum, c) => sum + (c.clicks ?? 0), 0);
   const conversions = campaigns.reduce((sum, c) => sum + (c.conversions ?? 0), 0);

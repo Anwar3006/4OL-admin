@@ -7,6 +7,7 @@
 
 import { apiFetch } from "@/lib/api-fetch";
 import {
+  TDiscountRow,
   TMarketingDiscountInput,
   TMarketingDiscountOutput,
 } from "@/schemas/marketing-discount.schema";
@@ -14,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface PaginatedResponse {
-  data: TMarketingDiscountOutput[];
+  data: TDiscountRow[];
   meta: {
     totalPages: number;
     total: number;
@@ -31,6 +32,8 @@ type DiscountPaginationInput = {
   page: number;
   limit: number;
   search?: string;
+  status?: string;
+  type?: string;
   activeOnly?: boolean;
 };
 
@@ -48,6 +51,8 @@ export const useMarketingDiscounts = ({
   page,
   limit,
   search,
+  status,
+  type,
   activeOnly = false,
 }: DiscountPaginationInput) => {
   return useQuery<PaginatedResponse, Error>({
@@ -55,6 +60,8 @@ export const useMarketingDiscounts = ({
       page,
       limit,
       search,
+      status,
+      type,
       activeOnly,
     }),
     queryFn: async () => {
@@ -63,7 +70,9 @@ export const useMarketingDiscounts = ({
         limit: String(limit),
       });
       if (search) params.set("search", search);
-      if (activeOnly) params.set("status", "active");
+      if (status) params.set("status", status);
+      else if (activeOnly) params.set("status", "active");
+      if (type) params.set("type", type);
       return apiFetch<PaginatedResponse>(`/api/marketing/discounts?${params.toString()}`);
     },
   });
@@ -100,6 +109,10 @@ const buildCreatePayload = (data: TMarketingDiscountInput & Record<string, unkno
     isActive,
     appliesTo,
     applicableItems,
+    eligiblePlans,
+    eligibleUsers,
+    perUserLimit,
+    campaignId,
     ...rest
   } = data;
 
@@ -109,10 +122,14 @@ const buildCreatePayload = (data: TMarketingDiscountInput & Record<string, unkno
     discount_type: discountType,
     max_uses: maxUses,
     valid_from: validFrom,
-    valid_until: validUntil,
+    valid_until: validUntil || null,
     is_active: isActive,
     applies_to: appliesTo,
     applicable_items: applicableItems,
+    eligible_plans: eligiblePlans ?? [],
+    eligible_users: eligibleUsers ?? "all",
+    per_user_limit: perUserLimit ?? null,
+    campaign_id: campaignId || null,
   };
 };
 
@@ -162,6 +179,10 @@ export const useUpdateMarketingDiscount = () => {
       if ("isActive" in inputData) inputData.is_active = inputData.isActive;
       if ("appliesTo" in inputData) inputData.applies_to = inputData.appliesTo;
       if ("applicableItems" in inputData) inputData.applicable_items = inputData.applicableItems;
+      if ("eligiblePlans" in inputData) inputData.eligible_plans = inputData.eligiblePlans;
+      if ("eligibleUsers" in inputData) inputData.eligible_users = inputData.eligibleUsers;
+      if ("perUserLimit" in inputData) inputData.per_user_limit = inputData.perUserLimit;
+      if ("campaignId" in inputData) inputData.campaign_id = inputData.campaignId || null;
       delete inputData.discountValue;
       delete inputData.discountType;
       delete inputData.maxUses;
@@ -170,6 +191,10 @@ export const useUpdateMarketingDiscount = () => {
       delete inputData.isActive;
       delete inputData.appliesTo;
       delete inputData.applicableItems;
+      delete inputData.eligiblePlans;
+      delete inputData.eligibleUsers;
+      delete inputData.perUserLimit;
+      delete inputData.campaignId;
 
       const result = await apiFetch<{ data: TMarketingDiscountOutput }>(
         `/api/marketing/discounts/${id}`,

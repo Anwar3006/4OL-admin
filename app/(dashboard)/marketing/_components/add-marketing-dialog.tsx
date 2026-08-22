@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import {
   TMarketingProfileInput,
   marketingProfileSchema,
+  CAMPAIGN_CHANNEL_OPTIONS,
 } from "@/schemas/marketing-profile.schema";
 import { toast } from "sonner";
 import CustomSelect from "@/components/CustomSelect";
@@ -50,6 +51,21 @@ const STEP_1_FIELDS: (keyof TMarketingProfileInput)[] = [
   "imageUrl",
 ];
 
+const CAMPAIGN_TYPE_SELECT_OPTIONS = [
+  { value: "app_promotion", label: "App Promotion" },
+  { value: "feature_launch", label: "Feature Launch" },
+  { value: "seasonal", label: "Seasonal" },
+  { value: "referral", label: "Referral" },
+];
+
+const CHANNEL_LABELS: Record<string, string> = {
+  push: "Push",
+  sms: "SMS",
+  email: "Email",
+  in_app_banner: "In-App Banner",
+  social: "Social",
+};
+
 const AddMarketingDialog = () => {
   const addMarketingDialog = useAddMarketingDialog();
 
@@ -71,6 +87,9 @@ const AddMarketingDialog = () => {
       },
       startDate: "",
       endDate: "",
+      channels: [],
+      target_segment: "",
+      budget: null,
     },
   });
 
@@ -136,6 +155,11 @@ const AddMarketingDialog = () => {
           },
           startDate: campaign.startDate,
           endDate: campaign.endDate,
+          campaign_type: campaign.campaign_type ?? undefined,
+          channels: (campaign.channels ??
+            []) as TMarketingProfileInput["channels"],
+          target_segment: campaign.target_segment ?? "",
+          budget: campaign.budget ?? null,
         });
       }
     } else {
@@ -155,6 +179,9 @@ const AddMarketingDialog = () => {
         },
         startDate: "",
         endDate: "",
+        channels: [],
+        target_segment: "",
+        budget: null,
       });
     }
   }, [addMarketingDialog.isOpen, addMarketingDialog.isEditMode, addMarketingDialog.data, form]);
@@ -294,6 +321,68 @@ const AddMarketingDialog = () => {
                   readOnly={false}
                 />
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomSelect
+                  name="campaign_type"
+                  label="Campaign Type"
+                  options={CAMPAIGN_TYPE_SELECT_OPTIONS}
+                  control={form.control}
+                />
+                <CustomInput
+                  type="number"
+                  name="budget"
+                  control={form.control}
+                  label="Budget (GH₵)"
+                  placeholder="0 = no budget"
+                  readOnly={false}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  Delivery Channels
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {CAMPAIGN_CHANNEL_OPTIONS.map((channelValue) => {
+                    const selected = (formValues.channels ?? []).includes(
+                      channelValue,
+                    );
+                    return (
+                      <button
+                        key={channelValue}
+                        type="button"
+                        onClick={() => {
+                          const current = formValues.channels ?? [];
+                          form.setValue(
+                            "channels",
+                            selected
+                              ? current.filter((c) => c !== channelValue)
+                              : [...current, channelValue],
+                          );
+                        }}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                          selected
+                            ? "bg-emerald-600 text-white border-emerald-600"
+                            : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300",
+                        )}
+                      >
+                        {CHANNEL_LABELS[channelValue] ?? channelValue}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <CustomInput
+                type="text"
+                name="target_segment"
+                control={form.control}
+                label="Target Segment"
+                placeholder="e.g. Premium users, Accra region, NHIS-linked"
+                readOnly={false}
+              />
 
               <CustomInput
                 type="textarea"

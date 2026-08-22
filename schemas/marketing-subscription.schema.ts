@@ -34,6 +34,15 @@ export const SUBSCRIPTION_PRIVILEGES = [
   "priority_support",
 ] as const;
 
+// Marketing unification build: consumer plan cards render free-form feature
+// lines from subscription_tiers.benefits (e.g. "Telemedicine (5 consults/mo)"),
+// so privileges widen from the legacy business enum to any string. The
+// legacy enum values stay valid.
+export const subscriptionPrivilegeSchema = z.union([
+  z.enum(SUBSCRIPTION_PRIVILEGES),
+  z.string(),
+]);
+
 export const marketingSubscriptionSchema = z.object({
   name: z.string().min(2, "Subscription name is required"),
   description: z.string().optional(),
@@ -41,7 +50,7 @@ export const marketingSubscriptionSchema = z.object({
   price: z.coerce.number().min(0, "Price cannot be negative"),
   period: z.enum(SUBSCRIPTION_PERIODS),
   billingCycle: z.enum(SUBSCRIPTION_BILLING_CYCLES),
-  privileges: z.array(z.enum(SUBSCRIPTION_PRIVILEGES)).default([]),
+  privileges: z.array(subscriptionPrivilegeSchema).default([]),
   tierLimit: z.coerce.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
 });
@@ -55,4 +64,6 @@ export type TMarketingSubscriptionOutput = TMarketingSubscriptionInput & {
   createdAt: string;
   updatedAt: string;
   createdBy: string | null;
+  subscribers?: number;
+  active_subscribers?: number;
 };

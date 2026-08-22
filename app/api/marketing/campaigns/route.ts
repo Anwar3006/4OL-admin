@@ -60,6 +60,8 @@ export async function GET(request: Request) {
   const status = url.searchParams.get("status") ?? "";
   const type = url.searchParams.get("type") ?? "";
   const channel = url.searchParams.get("channel") ?? "";
+  const dateFrom = url.searchParams.get("date_from") ?? "";
+  const dateTo = url.searchParams.get("date_to") ?? "";
 
   if (status && !STATUSES.includes(status)) {
     return NextResponse.json({ error: `Invalid status filter: ${status}` }, { status: 400 });
@@ -69,6 +71,9 @@ export async function GET(request: Request) {
   }
   if (channel && !CHANNELS.includes(channel)) {
     return NextResponse.json({ error: `Invalid channel filter: ${channel}` }, { status: 400 });
+  }
+  if ((dateFrom && Number.isNaN(Date.parse(dateFrom))) || (dateTo && Number.isNaN(Date.parse(dateTo)))) {
+    return NextResponse.json({ error: "Invalid date filter" }, { status: 400 });
   }
 
   const admin = getSupabaseAdmin();
@@ -81,6 +86,10 @@ export async function GET(request: Request) {
   if (status) query = query.eq("status", status);
   if (type) query = query.eq("campaign_type", type);
   if (channel) query = query.contains("channels", [channel]);
+  // Mockup date-range filter on the timestamptz twins (M-D7): campaigns whose
+  // window overlaps [date_from, date_to].
+  if (dateFrom) query = query.gte("ends_at", dateFrom);
+  if (dateTo) query = query.lte("starts_at", dateTo);
 
   const from = (page - 1) * limit;
   const [listResult, statsResult] = await Promise.all([
@@ -99,8 +108,28 @@ export async function GET(request: Request) {
   const count = (s: string) => rows.filter((r) => r.status === s).length;
   const total = listResult.count ?? 0;
 
+  // Merge mobile telemetry (analytics_events) into the manual column values
+  // so Impressions/Clicks/CTR render live. Degrades to columns-only when the
+  // unification migration hasn't been applied yet.
+  const campaigns = (listResult.data ?? []) as Array<Record<string, unknown>>;
+  const pageIds = campaigns.map((c) => c.id as string);
+  if (pageIds.length > 0) {
+    const { data: eventStats, error: eventError } = await admin.rpc(
+      "get_campaign_event_stats",
+      { p_campaign_ids: pageIds },
+    );
+    if (!eventError && eventStats) {
+      for (const campaign of campaigns) {
+        const stats = (eventStats as Record<string, { impressions?: number; clicks?: number }>)[campaign.id as string];
+        if (!stats) continue;
+        campaign.impressions = (Number(campaign.impressions ?? 0) || 0) + (stats.impressions ?? 0);
+        campaign.clicks = (Number(campaign.clicks ?? 0) || 0) + (stats.clicks ?? 0);
+      }
+    }
+  }
+
   return NextResponse.json({
-    data: listResult.data ?? [],
+    data: campaigns,
     meta: { totalPages: Math.ceil(total / limit), total, currentPage: page },
     analytics: {
       draft: count("draft"),

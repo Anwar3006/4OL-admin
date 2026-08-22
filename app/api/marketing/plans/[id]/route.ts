@@ -1,9 +1,10 @@
 /**
  * /api/marketing/plans/[id] — plan catalog edits (`m-edit-plan`).
- * Gap Analysis Part M (M8).
+ * Gap Analysis Part M (M8), rebased onto `subscription_tiers` by the
+ * marketing unification build.
  *
- * PATCH  → marketing.edit   — price/features/active flag
- * DELETE → marketing.delete — blocked while subscribers reference the plan
+ * PATCH  → marketing.edit   — price/benefits/name/active flag
+ * DELETE → marketing.delete — blocked while subscribers reference the tier
  */
 
 import { NextResponse } from "next/server";
@@ -14,14 +15,9 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 const PATCH_SCHEMA = z.object({
   name: z.string().min(2).max(80).optional(),
   description: z.string().max(1000).nullable().optional(),
-  tier_type: z.string().min(1).max(40).optional(),
   price: z.number().nonnegative().optional(),
-  period: z
-    .enum(["free", "3days", "7days", "0.5month", "1month", "3months", "6months", "12months", "Lifetime"])
-    .optional(),
-  billing_cycle: z.enum(["monthly", "yearly", "one-time"]).optional(),
-  privileges: z.array(z.string()).optional(),
-  tier_limit: z.number().int().nonnegative().optional(),
+  duration_days: z.number().int().positive().max(3650).nullable().optional(),
+  benefits: z.array(z.string().max(200)).max(30).optional(),
   is_active: z.boolean().optional(),
 });
 
@@ -35,7 +31,7 @@ export async function GET(
   const { id } = await params;
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
-    .from("marketing_subscriptions")
+    .from("subscription_tiers")
     .select("*")
     .eq("id", id)
     .maybeSingle();
@@ -75,8 +71,8 @@ export async function PATCH(
 
   const admin = getSupabaseAdmin();
   const { data: existing, error: fetchError } = await admin
-    .from("marketing_subscriptions")
-    .select("id, name, price")
+    .from("subscription_tiers")
+    .select("id, name, price_ghs")
     .eq("id", id)
     .maybeSingle();
 
@@ -87,9 +83,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
 
+  const update: Record<string, unknown> = {};
+  if (parsed.data.name !== undefined) update.name = parsed.data.name;
+  if (parsed.data.description !== undefined) update.description = parsed.data.description;
+  if (parsed.data.price !== undefined) update.price_ghs = parsed.data.price;
+  if (parsed.data.duration_days !== undefined) update.duration_days = parsed.data.duration_days;
+  if (parsed.data.benefits !== undefined) update.benefits = parsed.data.benefits;
+  if (parsed.data.is_active !== undefined) update.is_active = parsed.data.is_active;
+
   const { data: updated, error: updateError } = await admin
-    .from("marketing_subscriptions")
-    .update(parsed.data)
+    .from("subscription_tiers")
+    .update(update)
     .eq("id", id)
     .select()
     .single();
@@ -104,12 +108,12 @@ export async function PATCH(
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
     p_action_type: "marketing_plan_updated",
-    p_target_table: "marketing_subscriptions",
+    p_target_table: "subscription_tiers",
     p_record_id: id,
     p_description: `Subscription plan "${existing.name}" updated`,
     p_severity: "info",
-    p_old_data: { price: existing.price },
-    p_new_data: parsed.data,
+    p_old_data: { price_ghs: existing.price_ghs },
+    p_new_data: update,
   });
 
   return NextResponse.json({ data: updated });
@@ -126,8 +130,8 @@ export async function DELETE(
   const admin = getSupabaseAdmin();
 
   const { data: existing, error: fetchError } = await admin
-    .from("marketing_subscriptions")
-    .select("id, name")
+    .from("subscription_tiers")
+    .select("id, name, key")
     .eq("id", id)
     .maybeSingle();
 
@@ -138,11 +142,19 @@ export async function DELETE(
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
 
+  // Core entitlement tiers are structural — the mobile app branches on them.
+  if (["free", "premium", "lifetime"].includes(existing.key)) {
+    return NextResponse.json(
+      { error: "Core tiers (Free/Premium/Lifetime) cannot be deleted — deactivate instead" },
+      { status: 409 },
+    );
+  }
+
   // Never delete a plan with live subscribers — deactivate instead.
   const { count, error: countError } = await admin
     .from("user_subscriptions")
     .select("id", { count: "exact", head: true })
-    .eq("plan_id", id)
+    .eq("tier_id", id)
     .eq("status", "active");
 
   if (countError) {
@@ -156,7 +168,7 @@ export async function DELETE(
   }
 
   const { error: deleteError } = await admin
-    .from("marketing_subscriptions")
+    .from("subscription_tiers")
     .delete()
     .eq("id", id);
 
@@ -167,7 +179,7 @@ export async function DELETE(
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
     p_action_type: "marketing_plan_deleted",
-    p_target_table: "marketing_subscriptions",
+    p_target_table: "subscription_tiers",
     p_record_id: id,
     p_description: `Subscription plan "${existing.name}" deleted`,
     p_severity: "warning",

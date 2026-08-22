@@ -1,8 +1,10 @@
 /**
  * POST /api/marketing/subscribers/remind — renewal/at-risk reminder action.
- * Gap Analysis Part M (M9): stamps last_reminded_at; actual delivery rides
- * the Notifications interconnection (notification_campaigns) when wired.
- * Accepts explicit ids or { at_risk: true } for "Send All Reminders".
+ * Gap Analysis Part M (M9), completed by the marketing unification build:
+ * stamps last_reminded_at AND writes a "marketing" notification into the
+ * shared notifications table, which the mobile inbox/bell already reads
+ * (/api/user/notifications allowlist). Accepts explicit ids or
+ * { at_risk: true } for "Send All Reminders".
  */
 
 import { NextResponse } from "next/server";
@@ -36,16 +38,50 @@ export async function POST(request: Request) {
 
   const admin = getSupabaseAdmin();
   const now = new Date().toISOString();
-  let update = admin
+
+  // Resolve the target rows first so each subscriber gets an inbox message.
+  let target = admin
     .from("user_subscriptions")
-    .update({ last_reminded_at: now, updated_at: now });
+    .select("id, user_id, subscription_tiers(name)");
+  if (parsed.data.ids) target = target.in("id", parsed.data.ids);
+  else target = target.eq("status", "at_risk");
 
-  if (parsed.data.ids) update = update.in("id", parsed.data.ids);
-  else update = update.eq("status", "at_risk");
+  const { data: rows, error: fetchError } = await target;
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  }
 
-  const { data: reminded, error } = await update.select("id");
+  const ids = (rows ?? []).map((row) => row.id);
+  if (ids.length === 0) {
+    return NextResponse.json({ ok: true, reminded: 0 });
+  }
+
+  const { data: reminded, error } = await admin
+    .from("user_subscriptions")
+    .update({ last_reminded_at: now, updated_at: now })
+    .in("id", ids)
+    .select("id");
+
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Inbox delivery: one "marketing" notification per reminded subscriber.
+  // Errors here are non-fatal — the stamp above is the source of truth.
+  const notifications = (rows ?? []).map((row) => {
+    const tier = Array.isArray(row.subscription_tiers)
+      ? row.subscription_tiers[0]
+      : row.subscription_tiers;
+    return {
+      user_id: row.user_id,
+      title: "Your 4OurLife plan renewal",
+      body: `Your ${tier?.name ?? "premium"} plan is due for renewal soon. Renew now to keep every benefit active.`,
+      type: "marketing",
+      metadata: { source: "subscriber_reminder", subscription_id: row.id },
+    };
+  });
+  if (notifications.length > 0) {
+    await admin.from("notifications").insert(notifications);
   }
 
   await admin.rpc("log_admin_activity", {
@@ -53,7 +89,7 @@ export async function POST(request: Request) {
     p_action_type: "marketing_subscribers_reminded",
     p_target_table: "user_subscriptions",
     p_record_id: null,
-    p_description: `Renewal reminders queued for ${reminded?.length ?? 0} subscriber(s)`,
+    p_description: `Renewal reminders sent to ${reminded?.length ?? 0} subscriber(s)`,
     p_severity: "info",
     p_old_data: null,
     p_new_data: { count: reminded?.length ?? 0, at_risk: parsed.data.at_risk ?? false },

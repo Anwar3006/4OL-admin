@@ -36,6 +36,9 @@ type MarketingPaginationInput = {
   limit: number;
   search?: string;
   status?: string;
+  channel?: string;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 export const MARKETING_PROFILE_QUERY_KEYS = {
@@ -64,6 +67,9 @@ export const useMarketingProfiles = ({
   limit,
   search,
   status,
+  channel,
+  dateFrom,
+  dateTo,
 }: MarketingPaginationInput) => {
   return useQuery<PaginatedResponse, Error>({
     queryKey: MARKETING_PROFILE_QUERY_KEYS.list({
@@ -71,6 +77,9 @@ export const useMarketingProfiles = ({
       limit,
       search,
       status,
+      channel,
+      dateFrom,
+      dateTo,
     }),
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -79,6 +88,9 @@ export const useMarketingProfiles = ({
       });
       if (search) params.set("search", search);
       if (status) params.set("status", status);
+      if (channel) params.set("channel", channel);
+      if (dateFrom) params.set("date_from", dateFrom);
+      if (dateTo) params.set("date_to", dateTo);
       return apiFetch<PaginatedResponse>(`/api/marketing/campaigns?${params.toString()}`);
     },
   });

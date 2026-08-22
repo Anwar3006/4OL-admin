@@ -1367,6 +1367,28 @@ Mockup scope: `admin-panel.html` sidebar Marketing sub-menu (L1617–1621: Campa
 | M-D6 | Duplicate routes cleanup | Delete `.jsx` pages; redirect `/marketing/subscriptions|discounts` to tab deep-links; keep dialogs once, reused by tabs |
 | M-D7 | `marketing_profile` date columns as text | Migrate to timestamptz in the same migration (requires data backfill — flag as breaking-ish, needs user sign-off) |
 
+### M.6 Mockup-parity depth build — addendum (Implemented 2026-08-22)
+
+> **Status: IMPLEMENTED (both repos).** The Part M retrofit shipped the API/RBAC layer; this build closed the remaining **depth** gap against `admin-panel.html` plus the mobile delivery/redemption rails. Migration `supabase/migrations/20260822_marketing_unification.sql` (admin repo, re-runnable, additive) drives everything; **all UI degrades gracefully until it is applied**.
+
+**Phase 0 — `user_subscriptions` unification.** `public.user_subscriptions` was defined three times with incompatible shapes (business / Part M / fitness-entitlement). The fitness shape (`tier_id` → `subscription_tiers`, backs `get_my_entitlement()`) is now the single source of truth; the migration upgrades whichever shape exists in-place, widens the tier key CHECK, seeds Starter/Pro/Elite, re-points `get_marketing_overview()` at tiers, and reserves `source in ('paystack','admin_grant','promo')`. `marketing_subscriptions` stays as legacy plan catalog until fully drained.
+
+**Phase 1 — Admin mockup depth.**
+- Routes rebased on unified tables: plans, subscribers (+ remind incl. `at_risk`), overview RPC, discounts (campaign-name merge).
+- `SubscriptionsTab`: 4 KpiCards (Premium Users / MRR / Retention / At-Risk), plan-card grid with POPULAR badge + edit, sub-tabs All Subscribers (plan/method/renewal-window filters + export), At Risk (banner + Send All Reminders), Billing History deferred placeholder (M-D5).
+- `DiscountsTab`: 3 KPIs, search/type/status filters, export, create/edit dialog matching `m-create-discount` (eligible plans/users, per-user limit, linked campaign), Clone/Pause/Resume/Copy-code row actions, bulk pause/delete.
+- Campaigns: telemetry columns (Impressions/Clicks/CTR), date-range + server-side channel filters, CSV export; `add-marketing-dialog` gained campaign type, budget, delivery channels, target segment.
+
+**Phase 2 — Mobile delivery rails** (branch `feat/fitness-mockup-parity`): home carousel only shows campaigns eligible for `in_app_banner`; `push_promotions_enabled` opt-in toggle in Notification Preferences; `subscriber_reminder` / `screen=premium` marketing notifications deep-link to the paywall, others to the inbox.
+
+**Phase 3 — Telemetry loop.** `analytics_events` table + `log_marketing_event(uuid, text)` SECURITY DEFINER RPC (authenticated; impression/click only) + `get_campaign_event_stats(uuid[])` (service-role). Mobile emits via `lib/marketing-telemetry.ts` — clicks in `CampaignBox`, impressions on the active carousel slide (per-session dedupe). Admin campaign/analytics routes merge the counts; RPC failures swallowed (pre-migration).
+
+**Phase 4 — Promo redemption.** `POST /api/user/redeem-promo` (JWT identity + service-role writes): validates code window/status/uses, `per_user_limit` via `discount_redemptions`, `eligible_users` (all/new/free_plan/nhis_linked), `eligible_plans`; only `free_trial`/`partner` codes grant access (percentage/fixed/bogo → 422 "applies at checkout"), superseding the prior active subscription and inserting `user_subscriptions` with `source='promo'`. Paywall (`premium.tsx`) gained plan selection + promo-code field wired to it; entitlement cache invalidates on success.
+
+**Phase 5 — Deep-link CTAs.** New CTAs `upgrade_now` / `refer_friend` in `MARKETING_CTA_OPTIONS` + `CTA_CONFIG`; mobile `cta-actions.ts` gained `upgrade` (in-app paywall via expo-router; legacy `subscribe` honors an external link when present) and `referral` (link, else native share sheet) handlers.
+
+**Remaining user-manual steps:** apply `20260822_marketing_unification.sql` to the live DB; Meta/Twilio/SendGrid creds (unchanged from Part M).
+
 ---
 
 ## Part N — FacilityScout (Implemented 2026-08-21)

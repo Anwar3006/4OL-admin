@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { marketingColumns } from "@/components/Data-Table/columns/marketingColumns";
+import { Button } from "@/components/ui/button";
+import { exportCsv } from "@/lib/export-csv";
 import {
   useBatchMarketingProfiles,
   useMarketingProfiles,
@@ -61,6 +63,8 @@ export default function AllCampaignsTab() {
   const [status, setStatus] = useState(searchParams.get("status") ?? "");
   const [type, setType] = useState("");
   const [channel, setChannel] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // Follow header-button deep links while the tab stays mounted.
   useEffect(() => {
@@ -79,16 +83,15 @@ export default function AllCampaignsTab() {
     limit: pageSize,
     search: search || undefined,
     status: status || undefined,
+    channel: channel || undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
   const campaigns = (data?.data || []).filter(
     (campaign) =>
       !type || campaign.campaign_type === type || campaign.marketingType === type,
   );
-  const filtered = channel
-    ? campaigns.filter((campaign) =>
-        (campaign.channels ?? []).includes(channel),
-      )
-    : campaigns;
+  const filtered = campaigns;
 
   const totalPages = data?.meta?.totalPages || 1;
   const { open: openView } = useViewMarketingDialog();
@@ -97,6 +100,34 @@ export default function AllCampaignsTab() {
   const runBatch = (action: "launch" | "pause" | "end") =>
     (rows: TMarketingProfileOutput[]) =>
       batch.mutate({ ids: rows.map((row) => row.id), action });
+
+  const handleExport = () => {
+    exportCsv(
+      `campaigns-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        "Headline",
+        "Type",
+        "Status",
+        "Target",
+        "Start",
+        "End",
+        "Budget (GHS)",
+        "Impressions",
+        "Clicks",
+      ],
+      filtered.map((row) => [
+        row.headline,
+        row.campaign_type ?? row.marketingType,
+        row.status,
+        row.target_segment ?? "",
+        row.startDate,
+        row.endDate,
+        row.budget ?? "",
+        row.impressions ?? 0,
+        row.clicks ?? 0,
+      ]),
+    );
+  };
 
   const cardConfig: MobileCardConfig<TMarketingProfileOutput> = {
     header: {
@@ -165,7 +196,10 @@ export default function AllCampaignsTab() {
         <select
           className={selectClass}
           value={channel}
-          onChange={(e) => setChannel(e.target.value)}
+          onChange={(e) => {
+            setChannel(e.target.value);
+            onPageChange(1);
+          }}
         >
           {CHANNEL_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -173,6 +207,34 @@ export default function AllCampaignsTab() {
             </option>
           ))}
         </select>
+        <input
+          type="date"
+          aria-label="From date"
+          className={selectClass}
+          value={dateFrom}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            onPageChange(1);
+          }}
+        />
+        <input
+          type="date"
+          aria-label="To date"
+          className={selectClass}
+          value={dateTo}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            onPageChange(1);
+          }}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest"
+        >
+          📥 Export
+        </Button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">

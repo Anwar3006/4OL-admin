@@ -1,10 +1,13 @@
 /**
- * /api/marketing/plans — subscription plan catalog (`marketing_subscriptions`).
- * Gap Analysis Part M (M8): plan cards + `m-edit-plan` + Create Plan.
- * Subscriber counts aggregate over user_subscriptions.
+ * /api/marketing/plans — subscription plan catalog.
+ * Gap Analysis Part M (M8), rebased by the marketing unification build:
+ * plans are `subscription_tiers` — the SAME catalog the mobile paywall
+ * (get_subscription_tiers) and entitlement (get_my_entitlement) consume, so
+ * anything granted here unlocks premium on the consumer app instantly.
+ * The legacy `marketing_subscriptions` table is no longer read.
  *
- * GET  → marketing.view  — plans with subscriber counts
- * POST → marketing.edit  — create plan (m-edit-plan writes catalog)
+ * GET  → marketing.view  — tiers with subscriber counts
+ * POST → marketing.edit  — create tier (m-edit-plan / Create Plan)
  */
 
 import { NextResponse } from "next/server";
@@ -12,43 +15,34 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const PERIODS = [
-  "free",
-  "3days",
-  "7days",
-  "0.5month",
-  "1month",
-  "3months",
-  "6months",
-  "12months",
-  "Lifetime",
-];
-const BILLING_CYCLES = ["monthly", "yearly", "one-time"];
-
 const CREATE_SCHEMA = z.object({
   name: z.string().min(2).max(80),
   description: z.string().max(1000).optional(),
-  tier_type: z.string().min(1).max(40),
   price: z.number().nonnegative().default(0),
-  period: z.enum(PERIODS as [string, ...string[]]).default("1month"),
-  billing_cycle: z.enum(BILLING_CYCLES as [string, ...string[]]).default("monthly"),
-  privileges: z.array(z.string()).default([]),
-  tier_limit: z.number().int().nonnegative().default(0),
+  duration_days: z.number().int().positive().max(3650).nullable().optional(),
+  benefits: z.array(z.string().max(200)).max(30).default([]),
   is_active: z.boolean().default(true),
 });
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
 
 export async function GET() {
   const auth = await requireAdminApiUser("marketing.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
-  const [plansResult, subsResult] = await Promise.all([
-    admin.from("marketing_subscriptions").select("*").order("price", { ascending: true }),
-    admin.from("user_subscriptions").select("plan_id, status"),
+  const [tiersResult, subsResult] = await Promise.all([
+    admin.from("subscription_tiers").select("*").order("display_order", { ascending: true }),
+    admin.from("user_subscriptions").select("tier_id, status"),
   ]);
 
-  if (plansResult.error) {
-    return NextResponse.json({ error: plansResult.error.message }, { status: 500 });
+  if (tiersResult.error) {
+    return NextResponse.json({ error: tiersResult.error.message }, { status: 500 });
   }
   if (subsResult.error) {
     return NextResponse.json({ error: subsResult.error.message }, { status: 500 });
@@ -56,16 +50,17 @@ export async function GET() {
 
   const counts = new Map<string, { total: number; active: number }>();
   for (const row of subsResult.data ?? []) {
-    const entry = counts.get(row.plan_id) ?? { total: 0, active: 0 };
+    if (!row.tier_id) continue;
+    const entry = counts.get(row.tier_id) ?? { total: 0, active: 0 };
     entry.total += 1;
     if (row.status === "active") entry.active += 1;
-    counts.set(row.plan_id, entry);
+    counts.set(row.tier_id, entry);
   }
 
-  const data = (plansResult.data ?? []).map((plan) => ({
-    ...plan,
-    subscribers: counts.get(plan.id)?.total ?? 0,
-    active_subscribers: counts.get(plan.id)?.active ?? 0,
+  const data = (tiersResult.data ?? []).map((tier) => ({
+    ...tier,
+    subscribers: counts.get(tier.id)?.total ?? 0,
+    active_subscribers: counts.get(tier.id)?.active ?? 0,
   }));
 
   return NextResponse.json({ data });
@@ -90,10 +85,27 @@ export async function POST(request: Request) {
     );
   }
 
+  const key = slugify(parsed.data.name);
+  if (!/^[a-z][a-z0-9_]{0,39}$/.test(key)) {
+    return NextResponse.json(
+      { error: "Plan name must contain letters or digits" },
+      { status: 400 },
+    );
+  }
+
   const admin = getSupabaseAdmin();
   const { data: created, error } = await admin
-    .from("marketing_subscriptions")
-    .insert({ ...parsed.data, created_by: auth.user.id })
+    .from("subscription_tiers")
+    .insert({
+      key,
+      name: parsed.data.name,
+      description: parsed.data.description ?? null,
+      price_ghs: parsed.data.price,
+      duration_days: parsed.data.duration_days ?? null,
+      benefits: parsed.data.benefits,
+      is_active: parsed.data.is_active,
+      display_order: 9,
+    })
     .select()
     .single();
 
@@ -108,12 +120,12 @@ export async function POST(request: Request) {
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
     p_action_type: "marketing_plan_created",
-    p_target_table: "marketing_subscriptions",
+    p_target_table: "subscription_tiers",
     p_record_id: created.id,
     p_description: `Subscription plan "${created.name}" created`,
     p_severity: "info",
     p_old_data: null,
-    p_new_data: { name: created.name, price: created.price },
+    p_new_data: { name: created.name, price_ghs: created.price_ghs },
   });
 
   return NextResponse.json({ data: created }, { status: 201 });

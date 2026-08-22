@@ -81,8 +81,29 @@ export async function GET(request: Request) {
   const pct = active.filter((d) => d.discount_type === "percentage");
   const total = listResult.count ?? 0;
 
+  // Merge linked campaign names (campaign_id FK only exists after the 0821
+  // marketing extension — degrade gracefully when the migration is pending).
+  const rows = (listResult.data ?? []) as Array<Record<string, unknown>>;
+  const campaignIds = [
+    ...new Set(
+      rows
+        .map((row) => row.campaign_id)
+        .filter((id): id is string => typeof id === "string" && id.length > 0),
+    ),
+  ];
+  if (campaignIds.length > 0) {
+    const { data: campaigns } = await admin
+      .from("marketing_profile")
+      .select("id, name")
+      .in("id", campaignIds);
+    const nameById = new Map((campaigns ?? []).map((c) => [c.id, c.name]));
+    for (const row of rows) {
+      row.campaign_name = nameById.get(row.campaign_id as string) ?? null;
+    }
+  }
+
   return NextResponse.json({
-    data: listResult.data ?? [],
+    data: rows,
     meta: { totalPages: Math.ceil(total / limit), total, currentPage: page },
     analytics: {
       active_codes: active.length,

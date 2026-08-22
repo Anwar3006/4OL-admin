@@ -121,34 +121,14 @@ end;
 create index if not exists idx_marketing_discounts_status
   on public.marketing_discounts (status);
 
--- 3. User subscriptions (M-D5) -------------------------------------------------------
--- Subscriber-level rows: which user holds which plan. marketing_subscriptions
--- remains the plan catalog. Billing history / MRR stays deferred (K-D7) until
--- a transactions source exists.
-create table if not exists public.user_subscriptions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.user_profiles (user_id) on delete cascade,
-  plan_id uuid not null references public.marketing_subscriptions (id),
-  status text not null default 'active'
-    check (status in ('active', 'at_risk', 'cancelled', 'expired')),
-  subscribed_at timestamptz not null default now(),
-  next_renewal_at timestamptz,
-  payment_method text
-    check (payment_method in ('mtn_momo', 'vodafone_cash', 'paystack_card', 'other')),
-  auto_renew boolean not null default true,
-  risk_reason text,
-  last_reminded_at timestamptz,
-  cancelled_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create index if not exists idx_user_subscriptions_user
-  on public.user_subscriptions (user_id);
-create index if not exists idx_user_subscriptions_plan
-  on public.user_subscriptions (plan_id);
-create index if not exists idx_user_subscriptions_status
-  on public.user_subscriptions (status);
+-- 3. User subscriptions --------------------------------------------------------------
+-- MOVED: the subscriber table is created/reconciled by
+-- 20260822_marketing_unification.sql, which upgrades whichever
+-- user_subscriptions shape exists (business / fitness / fresh DB) into the
+-- single unified consumer-subscriptions table (tier_id -> subscription_tiers).
+-- This migration no longer defines its own competing shape — three
+-- CREATE TABLE IF NOT EXISTS definitions of the same table silently
+-- disabled each other depending on apply order.
 
 -- 4. KPI/analytics RPC ----------------------------------------------------------------
 create or replace function public.get_marketing_overview()

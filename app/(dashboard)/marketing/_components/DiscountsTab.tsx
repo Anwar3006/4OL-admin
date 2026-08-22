@@ -1,74 +1,229 @@
 "use client";
 
-import React from "react";
+/**
+ * Marketing → Discounts tab — mockup parity build (KPI row, search + type +
+ * status filters, Export, Create Code, pause/clone/copy/delete row actions,
+ * bulk pause/delete). Marketing unification build: rows come from
+ * /api/marketing/discounts (marketing_discounts + campaign name merge).
+ */
+
+import React, { useMemo, useState } from "react";
+import { Tag, BarChart3, Percent } from "lucide-react";
+import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { discountColumns } from "@/components/Data-Table/columns/discountColumns";
-import { useMarketingDiscounts } from "@/hooks/supabase-calls/useDiscounts";
+import { createDiscountColumns } from "@/components/Data-Table/columns/discountColumns";
+import { Button } from "@/components/ui/button";
+import DiscountDialog from "./discount-dialog";
+import { exportCsv } from "@/lib/export-csv";
 import { usePagination } from "@/hooks/use-pagination";
-import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
+import { toast } from "sonner";
+import {
+  useMarketingDiscounts,
+  useUpdateMarketingDiscount,
+  useDeleteMarketingDiscount,
+} from "@/hooks/supabase-calls/useDiscounts";
+import { TDiscountRow } from "@/schemas/marketing-discount.schema";
+
+const FILTER_SELECT_CLASS =
+  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+
+const TYPE_FILTER_OPTIONS = [
+  { value: "", label: "All types" },
+  { value: "percentage", label: "% Off" },
+  { value: "fixed", label: "Fixed" },
+  { value: "free_trial", label: "Free Trial" },
+  { value: "partner", label: "Partner" },
+];
+
+const STATUS_FILTER_OPTIONS = [
+  { value: "", label: "All statuses" },
+  { value: "active", label: "Active" },
+  { value: "expired", label: "Expired" },
+  { value: "scheduled", label: "Scheduled" },
+  { value: "paused", label: "Paused" },
+];
 
 export default function DiscountsTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
     usePagination({ key: "discounts_page" });
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dialog, setDialog] = useState<{ open: boolean; discount: TDiscountRow | null }>({
+    open: false,
+    discount: null,
+  });
+
+  const updateMutation = useUpdateMarketingDiscount();
+  const deleteMutation = useDeleteMarketingDiscount();
+
   const { data, isLoading, isError, error } = useMarketingDiscounts({
     page,
     limit: pageSize,
+    search: search || undefined,
+    type: typeFilter || undefined,
+    status: statusFilter || undefined,
   });
-  const discounts = data?.data || [];
 
+  const discounts = data?.data ?? [];
+  const analytics = data?.analytics;
   const totalPages = data?.meta?.totalPages || 1;
 
-  const cardConfig: MobileCardConfig<any> = {
-    header: {
-      title: (data) => data.code,
-      subtitle: (data) => data.description,
-      badge: (data) => (
-        <span
-          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-            data.status === "active"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-              : "bg-red-50 text-red-700 border-red-100"
-          }`}
-        >
-          {data.status || "active"}
-        </span>
-      ),
-    },
-    fields: [
-      {
-        id: "value",
-        label: "Value",
-        render: (data) =>
-          `${data.discount_value}${data.discount_type === "percentage" ? "%" : " OFF"}`,
-      },
-    ],
-    actions: [
-      { label: "Edit", onClick: (data) => console.log("Edit", data.id) },
-    ],
+  const columns = useMemo(
+    () =>
+      createDiscountColumns({
+        onEdit: (discount) => setDialog({ open: true, discount }),
+      }),
+    [],
+  );
+
+  const handleExport = () => {
+    exportCsv(
+      `discounts-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        "Code",
+        "Name",
+        "Type",
+        "Value",
+        "Eligible Users",
+        "Uses",
+        "Limit",
+        "Starts",
+        "Expires",
+        "Campaign",
+        "Status",
+      ],
+      discounts.map((row) => [
+        row.code,
+        row.name,
+        row.discount_type,
+        row.discount_value,
+        row.eligible_users ?? "all",
+        row.current_uses ?? 0,
+        row.max_uses ?? "",
+        row.valid_from,
+        row.valid_until ?? "",
+        row.campaign_name ?? "",
+        row.status ?? "active",
+      ]),
+    );
+  };
+
+  const handleBulkPause = async (rows: TDiscountRow[]) => {
+    for (const row of rows) {
+      await updateMutation.mutateAsync({ id: row.id, data: { status: "paused" } });
+    }
+    toast.success(`${rows.length} code(s) paused`);
+  };
+
+  const handleBulkDelete = async (rows: TDiscountRow[]) => {
+    if (!window.confirm(`Delete ${rows.length} discount code(s)? This cannot be undone.`)) {
+      return;
+    }
+    for (const row of rows) {
+      await deleteMutation.mutateAsync(row.id);
+    }
   };
 
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
-      <div className="flex flex-wrap gap-2 items-center">
-        <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-          placeholder="🔍 Search promo codes..."
+      {/* ── KPI row ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <KpiCard
+          icon={<Tag className="size-4" />}
+          label="Active Codes"
+          value={analytics?.active_codes ?? 0}
+          variant="green"
+          isLoading={isLoading}
+          isError={isError}
         />
-        <button className="h-9 px-4 rounded-xl bg-slate-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-slate-800 transition-all">
-          + Create Code
-        </button>
+        <KpiCard
+          icon={<BarChart3 className="size-4" />}
+          label="Total Uses"
+          value={analytics?.total_uses ?? 0}
+          variant="blue"
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <KpiCard
+          icon={<Percent className="size-4" />}
+          label="Avg Discount"
+          value={`${analytics?.avg_discount_pct ?? 0}%`}
+          variant="amber"
+          isLoading={isLoading}
+          isError={isError}
+        />
       </div>
 
+      {/* ── Filter bar ── */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          placeholder="🔍 Search promo codes..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            onPageChange(1);
+          }}
+        />
+        <select
+          className={FILTER_SELECT_CLASS}
+          value={typeFilter}
+          onChange={(e) => {
+            setTypeFilter(e.target.value);
+            onPageChange(1);
+          }}
+        >
+          {TYPE_FILTER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <select
+          className={FILTER_SELECT_CLASS}
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            onPageChange(1);
+          }}
+        >
+          {STATUS_FILTER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest"
+        >
+          📥 Export
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => setDialog({ open: true, discount: null })}
+          className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          + Create Code
+        </Button>
+      </div>
+
+      {/* ── Table ── */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <DataTable
-          columns={discountColumns}
+          columns={columns}
           data={discounts}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          onRowClick={(row) => console.log("Row Click", row.id)}
-          onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
-          cardConfig={cardConfig}
+          bulkActions={[
+            { label: "⏸️ Pause Selected", onClick: (rows) => void handleBulkPause(rows) },
+          ]}
+          onDeleteSelected={(rows) => void handleBulkDelete(rows)}
+          deleteLabel="🗑️ Delete Selected"
           pagination={{
             currentPage: page,
             totalPages: totalPages,
@@ -82,6 +237,12 @@ export default function DiscountsTab() {
           }}
         />
       </div>
+
+      <DiscountDialog
+        open={dialog.open}
+        onOpenChange={(open) => setDialog((prev) => ({ ...prev, open }))}
+        discount={dialog.discount}
+      />
     </div>
   );
 }

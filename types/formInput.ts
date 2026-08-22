@@ -522,6 +522,8 @@ export const MARKETING_CTA_OPTIONS = [
   { value: "sign_up", label: "Sign Up" },
   { value: "subscribe", label: "Subscribe" },
   { value: "use_app", label: "Use App" },
+  { value: "upgrade_now", label: "Upgrade Now" },
+  { value: "refer_friend", label: "Refer a Friend" },
   { value: "view_event", label: "View Event" },
   { value: "watch_more", label: "Watch More" },
 ];
@@ -640,6 +642,16 @@ export const CTA_CONFIG = {
     label: "Page Link",
     type: "single",
     placeholder: "https://subscribe.link",
+  }, //
+  upgrade_now: {
+    label: "Link (optional — leave blank to open the in-app Premium paywall)",
+    type: "single",
+    placeholder: "Leave blank for in-app Premium paywall",
+  }, //
+  refer_friend: {
+    label: "Referral Link (optional — leave blank to use the native share sheet)",
+    type: "single",
+    placeholder: "Leave blank to share via device share sheet",
   }, //
   use_app: {
     label: "App Links",
