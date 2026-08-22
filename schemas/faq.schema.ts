@@ -11,5 +11,7 @@ export type TFAQInput = z.infer<typeof faqInputSchema>;
 const faqOutputSchema = faqInputSchema.extend({
   id: z.string(),
   createdAt: z.date(),
+  // Column added by the Part AI migration; rows created before it carry null.
+  status: z.string().optional(),
 });
 export type TFAQOutput = z.infer<typeof faqOutputSchema>;

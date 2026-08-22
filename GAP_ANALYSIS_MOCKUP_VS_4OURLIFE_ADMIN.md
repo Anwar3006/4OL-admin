@@ -2405,6 +2405,34 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AI — My Account Platform (MA-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: the admin FAQ CMS (`/faq` page, `useFAQ*` hooks, platform-overview metrics) referenced ghost `faqs` / `faq_categories` tables never persisted by any migration; the mobile Help Center shipped 4 hardcoded FAQs and hardcoded support numbers; the mobile share link and support email were baked into 3 screens; Delete Account submitted an empty reason and force-logged the user out, so requests could never be revisited or withdrawn; `user_profiles` had no consent columns; My Account was a flat 10-item list mixing identity, preferences, security and destructive actions with no version stamp and no subscription entry point; Favorites only showed Saved content, never Liked.*
+
+### What was built
+
+1. **Migration `20260823_my_account_platform.sql`** (additive, re-runnable): captures the ghost `faq_categories` + `faqs` tables (status, view/helpful counters, `updated_at` trigger) with RLS exposing only published rows; public SECURITY DEFINER RPCs `get_public_faqs()` and `get_public_app_config()` (granted to anon/authenticated, revoked from public); `platform_settings` gains `support_whatsapp` + `share_url` with a seeded `global` row; `user_profiles` gains `marketing_consent` / `research_consent` (default false).
+2. **Admin:** `/faq` page re-backed by the live table — server-side debounced search, category filter, CSV export, edit/delete wired to the CMS hooks, status surfaced on rows and the accordion; `faq.schema.ts` output type extended with `status`; Settings > General gained Support WhatsApp + Share App URL fields, `/api/settings` validates and persists both; new public `GET /api/user/app-config` (safe fields only, baked-in fallbacks); `/api/user/delete-account-request` gained `GET` (caller's latest request) and `PATCH {action:"cancel"}` (only `pending_review` / `in_verification` are cancellable — the admin owns the rest of the lifecycle).
+3. **Mobile (4OurLife-MobileApp):** new `hooks/use-my-account.ts` (`useAppConfig`, `usePublicFaqs`, `useDeleteAccountRequest` / `useCancelDeleteRequest`, `useConsentSettings` / `useUpdateConsent` — all degrade gracefully pre-migration). My Account hub regrouped into Account / Preferences / Security & Privacy / Support & About sections with an app-version footer (MA-D1). Help Center renders CMS FAQs with category chips (built-in list stays as fallback) and dials/email/WhatsApp from app-config (MA-D2/D5). Delete Account: reason chips + optional detail stored on the row, in-flight status banner on revisit, in-app cancel, and the user now stays signed in after submitting (MA-D3). New screens: **Security Center** (password, biometrics, Danger Zone), **Privacy & Data** (marketing/research consent toggles, legal docs, data-rights copy), **About** (brand, version, share/rate/contact from app-config), **Subscription** (entitlement card + tier benefits + upgrade deep link to the fitness premium paywall). Favorites gained a third **Liked** segment alongside Facilities/Saved; Settings share/contact handlers now read app-config.
+
+### Decisions applied (MA-D1–MA-D8 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| MA-D1 | Hub layout | grouped sections + header + version footer |
+| MA-D2 | Help Center FAQs | live `get_public_faqs()` with built-in fallback |
+| MA-D3 | Delete flow | reason captured, status banner, in-app cancel, stay signed in |
+| MA-D4 | Security Center | password + biometrics + Danger Zone hub |
+| MA-D5 | Support contacts/share | `platform_settings` via app-config RPC/route, no hardcodes |
+| MA-D6 | Privacy & Data hub | consent columns + toggles + legal docs + data rights |
+| MA-D7 | About screen | brand/version/share/rate/contact |
+| MA-D8 | Subscription + Liked | entitlement overview screen; Favorites Liked segment |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260823_my_account_platform.sql` — until then: Help Center shows its built-in FAQs, contacts fall back to baked-in defaults, consent toggles render but do not persist.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

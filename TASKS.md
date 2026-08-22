@@ -2483,3 +2483,26 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [ ] Mobile rollout (future update, `feat/fitness-mockup-parity`):
       FindMedication screens (form/results/detail/history) consuming the
       same API surface.
+
+## My Account platform build (Part AI, 2026-08-22)
+
+- [x] Confirm decisions MA-D1–MA-D8 (user, 2026-08-22 — "I approve the
+      suggested decision set, proceed with full implementation").
+- [x] Migration `20260823_my_account_platform.sql`: ghost `faq_categories` +
+      `faqs` capture (RLS: published-only public read), public SECURITY
+      DEFINER RPCs `get_public_faqs()` + `get_public_app_config()`,
+      `platform_settings.support_whatsapp` / `share_url` + seeded global row,
+      `user_profiles.marketing_consent` / `research_consent`.
+- [x] Admin: `/faq` CMS wiring (live search/filter/export/edit/delete +
+      status), Settings support-contacts fields + `/api/settings` schema,
+      public `GET /api/user/app-config`, delete-account-request `GET` +
+      `PATCH cancel` (pending_review / in_verification only).
+- [x] Mobile (4OurLife-MobileApp): `hooks/use-my-account.ts`; grouped My
+      Account hub + version footer (MA-D1); DeleteAccount reason + status
+      banner + cancel + stay-signed-in (MA-D3); Security Center (MA-D4),
+      Privacy & Data consent hub (MA-D6), About (MA-D7), Subscription (MA-D8);
+      Help Center fetched FAQs/contacts (MA-D2/D5); Favorites Liked segment;
+      Settings share/contact via app-config (MA-D5).
+- [x] Docs: GAP_ANALYSIS Part AI section.
+- [ ] Apply `20260823_my_account_platform.sql` to the live Supabase DB
+      (user-manual; all mobile features degrade gracefully until applied).

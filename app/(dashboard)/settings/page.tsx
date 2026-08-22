@@ -45,6 +45,8 @@ type PlatformSettings = {
   platform_name: string;
   support_email: string | null;
   support_phone: string | null;
+  support_whatsapp: string | null;
+  share_url: string | null;
   default_language: "en" | "twi" | "ga";
 };
 
@@ -500,6 +502,30 @@ function GeneralSettings({
             onChange={(event) =>
               setSettings((current) =>
                 current ? { ...current, support_phone: event.target.value } : current,
+              )
+            }
+          />
+        </Field>
+        <Field label="Support WhatsApp">
+          <Input
+            placeholder="+233 55 000 0000"
+            value={settings?.support_whatsapp || ""}
+            disabled={loading || !settings}
+            onChange={(event) =>
+              setSettings((current) =>
+                current ? { ...current, support_whatsapp: event.target.value } : current,
+              )
+            }
+          />
+        </Field>
+        <Field label="Share App URL">
+          <Input
+            placeholder="https://4ourlife.com"
+            value={settings?.share_url || ""}
+            disabled={loading || !settings}
+            onChange={(event) =>
+              setSettings((current) =>
+                current ? { ...current, share_url: event.target.value } : current,
               )
             }
           />

@@ -72,3 +72,103 @@ export async function POST(request) {
 
   return NextResponse.json({ success: true, id: data.id });
 }
+
+/**
+ * GET /api/user/delete-account-request
+ *
+ * Gap Analysis Part AI (MA-D3): the mobile Delete Account screen needs to
+ * show the status of an in-flight request on revisit (pending banner +
+ * cancel option). Returns the caller's most recent request, or null.
+ */
+export async function GET(request) {
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.replace("Bearer ", "").trim();
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data: { user }, error: authError } = await admin.auth.getUser(token);
+  if (authError || !user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data, error } = await admin
+    .from("delete_account_requests")
+    .select("id, status, reason, created_at, updated_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[delete-account-request] GET failed:", error.message);
+    return NextResponse.json({ error: "Failed to load request status" }, { status: 500 });
+  }
+
+  return NextResponse.json({ request: data ?? null });
+}
+
+/**
+ * PATCH /api/user/delete-account-request
+ *
+ * Gap Analysis Part AI (MA-D3): lets the caller cancel their own request
+ * while it is still in flight. Only non-terminal statuses are cancellable;
+ * grace_period/completed requests are owned by the admin lifecycle and
+ * cannot be withdrawn from the app.
+ *
+ * Body: { action: "cancel" }
+ */
+export async function PATCH(request) {
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.replace("Bearer ", "").trim();
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data: { user }, error: authError } = await admin.auth.getUser(token);
+  if (authError || !user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  if (body?.action !== "cancel") {
+    return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
+  }
+
+  const { data: existing, error: findError } = await admin
+    .from("delete_account_requests")
+    .select("id, status")
+    .eq("user_id", user.id)
+    .in("status", ["pending_review", "in_verification"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (findError) {
+    console.error("[delete-account-request] cancel lookup failed:", findError.message);
+    return NextResponse.json({ error: "Failed to cancel request" }, { status: 500 });
+  }
+
+  if (!existing) {
+    return NextResponse.json(
+      { error: "No cancellable deletion request found" },
+      { status: 404 },
+    );
+  }
+
+  const { error: updateError } = await admin
+    .from("delete_account_requests")
+    .update({ status: "cancelled" })
+    .eq("id", existing.id);
+
+  if (updateError) {
+    console.error("[delete-account-request] cancel failed:", updateError.message);
+    return NextResponse.json({ error: "Failed to cancel request" }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, id: existing.id, status: "cancelled" });
+}
