@@ -13,7 +13,9 @@ describe("permission catalog integrity", () => {
     expect(new Set(PERMISSION_KEYS).size).toBe(PERMISSION_KEYS.length);
     for (const def of PERMISSION_CATALOG) {
       expect(def.key).toBe(`${def.resource}.${def.action}`);
-      expect(def.resource).toMatch(/^[a-z]+$/);
+      // Resources allow underscores (e.g. fitness_notifications) but no
+      // dots, so key = resource.action stays unambiguous.
+      expect(def.resource).toMatch(/^[a-z_]+$/);
       expect(def.action).toMatch(/^[a-z_]+$/);
       expect(def.description.length).toBeGreaterThan(0);
     }
