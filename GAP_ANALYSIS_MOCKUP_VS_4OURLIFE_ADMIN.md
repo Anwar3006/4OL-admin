@@ -2160,6 +2160,41 @@ The mockup's approach (global `!important` overrides) doesn't translate to Tailw
 
 ---
 
+## Part AA - Transactions Menu (`page-transactions`, mockup L8913-9266) (✅ Implemented 2026-08-22)
+
+**Mockup scope:** header date-range + Export Report; 4 KPI cards (Total Transactions / Revenue / Customers / Gross Profit); Revenue Analytics area chart + Payment Methods donut; main transactions table with Type filter (Subscription Fee / IBP Service Fee / Product Sale / Marketing Fee / Refund / Payout), More filter (Failed Only / Pending Only / High Value >₵500), Import/Export and user#xxxx vs IBP-xxxxx/FAC-xxxxx entity split; 6 sub-tabs — Service Charge % (SA-only rates editor), Subscriptions (consumer KPIs: Renewals/New/Upgrades/Churn), Failed (attempts + Notify/Retry), Refunds (approval workflow + New Refund), Tax & VAT (GRA 17.5% consumption tax + 25% income tax, TIN, quarterly filings), Expenses (SA-only cost buckets + P&L).
+
+**Pre-build codebase state:** the 7-tab shell + `?tab=` URL sync existed but every surface was hardcoded mock data except SubscriptionsTab (which read legacy facility subscriptions), and **zero** `/api/transactions` routes existed. RBAC keys `transactions.view/manage/export` were already in the catalog (finance_admin holds all three).
+
+### What was built
+
+1. **Unified ledger** — migration `20260822_transactions_ledger.sql` (additive, re-runnable): `transactions` (category, direction, amount, status, payer_class **user|business**, payer_user_id/payer_business_id, entity_kind **consumer|ibp|facility**, plan_key, txn_type_detail, source/source_id, fee tracking), `refunds` (pending_approval workflow), `service_charge_rates` (seeded with the 6 mockup rates), `tax_filings` + `finance_config` (GRA TIN), `operational_expenses`, `finance_visibility_config` (10 metric keys), RPC `get_transactions_overview()` (service-role), new catalog keys `transactions.expenses` + `transactions.rates` (no role grants ⇒ super-admin-only), and idempotent backfill from `user_subscriptions` (non-free tiers) + `escrow_transactions` (product sales + platform fees).
+2. **10 RBAC-guarded routes** under `/api/transactions*`: ledger list (segment/category/status/date/high-value/search filters), overview (with server-side metric masking), row actions (retry/dispute/cancel), refund request + refund queue + approve/reject (approve is SA-only and writes the outgoing ledger row), rates GET/PUT (PUT SA-only), tax summary + filing updates (remit SA-only), expenses GET/POST/PUT (hard SA-only), visibility config GET/PUT (SA-only). All audit-logged to `activity_logs`.
+3. **Hook layer** — `hooks/supabase-calls/useTransactions.ts`: typed list/overview/refund/rate/tax/expense/visibility queries + mutations with sonner toasts and query invalidation.
+4. **UI depth (all 7 tabs re-based onto real data):** KPI cards, revenue area chart and payment-method donut now render from the overview RPC with `🔒 Hidden by Super Admin` empty states; Recent tab gains the Business-vs-User segmented control, Type/More filters, debounced search, server pagination, CSV export and row actions (View dialog / Retry / Refund / Dispute); Service Charge tab wires the SA-only rates editor + fee revenue; Subscriptions tab shows consumer subscription payments with Renewals/New/Upgrades/Churn KPIs + plan/type filters; Failed tab shows the at-risk banner + attempts/Notify/Retry; Refunds tab implements the approval queue + New Refund dialog; Tax & VAT renders ledger-computed GRA liability + quarterly filings + CSV report; Expenses tab is SA-only with cost-bucket bars, P&L, add-expense dialog and the Metric Visibility governance dialog.
+
+### Business vs User filtering (requirement)
+`payer_class` (user|business) + `entity_kind` (consumer|ibp|facility) are indexed ledger columns. The Recent tab's segmented control (`All / 👤 Users / 🏢 Businesses`) drives `?segment=` server-side; KPIs, charts and exports segment automatically because they aggregate the same ledger. Deep links supported: `/api/transactions?payer=<uuid>` plus `?segment=` allow Users/IBP/Facilities menus to jump straight into a payer's money trail.
+
+### Super-Admin metric visibility governance (requirement)
+`finance_visibility_config` stores per-metric toggles; the SA manages them via the **🔐 Metric Visibility** dialog (Expenses tab). Enforcement is **server-side**: `/api/transactions/overview` nulls masked fields and flags `<metric>_hidden` for non-SA callers; `/api/transactions/tax` masks the liability summary the same way. Expenses/P&L/rate editing are hard-SA (permission keys with zero role grants), so they can never leak regardless of toggles.
+
+### Decisions applied (recommended defaults)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| AA-D1 | Ledger storage | New `transactions` table (not a view) — supports refunds/fees/status lifecycle |
+| AA-D2 | Paystack | Ledger accepts `source='paystack'` now; live gateway integration deferred |
+| AA-D3 | Expenses source | Manual SA entry (seeded May-2026 buckets matching the mockup) |
+| AA-D4 | GRA figures | Computed from the ledger (17.5% on subscriptions, 25% on service fees); filings are manual records |
+| AA-D5 | Never-exposable | Expenses, P&L, net profit and rate editing are hard super-admin surfaces |
+| AA-D6 | Import | CSV export shipped; CSV *import* deferred (needs column-mapping dialog) |
+
+### Manual step for the user
+- Apply `supabase/migrations/20260822_transactions_ledger.sql` to the live Supabase DB. All UI degrades gracefully pre-migration (empty states / 403-locked SA tabs).
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

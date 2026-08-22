@@ -1,13 +1,46 @@
+"use client";
+
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
+import { useTransactionsOverview } from "@/hooks/supabase-calls/useTransactions";
+
+const HIDDEN_VALUE = "🔒 Hidden";
 
 export default function TransactionStats() {
+  const { data } = useTransactionsOverview();
+  const kpis = data?.overview?.kpis;
+
+  const formatMoney = (value: number | null | undefined) =>
+    value === null || value === undefined ? "—" : `₵${Number(value).toLocaleString()}`;
+  const formatCount = (value: number | null | undefined) =>
+    value === null || value === undefined ? "—" : Number(value).toLocaleString();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-      <KpiCard icon="💳" label="Total Transactions" value="3,841" variant="blue" delta="+18.2% vs last month" deltaType="up" />
-      <KpiCard icon="₵" label="Total Revenue" value="₵142,800" variant="green" delta="+11.4% vs last month" deltaType="up" />
-      <KpiCard icon="👥" label="Total Customers" value="12,480" variant="purple" delta="+8.4% vs last month" deltaType="up" />
-      <KpiCard icon="📈" label="Gross Profit" value="₵127,540" variant="teal" delta="+18.2% vs last month" deltaType="up" />
+      <KpiCard
+        icon="💳"
+        label="Total Transactions"
+        value={kpis?.total_transactions_hidden ? HIDDEN_VALUE : formatCount(kpis?.total_transactions)}
+        variant="blue"
+      />
+      <KpiCard
+        icon="₵"
+        label="Total Revenue"
+        value={kpis?.total_revenue_hidden ? HIDDEN_VALUE : formatMoney(kpis?.total_revenue)}
+        variant="green"
+      />
+      <KpiCard
+        icon="👥"
+        label="Total Customers"
+        value={kpis?.total_customers_hidden ? HIDDEN_VALUE : formatCount(kpis?.total_customers)}
+        variant="purple"
+      />
+      <KpiCard
+        icon="📈"
+        label="Gross Profit"
+        value={kpis?.gross_profit_hidden ? HIDDEN_VALUE : formatMoney(kpis?.gross_profit)}
+        variant="teal"
+      />
     </div>
   );
 }

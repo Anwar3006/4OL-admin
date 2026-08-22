@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,33 +14,60 @@ import FailedTransactionsTab from "./_components/FailedTransactionsTab";
 import RefundsTab from "./_components/RefundsTab";
 import TaxVATTab from "./_components/TaxVATTab";
 import ExpensesTab from "./_components/ExpensesTab";
+import { CATEGORY_LABELS, formatProcessedAt } from "@/components/Data-Table/columns/transactionColumns";
+import { downloadCsv } from "@/lib/csv-export";
+import { apiFetch } from "@/lib/api-fetch";
+import { useTransactionsOverview, type TransactionRow } from "@/hooks/supabase-calls/useTransactions";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-const TransTabs = [
-  { id: "recent", label: "💳 Recent" },
-  { id: "service-charge", label: "💹 Service Charge %" },
-  { id: "subscriptions", label: "💎 Subscriptions" },
-  { id: "failed", label: "❌ Failed (12)" },
-  { id: "refunds", label: "🔄 Refunds (4)" },
-  { id: "tax-vat", label: "🧾 Tax & VAT" },
-  { id: "expenses", label: "💰 Expenses (SA Only)" },
-];
 
 const TransactionsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabParam || "recent");
+  // URL is the single source of truth; handleTabChange pushes the new tab param.
+  const activeTab = tabParam || "recent";
+  const [exporting, setExporting] = useState(false);
+  const { data: overview } = useTransactionsOverview();
+  const failedCount = overview?.overview?.failed?.count ?? 0;
 
-  useEffect(() => {
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam, activeTab]);
+  const TransTabs = [
+    { id: "recent", label: "💳 Recent" },
+    { id: "service-charge", label: "💹 Service Charge %" },
+    { id: "subscriptions", label: "💎 Subscriptions" },
+    { id: "failed", label: failedCount > 0 ? `❌ Failed (${failedCount})` : "❌ Failed" },
+    { id: "refunds", label: "🔄 Refunds" },
+    { id: "tax-vat", label: "🧾 Tax & VAT" },
+    { id: "expenses", label: "💰 Expenses (SA Only)" },
+  ];
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
     router.push(`/transactions?tab=${value}`, { scroll: false });
+  };
+
+  const handleExportReport = async () => {
+    setExporting(true);
+    try {
+      const result = await apiFetch<{ rows: TransactionRow[] }>("/api/transactions?limit=100");
+      downloadCsv(
+        (result.rows ?? []).map((row) => ({
+          reference: row.reference,
+          amount: row.amount,
+          payer: row.payer_name,
+          payer_code: row.payer_code,
+          segment: row.payer_class,
+          category: CATEGORY_LABELS[row.category] ?? row.category,
+          method: row.payment_method,
+          date: formatProcessedAt(row.processed_at),
+          status: row.status,
+        })),
+        "transactions-report",
+      );
+    } catch {
+      toast.error("Export failed — check your permissions or try again.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -50,12 +77,13 @@ const TransactionsPage = () => {
         subtitle="Track your business performance and analytics across all channels"
       >
         <div className="flex gap-2">
-            <select className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white outline-none">
-                <option>📅 Last 30 Days</option>
-                <option>Last 7 Days</option>
-                <option>This Year</option>
-            </select>
-            <button className="btn btn-secondary btn-sm">📥 Export Report</button>
+            <button
+              onClick={handleExportReport}
+              disabled={exporting}
+              className="btn btn-secondary btn-sm disabled:opacity-50"
+            >
+              {exporting ? "Exporting…" : "📥 Export Report"}
+            </button>
         </div>
       </PageHeader>
 

@@ -107,6 +107,8 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("transactions", "view", "View transactions and revenue analytics"),
   p("transactions", "manage", "Process refunds and manage charges"),
   p("transactions", "export", "Export financial reports"),
+  p("transactions", "expenses", "Manage operational expenses and P&L (super admin only)"),
+  p("transactions", "rates", "Edit service charge rates (super admin only)"),
   p("ai", "view", "View AI models, moderation queues and usage analytics"),
   p("ai", "manage", "Configure AI models and moderation settings"),
   p("whatsapp", "view", "View WhatsApp community groups and broadcasts"),

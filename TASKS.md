@@ -2418,3 +2418,29 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
       (in-app paywall) and referral (link, else share sheet) handlers.
 - [ ] Apply migration `20260822_marketing_unification.sql` to the live
       Supabase DB (user-manual, deployment-skip mandate).
+
+## Transactions menu depth build (Part AA, 2026-08-22)
+
+- [x] Migration `20260822_transactions_ledger.sql`: unified `transactions`
+      ledger (payer_class user/business, entity_kind consumer/ibp/facility),
+      `refunds`, `service_charge_rates`, `tax_filings` + `finance_config`,
+      `operational_expenses`, `finance_visibility_config`,
+      `get_transactions_overview()` RPC, SA-only catalog keys
+      (`transactions.expenses/rates`), backfill from `user_subscriptions` +
+      `escrow_transactions`.
+- [x] 10 RBAC-guarded API routes: ledger list with Business-vs-User segment /
+      category / status / high-value / date filters, overview with SA metric
+      masking, retry/dispute/cancel actions, refund request + approval queue
+      (SA-only approve), rates editor (SA-only PUT), tax summary + filings,
+      expenses (hard SA), visibility config (SA).
+- [x] Hook layer `useTransactions.ts` (typed queries + mutations).
+- [x] All 7 tabs re-based onto real data: KPIs/charts from the overview RPC
+      with `🔒 Hidden by Super Admin` states; Recent table depth (segmented
+      Business/User control, filters, search, pagination, CSV export, row
+      actions); Service Charge rates editor; consumer Subscriptions KPIs;
+      Failed banner + Retry/Notify; Refunds workflow + New Refund dialog;
+      Tax & VAT computed liability + filings + GRA report CSV; Expenses
+      SA-only with P&L and the Metric Visibility governance dialog.
+- [x] Docs: GAP_ANALYSIS Part AA addendum.
+- [ ] Apply migration `20260822_transactions_ledger.sql` to the live
+      Supabase DB (user-manual).
