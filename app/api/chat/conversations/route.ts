@@ -176,6 +176,10 @@ async function fetchDiscoverGroupsOnce(
   // Fetch every discoverable group category in one query; eligibility
   // filtering (verified-only, facility ownership) happens below since it
   // needs cross-table lookups above.
+  //
+  // Gap Analysis CH-D3: only active groups are discoverable, and the
+  // group_type column gates visibility (premium/admin groups are never
+  // discoverable; verified/hcp_verified are filtered client-side below).
   let publicQuery = admin
     .from("conversations")
     .select(
@@ -186,6 +190,7 @@ async function fetchDiscoverGroupsOnce(
       description,
       avatar_url,
       group_category,
+      group_type,
       is_verified_only,
       max_members,
       created_by,
@@ -196,6 +201,8 @@ async function fetchDiscoverGroupsOnce(
     )
     .eq("type", "group")
     .eq("is_deleted", false)
+    .eq("status", "active")
+    .not("group_type", "in", '("premium","admin")')
     .in("group_category", [...OPEN_CATEGORIES, "facility"])
     .order("created_at", { ascending: false })
     .limit(50);
@@ -220,7 +227,16 @@ async function fetchDiscoverGroupsOnce(
       if (memberCount >= maxMembers) return null;
 
       // Verified-HCPs-only groups: hide from anyone who isn't verified.
-      if (g.is_verified_only && !isVerifiedHcp) return null;
+      // CH-D3: honor both the legacy is_verified_only flag and the newer
+      // group_type vocabulary.
+      if (
+        (g.is_verified_only ||
+          g.group_type === "hcp_verified" ||
+          g.group_type === "verified") &&
+        !isVerifiedHcp
+      ) {
+        return null;
+      }
 
       // Facility groups: only discoverable by that facility's owner.
       if (
@@ -237,6 +253,7 @@ async function fetchDiscoverGroupsOnce(
         description: g.description,
         avatar_url: g.avatar_url,
         group_category: g.group_category,
+        group_type: g.group_type,
         is_verified_only: g.is_verified_only,
         max_members: maxMembers,
         member_count: memberCount,

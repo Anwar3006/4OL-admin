@@ -2285,6 +2285,126 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AD — Global Search (S-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: admin `/api/search/dynamic` returned unfiltered table rows (PII leak) and was still referenced by dead mobile hooks (`use-dynamic-search.ts`, `use-search-results.ts`); the live DB had ghost `global_search` / `admin_global_search` RPCs never captured in any migration; search analytics did not exist.*
+
+### What was built
+
+1. **Migration `20260822_global_search_v2.sql`** (additive, re-runnable): `global_search_v2` SECURITY DEFINER RPC — trigram + `ts_rank` hybrid over **conditions, symptoms, healthy_living_info (with legacy-column fallback), facility_profile (active only, no PII columns), drugs**; search analytics (`search_executed` / `search_zero_results`) logged inside the RPC; ghost `global_search` / `admin_global_search` captured via pg_proc-guarded `DO` blocks so live definitions are never overwritten.
+2. **Admin:** `/api/search/dynamic` rewritten to return **410 Gone** (deprecation + PII leak closed).
+3. **Mobile (4OL Mobile Plasence):** single `hooks/use-global-search.ts` (`useGlobalSearch`, 300 ms debounce, min 2 chars, stale-request guard) that tries `global_search_v2` and **falls back to legacy `global_search` pre-migration**; recent searches persisted in AsyncStorage; Home screen rewired onto the hook with a Recent Searches dropdown; dead hooks deleted.
+
+### Decisions applied (S-D1–S-D5 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| S-D1 | Search scope | conditions, symptoms, healthy_living_info, facility_profile (active, no PII), drugs; jobs/FAQs skipped |
+| S-D2 | Legacy endpoint | `/api/search/dynamic` → 410 Gone |
+| S-D3 | Ranking | trigram + ts_rank hybrid in one SECURITY DEFINER RPC |
+| S-D4 | Analytics | logged inside the RPC (search_executed / search_zero_results) |
+| S-D5 | Ghost RPCs | captured in migration, pg_proc-guarded |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260822_global_search_v2.sql` — mobile silently uses the legacy RPC until then.
+
+---
+
+## Part AE — Top Rated Placement Windows (T-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: Top Rated items went live the moment they were added with no scheduling; `search_top_rated_items` was granted to anon; the admin page had stub UI (no CSV export, no table search, dead View buttons, fake totals, no delete confirmation, N+1 module-count queries); mobile ignored expiry and had unstable sort ties.*
+
+### What was built
+
+1. **Migration `20260822_top_rated_placement_windows.sql`** (additive, re-runnable): `publish_from` / `expire_at` columns on `top_rated_items`; trigger-based snapshot refresh on window changes; anon revoked from `search_top_rated_items`.
+2. **Admin `/top-rated`:** window status chip column (active/scheduled/expired via `getTopRatedWindowStatus`), status filter + debounced table search, real totals, AlertDialog delete confirmation (subscription-sourced rows protected), View deep-links per module (`/facilities`, `/fitness?tab=outdoor`, `?tab=challenges`, `?tab=exercises`, `?tab=plans`), Export CSV; Add dialog gained `publish_from`/`expire_at` datetime inputs; N+1 module counts replaced by a single client-counted query.
+3. **Mobile:** `use-top-rated.ts` + `useTopRatedFacilities` apply lazy window filters (`expire_at` null-or-future, `publish_from` null-or-past) with a plain-query fallback pre-migration, plus `added_at` desc sort tiebreaker.
+
+### Decisions applied (T-D1–T-D5 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| T-D1 | Module scope | keep the 6 existing modules |
+| T-D2 | Scheduling | placement windows + lazy expiry + status chip + Expired filter (no live countdown/slot rotation) |
+| T-D3 | Snapshot | trigger-based refresh |
+| T-D4 | Page stubs | Export CSV, search, View links, real totals, AlertDialog, N+1 kill — all done |
+| T-D5 | Access | anon revoked; mobile sort tiebreaker aligned |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260822_top_rated_placement_windows.sql` — mobile filters fall back gracefully until then.
+
+---
+
+## Part AF — Encyclopedia Library Uncapping (L-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: Diseases / Symptoms / Healthy Living libraries paginated letter and category browsing at 20 rows, hiding the rest behind a Load More button that also **replaced** instead of appended in search mode; list queries selected heavy JSONB columns.*
+
+### What was built (mobile only — 4OL Mobile Plasence)
+
+- `use-condition.ts` / `use-symptom.ts` / `use-healthy-living.ts`: letter and category branches now load the whole bounded slice in one shot (`MAX_LIBRARY_ROWS = 500`, `hasMore: false` auto-hides Load More); search stays paginated but returns rows **cumulatively** (`.range(0, page*limit-1)`) so Load More appends (L-D4); column projections (L-D2): conditions `id, name, slug`, symptoms `id, name`, healthy living `id, name, slug, description, image_url`. No screen changes needed — the Load More button hides itself for letter/category and appends for search.
+
+### Decisions applied (L-D1–L-D5 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| L-D1 | Uncap | letter + category uncap; search stays paginated |
+| L-D2 | Projection | list-only columns (no heavy JSONB) |
+| L-D3 | Row cap | MAX_LIBRARY_ROWS = 500 |
+| L-D4 | Load More | dead path removed; cumulative range fixes replace-vs-append |
+| L-D5 | Scope | Diseases, Symptoms, Healthy Living |
+
+---
+
+## Part AG — Map Hardening + Outdoor Route Pins (M-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: `get_facilities_map` was NOT SECURITY DEFINER, PUBLIC/anon-callable, trusted the caller's `p_status` (null enumerated Rejected/Pending facilities), never escaped ilike wildcards, and had **zero** rate limiting (mobile bypasses the admin API); `facility_profile` had no RLS policies in any migration; the mobile map showed facilities only — no outdoor route pins.*
+
+### What was built
+
+1. **Migration `20260822_map_hardening.sql`** (re-runnable, signature unchanged): `get_facilities_map` rewritten SECURITY DEFINER + locked `search_path`; REVOKE public/anon, GRANT authenticated/service_role; auth gate; **DB-level per-user throttle 40 req/min** via private `map_rpc_throttle` ledger (admins/service_role exempt); server-enforced `status='active'` for non-admins; wildcard escaping; 100 sq-deg envelope cap. `facility_profile` RLS: active/approved SELECT for authenticated, full visibility for app admins + owners, admin/owner writes.
+2. **Mobile:** `useGetFacilitiesMapData` no longer sends `p_status` (server enforces) and fails fast on throttle/auth errors instead of retrying (previous markers stay on screen via placeholderData); new `useOutdoorRoutePins` hook + green `RoutePinMarker` layer on the map (active + approved routes only, anchor = GPS start point / bounds center) — pin tap deep-links to `outdoor/route-detail` with `from: 'map'`. Layer hides while a facility filter/search is active; degrades to empty pre-migration.
+
+### Decisions applied (M-D1–M-D5 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| M-D1 | RPC hardening | SECURITY DEFINER + grants + server-enforced status + escaping + envelope cap |
+| M-D2 | Rate limiting | DB-level per-user throttle 40/min inside the RPC |
+| M-D3 | Route pins | mobile layer via `get_outdoor_route_pins` + deep link to route detail |
+| M-D4 | RLS | facility_profile policies added |
+| M-D5 | Do-not-touch | collector GPS, coverage, IBP pins, non-active statuses stay disconnected |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260822_map_hardening.sql` — until then the RPC keeps its old permissive behavior and the pin layer shows nothing.
+
+---
+
+## Part AH — Chat Connectivity & Safety (CH-D) (✅ Implemented 2026-08-22)
+
+*Analyzed 2026-08-22. Pre-build: the entire chat schema (`conversations`, `conversation_members`, `messages`, …) existed live-only with no migration capture; group discoverability was unfiltered; mobile had no "Report message" path feeding the Flagged moderation queue; mobile tickets knew only Open/Closed; mobile group creation lacked the admin form's category/type fields and promised "processed shortly" while creation is immediate; message sending had no throttle.*
+
+### What was built
+
+1. **Migration `20260822_chat_schema_capture.sql`** (re-runnable, pg_proc/table-guarded): captures the ghost chat schema including the live-only `conversations` enrichment columns (`group_type`, `status`, `group_permissions`, `group_rules`, `region_restriction`, `is_group`, `group_name`, `group_description`) and the `report_chat_content` RPC (authenticated-only, feeds the Flagged queue).
+2. **Admin routes:** conversations discover hardened (`status='active'` + premium/admin group types excluded + verified/HCP gates); group creation enriches `group_category` / `group_type` / `group_permissions` / `group_rules` (non-fatal); message send throttled 30/min per user (429); support ticket status transitions push `dispatch_notification` to the requester (TKT display id + Resolved rating invite).
+3. **Mobile (4OL Mobile Plasence):** long-press **Report message** sheet (reason chips + optional detail) → `report_chat_content` RPC directly, anonymous to the reported party, graceful failure pre-migration; **ticket parity** — 5 admin statuses rendered, `TKT-XXXX` display ids, 1–5★ satisfaction rating UI on Resolved tickets via existing `PATCH /api/chat/support`; **group creation** — category chips mirroring admin `GROUP_CATEGORIES` + `group_type: 'open'` pass-through + misleading "processed shortly" copy corrected; legacy dead chain deleted (`src/services/chatsupport.ts`, `ChatSupportModal.tsx`, `Notifications-1.tsx`).
+
+### Decisions applied (CH-D1–CH-D6 confirmed by product owner)
+
+| # | Decision | Outcome |
+|---|----------|---------|
+| CH-D1 | Ghost schema | captured pg_proc-guarded, never overwriting live definitions |
+| CH-D2 | Report message | mobile → `report_chat_content` RPC directly (no new admin route) |
+| CH-D3 | Discover | status + group_type gating on the conversations route |
+| CH-D4 | Ticket parity | admin push-on-transition + mobile 5 statuses, TKT ids, rating UI |
+| CH-D5 | Group fields | admin pass-through + mobile category chips + copy fix |
+| CH-D6 | Throttle | 30/min message send on the admin route; legacy service deleted |
+
+### Manual steps for the user
+- Apply `supabase/migrations/20260822_chat_schema_capture.sql` — on the live DB it is a near no-op (guarded captures) but it makes fresh restores possible and grants `report_chat_content` to authenticated.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

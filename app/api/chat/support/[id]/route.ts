@@ -50,6 +50,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const admin = getSupabaseAdmin();
+
+  // Gap Analysis CH-D4 — capture the previous status so a real transition
+  // can push a notification to the ticket requester below.
+  const { data: previous, error: previousError } = await admin
+    .from("chat_support")
+    .select("status, requested_by, subject")
+    .eq("id", id)
+    .maybeSingle();
+  if (previousError) {
+    console.error("[chat/support/:id PATCH] lookup error:", previousError.message);
+  }
+
   const { data, error } = await admin
     .from("chat_support")
     .update(updates)
@@ -60,6 +72,38 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (error) {
     console.error("[chat/support/:id PATCH] Supabase error:", error.message);
     return NextResponse.json({ error: "Failed to update ticket." }, { status: 500 });
+  }
+
+  // CH-D4 — notify the requester when the ticket status actually changes.
+  // Never let a notification failure affect the PATCH response.
+  if (
+    previous?.requested_by &&
+    parsed.data.status &&
+    parsed.data.status !== previous.status
+  ) {
+    try {
+      const displayId = `TKT-${String(id).padStart(4, "0")}`;
+      await admin.rpc("dispatch_notification", {
+        p_recipients: [
+          {
+            user_id: previous.requested_by,
+            title: `Support ticket ${displayId} ${parsed.data.status}`,
+            body:
+              parsed.data.status === "Resolved"
+                ? `Your ticket "${data.subject ?? "no subject"}" has been resolved. Let us know how we did!`
+                : `Your ticket "${data.subject ?? "no subject"}" is now ${parsed.data.status}.`,
+            type: "support_ticket",
+            metadata: { ticket_id: id, display_id: displayId, status: parsed.data.status },
+            channel_id: "support-tickets",
+          },
+        ],
+      });
+    } catch (notifyError: any) {
+      console.error(
+        "[chat/support/:id PATCH] Failed to notify requester:",
+        notifyError?.message,
+      );
+    }
   }
 
   await admin.rpc("log_admin_activity", {

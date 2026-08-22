@@ -27,6 +27,9 @@ export const topRatedItemSchema = z.object({
   source: z.enum(TOP_RATED_SOURCES).default("manual"),
   rank: z.number().int().optional().nullable(),
   added_by: z.string().uuid().optional().nullable(),
+  // Gap Analysis T-D2 — placement windows (lazy expiry, no cron).
+  publish_from: z.string().optional().nullable(),
+  expire_at: z.string().optional().nullable(),
 });
 
 export type TTopRatedItemInput = z.infer<typeof topRatedItemSchema>;

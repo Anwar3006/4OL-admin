@@ -68,6 +68,8 @@ const AddTopRatedItemDialog = () => {
       rating_count: undefined,
       source: "manual",
       rank: undefined,
+      publish_from: undefined,
+      expire_at: undefined,
     },
   });
 
@@ -117,6 +119,13 @@ const AddTopRatedItemDialog = () => {
         rating_count: selectedItem.rating_count || undefined,
         source: "manual",
         admin_id: session?.user?.id || "",
+        // Gap Analysis T-D2 — optional placement window (lazy expiry).
+        publish_from: values.publish_from
+          ? new Date(values.publish_from).toISOString()
+          : null,
+        expire_at: values.expire_at
+          ? new Date(values.expire_at).toISOString()
+          : null,
       },
       {
         onSuccess: () => {
@@ -251,6 +260,58 @@ const AddTopRatedItemDialog = () => {
                       : "Start typing to search or choose a module"}
                   </div>
                 ) : null}
+              </div>
+
+              {/* Placement Window (optional) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="publish_from"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-xs">
+                        Publish From
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="datetime-local"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                        />
+                      </FormControl>
+                      <p className="text-[10px] text-slate-400">
+                        Leave empty to publish immediately
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="expire_at"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-xs">
+                        Expire At
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="datetime-local"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                        />
+                      </FormControl>
+                      <p className="text-[10px] text-slate-400">
+                        Leave empty for no expiry
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <DialogFooter className="pt-4 border-t">

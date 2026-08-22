@@ -1,18 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { topRatedItemColumns } from "@/components/Data-Table/columns/topRatedColumns";
-import { useTopRatedItems } from "@/hooks/supabase-calls/useTopRatedItems";
+import {
+  useRemoveTopRatedItem,
+  useTopRatedItems,
+} from "@/hooks/supabase-calls/useTopRatedItems";
 import { usePagination } from "@/hooks/use-pagination";
+import { useDebounce } from "@/hooks/use-debounce";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { TOP_RATED_MODULES } from "@/schemas/top-rated.schema";
+import { toast } from "sonner";
 
 interface TopRatedItemsTableProps {
   module?: string;
 }
 
+type WindowFilter = "all" | "active" | "scheduled" | "expired";
+
+const getModuleDeepLink = (module: string): string => {
+  const routes: Record<string, string> = {
+    facility: "/facilities",
+    outdoor_route: "/fitness?tab=outdoor",
+    outdoor_event: "/fitness?tab=outdoor",
+    challenge: "/fitness?tab=challenges",
+    exercise: "/fitness?tab=exercises",
+    fitness_plan: "/fitness?tab=plans",
+  };
+  return routes[module] || "/top-rated";
+};
+
 const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [windowStatus, setWindowStatus] = useState<WindowFilter>("all");
+  const debouncedSearch = useDebounce(search, 300);
+  const { mutate: removeItem } = useRemoveTopRatedItem();
+
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
     usePagination({
       key: `top-rated-${module || "all"}-page`,
@@ -21,10 +46,31 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
     page,
     limit: pageSize,
     module,
+    search: debouncedSearch.trim() || undefined,
+    windowStatus,
   });
 
   const items = data?.data || [];
   const totalPages = data?.meta?.totalPages || 1;
+
+  const handleDeleteSelected = (rows: any[]) => {
+    if (!rows.length) return;
+    Promise.all(
+      rows
+        .filter((row) => row.source !== "subscription")
+        .map(
+          (row) =>
+            new Promise<void>((resolve) =>
+              removeItem(
+                { module: row.module, item_id: row.item_id },
+                { onSettled: () => resolve() },
+              ),
+            ),
+        ),
+    ).then(() => {
+      toast.success(`Removed ${rows.length} top-rated item(s)`);
+    });
+  };
 
   const cardConfig: MobileCardConfig<any> = {
     header: {
@@ -60,7 +106,7 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
     actions: [
       {
         label: "View",
-        onClick: (row) => console.log("View", row.id),
+        onClick: (row) => router.push(getModuleDeepLink(row.module)),
       },
     ],
   };
@@ -71,7 +117,26 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
         <input
           className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search top-rated items..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            onPageChange(1);
+          }}
         />
+        {/* Gap Analysis T-D2 — placement-window filter */}
+        <select
+          className="h-9 px-3 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all bg-white"
+          value={windowStatus}
+          onChange={(e) => {
+            setWindowStatus(e.target.value as WindowFilter);
+            onPageChange(1);
+          }}
+        >
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="expired">Expired</option>
+        </select>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -81,13 +146,13 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
           isLoading={isLoading}
           isError={isError}
           error={error}
-          onRowClick={(row) => console.log("Row Click", row.id)}
-          onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
+          onRowClick={(row) => router.push(getModuleDeepLink(row.module))}
+          onDeleteSelected={handleDeleteSelected}
           cardConfig={cardConfig}
           pagination={{
             currentPage: page,
             totalPages,
-            totalItems: items.length,
+            totalItems: data?.meta?.total || 0,
             pageSize,
             onPageChange,
             onNextPage,

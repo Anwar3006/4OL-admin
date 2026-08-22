@@ -29,6 +29,8 @@ type TopRatedItemRow = {
   added_by: string | null;
   added_at: string;
   updated_at: string;
+  publish_from: string | null;
+  expire_at: string | null;
 };
 
 type TopRatedPaginationInput = {
@@ -36,6 +38,7 @@ type TopRatedPaginationInput = {
   limit: number;
   module?: string;
   search?: string;
+  windowStatus?: "all" | "active" | "scheduled" | "expired";
 };
 
 export const TOP_RATED_QUERY_KEYS = {
@@ -62,13 +65,33 @@ const mapTopRatedRow = (row: TopRatedItemRow): TTopRatedItemOutput => ({
   added_by: row.added_by,
   added_at: row.added_at,
   updated_at: row.updated_at,
+  publish_from: row.publish_from,
+  expire_at: row.expire_at,
 });
+
+/**
+ * Placement-window state for a curated item (Gap Analysis T-D2). Mirrors the
+ * lazy expiry filter the mobile shelf applies at read time.
+ */
+export const getTopRatedWindowStatus = (
+  item: Pick<TTopRatedItemOutput, "publish_from" | "expire_at">,
+  now: Date = new Date(),
+): "active" | "scheduled" | "expired" => {
+  if (item.expire_at && new Date(item.expire_at).getTime() < now.getTime()) {
+    return "expired";
+  }
+  if (item.publish_from && new Date(item.publish_from).getTime() > now.getTime()) {
+    return "scheduled";
+  }
+  return "active";
+};
 
 export const useTopRatedItems = ({
   page,
   limit,
   module,
   search,
+  windowStatus,
 }: TopRatedPaginationInput) => {
   return useQuery<PaginatedResponse, Error>({
     queryKey: TOP_RATED_QUERY_KEYS.list({
@@ -76,10 +99,12 @@ export const useTopRatedItems = ({
       limit,
       module,
       search,
+      windowStatus,
     }),
     queryFn: async () => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
+      const nowIso = new Date().toISOString();
 
       const supabase = await getSupabaseClient();
       let query = supabase
@@ -92,6 +117,18 @@ export const useTopRatedItems = ({
 
       if (search) {
         query = query.or(`title.ilike.%${search}%,subtitle.ilike.%${search}%`);
+      }
+
+      if (windowStatus === "expired") {
+        query = query.not("expire_at", "is", null).lt("expire_at", nowIso);
+      } else if (windowStatus === "scheduled") {
+        query = query
+          .not("publish_from", "is", null)
+          .gt("publish_from", nowIso);
+      } else if (windowStatus === "active") {
+        query = query
+          .or(`expire_at.is.null,expire_at.gte.${nowIso}`)
+          .or(`publish_from.is.null,publish_from.lte.${nowIso}`);
       }
 
       const result = await query
@@ -165,6 +202,8 @@ export const useUpsertTopRatedItem = () => {
           p_source: data.source || "manual",
           p_rank: data.rank,
           p_added_by: data.added_by || data.admin_id,
+          p_publish_from: data.publish_from || null,
+          p_expire_at: data.expire_at || null,
         },
       );
 
@@ -210,4 +249,29 @@ export const useRemoveTopRatedItem = () => {
       toast.error(`Failed to remove top-rated item: ${error.message}`);
     },
   });
+};
+
+/**
+ * Fetches every curated item in one query for CSV export (Gap Analysis T-D4).
+ * The curation list is small by design, so a full select is cheaper than
+ * paginating.
+ */
+export const fetchTopRatedItemsForExport = async (
+  module?: string,
+): Promise<TTopRatedItemOutput[]> => {
+  const supabase = await getSupabaseClient();
+  let query = supabase
+    .from("top_rated_items")
+    .select("*")
+    .order("rank", { ascending: true })
+    .order("rating", { ascending: false })
+    .limit(1000);
+
+  if (module) {
+    query = query.eq("module", module);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return ((data || []) as TopRatedItemRow[]).map(mapTopRatedRow);
 };

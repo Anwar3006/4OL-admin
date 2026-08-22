@@ -1,8 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useRemoveTopRatedItem } from "@/hooks/supabase-calls/useTopRatedItems";
+import {
+  getTopRatedWindowStatus,
+  useRemoveTopRatedItem,
+} from "@/hooks/supabase-calls/useTopRatedItems";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 const getModuleIcon = (module: string) => {
@@ -15,6 +30,25 @@ const getModuleIcon = (module: string) => {
     fitness_plan: "📋",
   };
   return icons[module] || "📦";
+};
+
+// Gap Analysis T-D4 — deep-link each curated item back to its module page.
+const getModuleRoute = (module: string): string => {
+  const routes: Record<string, string> = {
+    facility: "/facilities",
+    outdoor_route: "/fitness?tab=outdoor",
+    outdoor_event: "/fitness?tab=outdoor",
+    challenge: "/fitness?tab=challenges",
+    exercise: "/fitness?tab=exercises",
+    fitness_plan: "/fitness?tab=plans",
+  };
+  return routes[module] || "/top-rated";
+};
+
+const windowStatusStyles: Record<string, string> = {
+  active: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  scheduled: "bg-amber-50 text-amber-700 border-amber-100",
+  expired: "bg-red-50 text-red-600 border-red-100",
 };
 
 export const topRatedItemColumns: ColumnDef<any>[] = [
@@ -86,31 +120,49 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     ),
   },
   {
+    id: "window-status",
+    header: "Status",
+    cell: ({ row }) => {
+      // Gap Analysis T-D2 — lazy placement-window status chip.
+      const status = getTopRatedWindowStatus(row.original);
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            windowStatusStyles[status],
+          )}
+        >
+          {status}
+        </span>
+      );
+    },
+  },
+  {
     id: "actions",
     header: "",
     enableHiding: false,
     cell: ({ row }) => {
       const item = row.original;
       const isSubscriptionSourced = item.source === "subscription";
+      const router = useRouter();
+      const [confirmOpen, setConfirmOpen] = useState(false);
       const { mutate: removeItem, isPending: isRemoving } =
         useRemoveTopRatedItem();
 
       const handleDelete = () => {
-        if (
-          confirm("Are you sure you want to remove this item from top-rated?")
-        ) {
-          removeItem(
-            { module: item.module, item_id: item.item_id },
-            {
-              onSuccess: () => {
-                toast.success("Item removed from top-rated");
-              },
-              onError: (error) => {
-                toast.error(`Failed to remove item: ${error.message}`);
-              },
+        removeItem(
+          { module: item.module, item_id: item.item_id },
+          {
+            onSuccess: () => {
+              setConfirmOpen(false);
+              toast.success("Item removed from top-rated");
             },
-          );
-        }
+            onError: (error) => {
+              setConfirmOpen(false);
+              toast.error(`Failed to remove item: ${error.message}`);
+            },
+          },
+        );
       };
 
       return (
@@ -119,7 +171,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
             className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded flex items-center justify-center"
             onClick={(e) => {
               e.stopPropagation();
-              console.log("View", item.id);
+              router.push(getModuleRoute(item.module));
             }}
           >
             👁️
@@ -129,13 +181,35 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
               className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded flex items-center justify-center disabled:opacity-50"
               onClick={(e) => {
                 e.stopPropagation();
-                handleDelete();
+                setConfirmOpen(true);
               }}
               disabled={isRemoving}
             >
               🗑️
             </button>
           )}
+
+          <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove top-rated item?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This removes <span className="font-semibold">{item.title}</span>{" "}
+                  from the {item.module.replace(/_/g, " ")} top-rated shelf.
+                  The underlying record is not deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isRemoving ? "Removing..." : "Remove"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       );
     },

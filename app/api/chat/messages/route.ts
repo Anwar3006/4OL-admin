@@ -57,6 +57,36 @@ export async function GET(req: NextRequest) {
 /**
  * POST /api/chat/messages
  */
+
+// Gap Analysis CH-D6 — per-user send throttle (sliding window). In-process
+// only: serverless instances have independent windows, so this is an
+// abuse/spam speed bump rather than a strict global cap. Fail-open — a
+// throttle bookkeeping problem must never block legitimate sends.
+const MESSAGE_SEND_WINDOW_MS = 60_000;
+const MESSAGE_SEND_MAX_PER_WINDOW = 30;
+const sendWindowByUser = new Map<string, { windowStart: number; count: number }>();
+
+function isMessageSendThrottled(userId: string): boolean {
+  const now = Date.now();
+  const entry = sendWindowByUser.get(userId);
+
+  if (!entry || now - entry.windowStart >= MESSAGE_SEND_WINDOW_MS) {
+    sendWindowByUser.set(userId, { windowStart: now, count: 1 });
+    // Opportunistic cleanup to keep the map bounded.
+    if (sendWindowByUser.size > 5000) {
+      for (const [key, value] of sendWindowByUser) {
+        if (now - value.windowStart >= MESSAGE_SEND_WINDOW_MS) {
+          sendWindowByUser.delete(key);
+        }
+      }
+    }
+    return false;
+  }
+
+  entry.count += 1;
+  return entry.count > MESSAGE_SEND_MAX_PER_WINDOW;
+}
+
 export async function POST(req: NextRequest) {
   const user = await getRequestUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -74,6 +104,13 @@ export async function POST(req: NextRequest) {
 
     if (!conversation_id) {
       return NextResponse.json({ error: "conversation_id is required" }, { status: 400 });
+    }
+
+    if (isMessageSendThrottled(user.id)) {
+      return NextResponse.json(
+        { error: "You are sending messages too quickly. Please wait a moment." },
+        { status: 429 },
+      );
     }
 
     const admin = getSupabaseAdmin();

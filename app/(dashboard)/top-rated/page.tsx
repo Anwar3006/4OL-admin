@@ -10,6 +10,12 @@ import TopRatedItemsTable from "./_components/TopRatedItemsTable";
 import AddTopRatedItemDialog from "./_components/AddTopRatedItemDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
+import { downloadCsv } from "@/lib/csv-export";
+import {
+  fetchTopRatedItemsForExport,
+  getTopRatedWindowStatus,
+} from "@/hooks/supabase-calls/useTopRatedItems";
+import { toast } from "sonner";
 import { useAddTopRatedItemDialog } from "@/stores/dialog-store";
 
 const TopRatedTabs = [
@@ -41,26 +47,25 @@ const TopRatedPage = () => {
   const router = useRouter();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "all");
+  const [isExporting, setIsExporting] = useState(false);
   const { open: openAddDialog } = useAddTopRatedItemDialog();
 
-  // Fetch counts for each module
+  // Gap Analysis T-D4 — one select instead of one count query per module.
   const { data: moduleCounts } = useQuery({
     queryKey: ["top-rated-module-counts"],
     queryFn: async () => {
       const supabase = await getSupabaseClient();
+      const { data, error } = await supabase
+        .from("top_rated_items")
+        .select("module")
+        .limit(1000);
+
+      if (error) throw error;
+
       const counts: Record<string, number> = {};
-
-      for (const module of TOP_RATED_MODULES) {
-        const { count, error } = await supabase
-          .from("top_rated_items")
-          .select("*", { count: "exact", head: true })
-          .eq("module", module);
-
-        if (!error) {
-          counts[module] = count || 0;
-        }
+      for (const row of data || []) {
+        counts[row.module] = (counts[row.module] || 0) + 1;
       }
-
       return counts;
     },
   });
@@ -69,6 +74,41 @@ const TopRatedPage = () => {
     (sum, count) => sum + count,
     0,
   );
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const items = await fetchTopRatedItemsForExport(
+        activeTab === "all" ? undefined : activeTab,
+      );
+      if (!items.length) {
+        toast.error("No top-rated items to export");
+        return;
+      }
+      downloadCsv(
+        items.map((item) => ({
+          module: item.module,
+          title: item.title,
+          subtitle: item.subtitle,
+          rating: item.rating,
+          rating_count: item.rating_count,
+          source: item.source,
+          rank: item.rank,
+          status: getTopRatedWindowStatus(item),
+          publish_from: item.publish_from || "",
+          expire_at: item.expire_at || "",
+          added_at: item.added_at
+            ? new Date(item.added_at).toISOString()
+            : "",
+        })),
+        `top-rated-items-${activeTab}-${new Date().toISOString().slice(0, 10)}.csv`,
+      );
+    } catch (err: any) {
+      toast.error(`Export failed: ${err?.message || err}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -81,7 +121,13 @@ const TopRatedPage = () => {
         title="🏆 Top Rated Curation"
         subtitle="Manage top-rated items across all modules - manually curated or subscription-driven"
       >
-        <button className="btn btn-secondary btn-sm">📋 Export List</button>
+        <button
+          className="btn btn-secondary btn-sm disabled:opacity-50"
+          onClick={handleExport}
+          disabled={isExporting}
+        >
+          {isExporting ? "⏳ Exporting..." : "📋 Export List"}
+        </button>
         <button
           className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
           onClick={openAddDialog}
