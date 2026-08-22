@@ -39,6 +39,13 @@ export default function SymptomsLinkedTab() {
           🩺 Symptoms Linked to Body Parts
         </h3>
         <span className="badge badge-purple">{rows?.length ?? 0} links</span>
+        {/* Phase 4 cross-link: symptom taxonomy lives on the Symptoms menu */}
+        <Link
+          href="/symptoms?tab=categories"
+          className="badge badge-blue hover:opacity-80 transition-opacity"
+        >
+          📂 Symptom Categories →
+        </Link>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <input
             className={`${inputCls} w-56`}

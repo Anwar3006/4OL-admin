@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +16,8 @@ import {
 } from "@/hooks/supabase-calls/useHealthyLiving";
 import AddHealthyLivingDialog from "./_components/add-healthyLiving-dialog";
 import ViewHealthyLivingDialog from "./_components/view-healthyLiving-dialog";
+import HealthyLivingAnalyticsTab from "./_components/analytics-tab";
+import HealthyLivingCarouselTab from "./_components/carousel-tab";
 import { cn } from "@/lib/utils";
 import HealthyLivingStats from "./_components/HealthyLivingStats";
 import {
@@ -32,9 +34,22 @@ const HealthyLivingPage = () => {
   const addHealthLiving = useAddHealthyLivingDialog();
   const viewHealthyLiving = useViewHealthyLivingDialog();
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "all");
+
+  // Deep-link support (Phase 4): /healthy_living?tab=engagement etc.
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) setActiveTab(tabParam);
+  }, [tabParam]);                                                    // eslint-disable-line
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", value);
+    window.history.pushState(null, "", `?${params.toString()}`);
+  };
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("hl_page") || "1", 10);
@@ -216,7 +231,7 @@ const HealthyLivingPage = () => {
       {/* KPI Grid */}
       <HealthyLivingStats />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
@@ -229,8 +244,8 @@ const HealthyLivingPage = () => {
           >
             {[
               { id: "all", label: "All Content", icon: "🥗" },
-              // { id: "categories", label: "Categories", icon: "📂" },
               { id: "engagement", label: "Analytics", icon: "📊" },
+              { id: "carousel", label: "Carousel", icon: "🎠" },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.id}
@@ -306,29 +321,13 @@ const HealthyLivingPage = () => {
   </div> */}
         </TabsContent>
 
-        {["categories", "engagement"].map((tabId) => (
-          <TabsContent key={tabId} value={tabId} className="outline-none mt-4 w-full min-w-0">
-            <div className="card py-20 text-center border border-slate-200 shadow-sm rounded-xl">
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center mx-auto text-2xl">
-                  {tabId === "categories" ? "📂" : "📊"}
-                </div>
-                <h3 className="text-lg font-black text-slate-800 capitalize">
-                  {tabId} View
-                </h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  This module is currently being optimized for wellness data
-                  analytics.
-                </p>
-                <div className="flex justify-center gap-2">
-                  <span className="badge badge-amber uppercase">
-                    Coming Soon
-                  </span>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        ))}
+        <TabsContent value="engagement" className="outline-none mt-4 w-full min-w-0">
+          <HealthyLivingAnalyticsTab />
+        </TabsContent>
+
+        <TabsContent value="carousel" className="outline-none mt-4 w-full min-w-0">
+          <HealthyLivingCarouselTab />
+        </TabsContent>
       </Tabs>
 
       <AddHealthyLivingDialog />

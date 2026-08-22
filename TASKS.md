@@ -2337,3 +2337,47 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [ ] Metric registry (Epic 10.1) updated if a new KPI/chart was added or an existing one's source changed.
 - [ ] Any chart/graph in the story uses the shared shadcn chart components (see **Epic 9**) rather than a one-off library instance or a hand-built static visual.
 - [ ] If the story touches a route/hook Part I's `build-ready` comparison (Epic 8) flagged as having a reference implementation on that branch, apply Part I Epic 0.2's auth-pattern fix and Part I Epic 2's error-handling standard — don't carry `build-ready`'s bugs forward.
+
+---
+
+# Symptoms + Healthy Living Analytics & Carousels Build (implemented 2026-08-22)
+
+> Extends Part I (Diseases & Conditions) parity to Symptoms and Healthy
+> Living: analytics tabs, a Symptoms Categories tab, bidirectional
+> cross-links, and home-carousel feature management. Branch
+> `feat/gap-analysis-parts-lmn-security`. Mobile counterparts (status
+> filter fix + home carousel consumer) land on
+> `feat/fitness-mockup-parity` in the mobile repo.
+
+- [x] Migration `20260822_content_analytics_carousel_extension.sql`
+      — persists live-only drift (`symptom_views`, `healthy_living_views`,
+      both increment RPCs, `get_healthy_living_kpi_stats`,
+      `symptoms.severity`), adds `'healthy_living'` to `category_type`,
+      featured-slot columns on `symptoms` + `healthy_living_info`,
+      `healthy_living_categories` junction w/ RLS, analytics RPCs
+      `get_symptom_analytics()` + `get_healthy_living_analytics()`,
+      `get_home_carousel()`, and RBAC seeds for `symptoms.feature` /
+      `healthyliving.feature` (admin + content_manager).
+- [x] RBAC-guarded routes: `/api/symptoms/analytics`,
+      `/api/healthy-living/analytics`, `/api/symptoms/[id]/feature`,
+      `/api/healthy-living/[id]/feature` (cap = 12, 409 when full).
+- [x] Analytics tabs replace both Coming Soon placeholders
+      (engagement-tab layout clone): 30-day view trend, category/body-part
+      bars, top viewed/liked/saved leaderboards, content-health KPIs;
+      degrade gracefully (error state) until migration is applied.
+- [x] Symptoms Categories tab: coverage KPIs, category table with
+      `?category=` highlight, uncategorised queue; `useCategoriesForSymptoms`
+      now filters `type = 'symptom'`.
+- [x] Bidirectional cross-links via query params: Symptoms ⇄ Anatomy ⇄
+      Categories (`?tab=`, `?id=`, `?category=` deep links; `?id=` opens
+      the symptom view dialog).
+- [x] Carousel tabs on both pages via shared `CarouselManager`
+      (`components/redesign/carousel-manager.tsx`) + shared
+      `lib/carousel-slots.ts` slot assignment.
+- [x] Mobile (branch `feat/fitness-mockup-parity`): symptom lists/search
+      now filter `status = 'published'` (category branch via
+      `symptoms!inner` join); `use-home-carousel.ts` consumes
+      `get_home_carousel()` and `ContentSlideBox` merges featured content
+      into the Home carousel after marketing campaigns.
+- [ ] Apply migration `20260822_content_analytics_carousel_extension.sql`
+      to the live Supabase DB (user-manual, deployment-skip mandate).

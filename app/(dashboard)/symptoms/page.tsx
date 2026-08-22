@@ -12,6 +12,9 @@ import {
 } from "@/stores/dialog-store";
 import AddSymptomDialog from "./_components/add-symptom-dialog";
 import ViewSymptomDialog from "./_components/view-symptom-dialog";
+import SymptomAnalyticsTab from "./_components/analytics-tab";
+import SymptomCategoriesTab from "./_components/categories-tab";
+import SymptomCarouselTab from "./_components/carousel-tab";
 import {
   useSymptoms,
   useSymptomStats,
@@ -28,8 +31,33 @@ const SymptomsPage = () => {
   const limit = 10;
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const [activeTab, setActiveTab] = useState("all");
   const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const idParam = searchParams.get("id");
+  const [activeTab, setActiveTab] = useState(tabParam || "all");
+
+  // Deep-link support (Phase 4): /symptoms?tab=categories&category=x and
+  // /symptoms?tab=analytics arrive from the Anatomy menu + Analytics bars.
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) setActiveTab(tabParam);
+  }, [tabParam]);                                                    // eslint-disable-line
+
+  // Deep-link support: /symptoms?id=<uuid> opens the view dialog — used by
+  // the Anatomy Linked Symptoms tab and the analytics leaderboards.
+  const lastOpenedId = React.useRef<string | null>(null);
+  useEffect(() => {
+    if (idParam && lastOpenedId.current !== idParam) {
+      lastOpenedId.current = idParam;
+      openViewDialog(idParam);
+    }
+  }, [idParam]);                                                     // eslint-disable-line
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", value);
+    window.history.pushState(null, "", `?${params.toString()}`);
+  };
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("sym_page") || "1", 10);
@@ -254,7 +282,7 @@ const SymptomsPage = () => {
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
@@ -269,6 +297,7 @@ const SymptomsPage = () => {
               { id: "all", label: "All Symptoms", icon: "🩺" },
               { id: "categories", label: "Categories", icon: "📂" },
               { id: "analytics", label: "Analytics", icon: "📊" },
+              { id: "carousel", label: "Carousel", icon: "🎠" },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.id}
@@ -357,33 +386,26 @@ const SymptomsPage = () => {
             </div>
           </TabsContent>
 
-          {["categories", "analytics"].map((tabId) => (
-            <TabsContent
-              key={tabId}
-              value={tabId}
-              className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
-            >
-              <div className="card py-32 text-center border-dashed border-2 border-slate-200 bg-slate-50/50">
-                <div className="max-w-md mx-auto space-y-4">
-                  <div className="w-20 h-20 bg-white rounded-3xl border border-slate-100 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-slate-200/50 animate-bounce">
-                    {tabId === "categories" ? "📂" : "📊"}
-                  </div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
-                    {tabId} Module
-                  </h3>
-                  <p className="text-[13px] text-slate-500 font-bold leading-relaxed px-6">
-                    We're building a high-fidelity dashboard for this module.
-                    Real-time data visualization and insights are coming soon.
-                  </p>
-                  <div className="pt-4">
-                    <span className="badge bg-slate-900 text-white px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-slate-200">
-                      Coming Soon
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          ))}
+          <TabsContent
+            value="categories"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <SymptomCategoriesTab />
+          </TabsContent>
+
+          <TabsContent
+            value="analytics"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <SymptomAnalyticsTab />
+          </TabsContent>
+
+          <TabsContent
+            value="carousel"
+            className="outline-none animate-in fade-in zoom-in-95 duration-300 w-full min-w-0"
+          >
+            <SymptomCarouselTab />
+          </TabsContent>
         </div>
       </Tabs>
 

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
+import { apiFetch, jsonBody } from "@/lib/api-fetch";
 import { toast } from "sonner";
 import {
   THealthyLivingInput,
@@ -249,3 +250,92 @@ export const useHealthyLivingOperations = () => ({
   update: useUpdateHealthyLiving(),
   delete: useDeleteHealthyLiving(),
 });
+
+// ============ Analytics + Carousel hooks (Analytics/Carousels build) ============
+
+export interface HealthyLivingAnalytics {
+  totals: {
+    total: number;
+    published: number;
+    draft: number;
+    archived: number;
+    views: number;
+    featured: number;
+    uncategorised: number;
+    unique_viewers_30d: number;
+  };
+  view_trend_30d: { date: string; views: number }[];
+  categories: { category_id: string; category_name: string; article_count: number }[];
+  top_viewed: { id: string; name: string; value: number }[];
+  top_liked: { id: string; name: string; value: number }[];
+  top_saved: { id: string; name: string; value: number }[];
+  engagement: { likes: number; saves: number; unique_engagers: number } | null;
+  engagement_pipeline_live: boolean;
+}
+
+/** GET /api/healthy-living/analytics — RBAC-guarded analytics (healthyliving.view). */
+export const useHealthyLivingAnalyticsApi = (enabled: boolean) => {
+  return useQuery<HealthyLivingAnalytics, Error>({
+    queryKey: [...HEALTHY_LIVING_QUERY_KEYS.all, "analytics-api"] as const,
+    queryFn: () => apiFetch<HealthyLivingAnalytics>("/api/healthy-living/analytics"),
+    enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/** PUT /api/healthy-living/[id]/feature — carousel slot assign/remove. */
+export const useFeatureHealthyLiving = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { ok: boolean; updated: number },
+    Error,
+    { id: string; ids?: string[]; featured: boolean; position?: number }
+  >({
+    mutationFn: ({ id, ids, featured, position }) =>
+      apiFetch(`/api/healthy-living/${id}/feature`, {
+        ...jsonBody({ ids, featured, position }),
+        method: "PUT",
+      }),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: HEALTHY_LIVING_QUERY_KEYS.all });
+      toast.success(
+        vars.featured
+          ? `${vars.ids?.length ?? 1} article(s) added to the carousel.`
+          : `${vars.ids?.length ?? 1} article(s) removed from the carousel.`,
+      );
+    },
+    onError: (error) => {
+      toast.error(`Carousel update failed: ${error.message}`);
+    },
+  });
+};
+
+/** Carousel tab data — featured set (slot order) + published candidates. */
+export const useHealthyLivingCarousel = () => {
+  const fetchCarouselData = async () => {
+    const supabase = await getSupabaseClient();
+    const [featuredRes, availableRes] = await Promise.all([
+      supabase
+        .from("healthy_living_info")
+        .select("id, name, status, view_count, featured_order, featured_from")
+        .eq("is_featured", true)
+        .order("featured_order", { ascending: true, nullsFirst: false }),
+      supabase
+        .from("healthy_living_info")
+        .select("id, name, status, view_count")
+        .eq("status", "published")
+        .neq("is_featured", true)
+        .order("view_count", { ascending: false })
+        .limit(20),
+    ]);
+    if (featuredRes.error) throw new Error(featuredRes.error.message);
+    if (availableRes.error) throw new Error(availableRes.error.message);
+    return { featured: featuredRes.data ?? [], available: availableRes.data ?? [] };
+  };
+
+  return useQuery<{ featured: any[]; available: any[] }, Error>({
+    queryKey: [...HEALTHY_LIVING_QUERY_KEYS.all, "carousel"] as const,
+    queryFn: fetchCarouselData,
+    staleTime: 1000 * 60 * 2,
+  });
+};
