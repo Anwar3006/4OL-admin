@@ -72,10 +72,12 @@
 | X | Compact (Density) Mode | ✅ Implemented 2026-08-21 | `use-density.ts` + CSS density tokens |
 | Y | Platform Schematic | ✅ Implemented 2026-08-21 | `/api/admin/schematic` auto-updating page |
 | Z | Delete Account Requests | ✅ Implemented 2026-08-21 | `20260821_deletion_policy_extension.sql`, rebuilt page |
+| AA | Transactions menu depth | ✅ Implemented 2026-08-22 | `20260822_transactions_ledger.sql`, 10 RBAC-guarded `/api/transactions*` routes, `useTransactions.ts`, all 7 tabs live |
+| AB | Medication Enquiry (admin depth + mobile rollout design) | ✅ Admin depth implemented 2026-08-22 | `20260822_med_enquiry_depth.sql`, 8 RBAC-guarded `/api/medenquiry*` routes, `useMedEnquiry.ts`, all 6 tabs live; mobile screens deferred (M-D9) |
 
 **Open follow-ups across parts (not blocking):** apply `20260820_*` /
-`20260821_*` migrations to the live Supabase DB (credentials with the
-owner); mobile-side stories 23.5/23.6/24.5; Meta WhatsApp creds; MNO
+`20260821_*` / `20260822_*` migrations to the live Supabase DB (credentials
+with the owner); mobile-side stories 23.5/23.6/24.5; Meta WhatsApp creds; MNO
 payout API for scout rewards; Supabase Realtime channel for BedTracker
 (currently polling); server-side failed-login telemetry (28.2 note).
 
@@ -2444,3 +2446,34 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [x] Docs: GAP_ANALYSIS Part AA addendum.
 - [ ] Apply migration `20260822_transactions_ledger.sql` to the live
       Supabase DB (user-manual).
+
+## Medication Enquiry depth + mobile rollout design (Part AB, analysis 2026-08-22)
+
+- [x] Admin mockup analysis: 6 tabs (All/Pending/Escrow/Delivery/Pharmacy
+      Responses/Disputes), KPIs, business-logic banner, connected-menus bar,
+      sidebar children + pending badge (mockup L7012–7210).
+- [x] Codebase audit: `/medenquiry` is a 4-tab placeholder shell, no API
+      routes/hooks, duplicate `/medication-enquiry` stubs; base tables
+      `medication_enquiries` + `escrow_transactions` already exist (Escrow /
+      Disputes data coverage is largely wiring).
+- [x] Mobile mockup analysis (`medication-enquiry-mockup.html`): Find
+      Medication form fields mapped to schema additions (unit, radius,
+      search-area mode, notify-on-availability); connectivity via shared
+      `${API_URL}/api/...` surface + Supabase Storage + expo-notifications.
+- [x] Mobile menu positioning: hidden `(tabs)/FindMedication` group
+      (fitness pattern) + Home quick-action tile + Reminders refill CTA +
+      IBP enquiry inbox; flagged mockup's IBP bottom-nav discrepancy.
+- [x] Docs: GAP_ANALYSIS Part AB section (decisions M-D1–M-D9).
+- [x] Confirm decisions M-D1–M-D9 (user, 2026-08-22 — "proceed with
+      recommendations and implement all"; IBP bottom-nav in the mobile
+      mockup confirmed as a mockup mistake).
+- [x] Admin build: migration `20260822_med_enquiry_depth.sql`
+      (`enquiry_responses`, column adds, status extension, overview RPC,
+      `medenquiry.view/manage` catalog keys).
+- [x] Admin build: `/api/medenquiry*` routes + `useMedEnquiry.ts` + 6-tab
+      page depth + sidebar children + duplicate-route cleanup (redirects).
+- [ ] Apply `20260822_med_enquiry_depth.sql` to the live Supabase DB
+      (user-manual; UI degrades gracefully until applied).
+- [ ] Mobile rollout (future update, `feat/fitness-mockup-parity`):
+      FindMedication screens (form/results/detail/history) consuming the
+      same API surface.

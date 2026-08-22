@@ -2195,6 +2195,65 @@ The mockup's approach (global `!important` overrides) doesn't translate to Tailw
 
 ---
 
+## Part AB — Medication Enquiry (admin `page-medenquiry`, mockup L7012–7210 + mobile `medication-enquiry-mockup.html`) (✅ Admin depth implemented 2026-08-22 · mobile screens deferred per M-D9)
+
+**Admin mockup scope:** header Export + Settings; Business Logic banner (Free Tier / Premium / Escrow Payment / Pickup-Delivery); Connected Menus bar (Pharmacies · HCP Prescribers · Users · Escrow Transactions · Notifications · IBP Wholesalers); 4 KPI cards (Total Enquiries 30d / Pending-Unmatched / Escrow Active + ₵ held / Match Rate); **6 tabs** — All Enquiries (search + Type With-Rx/OTC/HCP-Rx + 7 statuses + Tier filters, 12-col table incl. Best Price + distance + prescription badge, actions View/Copy/Alert/Escrow), Pending (elapsed-hours SLA, Broadcast to pharmacies / Notify User), Escrow (Release/Refund), Delivery (driver, distance, Track/Confirm), Pharmacy Responses (per-pharmacy/IBP performance: responses, avg response time, availability rate, fulfilled, rating), Disputes (user claim vs pharmacy claim, Release to Pharmacy / Refund User). Sidebar: parent badge `8` + 4 children with tab deep-links.
+
+**Pre-build codebase state:** nav has a single `/medenquiry` item (`medication.view`) with **no children/badge**; the page is a 4-tab placeholder shell (All/Pending/Escrow/Delivery) — mockup's Pharmacy Responses + Disputes tabs, KPIs, banner and actions all missing. Four orphan `PlaceholderPage` stubs at `/medication-enquiry[/pending|escrow|delivery]` (IA duplication). **Zero** API routes touch `medication_enquiries`/`escrow_transactions`; no hooks.
+
+### Existing infrastructure (build is largely wiring)
+- `medication_enquiries` table exists and is rich: user, prescription_id, medication name/desc, dosage, quantity, urgency (normal/urgent/emergency), status (pending/confirmed/processing/shipped/delivered/cancelled/rejected), `pharmacy_id` FK → `facility_profile`, delivery address/GPS/status enum, tracking/courier/ETA/proof, payment fields, `escrow_id` FK, insurance, + `drug_id` FK (Part B catalog).
+- `escrow_transactions` covers Escrow + Disputes tabs outright: amount, `escrow_status` (pending/held/released/refunded/disputed/resolved), held/released/refunded timestamps, `released_to`, `platform_fee`, full dispute column set.
+- Part AA already backfills the ledger from `escrow_transactions` and seeds the 4.5% `med_enquiry` service rate; Part B ships `drugs` catalog + `pharmacy_campaigns` + PharmacyCampaignModal (Broadcast reuse); Part J ships `hcp_verifications.can_respond_enquiries` and defers J-D4 counters to this build.
+
+### Schema gaps (migration `2026082x_med_enquiry_depth.sql`)
+1. **`enquiry_responses`** (new): enquiry_id FK, responder facility/IBP, price, available, accepted, responded_at — powers Best Price, Match Rate, Pharmacy Responses tab.
+2. `medication_enquiries` adds: `enquiry_type` (with_rx/otc/hcp_request), `hcp_prescriber_id` FK → `hcp_verifications`, `prescription_url` (storage), `fulfilment_mode` (pickup/delivery), `pickup_confirmation_code`, plus mobile submission fields from the mobile mockup: `unit` (tablets/capsules/bottles/…), `search_radius_km`, `search_area_mode` (current/custom), `custom_area`, `notify_on_availability`.
+3. Status vocabulary extended to the mockup set (Pending Match / Matched / In Escrow / Pickup Ready / Delivery in Progress / Completed / Cancelled).
+4. RPC `get_med_enquiry_overview()` (KPIs, match rate, escrow held, pharmacy performance) with Part AA's graceful `{error}` degradation.
+5. Catalog keys `medenquiry.view` / `medenquiry.manage` (SQL + `lib/permissions.ts` mirror).
+
+### RBAC proposal
+`medenquiry.view` → admin, finance_admin, support_agent · `medenquiry.manage` (broadcast/notify/confirm) → admin · Escrow Release/Refund gated via existing `transactions.manage` (finance_admin + SA; writes Part AA ledger rows incl. the 4.5% fee) · **dispute resolution super-admin only** (refund-approval precedent).
+
+### Interconnections
+Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes deep-link `/transactions?tab=refunds`) · Medication Reminder B (shared `drug_id` autocomplete + verification flow; Broadcast → `pharmacy_campaigns` + Epic-27 notifications; reminder Pharmacy-Notif eligibility keyed on confirmed responses) · HCP J (`can_respond_enquiries` routing; unlocks J-D4 counters; HCP-Rx enquiry rows show prescriber) · Facilities H / IBP C (responder profile links, performance feeds ratings) · Notifications R (status campaigns) · Map F (delivery GPS, distance display) · Users C (submitter links with Part B privacy-masking convention).
+
+### Mobile rollout analysis (`medication-enquiry-mockup.html`, future app update — 4OL Mobile Plasence)
+**Mockup content:** "Find Medication" submission form — medication name (required, wired to the Part B `search_drugs` autocomplete), dosage, quantity + unit selector (9 units), 3-way urgency picker (Low/week, Medium/48h, High/today — maps to the DB's `normal/urgent/emergency`), prescription photo capture with encrypted-storage privacy note, Search Area (current GPS vs custom location), radius slider 1–20 km, "notify me when available" checkbox, submit → search; HealthMiles promo card (pickup-via-app-directions reward → FitCoins linkage). **Discrepancy flagged:** the mockup's bottom nav shows the IBP/business layout (Home/My Business/Finance/Marketing/More); the consumer rollout must use the consumer tab bar. *(Confirmed by product owner 2026-08-22: the IBP bottom nav in this mockup was a mockup mistake — ignored.)*
+**Mobile connectivity audit:** 4OL Mobile Plasence has **zero** enquiry code today (only a schema snapshot in a stray `.sql` file); connectivity arrives via the shared API surface (`${API_URL}/api/...` served by this admin repo's `app/api` — same pattern as fitness/search/chat), Supabase Storage for prescription uploads, and the existing expo-notifications pipeline for "notify when available".
+**Menu positioning recommendations (consumer):**
+1. **Primary:** a hidden tab-bar screen group `(tabs)/FindMedication/` mirroring the `(fitness)` pattern (`href: null`) — keeps the 5-visible-tab bar intact while giving the feature a route home: `index` (form), `results` (response comparison sorted by price×distance), `enquiry-detail` (status timeline: matched → escrow paid → pickup code / delivery tracking), `history`.
+2. **Entry points:** "💊 Find Medication" tile in the Home quick-actions row (next to Top Rated); a contextual CTA inside Reminders (`MedicationList`) — "need to refill? find it nearby" (highest-intent audience, shares the drug catalog); Pharmacy facility-profile action "Ask for availability"; Map tab pharmacy pin action.
+3. **IBP/pharmacy side:** enquiry inbox card in `(ibpTabs)/index` with respond-with-price-and-availability flow feeding `enquiry_responses` (this is what populates the admin Pharmacy Responses tab).
+**Mobile UX enhancements:** urgency-driven SLA copy + push reminders; responses screen with best-price highlight and distance badges; escrow explainer before payment (funds held until confirmation); pickup confirmation code screen with QR; delivery tracking timeline reusing `delivery_status`; HealthMiles awarded on confirmed pickup (FitCoins integration); Rx-photo client-side compression; plan-gating notice (FAQ #10: Starter+) with upgrade deep-link; offline-friendly draft state for the form.
+
+### Decisions to confirm before implementation
+
+**All decisions M-D1–M-D9 confirmed by product owner 2026-08-22 ("proceed with recommendations and implement all") and implemented as recommended.**
+
+| # | Decision | Recommendation |
+|---|----------|----------------|
+| M-D1 | Duplicate `/medication-enquiry` stubs | Delete + redirect to `/medenquiry` (mockup id `page-medenquiry`; nav audit agrees) |
+| M-D2 | `enquiry_responses` | Create table now, Pharmacy Responses UI Phase 2 — schema-first keeps the mobile contract stable |
+| M-D3 | Escrow Release/Refund | finance_admin + SA via existing `transactions.manage` (no new key) |
+| M-D4 | Dispute resolution | Super-admin only |
+| M-D5 | Prescription storage | `prescription_url` column + Supabase Storage bucket (no prescriptions table) |
+| M-D6 | Drivers | `courier_name` + metadata jsonb now; dedicated drivers table deferred |
+| M-D7 | Status vocabulary | Extend CHECK to the mockup's 7 states |
+| M-D8 | Mobile positioning | Hidden `(tabs)/FindMedication` group (fitness pattern) + Home tile + Reminders CTA; consumer tab bar, not the IBP nav shown in the mockup |
+| M-D9 | Mobile rollout timing | Admin depth first (this part); mobile screens a future update on `feat/fitness-mockup-parity`, consuming the same `/api/medenquiry` surface |
+
+### Implementation evidence (admin depth, 2026-08-22)
+- **Migration** `supabase/migrations/20260822_med_enquiry_depth.sql`: `medication_enquiries` columns (enquiry_type, hcp_prescriber_id, prescription_url, fulfilment_mode, pickup_confirmation_code, unit, search_radius_km, search_area_mode, custom_area, notify_on_availability, delivery_distance_km) with legacy backfill; status CHECK swapped to the 7 mockup states with legacy mapping; `enquiry_responses` table (+RLS on, no policies); catalog keys `medenquiry.view`/`medenquiry.manage` seeded for admin/finance_admin/support_agent; `get_med_enquiry_overview()` SECURITY DEFINER RPC (KPIs + pharmacy_performance) revoked from public and granted to service_role only.
+- **API routes** `app/api/medenquiry/*`: list (filters q/type/status/tier, privacy-masked submitter names, server-derived best price/response counts), overview + pharmacies (RPC wrappers with Part AA graceful `{ok:true, empty:true}` degradation), `[id]` GET/PATCH (notify_user/mark_pickup_ready/confirm_delivery/cancel + audit log), `[id]/broadcast` (pending_match only, regional pharmacy selection capped at 25 → `pharmacy_campaigns`), `[id]/escrow` PATCH (release/refund behind `transactions.manage`, ledger writes with `med_enquiry` fee rate), disputes GET + disputes/[id] PATCH (super-admin-only verdict + ledger writes).
+- **Hooks** `hooks/supabase-calls/useMedEnquiry.ts` (query + mutation layer, sonner toasts, invalidation).
+- **UI** `app/(dashboard)/medenquiry`: 6 tabs (All / Pending / Escrow / Delivery / Pharmacy Responses / Disputes) with URL-as-source-of-truth, Business Logic banner, Connected Menus chips, 4 KPI cards, Export; DataTable + MobileCardConfig everywhere; double-confirm dialogs with reason for Release/Refund and dispute verdicts; elapsed-time SLA highlighting on Pending.
+- **Nav/IA**: `/medenquiry` children deep-links + `medenquiry.view` permission; duplicate `/medication-enquiry[/pending|escrow|delivery]` stubs replaced by redirects (M-D1); `lib/permissions.ts` catalog + ROLE_DEFAULTS mirror updated.
+- **Pending user action:** apply `20260822_med_enquiry_depth.sql` to the live DB (UI degrades gracefully until then).
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

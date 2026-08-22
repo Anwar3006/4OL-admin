@@ -80,6 +80,8 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("period", "content", "Manage Period Library content"),
   p("medication", "view", "View medication reminder data"),
   p("medication", "edit", "Manage medication database entries"),
+    p("medenquiry", "view", "View medication enquiries, escrow state and pharmacy responses"),
+    p("medenquiry", "manage", "Manage enquiry lifecycle, broadcasts and escrow actions"),
   p("hcp", "view", "View healthcare professional records"),
   p("hcp", "create", "Onboard new healthcare professionals"),
   p("hcp", "verify", "Approve or reject HCP verifications"),
@@ -156,6 +158,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "fitness.view", "fitness.create", "fitness.edit", "fitness.delete",
     "period.view", "period.edit", "period.review_notes", "period.content",
     "medication.view", "medication.edit",
+    "medenquiry.view", "medenquiry.manage",
     "hcp.view", "hcp.create", "hcp.verify",
     "jobs.view", "jobs.manage",
     "ibp.view", "ibp.edit", "ibp.delete",
@@ -211,6 +214,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "users.view",
     "chats.view", "chats.reply",
     "faq.view",
+    "medenquiry.view",
   ]),
   finance_admin: D([
     "dashboard.view", "dashboard.export",
@@ -219,6 +223,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "marketing.view",
     "subscriptions.view",
     "fitcoins.view",
+    "medenquiry.view",
   ]),
   compliance_officer: D([
     "dashboard.view",

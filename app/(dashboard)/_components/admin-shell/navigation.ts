@@ -116,7 +116,15 @@ export const dashboardNavSections: DashboardNavSection[] = [
         title: "Medication Enquiry",
         href: "/medenquiry",
         icon: "🔬",
-        permission: "medication.view",
+        permission: "medenquiry.view",
+        children: [
+          { title: "All Enquiries", href: "/medenquiry?tab=all" },
+          { title: "Pending", href: "/medenquiry?tab=pending" },
+          { title: "Escrow", href: "/medenquiry?tab=escrow" },
+          { title: "Delivery", href: "/medenquiry?tab=delivery" },
+          { title: "Pharmacy Responses", href: "/medenquiry?tab=pharmacies" },
+          { title: "Disputes", href: "/medenquiry?tab=disputes" },
+        ],
       },
       {
         title: "BedTracker (PKM)",
