@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
+  #cv { display: block; width: 100vw; height: 100vh; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<script>
+(function () {
+  'use strict';
+
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  // ── State ─────────────────────────────────────────────────────────────
+  var state = {
+    gender: 'female',
+    yaw: 0, pitch: 0, zoom: 1,
+    tgt: { x: 0, y: 105, z: 0 },
+    shiftX: 0,
+    organs: false,
+    placement: false,
+    focusRegion: null,
+    pins: []
+  };
+  // Lerped (displayed) values.
+  var disp = {
+    yaw: 0, pitch: 0, zoom: 1,
+    tx: 0, ty: 105, tz: 0,
+    shiftX: 0
+  };
+  var pinScreen = [];   // hit-test cache: {id, body_part_id, sx, sy}
+  var primScreen = [];  // hit-test cache: {region, part, sx, sy, r}
+  var dragging = false, moved = 0, lastX = 0, lastY = 0;
+  var startTime = Date.now();
+
+  function resize() {
+    cv.width = Math.floor(window.innerWidth * DPR);
+    cv.height = Math.floor(window.innerHeight * DPR);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ── Mannequin definition ──────────────────────────────────────────────
+  // kind: 's' sphere | 'c' capsule; g: 'all' | 'f' | 'm'; organ flags organs layer.
+  function P(kind, x1, y1, z1, x2, y2, z2, r, region, part, g, organ, col) {
+    return { kind: kind, x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2,
+             r: r, region: region, part: part, g: g, organ: organ, col: col };
+  }
+  var SKIN = '#d9b99b', ORGAN_RED = '#c0564f', ORGAN_SOFT = '#e0917f';
+
+  function buildBody(gender) {
+    var b = [];
+    var female = gender === 'female';
+    // Head + neck
+    b.push(P('s', 0, 188, 0, 0, 188, 0, 13, 'head', 'head', 'all', 0, SKIN));
+    b.push(P('c', 0, 176, 0, 0, 165, 0, 5, 'neck', 'neck', 'all', 0, SKIN));
+    // Torso
+    b.push(P('c', 0, 160, 0, 0, 132, 0, female ? 15 : 16.5, 'chest', 'chest', 'all', 0, SKIN));
+    b.push(P('c', 0, 132, 0, 0, 110, 0, 13, 'abdomen', 'abdomen', 'all', 0, SKIN));
+    b.push(P('c', 0, 110, 0, 0, 96, 0, female ? 16 : 14, 'pelvis', 'pelvis', 'all', 0, SKIN));
+    // Arms (both sides)
+    var sides = [-1, 1];
+    for (var i = 0; i < sides.length; i++) {
+      var s = sides[i];
+      var side = s < 0 ? 'left' : 'right';
+      b.push(P('s', s * 19, 158, 0, 0, 0, 0, 6, 'chest', 'shoulder', 'all', 0, SKIN));
+      b.push(P('c', s * 24, 156, 0, s * 27, 128, 0, 5, 'arm_' + side, 'arm', 'all', 0, SKIN));
+      b.push(P('c', s * 27, 128, 0, s * 28, 102, 0, 4.5, 'arm_' + side, 'forearm', 'all', 0, SKIN));
+      b.push(P('s', s * 28, 94, 2, 0, 0, 0, 5, 'hand_' + side, 'hand', 'all', 0, SKIN));
+      b.push(P('c', s * 9, 96, 0, s * 10, 62, 0, female ? 9 : 8, 'leg_' + side, 'thigh', 'all', 0, SKIN));
+      b.push(P('c', s * 10, 62, 0, s * 10, 22, 0, 6, 'leg_' + side, 'calf', 'all', 0, SKIN));
+      b.push(P('c', s * 10, 10, 2, s * 10, 4, 11, 4.5, 'foot_' + side, 'foot', 'all', 0, SKIN));
+    }
+    // Female chest marker
+    if (female) {
+      b.push(P('s', -7, 146, 10, 0, 0, 0, 5, 'chest', 'breast', 'f', 0, SKIN));
+      b.push(P('s', 7, 146, 10, 0, 0, 0, 5, 'chest', 'breast', 'f', 0, SKIN));
+    }
+    return b;
+  }
+
+  var ORGANS = [
+    P('s', 0, 190, 0, 0, 0, 0, 9, 'head', 'brain', 'all', 1, ORGAN_SOFT),
+    P('s', -4, 146, 5, 0, 0, 0, 5, 'chest', 'heart', 'all', 1, ORGAN_RED),
+    P('c', -7, 152, 3, -7, 134, 3, 5, 'chest', 'lung', 'all', 1, ORGAN_SOFT),
+    P('c', 7, 152, 3, 7, 134, 3, 5, 'chest', 'lung', 'all', 1, ORGAN_SOFT),
+    P('s', 4, 120, 5, 0, 0, 0, 6, 'abdomen', 'stomach', 'all', 1, ORGAN_SOFT),
+    P('c', -2, 127, 5, -8, 124, 5, 5, 'abdomen', 'liver', 'all', 1, ORGAN_RED),
+    P('s', -8, 116, -4, 0, 0, 0, 3.5, 'abdomen', 'kidney', 'all', 1, ORGAN_RED),
+    P('s', 8, 116, -4, 0, 0, 0, 3.5, 'abdomen', 'kidney', 'all', 1, ORGAN_RED),
+    P('s', 0, 108, 6, 0, 0, 0, 8, 'abdomen', 'intestines', 'all', 1, ORGAN_SOFT),
+    P('c', 0, 160, -6, 0, 100, -6, 3, 'back', 'spine', 'all', 1, '#e7c9a9')
+  ];
+
+  var body = buildBody(state.gender);
+
+  // ── Math / projection ─────────────────────────────────────────────────
+  var DEG = Math.PI / 180;
+  function rot(x, y, z) {
+    // Translate to camera target, yaw around Y, pitch around X.
+    var px = x - disp.tx, py = y - disp.ty, pz = z - disp.tz;
+    var yaw = disp.yaw * DEG, pitch = disp.pitch * DEG;
+    var cx = Math.cos(yaw), sx = Math.sin(yaw);
+    var x1 = px * cx - pz * sx;
+    var z1 = px * sx + pz * cx;
+    var cp = Math.cos(pitch), sp = Math.sin(pitch);
+    var y2 = py * cp - z1 * sp;
+    var z2 = py * sp + z1 * cp;
+    return { x: x1, y: y2, z: z2 };
+  }
+  function k() {
+    return disp.zoom * Math.min(cv.width, cv.height) / 260;
+  }
+  function project(pt) {
+    var r = rot(pt.x, pt.y, pt.z);
+    var f = 520;
+    var persp = f / (f + r.z);
+    var kk = k() * persp;
+    return {
+      sx: cv.width / 2 + disp.shiftX * DPR + r.x * kk,
+      sy: cv.height / 2 - r.y * kk,
+      z: r.z, kk: kk
+    };
+  }
+
+  function shade(hex, factor) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = Math.min(255, Math.round(((n >> 16) & 255) * factor));
+    var g = Math.min(255, Math.round(((n >> 8) & 255) * factor));
+    var b = Math.min(255, Math.round((n & 255) * factor));
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  // ── Render loop ───────────────────────────────────────────────────────
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function frame() {
+    var t = 0.14;
+    disp.yaw = lerp(disp.yaw, state.yaw, t);
+    disp.pitch = lerp(disp.pitch, state.pitch, t);
+    disp.zoom = lerp(disp.zoom, state.zoom, t);
+    disp.tx = lerp(disp.tx, state.tgt.x, t);
+    disp.ty = lerp(disp.ty, state.tgt.y, t);
+    disp.tz = lerp(disp.tz, state.tgt.z, t);
+    disp.shiftX = lerp(disp.shiftX, state.shiftX, t);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    primScreen = [];
+
+    var prims = body.slice();
+    if (state.organs) prims = prims.concat(ORGANS);
+
+    // Project + depth-sort (far first).
+    var items = [];
+    for (var i = 0; i < prims.length; i++) {
+      var p = prims[i];
+      var a = project({ x: p.x1, y: p.y1, z: p.z1 });
+      var bq = p.kind === 's' ? a : project({ x: p.x2, y: p.y2, z: p.z2 });
+      items.push({ p: p, a: a, b: bq, z: (a.z + bq.z) / 2 });
+    }
+    items.sort(function (m, n) { return n.z - m.z; });
+
+    var pulse = 0.5 + 0.5 * Math.sin((Date.now() - startTime) / 400);
+    var translucent = state.organs;
+
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j], pr = it.p;
+      var light = Math.max(0.62, Math.min(1.12, 1.02 - it.z / 90));
+      var col = shade(pr.col, light);
+      var focused = state.focusRegion && pr.region === state.focusRegion;
+      if (focused) col = shade('#34d399', light);
+
+      ctx.globalAlpha = (pr.organ === 0 && translucent) ? 0.45 : 1;
+      ctx.fillStyle = col;
+      ctx.strokeStyle = col;
+      var rr = pr.r * it.a.kk;
+      if (pr.kind === 's') {
+        ctx.beginPath();
+        ctx.arc(it.a.sx, it.a.sy, rr, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.lineWidth = rr * 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(it.a.sx, it.a.sy);
+        ctx.lineTo(it.b.sx, it.b.sy);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      if (pr.organ === 0) {
+        var cx = (it.a.sx + (pr.kind === 's' ? it.a.sx : it.b.sx)) / 2;
+        var cy = (it.a.sy + (pr.kind === 's' ? it.a.sy : it.b.sy)) / 2;
+        primScreen.push({ region: pr.region, part: pr.part, sx: cx, sy: cy, r: Math.max(rr * 1.3, 18 * DPR) });
+      }
+    }
+
+    // Pins (drawn last, always on top).
+    pinScreen = [];
+    for (var q = 0; q < state.pins.length; q++) {
+      var pin = state.pins[q];
+      var pp = project({ x: pin.x, y: pin.y, z: pin.z });
+      var base = 7 * DPR;
+      ctx.beginPath();
+      ctx.arc(pp.sx, pp.sy, base + 5 * DPR * pulse, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(16,185,129,' + (0.55 - 0.3 * pulse) + ')';
+      ctx.lineWidth = 2 * DPR;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(pp.sx, pp.sy, base, 0, Math.PI * 2);
+      ctx.fillStyle = '#059669';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(pp.sx, pp.sy, base * 0.45, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      pinScreen.push({ id: pin.id, body_part_id: pin.body_part_id, sx: pp.sx, sy: pp.sy });
+    }
+
+    if (state.placement) {
+      ctx.fillStyle = 'rgba(15,23,42,0.65)';
+      ctx.fillRect(0, 0, cv.width, 34 * DPR);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 13 * DPR + 'px sans-serif';
+      ctx.fillText('Placement mode: tap the model to capture a pin position', 12 * DPR, 22 * DPR);
+    }
+  }
+
+  // ── Input ─────────────────────────────────────────────────────────────
+  function pos(e) {
+    var t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX * DPR, y: t.clientY * DPR };
+  }
+  function onDown(e) {
+    dragging = true; moved = 0;
+    var p = pos(e); lastX = p.x; lastY = p.y;
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    var p = pos(e);
+    var dx = p.x - lastX, dy = p.y - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    lastX = p.x; lastY = p.y;
+    state.yaw += dx / DPR * 0.45;
+    state.pitch = Math.max(-35, Math.min(35, state.pitch - dy / DPR * 0.22));
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    if (moved < 8 * DPR) handleTap(lastX, lastY);
+  }
+  cv.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  cv.addEventListener('touchstart', function (e) { onDown(e); }, { passive: true });
+  cv.addEventListener('touchmove', function (e) { onMove(e); e.preventDefault(); }, { passive: false });
+  cv.addEventListener('touchend', function (e) {
+    if (!dragging) return;
+    dragging = false;
+    if (moved < 8 * DPR) handleTap(lastX, lastY);
+  });
+
+  function handleTap(sx, sy) {
+    // Placement capture: unproject at the camera-target depth plane.
+    if (state.placement) {
+      var kk = k();
+      var vx = (sx - cv.width / 2 - disp.shiftX * DPR) / kk;
+      var vy = -(sy - cv.height / 2) / kk;
+      var yaw = -disp.yaw * DEG, pitch = -disp.pitch * DEG;
+      var cp = Math.cos(pitch), sp = Math.sin(pitch);
+      var y1 = vy * cp, z1 = vy * sp;
+      var cx = Math.cos(yaw), sxr = Math.sin(yaw);
+      var mx = vx * cx - z1 * sxr + disp.tx;
+      var mz = vx * sxr + z1 * cx + disp.tz;
+      var my = y1 + disp.ty;
+      var hit = pickPrim(sx, sy);
+      send({ type: 'placement',
+             x: Math.round(mx * 10) / 10,
+             y: Math.round(my * 10) / 10,
+             z: Math.round(mz * 10) / 10,
+             region: hit ? hit.region : null,
+             part: hit ? hit.part : null });
+      return;
+    }
+    // Pins first.
+    var best = null, bestD = 26 * DPR;
+    for (var i = 0; i < pinScreen.length; i++) {
+      var p = pinScreen[i];
+      var d = Math.sqrt((p.sx - sx) * (p.sx - sx) + (p.sy - sy) * (p.sy - sy));
+      if (d < bestD) { bestD = d; best = p; }
+    }
+    if (best) {
+      send({ type: 'pin_tapped', id: best.id, body_part_id: best.body_part_id });
+      return;
+    }
+    var prim = pickPrim(sx, sy);
+    if (prim) {
+      send({ type: 'region_tapped', region: prim.region, part: prim.part });
+      return;
+    }
+    send({ type: 'empty_tapped' });
+  }
+
+  function pickPrim(sx, sy) {
+    var best = null, bestD = Infinity;
+    for (var i = 0; i < primScreen.length; i++) {
+      var p = primScreen[i];
+      var d = Math.sqrt((p.sx - sx) * (p.sx - sx) + (p.sy - sy) * (p.sy - sy));
+      if (d < p.r && d < bestD) { bestD = d; best = p; }
+    }
+    return best;
+  }
+
+  // ── Messaging ─────────────────────────────────────────────────────────
+  function send(obj) {
+    var msg = JSON.stringify(obj);
+    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      window.ReactNativeWebView.postMessage(msg);
+    } else if (window.parent && window.parent !== window) {
+      window.parent.postMessage(msg, '*');
+    }
+  }
+
+  function handle(m) {
+    if (!m || !m.type) return;
+    switch (m.type) {
+      case 'init':
+        if (m.gender) { state.gender = m.gender; body = buildBody(m.gender); }
+        if (m.pins) state.pins = m.pins;
+        if (typeof m.organs === 'boolean') state.organs = m.organs;
+        if (typeof m.placement === 'boolean') state.placement = m.placement;
+        break;
+      case 'set_gender':
+        state.gender = m.gender;
+        body = buildBody(m.gender);
+        break;
+      case 'set_pins':
+        state.pins = Array.isArray(m.pins) ? m.pins : [];
+        break;
+      case 'set_organs':
+        state.organs = !!m.visible;
+        break;
+      case 'set_placement':
+        state.placement = !!m.on;
+        break;
+      case 'set_focus_region':
+        state.focusRegion = m.key || null;
+        break;
+      case 'shift_model':
+        state.shiftX = m.x || 0;
+        break;
+      case 'zoom_region':
+        state.zoom = m.zoom || 2.2;
+        state.tgt = { x: m.x || 0, y: m.y || 120, z: m.z || 0 };
+        if (typeof m.yaw === 'number') state.yaw = m.yaw;
+        state.focusRegion = m.key || state.focusRegion;
+        state.pins = Array.isArray(m.pins) ? m.pins : state.pins;
+        break;
+      case 'reset_view':
+        state.zoom = 1;
+        state.tgt = { x: 0, y: 105, z: 0 };
+        state.yaw = 0; state.pitch = 0;
+        state.focusRegion = null;
+        state.pins = [];
+        break;
+    }
+  }
+
+  window.__recv = handle;
+  window.addEventListener('message', function (e) {
+    try {
+      var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      handle(d);
+    } catch (err) { /* ignore malformed frames */ }
+  });
+
+  requestAnimationFrame(frame);
+  send({ type: 'ready' });
+})();
+</script>
+</body>
+</html>

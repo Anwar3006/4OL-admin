@@ -2496,6 +2496,40 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AL — Human Anatomy Explorer: 3D Mobile UI + AI Pin Mapping (AL-D) (✅ Implemented 2026-08-23)
+
+*New feature stream (not mockup-gap): mobile 3D Human Anatomy explorer with rotatable male/female model, region zoom with content pins, topic panel + content modals; admin 3D pin placement editor and AI pin-mapper for Diseases & Conditions, Symptoms, Healthy Living and Fitness content. Builds on the Part A anatomy schema (`body_parts`, junctions, `anatomy_interactions`) and the mobile `(modal)` content detail routes.*
+
+**What was built:**
+
+1. **Migration `20260823_anatomy_mobile_al.sql`** — `anatomy_regions` (14-region vocabulary + camera presets), `anatomy_hotspots_3d` (3D pin anchors, unique per body part + gender, `source` provenance), `fitness_body_parts` junction (closes the fitness association gap), `source` columns on the three existing junctions, `action` column + `log_anatomy_interaction()` RPC on `anatomy_interactions`, one-call `get_anatomy_region_content(region, gender)` aggregation RPC (published-only conditions/tips, active workouts, parts with zero content omitted), `ai_body_part_mappings` review queue, and a fuzzy name-keyword seed of 3D pins targeting the placeholder mannequin.
+2. **Mobile scene engine** (`lib/anatomy-scene.ts`, mirrored to admin `public/anatomy/scene.html`) — self-contained dependency-free canvas renderer: drag-to-rotate, pitch clamp, depth-sorted primitive mannequin with gender variants, premium organs layer, camera lerp zoom to region presets, pulsing pins, screen-space hit-testing, placement-mode unprojection, JSON message bridge (RN `injectJavaScript` ↔ iframe `postMessage`). *Deviation from AL-D1: three.js is not vendored anywhere in the workspace and runtime downloads are disallowed, so Phase 0 ships an equivalent mini-engine with the same protocol — a production three.js + GLB scene can replace the renderer internals without touching the shells (AL-D2 placeholder plan).*
+3. **Mobile Anatomy screen** (`app/(app)/(auth)/Anatomy/index.tsx` + `hooks/use-anatomy.ts`) — state machine FULL_BODY → REGION_ZOOM → PIN_SELECTED: region tap zooms and streams pins (only parts with registered content), pin tap shifts the model left (tablets) / opens a bottom sheet (phones) listing topics grouped Diseases 🦠 / Symptoms 🩺 / Healthy Living 🌿 / Fitness 💪, topic tap reuses the existing `(modal)` detail routes (`workout-detail` for fitness), tap-away closes topics, context-aware back (panel → region → full → exit) incl. Android hardware back; interaction telemetry on pin tap + content open; Home entry via new Anatomy category tile (second position, both CategorySmall/Large switches).
+4. **Premium plumbing (AL-D9)** — organs layer toggle gated by `useEntitlement`; locked state routes to the existing premium plans screen.
+5. **Admin 3D Pin Placement tab** (`PinPlacement3DTab.tsx` + `/api/anatomy/hotspots3d`, `/api/anatomy/regions`) — iframe embeds the same scene engine; placement mode captures model-space coordinates on tap, saves via upsert on `(body_part_id, gender)`; per-region pin list with provenance + delete.
+6. **Admin AI Pin Mapper** (`AiPinMapperTab.tsx`, `lib/anatomy/ai-pin-mapper.ts`, `/api/anatomy/ai-map`, `/api/anatomy/ai-map/decide`) — OpenAI structured outputs (gpt-4o, same pattern as `lib/fitness/generate-plan.ts`), body-part vocabulary constrained, batch cap 25, unmapped-only + already-queued exclusion; every suggestion lands as `proposed` in `ai_body_part_mappings` with confidence + rationale; approval is the **only** path that writes junction rows (`source='ai'`); bulk approve ≥90% helper.
+
+| Decision | Choice |
+| --- | --- |
+| AL-D1 3D tech | WebView/iframe scene + JSON bridge (three.js deferred — see deviation note) |
+| AL-D2 Models | Placeholder primitive mannequin now; licensed stylized GLBs drop in later via the same protocol |
+| AL-D3 Pin geometry | `anatomy_hotspots_3d` + admin 3D placement editor (seeded by keyword backfill, `source='seed'`) |
+| AL-D4 Interaction | Full state machine; bottom-sheet panel <600dp, side split ≥600dp |
+| AL-D5 Content modal | Reuses existing `(modal)` detail routes; fitness → `workout-detail` |
+| AL-D6 Content API | Single `get_anatomy_region_content` RPC per region+gender, published-only |
+| AL-D7 Fitness association | `fitness_body_parts` junction, AI-seeded + manual |
+| AL-D8 AI mapper | Proposed → human-approved only; audit table with confidence/rationale/model |
+| AL-D9 Premium | Free core; organs layer gated via existing entitlement |
+| AL-D10 Analytics | `anatomy_interactions` action types feed the existing Map Interactions 30d KPI |
+
+**Explicitly rejected (documented):** @react-three/fiber + expo-gl (new native deps on SDK 56 Expo Go project), sprite-turntable pseudo-3D (fails rotation + zoom + pin hit-testing), auto-publishing AI mappings (safety), gating free content reads (funnel damage), hardcoding pin coordinates (not admin-editable).
+
+**Residual risk / honest scoping:** the placeholder mannequin is functional but not final art; seeded pin coordinates target the placeholder geometry and need a refinement pass in the placement editor once production models land; the AI mapper needs `OPENAI_API_KEY` present and the migration applied.
+
+**User-manual activation steps:** apply `20260823_anatomy_mobile_al.sql`; run AI Pin Mapper batches per content type and approve suggestions; refine seeded pins in 3D Pin Placement; source/licence production male+female GLBs (follow-up AL-D2.2) and swap the scene renderer internals.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

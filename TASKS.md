@@ -2578,3 +2578,31 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
       sessions that trip headless indicators (reuses device-sign-in OTP).
 - [ ] Verify watermark visibility + idle sign-out on a staging admin session
       (user-manual).
+
+## Human Anatomy explorer: 3D mobile UI + AI pin mapping (Part AL, 2026-08-23)
+
+- [x] Migration `20260823_anatomy_mobile_al.sql`: anatomy_regions vocabulary +
+      camera presets, anatomy_hotspots_3d, fitness_body_parts junction,
+      source columns on existing junctions, get_anatomy_region_content +
+      log_anatomy_interaction RPCs, ai_body_part_mappings queue, keyword seed.
+- [x] Mobile: dependency-free 3D scene engine (WebView asset), rotatable
+      male/female mannequin, region zoom, pins, organs layer, placement mode.
+- [x] Mobile: Anatomy screen state machine (full → region → pin), topic
+      panel (bottom sheet phones / side panel tablets), reuse of existing
+      content detail modals, interaction telemetry, Home category tile.
+- [x] Mobile: premium gate on the organs layer via useEntitlement.
+- [x] Admin: 3D Pin Placement tab (iframe scene editor) + hotspots3d /
+      regions API routes (anatomy.view / anatomy.edit RBAC).
+- [x] Admin: AI Pin Mapper (OpenAI structured outputs, vocabulary-
+      constrained, proposed → human-approved only) + decide endpoint.
+- [x] tsc clean in both repos for all Part AL files.
+- [ ] Apply `20260823_anatomy_mobile_al.sql` to the live Supabase DB
+      (user-manual; explorer shows a graceful empty state until applied).
+- [ ] Run AI Pin Mapper batches per content type and approve suggestions
+      (user-manual; requires OPENAI_API_KEY).
+- [ ] Refine seeded pin coordinates in the 3D Pin Placement tab.
+- [ ] AL-D2.2: source/licence production male + female GLB models and swap
+      the scene renderer internals (message protocol unchanged).
+- [ ] Premium follow-ups: P2 symptom-triage mode, P3 personal focus areas,
+      P4 offline model packs, P5 Learn/FitCoins quiz mode (design pass).
+

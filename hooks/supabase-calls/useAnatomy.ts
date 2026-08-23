@@ -345,3 +345,189 @@ export const useLinkTipToBodyPart = () => {
     onError: (error) => toast.error(error.message),
   });
 };
+
+// ── Part AL: 3D anatomy explorer (mobile) ─────────────────────────────────
+
+export interface AnatomyRegion3D {
+  key: string;
+  label: string;
+  target_x: number;
+  target_y: number;
+  target_z: number;
+  zoom: number;
+  default_yaw: number;
+  display_order: number;
+}
+
+export const useAnatomyRegions3D = () => {
+  return useQuery({
+    queryKey: ["anatomy-regions-3d"],
+    queryFn: async () => {
+      const res = await fetch("/api/anatomy/regions");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load regions.");
+      return json as { regions: AnatomyRegion3D[]; applied: boolean };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export interface Hotspot3D {
+  id: string;
+  body_part_id: string;
+  region_key: string;
+  gender: "female" | "male" | "shared";
+  x: number;
+  y: number;
+  z: number;
+  source: string;
+  body_parts?: { id: string; name: string; body_system: string | null } | null;
+}
+
+export const useHotspots3D = (region?: string) => {
+  return useQuery({
+    queryKey: ["anatomy-hotspots-3d", region ?? "all"],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/anatomy/hotspots3d${region ? `?region=${region}` : ""}`,
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load 3D pins.");
+      return json as { hotspots: Hotspot3D[]; applied: boolean };
+    },
+  });
+};
+
+export const useUpsertHotspot3D = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      body_part_id: string;
+      region_key: string;
+      gender: "female" | "male" | "shared";
+      x: number;
+      y: number;
+      z: number;
+    }) => {
+      const res = await fetch("/api/anatomy/hotspots3d", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save pin.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-hotspots-3d"] });
+      toast.success("3D pin saved.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useDeleteHotspot3D = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/anatomy/hotspots3d?id=${id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete pin.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-hotspots-3d"] });
+      toast.success("3D pin removed.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+// ── Part AL: AI Pin Mapper ─────────────────────────────────────────────────
+
+export interface AiMappingRow {
+  id: string;
+  content_type: "condition" | "symptom" | "tip" | "workout";
+  content_id: string;
+  content_name: string;
+  confidence: number;
+  rationale: string | null;
+  status: "proposed" | "approved" | "rejected";
+  model: string | null;
+  created_at: string;
+  body_parts?: { id: string; name: string } | null;
+}
+
+export const useAiMappings = (status: string, contentType?: string) => {
+  return useQuery({
+    queryKey: ["anatomy-ai-mappings", status, contentType ?? "all"],
+    queryFn: async () => {
+      const params = new URLSearchParams({ status });
+      if (contentType) params.set("content_type", contentType);
+      const res = await fetch(`/api/anatomy/ai-map?${params.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load suggestions.");
+      return json as { mappings: AiMappingRow[]; applied: boolean };
+    },
+  });
+};
+
+export const useRunAiMap = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      content_type: "condition" | "symptom" | "tip" | "workout";
+      unmapped_only: boolean;
+      batch_size: number;
+    }) => {
+      const res = await fetch("/api/anatomy/ai-map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "AI mapping failed.");
+      return json as {
+        scanned: number;
+        proposed: number;
+        skipped: number;
+        model: string;
+        estimatedInputTokens?: number;
+      };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-ai-mappings"] });
+      toast.success(
+        `Scanned ${result.scanned} — ${result.proposed} new suggestions queued.`,
+      );
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useDecideAiMapping = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      ids: string[];
+      decision: "approved" | "rejected";
+    }) => {
+      const res = await fetch("/api/anatomy/ai-map/decide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Review failed.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-ai-mappings"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Review saved.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
