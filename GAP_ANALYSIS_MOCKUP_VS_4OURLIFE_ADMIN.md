@@ -2566,6 +2566,40 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AN — Medication Enquiry mobile rollout ("Find Medication") + premium PM1–PM6 (implemented 2026-08-23)
+
+Mockup source: `medication_inquiry.html` (consumer "Find Medication" form). Part AB built the admin depth on `medication_enquiries` + `enquiry_responses` + `escrow_transactions`; Part AN adds the consumer mobile layer on that same schema — no new tables.
+
+1. **Migration `20260825_med_enquiry_mobile_an.sql`** — `medication_enquiries.is_priority` flag (PM1); 7 SECURITY DEFINER RPCs keyed on `auth.uid()` only: `search_drug_names(p_q)` (drugs catalog + aliases trgm-style ILIKE, active only), `submit_medication_enquiry(p)` (validation, urgency vocabulary guard, free-tier caps enforced server-side, radius clamp, premium auto-broadcast into `pharmacy_campaigns` mirroring the admin broadcast route), `get_my_medication_enquiries()` (response count + best price + matched pharmacy), `get_medication_enquiry_detail(p_id)` (ownership check, offers ordered best-first, free top-3 with `offers_hidden`, escrow embed, premium best-price history for the medication), `accept_enquiry_offer(p_response_id)` (atomic: accepted one / others expired, enquiry → `matched`), `cancel_medication_enquiry(p_id)` (pre-escrow only), `raise_escrow_dispute(p_enquiry_id, p_reason)` (escrow `held` → `disputed`); two fail-open notification triggers (offer received — honours `notify_on_availability`; `pickup_ready`/`delivery_in_progress`/`completed` transitions). All grants `authenticated`/`service_role` only.
+2. **Admin `/api/medenquiry/attachment`** — signed-URL upload route for prescription photos (mirrors `/api/jobs/attachment`; `prescriptions/{user}/…` storage prefix, 5MB cap, images). Free for all users by design (safety feature, never gated).
+3. **Mobile Find Medication form** (`Medication/index.tsx`) — native port of the mockup: drug-name autocomplete from the drugs catalog, dosage, quantity + 9-unit dropdown, Low/Medium/High urgency cards (→ `normal`/`urgent`/`emergency`), prescription photo via camera/gallery with privacy notice, Current/Custom search area, radius chips 1–20 km, availability-notify switch, pickup/delivery toggle; success state mirrors the mockup's "Searching Nearby Pharmacies" panel.
+4. **Mobile My Enquiries** (`Medication/inquiries.tsx`) — status chips for the 7-state vocabulary, response count, best price, matched pharmacy, cancel-while-cancellable, free-limit banner.
+5. **Mobile enquiry detail modal** (`(modal)/MedEnquiryDetail.tsx`) — request summary, pharmacy offer cards with Accept (auto-refresh polling while `pending_match`), hidden-offers upsell, premium price-history bar chart, escrow card with raise-a-dispute flow, pickup confirmation code display, delivery tracking (courier/tracking).
+6. **Entry points** — "Find Medication" home tile (`prescription-bottle-medical`, after Pharmacies) wired in both CategorySmall/Large switches.
+
+| Decision | Choice |
+| --- | --- |
+| AN-D1 Entry & routes | Home tile + `Medication` group (form + enquiries) + `MedEnquiryDetail` modal |
+| AN-D2 Urgency mapping | Low→`normal`, Medium→`urgent`, High→`emergency` |
+| AN-D3 Autocomplete | `search_drug_names` RPC over drugs catalog; free-text always allowed |
+| AN-D4 Prescription upload | `/api/medenquiry/attachment`, `prescriptions/` prefix, sets `enquiry_type='with_rx'`, free |
+| AN-D5 Data access | RPC-only from mobile, fail-open until migration applied |
+| AN-D6 Accept offer | Atomic server-side (others expired); only `pending_match`/`matched` |
+| AN-D7 Cancel | Pre-escrow only; terminal |
+| AN-D8 Notifications | Existing `notifications` table (type `system`), fail-open triggers |
+| AN-D9 Free limits | 3 active enquiries, ≤10 km radius, top-3 offers, pickup only — enforced client AND server |
+| AN-D10 Premium | PM1 priority broadcast · PM2 20 km radius · PM3 all offers + price history · PM4 unlimited enquiries · PM5 delivery · PM6 2× HealthMiles (rewards integration follow-up) |
+| AN-D11 Dispute | User-raised while escrow `held`; reuses `escrow_transactions` dispute columns |
+| AN-D12 Scoping | No payment gateway (escrow recorded, money offline); no courier GPS; no Rx OCR; `hcp_request` reserved for future HCP app |
+
+**Explicitly rejected (documented):** gating prescription upload (safety optics), in-app payments this part, premium-gating enquiry submission itself (funnel damage), separate mobile schema (Part AB schema is the single source of truth).
+
+**Residual risk / honest scoping:** PM6 (2× HealthMiles) has no rewards-integration code yet — the incentive is advertised but the credit event is a follow-up. Pharmacy responses still arrive through the admin/IBP surfaces (no pharmacy-facing app yet). Escrow release and payment settlement stay manual/admin-driven.
+
+**User-manual activation steps:** apply `20260825_med_enquiry_mobile_an.sql` (and the still-pending Part AB `20260822_med_enquiry_depth.sql` if not yet applied). No admin UI changes needed — the existing 6-tab Medication Enquiry menu consumes the mobile-submitted data as-is.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

@@ -73,7 +73,7 @@
 | Y | Platform Schematic | ✅ Implemented 2026-08-21 | `/api/admin/schematic` auto-updating page |
 | Z | Delete Account Requests | ✅ Implemented 2026-08-21 | `20260821_deletion_policy_extension.sql`, rebuilt page |
 | AA | Transactions menu depth | ✅ Implemented 2026-08-22 | `20260822_transactions_ledger.sql`, 10 RBAC-guarded `/api/transactions*` routes, `useTransactions.ts`, all 7 tabs live |
-| AB | Medication Enquiry (admin depth + mobile rollout design) | ✅ Admin depth implemented 2026-08-22 | `20260822_med_enquiry_depth.sql`, 8 RBAC-guarded `/api/medenquiry*` routes, `useMedEnquiry.ts`, all 6 tabs live; Facilities ↔ MedEnquiry cross-links; mobile screens deferred (M-D9) |
+| AB | Medication Enquiry (admin depth + mobile rollout design) | ✅ Admin depth implemented 2026-08-22; mobile rollout in Part AN | `20260822_med_enquiry_depth.sql`, 8 RBAC-guarded `/api/medenquiry*` routes, `useMedEnquiry.ts`, all 6 tabs live; Facilities ↔ MedEnquiry cross-links; mobile screens shipped in Part AN (M-D9 closed) |
 | AC | App Reviews & periodic rating popup (Reviews menu "App" target) | ✅ Implemented 2026-08-22 | `20260822_app_reviews.sql` (table + 5 RPCs + RLS + monthly throttle), 📱 App Reviews tab on `/reviews` with live moderation, `useAppReviews.tsx`; mobile: `RateAppModal` + `RateAppPromptController` + `lib/store-links.ts` (4OL Mobile Plasence) |
 | AD | Global Search (S-D) | ✅ Implemented 2026-08-22 | `20260822_global_search_v2.sql` (hybrid RPC + analytics + ghost RPC capture), `/api/search/dynamic` → 410 Gone; mobile: `use-global-search.ts` + Home wiring, dead search hooks deleted (4OL Mobile Plasence) |
 | AE | Top Rated placement windows (T-D) | ✅ Implemented 2026-08-22 | `20260822_top_rated_placement_windows.sql` (windows + snapshot trigger + anon revoke); `/top-rated` page completed (CSV export, search, totals, AlertDialog, deep links, window inputs); mobile window filters + sort tiebreaker (4OL Mobile Plasence) |
@@ -2635,4 +2635,33 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [ ] Publish job postings from the Jobs menu to populate the mobile board.
 - [ ] Follow-up: cron delivery matching job_alerts prefs against new postings.
 - [ ] Follow-up: CV Boost billing event (currently surfaced via ordering).
+
+## Medication Enquiry mobile rollout "Find Medication" + premium PM1–PM6 (Part AN, 2026-08-23)
+
+- [x] Confirm decisions AN-D1…AN-D12 + premium strategies PM1–PM6 (user,
+      2026-08-23 — "Approved. Proceed and implement").
+- [x] Migration `20260825_med_enquiry_mobile_an.sql`: `is_priority` flag;
+      7 SECURITY DEFINER RPCs (search_drug_names, submit_medication_enquiry,
+      get_my_medication_enquiries, get_medication_enquiry_detail,
+      accept_enquiry_offer, cancel_medication_enquiry, raise_escrow_dispute);
+      fail-open notification triggers (offer received, status transitions);
+      free-tier caps enforced server-side (3 active, ≤10 km, top-3 offers).
+- [x] Admin: `/api/medenquiry/attachment` signed-URL route for prescription
+      photos (`prescriptions/` prefix, 5MB cap, free by design).
+- [x] Mobile: `hooks/use-medication-enquiry.ts` (RPC-only, fail-open).
+- [x] Mobile: Find Medication form (`Medication/index.tsx`) — drug
+      autocomplete, dosage, quantity + 9 units, urgency cards, Rx photo
+      (camera/gallery), search area/radius, notify switch, pickup/delivery.
+- [x] Mobile: My Enquiries list (`Medication/inquiries.tsx`) with status
+      chips, best price, cancel, free-limit banner.
+- [x] Mobile: MedEnquiryDetail modal — offers with Accept, hidden-offers
+      upsell, price history (PM3), escrow + dispute, pickup code, delivery
+      tracking; registered in `(modal)/_layout.tsx`.
+- [x] Home tile "Find Medication" + CategorySmall/Large routing.
+- [x] Docs: GAP_ANALYSIS Part AN section.
+- [x] tsc clean in both repos for all Part AN files.
+- [ ] Apply `20260825_med_enquiry_mobile_an.sql` to the live Supabase DB
+      (user-manual; screens degrade gracefully until applied).
+- [ ] Follow-up: PM6 HealthMiles 2× credit event (rewards integration).
+- [ ] Follow-up: pharmacy-facing response surface (currently admin/IBP only).
 
