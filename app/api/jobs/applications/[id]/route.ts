@@ -11,9 +11,67 @@ import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-aut
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const UPDATE_SCHEMA = z.object({
-  status: z.enum(["pending", "reviewed", "shortlisted", "rejected", "hired"]),
+  status: z.enum([
+    "pending",
+    "reviewed",
+    "shortlisted",
+    "rejected",
+    "hired",
+    "withdrawn",
+  ]),
   review_notes: z.string().max(4000).optional(),
 });
+
+/** AM-D8: applicant status-change notification — lands in the same inbox
+ * the mobile bell reads (type 'system', metadata routes to Jobs). Fail-open:
+ * a notification failure must never break the pipeline transition. */
+async function notifyApplicant(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  applicationId: string,
+  status: string,
+) {
+  const COPY: Record<string, { title: string; body: string }> = {
+    reviewed: {
+      title: "Application under review",
+      body: "The employer has started reviewing your application. We'll keep you posted.",
+    },
+    shortlisted: {
+      title: "You've been shortlisted! 🎉",
+      body: "Great news — you've been shortlisted for this position. The employer will contact you about next steps.",
+    },
+    hired: {
+      title: "Congratulations — you're hired! 🎊",
+      body: "The employer has marked your application as hired. They will reach out with onboarding details.",
+    },
+    rejected: {
+      title: "Application update",
+      body: "This employer isn't moving forward with your application. Keep applying — new healthcare roles are posted daily.",
+    },
+  };
+  const copy = COPY[status];
+  if (!copy) return;
+  try {
+    const { data: app } = await supabase
+      .from("job_applications")
+      .select("applicant_id, job_postings(title)")
+      .eq("id", applicationId)
+      .maybeSingle();
+    const applicantId = (app as { applicant_id?: string } | null)?.applicant_id;
+    if (!applicantId) return;
+    const jobTitle =
+      ((app as { job_postings?: { title?: string } | null })?.job_postings
+        ?.title ?? "the position");
+    await supabase.from("notifications").insert({
+      user_id: applicantId,
+      title: copy.title,
+      body: `${copy.body} (${jobTitle})`,
+      type: "system",
+      metadata: { module: "jobs", application_id: applicationId, status },
+    });
+  } catch {
+    // Fail-open by design.
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -76,6 +134,8 @@ export async function PATCH(
   if (!updated?.length) {
     return NextResponse.json({ error: "Application not found" }, { status: 404 });
   }
+
+  await notifyApplicant(supabase, id, parsed.data.status);
 
   await supabase.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,

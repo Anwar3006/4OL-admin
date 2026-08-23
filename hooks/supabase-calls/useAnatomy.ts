@@ -531,3 +531,54 @@ export const useDecideAiMapping = () => {
     onError: (error) => toast.error(error.message),
   });
 };
+
+// ── Part AM: premium layers configuration (P2–P5) ─────────────────────────
+
+export interface AnatomyPremiumLayers {
+  organs: boolean;
+  tours: boolean;
+  quiz: boolean;
+  kids: boolean;
+}
+
+export interface AnatomyPremiumConfigResponse {
+  layers: AnatomyPremiumLayers;
+  regions: { key: string; label: string; is_premium: boolean }[];
+  applied: boolean;
+}
+
+export const useAnatomyPremiumConfig = () => {
+  return useQuery({
+    queryKey: ["anatomy-premium-config"],
+    queryFn: async () => {
+      const res = await fetch("/api/anatomy/premium-config");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load premium config.");
+      return json as AnatomyPremiumConfigResponse;
+    },
+  });
+};
+
+export const useUpdateAnatomyPremiumConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      layers: AnatomyPremiumLayers;
+      premium_regions: string[];
+    }) => {
+      const res = await fetch("/api/anatomy/premium-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save premium config.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-premium-config"] });
+      toast.success("Premium layers saved — mobile picks them up on next load.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};

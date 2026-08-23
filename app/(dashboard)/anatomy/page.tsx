@@ -15,6 +15,7 @@ import ConnectedModulesTab from "./_components/ConnectedModulesTab";
 import BusinessStrategyTab from "./_components/BusinessStrategyTab";
 import PinPlacement3DTab from "./_components/PinPlacement3DTab";
 import AiPinMapperTab from "./_components/AiPinMapperTab";
+import PremiumLayersTab from "./_components/PremiumLayersTab";
 import AddBodyPartDialog from "./_components/AddBodyPartDialog";
 
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const AnatomyTabs = [
   { id: "body-map",   label: "🪴 Body Map" },
   { id: "pins-3d",    label: "📍 3D Pin Placement" },
   { id: "ai-mapper",  label: "🤖 AI Pin Mapper" },
+  { id: "premium",    label: "💎 Premium Layers" },
   { id: "conditions", label: "🦠 Linked Conditions" },
   { id: "symptoms",   label: "🩺 Linked Symptoms" },
   { id: "tips",       label: "🌿 Healthy Tips" },
@@ -179,6 +181,9 @@ export default function AnatomyPage() {
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="ai-mapper">
             <AiPinMapperTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="premium">
+            <PremiumLayersTab />
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="conditions">
             <ConditionsLinkedTab />

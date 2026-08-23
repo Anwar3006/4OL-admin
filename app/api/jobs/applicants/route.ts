@@ -11,7 +11,7 @@ import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-aut
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const APPLICATION_SELECT =
-  "id, job_id, applicant_id, cover_letter, resume_url, portfolio_url, status, review_notes, reviewed_at, created_at, user_profiles!job_applications_applicant_id_fkey(first_name,last_name), job_postings(title, region, facility_profile(facility_name))";
+  "id, job_id, applicant_id, cover_letter, resume_url, portfolio_url, status, review_notes, reviewed_at, created_at, applicant_type, profession, specialization, highest_qualification, is_boosted, user_profiles!job_applications_applicant_id_fkey(first_name,last_name), job_postings(title, region, facility_profile(facility_name))";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdminApiUser("jobs.view");
@@ -28,6 +28,8 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from("job_applications")
     .select(APPLICATION_SELECT, { count: "exact" })
+    // CV Boost (Part AM, AM-D7): boosted applications surface first.
+    .order("is_boosted", { ascending: false })
     .order("created_at", { ascending: false })
     .range((page - 1) * limit, page * limit - 1);
 

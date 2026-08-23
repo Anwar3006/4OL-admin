@@ -50,7 +50,14 @@ export const APPLICATION_STATUSES = [
   "shortlisted",
   "rejected",
   "hired",
+  "withdrawn",
 ] as const;
+
+/** Statuses an admin can actively move an application to (Part AM: withdrawn
+ * is applicant-initiated and only shown as a state, not a destination). */
+export const ASSIGNABLE_APPLICATION_STATUSES = APPLICATION_STATUSES.filter(
+  (status) => status !== "withdrawn",
+);
 
 export const EMPLOYMENT_STATUSES = [
   "unemployed",
@@ -109,6 +116,12 @@ export interface JobApplicationRow {
   review_notes?: string | null;
   reviewed_at?: string | null;
   created_at?: string;
+  /** Part AM (mobile wizard) fields. */
+  applicant_type?: "hcp" | "non_hcp" | null;
+  profession?: string | null;
+  specialization?: string | null;
+  highest_qualification?: string | null;
+  is_boosted?: boolean;
   user_profiles?: {
     first_name?: string | null;
     last_name?: string | null;

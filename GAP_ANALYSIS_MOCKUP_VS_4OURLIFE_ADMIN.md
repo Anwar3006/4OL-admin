@@ -2530,6 +2530,42 @@ Transactions AA (ledger writes on release/refund, fee at seeded 4.5%, disputes d
 
 ---
 
+## Part AM — Jobs & Careers on Mobile + Anatomy Premium P2–P5 (AM-D) (✅ Implemented 2026-08-23)
+
+*New feature stream (not mockup-gap): consumer users must be able to browse job postings published by healthcare businesses and apply from the consumer app, while a dedicated HCP app is still planned separately. Analyzed the Part K Jobs admin module, the `employment_application.html` mockup (HCP-only 4-step form) and the existing notifications/entitlement plumbing; then extended anatomy premium with region deep-dives, guided tours + quiz, kids mode and analytics-driven upsell, plus an admin toggle deciding which anatomy layers are premium.*
+
+**What was built:**
+
+1. **Migration `20260824_jobs_mobile_am.sql`** — `job_applications` extended (`applicant_type` hcp/non_hcp, profession, specialization, years_experience_band, highest_qualification, skills[], languages[], national_id, licence_pin, consent jsonb, is_boosted; status CHECK rebuilt to include `withdrawn`; defensive dedupe then `unique(job_id, applicant_id)`); `job_saved` + `job_alerts` tables (RLS-enabled, RPC-only); 10 SECURITY DEFINER RPCs — `get_job_listings` (published+unexpired, featured-first, facility join), `get_job_details` (increments view_count, reports caller's own application status + accepting flag), `apply_to_job` (open-posting + duplicate guards, bumps application_count), `withdraw_application` (own + pending only), `get_my_applications`, `toggle_job_saved`, `get_saved_jobs`, `upsert_job_alert`, `get_job_alert`, `upsert_open_to_offers` (upserts `hcp_digital_cvs`).
+2. **Migration `20260824_anatomy_premium_am.sql`** — `anatomy_regions.is_premium` flag; `anatomy_premium_config` (layers jsonb: organs/tours/quiz/kids); `get_anatomy_premium_config()` (fail-safe → everything premium if missing); `get_anatomy_quiz(p_limit)` — questions generated server-side from the published conditions↔body_parts junction with 3 same-system-preferred distractors (no AI dependency).
+3. **Admin jobs extensions** — new `/api/jobs/attachment` signed-URL upload route (mirrors the chat pattern; cv/licence/certificate kinds with per-kind size caps, `jobs/{user}/{job}/{kind}/` storage prefix); Applicants tab now surfaces applicant type, profession, qualification and ⭐ CV-boost (boosted applications ordered first server-side); `withdrawn` status supported end-to-end incl. status-change notifications to the applicant via the existing `notifications` table (type `system`, fail-open).
+4. **Admin Anatomy → 💎 Premium Layers tab** — toggle which layers are premium-gated (Organs/Guided tours/Quiz/Kids mode) and flag individual region deep-dives; persists via `/api/anatomy/premium-config` (GET/PUT, `anatomy.view`/`anatomy.edit`, audit-logged). Mobile picks the config up through the RPC on next load.
+5. **Mobile Jobs board + detail** (`app/(app)/(auth)/Jobs/index.tsx`, `(modal)/JobDetails.tsx`) — search, job-type chips, Ghana-region picker, featured-first cards with salary/deadline/bookmark; detail modal with facility card, requirement checklist, applicant/view counts, share, and an Apply CTA that switches to the caller's live application status. Home entry via new Jobs category tile (both CategorySmall/Large switches).
+6. **Mobile 4-step apply wizard** (`Jobs/apply/[id].tsx`) — one flow for HCP and non-HCP applicants (step-2 toggle branches the field set per the modified `employment_application.html` concept); CV upload reuses the chat signed-URL pattern via `/api/jobs/attachment` + `File#upload`; optional National ID remembered on-device for the next application (masked in admin, AM-D3); cover letter; review step with consent + premium CV Boost.
+7. **Mobile My Jobs** (`Jobs/applications.tsx`, `Jobs/alerts.tsx`) — applications tracker with status chips and withdraw-while-pending; saved jobs tab; premium application insights and open-to-offers toggle; premium job-alerts screen (regions/job types/specialties).
+8. **Anatomy P2–P5** — P2: admin-flagged region deep-dives gated pre-zoom with 🔒 chips; P3: guided tour (auto-zoom region walkthrough with captions, Next/End controls) + server-generated body quiz overlay with score card; P4: kids mode (`set_kids` scene command — bright cartoon palette, friendly face, organs hidden — mirrored to admin `scene.html`); P5: contextual upsell sheet after the second premium-gate hit in a session. All gates respect the admin Premium Layers config (`useAnatomyPremiumConfig`, fail-safe to premium).
+
+| Decision | Choice |
+| --- | --- |
+| AM-D1 Entry & routes | Home tile + `(app)/(auth)/Jobs` routes; detail in `(modal)` |
+| AM-D2 Apply form | Single 4-step wizard; HCP/non-HCP toggle at step 2 |
+| AM-D3 National ID | Optional, persisted on-device, masked in admin |
+| AM-D4 Uploads | Signed-URL via `/api/jobs/attachment` (chat pattern), `jobs/` prefix |
+| AM-D5 Data access | RPC-only from mobile, fail-open until migration applied |
+| AM-D6 Duplicates/withdraw | `unique(job_id, applicant_id)`; withdraw only while pending |
+| AM-D7 Premium split | Free: browse + unlimited applies; Premium: alerts, saved-cap lift (3 free), CV Boost, insights, open-to-offers |
+| AM-D8 Notifications | Status changes via existing `notifications` table, type `system` |
+| AM-D9 Admin surface | Applicants tab shows new fields + withdrawn; boosted first |
+| AM-D10 Telemetry | Reuses `view_count`/`application_count`; no new telemetry tables |
+
+**Explicitly rejected (documented):** separate mobile job app for consumers (HCP app comes later; consumers apply in-app), AI-generated quiz questions (server-generated from the content junction — free, instant, no key needed), premium-gating applications themselves (funnel damage), client-side enforcement of the premium layers config (admin toggle decides *what* is gated; enforcement stays in `useEntitlement`).
+
+**Residual risk / honest scoping:** job alert delivery itself (cron matching `job_alerts` against new postings) is not yet built — prefs are stored and surfaced; matched-posting notifications are a follow-up. CV Boost is surfaced via ordering only (no separate billing event yet). The premium entitlement for anatomy is enforced client-side as before.
+
+**User-manual activation steps:** apply `20260824_jobs_mobile_am.sql` and `20260824_anatomy_premium_am.sql`; review the Anatomy → Premium Layers tab and save the layer/region configuration; publish job postings from the Jobs menu to populate the board.
+
+---
+
 ## Shared conventions (all parts)
 
 - All server routes: `requireAdminApiUser("<resource>.<action>")` (RBAC Epic 31 pattern — merged and production-applied as of 2026-08-19)

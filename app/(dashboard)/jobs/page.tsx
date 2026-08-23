@@ -19,6 +19,7 @@ import { useHasPermission } from "@/stores/permission-context";
 import { GHANA_REGIONS_ENUM } from "@/types/formInput";
 import {
   APPLICATION_STATUSES,
+  ASSIGNABLE_APPLICATION_STATUSES,
   JOB_TYPES,
   POSTING_STATUSES,
   applicationDisplayId,
@@ -53,6 +54,7 @@ const APPLICATION_BADGE: Record<string, string> = {
   shortlisted: "bg-indigo-50 text-indigo-700 border-indigo-100",
   rejected: "bg-red-50 text-red-600 border-red-100",
   hired: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  withdrawn: "bg-slate-100 text-slate-400 border-slate-200",
 };
 
 const PREMIUM_SERVICES = [
@@ -558,11 +560,22 @@ const JobsPage = () => {
                       <tr key={app.id} className="hover:bg-slate-50/60">
                         <td className="px-4 py-3">
                           <p className="text-[12px] font-black text-slate-800">
+                            {app.is_boosted && "⭐ "}
                             {maskApplicantName(app.user_profiles)}
                           </p>
                           <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
                             {applicationDisplayId(app)}
                           </span>
+                          {/* Part AM: wizard applicant profile summary */}
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                            {app.applicant_type === "non_hcp"
+                              ? "Non-HCP"
+                              : "HCP"}
+                            {app.profession ? ` · ${app.profession}` : ""}
+                            {app.highest_qualification
+                              ? ` · ${app.highest_qualification}`
+                              : ""}
+                          </p>
                         </td>
                         <td className="px-3 py-3">
                           <p className="text-[11px] font-bold text-slate-700">
@@ -621,7 +634,7 @@ const JobsPage = () => {
                               })
                             }
                           >
-                            {APPLICATION_STATUSES.map((status) => (
+                            {ASSIGNABLE_APPLICATION_STATUSES.map((status) => (
                               <option key={status} value={status}>
                                 {status}
                               </option>

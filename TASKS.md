@@ -2606,3 +2606,33 @@ This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_AN
 - [ ] Premium follow-ups: P2 symptom-triage mode, P3 personal focus areas,
       P4 offline model packs, P5 Learn/FitCoins quiz mode (design pass).
 
+## Jobs & Careers on mobile + anatomy premium P2–P5 (Part AM, 2026-08-23)
+
+- [x] Confirm decisions AM-D1…AM-D10 (user, 2026-08-23 — "I Approve
+      AM-D1–AM-D10, proceed and implement" + anatomy P2–P5 + admin premium
+      layers toggle).
+- [x] Migration `20260824_jobs_mobile_am.sql`: job_applications consumer
+      columns + withdrawn status + dedupe/unique(job_id, applicant_id);
+      job_saved + job_alerts; 10 SECURITY DEFINER RPCs (listings, details,
+      apply, withdraw, my applications, saved, alerts, open-to-offers).
+- [x] Migration `20260824_anatomy_premium_am.sql`: anatomy_regions.is_premium,
+      anatomy_premium_config, get_anatomy_premium_config(), get_anatomy_quiz().
+- [x] Admin: /api/jobs/attachment signed-URL route; Applicants tab fields +
+      withdrawn + boosted-first ordering; status-change notifications.
+- [x] Admin: Anatomy Premium Layers tab + /api/anatomy/premium-config
+      (anatomy.view / anatomy.edit RBAC, audit-logged).
+- [x] Mobile: Jobs board, JobDetails modal, 4-step apply wizard (HCP/non-HCP),
+      My Applications + Saved, premium Job Alerts screen, home Jobs tile.
+- [x] Mobile premium gates: saved-jobs free cap 3, alerts/CV Boost/insights/
+      open-to-offers behind useEntitlement.
+- [x] Anatomy P2–P5: premium region gates, guided tour + quiz, kids mode
+      (set_kids mirrored to admin scene.html), contextual upsell sheet.
+- [x] Docs: GAP_ANALYSIS Part AM section.
+- [x] tsc clean in both repos for all Part AM files.
+- [ ] Apply `20260824_jobs_mobile_am.sql` + `20260824_anatomy_premium_am.sql`
+      to the live Supabase DB (user-manual; board/quiz degrade gracefully).
+- [ ] Set the Premium Layers config in Anatomy → Premium Layers tab and save.
+- [ ] Publish job postings from the Jobs menu to populate the mobile board.
+- [ ] Follow-up: cron delivery matching job_alerts prefs against new postings.
+- [ ] Follow-up: CV Boost billing event (currently surfaced via ordering).
+
