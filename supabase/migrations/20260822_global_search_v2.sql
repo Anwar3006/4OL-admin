@@ -102,15 +102,15 @@ begin
        or similarity(s.name, v_term) > 0.2
     union all
     -- Healthy Living (admin-managed table; legacy healthy_living NOT searched)
-    select 'healthy_living', h.id::text, h.title, h.category, null,
+    select 'healthy_living', h.id::text, h.name, h.slug, h.image_url,
            greatest(
-             ts_rank(to_tsvector('simple', coalesce(h.title, '')), plainto_tsquery('simple', v_term)),
-             similarity(h.title, v_term)
+             ts_rank(to_tsvector('simple', coalesce(h.name, '')), plainto_tsquery('simple', v_term)),
+             similarity(h.name, v_term)
            )
     from public.healthy_living_info h
     where (h.status is null or h.status = 'published')
-      and (h.title ilike '%' || v_escaped || '%'
-           or similarity(h.title, v_term) > 0.2)
+      and (h.name ilike '%' || v_escaped || '%'
+           or similarity(h.name, v_term) > 0.2)
     union all
     -- Facilities: active only, public fields only — never contact PII (S-D2)
     select 'facility_profile', f.id::text, f.facility_name, f.area, f.featured_image_url,
@@ -177,7 +177,7 @@ grant execute on function public.global_search_v2(text, int) to authenticated, s
 -- Trigram indexes backing the similarity() branches above.
 create index if not exists idx_conditions_name_trgm on public.conditions using gin (name gin_trgm_ops);
 create index if not exists idx_symptoms_name_trgm on public.symptoms using gin (name gin_trgm_ops);
-create index if not exists idx_healthy_living_info_title_trgm on public.healthy_living_info using gin (title gin_trgm_ops);
+create index if not exists idx_healthy_living_info_name_trgm on public.healthy_living_info using gin (name gin_trgm_ops);
 create index if not exists idx_facility_profile_name_trgm on public.facility_profile using gin (facility_name gin_trgm_ops);
 create index if not exists idx_drugs_name_trgm on public.drugs using gin (name gin_trgm_ops);
 
@@ -222,9 +222,9 @@ begin
       end if;
 
       if to_regclass('public.healthy_living_info') is not null then
-        select coalesce(jsonb_agg(jsonb_build_object('entity_type','healthy_living','id',id,'title',title,'subtitle',category)), '[]'::jsonb)
+        select coalesce(jsonb_agg(jsonb_build_object('entity_type','healthy_living','id',id,'title',name,'subtitle',slug)), '[]'::jsonb)
         into v_part from public.healthy_living_info
-        where (status is null or status = 'published') and title ilike '%' || v_escaped || '%' limit 5;
+        where (status is null or status = 'published') and name ilike '%' || v_escaped || '%' limit 5;
         v_out := v_out || coalesce(v_part, '[]'::jsonb);
       end if;
 
@@ -301,8 +301,8 @@ begin
       end if;
 
       if to_regclass('public.healthy_living_info') is not null then
-        select coalesce(jsonb_agg(jsonb_build_object('entity_type','healthy_living','id',id,'name',title)), '[]'::jsonb)
-        into v_part from public.healthy_living_info where title ilike '%' || v_escaped || '%' limit v_limit;
+        select coalesce(jsonb_agg(jsonb_build_object('entity_type','healthy_living','id',id,'name',name)), '[]'::jsonb)
+        into v_part from public.healthy_living_info where name ilike '%' || v_escaped || '%' limit v_limit;
         v_out := v_out || coalesce(v_part, '[]'::jsonb);
       end if;
 

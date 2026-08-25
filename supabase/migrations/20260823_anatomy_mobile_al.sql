@@ -72,7 +72,7 @@ create index if not exists anatomy_hotspots_3d_region_idx
 -- ── 3. Fitness ↔ body-part junction (closes the association gap) ───────────
 
 create table if not exists public.fitness_body_parts (
-  workout_id uuid not null references public.workouts(id) on delete cascade,
+  workout_id uuid not null references public.fitness_exercises(id) on delete cascade,
   body_part_id uuid not null references public.body_parts(id) on delete cascade,
   source text not null default 'manual',  -- manual | ai
   created_at timestamptz not null default now(),
@@ -183,7 +183,7 @@ begin
                        order by wk.exercise_name) as items,
              count(*) as n
       from public.fitness_body_parts fbp
-      join public.workouts wk on wk.id = fbp.workout_id
+      join public.fitness_exercises wk on wk.id = fbp.workout_id
       where fbp.body_part_id = h.body_part_id
         and wk.is_active = true
     ) w on true

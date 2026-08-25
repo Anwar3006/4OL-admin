@@ -73,12 +73,16 @@ alter table public.chat_support
   add column if not exists resolved_by uuid references auth.users(id);
 
 -- Backfill legacy Closed tickets to Resolved before tightening the check.
-update public.chat_support
-set status = 'Resolved'
-where status = 'Closed';
+
 
 alter table public.chat_support
   drop constraint if exists chat_support_status_check;
+
+-- Data migration must run AFTER the old ('Open','Closed') constraint is
+-- dropped, otherwise 'Resolved' is rejected.
+update public.chat_support
+set status = 'Resolved'
+where status = 'Closed';
 alter table public.chat_support
   add constraint chat_support_status_check
   check (status in ('Open', 'Unread', 'Pending', 'Resolved', 'Escalated'));

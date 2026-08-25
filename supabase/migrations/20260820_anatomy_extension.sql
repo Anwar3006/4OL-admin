@@ -102,6 +102,9 @@ create index if not exists anatomy_interactions_created_idx
 -- Consumed by useSymptomStats (bodyPartDistribution). Returns per-part
 -- symptom + condition link counts.
 
+-- Return type changes from the earlier definition; CREATE OR REPLACE cannot.
+drop function if exists public.get_body_part_stats();
+
 create or replace function public.get_body_part_stats()
 returns table (
   body_part_id uuid,

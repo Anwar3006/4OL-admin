@@ -181,6 +181,9 @@ grant execute on function public.increment_healthy_living_view_count(uuid, uuid)
 -- Consumed by HealthyLivingStats (3-KPI row). Deltas are month-over-month
 -- percentages based on created_at.
 
+-- Return type changes from json to TABLE(...); CREATE OR REPLACE cannot.
+drop function if exists public.get_healthy_living_kpi_stats();
+
 create or replace function public.get_healthy_living_kpi_stats()
 returns table (
   total_articles bigint,

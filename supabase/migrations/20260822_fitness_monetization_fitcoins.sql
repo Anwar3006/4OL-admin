@@ -120,12 +120,15 @@ create or replace function public.get_subscription_tiers()
 returns jsonb
 language sql stable security definer set search_path = public
 as $$
-  select coalesce(jsonb_agg(row_to_json(t) order by t.display_order), '[]'::jsonb)
-  from (
-    select id, key, name, description, price_ghs, duration_days, benefits
-    from public.subscription_tiers
-    where is_active = true
-  ) t;
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'id', id, 'key', key, 'name', name, 'description', description,
+        'price_ghs', price_ghs, 'duration_days', duration_days, 'benefits', benefits
+      ) order by display_order
+    ), '[]'::jsonb)
+  from public.subscription_tiers
+  where is_active = true;
 $$;
 
 revoke all on function public.get_my_entitlement() from public;

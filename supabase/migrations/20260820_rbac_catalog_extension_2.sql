@@ -37,6 +37,11 @@ on conflict (key) do nothing;
 -- Role defaults (super_admin bypasses the catalog; settings.security,
 -- settings.billing, whatsapp.broadcast, facilities.feature and devops.view
 -- are deliberately super_admin-only).
+-- ai_manager must exist before it can be granted permissions
+insert into public.admin_platform_roles (role, label, description, is_super, sort_order) values
+  ('ai_manager', 'AI Manager', 'AI Hub only: models, moderation queue, recommendations and AI analytics.', false, 9)
+on conflict (role) do nothing;
+
 insert into public.admin_role_permissions (role, permission_key) values
   ('admin', 'diseases.feature'),
   ('content_manager', 'diseases.feature'),
@@ -53,6 +58,4 @@ on conflict do nothing;
 -- O12: AI Manager platform role (mockup role table L10880) — scoped to
 -- the AI Hub only. user_profiles.role is free text, so adding the role
 -- vocabulary row is all that's required server-side.
-insert into public.admin_platform_roles (role, label, description, is_super, sort_order) values
-  ('ai_manager', 'AI Manager', 'AI Hub only: models, moderation queue, recommendations and AI analytics.', false, 9)
-on conflict (role) do nothing;
+

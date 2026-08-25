@@ -248,6 +248,9 @@ grant execute on function public.get_outdoor_route_pins() to anon, authenticated
 --    footprint points, falling back to facility pins submitted by the same
 --    user when no footprint log exists yet.
 -- -----------------------------------------------------------------------------
+-- Return type changes from the earlier definition; CREATE OR REPLACE cannot.
+drop function if exists public.get_registrar_trails(integer);
+
 create or replace function public.get_registrar_trails(days_back integer default 1)
 returns table (registrar_id uuid, trail jsonb)
 language plpgsql

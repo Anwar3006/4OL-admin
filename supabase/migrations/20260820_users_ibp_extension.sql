@@ -25,8 +25,8 @@ create sequence if not exists public.user_public_id_seq;
 -- Backfill public ids for existing profiles (4OL-000001 …, deterministic).
 with numbered as (
   select user_id,
-         (select coalesce(max((nullif(regexp_replace(public_id, '\D', '', 'g'), '')::int), 0)
-          from public.user_profiles)) + row_number() over (order by created_at, user_id) as rn
+         (select coalesce(max(nullif(regexp_replace(public_id, '\D', '', 'g'), '')::int), 0)
+          from public.user_profiles) + row_number() over (order by created_at, user_id) as rn
   from public.user_profiles
   where public_id is null
 )

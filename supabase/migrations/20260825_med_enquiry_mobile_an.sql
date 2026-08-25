@@ -156,7 +156,7 @@ begin
   -- mirroring the admin /api/medenquiry/[id]/broadcast route.
   if v_is_premium and coalesce((p ->> 'is_priority')::boolean, true) then
     begin
-      select region into v_region from public.user_profiles where id = v_uid;
+      select region into v_region from public.user_profiles where user_id = v_uid;
       if v_area_mode = 'custom' then
         v_region := nullif(trim(coalesce(p ->> 'custom_area', '')), '');
       end if;
@@ -299,9 +299,11 @@ begin
       select fp.facility_name from public.facility_profile fp
       where fp.id = v_enq.pharmacy_id),
     'offers', coalesce((
-      select jsonb_agg(o.row_json order by o.sort_key)
+      select jsonb_agg(o.row_json order by o.rn)
       from (
-        select er.available desc as sort_key,
+        select row_number() over (
+                 order by er.available desc, er.price asc nulls last, er.responded_at asc
+               ) as rn,
           jsonb_build_object(
             'id', er.id,
             'price', er.price,
