@@ -45,3 +45,6 @@ trying.js
 
 *.zip
 Fitness_IMG/
+
+# TypeScript incremental build artifact — regenerated on every build
+*.tsbuildinfo
