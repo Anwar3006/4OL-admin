@@ -67,13 +67,17 @@ export const useDrugKpiStats = () => {
       const supabase = await getSupabaseClient();
       const { data, error } = await supabase.rpc("get_drug_kpi_stats");
       if (error) throw error;
-      return data as {
+      // RETURNS TABLE(...) — PostgREST returns a one-element array, so the
+      // row has to be unwrapped before it matches this shape. See
+      // HealthyLivingStats for the crash this caused when it wasn't.
+      const row = Array.isArray(data) ? data[0] : data;
+      return (row ?? null) as {
         drugs_in_db: number;
         drug_categories: number;
         interaction_pairs: number;
         interaction_flags_30d: number;
         pending_verifications: number;
-      };
+      } | null;
     },
   });
 };

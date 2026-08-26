@@ -14,7 +14,11 @@ interface HealthyLivingKpiData {
 }
 
 export default function HealthyLivingStats() {
-  const { data: stats, isLoading, isError } = useQuery<HealthyLivingKpiData>({
+  const {
+    data: stats,
+    isLoading,
+    isError,
+  } = useQuery<HealthyLivingKpiData | null>({
     queryKey: ["healthy-living-kpi-stats"],
     queryFn: async () => {
       const supabase = await getSupabaseClient();
@@ -24,7 +28,24 @@ export default function HealthyLivingStats() {
         console.error("Error fetching Healthy Living KPI stats:", error);
         throw error;
       }
-      return data as HealthyLivingKpiData;
+
+      // get_healthy_living_kpi_stats is declared RETURNS TABLE(...), so
+      // PostgREST hands back a one-element ARRAY, not an object. Casting that
+      // straight to HealthyLivingKpiData type-checked but left every field
+      // undefined at runtime — and an array is truthy, so the `!stats` guard
+      // below waved it through to stats.total_articles.toLocaleString().
+      const row = (Array.isArray(data) ? data[0] : data) as
+        | HealthyLivingKpiData
+        | undefined;
+      if (!row) return null;
+
+      return {
+        total_articles: Number(row.total_articles ?? 0),
+        total_delta: Number(row.total_delta ?? 0),
+        published_articles: Number(row.published_articles ?? 0),
+        published_delta: Number(row.published_delta ?? 0),
+        total_views: Number(row.total_views ?? 0),
+      };
     }
   });
 
