@@ -7,7 +7,6 @@ import {
   UserCircle,
   ShieldCheck,
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
@@ -15,6 +14,7 @@ import { usePerformFacilityReview } from "@/hooks/supabase-calls/useReviews";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 
 type Props = {
   facility: any;
@@ -93,22 +93,6 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
     );
   };
 
-  // Handle status toggle
-  const handleStatusToggle = (isTopRated: boolean) => {
-    // Optimistically update local state
-
-    submitAction({
-      adminId,
-      facilityId: facility.id,
-      isTopRated,
-      comment: null,
-      rating: null,
-      parentId: null,
-    });
-  };
-
-  console.log("Reviews: ");
-
   return (
     <div className="space-y-8 mt-10">
       {/* 1. Summary Header */}
@@ -142,16 +126,22 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-3">
-            <span className="text-xs md:text-sm font-bold text-slate-700">
-              Top-Rated Status
-            </span>
-            <Switch
-              disabled={isPending || isSubmittingRating}
-              checked={currentFacility.is_top_rated}
-              onCheckedChange={handleStatusToggle}
-            />
-          </div>
+          {/* Was a bare Switch onto facility_profile.is_top_rated, which wrote
+              the column directly and skipped the placement-window dialog — two
+              different controls for one piece of state in the same view. Now
+              the same shared toggle the header uses, so marking always offers
+              Publish From / Expire At. */}
+          <TopRatedToggle
+            module="facility"
+            itemId={currentFacility.id}
+            title={currentFacility.facility_name}
+            subtitle={[currentFacility.region, currentFacility.district]
+              .filter(Boolean)
+              .join(", ")}
+            imageUrl={currentFacility.featured_image_url}
+            rating={currentFacility.rating_average}
+            ratingCount={currentFacility.rating_count}
+          />
           {currentFacility.is_top_rated && (
             <Badge className="bg-amber-100 text-amber-700 border-amber-200 gap-1 animate-in fade-in zoom-in">
               <Trophy size={12} /> Featured
