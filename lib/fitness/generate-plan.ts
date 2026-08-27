@@ -269,8 +269,8 @@ export function deriveStyleTag(selections: any): string {
  * Deterministic selection hash — ported byte-for-byte from
  * 4-Our-Life-App/store/use-fitness-store.ts so hashes computed on either
  * side of the fence (mobile onboarding vs. admin AI-generate form) are
- * comparable, letting a real user's onboarding hash match an
- * admin-crafted plan and skip a redundant Gemini call.
+ * comparable, letting admin-crafted plans match a real user's onboarding
+ * profile when admin generation wants reusable-plan deduplication.
  *
  * Do not import this from the mobile repo's path ("@/store/use-fitness-store")
  * — that alias resolves within the mobile app only and does not exist in
@@ -278,7 +278,9 @@ export function deriveStyleTag(selections: any): string {
  *
  * Health-specific fields (age, weight, height) are intentionally EXCLUDED
  * so body metrics don't prevent cache hits for users with identical
- * workout preferences — also why the admin form never collects them.
+ * workout preferences — also why the admin form never collects them. Mobile
+ * user regeneration passes allowCache=false, so this hash is a profile
+ * fingerprint there rather than a "return the same plan" key.
  */
 export function buildSelectionHash(s: any): string {
   const key = [
@@ -317,6 +319,14 @@ export interface GenerationOptions {
   // is always the actual caller (the mobile user, or the admin who
   // triggered generation) and is always known at both call sites.
   userId?: string;
+  // Admin plan generation can still reuse a matching reusable plan. Mobile
+  // regeneration should pass false so the same profile hash does not trap a
+  // user on the same plan forever.
+  allowCache?: boolean;
+  // Mobile regeneration uses the user's existing assignment history to ask
+  // the model for a continuation/rotation instead of a repeat.
+  avoidUserPlanHistory?: boolean;
+  historyPlanLimit?: number;
 }
 
 export interface GenerationResult {
@@ -324,6 +334,66 @@ export interface GenerationResult {
   selection_hash: string;
   cached: boolean;
   error?: string;
+}
+
+interface UserPlanHistoryContext {
+  planIds: string[];
+  exerciseIds: Set<string>;
+}
+
+async function fetchUserPlanHistoryContext(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string | undefined,
+  limit: number,
+): Promise<UserPlanHistoryContext> {
+  if (!userId) return { planIds: [], exerciseIds: new Set() };
+
+  const { data: assignments, error: assignmentsError } = await admin
+    .from("fitness_user_assignments")
+    .select("plan_id, started_at, status")
+    .eq("user_id", userId)
+    .order("started_at", { ascending: false })
+    .limit(limit);
+
+  if (assignmentsError) {
+    console.warn(
+      "[fitness-generate] Previous plan lookup failed:",
+      assignmentsError.message,
+    );
+    return { planIds: [], exerciseIds: new Set() };
+  }
+
+  const planIds = [
+    ...new Set(
+      (assignments ?? [])
+        .map((assignment: any) => assignment.plan_id)
+        .filter(Boolean),
+    ),
+  ];
+
+  if (planIds.length === 0) return { planIds, exerciseIds: new Set() };
+
+  const { data: previousExercises, error: exercisesError } = await admin
+    .from("fitness_plan_exercises")
+    .select("exercise_id")
+    .in("plan_id", planIds);
+
+  if (exercisesError) {
+    console.warn(
+      "[fitness-generate] Previous exercise lookup failed:",
+      exercisesError.message,
+    );
+    return { planIds, exerciseIds: new Set() };
+  }
+
+  return {
+    planIds,
+    exerciseIds: new Set(
+      (previousExercises ?? [])
+        .map((row: any) => row.exercise_id)
+        .filter(Boolean),
+    ),
+  };
 }
 
 /**
@@ -335,22 +405,43 @@ export interface GenerationResult {
 export async function generateFitnessPlan(
   options: GenerationOptions,
 ): Promise<GenerationResult> {
-  const { selections, selection_hash, authorId, authorType, userId } = options;
+  const {
+    selections,
+    selection_hash,
+    authorId,
+    authorType,
+    userId,
+    allowCache = true,
+    avoidUserPlanHistory = false,
+    historyPlanLimit = 4,
+  } = options;
   const admin = getSupabaseAdmin();
 
   // ── Cache check ──
-  const { data: cachedPlan } = await admin
-    .from("fitness_plans")
-    .select("id")
-    .eq("selection_hash", selection_hash)
-    .maybeSingle();
+  if (allowCache) {
+    const { data: cachedPlan, error: cachedPlanError } = await admin
+      .from("fitness_plans")
+      .select("id")
+      .eq("selection_hash", selection_hash)
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (cachedPlan?.id) {
-    return {
-      planId: cachedPlan.id,
-      selection_hash,
-      cached: true,
-    };
+    if (cachedPlanError) {
+      console.warn(
+        "[fitness-generate] Cache lookup failed:",
+        cachedPlanError.message,
+      );
+    }
+
+    if (cachedPlan?.id) {
+      return {
+        planId: cachedPlan.id,
+        selection_hash,
+        cached: true,
+      };
+    }
   }
 
   const openaiApiKey = process.env.OPENAI_API_KEY;
@@ -423,6 +514,41 @@ export async function generateFitnessPlan(
     met_value: e.met_value || 5.0, // Fallback MET if null in DB
   }));
 
+  const previousPlanContext = avoidUserPlanHistory
+    ? await fetchUserPlanHistoryContext(admin, userId, historyPlanLimit)
+    : { planIds: [], exerciseIds: new Set<string>() };
+  const previousExerciseNames = dbExercises
+    .filter((e: any) => previousPlanContext.exerciseIds.has(e.id))
+    .map((e: any) => e.exercise_name)
+    .slice(0, 80);
+  const hasPreviousPlanContext =
+    previousPlanContext.planIds.length > 0 ||
+    previousPlanContext.exerciseIds.size > 0;
+
+  const rollingPlanInstructions = hasPreviousPlanContext
+    ? `
+== ROLLING PLAN CONTEXT ==
+This user is regenerating after already receiving ${previousPlanContext.planIds.length} previous plan(s).
+Recently used exercise names: ${previousExerciseNames.join(", ") || "Unavailable"}.
+Recently used exercise IDs: ${[...previousPlanContext.exerciseIds].slice(0, 120).join(", ")}.
+
+Treat this as the NEXT plan in the user's fitness journey:
+- Keep the user's current selections as the source of truth for goals, level, equipment, schedule, and duration.
+- Do not return the same plan structure or the same dominant exercise rotation.
+- Prefer exercises that are not in the recently used list when the library allows it.
+- If a repeat is necessary for safety, equipment limits, or skill progression, change the placement, reps, sets, rest, or coaching intent so it feels like progression instead of duplication.
+- Maintain realistic progression for the user's level; do not overcorrect into an advanced plan just to be different.
+`.trim()
+    : `
+== ROLLING PLAN CONTEXT ==
+No previous generated plan was found for this user. Generate from the user's current selections only.
+`.trim();
+
+  const availableExercisesWithHistory = availableExercisesContext.map((e) => ({
+    ...e,
+    recently_used: previousPlanContext.exerciseIds.has(e.id),
+  }));
+
   // ── Call OpenAI ──
   const openai = new OpenAI({ apiKey: openaiApiKey });
 
@@ -453,8 +579,10 @@ You are an elite Strength & Conditioning Coach and biomechanics expert. Your tas
 4. PACING: Active days should have an appropriate number of exercises to realistically fit into a ${sessionMinutes}-minute window (approx. ${Math.max(4, Math.round(sessionMinutes / 8))} exercises).
 5. COACHING: Provide high-value, specific "coach_notes" for each exercise.
 
+${rollingPlanInstructions}
+
 == LIBRARY OF AVAILABLE EXERCISES ==
-${JSON.stringify(availableExercisesContext)}
+${JSON.stringify(availableExercisesWithHistory)}
   `.trim();
 
   // ── Retry Logic (Exponential Backoff) ──

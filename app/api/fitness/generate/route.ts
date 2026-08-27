@@ -113,6 +113,23 @@ export async function POST(req: NextRequest) {
         console.error("[fitness-generate] Persistence error:", error.message);
     });
 
+  const { data: previousAssignment, error: previousAssignmentError } =
+    await admin
+      .from("fitness_user_assignments")
+      .select("plan_id")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+  if (previousAssignmentError) {
+    console.warn(
+      "[fitness-generate] Previous assignment lookup failed:",
+      previousAssignmentError.message,
+    );
+  }
+
+  const hasPreviousGeneratedPlan = Boolean(previousAssignment?.plan_id);
+
   // Generate the plan using shared logic
   const result = await generateFitnessPlan({
     selections,
@@ -120,6 +137,8 @@ export async function POST(req: NextRequest) {
     authorId: undefined, // Mobile onboarding - no specific author
     authorType: "ai",
     userId, // attribute the fitness_ai_calls log row to the requesting user
+    allowCache: !hasPreviousGeneratedPlan,
+    avoidUserPlanHistory: hasPreviousGeneratedPlan,
   });
 
   if (result.error) {
