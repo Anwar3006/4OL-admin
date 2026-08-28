@@ -24,6 +24,16 @@ export interface FitnessUserRow {
   joined_at: string;
   last_active: string | null;
   plan_completions: number;
+  /**
+   * SUBSCRIPTION tier — not to be confused with `level`, which is the
+   * training level (beginner/intermediate/advanced) from fitness onboarding.
+   * 'free' when the user has no active grant or paid subscription.
+   */
+  tier_key: string;
+  tier_name: string;
+  is_premium: boolean;
+  subscription_expires_at: string | null;
+  subscription_source: string | null;
 }
 
 export const useFitnessUsers = ({

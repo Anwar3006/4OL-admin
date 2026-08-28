@@ -1,19 +1,32 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { useFitnessUsers, type FitnessUserRow } from "@/hooks/supabase-calls/useFitnessAnalytics";
 import { Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { usePermissionContext } from "@/stores/permission-context";
 
 /**
- * Fitness Users (Gap Analysis Part V) — rebuilt from the generic 4-column
- * user table to the mockup's fitness-specific columns, fed by the
- * get_fitness_users RPC (server-side aggregates, V-D5). Body Type / Goals /
- * Streak are not modeled in the schema (fitness_users only stores plan +
- * level), so the closest available fields are shown instead.
+ * Fitness Users (Gap Analysis Part V) — fitness-specific columns fed by the
+ * get_fitness_users RPC (server-side aggregates, V-D5).
+ *
+ * Two fixes here, both from the same root cause. get_fitness_users used to
+ * read public.fitness_users, which fitness_user_assignments replaced and
+ * which nothing has written to since — so this tab showed ZERO members no
+ * matter how many people were training. It now reads real engagement
+ * (onboarded / assigned a plan / logged a session).
+ *
+ * And the column headed "Tier / Level" rendered fitness_users.current_level,
+ * a beginner/intermediate TRAINING level with nothing to do with Premium.
+ * Subscription tier is now its own column, with grant/revoke inline, so the
+ * list an admin assigns premium FROM is the list that shows who has it.
+ * Grant/revoke is super-admin only, matching /api/subscriptions/admin, which
+ * enforces the same rule server-side.
  */
 
 const formatDate = (value: string | null) =>
@@ -24,6 +37,10 @@ const UsersTab = () => {
   const debouncedSearch = useDebounce(search, 500);
   const limit = 25;
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const { userRole } = usePermissionContext();
+  const isSuperAdmin = userRole === "super_admin";
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("fit_user_page") || "1", 10);
@@ -33,6 +50,63 @@ const UsersTab = () => {
     limit,
     search: debouncedSearch,
   });
+
+  const refresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ["fitness-users"] }),
+    [queryClient],
+  );
+
+  const handleGrant = useCallback(
+    async (row: FitnessUserRow) => {
+      if (!confirm(`Give ${row.name || "this user"} Premium access?`)) return;
+      setPendingUserId(row.user_id);
+      try {
+        const res = await fetch("/api/subscriptions/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: row.user_id,
+            tierKey: "premium",
+            note: "Granted from Fitness ▸ Users",
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Grant failed");
+        toast.success(`Premium assigned to ${row.name || "user"}`);
+        refresh();
+      } catch (err) {
+        toast.error((err as Error).message);
+      } finally {
+        setPendingUserId(null);
+      }
+    },
+    [refresh],
+  );
+
+  // Revoking the active grant is what "set back to Free" means — entitlement
+  // is the absence of an active user_subscriptions row, not a 'free' row.
+  const handleRevoke = useCallback(
+    async (row: FitnessUserRow) => {
+      if (!confirm(`Return ${row.name || "this user"} to the Free tier?`)) return;
+      setPendingUserId(row.user_id);
+      try {
+        const res = await fetch("/api/subscriptions/admin", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: row.user_id }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Revoke failed");
+        toast.success(`${row.name || "User"} moved back to Free`);
+        refresh();
+      } catch (err) {
+        toast.error((err as Error).message);
+      } finally {
+        setPendingUserId(null);
+      }
+    },
+    [refresh],
+  );
 
   const columns = useMemo(
     () => [
@@ -67,8 +141,30 @@ const UsersTab = () => {
         ),
       },
       {
+        accessorKey: "tier_key",
+        header: "Subscription",
+        cell: ({ row }: { row: { original: FitnessUserRow } }) => (
+          <div className="flex flex-col gap-0.5">
+            <span
+              className={`badge h-5 text-[9px] uppercase font-black w-fit ${
+                row.original.is_premium ? "badge-green" : "badge-slate"
+              }`}
+            >
+              {row.original.tier_name || "Free"}
+            </span>
+            {row.original.is_premium && (
+              <span className="text-[9px] text-slate-400 font-bold">
+                {row.original.subscription_expires_at
+                  ? `Until ${formatDate(row.original.subscription_expires_at)}`
+                  : "Lifetime"}
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
         accessorKey: "level",
-        header: "Tier / Level",
+        header: "Training Level",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <span className="badge badge-blue h-5 text-[9px] uppercase font-black">
             {row.original.level || "—"}
@@ -154,6 +250,28 @@ const UsersTab = () => {
         header: "",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex items-center justify-end gap-2">
+            {isSuperAdmin && (
+              <button
+                type="button"
+                disabled={pendingUserId === row.original.user_id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (row.original.is_premium) handleRevoke(row.original);
+                  else handleGrant(row.original);
+                }}
+                className={`h-8 px-2.5 rounded-lg text-[10px] font-black uppercase transition-colors disabled:opacity-50 ${
+                  row.original.is_premium
+                    ? "text-slate-500 hover:text-red-600 hover:bg-red-50"
+                    : "text-emerald-600 hover:bg-emerald-50"
+                }`}
+              >
+                {pendingUserId === row.original.user_id
+                  ? "…"
+                  : row.original.is_premium
+                    ? "Make Free"
+                    : "Make Premium"}
+              </button>
+            )}
             <a
               aria-label="Open user profile"
               href={`/users?search=${encodeURIComponent(row.original.name || row.original.user_id)}`}
@@ -166,7 +284,7 @@ const UsersTab = () => {
         ),
       },
     ],
-    [],
+    [isSuperAdmin, pendingUserId, handleGrant, handleRevoke],
   );
 
   return (
