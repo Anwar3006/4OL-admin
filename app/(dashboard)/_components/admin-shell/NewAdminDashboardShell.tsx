@@ -4,18 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  ChevronRight,
-  ChevronDown,
-  Search,
-  Bell,
-  MessageSquare,
-  LogOut,
-  User,
-  Settings,
-  Rows3,
-  StretchHorizontal,
-} from "lucide-react";
+import { ChevronRight, ChevronDown, LogOut, User, Settings } from "lucide-react";
 import { dashboardNavSections } from "./navigation";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -53,7 +42,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ProfileModal from "@/components/redesign/modals/ProfileModal";
 import AdminSearchDialog from "./AdminSearchDialog";
-import { useDensity } from "@/hooks/use-density";
+import NotificationBell from "./NotificationBell";
+import SupportMessagesButton from "./SupportMessagesButton";
+import AlertsButton from "./AlertsButton";
+import ThemeMenu from "./ThemeMenu";
+import DensityMenu from "./DensityMenu";
+import NavGlyph, { NAV_GLYPH } from "./NavGlyph";
 
 interface NewAdminDashboardShellProps {
   children: React.ReactNode;
@@ -108,7 +102,6 @@ export default function NewAdminDashboardShell({
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isMac, setIsMac] = useState(false);
-  const { effective, cycleMode, hydrated } = useDensity();
 
   // Detect platform client-side only, to avoid SSR/client markup mismatch
   useEffect(() => {
@@ -139,9 +132,13 @@ export default function NewAdminDashboardShell({
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
+        // Explicit column list, not select("*"): the shell only needs the
+        // identity chip fields, and the wildcard pulled whitelisted_ips,
+        // notes, login_attempts and admin_permissions into the browser —
+        // the same leak ProfileModal was rewritten to close.
         const { data } = await supabase
           .from("user_profiles")
-          .select("*")
+          .select("first_name, last_name, role, public_id, avatar_url")
           .eq("user_id", user.id)
           .single();
         if (data) {
@@ -489,7 +486,9 @@ export default function NewAdminDashboardShell({
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mx-2 h-4" />
-              <nav className="flex items-center text-sm font-medium text-muted-foreground">
+              <nav className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                <NavGlyph char={NAV_GLYPH.home} size={13} />
+                <span className="text-muted-foreground/60">—</span>
                 <span className="text-foreground font-semibold tracking-tight">
                   {pageTitle}
                 </span>
@@ -504,7 +503,11 @@ export default function NewAdminDashboardShell({
                 onClick={() => setSearchOpen(true)}
                 className="relative hidden lg:flex items-center h-9 w-64 2xl:w-80 5xl:w-96 rounded-md bg-muted/50 border border-transparent hover:bg-muted transition-colors text-left"
               >
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <NavGlyph
+                  char={NAV_GLYPH.search}
+                  size={13}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2"
+                />
                 <span className="pl-9 pr-12 text-sm text-muted-foreground truncate">
                   Search...
                 </span>
@@ -520,43 +523,18 @@ export default function NewAdminDashboardShell({
                 className="lg:hidden text-muted-foreground"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="size-4" />
+                <NavGlyph char={NAV_GLYPH.search} />
               </Button>
 
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative text-muted-foreground hover:text-foreground"
-                >
-                  <Bell className="size-4" />
-                  <span className="absolute right-2 top-2 size-1.5 rounded-full bg-destructive" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative text-muted-foreground hover:text-foreground"
-                >
-                  <MessageSquare className="size-4" />
-                  <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-                </Button>
-                {/* Part X: density toggle (mockup ts-density-btn). Cycles
-                    auto → comfortable → compact; auto resolves to compact
-                    on viewports ≤ 1024px (iPad). */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-foreground"
-                  title={`Density: ${hydrated ? effective : "auto"} (click to change)`}
-                  aria-label="Toggle display density"
-                  onClick={cycleMode}
-                >
-                  {hydrated && effective === "compact" ? (
-                    <Rows3 className="size-4" />
-                  ) : (
-                    <StretchHorizontal className="size-4" />
-                  )}
-                </Button>
+                {/* Order matches the mockup topbar: 🔔 🚨 💬 ☰, then the
+                    dark-mode control the mockup has no equivalent for. Each
+                    owns its own data/state (see the component headers). */}
+                <NotificationBell />
+                <SupportMessagesButton />
+                <AlertsButton />
+                <DensityMenu />
+                <ThemeMenu />
               </div>
 
               <Separator
@@ -564,20 +542,35 @@ export default function NewAdminDashboardShell({
                 className="mx-1 h-6 hidden sm:block"
               />
 
-              {/* Part W: top-bar avatar is the mockup's profile-modal trigger
-                  (tb-user); previously inert. */}
+              {/* Identity chip — the mockup's tb-user. Opens the profile /
+                  access / security modal; the sidebar footer dropdown opens
+                  the same modal so both entry points stay in sync. */}
               <button
                 type="button"
-                aria-label="Open admin profile"
-                title="Admin profile"
-                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Open admin profile, access and security"
+                title="Profile, access & security"
+                className="flex items-center gap-2 rounded-full border border-border py-1 pl-1 pr-1 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:pr-3"
                 onClick={() => setProfileOpen(true)}
               >
-                <Avatar className="size-8 cursor-pointer border border-border">
+                <Avatar className="size-8 cursor-pointer">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
+                <span className="hidden min-w-0 flex-col items-start leading-tight sm:flex">
+                  <span className="max-w-[140px] truncate text-xs font-semibold">
+                    {profile?.name || "Admin"}
+                  </span>
+                  <span className="max-w-[140px] truncate text-[10px] capitalize text-muted-foreground">
+                    {(profile?.role ?? "administrator").replace(/_/g, " ")}
+                    {profile?.public_id ? ` · ${profile.public_id}` : ""}
+                  </span>
+                </span>
+                <NavGlyph
+                  char={NAV_GLYPH.caret}
+                  size={10}
+                  className="hidden text-muted-foreground sm:inline-block"
+                />
               </button>
             </div>
           </header>

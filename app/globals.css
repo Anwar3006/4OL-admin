@@ -204,11 +204,21 @@
     overflow-x: hidden;
   }
 
+  /* background-color follows the theme token rather than the fixed
+     --clr-slate-50. The two are the same #f8fafc in light mode, so this is a
+     no-op there, but without it the page behind the shell stayed light after
+     the top-nav dark-mode switch flipped `.dark` on <html>. */
   body {
-    background-color: var(--clr-slate-50);
+    background-color: var(--color-background);
     color: var(--clr-slate-600);
     font-weight: 400;
     overflow-x: hidden;
+  }
+
+  /* Text colour is switched only under .dark so light mode keeps its exact
+     current #475569 body copy. */
+  .dark body {
+    color: var(--color-foreground);
   }
 
   *:focus-visible {

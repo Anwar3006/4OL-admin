@@ -32,7 +32,12 @@ export type CycleRecord = {
 
 export type ConsentRecord = {
   user_id: string;
-  consent_type: "tracking" | "notifications" | "marketing" | "research_analytics";
+  consent_type:
+    | "tracking"
+    | "notifications"
+    | "marketing"
+    | "research_analytics"
+    | "personalization";
   granted: boolean;
   policy_version: string;
   source: string;
@@ -50,7 +55,12 @@ export const PERIOD_METRIC_DEFINITIONS = {
 export const SENSITIVE_AUDIENCE_KEYS = new Set([
   "goal",
   "pregnancy_intent",
+  "trying_to_conceive",
+  "ttc",
   "pcos",
+  "ovulation",
+  "ovulation_test",
+  "preconception",
   "sexual_activity",
   "medication",
   "symptom",

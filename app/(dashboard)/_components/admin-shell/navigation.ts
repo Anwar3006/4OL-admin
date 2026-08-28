@@ -113,18 +113,13 @@ export const dashboardNavSections: DashboardNavSection[] = [
         permission: "jobs.view",
       },
       {
+        // Flat, no children: /medenquiry already renders these six as page
+        // tabs (all/pending/escrow/delivery/pharmacies/disputes), so the
+        // sidebar sub-nav duplicated the same six destinations one level up.
         title: "Medication Enquiry",
         href: "/medenquiry",
         icon: "🔬",
         permission: "medenquiry.view",
-        children: [
-          { title: "All Enquiries", href: "/medenquiry?tab=all" },
-          { title: "Pending", href: "/medenquiry?tab=pending" },
-          { title: "Escrow", href: "/medenquiry?tab=escrow" },
-          { title: "Delivery", href: "/medenquiry?tab=delivery" },
-          { title: "Pharmacy Responses", href: "/medenquiry?tab=pharmacies" },
-          { title: "Disputes", href: "/medenquiry?tab=disputes" },
-        ],
       },
       {
         title: "BedTracker (PKM)",
@@ -183,16 +178,13 @@ export const dashboardNavSections: DashboardNavSection[] = [
     title: "AI Intelligence",
     items: [
       {
+        // Flat, no children — /ai already renders these four as page tabs
+        // (models/moderation/recommendations/analytics). Same rationale as
+        // Medication Enquiry above.
         title: "AI Hub",
         href: "/ai",
         icon: "🤖",
         permission: "ai.view",
-        children: [
-          { title: "AI Models", href: "/ai?tab=models" },
-          { title: "AI Moderation", href: "/ai?tab=moderation" },
-          { title: "Recommendations", href: "/ai?tab=recommendations" },
-          { title: "AI Analytics", href: "/ai?tab=analytics" },
-        ],
       },
     ],
   },

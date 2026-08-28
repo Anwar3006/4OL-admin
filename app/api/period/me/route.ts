@@ -5,6 +5,8 @@ import { DEFAULT_CYCLE_LENGTH, DEFAULT_PERIOD_LENGTH, predictNextPeriod, type Cy
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support"]);
+const TtcReadinessStatus = z.enum(["not_started", "planned", "completed", "not_applicable"]);
+const OvulationTestResult = z.enum(["negative", "low", "high", "peak", "positive", "invalid"]);
 
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -18,6 +20,54 @@ const ActionSchema = z.discriminatedUnion("action", [
     onboardingVersion: z.string().trim().max(30).optional(),
     onboardingComplete: z.boolean().default(true),
     remindersEnabled: z.boolean().default(false),
+  }),
+  z.object({
+    action: z.literal("save_ttc_profile"),
+    tryingSince: DateString.nullable().optional(),
+    conceptionTimeline: z.enum(["soon", "next_3_months", "next_6_months", "this_year", "not_sure"]).nullable().optional(),
+    showConceptionLanguage: z.boolean().default(true),
+    partnerInvolved: z.boolean().nullable().optional(),
+    prenatalVitaminStartedOn: DateString.nullable().optional(),
+    preconceptionVisitStatus: TtcReadinessStatus.default("not_started"),
+    preconceptionVisitDate: DateString.nullable().optional(),
+    medicationReviewStatus: TtcReadinessStatus.default("not_started"),
+    vaccineReviewStatus: TtcReadinessStatus.default("not_started"),
+    chronicConditionReviewStatus: TtcReadinessStatus.default("not_started"),
+    stiScreeningStatus: TtcReadinessStatus.default("not_started"),
+    dentalCheckStatus: TtcReadinessStatus.default("not_started"),
+    lifestyleFocusAreas: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("save_ovulation_test"),
+    id: z.string().uuid().optional(),
+    loggedOn: DateString,
+    testedAt: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+    result: OvulationTestResult,
+    brand: z.string().trim().max(120).nullable().optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+    clientEventId: z.string().trim().min(8).max(200).optional(),
+    appVersion: z.string().trim().max(40).optional(),
+    source: z.enum(["user", "device", "offline_sync"]).default("device"),
+  }),
+  z.object({
+    action: z.literal("update_ttc_checklist_progress"),
+    checklistItemId: z.string().uuid(),
+    status: z.enum(["not_started", "planned", "done", "skipped"]),
+    targetDate: DateString.nullable().optional(),
+    reminderEnabled: z.boolean().default(false),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("save_preconception_appointment"),
+    id: z.string().uuid().optional(),
+    appointmentDate: z.string().datetime(),
+    timezone: z.string().trim().min(1).max(100).default("UTC"),
+    clinicianName: z.string().trim().max(160).nullable().optional(),
+    purpose: z.enum(["preconception_visit", "medication_review", "vaccine_review", "fertility_consult", "other"]).default("preconception_visit"),
+    status: z.enum(["planned", "completed", "cancelled"]).default("planned"),
+    questions: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
   }),
   z.object({
     action: z.literal("save_daily_log"),
@@ -87,19 +137,57 @@ export async function GET(request: NextRequest) {
   const { supabase, user } = await getPeriodRequestClient(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [settings, cycles, logs, forecasts, consents, preferences, content, trivia, flags] = await Promise.all([
+  const [
+    settings,
+    cycles,
+    logs,
+    forecasts,
+    consents,
+    preferences,
+    ttcProfile,
+    ovulationTests,
+    ttcChecklistItems,
+    ttcChecklistProgress,
+    preconceptionAppointments,
+    fertilityInsights,
+    content,
+    trivia,
+    flags,
+  ] = await Promise.all([
     supabase.from("period_user_settings").select("tracking_goal,typical_cycle_length,typical_period_length,timezone,locale,onboarding_version,onboarding_completed_at,reminders_enabled,quiet_hours_start,quiet_hours_end,updated_at").eq("user_id", user.id).maybeSingle(),
     supabase.from("period_cycles").select("id,period_start_date,period_end_date,cycle_length,period_length,next_period_forecast,ovulation_forecast,fertile_window,current_phase,source,created_at,updated_at").eq("user_id", user.id).order("period_start_date", { ascending: false }).limit(24),
     supabase.from("period_daily_logs").select("id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,sexual_activity,exercise_minutes,medication_logged,medication_name,note_ciphertext,note_category,source,client_event_id,app_version,sync_status,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(400),
     supabase.from("period_forecasts").select("id,cycle_id,model_key,model_version,predicted_period_start,predicted_ovulation_date,fertile_window,confidence,explanation_code,generated_at,superseded_at").eq("user_id", user.id).is("superseded_at", null).order("generated_at", { ascending: false }).limit(12),
     supabase.from("period_consent_events").select("consent_type,granted,policy_version,source,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
-    supabase.from("period_notification_preferences").select("period_reminders,fertile_window_reminders,content_reminders,quiet_hours_start,quiet_hours_end,timezone,updated_at").eq("user_id", user.id).maybeSingle(),
+    supabase.from("period_notification_preferences").select("period_reminders,fertile_window_reminders,content_reminders,ovulation_test_reminders,prenatal_vitamin_reminders,preconception_checklist_reminders,quiet_hours_start,quiet_hours_end,timezone,updated_at").eq("user_id", user.id).maybeSingle(),
+    supabase.from("period_ttc_profiles").select("trying_since,conception_timeline,show_conception_language,partner_involved,prenatal_vitamin_started_on,preconception_visit_status,preconception_visit_date,medication_review_status,vaccine_review_status,chronic_condition_review_status,sti_screening_status,dental_check_status,lifestyle_focus_areas,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).maybeSingle(),
+    supabase.from("period_ovulation_tests").select("id,logged_on,tested_at,result,brand,notes_ciphertext,source,client_event_id,app_version,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(180),
+    supabase.from("period_ttc_checklist_items").select("id,code,title,description,category,source_label,source_url,display_order,is_active,updated_at").eq("is_active", true).order("display_order", { ascending: true }),
+    supabase.from("period_ttc_checklist_progress").select("checklist_item_id,status,target_date,completed_at,reminder_enabled,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    supabase.from("period_preconception_appointments").select("id,appointment_date,timezone,clinician_name,purpose,status,questions,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("appointment_date", { ascending: false }).limit(50),
+    supabase.from("period_fertility_insights").select("id,cycle_id,insight_date,insight_type,title,message,confidence,evidence,source_model,safety_level,status,expires_at,created_at,updated_at").eq("user_id", user.id).eq("status", "active").order("insight_date", { ascending: false }).limit(20),
     supabase.from("period_content").select("id,title,topic,summary,content_type,locale,tags,media_url,version,body_html,published_at").eq("status", "published").order("published_at", { ascending: false }).limit(100),
     supabase.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone").in("status", ["ready", "live", "ended"]).order("starts_at", { ascending: true }).limit(12),
     supabase.from("period_feature_flags").select("key,description,rollout_percent,minimum_app_version").eq("enabled", true),
   ]);
 
-  const firstError = [settings, cycles, logs, forecasts, consents, preferences, content, trivia, flags].find((result) => result.error)?.error;
+  const firstError = [
+    settings,
+    cycles,
+    logs,
+    forecasts,
+    consents,
+    preferences,
+    ttcProfile,
+    ovulationTests,
+    ttcChecklistItems,
+    ttcChecklistProgress,
+    preconceptionAppointments,
+    fertilityInsights,
+    content,
+    trivia,
+    flags,
+  ].find((result) => result.error)?.error;
   if (firstError) {
     console.error("[period/me]", firstError.message);
     return NextResponse.json({ error: "Unable to load Period Tracker data" }, { status: 500 });
@@ -125,6 +213,12 @@ export async function GET(request: NextRequest) {
     forecasts: forecasts.data ?? [],
     consentEvents: consents.data ?? [],
     notificationPreferences: preferences.data,
+    ttcProfile: ttcProfile.data,
+    ovulationTests: ovulationTests.data ?? [],
+    ttcChecklistItems: ttcChecklistItems.data ?? [],
+    ttcChecklistProgress: ttcChecklistProgress.data ?? [],
+    preconceptionAppointments: preconceptionAppointments.data ?? [],
+    fertilityInsights: fertilityInsights.data ?? [],
     content: content.data ?? [],
     triviaEvents: trivia.data ?? [],
     recommendations,
@@ -145,6 +239,99 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.from("period_user_settings").upsert({ user_id: user.id, tracking_goal: input.goal, typical_cycle_length: input.typicalCycleLength, typical_period_length: input.typicalPeriodLength, timezone: input.timezone, locale: input.locale, region: input.region ?? null, onboarding_version: input.onboardingVersion ?? null, onboarding_completed_at: input.onboardingComplete ? new Date().toISOString() : null, reminders_enabled: input.remindersEnabled }, { onConflict: "user_id" });
     if (error) return NextResponse.json({ error: "Unable to save settings" }, { status: 500 });
     return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "save_ttc_profile") {
+    const { error } = await supabase.from("period_ttc_profiles").upsert({
+      user_id: user.id,
+      trying_since: input.tryingSince ?? null,
+      conception_timeline: input.conceptionTimeline ?? null,
+      show_conception_language: input.showConceptionLanguage,
+      partner_involved: input.partnerInvolved ?? null,
+      prenatal_vitamin_started_on: input.prenatalVitaminStartedOn ?? null,
+      preconception_visit_status: input.preconceptionVisitStatus,
+      preconception_visit_date: input.preconceptionVisitDate ?? null,
+      medication_review_status: input.medicationReviewStatus,
+      vaccine_review_status: input.vaccineReviewStatus,
+      chronic_condition_review_status: input.chronicConditionReviewStatus,
+      sti_screening_status: input.stiScreeningStatus,
+      dental_check_status: input.dentalCheckStatus,
+      lifestyle_focus_areas: input.lifestyleFocusAreas,
+      notes_ciphertext: input.notesCiphertext ?? null,
+    }, { onConflict: "user_id" });
+    if (error) return NextResponse.json({ error: "Unable to save TTC profile" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "save_ovulation_test") {
+    const payload = {
+      user_id: user.id,
+      logged_on: input.loggedOn,
+      tested_at: input.testedAt ?? null,
+      result: input.result,
+      brand: input.brand?.trim() || null,
+      notes_ciphertext: input.notesCiphertext ?? null,
+      source: input.source,
+      client_event_id: input.clientEventId ?? null,
+      app_version: input.appVersion ?? null,
+    };
+
+    if (input.id) {
+      const { data, error } = await supabase.from("period_ovulation_tests").update(payload).eq("id", input.id).eq("user_id", user.id).select("id,updated_at").single();
+      if (error) return NextResponse.json({ error: "Unable to save ovulation test" }, { status: 500 });
+      return NextResponse.json({ ok: true, data });
+    }
+
+    if (input.clientEventId) {
+      const { data: existing } = await supabase.from("period_ovulation_tests").select("id").eq("user_id", user.id).eq("client_event_id", input.clientEventId).maybeSingle();
+      if (existing?.id) {
+        const { data, error } = await supabase.from("period_ovulation_tests").update(payload).eq("id", existing.id).eq("user_id", user.id).select("id,updated_at").single();
+        if (error) return NextResponse.json({ error: "Unable to save ovulation test" }, { status: 500 });
+        return NextResponse.json({ ok: true, data });
+      }
+    }
+
+    const { data, error } = await supabase.from("period_ovulation_tests").insert(payload).select("id,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to save ovulation test" }, { status: 500 });
+    return NextResponse.json({ ok: true, data }, { status: 201 });
+  }
+
+  if (input.action === "update_ttc_checklist_progress") {
+    const completedAt = input.status === "done" ? new Date().toISOString() : null;
+    const { error } = await supabase.from("period_ttc_checklist_progress").upsert({
+      user_id: user.id,
+      checklist_item_id: input.checklistItemId,
+      status: input.status,
+      target_date: input.targetDate ?? null,
+      completed_at: completedAt,
+      reminder_enabled: input.reminderEnabled,
+      notes_ciphertext: input.notesCiphertext ?? null,
+    }, { onConflict: "user_id,checklist_item_id" });
+    if (error) return NextResponse.json({ error: "Unable to save checklist progress" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "save_preconception_appointment") {
+    const payload = {
+      user_id: user.id,
+      appointment_date: input.appointmentDate,
+      timezone: input.timezone,
+      clinician_name: input.clinicianName?.trim() || null,
+      purpose: input.purpose,
+      status: input.status,
+      questions: input.questions,
+      notes_ciphertext: input.notesCiphertext ?? null,
+    };
+
+    if (input.id) {
+      const { data, error } = await supabase.from("period_preconception_appointments").update(payload).eq("id", input.id).eq("user_id", user.id).select("id,updated_at").single();
+      if (error) return NextResponse.json({ error: "Unable to save appointment" }, { status: 500 });
+      return NextResponse.json({ ok: true, data });
+    }
+
+    const { data, error } = await supabase.from("period_preconception_appointments").insert(payload).select("id,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to save appointment" }, { status: 500 });
+    return NextResponse.json({ ok: true, data }, { status: 201 });
   }
 
   if (input.action === "save_daily_log") {

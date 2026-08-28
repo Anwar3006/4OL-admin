@@ -28,7 +28,7 @@ const PATCH_SCHEMA = z
   .refine((body) => Object.keys(body).length > 0, { message: "No fields to update" });
 
 const PROFILE_FIELDS =
-  "first_name,last_name,phone_number,department,location,role,status,mfa_enabled,last_login_at,created_at,avatar_url";
+  "first_name,last_name,phone_number,department,location,role,status,mfa_enabled,last_login_at,created_at,avatar_url,public_id";
 
 export async function GET() {
   const auth = await requireAdminApiUser();
@@ -48,6 +48,10 @@ export async function GET() {
   return NextResponse.json({
     profile: profile ?? null,
     email: auth.user.email ?? null,
+    // Human-facing account number (4OL-000001) shown on the top-nav chip and
+    // the modal subtitle. Kept out of `profile` so the PATCH round-trip below
+    // can't be tricked into treating it as an editable field.
+    publicId: (profile as { public_id?: string | null } | null)?.public_id ?? null,
   });
 }
 
