@@ -2319,6 +2319,54 @@ not something to silently rewrite mid-Epic-27.
 
 ---
 
+## Epic 32 — Reports Menu: Scheduled AI-Generated Platform Reports (implemented 2026-08-30)
+
+> Branch `feat/admin-reports-menu` (a9972a7). Super admins schedule
+> daily/weekly/monthly/quarterly/yearly reports covering users, mobile-app
+> traction, admin activity, security, finance, AI usage and marketing;
+> deterministic collectors compute every number, an AI model (OpenAI
+> `gpt-4o-mini` via `OPENAI_API_KEY`) writes only the words, and reports
+> deliver into each recipient's admin inbox via the notifications table.
+> Mockup parity: top-level Reports page in `admin-panel.html` (root repo
+> f957554).
+
+- [x] **32.1** `[Backend]` Migration
+  `supabase/migrations/20260830_admin_reports_menu.sql` —
+  `report_definitions`, `report_recipients`, `report_runs`,
+  `report_delivery_logs`, `report_metrics_snapshots` (RLS on, no policies
+  = service-role only); timezone-aware `next_report_run_at()`;
+  `enqueue_due_report_runs()` idempotent by `definition:start:end`;
+  `purge_expired_report_runs()` retention (daily 90d / weekly 365d /
+  monthly+ 20y); `reports.view` + `reports.manage` permission seeds;
+  guarded pg_cron wiring.
+- [x] **32.2** `[Backend]` `lib/reports/` — `collectors.ts` (7
+  deterministic collectors with snapshot cache, anomaly rules, honest
+  "awaiting data" degradation per section), `narrative.ts` (OpenAI chat
+  narration with token budget, 60s timeout, metrics-only markdown
+  fallback), `processor.ts` (collect → narrate → deliver, stuck-run
+  auto-fail after 15 min, failure alerting to the schedule creator).
+- [x] **32.3** `[Backend]` `app/api/reports` — RBAC-enforced
+  (`requireAdminApiUser`): meta/definitions/recipients/admins/inbox/runs
+  reads with server-side per-recipient section redaction; mutations
+  create/update/delete definition, replace recipients, `generate_now`,
+  `process_queue`, `retry_run`. `app/api/reports/cron` hourly worker
+  behind `CRON_SECRET` + `vercel.json` cron.
+- [x] **32.4** `[Admin]` `app/(dashboard)/reports` — 📥 My Reports /
+  🗓️ Schedules / 👥 Recipients / 🕓 Run History tabs (manage tabs gated
+  by `reports.manage`); delta-first metrics with anomaly callouts
+  leading; AI-provenance labels; sidebar nav + permission catalog wired.
+- [ ] **32.5** `[Ops]` Deploy follow-ups: apply
+  `20260830_admin_reports_menu.sql` to live Supabase; set
+  `OPENAI_API_KEY` + `CRON_SECRET` env vars on Vercel. Until then runs
+  ship metrics-only and the cron worker returns 503 by design.
+
+**Related (Period Tracker, 2026-08-29):** branch `feat/period-gap-closure`
+(ccdf9a4 + eb4756c) closed the G1–G15 audit gaps — TTC consultation API
+wired, Trivia rules enforced, fulfilment loop closed, fertility-insight
+output aligned with the table schema and mobile contract.
+
+---
+
 ## Suggested Phasing (Part II)
 
 This roughly follows the existing 8-week roadmap in `ADMIN_DASHBOARD_SUPABASE_ANALYTICS_ROADMAP.md`, extended to cover the epics that document didn't include (Period Tracker mobile build, Payments, Subscriptions, and the smaller placeholder modules). Part I (Epics 0-8) should be worked before or alongside Phase 1 below — several Part II epics assume Part I's security/reliability fixes are already in place.
