@@ -87,6 +87,18 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Users", href: "/users", icon: "👤", permission: "users.view" },
       { title: "IBP Businesses", href: "/ibp", icon: "🏢", permission: "ibp.view" },
       { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },
+      {
+        title: "Reports",
+        href: "/reports",
+        icon: "📊",
+        permission: "reports.view",
+        children: [
+          { title: "My Reports", href: "/reports?tab=inbox" },
+          { title: "Schedules", href: "/reports?tab=schedules", permission: "reports.manage" },
+          { title: "Recipients", href: "/reports?tab=recipients", permission: "reports.manage" },
+          { title: "Run History", href: "/reports?tab=runs", permission: "reports.manage" },
+        ],
+      },
     ],
   },
   {

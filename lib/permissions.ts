@@ -127,6 +127,8 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("security", "view", "View security center and audit logs"),
   p("security", "settings", "Change platform security settings"),
   p("map", "export", "Export map, footprint and coverage data"),
+  p("reports", "view", "View platform reports delivered to me"),
+  p("reports", "manage", "Manage report schedules, sections and recipients"),
   p("integrations", "keys", "Manage external integration credentials"),
   p("engagement", "view", "View content engagement analytics"),
   p("subscriptions", "view", "View subscription tiers and entitlements"),
@@ -178,6 +180,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "subscriptions.view", "subscriptions.manage",
     "fitcoins.view", "fitcoins.manage",
     "fitness_notifications.send",
+    "reports.view",
   ]),
   registrar: D([
     "dashboard.view",
@@ -224,6 +227,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "subscriptions.view",
     "fitcoins.view",
     "medenquiry.view",
+    "reports.view",
   ]),
   compliance_officer: D([
     "dashboard.view",
@@ -232,6 +236,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "deleteaccount.view", "deleteaccount.approve", "deleteaccount.export",
     "period.view",
     "security.view",
+    "reports.view",
   ]),
   analyst: D(
     PERMISSION_CATALOG
