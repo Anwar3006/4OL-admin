@@ -199,6 +199,12 @@ const WriteSchema = z.discriminatedUnion("action", [
     surfaceDurationWeeks: z.number().int().min(1).max(12),
     surfaceChannel: z.enum(["plasence_library", "push_digest", "today_tip"]).default("plasence_library"),
   }),
+  z.object({
+    action: z.literal("dispatch_campaign"),
+    campaignId: z.string().uuid(),
+    title: z.string().trim().min(2).max(160),
+    message: z.string().trim().min(2).max(500),
+  }),
 ]);
 
 const unsafeHtml = (value: string) => /<\s*(script|iframe|object|embed)|javascript\s*:|\bon\w+\s*=/i.test(value);
@@ -769,6 +775,48 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: "Unable to create campaign" }, { status: 500 });
     await writeAudit(user.id, "create", "period_campaign", data.id, { channel: input.channel, scheduledAt: input.scheduledAt ?? null });
     return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "dispatch_campaign") {
+    // G7: turns a campaign into real in-app notifications. Audience = users
+    // whose LATEST consent for the campaign's consent type is granted, minus
+    // anyone notified by a Period campaign inside the frequency-cap window.
+    // Rejects when the reachable cohort is below the campaign's minimum so
+    // small sensitive groups are never singled out.
+    const { data: campaign, error: campaignError } = await admin.from("period_campaigns").select("id,status,channel,consent_type,minimum_cohort_size,frequency_cap_days,reached_count").eq("id", input.campaignId).maybeSingle();
+    if (campaignError || !campaign) return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
+    if (campaign.status === "completed" || campaign.status === "cancelled") return NextResponse.json({ error: "This campaign has already finished" }, { status: 409 });
+    if (campaign.channel !== "in_app") return NextResponse.json({ error: "Only in-app campaigns can be dispatched from here" }, { status: 409 });
+
+    const consentType = campaign.consent_type || "marketing";
+    const { data: consentRows, error: consentError } = await admin.from("period_consent_events").select("user_id,granted,created_at").eq("consent_type", consentType).order("created_at", { ascending: false }).limit(20_000);
+    if (consentError) return NextResponse.json({ error: "Unable to resolve the campaign audience" }, { status: 500 });
+    const optedIn = new Set<string>();
+    const seen = new Set<string>();
+    for (const row of consentRows ?? []) {
+      if (seen.has(row.user_id)) continue;
+      seen.add(row.user_id);
+      if (row.granted) optedIn.add(row.user_id);
+    }
+
+    const capDays = Math.max(1, Number(campaign.frequency_cap_days ?? 7));
+    const capSince = new Date(Date.now() - capDays * 86400000).toISOString();
+    const { data: recentNotifications, error: recentError } = await admin.from("notifications").select("user_id").eq("type", "period_campaign").gte("created_at", capSince).limit(20_000);
+    if (recentError) return NextResponse.json({ error: "Unable to apply the frequency cap" }, { status: 500 });
+    const recentlyReached = new Set((recentNotifications ?? []).map((row: any) => row.user_id));
+    const audience = [...optedIn].filter((userId) => !recentlyReached.has(userId));
+
+    const minimumCohort = Math.max(25, Number(campaign.minimum_cohort_size ?? 100));
+    if (audience.length < minimumCohort) {
+      return NextResponse.json({ error: `Reachable cohort is ${audience.length} — below the ${minimumCohort} minimum. Broaden the audience or lower the frequency cap.` }, { status: 409 });
+    }
+
+    const { error: insertError } = await admin.from("notifications").insert(audience.map((userId) => ({ user_id: userId, title: input.title, body: input.message, type: "period_campaign", metadata: { campaign_id: campaign.id }, campaign_id: campaign.id })));
+    if (insertError) return NextResponse.json({ error: "Unable to deliver the campaign" }, { status: 500 });
+    const { error: updateError } = await admin.from("period_campaigns").update({ reached_count: Number(campaign.reached_count ?? 0) + audience.length, sent_at: new Date().toISOString(), status: "completed" }).eq("id", campaign.id);
+    if (updateError) return NextResponse.json({ error: "Campaign delivered but its status could not be updated" }, { status: 500 });
+    await writeAudit(user.id, "dispatch", "period_campaign", campaign.id, { reached: audience.length, consentType, frequencyCapDays: capDays });
+    return NextResponse.json({ ok: true, reached: audience.length });
   }
 
   if (input.action === "create_content") {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getPeriodRequestClient } from "@/lib/period-request-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { DEFAULT_CYCLE_LENGTH, DEFAULT_PERIOD_LENGTH, predictNextPeriod, type CycleInput } from "@/lib/period-calculator";
+import { generateFertilityInsights } from "@/lib/fertility-insights";
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support"]);
@@ -132,6 +133,65 @@ const ActionSchema = z.discriminatedUnion("action", [
     durationMs: z.number().int().min(0).max(600_000).optional(),
     metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).default({}),
   }),
+  // TTC & Fertility writes (mobile api.ts contract). Intimate detail stays
+  // encrypted (notes_ciphertext); only the active checklist template and the
+  // user's own aggregates come back down in GET.
+  z.object({
+    action: z.literal("save_ttc_profile"),
+    tryingSince: DateString.nullable().optional(),
+    conceptionTimeline: z.string().trim().max(80).nullable().optional(),
+    showConceptionLanguage: z.boolean().optional(),
+    partnerInvolved: z.boolean().optional(),
+    prenatalVitaminStartedOn: DateString.nullable().optional(),
+    preconceptionVisitStatus: z.string().trim().max(40).nullable().optional(),
+    preconceptionVisitDate: DateString.nullable().optional(),
+    medicationReviewStatus: z.string().trim().max(40).nullable().optional(),
+    vaccineReviewStatus: z.string().trim().max(40).nullable().optional(),
+    chronicConditionReviewStatus: z.string().trim().max(40).nullable().optional(),
+    stiScreeningStatus: z.string().trim().max(40).nullable().optional(),
+    dentalCheckStatus: z.string().trim().max(40).nullable().optional(),
+    lifestyleFocusAreas: z.array(z.string().trim().min(1).max(60)).max(12).optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("save_ovulation_test"),
+    id: z.string().uuid(),
+    loggedOn: DateString,
+    testedAt: z.string().trim().max(40).nullable().optional(),
+    result: z.string().trim().min(1).max(30),
+    brand: z.string().trim().max(120).nullable().optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+    clientEventId: z.string().uuid().nullable().optional(),
+    appVersion: z.string().trim().max(40).optional(),
+    source: z.enum(["user", "device", "offline_sync"]).default("user"),
+  }),
+  z.object({
+    action: z.literal("update_ttc_checklist_progress"),
+    checklistItemId: z.string().uuid(),
+    status: z.string().trim().min(1).max(30),
+    targetDate: DateString.nullable().optional(),
+    reminderEnabled: z.boolean().optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("save_preconception_appointment"),
+    id: z.string().uuid(),
+    appointmentDate: DateString,
+    timezone: z.string().trim().max(80).optional(),
+    clinicianName: z.string().trim().max(160).nullable().optional(),
+    purpose: z.string().trim().min(1).max(80),
+    status: z.string().trim().min(1).max(30),
+    questions: z.array(z.string().trim().min(1).max(1000)).max(20).optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("save_notification_preferences"),
+    periodReminders: z.boolean().optional(),
+    fertileWindowReminders: z.boolean().optional(),
+    contentReminders: z.boolean().optional(),
+    quietHoursStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().optional(),
+    quietHoursEnd: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().optional(),
+  }),
 ]);
 
 export async function GET(request: NextRequest) {
@@ -207,6 +267,57 @@ export async function GET(request: NextRequest) {
   const latestNotificationConsent = consents.data?.find((item: any) => item.consent_type === "notifications");
   const engagementSuggestions = latestNotificationConsent?.granted ? [{ recommendationType: "engagement", reasonCode: "weekly_learning_opt_in", title: "Your weekly Library picks are ready", message: "Explore reviewed content selected from your recent tracker inputs.", sendEligible: true, safetyPolicy: "period-safety-v1" }] : [];
 
+  // G8: surface AI suggestions scheduled to the today_tip channel. Only
+  // completed jobs inside their surface window qualify; output shape is read
+  // defensively so malformed jobs are skipped, never surfaced raw.
+  let tipSuggestions: any[] = [];
+  try {
+    const adminForTips = getSupabaseAdmin();
+    const nowIso = new Date().toISOString();
+    const { data: tipJobs } = await adminForTips.from("period_ai_jobs").select("id,output,scheduled_at,surface_duration_weeks").eq("job_type", "content_suggestion").eq("status", "completed").eq("surface_channel", "today_tip").lte("scheduled_at", nowIso).limit(20);
+    tipSuggestions = (tipJobs ?? [])
+      .filter((job: any) => {
+        const windowMs = Math.max(1, Number(job.surface_duration_weeks ?? 2)) * 7 * 86400000;
+        return job.scheduled_at && Date.now() - new Date(job.scheduled_at).getTime() <= windowMs;
+      })
+      .map((job: any) => {
+        const output = job.output ?? {};
+        const title = typeof output.title === "string" ? output.title : "Today's tip";
+        const message = typeof output.summary === "string" ? output.summary : typeof output.message === "string" ? output.message : typeof output.body === "string" ? output.body : "";
+        return { recommendationType: "engagement", reasonCode: "ai_today_tip", title, message, sendEligible: false, safetyPolicy: "period-safety-v1" };
+      })
+      .filter((tip: any) => tip.message.length > 0);
+  } catch {
+    // Tip surfacing is best-effort.
+  }
+
+  // G6: derive today's fertility insight cards and persist any that are new
+  // (idempotent per user + insight_type + insight_date). Educational wording
+  // only — never pregnancy inference, never diagnosis.
+  let insights = (fertilityInsights.data ?? []) as any[];
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const drafts = generateFertilityInsights({
+      today,
+      trackingGoal: settings.data?.tracking_goal ?? null,
+      cycles: (cycles.data ?? []) as any[],
+      forecasts: (forecasts.data ?? []) as any[],
+      dailyLogs: (logs.data ?? []) as any[],
+      ovulationTests: (ovulationTests.data ?? []) as any[],
+      checklistItems: (ttcChecklistItems.data ?? []) as any[],
+      checklistProgress: (ttcChecklistProgress.data ?? []) as any[],
+    });
+    const existingToday = new Set(insights.filter((row: any) => row.insight_date === today).map((row: any) => row.insight_type));
+    const fresh = drafts.filter((draft) => !existingToday.has(draft.insight_type));
+    if (fresh.length) {
+      const admin = getSupabaseAdmin();
+      const { data: created } = await admin.from("period_fertility_insights").insert(fresh.map((draft) => ({ user_id: user.id, insight_type: draft.insight_type, insight_date: draft.insight_date, title: draft.title, summary: draft.summary, confidence: draft.confidence, evidence: draft.evidence, safety_level: draft.safety_level, suggested_action: draft.suggested_action, status: "active" }))).select();
+      if (created) insights = [...insights, ...created];
+    }
+  } catch {
+    // Insight generation is best-effort; never block the tracker payload.
+  }
+
   return NextResponse.json({
     settings: settings.data,
     cycles: cycles.data ?? [],
@@ -219,11 +330,11 @@ export async function GET(request: NextRequest) {
     ttcChecklistItems: ttcChecklistItems.data ?? [],
     ttcChecklistProgress: ttcChecklistProgress.data ?? [],
     preconceptionAppointments: preconceptionAppointments.data ?? [],
-    fertilityInsights: fertilityInsights.data ?? [],
+    fertilityInsights: insights,
     content: content.data ?? [],
     triviaEvents: trivia.data ?? [],
     recommendations,
-    engagementSuggestions,
+    engagementSuggestions: [...engagementSuggestions, ...tipSuggestions],
     featureFlags: flags.data ?? [],
     serverTime: new Date().toISOString(),
   });
@@ -368,6 +479,36 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.from("period_daily_logs").upsert({ user_id: user.id, cycle_id: input.cycleId ?? null, logged_on: input.loggedOn, flow: input.flow ?? null, moods: input.moods, symptoms: input.symptoms, basal_body_temperature: input.basalBodyTemperature ?? null, temperature_unit: input.temperatureUnit, cervical_mucus: input.cervicalMucus ?? null, sexual_activity: input.sexualActivity ?? null, exercise_minutes: input.exerciseMinutes ?? null, medication_logged: input.medicationLogged, medication_name: input.medicationLogged ? (input.medicationName?.trim() || null) : null, note_ciphertext: input.noteCiphertext ?? null, note_category: input.noteCategory ?? null, client_event_id: input.clientEventId, app_version: input.appVersion ?? null, source: input.source, sync_status: "synced" }, { onConflict: "user_id,logged_on" }).select("id,updated_at").single();
     if (error) return NextResponse.json({ error: "Unable to save daily log" }, { status: 500 });
     return NextResponse.json({ ok: true, data });
+  }
+
+  if (input.action === "save_ttc_profile") {
+    const { error } = await supabase.from("period_ttc_profiles").upsert({ user_id: user.id, trying_since: input.tryingSince ?? null, conception_timeline: input.conceptionTimeline ?? null, show_conception_language: input.showConceptionLanguage ?? true, partner_involved: input.partnerInvolved ?? false, prenatal_vitamin_started_on: input.prenatalVitaminStartedOn ?? null, preconception_visit_status: input.preconceptionVisitStatus ?? null, preconception_visit_date: input.preconceptionVisitDate ?? null, medication_review_status: input.medicationReviewStatus ?? null, vaccine_review_status: input.vaccineReviewStatus ?? null, chronic_condition_review_status: input.chronicConditionReviewStatus ?? null, sti_screening_status: input.stiScreeningStatus ?? null, dental_check_status: input.dentalCheckStatus ?? null, lifestyle_focus_areas: input.lifestyleFocusAreas ?? [], notes_ciphertext: input.notesCiphertext ?? null }, { onConflict: "user_id" });
+    if (error) return NextResponse.json({ error: "Unable to save TTC profile" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "save_ovulation_test") {
+    const { data, error } = await supabase.from("period_ovulation_tests").upsert({ id: input.id, user_id: user.id, logged_on: input.loggedOn, tested_at: input.testedAt ?? null, result: input.result, brand: input.brand ?? null, notes_ciphertext: input.notesCiphertext ?? null, client_event_id: input.clientEventId ?? null, app_version: input.appVersion ?? null, source: input.source }, { onConflict: "user_id,client_event_id" }).select("id,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to save ovulation test" }, { status: 500 });
+    return NextResponse.json({ ok: true, data });
+  }
+
+  if (input.action === "update_ttc_checklist_progress") {
+    const { error } = await supabase.from("period_ttc_checklist_progress").upsert({ user_id: user.id, checklist_item_id: input.checklistItemId, status: input.status, target_date: input.targetDate ?? null, reminder_enabled: input.reminderEnabled ?? false, notes_ciphertext: input.notesCiphertext ?? null }, { onConflict: "user_id,checklist_item_id" });
+    if (error) return NextResponse.json({ error: "Unable to update checklist progress" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "save_preconception_appointment") {
+    const { data, error } = await supabase.from("period_preconception_appointments").upsert({ id: input.id, user_id: user.id, appointment_date: input.appointmentDate, timezone: input.timezone ?? "Africa/Accra", clinician_name: input.clinicianName ?? null, purpose: input.purpose, status: input.status, questions: input.questions ?? [], notes_ciphertext: input.notesCiphertext ?? null }).select("id,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to save appointment" }, { status: 500 });
+    return NextResponse.json({ ok: true, data });
+  }
+
+  if (input.action === "save_notification_preferences") {
+    const { error } = await supabase.from("period_notification_preferences").upsert({ user_id: user.id, period_reminders: input.periodReminders ?? true, fertile_window_reminders: input.fertileWindowReminders ?? true, content_reminders: input.contentReminders ?? false, quiet_hours_start: input.quietHoursStart ?? null, quiet_hours_end: input.quietHoursEnd ?? null }, { onConflict: "user_id" });
+    if (error) return NextResponse.json({ error: "Unable to save notification preferences" }, { status: 500 });
+    return NextResponse.json({ ok: true });
   }
 
   if (input.action === "record_consent") {
