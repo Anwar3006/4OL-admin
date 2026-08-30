@@ -11,6 +11,7 @@ export const PERIOD_TAB_IDS = [
   "trivia",
   "forecasts",
   "quality",
+  "premium",
 ] as const;
 
 export type PeriodTabId = (typeof PERIOD_TAB_IDS)[number];

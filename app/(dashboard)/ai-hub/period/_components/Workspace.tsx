@@ -407,6 +407,8 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
                   <option value="badge">Badge</option>
                   <option value="discount">Discount</option>
                   <option value="prize">Prize</option>
+                  <option value="cash">Cash prize (MoMo payout)</option>
+                  <option value="airtime">Airtime / Data bundle</option>
                 </select>
               </label>
               <label className="form-label">

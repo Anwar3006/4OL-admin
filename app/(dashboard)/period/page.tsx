@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Download,
   Flag,
+  Gem,
   HeartHandshake,
   Loader2,
   Megaphone,
@@ -119,6 +120,12 @@ const tabs: Tab[] = [
     label: "App Quality",
     description: "Sync, client health and feature flags",
     icon: Settings2,
+  },
+  {
+    id: "premium",
+    label: "Premium",
+    description: "Cycle Pro grants, onboarding trials and expiry policy",
+    icon: Gem,
   },
 ];
 
@@ -409,6 +416,62 @@ const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
       render: (value) => (value == null ? "—" : `${value} ms`),
     },
     { key: "latestAt", label: "Latest", render: dateTime },
+  ],
+  premium: [
+    { key: "user", label: "User" },
+    {
+      key: "user_id",
+      label: "User ID",
+      render: (value) => <code className="text-[11px]">{shortId(value)}</code>,
+    },
+    {
+      key: "tier",
+      label: "Tier",
+      render: (value) => (
+        <span className="badge badge-purple">
+          {String(value ?? "cycle_pro").replaceAll("_", " ")}
+        </span>
+      ),
+    },
+    {
+      key: "source",
+      label: "Source",
+      render: (value) => (
+        <span
+          className={cn(
+            "badge",
+            value === "onboarding_trial" ? "badge-blue" : "badge-green",
+          )}
+        >
+          {String(value ?? "manual").replaceAll("_", " ")}
+        </span>
+      ),
+    },
+    { key: "reason", label: "Reason" },
+    { key: "starts_at", label: "Granted", render: date },
+    { key: "expires_at", label: "Expires", render: date },
+    {
+      key: "daysLeft",
+      label: "Days Left",
+      render: (value, row) =>
+        row.state === "revoked" || row.state === "expired" ? (
+          "—"
+        ) : (
+          <span
+            className={cn(
+              "badge",
+              Number(value) <= 3 ? "badge-red" : "badge-green",
+            )}
+          >
+            {value}
+          </span>
+        ),
+    },
+    {
+      key: "state",
+      label: "State",
+      render: (value) => status(value),
+    },
   ],
 };
 
@@ -792,6 +855,30 @@ function PeriodWorkspace() {
         },
       ];
     if (activeTab === "trivia") return [];
+    if (activeTab === "premium")
+      return [
+        {
+          label: "Extend 14 days",
+          onClick: (row) =>
+            mutate(
+              {
+                action: "extend_premium_grant",
+                id: row.id,
+                days: 14,
+              },
+              "Grant extended by 14 days, within the 90-day duration cap.",
+            ),
+        },
+        {
+          label: "Revoke access",
+          danger: true,
+          onClick: (row) =>
+            mutate(
+              { action: "revoke_premium_grant", id: row.id },
+              "Premium access revoked and recorded in the audit trail.",
+            ),
+        },
+      ];
     if (activeTab === "forecasts")
       return [
         {
@@ -1094,6 +1181,13 @@ function PeriodWorkspace() {
                 mutate={mutate}
               />
             )}
+            {activeTab === "content" && (
+              <AiSuggestions
+                suggestions={payload.aiSuggestions ?? []}
+                saving={saving}
+                mutate={mutate}
+              />
+            )}
             {activeTab === "trivia" && (
               <SummaryNote
                 icon={<Sparkles className="h-4 w-4" />}
@@ -1104,6 +1198,11 @@ function PeriodWorkspace() {
               <TriviaOperations
                 events={payload.events ?? []}
                 leads={payload.leads ?? []}
+                rewards={payload.rewards ?? []}
+                submissions={payload.submissions ?? []}
+                fulfillments={payload.fulfillments ?? []}
+                blockedDevices={payload.blockedDevices ?? []}
+                rules={payload.rules ?? []}
                 saving={saving}
                 mutate={mutate}
               />
@@ -1121,6 +1220,13 @@ function PeriodWorkspace() {
             {activeTab === "consent" && (
               <PrivacyRequests
                 rows={payload.privacyRequests ?? []}
+                saving={saving}
+                mutate={mutate}
+              />
+            )}
+            {activeTab === "premium" && (
+              <PremiumOperations
+                settings={payload.settings ?? null}
                 saving={saving}
                 mutate={mutate}
               />
@@ -1307,16 +1413,39 @@ function Overview({ payload }: { payload: any }) {
 function TriviaOperations({
   events,
   leads,
+  rewards,
+  submissions,
+  fulfillments,
+  blockedDevices,
+  rules,
   saving,
   mutate,
 }: {
   events: Row[];
   leads: Row[];
+  rewards: Row[];
+  submissions: Row[];
+  fulfillments: Row[];
+  blockedDevices: Row[];
+  rules: Row[];
   saving: boolean;
   mutate: (body: any, message: string) => Promise<void>;
 }) {
+  const rewardById = new Map(rewards.map((reward) => [reward.id, reward]));
+  const submissionById = new Map(
+    submissions.map((submission) => [submission.id, submission]),
+  );
+  const leadBySubmission = new Map(
+    leads
+      .filter((lead) => lead.submission_id)
+      .map((lead) => [lead.submission_id, lead]),
+  );
+  const activeBlocks = blockedDevices.filter(
+    (item) => item.status !== "unblocked",
+  );
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-2">
       <section
         className="card overflow-hidden"
         aria-labelledby="trivia-events-heading"
@@ -1456,6 +1585,306 @@ function TriviaOperations({
           </table>
         </div>
       </section>
+      </div>
+
+      <section
+        className="card overflow-hidden"
+        aria-labelledby="trivia-fulfillment-heading"
+      >
+        <div className="card-header">
+          <div>
+            <h3 id="trivia-fulfillment-heading" className="card-title">
+              Winners &amp; prize fulfillment
+            </h3>
+            <p className="text-xs text-slate-500">
+              One row per winner × prize tier. Mark <strong>Sent</strong> once
+              the prize is paid out — the winner then receives the in-app
+              fulfillment prompt. <strong>Fulfilled</strong> closes the loop.
+              Cash/airtime payouts use the consented lead MoMo number.
+            </p>
+          </div>
+          <span className="badge badge-blue">
+            {fulfillments.filter((item) => item.prize_status === "pending").length}{" "}
+            to send ·{" "}
+            {fulfillments.filter((item) => item.prize_status === "fulfilled").length}{" "}
+            fulfilled
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b bg-slate-50">
+                <th className="p-3">Tier</th>
+                <th className="p-3">Prize</th>
+                <th className="p-3">Winner</th>
+                <th className="p-3">Consented lead</th>
+                <th className="p-3">Prize status</th>
+                <th className="p-3">Fulfillment prompt</th>
+                <th className="p-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {fulfillments.map((item) => {
+                const reward = item.reward_id
+                  ? rewardById.get(item.reward_id)
+                  : null;
+                const submission = item.submission_id
+                  ? submissionById.get(item.submission_id)
+                  : null;
+                const lead = item.submission_id
+                  ? leadBySubmission.get(item.submission_id)
+                  : null;
+                return (
+                  <tr key={item.id} className="border-b">
+                    <td className="p-3 font-medium">{item.tier_label}</td>
+                    <td className="p-3">
+                      {reward
+                        ? `${reward.icon} ${reward.name}`
+                        : "Unlinked prize"}
+                      {reward?.reward_type === "cash" ||
+                      reward?.reward_type === "airtime" ? (
+                        <span className="badge badge-purple ml-2">
+                          {reward.reward_type}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="p-3">
+                      <code className="text-xs">
+                        {submission?.user_id
+                          ? shortId(submission.user_id)
+                          : "Guest"}
+                      </code>
+                    </td>
+                    <td className="p-3">
+                      {lead?.mobile ?? (
+                        <span className="text-xs text-slate-500">
+                          No consented lead
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">{status(item.prize_status)}</td>
+                    <td className="p-3 text-xs text-slate-500">
+                      {item.prize_status === "fulfilled"
+                        ? `Sent ${date(item.sent_at)} · confirmed ${date(item.confirmed_at)}`
+                        : item.prize_status === "sent"
+                          ? `Prompt delivered ${dateTime(item.prompt_sent_at)} · awaiting confirmation`
+                          : "Not sent yet"}
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        {item.prize_status === "pending" && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            disabled={saving}
+                            onClick={() =>
+                              mutate(
+                                {
+                                  action: "mark_fulfillment_sent",
+                                  id: item.id,
+                                },
+                                "Prize marked sent — the winner will now receive the in-app fulfillment prompt.",
+                              )
+                            }
+                          >
+                            Mark sent
+                          </button>
+                        )}
+                        {item.prize_status === "sent" && (
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            disabled={saving}
+                            onClick={() =>
+                              mutate(
+                                {
+                                  action: "mark_fulfillment_fulfilled",
+                                  id: item.id,
+                                },
+                                "Fulfillment complete for this winner tier.",
+                              )
+                            }
+                          >
+                            Mark fulfilled
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {!fulfillments.length && (
+                <tr>
+                  <td colSpan={7} className="p-4 text-slate-500">
+                    No prize fulfillment entries yet. Winners appear here once
+                    a finished event's prize tiers are recorded.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <section
+          className="card overflow-hidden"
+          aria-labelledby="trivia-blocked-heading"
+        >
+          <div className="card-header">
+            <div>
+              <h3 id="trivia-blocked-heading" className="card-title">
+                Blocked devices &amp; users
+              </h3>
+              <p className="text-xs text-slate-500">
+                Privacy-hashed identifiers only — never raw device tokens or
+                phone numbers. Active blocks are rejected on submit.
+              </p>
+            </div>
+            <span className="badge badge-red">
+              {activeBlocks.length} active
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="p-3">Device hash</th>
+                  <th className="p-3">Mobile hash</th>
+                  <th className="p-3">Violation</th>
+                  <th className="p-3">Detected</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {blockedDevices.map((item) => (
+                  <tr key={item.id} className="border-b">
+                    <td className="p-3">
+                      <code className="text-xs">{shortId(item.device_hash)}</code>
+                    </td>
+                    <td className="p-3">
+                      <code className="text-xs">
+                        {item.mobile_hash ? shortId(item.mobile_hash) : "—"}
+                      </code>
+                    </td>
+                    <td className="p-3">
+                      {String(item.violation ?? "").replaceAll("_", " ")}
+                    </td>
+                    <td className="p-3">{dateTime(item.detected_at)}</td>
+                    <td className="p-3">{status(item.status)}</td>
+                    <td className="p-3 text-right">
+                      {item.status !== "unblocked" && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={saving}
+                          onClick={() =>
+                            mutate(
+                              { action: "unblock_trivia_device", id: item.id },
+                              "Device unblocked. Future submissions are accepted again.",
+                            )
+                          }
+                        >
+                          Unblock
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {!blockedDevices.length && (
+                  <tr>
+                    <td colSpan={6} className="p-4 text-slate-500">
+                      No blocked devices.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section
+          className="card overflow-hidden"
+          aria-labelledby="trivia-rules-heading"
+        >
+          <div className="card-header">
+            <div>
+              <h3 id="trivia-rules-heading" className="card-title">
+                Trivia rules settings
+              </h3>
+              <p className="text-xs text-slate-500">
+                Every change is audit-logged. The per-device question shuffle
+                keeps scoring question-ID based.
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50">
+                  <th className="p-3">Rule</th>
+                  <th className="p-3">Value</th>
+                  <th className="p-3">Enforced by</th>
+                  <th className="p-3">Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rules.map((rule) => (
+                  <tr key={rule.key} className="border-b">
+                    <td className="p-3">
+                      <div className="font-medium">
+                        {String(rule.key).replaceAll("_", " ")}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {rule.description}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <code className="text-xs">{rule.value}</code>
+                    </td>
+                    <td className="p-3 text-xs">{rule.enforced_by}</td>
+                    <td className="p-3">
+                      <button
+                        type="button"
+                        className={cn(
+                          "badge",
+                          rule.is_active ? "badge-green" : "badge-slate",
+                        )}
+                        disabled={saving}
+                        onClick={() =>
+                          mutate(
+                            {
+                              action: "update_trivia_rule",
+                              key: rule.key,
+                              value: rule.value,
+                              isActive: !rule.is_active,
+                            },
+                            `Rule ${rule.is_active ? "disabled" : "enabled"}: ${String(rule.key).replaceAll("_", " ")}.`,
+                          )
+                        }
+                      >
+                        {rule.is_active ? "On" : "Off"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {!rules.length && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-slate-500">
+                      No Trivia rules configured.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
@@ -2360,6 +2789,388 @@ function FeatureFlags({
         </p>
       )}
     </div>
+  );
+}
+
+function PremiumOperations({
+  settings,
+  saving,
+  mutate,
+}: {
+  settings: Row | null;
+  saving: boolean;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+}) {
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <form
+        className="card space-y-3 p-4"
+        aria-label="Premium onboarding trial settings"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          mutate(
+            {
+              action: "update_premium_settings",
+              onboardingTrialDays: Number(form.get("onboardingTrialDays")),
+              expiryReminderDays: Number(form.get("expiryReminderDays") ?? 3),
+              autoLockOnExpiry: form.get("autoLockOnExpiry") === "on",
+              showPaywallOnExpiry: form.get("showPaywallOnExpiry") === "on",
+            },
+            "Premium settings saved. New signups follow the selected trial policy.",
+          );
+        }}
+      >
+        <div>
+          <div className="card-title">Premium settings (Super Admin)</div>
+          <p className="mt-1 text-xs text-slate-500">
+            Free Cycle Pro for every new user after Plasence onboarding. On
+            expiry premium features auto-lock until the user subscribes.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <label className="form-label">
+            Free premium for new users
+            <select
+              name="onboardingTrialDays"
+              defaultValue={String(settings?.onboarding_trial_days ?? 14)}
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+              <option value="0">Off</option>
+            </select>
+          </label>
+          <label className="form-label">
+            Expiry reminder (days before)
+            <input
+              name="expiryReminderDays"
+              type="number"
+              min="0"
+              max="14"
+              defaultValue={settings?.expiry_reminder_days ?? 3}
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+        </div>
+        <label className="form-label flex items-center gap-2">
+          <input
+            name="autoLockOnExpiry"
+            type="checkbox"
+            defaultChecked={settings?.auto_lock_on_expiry ?? true}
+          />{" "}
+          Auto-lock premium features on expiry
+        </label>
+        <label className="form-label flex items-center gap-2">
+          <input
+            name="showPaywallOnExpiry"
+            type="checkbox"
+            defaultChecked={settings?.show_paywall_on_expiry ?? true}
+          />{" "}
+          Show subscribe paywall on gated actions
+        </label>
+        <div className="flex justify-end">
+          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            {saving ? "Saving…" : "Save settings"}
+          </button>
+        </div>
+      </form>
+
+      <form
+        className="card space-y-3 p-4"
+        aria-label="Grant premium access"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          mutate(
+            {
+              action: "grant_premium",
+              userId: String(form.get("userId") ?? "").trim(),
+              tier: form.get("tier"),
+              source: form.get("source"),
+              reason: form.get("reason"),
+              notes: form.get("notes") || undefined,
+              durationDays: Number(form.get("durationDays")),
+            },
+            "Premium granted with a duration cap. The grant is audit-logged and expires automatically.",
+          );
+        }}
+      >
+        <div>
+          <div className="card-title">Grant premium access</div>
+          <p className="mt-1 text-xs text-slate-500">
+            Super Admin only · duration-capped (max 90 days) · reason is
+            mandatory and audit-logged · no indefinite access.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <label className="form-label">
+            User ID
+            <input
+              name="userId"
+              required
+              pattern="[0-9a-fA-F-]{36}"
+              placeholder="uuid"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="form-label">
+            Tier
+            <select
+              name="tier"
+              defaultValue="cycle_pro"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="cycle_pro">Cycle Pro (full)</option>
+              <option value="cycle_pro_ttc">Cycle Pro — TTC tools</option>
+              <option value="cycle_pro_insights">Cycle Pro — Insights</option>
+            </select>
+          </label>
+          <label className="form-label">
+            Duration cap
+            <select
+              name="durationDays"
+              defaultValue="30"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+              <option value="60">60 days</option>
+              <option value="90">90 days</option>
+            </select>
+          </label>
+          <label className="form-label">
+            Source
+            <select
+              name="source"
+              defaultValue="manual"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="manual">Manual</option>
+              <option value="trivia_prize">Trivia prize fulfillment</option>
+              <option value="goodwill">Goodwill / support case</option>
+              <option value="clinical_program">Clinical program</option>
+              <option value="partner">Partner / ambassador</option>
+              <option value="beta">Beta tester</option>
+            </select>
+          </label>
+        </div>
+        <label className="form-label">
+          Reason (mandatory — audit-logged)
+          <input
+            name="reason"
+            required
+            minLength={2}
+            maxLength={500}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            placeholder="e.g. Trivia Aug 22 — Cycle Pro 1 month prize"
+          />
+        </label>
+        <label className="form-label">
+          Notes (optional)
+          <input
+            name="notes"
+            maxLength={1000}
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          />
+        </label>
+        <div className="flex justify-end">
+          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            {saving ? "Granting…" : "Grant premium"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function AiSuggestions({
+  suggestions,
+  saving,
+  mutate,
+}: {
+  suggestions: Row[];
+  saving: boolean;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+}) {
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
+  const reviewQueue = suggestions.filter((item) => item.status === "review");
+  return (
+    <section
+      className="card overflow-hidden"
+      aria-labelledby="ai-suggestions-heading"
+    >
+      <div className="card-header">
+        <div>
+          <h3 id="ai-suggestions-heading" className="card-title">
+            AI content suggestions
+          </h3>
+          <p className="text-xs text-slate-500">
+            Grounded in approved encyclopedia sources (Diseases &amp;
+            Conditions, Symptoms, Healthy Living). Admin sets the schedule
+            date, frequency cap and duration — AI never self-publishes.
+          </p>
+        </div>
+        <span className="badge badge-blue">
+          {reviewQueue.length} awaiting review
+        </span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b bg-slate-50">
+              <th className="p-3">Job</th>
+              <th className="p-3">Sources</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Schedule</th>
+              <th className="p-3">Frequency cap</th>
+              <th className="p-3">Duration</th>
+              <th className="p-3">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {suggestions.slice(0, 20).map((item) => (
+              <React.Fragment key={item.id}>
+                <tr className="border-b">
+                  <td className="p-3">
+                    <div className="font-medium">
+                      {String(item.job_type ?? "").replaceAll("_", " ")}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {dateTime(item.created_at)} ·{" "}
+                      <code className="text-[11px]">{shortId(item.id)}</code>
+                    </div>
+                  </td>
+                  <td className="p-3 text-xs">
+                    {(item.source_menus ?? []).join(", ") || "—"}
+                  </td>
+                  <td className="p-3">{status(item.status)}</td>
+                  <td className="p-3">{dateTime(item.scheduled_at)}</td>
+                  <td className="p-3">
+                    {item.frequency_cap_days
+                      ? `1 per ${item.frequency_cap_days} days`
+                      : "—"}
+                  </td>
+                  <td className="p-3">
+                    {item.surface_duration_weeks
+                      ? `${item.surface_duration_weeks} weeks`
+                      : "—"}
+                  </td>
+                  <td className="p-3 text-right">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() =>
+                        setSchedulingId(
+                          schedulingId === item.id ? null : item.id,
+                        )
+                      }
+                    >
+                      {schedulingId === item.id ? "Close" : "Schedule"}
+                    </button>
+                  </td>
+                </tr>
+                {schedulingId === item.id && (
+                  <tr className="border-b bg-slate-50">
+                    <td colSpan={7} className="p-3">
+                      <form
+                        className="grid grid-cols-1 gap-3 md:grid-cols-5"
+                        aria-label="Schedule AI suggestion"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          const form = new FormData(event.currentTarget);
+                          const raw = String(form.get("scheduledAt") ?? "");
+                          if (!raw) return;
+                          mutate(
+                            {
+                              action: "schedule_ai_suggestion",
+                              jobId: item.id,
+                              scheduledAt: new Date(raw).toISOString(),
+                              frequencyCapDays: Number(form.get("frequencyCapDays")),
+                              surfaceDurationWeeks: Number(form.get("surfaceDurationWeeks")),
+                              surfaceChannel: form.get("surfaceChannel"),
+                            },
+                            "Suggestion scheduled. Clinical sign-off is still required before the publish date.",
+                          );
+                          setSchedulingId(null);
+                        }}
+                      >
+                        <label className="form-label">
+                          Schedule date
+                          <input
+                            name="scheduledAt"
+                            type="datetime-local"
+                            required
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                          />
+                        </label>
+                        <label className="form-label">
+                          Frequency cap
+                          <select
+                            name="frequencyCapDays"
+                            defaultValue="14"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                          >
+                            <option value="7">1 per 7 days</option>
+                            <option value="14">1 per 14 days</option>
+                            <option value="30">1 per 30 days</option>
+                          </select>
+                        </label>
+                        <label className="form-label">
+                          Duration on surface
+                          <select
+                            name="surfaceDurationWeeks"
+                            defaultValue="2"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                          >
+                            <option value="1">1 week</option>
+                            <option value="2">2 weeks</option>
+                            <option value="4">4 weeks</option>
+                          </select>
+                        </label>
+                        <label className="form-label">
+                          Target surface
+                          <select
+                            name="surfaceChannel"
+                            defaultValue="plasence_library"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                          >
+                            <option value="plasence_library">Library — Featured</option>
+                            <option value="push_digest">Push digest</option>
+                            <option value="today_tip">Today screen tip</option>
+                          </select>
+                        </label>
+                        <div className="flex items-end">
+                          <button
+                            type="submit"
+                            className="btn btn-primary btn-sm"
+                            disabled={saving}
+                          >
+                            {saving ? "Saving…" : "Save schedule"}
+                          </button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+            {!suggestions.length && (
+              <tr>
+                <td colSpan={7} className="p-4 text-slate-500">
+                  No AI content suggestions yet. Request one from the AI
+                  workspace.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 

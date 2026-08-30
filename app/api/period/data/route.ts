@@ -72,7 +72,7 @@ const WriteSchema = z.discriminatedUnion("action", [
     name: z.string().trim().min(2).max(120),
     description: z.string().trim().min(2).max(500),
     icon: z.string().trim().min(1).max(8).default("🏆"),
-    rewardType: z.enum(["points", "badge", "discount", "prize"]).default("points"),
+    rewardType: z.enum(["points", "badge", "discount", "prize", "cash", "airtime"]).default("points"),
     value: z.string().trim().max(120).optional(),
   }),
   z.object({ action: z.literal("review_trivia_event"), id: z.string().uuid() }),
@@ -146,6 +146,59 @@ const WriteSchema = z.discriminatedUnion("action", [
     reason: z.string().trim().max(300).optional(), displayOrder: z.number().int().min(0).max(10_000).default(0),
   }),
   z.object({ action: z.literal("publish_content_collection"), id: z.string().uuid() }),
+  z.object({
+    action: z.literal("grant_premium"),
+    userId: z.string().uuid(),
+    tier: z.enum(["cycle_pro", "cycle_pro_ttc", "cycle_pro_insights"]).default("cycle_pro"),
+    source: z.enum(["manual", "trivia_prize", "goodwill", "clinical_program", "partner", "beta"]).default("manual"),
+    reason: z.string().trim().min(2).max(500),
+    notes: z.string().trim().max(1000).optional(),
+    // No indefinite access: manual grants are capped at 90 days (DB-enforced too).
+    durationDays: z.number().int().refine((value) => [7, 14, 30, 60, 90].includes(value), { message: "Duration cap must be 7, 14, 30, 60 or 90 days" }),
+  }),
+  z.object({ action: z.literal("extend_premium_grant"), id: z.string().uuid(), days: z.number().int().min(1).max(90) }),
+  z.object({ action: z.literal("revoke_premium_grant"), id: z.string().uuid() }),
+  z.object({
+    action: z.literal("update_premium_settings"),
+    onboardingTrialDays: z.union([z.literal(0), z.literal(7), z.literal(14), z.literal(30)]),
+    expiryReminderDays: z.number().int().min(0).max(14).default(3),
+    autoLockOnExpiry: z.boolean().default(true),
+    showPaywallOnExpiry: z.boolean().default(true),
+  }),
+  z.object({
+    action: z.literal("create_fulfillment"),
+    eventId: z.string().uuid(),
+    submissionId: z.string().uuid().optional(),
+    tierLabel: z.string().trim().min(2).max(120),
+    rewardId: z.string().uuid().optional(),
+    notes: z.string().trim().max(1000).optional(),
+  }),
+  z.object({ action: z.literal("mark_fulfillment_sent"), id: z.string().uuid() }),
+  z.object({ action: z.literal("mark_fulfillment_fulfilled"), id: z.string().uuid() }),
+  z.object({
+    action: z.literal("block_trivia_device"),
+    deviceHash: z.string().trim().min(8).max(160),
+    mobileHash: z.string().trim().min(8).max(160).optional(),
+    userId: z.string().uuid().optional(),
+    violation: z.enum(["duplicate_submission", "multi_account_farming", "bot_like_completion", "answer_set_probing", "other"]),
+    evidence: z.string().trim().max(1000).optional(),
+    status: z.enum(["blocked", "under_review"]).default("blocked"),
+  }),
+  z.object({ action: z.literal("unblock_trivia_device"), id: z.string().uuid() }),
+  z.object({
+    action: z.literal("update_trivia_rule"),
+    key: z.string().trim().min(2).max(80),
+    value: z.string().trim().min(1).max(200),
+    isActive: z.boolean(),
+  }),
+  z.object({
+    action: z.literal("schedule_ai_suggestion"),
+    jobId: z.string().uuid(),
+    scheduledAt: z.string().datetime(),
+    frequencyCapDays: z.number().int().min(1).max(90),
+    surfaceDurationWeeks: z.number().int().min(1).max(12),
+    surfaceChannel: z.enum(["plasence_library", "push_digest", "today_tip"]).default("plasence_library"),
+  }),
 ]);
 
 const unsafeHtml = (value: string) => /<\s*(script|iframe|object|embed)|javascript\s*:|\bon\w+\s*=/i.test(value);
@@ -232,11 +285,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (tab === "content") {
-    const [{ data, error }, { data: publications }, { data: sourceLinks }, { data: collections }] = await Promise.all([
+    const [{ data, error }, { data: publications }, { data: sourceLinks }, { data: collections }, { data: aiSuggestions }] = await Promise.all([
       admin.from("period_content").select("id,title,slug,summary,topic,content_type,locale,tags,cover_image_url,reading_minutes,reading_level,featured,curation_type,version,reads,completion_count,helpful_count,not_helpful_count,status,clinical_reviewed_at,review_expires_at,published_at,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,display_order").eq("channel", "plasence_library").limit(1000),
       admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").limit(5000),
       admin.from("period_content_collections").select("id,title,slug,status,curation_type,display_order,published_at,period_content_collection_items(content_id,display_order)").order("display_order").limit(200),
+      admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,output,validation,error_code,created_at,completed_at,scheduled_at,frequency_cap_days,surface_duration_weeks,surface_channel").in("job_type", ["content_suggestion", "content_curation"]).order("created_at", { ascending: false }).limit(200),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load content" }, { status: 500 });
     const publicationMap = new Map((publications ?? []).map((item) => [item.content_id, item]));
@@ -251,16 +305,19 @@ export async function GET(request: NextRequest) {
       helpfulPercent: percent(Number(item.helpful_count), Number(item.helpful_count) + Number(item.not_helpful_count)),
       completionRate: percent(Number(item.completion_count), Number(item.reads)),
     })).filter((row) => (!status || row.status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
-    return NextResponse.json({ ...pageRows(rows, page, pageSize), collections: collections ?? [] });
+    return NextResponse.json({ ...pageRows(rows, page, pageSize), collections: collections ?? [], aiSuggestions: aiSuggestions ?? [] });
   }
 
   if (tab === "trivia") {
-    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }] = await Promise.all([
+    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }, { data: fulfillments }, { data: blockedDevices }, { data: rules }] = await Promise.all([
       admin.from("period_trivia_questions").select("id,event_id,position,topic,question,options,correct_option,explanation,difficulty,status,validation_status,ai_job_id,manual_batch_id,source_refs,reviewed_by,published_at,created_by,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").gte("submitted_at", new Date(Date.now() - 30 * 86400000).toISOString()).limit(5000),
       admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_platform,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
+      admin.from("period_trivia_fulfillment").select("id,event_id,submission_id,user_id,tier_label,reward_id,prize_status,sent_at,prompt_sent_at,confirmed_at,fulfilled_at,notes,created_at").order("created_at", { ascending: false }).limit(500),
+      admin.from("period_trivia_blocked_devices").select("id,device_hash,mobile_hash,user_id,violation,evidence,status,detected_at,unblocked_at").order("detected_at", { ascending: false }).limit(200),
+      admin.from("period_trivia_rules").select("key,description,value,enforced_by,is_active,updated_at").order("key"),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load trivia" }, { status: 500 });
 
@@ -316,7 +373,7 @@ export async function GET(request: NextRequest) {
           name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialPlatform: lead.social_platform ?? "Social", socialHandle: `${handle.slice(0, 2)}••••` };
       } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialPlatform: lead.social_platform ?? "Social", socialHandle: "Protected" }; }
     });
-    return NextResponse.json({ ...pageRows(batchRows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
+    return NextResponse.json({ ...pageRows(batchRows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], fulfillments: fulfillments ?? [], blockedDevices: blockedDevices ?? [], rules: rules ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
   }
 
   if (tab === "forecasts") {
@@ -347,6 +404,25 @@ export async function GET(request: NextRequest) {
     }
     const rows = [...grouped.values()].map(({ durations, ...row }) => ({ ...row, averageDuration: average(durations) }));
     return NextResponse.json({ ...pageRows(rows.filter((row) => !query || JSON.stringify(row).toLowerCase().includes(query)), page, pageSize), featureFlags: flags ?? [] });
+  }
+
+  if (tab === "premium") {
+    const [{ data: settings }, { data: grants, error }] = await Promise.all([
+      admin.from("period_premium_settings").select("*").maybeSingle(),
+      admin.from("period_premium_grants").select("id,user_id,tier,source,reason,notes,starts_at,expires_at,revoked_at,granted_by,created_at").order("created_at", { ascending: false }).limit(1000),
+    ]);
+    if (error) return NextResponse.json({ error: "Unable to load premium entitlements" }, { status: 500 });
+    const userIds = [...new Set((grants ?? []).map((grant) => grant.user_id))];
+    const profiles = profileMaps(await loadProfiles(admin, userIds));
+    const nowMs = Date.now();
+    const rows = (grants ?? []).map((grant) => ({
+      ...grant,
+      user: maskName(profiles.get(grant.user_id)?.first_name, profiles.get(grant.user_id)?.last_name),
+      region: profiles.get(grant.user_id)?.region ?? "Not supplied",
+      daysLeft: grant.revoked_at ? 0 : Math.max(0, Math.ceil((new Date(grant.expires_at).getTime() - nowMs) / 86400000)),
+      state: grant.revoked_at ? "revoked" : new Date(grant.expires_at).getTime() <= nowMs ? "expired" : new Date(grant.expires_at).getTime() - nowMs <= 3 * 86400000 ? "expiring" : "active",
+    })).filter((row) => (!status || row.state === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
+    return NextResponse.json({ ...pageRows(rows, page, pageSize), settings: settings ?? null });
   }
 
   if (tab === "logs") {
@@ -786,6 +862,134 @@ export async function POST(request: NextRequest) {
     const { error } = await admin.from("period_feature_flags").update({ enabled: input.enabled, rollout_percent: input.rolloutPercent, updated_by: user.id }).eq("key", input.key);
     if (error) return NextResponse.json({ error: "Unable to update feature flag" }, { status: 500 });
     await writeAudit(user.id, "rollout_change", "period_feature_flag", input.key, { enabled: input.enabled, rolloutPercent: input.rolloutPercent });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "grant_premium") {
+    const startsAt = new Date();
+    const expiresAt = new Date(startsAt.getTime() + input.durationDays * 86400000);
+    const { data, error } = await admin.from("period_premium_grants").insert({
+      user_id: input.userId,
+      tier: input.tier,
+      source: input.source,
+      reason: input.reason,
+      notes: input.notes ?? null,
+      starts_at: startsAt.toISOString(),
+      expires_at: expiresAt.toISOString(),
+      granted_by: user.id,
+    }).select("id").single();
+    if (error) return NextResponse.json({ error: "Unable to grant premium access" }, { status: 500 });
+    await writeAudit(user.id, "grant", "period_premium_grant", data.id, { userId: input.userId, tier: input.tier, durationDays: input.durationDays, reason: input.reason });
+    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "extend_premium_grant") {
+    const { data: grant } = await admin.from("period_premium_grants").select("id,starts_at,expires_at,revoked_at").eq("id", input.id).maybeSingle();
+    if (!grant) return NextResponse.json({ error: "Grant not found" }, { status: 404 });
+    if (grant.revoked_at) return NextResponse.json({ error: "Revoked grants cannot be extended" }, { status: 409 });
+    const baseMs = Math.max(Date.now(), new Date(grant.expires_at).getTime());
+    const expiresAt = new Date(baseMs + input.days * 86400000);
+    const capMs = new Date(grant.starts_at).getTime() + 90 * 86400000;
+    if (expiresAt.getTime() > capMs) return NextResponse.json({ error: "Duration cap exceeded — grants cannot run longer than 90 days from their start" }, { status: 400 });
+    const { error } = await admin.from("period_premium_grants").update({ expires_at: expiresAt.toISOString() }).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to extend the grant" }, { status: 500 });
+    await writeAudit(user.id, "extend", "period_premium_grant", input.id, { days: input.days, expiresAt: expiresAt.toISOString() });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "revoke_premium_grant") {
+    const { error } = await admin.from("period_premium_grants").update({ revoked_at: new Date().toISOString(), revoked_by: user.id }).eq("id", input.id).is("revoked_at", null);
+    if (error) return NextResponse.json({ error: "Unable to revoke the grant" }, { status: 500 });
+    await writeAudit(user.id, "revoke", "period_premium_grant", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "update_premium_settings") {
+    const { error } = await admin.from("period_premium_settings").update({
+      onboarding_trial_days: input.onboardingTrialDays,
+      expiry_reminder_days: input.expiryReminderDays,
+      auto_lock_on_expiry: input.autoLockOnExpiry,
+      show_paywall_on_expiry: input.showPaywallOnExpiry,
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    }).eq("id", 1);
+    if (error) return NextResponse.json({ error: "Unable to update premium settings" }, { status: 500 });
+    await writeAudit(user.id, "update", "period_premium_settings", "singleton", { onboardingTrialDays: input.onboardingTrialDays });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "create_fulfillment") {
+    const { data, error } = await admin.from("period_trivia_fulfillment").insert({
+      event_id: input.eventId,
+      submission_id: input.submissionId ?? null,
+      tier_label: input.tierLabel,
+      reward_id: input.rewardId ?? null,
+      notes: input.notes ?? null,
+    }).select("id").single();
+    if (error) return NextResponse.json({ error: "Unable to create the fulfillment entry" }, { status: 500 });
+    await writeAudit(user.id, "create", "period_trivia_fulfillment", data.id, { eventId: input.eventId, tierLabel: input.tierLabel });
+    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "mark_fulfillment_sent") {
+    const { data: entry } = await admin.from("period_trivia_fulfillment").select("id,prize_status").eq("id", input.id).maybeSingle();
+    if (!entry) return NextResponse.json({ error: "Fulfillment entry not found" }, { status: 404 });
+    if (entry.prize_status === "fulfilled") return NextResponse.json({ error: "Fulfilled prizes cannot move back to sent" }, { status: 409 });
+    const now = new Date().toISOString();
+    // Marking sent fires the in-app fulfillment prompt for the winner.
+    const { error } = await admin.from("period_trivia_fulfillment").update({ prize_status: "sent", sent_at: now, sent_by: user.id, prompt_sent_at: now }).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to mark the prize as sent" }, { status: 500 });
+    await writeAudit(user.id, "send", "period_trivia_fulfillment", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "mark_fulfillment_fulfilled") {
+    const { data: entry } = await admin.from("period_trivia_fulfillment").select("id,prize_status").eq("id", input.id).maybeSingle();
+    if (!entry) return NextResponse.json({ error: "Fulfillment entry not found" }, { status: 404 });
+    if (entry.prize_status === "pending") return NextResponse.json({ error: "Mark the prize as sent before fulfilling it" }, { status: 409 });
+    const now = new Date().toISOString();
+    const { error } = await admin.from("period_trivia_fulfillment").update({ prize_status: "fulfilled", confirmed_at: now, fulfilled_at: now, fulfilled_by: user.id }).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to mark the prize as fulfilled" }, { status: 500 });
+    await writeAudit(user.id, "fulfill", "period_trivia_fulfillment", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "block_trivia_device") {
+    const { data, error } = await admin.from("period_trivia_blocked_devices").insert({
+      device_hash: input.deviceHash,
+      mobile_hash: input.mobileHash ?? null,
+      user_id: input.userId ?? null,
+      violation: input.violation,
+      evidence: input.evidence ?? null,
+      status: input.status,
+      blocked_by: input.status === "blocked" ? user.id : null,
+    }).select("id").single();
+    if (error) return NextResponse.json({ error: "Unable to record the block" }, { status: 500 });
+    await writeAudit(user.id, input.status === "blocked" ? "block" : "flag", "period_trivia_blocked_device", data.id, { violation: input.violation });
+    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "unblock_trivia_device") {
+    const { error } = await admin.from("period_trivia_blocked_devices").update({ status: "unblocked", unblocked_at: new Date().toISOString(), unblocked_by: user.id }).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to unblock the device" }, { status: 500 });
+    await writeAudit(user.id, "unblock", "period_trivia_blocked_device", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "update_trivia_rule") {
+    const { error } = await admin.from("period_trivia_rules").update({ value: input.value, is_active: input.isActive, updated_by: user.id, updated_at: new Date().toISOString() }).eq("key", input.key);
+    if (error) return NextResponse.json({ error: "Unable to update the trivia rule" }, { status: 500 });
+    await writeAudit(user.id, "update", "period_trivia_rule", input.key, { value: input.value, isActive: input.isActive });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "schedule_ai_suggestion") {
+    const { data: job } = await admin.from("period_ai_jobs").select("id,status,job_type").eq("id", input.jobId).maybeSingle();
+    if (!job) return NextResponse.json({ error: "AI suggestion not found" }, { status: 404 });
+    if (!["content_suggestion", "content_curation"].includes(job.job_type)) return NextResponse.json({ error: "Only content suggestion jobs can be scheduled" }, { status: 400 });
+    const { error } = await admin.from("period_ai_jobs").update({ scheduled_at: input.scheduledAt, frequency_cap_days: input.frequencyCapDays, surface_duration_weeks: input.surfaceDurationWeeks, surface_channel: input.surfaceChannel, scheduled_by: user.id }).eq("id", input.jobId);
+    if (error) return NextResponse.json({ error: "Unable to schedule the suggestion" }, { status: 500 });
+    await writeAudit(user.id, "schedule", "period_ai_job", input.jobId, { scheduledAt: input.scheduledAt, frequencyCapDays: input.frequencyCapDays });
     return NextResponse.json({ ok: true });
   }
 
