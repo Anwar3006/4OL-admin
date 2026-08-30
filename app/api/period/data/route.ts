@@ -438,7 +438,7 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
     const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
     const [{ data: trackerSettings }, { data: ttcProfiles, error }, { data: checklistItems }, { data: checklistProgress }, { data: ovulationTests }, { data: appointments }, { data: insights }] = await Promise.all([
-      admin.from("period_user_settings").select("id"),
+      admin.from("period_user_settings").select("user_id"),
       admin.from("period_ttc_profiles").select("user_id,preconception_visit_status,medication_review_status,vaccine_review_status,chronic_condition_review_status,sti_screening_status,dental_check_status,prenatal_vitamin_started_on,created_at").order("created_at", { ascending: false }).limit(5000),
       admin.from("period_ttc_checklist_items").select("id,code,title,category,display_order").eq("is_active", true).order("display_order"),
       admin.from("period_ttc_checklist_progress").select("user_id,checklist_item_id,status").limit(10000),

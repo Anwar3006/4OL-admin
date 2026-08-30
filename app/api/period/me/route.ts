@@ -133,57 +133,6 @@ const ActionSchema = z.discriminatedUnion("action", [
     durationMs: z.number().int().min(0).max(600_000).optional(),
     metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).default({}),
   }),
-  // TTC & Fertility writes (mobile api.ts contract). Intimate detail stays
-  // encrypted (notes_ciphertext); only the active checklist template and the
-  // user's own aggregates come back down in GET.
-  z.object({
-    action: z.literal("save_ttc_profile"),
-    tryingSince: DateString.nullable().optional(),
-    conceptionTimeline: z.string().trim().max(80).nullable().optional(),
-    showConceptionLanguage: z.boolean().optional(),
-    partnerInvolved: z.boolean().optional(),
-    prenatalVitaminStartedOn: DateString.nullable().optional(),
-    preconceptionVisitStatus: z.string().trim().max(40).nullable().optional(),
-    preconceptionVisitDate: DateString.nullable().optional(),
-    medicationReviewStatus: z.string().trim().max(40).nullable().optional(),
-    vaccineReviewStatus: z.string().trim().max(40).nullable().optional(),
-    chronicConditionReviewStatus: z.string().trim().max(40).nullable().optional(),
-    stiScreeningStatus: z.string().trim().max(40).nullable().optional(),
-    dentalCheckStatus: z.string().trim().max(40).nullable().optional(),
-    lifestyleFocusAreas: z.array(z.string().trim().min(1).max(60)).max(12).optional(),
-    notesCiphertext: z.string().max(20_000).nullable().optional(),
-  }),
-  z.object({
-    action: z.literal("save_ovulation_test"),
-    id: z.string().uuid(),
-    loggedOn: DateString,
-    testedAt: z.string().trim().max(40).nullable().optional(),
-    result: z.string().trim().min(1).max(30),
-    brand: z.string().trim().max(120).nullable().optional(),
-    notesCiphertext: z.string().max(20_000).nullable().optional(),
-    clientEventId: z.string().uuid().nullable().optional(),
-    appVersion: z.string().trim().max(40).optional(),
-    source: z.enum(["user", "device", "offline_sync"]).default("user"),
-  }),
-  z.object({
-    action: z.literal("update_ttc_checklist_progress"),
-    checklistItemId: z.string().uuid(),
-    status: z.string().trim().min(1).max(30),
-    targetDate: DateString.nullable().optional(),
-    reminderEnabled: z.boolean().optional(),
-    notesCiphertext: z.string().max(20_000).nullable().optional(),
-  }),
-  z.object({
-    action: z.literal("save_preconception_appointment"),
-    id: z.string().uuid(),
-    appointmentDate: DateString,
-    timezone: z.string().trim().max(80).optional(),
-    clinicianName: z.string().trim().max(160).nullable().optional(),
-    purpose: z.string().trim().min(1).max(80),
-    status: z.string().trim().min(1).max(30),
-    questions: z.array(z.string().trim().min(1).max(1000)).max(20).optional(),
-    notesCiphertext: z.string().max(20_000).nullable().optional(),
-  }),
   z.object({
     action: z.literal("save_notification_preferences"),
     periodReminders: z.boolean().optional(),
@@ -478,30 +427,6 @@ export async function POST(request: NextRequest) {
   if (input.action === "save_daily_log") {
     const { data, error } = await supabase.from("period_daily_logs").upsert({ user_id: user.id, cycle_id: input.cycleId ?? null, logged_on: input.loggedOn, flow: input.flow ?? null, moods: input.moods, symptoms: input.symptoms, basal_body_temperature: input.basalBodyTemperature ?? null, temperature_unit: input.temperatureUnit, cervical_mucus: input.cervicalMucus ?? null, sexual_activity: input.sexualActivity ?? null, exercise_minutes: input.exerciseMinutes ?? null, medication_logged: input.medicationLogged, medication_name: input.medicationLogged ? (input.medicationName?.trim() || null) : null, note_ciphertext: input.noteCiphertext ?? null, note_category: input.noteCategory ?? null, client_event_id: input.clientEventId, app_version: input.appVersion ?? null, source: input.source, sync_status: "synced" }, { onConflict: "user_id,logged_on" }).select("id,updated_at").single();
     if (error) return NextResponse.json({ error: "Unable to save daily log" }, { status: 500 });
-    return NextResponse.json({ ok: true, data });
-  }
-
-  if (input.action === "save_ttc_profile") {
-    const { error } = await supabase.from("period_ttc_profiles").upsert({ user_id: user.id, trying_since: input.tryingSince ?? null, conception_timeline: input.conceptionTimeline ?? null, show_conception_language: input.showConceptionLanguage ?? true, partner_involved: input.partnerInvolved ?? false, prenatal_vitamin_started_on: input.prenatalVitaminStartedOn ?? null, preconception_visit_status: input.preconceptionVisitStatus ?? null, preconception_visit_date: input.preconceptionVisitDate ?? null, medication_review_status: input.medicationReviewStatus ?? null, vaccine_review_status: input.vaccineReviewStatus ?? null, chronic_condition_review_status: input.chronicConditionReviewStatus ?? null, sti_screening_status: input.stiScreeningStatus ?? null, dental_check_status: input.dentalCheckStatus ?? null, lifestyle_focus_areas: input.lifestyleFocusAreas ?? [], notes_ciphertext: input.notesCiphertext ?? null }, { onConflict: "user_id" });
-    if (error) return NextResponse.json({ error: "Unable to save TTC profile" }, { status: 500 });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (input.action === "save_ovulation_test") {
-    const { data, error } = await supabase.from("period_ovulation_tests").upsert({ id: input.id, user_id: user.id, logged_on: input.loggedOn, tested_at: input.testedAt ?? null, result: input.result, brand: input.brand ?? null, notes_ciphertext: input.notesCiphertext ?? null, client_event_id: input.clientEventId ?? null, app_version: input.appVersion ?? null, source: input.source }, { onConflict: "user_id,client_event_id" }).select("id,updated_at").single();
-    if (error) return NextResponse.json({ error: "Unable to save ovulation test" }, { status: 500 });
-    return NextResponse.json({ ok: true, data });
-  }
-
-  if (input.action === "update_ttc_checklist_progress") {
-    const { error } = await supabase.from("period_ttc_checklist_progress").upsert({ user_id: user.id, checklist_item_id: input.checklistItemId, status: input.status, target_date: input.targetDate ?? null, reminder_enabled: input.reminderEnabled ?? false, notes_ciphertext: input.notesCiphertext ?? null }, { onConflict: "user_id,checklist_item_id" });
-    if (error) return NextResponse.json({ error: "Unable to update checklist progress" }, { status: 500 });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (input.action === "save_preconception_appointment") {
-    const { data, error } = await supabase.from("period_preconception_appointments").upsert({ id: input.id, user_id: user.id, appointment_date: input.appointmentDate, timezone: input.timezone ?? "Africa/Accra", clinician_name: input.clinicianName ?? null, purpose: input.purpose, status: input.status, questions: input.questions ?? [], notes_ciphertext: input.notesCiphertext ?? null }).select("id,updated_at").single();
-    if (error) return NextResponse.json({ error: "Unable to save appointment" }, { status: 500 });
     return NextResponse.json({ ok: true, data });
   }
 

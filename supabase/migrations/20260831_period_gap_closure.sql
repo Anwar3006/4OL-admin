@@ -11,16 +11,12 @@
 -- G7:  lookup index for the campaign dispatch frequency-cap query.
 -- ============================================================================
 
--- 1) Widen the subscription tier key check so Period tiers can exist.
-do $$
-begin
-  alter table public.subscription_tiers drop constraint if exists subscription_tiers_key_check;
-exception when others then null;
-end $$;
-
-alter table public.subscription_tiers
-  add constraint subscription_tiers_key_check
-  check (key in ('free', 'premium', 'lifetime', 'cycle_pro', 'cycle_pro_ttc', 'cycle_pro_insights'));
+-- 1) Subscription tier keys.
+-- NOTE: subscription_tiers_key_check is a *format* constraint on the live DB
+-- (^[a-z][a-z0-9_]{0,39}$), not a whitelist, so the cycle_pro* keys below are
+-- already permitted. The earlier draft of this migration replaced it with an
+-- enumerated list that omitted the live starter/pro/elite tiers, which would
+-- have failed validation against existing rows. Leave the constraint alone.
 
 insert into public.subscription_tiers (key, name, description, price_ghs, duration_days, benefits, display_order) values
   ('cycle_pro', 'Cycle Pro',
