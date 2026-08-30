@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getPeriodRequestClient } from "@/lib/period-request-auth";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { DEFAULT_CYCLE_LENGTH, DEFAULT_PERIOD_LENGTH, predictNextPeriod, type CycleInput } from "@/lib/period-calculator";
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -238,6 +239,35 @@ export async function POST(request: NextRequest) {
   if (input.action === "save_settings") {
     const { error } = await supabase.from("period_user_settings").upsert({ user_id: user.id, tracking_goal: input.goal, typical_cycle_length: input.typicalCycleLength, typical_period_length: input.typicalPeriodLength, timezone: input.timezone, locale: input.locale, region: input.region ?? null, onboarding_version: input.onboardingVersion ?? null, onboarding_completed_at: input.onboardingComplete ? new Date().toISOString() : null, reminders_enabled: input.remindersEnabled }, { onConflict: "user_id" });
     if (error) return NextResponse.json({ error: "Unable to save settings" }, { status: 500 });
+
+    // Onboarding trial: every newly onboarded user gets the configured free
+    // Cycle Pro window (7/14/30 days, or none when set to 0). Provisions at
+    // most ONE trial grant per user; after it lapses premium features
+    // auto-lock until a subscription or admin grant exists. Service role is
+    // required because users have no write policy on grants.
+    if (input.onboardingComplete) {
+      try {
+        const admin = getSupabaseAdmin();
+        const [{ data: trialSettings }, { data: priorTrials }] = await Promise.all([
+          admin.from("period_premium_settings").select("onboarding_trial_days").maybeSingle(),
+          admin.from("period_premium_grants").select("id").eq("user_id", user.id).eq("source", "onboarding_trial").limit(1),
+        ]);
+        const trialDays = trialSettings?.onboarding_trial_days ?? 0;
+        if (trialDays > 0 && !(priorTrials ?? []).length) {
+          await admin.from("period_premium_grants").insert({
+            user_id: user.id,
+            tier: "cycle_pro",
+            source: "onboarding_trial",
+            reason: `Onboarding trial (${trialDays} days)`,
+            starts_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + trialDays * 86400000).toISOString(),
+          });
+        }
+      } catch {
+        // Trial provisioning must never block onboarding itself.
+      }
+    }
+
     return NextResponse.json({ ok: true });
   }
 
