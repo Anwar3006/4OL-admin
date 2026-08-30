@@ -11,11 +11,11 @@ export interface InsightDraft {
   insight_type: "fertile_window" | "ovulation_prediction" | "timing_suggestion" | "bbt_shift" | "irregular_cycle" | "preconception_next_step";
   insight_date: string; // YYYY-MM-DD
   title: string;
-  summary: string;
+  message: string;
   confidence: number; // 0..1
   evidence: Record<string, string | number | boolean | null>;
-  safety_level: string;
-  suggested_action: string | null;
+  /** Table check constraint: informational | caution. */
+  safety_level: "informational" | "caution";
 }
 
 interface GeneratorInput {
@@ -54,11 +54,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
       insight_type: "fertile_window",
       insight_date: today,
       title: "Estimated fertile window",
-      summary: `Your estimated fertile window is ${formatDate(window[0])}–${formatDate(window[1])}, based on your recent cycles. This is an estimate, not a guarantee.`,
+      message: `Your estimated fertile window is ${formatDate(window[0])}–${formatDate(window[1])}, based on your recent cycles. This is an estimate, not a guarantee.`,
       confidence: latestForecast?.confidence ?? 0.5,
       evidence: { forecastId: latestForecast?.id ?? null, windowStart: window[0], windowEnd: window[1] },
       safety_level: "informational",
-      suggested_action: null,
     });
 
     // 2) Ovulation estimate — only while the date is upcoming.
@@ -68,11 +67,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
         insight_type: "ovulation_prediction",
         insight_date: today,
         title: "Ovulation estimate",
-        summary: `Ovulation may occur around ${formatDate(ovulationDate)}. Estimates shift as new cycles are confirmed.`,
+        message: `Ovulation may occur around ${formatDate(ovulationDate)}. Estimates shift as new cycles are confirmed.`,
         confidence: latestForecast?.confidence ?? 0.5,
         evidence: { forecastId: latestForecast?.id ?? null, predictedOvulationDate: ovulationDate },
         safety_level: "informational",
-        suggested_action: null,
       });
 
       // 3) Timing suggestion — TTC goal only, within the next five days.
@@ -82,11 +80,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
           insight_type: "timing_suggestion",
           insight_date: today,
           title: "Timing suggestion",
-          summary: `Your estimated ovulation is about ${daysAway === 0 ? "today" : `${daysAway} day${daysAway === 1 ? "" : "s"} away`}. Many couples choose to have intercourse in the days leading up to it — regular timing often matters more than exact dates.`,
+          message: `Your estimated ovulation is about ${daysAway === 0 ? "today" : `${daysAway} day${daysAway === 1 ? "" : "s"} away`}. Many couples choose to have intercourse in the days leading up to it — regular timing often matters more than exact dates.`,
           confidence: (latestForecast?.confidence ?? 0.5) * 0.9,
           evidence: { daysAway, windowStart: window[0], windowEnd: window[1] },
-          safety_level: "educational",
-          suggested_action: null,
+          safety_level: "informational",
         });
       }
     }
@@ -107,11 +104,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
         insight_type: "bbt_shift",
         insight_date: today,
         title: "Temperature shift noted",
-        summary: `Your recent temperature readings may show a slight upward shift (about ${shift.toFixed(1)}°C). Temperature shifts can follow ovulation, but a single pattern is not a diagnosis.`,
+        message: `Your recent temperature readings may show a slight upward shift (about ${shift.toFixed(1)}°C). Temperature shifts can follow ovulation, but a single pattern is not a diagnosis.`,
         confidence: 0.45,
         evidence: { sampleCount: temps.length, shiftCelsius: Number(shift.toFixed(2)) },
         safety_level: "informational",
-        suggested_action: null,
       });
     }
   }
@@ -125,11 +121,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
         insight_type: "irregular_cycle",
         insight_date: today,
         title: "Cycle length variation",
-        summary: `Your recent cycles have varied by about ${spread} days. Some variation is common; if it persists or concerns you, a healthcare professional can help you review it.`,
+        message: `Your recent cycles have varied by about ${spread} days. Some variation is common; if it persists or concerns you, a healthcare professional can help you review it. Consider mentioning it at your next check-up.`,
         confidence: 0.6,
         evidence: { cycleCount: lengths.length, spreadDays: spread },
-        safety_level: "educational",
-        suggested_action: "Consider mentioning cycle variation at your next check-up",
+        safety_level: "caution",
       });
     }
   }
@@ -143,11 +138,10 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
         insight_type: "preconception_next_step",
         insight_date: today,
         title: "Your next preconception step",
-        summary: `You have completed ${done.size} of ${input.checklistItems.length} preconception steps. "${remaining[0].title ?? "The next item"}" may be a good next step.`,
+        message: `You have completed ${done.size} of ${input.checklistItems.length} preconception steps. "${remaining[0].title ?? "The next item"}" may be a good next step.`,
         confidence: 0.8,
         evidence: { completedCount: done.size, totalItems: input.checklistItems.length, nextItemId: remaining[0].id },
-        safety_level: "educational",
-        suggested_action: remaining[0].title ?? null,
+        safety_level: "informational",
       });
     }
   }

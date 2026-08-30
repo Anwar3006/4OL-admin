@@ -311,7 +311,7 @@ export async function GET(request: NextRequest) {
     const fresh = drafts.filter((draft) => !existingToday.has(draft.insight_type));
     if (fresh.length) {
       const admin = getSupabaseAdmin();
-      const { data: created } = await admin.from("period_fertility_insights").insert(fresh.map((draft) => ({ user_id: user.id, insight_type: draft.insight_type, insight_date: draft.insight_date, title: draft.title, summary: draft.summary, confidence: draft.confidence, evidence: draft.evidence, safety_level: draft.safety_level, suggested_action: draft.suggested_action, status: "active" }))).select();
+      const { data: created } = await admin.from("period_fertility_insights").insert(fresh.map((draft) => ({ user_id: user.id, insight_type: draft.insight_type, insight_date: draft.insight_date, title: draft.title, message: draft.message, confidence: draft.confidence, evidence: draft.evidence, safety_level: draft.safety_level, status: "active" }))).select();
       if (created) insights = [...insights, ...created];
     }
   } catch {
