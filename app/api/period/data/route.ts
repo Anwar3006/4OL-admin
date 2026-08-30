@@ -425,6 +425,124 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ...pageRows(rows, page, pageSize), settings: settings ?? null });
   }
 
+  if (tab === "ttc") {
+    // TTC & Fertility analytics (TTC_PLAN.md): aggregates and masked metadata
+    // only. Intimate per-user detail (sexual activity, encrypted notes) is
+    // never exposed here; appointments show a short user id, not a name.
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    const [{ data: trackerSettings }, { data: ttcProfiles, error }, { data: checklistItems }, { data: checklistProgress }, { data: ovulationTests }, { data: appointments }, { data: insights }] = await Promise.all([
+      admin.from("period_user_settings").select("id"),
+      admin.from("period_ttc_profiles").select("user_id,preconception_visit_status,medication_review_status,vaccine_review_status,chronic_condition_review_status,sti_screening_status,dental_check_status,prenatal_vitamin_started_on,created_at").order("created_at", { ascending: false }).limit(5000),
+      admin.from("period_ttc_checklist_items").select("id,code,title,category,display_order").eq("is_active", true).order("display_order"),
+      admin.from("period_ttc_checklist_progress").select("user_id,checklist_item_id,status").limit(10000),
+      admin.from("period_ovulation_tests").select("logged_on,result,brand,source").gte("logged_on", thirtyDaysAgo).limit(10000),
+      admin.from("period_preconception_appointments").select("id,user_id,appointment_date,timezone,clinician_name,purpose,status,questions").order("appointment_date", { ascending: false }).limit(500),
+      admin.from("period_fertility_insights").select("insight_type,confidence,status,evidence").gte("created_at", sevenDaysAgo).limit(10000),
+    ]);
+    if (error) return NextResponse.json({ error: "Unable to load TTC data" }, { status: 500 });
+
+    // Checklist readiness: per active item, share of TTC users who marked it
+    // done. Readiness status on the TTC profile counts as done too, since it
+    // is the same preconception preparation signal.
+    const readinessFields: Record<string, string> = {
+      preconception_visit: "preconception_visit_status",
+      medication_review: "medication_review_status",
+      vaccine_review: "vaccine_review_status",
+      chronic_condition_review: "chronic_condition_review_status",
+      sti_screening: "sti_screening_status",
+      dental_check: "dental_check_status",
+    };
+    const ttcUserCount = (ttcProfiles ?? []).length;
+    const doneByItem = new Map<string, Set<string>>();
+    for (const row of checklistProgress ?? []) {
+      if (row.status === "done") doneByItem.set(row.checklist_item_id, new Set([...(doneByItem.get(row.checklist_item_id) ?? []), row.user_id]));
+    }
+    for (const item of checklistItems ?? []) {
+      const field = readinessFields[item.code];
+      if (!field) continue;
+      const fromProfile = (ttcProfiles ?? []).filter((profile) => (profile as any)[field] === "completed").map((profile) => profile.user_id);
+      doneByItem.set(item.id, new Set([...(doneByItem.get(item.id) ?? []), ...fromProfile]));
+    }
+    const checklistReadiness = (checklistItems ?? []).map((item) => ({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      doneCount: doneByItem.get(item.id)?.size ?? 0,
+      donePercent: percent(doneByItem.get(item.id)?.size ?? 0, ttcUserCount),
+    }));
+    const checklistHalfCount = (() => {
+      const itemCount = (checklistItems ?? []).length || 1;
+      const userDoneCounts = new Map<string, number>();
+      for (const [, users] of doneByItem) for (const userId of users) userDoneCounts.set(userId, (userDoneCounts.get(userId) ?? 0) + 1);
+      return [...userDoneCounts.values()].filter((count) => count >= itemCount / 2).length;
+    })();
+
+    // Ovulation tests (30 days): result buckets never imply pregnancy.
+    const tests = ovulationTests ?? [];
+    const brandCounts = tests.reduce<Record<string, number>>((acc, test) => {
+      const brand = (test.brand ?? "Other").trim() || "Other";
+      acc[brand] = (acc[brand] ?? 0) + 1;
+      return acc;
+    }, {});
+    const ovulationBreakdown = {
+      total: tests.length,
+      positive: tests.filter((test) => ["positive", "peak", "high"].includes(test.result)).length,
+      negative: tests.filter((test) => ["negative", "low"].includes(test.result)).length,
+      invalid: tests.filter((test) => test.result === "invalid").length,
+      deviceOrSync: tests.filter((test) => test.source !== "user").length,
+      topBrands: Object.entries(brandCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([brand, count]) => `${brand} (${percent(count, tests.length)})`)
+        .join(" · ") || "No brands recorded",
+    };
+
+    // Insight cards (7 days): non-diagnostic generation quality only.
+    const insightGroups = new Map<string, { generated: number; confidences: number[]; dismissed: number; shown: number; evidenceKeys: Set<string> }>();
+    for (const insight of insights ?? []) {
+      const group = insightGroups.get(insight.insight_type) ?? { generated: 0, confidences: [] as number[], dismissed: 0, shown: 0, evidenceKeys: new Set<string>() };
+      group.generated += 1;
+      if (insight.confidence != null) group.confidences.push(Number(insight.confidence));
+      if (insight.status === "dismissed") group.dismissed += 1;
+      if (insight.status !== "superseded") group.shown += 1;
+      Object.keys(insight.evidence ?? {}).forEach((key) => group.evidenceKeys.add(key));
+      insightGroups.set(insight.insight_type, group);
+    }
+    const insightBreakdown = [...insightGroups.entries()].map(([insightType, group]) => ({
+      id: insightType,
+      insightType,
+      generated7d: group.generated,
+      averageConfidence: group.confidences.length ? (group.confidences.reduce((sum, value) => sum + value, 0) / group.confidences.length).toFixed(2) : null,
+      shown: group.shown,
+      dismissedPercent: percent(group.dismissed, group.generated),
+      evidenceFields: [...group.evidenceKeys].slice(0, 4).join(", ") || "—",
+      status: "live",
+    })).sort((a, b) => b.generated7d - a.generated7d);
+
+    const visitsPlanned = (appointments ?? []).filter((appointment) => appointment.status === "planned").length;
+    const visitsCompleted = (appointments ?? []).filter((appointment) => appointment.status === "completed").length;
+    const rows = (appointments ?? []).map((appointment) => ({
+      ...appointment,
+      questionsCount: Array.isArray(appointment.questions) ? appointment.questions.length : 0,
+    })).filter((row) => (!status || row.status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
+
+    return NextResponse.json({
+      ...pageRows(rows, page, pageSize),
+      stats: {
+        ttcProfiles: ttcUserCount,
+        adoptionPercent: percent(ttcUserCount, trackerSettings?.length ?? 0),
+        checklistHalfPercent: percent(checklistHalfCount, ttcUserCount),
+        ovulationTests30d: ovulationBreakdown.total,
+        visitsPlanned,
+        visitsCompleted,
+      },
+      checklistReadiness,
+      ovulationBreakdown,
+      insightBreakdown,
+    });
+  }
+
   if (tab === "logs") {
     const { data: logs, error } = await admin.from("period_daily_logs").select("id,user_id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,exercise_minutes,medication_logged,source,app_version,sync_status,created_at,updated_at").order("logged_on", { ascending: false }).limit(5000);
     if (error) return NextResponse.json({ error: "Unable to load daily logs" }, { status: 500 });

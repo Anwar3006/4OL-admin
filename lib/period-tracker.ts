@@ -11,6 +11,7 @@ export const PERIOD_TAB_IDS = [
   "trivia",
   "forecasts",
   "quality",
+  "ttc",
   "premium",
 ] as const;
 
