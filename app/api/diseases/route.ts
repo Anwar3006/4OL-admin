@@ -38,9 +38,9 @@ export async function GET(request: NextRequest) {
     .select(CONTENT_SELECT, { count: "exact" });
 
   if (search) {
-    // Mockup: "Search by name, ICD code, category..." - name + ICD-11 here;
-    // category match would need a join, kept simple for the admin surface.
-    query = query.or(`name.ilike.%${search}%,icd11_code.ilike.%${search}%`);
+    // Admin list searches by name; category match would need a join,
+    // kept simple for the admin surface.
+    query = query.ilike("name", `%${search}%`);
   }
   if (status) query = query.eq("status", status);
   if (featured === "yes") query = query.eq("is_featured", true);

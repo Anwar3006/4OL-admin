@@ -22,7 +22,7 @@ export async function GET() {
     .from("conditions")
     .select(
       `
-      name, icd11_code, severity, nhis_coverage, status, view_count,
+      name, severity, nhis_coverage, status, view_count,
       like_count, save_count, is_featured, featured_order, created_at,
       condition_categories (categories (name))
       `,
@@ -35,7 +35,6 @@ export async function GET() {
 
   const header = [
     "Name",
-    "ICD-11",
     "Severity",
     "NHIS Coverage",
     "Categories",
@@ -51,7 +50,6 @@ export async function GET() {
   const lines = (data ?? []).map((row: any) =>
     [
       row.name,
-      row.icd11_code,
       row.severity,
       row.nhis_coverage,
       row.condition_categories

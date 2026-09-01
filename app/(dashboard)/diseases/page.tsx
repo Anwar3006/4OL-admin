@@ -3,7 +3,7 @@
 /**
  * Diseases & Conditions (Gap Analysis Part I, I-Phase 4).
  * All tab is route-backed (/api/diseases) with status/featured filters,
- * ICD-11 + Likes/Saves columns, bulk Feature/Publish/Delete and CSV export.
+ * Likes/Saves columns, bulk Feature/Publish/Delete and CSV export.
  * Carousel / Engagement / Linkages tabs render real data via dedicated
  * server routes — no "Coming Soon" placeholders remain.
  */
@@ -127,18 +127,6 @@ const DiseasesPage = () => {
           </div>
         </div>
       ),
-    },
-    {
-      accessorKey: "icd11_code",
-      header: "ICD-11",
-      cell: ({ row }: any) =>
-        row.original.icd11_code ? (
-          <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-            {row.original.icd11_code}
-          </span>
-        ) : (
-          <span className="text-[10px] text-slate-300 italic">—</span>
-        ),
     },
     {
       accessorKey: "severity",
@@ -295,7 +283,7 @@ const DiseasesPage = () => {
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
         title="🦠 Diseases & Conditions"
-        subtitle="Health content database · ICD-11 indexed · Managed by Content Manager"
+        subtitle="Health content database · Managed by Content Manager"
       >
         <button
           className="btn btn-secondary"
@@ -410,7 +398,7 @@ const DiseasesPage = () => {
               <div className="relative flex-1 min-w-[300px]">
                 <input
                   className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 text-xs focus:ring-4 focus:ring-ek-green/10 focus:border-ek-green outline-none transition-all"
-                  placeholder="🔍 Search by name, ICD code, category..."
+                  placeholder="🔍 Search by name, category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />

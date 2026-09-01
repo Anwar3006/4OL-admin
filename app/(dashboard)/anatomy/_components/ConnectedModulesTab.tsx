@@ -25,7 +25,7 @@ const MODULE_CARDS = [
     title: "Diseases & Conditions",
     table: "conditions",
     href: "/diseases",
-    detail: "condition_body_parts junction · ICD-11 codes · specialist routing",
+    detail: "condition_body_parts junction · specialist routing",
   },
   {
     icon: "🩺",

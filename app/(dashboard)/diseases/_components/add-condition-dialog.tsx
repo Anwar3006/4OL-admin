@@ -80,7 +80,6 @@ const AddConditionDialog = () => {
       specialist: "",
       nhs_link: "",
       image_url: "",
-      icd11_code: "",
       severity: "",
       nhis_coverage: "",
       types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
@@ -138,7 +137,6 @@ const AddConditionDialog = () => {
           nhs_link: condition.nhs_link ?? "",
           image_url: condition.image_url ?? "",
           specialist: condition.specialist ?? "",
-          icd11_code: condition.icd11_code ?? "",
           severity: condition.severity ?? "",
           nhis_coverage: condition.nhis_coverage ?? "",
         });
@@ -161,7 +159,6 @@ const AddConditionDialog = () => {
           specialist: "",
           nhs_link: "",
           image_url: "",
-          icd11_code: "",
           severity: "",
           nhis_coverage: "",
           types: [{ type_name: "", about_type: EMPTY_LEXICAL_STATE }],
@@ -287,14 +284,7 @@ const AddConditionDialog = () => {
                 </div>
 
                 {/* Classification (Gap Analysis Part I, I-D1 / m-add-condition) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <CustomInput
-                    type="text"
-                    name="icd11_code"
-                    control={form.control}
-                    label="ICD-11 Code"
-                    readOnly={false}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">
                       Severity

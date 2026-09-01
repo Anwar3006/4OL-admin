@@ -2,7 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { useAnatomyConditions, useBodyParts } from "@/hooks/supabase-calls/useAnatomy";
+import {
+  useAnatomyConditions,
+  useBodyParts,
+} from "@/hooks/supabase-calls/useAnatomy";
 
 const inputCls =
   "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
@@ -26,7 +29,8 @@ export default function ConditionsLinkedTab() {
   });
 
   const bodyPartOptions = useMemo(
-    () => (parts?.parts ?? []).slice().sort((a, b) => a.name.localeCompare(b.name)),
+    () =>
+      (parts?.parts ?? []).slice().sort((a, b) => a.name.localeCompare(b.name)),
     [parts],
   );
 
@@ -51,7 +55,9 @@ export default function ConditionsLinkedTab() {
           >
             <option value="">All body parts</option>
             {bodyPartOptions.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
@@ -63,7 +69,6 @@ export default function ConditionsLinkedTab() {
             <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
               <th className="px-5 py-3">Body Part</th>
               <th className="px-5 py-3">Condition</th>
-              <th className="px-5 py-3">ICD-11</th>
               <th className="px-5 py-3">Severity</th>
               <th className="px-5 py-3">Specialist</th>
               <th className="px-5 py-3">Status</th>
@@ -72,14 +77,20 @@ export default function ConditionsLinkedTab() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
+                <td
+                  colSpan={5}
+                  className="px-5 py-10 text-center text-slate-400"
+                >
                   Loading condition links…
                 </td>
               </tr>
             )}
             {!isLoading && (rows ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
+                <td
+                  colSpan={5}
+                  className="px-5 py-10 text-center text-slate-400"
+                >
                   No condition ↔ body-part links found.
                 </td>
               </tr>
@@ -90,7 +101,9 @@ export default function ConditionsLinkedTab() {
                   key={`${row.condition_id}-${row.body_part_id}`}
                   className="border-b border-slate-50 hover:bg-slate-50/60"
                 >
-                  <td className="px-5 py-3 font-bold text-slate-800">{row.body_part_name}</td>
+                  <td className="px-5 py-3 font-bold text-slate-800">
+                    {row.body_part_name}
+                  </td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/diseases?id=${row.condition_id}`}
@@ -99,17 +112,22 @@ export default function ConditionsLinkedTab() {
                       {row.condition_name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 font-mono text-slate-500">
-                    {row.icd11_code || "—"}
-                  </td>
                   <td className="px-5 py-3">
                     <span className={severityBadge(row.severity)}>
                       {row.severity || "unknown"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-slate-600">{row.specialist || "—"}</td>
+                  <td className="px-5 py-3 text-slate-600">
+                    {row.specialist || "—"}
+                  </td>
                   <td className="px-5 py-3">
-                    <span className={row.status === "published" ? "badge badge-green" : "badge badge-slate"}>
+                    <span
+                      className={
+                        row.status === "published"
+                          ? "badge badge-green"
+                          : "badge badge-slate"
+                      }
+                    >
                       {row.status || "—"}
                     </span>
                   </td>
