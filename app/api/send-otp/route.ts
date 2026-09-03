@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendVerificationCode } from "@/lib/twilio";
+import { sendVerificationCode } from "@/lib/sms";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send verification code via Twilio Verify API
+    // Send verification code via AWS SNS/End User Messaging SMS
     const result = await sendVerificationCode(phoneNumber);
 
     if (!result.success) {
-      console.error("Twilio Verify error:", result.error);
+      console.error("Verification code send error:", result.error);
       return NextResponse.json(
         { error: result.error || "Failed to send verification code" },
         { status: 500 },

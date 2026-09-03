@@ -34,6 +34,7 @@ export async function getPlatformHealth(): Promise<PlatformHealth> {
     supabase: supabaseStatus,
     firebase: envStatus("FIREBASE_SERVICE_ACCOUNT_JSON"),
     twilio: envStatus("TWILIO_AUTH_TOKEN"),
+    awsSms: envStatus("SMS_ORIGINATION_ID"),
     resend: envStatus("RESEND_API_KEY"),
     paystack: envStatus("PAYSTACK_SECRET_KEY"),
     googleMaps: envStatus("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),

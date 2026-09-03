@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkVerificationCode } from "@/lib/twilio";
+import { checkVerificationCode } from "@/lib/sms";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify code using Twilio Verify API
+    // Verify code against otp_verifications (see lib/sms.ts)
     const result = await checkVerificationCode(phoneNumber, otp);
 
     if (!result.success) {

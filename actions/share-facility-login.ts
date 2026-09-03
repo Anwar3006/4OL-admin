@@ -1,10 +1,7 @@
 "use server";
 
-import {
-  initiateWhatsAppHandshake,
-  sendSMS,
-  formatPhoneNumber,
-} from "@/lib/twilio";
+import { initiateWhatsAppHandshake } from "@/lib/twilio";
+import { sendSMS, formatPhoneNumber } from "@/lib/sms";
 
 export async function notifyFacilityRegistration(formData: {
   facilityWhatsapp: string;
