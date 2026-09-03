@@ -18,6 +18,7 @@ const CONTENT_TYPES: MappingContentType[] = [
   "symptom",
   "tip",
   "workout",
+  "drug",
 ];
 
 const NAME_SOURCES: Record<MappingContentType, { table: string; nameCol: string }> = {
@@ -25,6 +26,7 @@ const NAME_SOURCES: Record<MappingContentType, { table: string; nameCol: string 
   symptom: { table: "symptoms", nameCol: "name" },
   tip: { table: "healthy_living_info", nameCol: "name" },
   workout: { table: "workouts", nameCol: "exercise_name" },
+  drug: { table: "drugs", nameCol: "name" },
 };
 
 export async function GET(req: NextRequest) {

@@ -11,6 +11,7 @@ import BodyMapTab from "./_components/BodyMapTab";
 import ConditionsLinkedTab from "./_components/ConditionsLinkedTab";
 import SymptomsLinkedTab from "./_components/SymptomsLinkedTab";
 import HealthyTipsTab from "./_components/HealthyTipsTab";
+import DrugsLinkedTab from "./_components/DrugsLinkedTab";
 import ConnectedModulesTab from "./_components/ConnectedModulesTab";
 import BusinessStrategyTab from "./_components/BusinessStrategyTab";
 import PinPlacement3DTab from "./_components/PinPlacement3DTab";
@@ -25,6 +26,7 @@ const AnatomyTabs = [
   { id: "pins-3d",    label: "📍 3D Pin Placement" },
   { id: "ai-mapper",  label: "🤖 AI Pin Mapper" },
   { id: "premium",    label: "💎 Premium Layers" },
+  { id: "drugs",      label: "💊 Linked Drugs" },
   { id: "conditions", label: "🦠 Linked Conditions" },
   { id: "symptoms",   label: "🩺 Linked Symptoms" },
   { id: "tips",       label: "🌿 Healthy Tips" },
@@ -184,6 +186,9 @@ export default function AnatomyPage() {
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="premium">
             <PremiumLayersTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="drugs">
+            <DrugsLinkedTab />
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="conditions">
             <ConditionsLinkedTab />

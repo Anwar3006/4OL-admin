@@ -1,0 +1,21 @@
+{
+  "version": "2026-09-01.nih-hra-skin-standard",
+  "defaultVariant": "standard",
+  "decoderRequired": [],
+  "models": {
+    "female": {
+      "publicUrl": "/anatomy/models/body-female-skin-standard.glb",
+      "bytes": 3215404,
+      "triangles": 133924,
+      "sourceEntryId": "3DPX-020992",
+      "sourceUrl": "https://3d.nih.gov/entries/20992?version=1"
+    },
+    "male": {
+      "publicUrl": "/anatomy/models/body-male-skin-standard.glb",
+      "bytes": 1168664,
+      "triangles": 64858,
+      "sourceEntryId": "3DPX-021022",
+      "sourceUrl": "https://3d.nih.gov/entries/21022?version=1"
+    }
+  }
+}

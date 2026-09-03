@@ -13,6 +13,7 @@
     "type-check": "tsc",
     "seed": "tsx scripts/seeder.ts",
     "seed:disease": "tsx scripts/disease_seeder.ts",
+    "seed:drugs": "tsx scripts/seed-drugs-from-json.ts",
     "security:audit": "npm audit --audit-level=high"
   },
   "dependencies": {

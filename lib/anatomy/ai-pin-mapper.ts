@@ -14,13 +14,14 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
  * retry with backoff, cost awareness).
  */
 
-export type MappingContentType = "condition" | "symptom" | "tip" | "workout";
+export type MappingContentType = "condition" | "symptom" | "tip" | "workout" | "drug";
 
 interface ContentSource {
   table: string;
   junction: string;
   junctionContentCol: string;
   label: string;
+  sourceColumn?: string;
 }
 
 const SOURCES: Record<MappingContentType, ContentSource> = {
@@ -29,24 +30,33 @@ const SOURCES: Record<MappingContentType, ContentSource> = {
     junction: "condition_body_parts",
     junctionContentCol: "condition_id",
     label: "Diseases & Conditions",
+    sourceColumn: "source",
   },
   symptom: {
     table: "symptoms",
     junction: "symptom_body_parts",
     junctionContentCol: "symptom_id",
     label: "Symptoms",
+    sourceColumn: "source",
   },
   tip: {
     table: "healthy_living_info",
     junction: "healthy_living_body_parts",
     junctionContentCol: "tip_id",
     label: "Healthy Living",
+    sourceColumn: "source",
   },
   workout: {
     table: "workouts",
     junction: "fitness_body_parts",
     junctionContentCol: "workout_id",
     label: "Fitness",
+  },
+  drug: {
+    table: "drugs",
+    junction: "drug_body_parts",
+    junctionContentCol: "drug_id",
+    label: "Drugs",
   },
 };
 
@@ -114,6 +124,7 @@ export async function runAiPinMapping(opts: {
   // ── Candidate content rows ──
   let contentQuery = admin.from(source.table).select("*").limit(batchSize * 4);
   if (opts.contentType === "workout") contentQuery = contentQuery.eq("is_active", true);
+  if (opts.contentType === "drug") contentQuery = contentQuery.eq("status", "active");
   const { data: contentRows, error: contentError } = await contentQuery;
   if (contentError) {
     return {
@@ -315,14 +326,17 @@ export async function decideMapping(opts: {
   if (opts.decision === "approved") {
     const source = SOURCES[mapping.content_type as MappingContentType];
     if (!source) return { ok: false, error: "Unknown content type." };
-    const { error: linkError } = await admin.from(source.junction).upsert(
-      {
-        [source.junctionContentCol]: mapping.content_id,
-        body_part_id: mapping.body_part_id,
-        source: "ai",
-      },
-      { onConflict: `${source.junctionContentCol},body_part_id`, ignoreDuplicates: true },
-    );
+    const linkPayload: Record<string, unknown> = {
+      [source.junctionContentCol]: mapping.content_id,
+      body_part_id: mapping.body_part_id,
+    };
+    if (source.sourceColumn) linkPayload[source.sourceColumn] = "ai";
+    const { error: linkError } = await admin
+      .from(source.junction)
+      .upsert(linkPayload, {
+        onConflict: `${source.junctionContentCol},body_part_id`,
+        ignoreDuplicates: true,
+      });
     if (linkError) {
       return {
         ok: false,

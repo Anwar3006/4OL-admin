@@ -52,14 +52,12 @@ type PlatformSettings = {
 
 type Plan = {
   id: string;
+  key: string;
   name: string;
-  slug: string;
   description: string | null;
-  tier: string;
-  price_monthly: number | null;
-  price_yearly: number | null;
-  currency: string | null;
-  features: string[] | null;
+  price_ghs: number | null;
+  duration_days: number | null;
+  benefits: string[] | null;
   is_active: boolean | null;
 };
 
@@ -569,9 +567,9 @@ function PlansTable({ loading, plans }: { loading: boolean; plans: Plan[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Tier</TableHead>
-              <TableHead>Monthly</TableHead>
-              <TableHead>Yearly</TableHead>
+              <TableHead>Key</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Duration</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -584,9 +582,9 @@ function PlansTable({ loading, plans }: { loading: boolean; plans: Plan[] }) {
               plans.map((plan) => (
                 <TableRow key={plan.id}>
                   <TableCell className="font-bold text-slate-800">{plan.name}</TableCell>
-                  <TableCell><Badge variant="blue">{plan.tier}</Badge></TableCell>
-                  <TableCell>{formatMoney(plan.price_monthly, plan.currency || "GHS")}</TableCell>
-                  <TableCell>{formatMoney(plan.price_yearly, plan.currency || "GHS")}</TableCell>
+                  <TableCell><Badge variant="blue">{plan.key}</Badge></TableCell>
+                  <TableCell>{formatMoney(plan.price_ghs, "GHS")}</TableCell>
+                  <TableCell>{plan.duration_days ? `${plan.duration_days} days` : "Lifetime"}</TableCell>
                   <TableCell>
                     <Badge variant={plan.is_active ? "emerald" : "secondary"}>
                       {plan.is_active ? "Active" : "Inactive"}

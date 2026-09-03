@@ -8,12 +8,12 @@ export async function GET() {
 
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
-    .from("subscription_plans")
+    .from("subscription_tiers")
     .select(
-      "id, name, slug, description, tier, price_monthly, price_yearly, currency, features, is_active, display_order",
+      "id, key, name, description, price_ghs, duration_days, benefits, is_active, display_order",
     )
     .order("display_order", { ascending: true })
-    .order("price_monthly", { ascending: true });
+    .order("price_ghs", { ascending: true });
 
   if (error) {
     console.error("[settings/plans] Supabase error:", error.message);

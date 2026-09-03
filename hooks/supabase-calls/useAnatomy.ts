@@ -268,6 +268,45 @@ export const useAnatomyTips = (bodyPartId?: string) => {
   });
 };
 
+// ── Tab 5: Drugs linked to body parts ─────────────────────────────────────
+
+export interface AnatomyDrugLinkRow {
+  body_part_id: string;
+  body_part_name: string;
+  body_system: string | null;
+  drug_id: string;
+  drug_name: string;
+  generic_name: string | null;
+  category: string | null;
+  availability: string | null;
+  dosage_form: string | null;
+  strength: string | null;
+  strength_unit: string | null;
+  status: string | null;
+}
+
+export const useAnatomyDrugLinks = ({
+  search,
+  bodyPartId,
+}: {
+  search?: string;
+  bodyPartId?: string;
+}) => {
+  return useQuery({
+    queryKey: ["anatomy-drug-links", search, bodyPartId],
+    queryFn: async () => {
+      const qs = new URLSearchParams();
+      if (search) qs.set("search", search);
+      if (bodyPartId) qs.set("body_part_id", bodyPartId);
+      const res = await fetch(`/api/anatomy/drug-links?${qs.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load drug links.");
+      return json as { links: AnatomyDrugLinkRow[]; total: number };
+    },
+    placeholderData: (previousData) => previousData,
+  });
+};
+
 // ── Mutations ──────────────────────────────────────────────────────────────
 
 export const useCreateBodyPart = () => {
@@ -341,6 +380,64 @@ export const useLinkTipToBodyPart = () => {
       queryClient.invalidateQueries({ queryKey: ["anatomy-tips"] });
       queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
       toast.success("Tip linked to body part.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useLinkDrugToBodyPart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      drugId,
+      bodyPartId,
+    }: {
+      drugId: string;
+      bodyPartId: string;
+    }) => {
+      const res = await fetch("/api/anatomy/drug-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drug_id: drugId, body_part_id: bodyPartId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to link drug.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-drug-links"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Drug linked to body part.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useUnlinkDrugFromBodyPart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      drugId,
+      bodyPartId,
+    }: {
+      drugId: string;
+      bodyPartId: string;
+    }) => {
+      const qs = new URLSearchParams({
+        drug_id: drugId,
+        body_part_id: bodyPartId,
+      });
+      const res = await fetch(`/api/anatomy/drug-links?${qs.toString()}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to unlink drug.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-drug-links"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Drug body-part link removed.");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -449,7 +546,7 @@ export const useDeleteHotspot3D = () => {
 
 export interface AiMappingRow {
   id: string;
-  content_type: "condition" | "symptom" | "tip" | "workout";
+  content_type: "condition" | "symptom" | "tip" | "workout" | "drug";
   content_id: string;
   content_name: string;
   confidence: number;
@@ -478,7 +575,7 @@ export const useRunAiMap = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
-      content_type: "condition" | "symptom" | "tip" | "workout";
+      content_type: "condition" | "symptom" | "tip" | "workout" | "drug";
       unmapped_only: boolean;
       batch_size: number;
     }) => {
@@ -525,6 +622,7 @@ export const useDecideAiMapping = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["anatomy-ai-mappings"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-drug-links"] });
       queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
       toast.success("Review saved.");
     },

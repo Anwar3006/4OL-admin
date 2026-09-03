@@ -1,427 +1,656 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
   html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
-  #cv { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  #scene { width: 100vw; height: 100vh; touch-action: none; }
+  #status {
+    position: fixed; left: 14px; top: 14px; right: 148px; z-index: 5;
+    border-radius: 999px; background: rgba(15,23,42,0.72); color: #fff;
+    font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1; padding: 10px 12px; text-align: center;
+    pointer-events: none; transition: opacity 180ms ease, transform 180ms ease;
+  }
+  #status.hidden { opacity: 0; transform: translateY(-8px); }
 </style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body>
-<canvas id="cv"></canvas>
-<script>
-(function () {
-  'use strict';
+<div id="scene"></div>
+<div id="status">Loading anatomy...</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-  var cv = document.getElementById('cv');
-  var ctx = cv.getContext('2d');
-  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+var container = document.getElementById('scene');
+var statusEl = document.getElementById('status');
+var DPR = Math.min(window.devicePixelRatio || 1, 2);
+var DEG = Math.PI / 180;
+var query = new URLSearchParams(window.location.search || '');
+var initialViewProfile = query.get('view_profile') === 'mobile' ? 'mobile' : 'admin';
+var initialDirectControls = query.get('direct_controls') === 'false' ? false : true;
 
-  // ── State ─────────────────────────────────────────────────────────────
-  var state = {
-    gender: 'female',
-    yaw: 0, pitch: 0, zoom: 1,
-    tgt: { x: 0, y: 105, z: 0 },
-    shiftX: 0,
-    organs: false,
-    placement: false,
-    focusRegion: null,
-    kids: false,
-    pins: []
+var state = {
+  gender: 'female',
+  yaw: 0,
+  pitch: 0,
+  zoom: 1,
+  tgt: { x: 0, y: 100, z: 0 },
+  viewPan: { x: 0, y: 0, z: 0 },
+  viewProfile: initialViewProfile,
+  directControls: initialDirectControls,
+  fullBodyTarget: { x: 150, y: -50, z: 0 },
+  fullBodyDistance: 680,
+  bodyMetrics: null,
+  shiftX: 0,
+  organs: false,
+  placement: false,
+  focusRegion: null,
+  kids: false,
+  pins: [],
+  modelUrls: {
+    female: '/anatomy/models/body-female-skin-standard.glb',
+    male: '/anatomy/models/body-male-skin-standard.glb'
+  }
+};
+
+var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(DPR);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+container.appendChild(renderer.domElement);
+
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 1200);
+var raycaster = new THREE.Raycaster();
+var pointer = new THREE.Vector2();
+var loader = new GLTFLoader();
+var modelCache = {};
+var bodyRoot = null;
+var bodyMeshes = [];
+var pinGroup = new THREE.Group();
+var organGroup = new THREE.Group();
+var markerGroup = new THREE.Group();
+scene.add(pinGroup);
+scene.add(organGroup);
+scene.add(markerGroup);
+
+scene.add(new THREE.HemisphereLight(0xf8fafc, 0x172033, 1.15));
+var key = new THREE.DirectionalLight(0xffffff, 1.05);
+key.position.set(120, 260, 280);
+scene.add(key);
+var rim = new THREE.DirectionalLight(0x7dd3fc, 0.35);
+rim.position.set(-220, 180, -260);
+scene.add(rim);
+
+var skinColor = new THREE.Color(0.46, 0.255, 0.14);
+var kidsColor = new THREE.Color(0.82, 0.46, 0.27);
+var highlightMaterial = new THREE.MeshBasicMaterial({
+  color: 0x10b981,
+  transparent: true,
+  opacity: 0.12,
+  depthWrite: false
+});
+
+var dragging = false;
+var moved = 0;
+var lastX = 0;
+var lastY = 0;
+var statusTimer = null;
+
+function setStatus(text, sticky) {
+  statusEl.textContent = text;
+  statusEl.classList.remove('hidden');
+  if (statusTimer) window.clearTimeout(statusTimer);
+  if (!sticky) {
+    statusTimer = window.setTimeout(function () {
+      statusEl.classList.add('hidden');
+    }, 1400);
+  }
+}
+
+function send(obj) {
+  var msg = JSON.stringify(obj);
+  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+    window.ReactNativeWebView.postMessage(msg);
+  } else if (window.parent && window.parent !== window) {
+    window.parent.postMessage(msg, '*');
+  }
+}
+
+function resize() {
+  var w = Math.max(container.clientWidth, 1);
+  var h = Math.max(container.clientHeight, 1);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function normalizeBody(root) {
+  var wrapper = new THREE.Group();
+  wrapper.add(root);
+
+  var box = new THREE.Box3().setFromObject(root);
+  var size = box.getSize(new THREE.Vector3());
+  var center = box.getCenter(new THREE.Vector3());
+  var scale = 200 / Math.max(size.y, 0.0001);
+  root.position.x -= center.x;
+  root.position.y -= box.min.y;
+  root.position.z -= center.z;
+  wrapper.scale.setScalar(scale);
+  wrapper.updateMatrixWorld(true);
+
+  var normalizedBox = new THREE.Box3().setFromObject(wrapper);
+  var normalizedSize = normalizedBox.getSize(new THREE.Vector3());
+  var normalizedCenter = normalizedBox.getCenter(new THREE.Vector3());
+  wrapper.position.x -= normalizedCenter.x;
+  wrapper.position.y -= normalizedBox.min.y;
+  wrapper.position.z -= normalizedCenter.z;
+  wrapper.updateMatrixWorld(true);
+
+  normalizedBox = new THREE.Box3().setFromObject(wrapper);
+  normalizedSize = normalizedBox.getSize(new THREE.Vector3());
+  normalizedCenter = normalizedBox.getCenter(new THREE.Vector3());
+  state.bodyMetrics = {
+    center: { x: normalizedCenter.x, y: normalizedCenter.y, z: normalizedCenter.z },
+    size: { x: normalizedSize.x, y: normalizedSize.y, z: normalizedSize.z }
   };
-  // Lerped (displayed) values.
-  var disp = {
-    yaw: 0, pitch: 0, zoom: 1,
-    tx: 0, ty: 105, tz: 0,
-    shiftX: 0
+  applyFullBodyFrame();
+  window.__anatomyDebug = {
+    bodyCenter: state.fullBodyTarget,
+    bodyDistance: state.fullBodyDistance,
+    bodySize: { x: normalizedSize.x, y: normalizedSize.y, z: normalizedSize.z }
   };
-  var pinScreen = [];   // hit-test cache: {id, body_part_id, sx, sy}
-  var primScreen = [];  // hit-test cache: {region, part, sx, sy, r}
-  var dragging = false, moved = 0, lastX = 0, lastY = 0;
-  var startTime = Date.now();
+  return wrapper;
+}
 
-  function resize() {
-    cv.width = Math.floor(window.innerWidth * DPR);
-    cv.height = Math.floor(window.innerHeight * DPR);
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  // ── Mannequin definition ──────────────────────────────────────────────
-  // kind: 's' sphere | 'c' capsule; g: 'all' | 'f' | 'm'; organ flags organs layer.
-  function P(kind, x1, y1, z1, x2, y2, z2, r, region, part, g, organ, col) {
-    return { kind: kind, x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2,
-             r: r, region: region, part: part, g: g, organ: organ, col: col };
-  }
-  var SKIN = '#d9b99b', ORGAN_RED = '#c0564f', ORGAN_SOFT = '#e0917f';
-  // Kids mode (Part AM, P4): bright cartoon palette + a friendly face.
-  var SKIN_KIDS = '#ffd7ad';
-
-  function buildBody(gender) {
-    var b = [];
-    var female = gender === 'female';
-    // Head + neck
-    b.push(P('s', 0, 188, 0, 0, 188, 0, 13, 'head', 'head', 'all', 0, SKIN));
-    b.push(P('c', 0, 176, 0, 0, 165, 0, 5, 'neck', 'neck', 'all', 0, SKIN));
-    // Torso
-    b.push(P('c', 0, 160, 0, 0, 132, 0, female ? 15 : 16.5, 'chest', 'chest', 'all', 0, SKIN));
-    b.push(P('c', 0, 132, 0, 0, 110, 0, 13, 'abdomen', 'abdomen', 'all', 0, SKIN));
-    b.push(P('c', 0, 110, 0, 0, 96, 0, female ? 16 : 14, 'pelvis', 'pelvis', 'all', 0, SKIN));
-    // Arms (both sides)
-    var sides = [-1, 1];
-    for (var i = 0; i < sides.length; i++) {
-      var s = sides[i];
-      var side = s < 0 ? 'left' : 'right';
-      b.push(P('s', s * 19, 158, 0, 0, 0, 0, 6, 'chest', 'shoulder', 'all', 0, SKIN));
-      b.push(P('c', s * 24, 156, 0, s * 27, 128, 0, 5, 'arm_' + side, 'arm', 'all', 0, SKIN));
-      b.push(P('c', s * 27, 128, 0, s * 28, 102, 0, 4.5, 'arm_' + side, 'forearm', 'all', 0, SKIN));
-      b.push(P('s', s * 28, 94, 2, 0, 0, 0, 5, 'hand_' + side, 'hand', 'all', 0, SKIN));
-      b.push(P('c', s * 9, 96, 0, s * 10, 62, 0, female ? 9 : 8, 'leg_' + side, 'thigh', 'all', 0, SKIN));
-      b.push(P('c', s * 10, 62, 0, s * 10, 22, 0, 6, 'leg_' + side, 'calf', 'all', 0, SKIN));
-      b.push(P('c', s * 10, 10, 2, s * 10, 4, 11, 4.5, 'foot_' + side, 'foot', 'all', 0, SKIN));
-    }
-    // Female chest marker
-    if (female) {
-      b.push(P('s', -7, 146, 10, 0, 0, 0, 5, 'chest', 'breast', 'f', 0, SKIN));
-      b.push(P('s', 7, 146, 10, 0, 0, 0, 5, 'chest', 'breast', 'f', 0, SKIN));
-    }
-    return b;
-  }
-
-  var ORGANS = [
-    P('s', 0, 190, 0, 0, 0, 0, 9, 'head', 'brain', 'all', 1, ORGAN_SOFT),
-    P('s', -4, 146, 5, 0, 0, 0, 5, 'chest', 'heart', 'all', 1, ORGAN_RED),
-    P('c', -7, 152, 3, -7, 134, 3, 5, 'chest', 'lung', 'all', 1, ORGAN_SOFT),
-    P('c', 7, 152, 3, 7, 134, 3, 5, 'chest', 'lung', 'all', 1, ORGAN_SOFT),
-    P('s', 4, 120, 5, 0, 0, 0, 6, 'abdomen', 'stomach', 'all', 1, ORGAN_SOFT),
-    P('c', -2, 127, 5, -8, 124, 5, 5, 'abdomen', 'liver', 'all', 1, ORGAN_RED),
-    P('s', -8, 116, -4, 0, 0, 0, 3.5, 'abdomen', 'kidney', 'all', 1, ORGAN_RED),
-    P('s', 8, 116, -4, 0, 0, 0, 3.5, 'abdomen', 'kidney', 'all', 1, ORGAN_RED),
-    P('s', 0, 108, 6, 0, 0, 0, 8, 'abdomen', 'intestines', 'all', 1, ORGAN_SOFT),
-    P('c', 0, 160, -6, 0, 100, -6, 3, 'back', 'spine', 'all', 1, '#e7c9a9')
-  ];
-
-  var body = buildBody(state.gender);
-
-  // ── Math / projection ─────────────────────────────────────────────────
-  var DEG = Math.PI / 180;
-  function rot(x, y, z) {
-    // Translate to camera target, yaw around Y, pitch around X.
-    var px = x - disp.tx, py = y - disp.ty, pz = z - disp.tz;
-    var yaw = disp.yaw * DEG, pitch = disp.pitch * DEG;
-    var cx = Math.cos(yaw), sx = Math.sin(yaw);
-    var x1 = px * cx - pz * sx;
-    var z1 = px * sx + pz * cx;
-    var cp = Math.cos(pitch), sp = Math.sin(pitch);
-    var y2 = py * cp - z1 * sp;
-    var z2 = py * sp + z1 * cp;
-    return { x: x1, y: y2, z: z2 };
-  }
-  function k() {
-    return disp.zoom * Math.min(cv.width, cv.height) / 260;
-  }
-  function project(pt) {
-    var r = rot(pt.x, pt.y, pt.z);
-    var f = 520;
-    var persp = f / (f + r.z);
-    var kk = k() * persp;
+function frameProfile() {
+  if (state.viewProfile === 'mobile') {
     return {
-      sx: cv.width / 2 + disp.shiftX * DPR + r.x * kk,
-      sy: cv.height / 2 - r.y * kk,
-      z: r.z, kk: kk
+      offsetX: Number(query.get('frame_x') || 95),
+      offsetY: Number(query.get('frame_y') || -180),
+      minDistance: Number(query.get('frame_distance') || 900),
+      yFactor: 3.6,
+      xFactor: 10.2
     };
   }
+  return { offsetX: 150, offsetY: -150, minDistance: 680, yFactor: 3.4, xFactor: 6.8 };
+}
 
-  function shade(hex, factor) {
-    var n = parseInt(hex.slice(1), 16);
-    var r = Math.min(255, Math.round(((n >> 16) & 255) * factor));
-    var g = Math.min(255, Math.round(((n >> 8) & 255) * factor));
-    var b = Math.min(255, Math.round((n & 255) * factor));
-    return 'rgb(' + r + ',' + g + ',' + b + ')';
+function applyFullBodyFrame() {
+  if (!state.bodyMetrics) return;
+  var profile = frameProfile();
+  var center = state.bodyMetrics.center;
+  var size = state.bodyMetrics.size;
+  state.fullBodyTarget = {
+    x: center.x + profile.offsetX,
+    y: center.y + profile.offsetY,
+    z: center.z
+  };
+  state.fullBodyDistance = Math.max(profile.minDistance, size.y * profile.yFactor, size.x * profile.xFactor);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function tuneMaterials(root) {
+  root.traverse(function (node) {
+    if (!node.isMesh) return;
+    node.frustumCulled = true;
+    node.material = new THREE.MeshStandardMaterial({
+      color: state.kids ? kidsColor : skinColor,
+      roughness: 0.82,
+      metalness: 0,
+      side: THREE.FrontSide
+    });
+  });
+}
+
+function collectBodyMeshes(root) {
+  bodyMeshes = [];
+  root.traverse(function (node) {
+    if (node.isMesh) bodyMeshes.push(node);
+  });
+}
+
+async function loadBody(gender) {
+  var url = state.modelUrls[gender] || state.modelUrls.female;
+  if (!url) return;
+  setStatus('Loading ' + gender + ' body...', true);
+  try {
+    if (!modelCache[gender] || modelCache[gender].url !== url) {
+      var gltf = await loader.loadAsync(url);
+      var normalizedScene = normalizeBody(gltf.scene);
+      tuneMaterials(normalizedScene);
+      modelCache[gender] = { url: url, scene: normalizedScene };
+    }
+    if (bodyRoot) scene.remove(bodyRoot);
+    bodyRoot = modelCache[gender].scene;
+    tuneMaterials(bodyRoot);
+    collectBodyMeshes(bodyRoot);
+    scene.add(bodyRoot);
+    buildFocusMarker();
+    setStatus(gender.charAt(0).toUpperCase() + gender.slice(1) + ' body ready', false);
+    send({ type: 'model_ready', gender: gender });
+  } catch (err) {
+    setStatus('Could not load anatomy model', true);
+    send({ type: 'model_error', gender: gender, message: err && err.message ? err.message : String(err) });
   }
+}
 
-  // ── Render loop ───────────────────────────────────────────────────────
-  function lerp(a, b, t) { return a + (b - a) * t; }
+function updateCamera() {
+  var isFullBody = (state.zoom || 1) <= 1.05 && !state.focusRegion;
+  var baseTarget = isFullBody ? state.fullBodyTarget : state.tgt;
+  var target = new THREE.Vector3(baseTarget.x || 0, baseTarget.y || 100, baseTarget.z || 0);
+  target.add(new THREE.Vector3(state.viewPan.x || 0, state.viewPan.y || 0, state.viewPan.z || 0));
+  var pitch = Math.max(-35, Math.min(35, state.pitch)) * DEG;
+  var yaw = state.yaw * DEG;
+  var baseDistance = isFullBody ? state.fullBodyDistance : 280;
+  var distance = baseDistance / Math.max(state.zoom || 1, 0.2);
+  var offset = new THREE.Vector3(
+    Math.sin(yaw) * Math.cos(pitch) * distance,
+    Math.sin(pitch) * distance,
+    Math.cos(yaw) * Math.cos(pitch) * distance
+  );
+  var right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+  target.addScaledVector(right, -(state.shiftX || 0) / Math.max(state.zoom || 1, 1) * 0.18);
+  camera.position.copy(target).add(offset);
+  camera.lookAt(target);
+  camera.near = Math.max(distance / 120, 0.1);
+  camera.far = 1200;
+  camera.updateProjectionMatrix();
+}
 
-  function frame() {
-    var t = 0.14;
-    disp.yaw = lerp(disp.yaw, state.yaw, t);
-    disp.pitch = lerp(disp.pitch, state.pitch, t);
-    disp.zoom = lerp(disp.zoom, state.zoom, t);
-    disp.tx = lerp(disp.tx, state.tgt.x, t);
-    disp.ty = lerp(disp.ty, state.tgt.y, t);
-    disp.tz = lerp(disp.tz, state.tgt.z, t);
-    disp.shiftX = lerp(disp.shiftX, state.shiftX, t);
-    render();
-    requestAnimationFrame(frame);
+function clearGroup(group) {
+  group.traverse(function (child) {
+    if (child === group) return;
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) {
+      if (child.material.map) child.material.map.dispose();
+      child.material.dispose();
+    }
+  });
+  while (group.children.length) {
+    group.children.pop();
   }
+}
 
-  function render() {
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    primScreen = [];
+function makePinLabel(text) {
+  if (!text) return null;
+  var canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 80;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = '700 26px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  var label = String(text).slice(0, 24);
+  var textWidth = Math.min(ctx.measureText(label).width, 216);
+  var boxWidth = Math.max(96, textWidth + 36);
+  var x = (canvas.width - boxWidth) / 2;
+  var y = 16;
+  var width = boxWidth;
+  var height = 42;
+  var radius = 21;
+  ctx.fillStyle = 'rgba(15,23,42,0.86)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, canvas.width / 2, 38, 216);
+  var texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  var material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false
+  });
+  var sprite = new THREE.Sprite(material);
+  sprite.renderOrder = 30;
+  sprite.scale.set(24, 7.5, 1);
+  return sprite;
+}
 
-    var prims = body.slice();
-    if (state.organs && !state.kids) prims = prims.concat(ORGANS);
-
-    // Project + depth-sort (far first).
-    var items = [];
-    for (var i = 0; i < prims.length; i++) {
-      var p = prims[i];
-      var a = project({ x: p.x1, y: p.y1, z: p.z1 });
-      var bq = p.kind === 's' ? a : project({ x: p.x2, y: p.y2, z: p.z2 });
-      items.push({ p: p, a: a, b: bq, z: (a.z + bq.z) / 2 });
+function buildPins() {
+  clearGroup(pinGroup);
+  var outer = new THREE.SphereGeometry(3.4, 20, 12);
+  var inner = new THREE.SphereGeometry(1.35, 16, 8);
+  var mat = new THREE.MeshBasicMaterial({ color: 0x059669 });
+  var core = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  for (var i = 0; i < state.pins.length; i++) {
+    var pin = state.pins[i];
+    var group = new THREE.Group();
+    group.position.set(Number(pin.x) || 0, Number(pin.y) || 0, Number(pin.z) || 0);
+    group.userData = { id: pin.id, body_part_id: pin.body_part_id, pin: true };
+    var shell = new THREE.Mesh(outer, mat);
+    var dot = new THREE.Mesh(inner, core);
+    shell.userData = group.userData;
+    dot.userData = group.userData;
+    group.add(shell);
+    group.add(dot);
+    var label = makePinLabel(pin.label || pin.name);
+    if (label) {
+      label.position.set(0, 7.4, 2.5);
+      group.add(label);
     }
-    items.sort(function (m, n) { return n.z - m.z; });
+    pinGroup.add(group);
+  }
+}
 
-    var pulse = 0.5 + 0.5 * Math.sin((Date.now() - startTime) / 400);
-    var translucent = state.organs && !state.kids;
+function cylinderBetween(a, b, radius, material) {
+  var dir = new THREE.Vector3().subVectors(b, a);
+  var geo = new THREE.CylinderGeometry(radius, radius, Math.max(dir.length(), 0.01), 18, 1);
+  var mesh = new THREE.Mesh(geo, material);
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  return mesh;
+}
 
-    for (var j = 0; j < items.length; j++) {
-      var it = items[j], pr = it.p;
-      var light = Math.max(0.62, Math.min(1.12, 1.02 - it.z / 90));
-      var baseCol = state.kids && pr.organ === 0 ? SKIN_KIDS : pr.col;
-      var col = shade(baseCol, light);
-      var focused = state.focusRegion && pr.region === state.focusRegion;
-      if (focused) col = shade(state.kids ? '#f472b6' : '#34d399', light);
+function buildOrgans() {
+  clearGroup(organGroup);
+  if (!state.organs || state.kids) return;
+  var red = new THREE.MeshStandardMaterial({ color: 0xc0564f, roughness: 0.68, transparent: true, opacity: 0.72 });
+  var soft = new THREE.MeshStandardMaterial({ color: 0xe0917f, roughness: 0.72, transparent: true, opacity: 0.62 });
+  var bone = new THREE.MeshStandardMaterial({ color: 0xe7c9a9, roughness: 0.8, transparent: true, opacity: 0.62 });
+  function sphere(x, y, z, sx, sy, sz, mat) {
+    var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), mat);
+    mesh.position.set(x, y, z);
+    mesh.scale.set(sx, sy, sz);
+    organGroup.add(mesh);
+  }
+  sphere(0, 186, 0, 9, 7, 7, soft);
+  sphere(-4, 142, 8, 5, 6, 4, red);
+  sphere(-10, 146, 4, 7, 15, 4, soft);
+  sphere(10, 146, 4, 7, 15, 4, soft);
+  sphere(-5, 124, 7, 11, 5, 4, red);
+  sphere(5, 116, 8, 7, 5, 4, soft);
+  sphere(-8, 111, -4, 4, 6, 3, red);
+  sphere(8, 111, -4, 4, 6, 3, red);
+  sphere(0, 102, 7, 12, 9, 5, soft);
+  organGroup.add(cylinderBetween(new THREE.Vector3(0, 160, -7), new THREE.Vector3(0, 70, -7), 2.2, bone));
+}
 
-      ctx.globalAlpha = (pr.organ === 0 && translucent) ? 0.45 : 1;
-      ctx.fillStyle = col;
-      ctx.strokeStyle = col;
-      var rr = pr.r * it.a.kk;
-      if (pr.kind === 's') {
-        ctx.beginPath();
-        ctx.arc(it.a.sx, it.a.sy, rr, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.lineWidth = rr * 2;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(it.a.sx, it.a.sy);
-        ctx.lineTo(it.b.sx, it.b.sy);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
+function buildFocusMarker() {
+  clearGroup(markerGroup);
+  if (!state.focusRegion) return;
+  var p = regionTarget(state.focusRegion);
+  var marker = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16), highlightMaterial);
+  marker.position.set(p.x, p.y, p.z);
+  marker.scale.set(p.sx, p.sy, p.sz);
+  markerGroup.add(marker);
+}
 
-      if (pr.organ === 0) {
-        var cx = (it.a.sx + (pr.kind === 's' ? it.a.sx : it.b.sx)) / 2;
-        var cy = (it.a.sy + (pr.kind === 's' ? it.a.sy : it.b.sy)) / 2;
-        primScreen.push({ region: pr.region, part: pr.part, sx: cx, sy: cy, r: Math.max(rr * 1.3, 18 * DPR) });
-      }
-    }
+function regionTarget(key) {
+  var map = {
+    head: { x: 0, y: 184, z: 0, sx: 20, sy: 18, sz: 18 },
+    neck: { x: 0, y: 164, z: 0, sx: 16, sy: 12, sz: 12 },
+    chest: { x: 0, y: 140, z: 0, sx: 32, sy: 26, sz: 18 },
+    abdomen: { x: 0, y: 112, z: 0, sx: 30, sy: 26, sz: 18 },
+    pelvis: { x: 0, y: 88, z: 0, sx: 30, sy: 18, sz: 18 },
+    back: { x: 0, y: 124, z: -8, sx: 30, sy: 48, sz: 10 },
+    arm_left: { x: -48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
+    arm_right: { x: 48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
+    hand_left: { x: -58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
+    hand_right: { x: 58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
+    leg_left: { x: -16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
+    leg_right: { x: 16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
+    foot_left: { x: -16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 },
+    foot_right: { x: 16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 }
+  };
+  return map[key] || { x: 0, y: 105, z: 0, sx: 28, sy: 28, sz: 18 };
+}
 
-    // Kids mode: friendly face on the head (drawn when facing forward).
-    if (state.kids) {
-      var head = project({ x: 0, y: 188, z: 0 });
-      var faceZ = project({ x: 0, y: 188, z: 13 }).z;
-      if (faceZ < 60) {
-        var hr = 13 * head.kk;
-        ctx.fillStyle = '#1f2937';
-        ctx.beginPath();
-        ctx.arc(head.sx - hr * 0.32, head.sy - hr * 0.12, Math.max(1.2 * DPR, hr * 0.09), 0, Math.PI * 2);
-        ctx.arc(head.sx + hr * 0.32, head.sy - hr * 0.12, Math.max(1.2 * DPR, hr * 0.09), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(head.sx, head.sy + hr * 0.12, hr * 0.42, 0.15 * Math.PI, 0.85 * Math.PI);
-        ctx.strokeStyle = '#1f2937';
-        ctx.lineWidth = Math.max(DPR, hr * 0.06);
-        ctx.lineCap = 'round';
-        ctx.stroke();
-        ctx.fillStyle = 'rgba(251,113,133,0.45)';
-        ctx.beginPath();
-        ctx.arc(head.sx - hr * 0.55, head.sy + hr * 0.18, hr * 0.14, 0, Math.PI * 2);
-        ctx.arc(head.sx + hr * 0.55, head.sy + hr * 0.18, hr * 0.14, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+function classifyPoint(point) {
+  var x = point.x;
+  var y = point.y;
+  var ax = Math.abs(x);
+  var side = x < 0 ? 'left' : 'right';
+  if (y >= 168) return { region: 'head', part: 'head' };
+  if (y >= 155 && ax < 18) return { region: 'neck', part: 'neck' };
+  if (ax > 34 && y >= 86) {
+    if (y < 94 || ax > 56) return { region: 'hand_' + side, part: 'hand' };
+    return { region: 'arm_' + side, part: y > 123 ? 'arm' : 'forearm' };
+  }
+  if (y >= 126) return { region: 'chest', part: 'chest' };
+  if (y >= 100) return { region: 'abdomen', part: 'abdomen' };
+  if (y >= 78) return { region: 'pelvis', part: 'pelvis' };
+  if (y >= 14) return { region: 'leg_' + side, part: y > 48 ? 'thigh' : 'calf' };
+  return { region: 'foot_' + side, part: 'foot' };
+}
 
-    // Pins (drawn last, always on top).
-    pinScreen = [];
-    for (var q = 0; q < state.pins.length; q++) {
-      var pin = state.pins[q];
-      var pp = project({ x: pin.x, y: pin.y, z: pin.z });
-      var base = 7 * DPR;
-      ctx.beginPath();
-      ctx.arc(pp.sx, pp.sy, base + 5 * DPR * pulse, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(16,185,129,' + (0.55 - 0.3 * pulse) + ')';
-      ctx.lineWidth = 2 * DPR;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(pp.sx, pp.sy, base, 0, Math.PI * 2);
-      ctx.fillStyle = '#059669';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(pp.sx, pp.sy, base * 0.45, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      pinScreen.push({ id: pin.id, body_part_id: pin.body_part_id, sx: pp.sx, sy: pp.sy });
-    }
+function setPointer(clientX, clientY) {
+  var rect = renderer.domElement.getBoundingClientRect();
+  pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+}
 
+function raycastPins() {
+  var meshes = [];
+  pinGroup.traverse(function (node) {
+    if (node.isMesh) meshes.push(node);
+  });
+  return raycaster.intersectObjects(meshes, false);
+}
+
+function handleTap(clientX, clientY) {
+  setPointer(clientX, clientY);
+  raycaster.setFromCamera(pointer, camera);
+  var pinHits = raycastPins();
+  if (!state.placement && pinHits.length > 0) {
+    var pin = pinHits[0].object.userData || {};
+    send({ type: 'pin_tapped', id: pin.id, body_part_id: pin.body_part_id });
+    return;
+  }
+  var bodyHits = raycaster.intersectObjects(bodyMeshes, true);
+  if (bodyHits.length > 0) {
+    var point = bodyHits[0].point;
+    var hit = classifyPoint(point);
     if (state.placement) {
-      ctx.fillStyle = 'rgba(15,23,42,0.65)';
-      ctx.fillRect(0, 0, cv.width, 34 * DPR);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 13 * DPR + 'px sans-serif';
-      ctx.fillText('Placement mode: tap the model to capture a pin position', 12 * DPR, 22 * DPR);
+      send({
+        type: 'placement',
+        x: Math.round(point.x * 10) / 10,
+        y: Math.round(point.y * 10) / 10,
+        z: Math.round(point.z * 10) / 10,
+        region: hit.region,
+        part: hit.part
+      });
+    } else {
+      send({ type: 'region_tapped', region: hit.region, part: hit.part });
     }
+    return;
   }
+  send({ type: 'empty_tapped' });
+}
 
-  // ── Input ─────────────────────────────────────────────────────────────
-  function pos(e) {
-    var t = e.touches ? e.touches[0] : e;
-    return { x: t.clientX * DPR, y: t.clientY * DPR };
-  }
-  function onDown(e) {
-    dragging = true; moved = 0;
-    var p = pos(e); lastX = p.x; lastY = p.y;
-  }
-  function onMove(e) {
-    if (!dragging) return;
+function pos(e) {
+  var touch = e.touches && e.touches.length ? e.touches[0] : e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : e;
+  return { x: touch.clientX, y: touch.clientY };
+}
+
+function onDown(e) {
+  dragging = true;
+  moved = 0;
+  var p = pos(e);
+  lastX = p.x;
+  lastY = p.y;
+}
+
+function onMove(e) {
+  if (!dragging) return;
+  var p = pos(e);
+  var dx = p.x - lastX;
+  var dy = p.y - lastY;
+  moved += Math.abs(dx) + Math.abs(dy);
+  lastX = p.x;
+  lastY = p.y;
+  if (!state.directControls) return;
+  state.yaw += dx * 0.45;
+  state.pitch = Math.max(-35, Math.min(35, state.pitch - dy * 0.22));
+}
+
+function onUp(e) {
+  if (!dragging) return;
+  dragging = false;
+  if (moved < 8) {
     var p = pos(e);
-    var dx = p.x - lastX, dy = p.y - lastY;
-    moved += Math.abs(dx) + Math.abs(dy);
-    lastX = p.x; lastY = p.y;
-    state.yaw += dx / DPR * 0.45;
-    state.pitch = Math.max(-35, Math.min(35, state.pitch - dy / DPR * 0.22));
+    handleTap(p.x, p.y);
   }
-  function onUp() {
-    if (!dragging) return;
-    dragging = false;
-    if (moved < 8 * DPR) handleTap(lastX, lastY);
+}
+
+renderer.domElement.addEventListener('mousedown', onDown);
+window.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup', onUp);
+renderer.domElement.addEventListener('touchstart', function (e) { onDown(e); }, { passive: true });
+renderer.domElement.addEventListener('touchmove', function (e) { onMove(e); e.preventDefault(); }, { passive: false });
+renderer.domElement.addEventListener('touchend', onUp);
+
+function handle(m) {
+  if (!m || !m.type) return;
+  switch (m.type) {
+    case 'init':
+      if (m.model_urls) state.modelUrls = m.model_urls;
+      if (m.view_profile) state.viewProfile = m.view_profile;
+      if (typeof m.direct_controls === 'boolean') state.directControls = m.direct_controls;
+      applyFullBodyFrame();
+      if (m.gender) state.gender = m.gender;
+      if (Array.isArray(m.pins)) state.pins = m.pins;
+      if (typeof m.organs === 'boolean') state.organs = m.organs;
+      if (typeof m.placement === 'boolean') state.placement = m.placement;
+      if (typeof m.kids === 'boolean') state.kids = m.kids;
+      buildPins();
+      buildOrgans();
+      loadBody(state.gender);
+      break;
+    case 'set_models':
+      if (m.model_urls) state.modelUrls = m.model_urls;
+      loadBody(state.gender);
+      break;
+    case 'set_view_profile':
+      state.viewProfile = m.profile || 'admin';
+      if (typeof m.direct_controls === 'boolean') state.directControls = m.direct_controls;
+      applyFullBodyFrame();
+      break;
+    case 'pan_screen':
+      state.viewPan.x -= (Number(m.x) || 0) / Math.max(state.zoom || 1, 1);
+      state.viewPan.y -= (Number(m.y) || 0) / Math.max(state.zoom || 1, 1);
+      state.viewPan.z -= (Number(m.z) || 0) / Math.max(state.zoom || 1, 1);
+      break;
+    case 'zoom_step':
+      state.zoom = clamp((state.zoom || 1) + (Number(m.delta) || 0), 0.72, 4);
+      break;
+    case 'rotate_yaw':
+      state.yaw += Number(m.delta) || 0;
+      break;
+    case 'recenter_view':
+      state.viewPan = { x: 0, y: 0, z: 0 };
+      state.zoom = 1;
+      state.pitch = 0;
+      state.yaw = 0;
+      applyFullBodyFrame();
+      break;
+    case 'set_gender':
+      state.gender = m.gender || 'female';
+      loadBody(state.gender);
+      break;
+    case 'set_pins':
+      state.pins = Array.isArray(m.pins) ? m.pins : [];
+      buildPins();
+      break;
+    case 'set_organs':
+      state.organs = !!m.visible;
+      buildOrgans();
+      break;
+    case 'set_kids':
+      state.kids = !!m.on;
+      if (state.kids) state.organs = false;
+      if (bodyRoot) tuneMaterials(bodyRoot);
+      buildOrgans();
+      break;
+    case 'set_placement':
+      state.placement = !!m.on;
+      setStatus(state.placement ? 'Placement mode: tap the body to capture coordinates' : 'Placement off', false);
+      break;
+    case 'set_focus_region':
+      state.focusRegion = m.key || null;
+      buildFocusMarker();
+      break;
+    case 'shift_model':
+      state.shiftX = Number(m.x) || 0;
+      break;
+    case 'zoom_region':
+      state.zoom = Number(m.zoom) || 2.2;
+      state.tgt = { x: Number(m.x) || 0, y: Number(m.y) || 120, z: Number(m.z) || 0 };
+      state.viewPan = { x: 0, y: 0, z: 0 };
+      if (typeof m.yaw === 'number') state.yaw = m.yaw;
+      state.focusRegion = m.key || state.focusRegion;
+      state.pins = Array.isArray(m.pins) ? m.pins : state.pins;
+      buildPins();
+      buildFocusMarker();
+      break;
+    case 'reset_view':
+      state.zoom = 1;
+      state.viewPan = { x: 0, y: 0, z: 0 };
+      applyFullBodyFrame();
+      state.tgt = state.fullBodyTarget || { x: 0, y: 100, z: 0 };
+      state.yaw = 0;
+      state.pitch = 0;
+      state.focusRegion = null;
+      state.pins = [];
+      buildPins();
+      buildFocusMarker();
+      break;
   }
-  cv.addEventListener('mousedown', onDown);
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-  cv.addEventListener('touchstart', function (e) { onDown(e); }, { passive: true });
-  cv.addEventListener('touchmove', function (e) { onMove(e); e.preventDefault(); }, { passive: false });
-  cv.addEventListener('touchend', function (e) {
-    if (!dragging) return;
-    dragging = false;
-    if (moved < 8 * DPR) handleTap(lastX, lastY);
+}
+
+window.__recv = handle;
+window.addEventListener('message', function (e) {
+  try {
+    var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+    handle(data);
+  } catch (err) {}
+});
+
+function animate() {
+  updateCamera();
+  pinGroup.children.forEach(function (pin) {
+    var scale = 1 + 0.08 * Math.sin(Date.now() / 280);
+    pin.scale.setScalar(scale);
   });
+  renderer.render(scene, camera);
+}
 
-  function handleTap(sx, sy) {
-    // Placement capture: unproject at the camera-target depth plane.
-    if (state.placement) {
-      var kk = k();
-      var vx = (sx - cv.width / 2 - disp.shiftX * DPR) / kk;
-      var vy = -(sy - cv.height / 2) / kk;
-      var yaw = -disp.yaw * DEG, pitch = -disp.pitch * DEG;
-      var cp = Math.cos(pitch), sp = Math.sin(pitch);
-      var y1 = vy * cp, z1 = vy * sp;
-      var cx = Math.cos(yaw), sxr = Math.sin(yaw);
-      var mx = vx * cx - z1 * sxr + disp.tx;
-      var mz = vx * sxr + z1 * cx + disp.tz;
-      var my = y1 + disp.ty;
-      var hit = pickPrim(sx, sy);
-      send({ type: 'placement',
-             x: Math.round(mx * 10) / 10,
-             y: Math.round(my * 10) / 10,
-             z: Math.round(mz * 10) / 10,
-             region: hit ? hit.region : null,
-             part: hit ? hit.part : null });
-      return;
-    }
-    // Pins first.
-    var best = null, bestD = 26 * DPR;
-    for (var i = 0; i < pinScreen.length; i++) {
-      var p = pinScreen[i];
-      var d = Math.sqrt((p.sx - sx) * (p.sx - sx) + (p.sy - sy) * (p.sy - sy));
-      if (d < bestD) { bestD = d; best = p; }
-    }
-    if (best) {
-      send({ type: 'pin_tapped', id: best.id, body_part_id: best.body_part_id });
-      return;
-    }
-    var prim = pickPrim(sx, sy);
-    if (prim) {
-      send({ type: 'region_tapped', region: prim.region, part: prim.part });
-      return;
-    }
-    send({ type: 'empty_tapped' });
+renderer.setAnimationLoop(animate);
+send({ type: 'ready' });
+window.setTimeout(function () {
+  if (!bodyRoot && !(window.ReactNativeWebView && window.ReactNativeWebView.postMessage)) {
+    loadBody(state.gender);
   }
-
-  function pickPrim(sx, sy) {
-    var best = null, bestD = Infinity;
-    for (var i = 0; i < primScreen.length; i++) {
-      var p = primScreen[i];
-      var d = Math.sqrt((p.sx - sx) * (p.sx - sx) + (p.sy - sy) * (p.sy - sy));
-      if (d < p.r && d < bestD) { bestD = d; best = p; }
-    }
-    return best;
-  }
-
-  // ── Messaging ─────────────────────────────────────────────────────────
-  function send(obj) {
-    var msg = JSON.stringify(obj);
-    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-      window.ReactNativeWebView.postMessage(msg);
-    } else if (window.parent && window.parent !== window) {
-      window.parent.postMessage(msg, '*');
-    }
-  }
-
-  function handle(m) {
-    if (!m || !m.type) return;
-    switch (m.type) {
-      case 'init':
-        if (m.gender) { state.gender = m.gender; body = buildBody(m.gender); }
-        if (m.pins) state.pins = m.pins;
-        if (typeof m.organs === 'boolean') state.organs = m.organs;
-        if (typeof m.placement === 'boolean') state.placement = m.placement;
-        if (typeof m.kids === 'boolean') state.kids = m.kids;
-        break;
-      case 'set_gender':
-        state.gender = m.gender;
-        body = buildBody(m.gender);
-        break;
-      case 'set_pins':
-        state.pins = Array.isArray(m.pins) ? m.pins : [];
-        break;
-      case 'set_organs':
-        state.organs = !!m.visible;
-        break;
-      case 'set_kids':
-        state.kids = !!m.on;
-        if (state.kids) state.organs = false;
-        break;
-      case 'set_placement':
-        state.placement = !!m.on;
-        break;
-      case 'set_focus_region':
-        state.focusRegion = m.key || null;
-        break;
-      case 'shift_model':
-        state.shiftX = m.x || 0;
-        break;
-      case 'zoom_region':
-        state.zoom = m.zoom || 2.2;
-        state.tgt = { x: m.x || 0, y: m.y || 120, z: m.z || 0 };
-        if (typeof m.yaw === 'number') state.yaw = m.yaw;
-        state.focusRegion = m.key || state.focusRegion;
-        state.pins = Array.isArray(m.pins) ? m.pins : state.pins;
-        break;
-      case 'reset_view':
-        state.zoom = 1;
-        state.tgt = { x: 0, y: 105, z: 0 };
-        state.yaw = 0; state.pitch = 0;
-        state.focusRegion = null;
-        state.pins = [];
-        break;
-    }
-  }
-
-  window.__recv = handle;
-  window.addEventListener('message', function (e) {
-    try {
-      var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-      handle(d);
-    } catch (err) { /* ignore malformed frames */ }
-  });
-
-  requestAnimationFrame(frame);
-  send({ type: 'ready' });
-})();
+}, 350);
 </script>
 </body>
 </html>

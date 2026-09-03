@@ -19,6 +19,7 @@ const CONTENT_TYPES = [
   { value: "condition", label: "🦠 Diseases & Conditions" },
   { value: "symptom", label: "🩺 Symptoms" },
   { value: "tip", label: "🌿 Healthy Living" },
+  { value: "drug", label: "💊 Drugs" },
   { value: "workout", label: "💪 Fitness" },
 ] as const;
 
@@ -26,6 +27,7 @@ const TYPE_BADGE: Record<string, string> = {
   condition: "badge-green",
   symptom: "badge-purple",
   tip: "badge-amber",
+  drug: "badge-green",
   workout: "badge-blue",
 };
 
