@@ -18,6 +18,13 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
   const body = JSON.parse(raw) as Record<string, string>;
 
+  // AWS SNS always sends this header — if it's missing, this request didn't come from SNS.
+  console.log("[ses-events] incoming request", {
+    snsMessageType: req.headers.get("x-amz-sns-message-type"),
+    userAgent: req.headers.get("user-agent"),
+    bodyKeys: Object.keys(body),
+  });
+
   const verified = await verifySnsMessage(body).catch((err) => {
     console.error("[ses-events] verifySnsMessage threw", err);
     return false;
