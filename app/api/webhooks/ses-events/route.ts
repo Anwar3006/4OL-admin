@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
   const body = JSON.parse(raw) as Record<string, string>;
 
-  const verified = await verifySnsMessage(body).catch(() => false);
+  const verified = await verifySnsMessage(body).catch((err) => {
+    console.error("[ses-events] verifySnsMessage threw", err);
+    return false;
+  });
   if (!verified) {
     return NextResponse.json({ error: "invalid_signature" }, { status: 403 });
   }
