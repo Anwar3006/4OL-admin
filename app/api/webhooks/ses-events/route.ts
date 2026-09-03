@@ -3,15 +3,11 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { verifySnsMessage } from "@/lib/sns-verify";
 
 type SesBouncedRecipient = { emailAddress: string };
-type SesBounceMessage = {
-  eventType: "Bounce";
-  bounce: { bounceType: "Permanent" | "Transient"; bouncedRecipients: SesBouncedRecipient[] };
+type SesEventMessage = {
+  eventType: string;
+  bounce?: { bounceType: "Permanent" | "Transient"; bouncedRecipients: SesBouncedRecipient[] };
+  complaint?: { complainedRecipients: SesBouncedRecipient[] };
 };
-type SesComplaintMessage = {
-  eventType: "Complaint";
-  complaint: { complainedRecipients: SesBouncedRecipient[] };
-};
-type SesEventMessage = SesBounceMessage | SesComplaintMessage | { eventType: string };
 
 // AWS SES posts Bounce/Complaint/Delivery events to this endpoint via an SNS
 // topic wired up as a configuration set event destination. Hard bounces and
@@ -36,8 +32,8 @@ export async function POST(req: NextRequest) {
     const message = JSON.parse(body.Message) as SesEventMessage;
     const admin = getSupabaseAdmin();
 
-    if (message.eventType === "Bounce" && message.bounce.bounceType === "Permanent") {
-      const rows = message.bounce.bouncedRecipients.map((r) => ({
+    if (message.eventType === "Bounce" && message.bounce && message.bounce.bounceType === "Permanent") {
+      const rows = message.bounce.bouncedRecipients.map((r: SesBouncedRecipient) => ({
         email: r.emailAddress.toLowerCase(),
         reason: "hard_bounce" as const,
         source_event: message,
@@ -45,8 +41,8 @@ export async function POST(req: NextRequest) {
       await admin.from("email_suppressions").upsert(rows, { onConflict: "email" });
     }
 
-    if (message.eventType === "Complaint") {
-      const rows = message.complaint.complainedRecipients.map((r) => ({
+    if (message.eventType === "Complaint" && message.complaint) {
+      const rows = message.complaint.complainedRecipients.map((r: SesBouncedRecipient) => ({
         email: r.emailAddress.toLowerCase(),
         reason: "complaint" as const,
         source_event: message,
