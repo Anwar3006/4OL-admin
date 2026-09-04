@@ -5,14 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
   html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
-  #scene { width: 100vw; height: 100vh; touch-action: none; }
-  #scene canvas { display: block; }
+  /* #scene must paint above #bg: a positioned element with z-index:0
+     (#bg) is painted above ALL static (unpositioned) content regardless
+     of DOM order, so while #scene was static its opaque gradient covered
+     the WebGL canvas completely - the model rendered but never showed.
+     Keeping the canvas on a positioned stacking context fixes that. */
+  #scene { position: relative; z-index: 1; width: 100vw; height: 100vh; touch-action: none; }
+  /* The canvas must be pinned to the container's CSS size. Its width and
+     height attributes are the drawing-buffer size (CSS size x devicePixel
+     ratio), and a canvas with no CSS size lays out at those attribute
+     values instead - on a 2x screen that is a canvas twice the viewport in
+     each direction, of which only the top-left quarter is ever visible. */
+  #scene canvas { display: block; width: 100% !important; height: 100% !important; }
   #bg {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background: radial-gradient(120% 90% at 50% 18%, #1e293b 0%, #0f172a 55%, #060a14 100%);
   }
+  /* Pin labels live in the DOM, not in the WebGL scene. Sprite labels
+     inherit the model's perspective, so clustered pins (five on a head)
+     pile on top of each other and the ones behind become impossible to
+     tap. DOM labels can be measured, laid out in screen space with a
+     guaranteed-collision-free stack, and given real hit targets. */
+  #leaders { position: fixed; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+  #labels { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+  .leader { fill: none; stroke: rgba(226,232,240,0.45); stroke-width: 1.4; stroke-linecap: round; }
+  .leader.behind { stroke: rgba(226,232,240,0.2); stroke-dasharray: 3 4; }
+  .pin-label {
+    position: absolute; left: 0; top: 0; transform: translate3d(-999px,-999px,0);
+    will-change: transform; box-sizing: border-box;
+    display: flex; align-items: center; gap: 7px;
+    max-width: 190px; max-width: min(32vw, 190px);
+    margin: 0; padding: 7px 12px;
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 999px;
+    background: rgba(9,14,26,0.88);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(2,6,14,0.5);
+    color: #f1f5f9; font: 600 13px/1.15 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    pointer-events: auto; cursor: pointer; touch-action: none;
+    -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+    opacity: 0; transition: opacity 180ms ease, background 140ms ease, border-color 140ms ease;
+  }
+  .pin-label.on { opacity: 1; }
+  .pin-label.behind { opacity: 0.55; }
+  .pin-label.active { background: rgba(4,90,66,0.95); border-color: rgba(52,211,153,0.8); }
+  .pin-label-dot {
+    flex: 0 0 auto; width: 8px; height: 8px; border-radius: 999px;
+    background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,0.85);
+  }
+  .pin-label.locked .pin-label-dot { background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.85); }
+  .pin-label-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pin-label-lock { flex: 0 0 auto; font-size: 10px; opacity: 0.9; }
   #status {
-    position: fixed; left: 14px; top: 14px; right: 148px; z-index: 5;
+    /* Clears the native info button on the left and the layers button on
+       the right, both of which float over this same top row. */
+    position: fixed; left: 66px; top: 14px; right: 66px; z-index: 5;
     border-radius: 999px; background: rgba(15,23,42,0.72); color: #fff;
     font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1; padding: 10px 12px; text-align: center;
@@ -50,6 +96,8 @@
 <body>
 <div id="bg"></div>
 <div id="scene"></div>
+<svg id="leaders" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="labels"></div>
 <div id="loader"><div class="loader-ring"></div><div class="loader-label">Loading anatomy</div></div>
 <div id="status">Loading anatomy...</div>
 <script type="module">
@@ -59,29 +107,47 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 var container = document.getElementById('scene');
 var statusEl = document.getElementById('status');
 var loaderEl = document.getElementById('loader');
+var labelLayer = document.getElementById('labels');
+var leaderSvg = document.getElementById('leaders');
 var DPR = Math.min(window.devicePixelRatio || 1, 2);
 var DEG = Math.PI / 180;
 var query = new URLSearchParams(window.location.search || '');
 var initialViewProfile = query.get('view_profile') === 'mobile' ? 'mobile' : 'admin';
 var initialDirectControls = query.get('direct_controls') === 'false' ? false : true;
 
+// How much of the framing rectangle's tighter axis the subject fills.
+var BODY_FILL = 0.9;
+var REGION_FILL = 0.85;
+var ZOOM_MIN = 0.55;
+var ZOOM_MAX = 6;
+var PITCH_LIMIT = 55;
+
 var state = {
   gender: 'female',
   yaw: 0,
   pitch: 0,
   zoom: 1,
-  tgt: { x: 0, y: 100, z: 0 },
-  viewPan: { x: 0, y: 0, z: 0 },
+  // Orbit pivot and the distance that frames the current subject at
+  // zoom 1. Both are goals; the cam state eases toward them every frame, so the
+  // full-body -> region transition is one continuous move instead of a
+  // hard switch between two unrelated camera rigs.
+  pivot: { x: 0, y: 100, z: 0 },
+  baseDistance: 680,
+  // Screen-space pan, in world units along the camera's right/up axes,
+  // so panning always follows the finger no matter how the model is
+  // rotated (world-axis panning drifts sideways once you turn the body).
+  pan: { x: 0, y: 0 },
+  // UI chrome covering the canvas, in CSS px. The scene frames the
+  // subject inside what is left, so a bottom sheet or a side panel never
+  // buries the part the user just asked to look at.
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
   viewProfile: initialViewProfile,
   directControls: initialDirectControls,
-  fullBodyTarget: { x: 150, y: -50, z: 0 },
-  fullBodyDistance: 680,
   bodyMetrics: null,
-  shiftX: 0,
   organs: false,
   placement: false,
   focusRegion: null,
-  kids: false,
+  activePinId: null,
   pins: [],
   modelUrls: {
     female: '/anatomy/models/body-female-skin-standard.glb',
@@ -90,12 +156,12 @@ var state = {
   }
 };
 
-// Rendered camera state — eased toward state.* every frame (see updateCamera).
+// Rendered camera state - eased toward state.* every frame (see dampCamera).
 var cam = {
   yaw: 0, pitch: 0, zoom: 1,
-  tgt: { x: 0, y: 100, z: 0 },
-  pan: { x: 0, y: 0, z: 0 },
-  shiftX: 0
+  pivot: { x: 0, y: 100, z: 0 },
+  distance: 680,
+  pan: { x: 0, y: 0 }
 };
 var camReady = false;
 
@@ -107,7 +173,7 @@ renderer.toneMappingExposure = 1.05;
 container.appendChild(renderer.domElement);
 
 var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 1200);
+var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 4000);
 var raycaster = new THREE.Raycaster();
 var pointer = new THREE.Vector2();
 var loader = new GLTFLoader();
@@ -115,6 +181,8 @@ var clock = new THREE.Clock();
 var modelCache = {};
 var bodyRoot = null;
 var bodyMeshes = [];
+var bodyBox = null;
+var regionBoxes = {};
 var pinGroup = new THREE.Group();
 var organGroup = new THREE.Group();
 var markerGroup = new THREE.Group();
@@ -124,7 +192,7 @@ scene.add(pinGroup);
 scene.add(organGroup);
 scene.add(markerGroup);
 
-// Note: deliberately no PMREMGenerator/environment map here — it requires
+// Note: deliberately no PMREMGenerator/environment map here - it requires
 // WebGL2 and reliable shader compilation, which some Android WebView GPU
 // drivers don't handle well; the lighting rig below covers materials fine
 // without it. envMapIntensity on materials is simply inert without one.
@@ -140,11 +208,10 @@ rim.position.set(-220, 220, -260);
 scene.add(rim);
 
 var skinColor = new THREE.Color(0.46, 0.255, 0.14);
-var kidsColor = new THREE.Color(0.82, 0.46, 0.27);
 var highlightMaterial = new THREE.MeshBasicMaterial({
   color: 0x34d399,
   transparent: true,
-  opacity: 0.14,
+  opacity: 0.1,
   depthWrite: false
 });
 
@@ -152,9 +219,16 @@ var dragging = false;
 var moved = 0;
 var lastX = 0;
 var lastY = 0;
+var gestureMode = 'rotate';
+var pinchDistance = 0;
+var pinchCenter = { x: 0, y: 0 };
 var dragVel = { yaw: 0, pitch: 0 };
 var inertia = { yaw: 0, pitch: 0, active: false };
 var statusTimer = null;
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 function setStatus(text, sticky) {
   statusEl.textContent = text;
@@ -202,10 +276,97 @@ function resize() {
   var h = Math.max(container.clientHeight, 1);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  renderer.setSize(w, h, false);
+  // updateStyle must stay on. With it off three.js sizes the drawing
+  // buffer but never writes canvas.style, so the element lays out at its
+  // attribute size - devicePixelRatio times too big - and the viewport
+  // shows only the top-left corner of the render, which is why the figure
+  // sat off in the bottom-right no matter where the camera was aimed.
+  renderer.setSize(w, h, true);
+  refit();
 }
 window.addEventListener('resize', resize);
+// A bare window 'resize' listener never fires inside an embedded WebView
+// with a fixed native container - there's no real browser window being
+// resized. If the very first resize() call above ran before the WebView's
+// own layout had settled, clientWidth/Height could have been 0,
+// permanently pinning the canvas at 1x1 with nothing after to correct it.
+// ResizeObserver reacts to the container's actual layout size any time it
+// changes, including the delayed "0 -> real size" transition on first load.
+if (window.ResizeObserver) {
+  new ResizeObserver(function () { resize(); }).observe(container);
+}
 resize();
+
+// ---------------------------------------------------------------------
+// Viewport rectangles
+//
+// canvasSize()  the whole WebGL canvas
+// chromeRect()  what is left after the native UI insets (header banner,
+//               bottom sheet, dock, side panel) - labels are clamped here
+// frameRect()   chromeRect minus the gutters reserved for pin labels -
+//               the camera frames the subject inside this, so a zoomed
+//               region lands dead centre of the space the user can see
+// ---------------------------------------------------------------------
+function canvasSize() {
+  return { w: Math.max(container.clientWidth, 1), h: Math.max(container.clientHeight, 1) };
+}
+
+function chromeRect() {
+  var s = canvasSize();
+  var i = state.insets || {};
+  var left = clamp(Number(i.left) || 0, 0, s.w * 0.45);
+  var right = clamp(Number(i.right) || 0, 0, s.w * 0.45);
+  var top = clamp(Number(i.top) || 0, 0, s.h * 0.45);
+  var bottom = clamp(Number(i.bottom) || 0, 0, s.h * 0.6);
+  return {
+    x: left, y: top,
+    w: Math.max(s.w - left - right, 48),
+    h: Math.max(s.h - top - bottom, 48),
+    canvasW: s.w, canvasH: s.h
+  };
+}
+
+/** Side space reserved for pin labels once a region has enough pins that
+    they would otherwise sit on top of the model. */
+function labelGutter() {
+  if (!state.focusRegion || state.pins.length < 3) return 0;
+  var s = canvasSize();
+  return clamp(s.w * 0.12, 40, 110);
+}
+
+function frameRect() {
+  var r = chromeRect();
+  var g = labelGutter();
+  var w = Math.max(r.w - g * 2, 60);
+  return { x: r.x + g, y: r.y, w: w, h: r.h, canvasW: r.canvasW, canvasH: r.canvasH };
+}
+
+/** Shift the projection so the frame rect's centre becomes the optical
+    centre. Done with setViewOffset rather than by moving the look-at
+    target: an offset pivot makes the model swing across (and off) the
+    screen the moment you rotate, which is exactly the bad orbit the
+    rotate buttons used to produce. A projection shift is rotation
+    invariant - the subject stays put while it spins. */
+function applyViewOffset() {
+  var r = frameRect();
+  var dx = r.canvasW / 2 - (r.x + r.w / 2);
+  var dy = r.canvasH / 2 - (r.y + r.h / 2);
+  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+    if (camera.view && camera.view.enabled) camera.clearViewOffset();
+    return;
+  }
+  camera.setViewOffset(r.canvasW, r.canvasH, dx, dy, r.canvasW, r.canvasH);
+}
+
+/** Orbit distance that fits a size (world units) inside the frame rect. */
+function fitDistance(size, fillFactor) {
+  var r = frameRect();
+  var perUnit = 2 * Math.tan((camera.fov / 2) * DEG);
+  var aspect = camera.aspect || (r.canvasW / Math.max(r.canvasH, 1));
+  var dh = (size.y * (r.canvasH / Math.max(r.h, 1))) / (fillFactor * perUnit);
+  var dw = (size.x * (r.canvasW / Math.max(r.w, 1))) / (fillFactor * perUnit * Math.max(aspect, 0.05));
+  return Math.max(dh, dw, 30) + size.z * 0.5;
+}
 
 function normalizeBody(root) {
   var wrapper = new THREE.Group();
@@ -222,7 +383,6 @@ function normalizeBody(root) {
   wrapper.updateMatrixWorld(true);
 
   var normalizedBox = new THREE.Box3().setFromObject(wrapper);
-  var normalizedSize = normalizedBox.getSize(new THREE.Vector3());
   var normalizedCenter = normalizedBox.getCenter(new THREE.Vector3());
   wrapper.position.x -= normalizedCenter.x;
   wrapper.position.y -= normalizedBox.min.y;
@@ -230,49 +390,18 @@ function normalizeBody(root) {
   wrapper.updateMatrixWorld(true);
 
   normalizedBox = new THREE.Box3().setFromObject(wrapper);
-  normalizedSize = normalizedBox.getSize(new THREE.Vector3());
+  var normalizedSize = normalizedBox.getSize(new THREE.Vector3());
   normalizedCenter = normalizedBox.getCenter(new THREE.Vector3());
+  bodyBox = normalizedBox;
   state.bodyMetrics = {
     center: { x: normalizedCenter.x, y: normalizedCenter.y, z: normalizedCenter.z },
     size: { x: normalizedSize.x, y: normalizedSize.y, z: normalizedSize.z }
   };
-  applyFullBodyFrame();
   window.__anatomyDebug = {
-    bodyCenter: state.fullBodyTarget,
-    bodyDistance: state.fullBodyDistance,
-    bodySize: { x: normalizedSize.x, y: normalizedSize.y, z: normalizedSize.z }
+    bodyCenter: state.bodyMetrics.center,
+    bodySize: state.bodyMetrics.size
   };
   return wrapper;
-}
-
-function frameProfile() {
-  if (state.viewProfile === 'mobile') {
-    return {
-      offsetX: Number(query.get('frame_x') || 95),
-      offsetY: Number(query.get('frame_y') || -180),
-      minDistance: Number(query.get('frame_distance') || 900),
-      yFactor: 3.6,
-      xFactor: 10.2
-    };
-  }
-  return { offsetX: 150, offsetY: -150, minDistance: 680, yFactor: 3.4, xFactor: 6.8 };
-}
-
-function applyFullBodyFrame() {
-  if (!state.bodyMetrics) return;
-  var profile = frameProfile();
-  var center = state.bodyMetrics.center;
-  var size = state.bodyMetrics.size;
-  state.fullBodyTarget = {
-    x: center.x + profile.offsetX,
-    y: center.y + profile.offsetY,
-    z: center.z
-  };
-  state.fullBodyDistance = Math.max(profile.minDistance, size.y * profile.yFactor, size.x * profile.xFactor);
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
 }
 
 function tuneMaterials(root) {
@@ -280,18 +409,33 @@ function tuneMaterials(root) {
     if (!node.isMesh) return;
     node.frustumCulled = true;
     node.material = new THREE.MeshPhysicalMaterial({
-      color: state.kids ? kidsColor : skinColor,
+      color: skinColor,
       roughness: 0.58,
       metalness: 0,
       sheen: 0.35,
       sheenRoughness: 0.7,
-      sheenColor: state.kids ? kidsColor : skinColor,
+      sheenColor: skinColor,
       clearcoat: 0.05,
       clearcoatRoughness: 0.6,
       envMapIntensity: 0.55,
       side: THREE.FrontSide
     });
+    node.renderOrder = 0;
   });
+}
+
+/**
+ * The organs layer hides the body outright rather than making it sheer.
+ * The organ meshes sit inside the body (same 200-unit scene space), so an
+ * opaque skin buried them completely - which is why the toggle looked
+ * inert - and even a see-through shell muddies the organ colours.
+ *
+ * Tapping a region still works with the body hidden: three.js raycasts
+ * against geometry and does not test object.visible, so the invisible body
+ * keeps acting as the hit surface.
+ */
+function applyBodyVisibility() {
+  if (bodyRoot) bodyRoot.visible = !state.organs;
 }
 
 function collectBodyMeshes(root) {
@@ -299,6 +443,155 @@ function collectBodyMeshes(root) {
   root.traverse(function (node) {
     if (node.isMesh) bodyMeshes.push(node);
   });
+}
+
+// ---------------------------------------------------------------------
+// Region geometry
+//
+// The canonical boxes below are authored constants; the real model is not
+// obliged to match them (on the shipped female mesh the head box is 36x40
+// units against a head that actually measures 24x26). Framing off the
+// constants therefore lands the camera off-centre and too far out, which
+// is what made "tap a body part" feel like it did nothing. So after each
+// model loads we sample its vertices, bucket them by the same classifier
+// taps use, and keep the measured box per region.
+// ---------------------------------------------------------------------
+function regionTarget(key) {
+  var map = {
+    head: { x: 0, y: 184, z: 0, sx: 20, sy: 18, sz: 18 },
+    neck: { x: 0, y: 164, z: 0, sx: 16, sy: 12, sz: 12 },
+    chest: { x: 0, y: 140, z: 0, sx: 32, sy: 26, sz: 18 },
+    abdomen: { x: 0, y: 112, z: 0, sx: 30, sy: 26, sz: 18 },
+    pelvis: { x: 0, y: 88, z: 0, sx: 30, sy: 18, sz: 18 },
+    back: { x: 0, y: 124, z: -8, sx: 30, sy: 48, sz: 10 },
+    arm_left: { x: -48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
+    arm_right: { x: 48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
+    hand_left: { x: -58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
+    hand_right: { x: 58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
+    leg_left: { x: -16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
+    leg_right: { x: 16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
+    foot_left: { x: -16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 },
+    foot_right: { x: 16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 }
+  };
+  return map[key] || { x: 0, y: 105, z: 0, sx: 28, sy: 28, sz: 18 };
+}
+
+function fallbackRegionBox(key) {
+  var r = regionTarget(key);
+  return new THREE.Box3(
+    new THREE.Vector3(r.x - r.sx, r.y - r.sy, r.z - r.sz),
+    new THREE.Vector3(r.x + r.sx, r.y + r.sy, r.z + r.sz)
+  );
+}
+
+function classifyPoint(point) {
+  var x = point.x;
+  var y = point.y;
+  var ax = Math.abs(x);
+  var side = x < 0 ? 'left' : 'right';
+  if (y >= 168) return { region: 'head', part: 'head' };
+  if (y >= 155 && ax < 18) return { region: 'neck', part: 'neck' };
+  if (ax > 34 && y >= 86) {
+    if (y < 94 || ax > 56) return { region: 'hand_' + side, part: 'hand' };
+    return { region: 'arm_' + side, part: y > 123 ? 'arm' : 'forearm' };
+  }
+  if (y >= 126) return { region: 'chest', part: 'chest' };
+  if (y >= 100) return { region: 'abdomen', part: 'abdomen' };
+  if (y >= 78) return { region: 'pelvis', part: 'pelvis' };
+  if (y >= 14) return { region: 'leg_' + side, part: y > 48 ? 'thigh' : 'calf' };
+  return { region: 'foot_' + side, part: 'foot' };
+}
+
+function percentile(sorted, p) {
+  if (sorted.length === 0) return 0;
+  var i = clamp(Math.round((sorted.length - 1) * p), 0, sorted.length - 1);
+  return sorted[i];
+}
+
+/** Sample the loaded mesh and record a tight bounding box per region.
+    Sampling is capped so this stays a few milliseconds even on dense
+    meshes, and a 1st/99th percentile trim keeps one stray vertex from
+    inflating a whole region. */
+function measureRegions(root) {
+  regionBoxes = {};
+  if (!root) return;
+  root.updateMatrixWorld(true);
+  var buckets = {};
+  var v = new THREE.Vector3();
+  root.traverse(function (node) {
+    if (!node.isMesh || !node.geometry) return;
+    var attr = node.geometry.attributes && node.geometry.attributes.position;
+    if (!attr) return;
+    var stride = Math.max(1, Math.floor(attr.count / 30000));
+    for (var i = 0; i < attr.count; i += stride) {
+      v.fromBufferAttribute(attr, i).applyMatrix4(node.matrixWorld);
+      var regionKey = classifyPoint(v).region;
+      var b = buckets[regionKey];
+      if (!b) { b = buckets[regionKey] = { x: [], y: [], z: [] }; }
+      b.x.push(v.x); b.y.push(v.y); b.z.push(v.z);
+    }
+  });
+  Object.keys(buckets).forEach(function (regionKey) {
+    var b = buckets[regionKey];
+    if (b.x.length < 24) return;
+    b.x.sort(function (a, c) { return a - c; });
+    b.y.sort(function (a, c) { return a - c; });
+    b.z.sort(function (a, c) { return a - c; });
+    regionBoxes[regionKey] = new THREE.Box3(
+      new THREE.Vector3(percentile(b.x, 0.01), percentile(b.y, 0.01), percentile(b.z, 0.01)),
+      new THREE.Vector3(percentile(b.x, 0.99), percentile(b.y, 0.99), percentile(b.z, 0.99))
+    );
+  });
+  // classifyPoint has no 'back' bucket (it reads front and back of the
+  // torso the same way), so build it from the torso and view it from
+  // behind - default yaw handles the turn.
+  var chest = regionBoxes.chest;
+  var abdomen = regionBoxes.abdomen;
+  if (chest && abdomen) {
+    regionBoxes.back = chest.clone().union(abdomen);
+  }
+}
+
+function regionBox(key) {
+  if (!key) return bodyBox ? bodyBox.clone() : null;
+  var measured = regionBoxes[key];
+  if (measured && !measured.isEmpty()) return measured.clone();
+  return fallbackRegionBox(key);
+}
+
+/** A slight turn toward limbs and the back so the part is not hidden by
+    the torso when you zoom to it. */
+function defaultYawFor(key) {
+  if (!key) return 0;
+  if (key === 'back') return 180;
+  if (key.indexOf('_left') !== -1) return -32;
+  if (key.indexOf('_right') !== -1) return 32;
+  return 0;
+}
+
+/** Recompute the orbit pivot and framing distance for whatever the scene
+    is currently showing. Cheap, and safe to call on every layout change. */
+/** What the camera should be framing right now. */
+function currentFocusBox() {
+  if (state.focusRegion) return regionBox(state.focusRegion);
+  // Body hidden by the organs layer: frame the organs, otherwise the
+  // camera keeps composing for a figure that is not being drawn and the
+  // organs sit as a small clump in the middle of an empty screen.
+  if (state.organs && organGroup.children.length > 0) {
+    var organBox = new THREE.Box3().setFromObject(organGroup);
+    if (!organBox.isEmpty()) return organBox;
+  }
+  return bodyBox ? bodyBox.clone() : null;
+}
+
+function refit() {
+  var box = currentFocusBox();
+  if (!box || box.isEmpty()) return;
+  var center = box.getCenter(new THREE.Vector3());
+  var size = box.getSize(new THREE.Vector3());
+  state.pivot = { x: center.x, y: center.y, z: center.z };
+  state.baseDistance = fitDistance(size, state.focusRegion ? REGION_FILL : BODY_FILL);
+  if (!camReady) snapCamera();
 }
 
 function buildContactShadow() {
@@ -326,7 +619,39 @@ function buildContactShadow() {
   shadowGroup.add(mesh);
 }
 
+/** Reject a promise that never settles. GLTFLoader hands off to fetch/XHR,
+    and a request the WebView quietly refuses (a file:// URL under an https
+    baseUrl, a stalled connection) can leave that promise pending forever —
+    which is a spinner that never clears, with nothing logged. */
+function withTimeout(promise, ms, label) {
+  return new Promise(function (resolve, reject) {
+    var settled = false;
+    var timer = window.setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      reject(new Error(label + ' timed out after ' + Math.round(ms / 1000) + 's'));
+    }, ms);
+    promise.then(
+      function (value) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      function (err) {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+var bodyLoadToken = 0;
+
 async function loadBody(gender) {
+  var token = ++bodyLoadToken;
   var url = state.modelUrls[gender] || state.modelUrls.female;
   if (!url) return;
   var firstLoad = !bodyRoot;
@@ -334,26 +659,41 @@ async function loadBody(gender) {
   setStatus('Loading ' + gender + ' body...', true);
   try {
     if (!modelCache[gender] || modelCache[gender].url !== url) {
-      var gltf = await loader.loadAsync(url);
+      var gltf = await withTimeout(loader.loadAsync(url), 25000, 'Model download');
+      if (token !== bodyLoadToken) return;
       var normalizedScene = normalizeBody(gltf.scene);
       tuneMaterials(normalizedScene);
       modelCache[gender] = { url: url, scene: normalizedScene };
     }
     if (bodyRoot) scene.remove(bodyRoot);
     bodyRoot = modelCache[gender].scene;
+    bodyBox = new THREE.Box3().setFromObject(bodyRoot);
+    var boxSize = bodyBox.getSize(new THREE.Vector3());
+    var boxCenter = bodyBox.getCenter(new THREE.Vector3());
+    state.bodyMetrics = {
+      center: { x: boxCenter.x, y: boxCenter.y, z: boxCenter.z },
+      size: { x: boxSize.x, y: boxSize.y, z: boxSize.z }
+    };
     tuneMaterials(bodyRoot);
     collectBodyMeshes(bodyRoot);
     scene.add(bodyRoot);
+    applyBodyVisibility();
+    measureRegions(bodyRoot);
+    refit();
     buildFocusMarker();
     buildContactShadow();
     if (!camReady) { snapCamera(); camReady = true; }
-    setStatus(gender.charAt(0).toUpperCase() + gender.slice(1) + ' body ready', false);
-    setLoading(false);
+    setStatus((gender === 'female' ? 'Female' : 'Male') + ' model ready');
     send({ type: 'model_ready', gender: gender });
   } catch (err) {
+    if (token !== bodyLoadToken) return;
     setStatus('Could not load anatomy model', true);
-    setLoading(false);
     send({ type: 'model_error', gender: gender, message: err && err.message ? err.message : String(err) });
+  } finally {
+    // Always clear the spinner, on every exit path. Only the newest load
+    // may do it, so a gender switch mid-flight can't hide the loader out
+    // from under the load that is actually still running.
+    if (token === bodyLoadToken) setLoading(false);
   }
 }
 
@@ -381,22 +721,31 @@ function tuneOrganMaterials(root) {
   var neutral = new THREE.Color(0.72, 0.6, 0.58);
   root.traverse(function (node) {
     if (!node.isMesh) return;
+    // The bundled organ set ships POSITION only, with no NORMAL attribute.
+    // A lit material with no normals shades every fragment black, which is
+    // why the organs layer only ever produced silhouettes. Deriving them
+    // from the faces is what makes the geometry actually readable.
+    if (node.geometry && !node.geometry.attributes.normal) {
+      node.geometry.computeVertexNormals();
+    }
     var name = findOrganName(node);
     var tint = soft;
     if (name === 'heart' || name === 'right_kidney' || name === 'left_kidney') tint = deepRed;
     if (name === 'brain') tint = neutral;
+    // Deliberately opaque: organs must land in the opaque render pass so
+    // they are drawn before the see-through skin blends on top. A
+    // transparent organ competing with a transparent shell sorts
+    // unpredictably and can vanish depending on the camera angle.
     node.material = new THREE.MeshPhysicalMaterial({
       color: tint,
       roughness: 0.42,
       metalness: 0,
       clearcoat: 0.25,
       clearcoatRoughness: 0.35,
-      transmission: state.viewProfile === 'mobile' ? 0 : 0.08,
-      transparent: true,
-      opacity: 0.86,
       envMapIntensity: 0.5,
       side: THREE.FrontSide
     });
+    node.renderOrder = 0;
   });
 }
 
@@ -405,7 +754,7 @@ function ensureOrgansLoaded() {
   if (organsLoadPromise) return organsLoadPromise;
   var url = state.modelUrls.organs;
   if (!url) return Promise.resolve(null);
-  organsLoadPromise = loader.loadAsync(url).then(function (gltf) {
+  organsLoadPromise = withTimeout(loader.loadAsync(url), 20000, 'Organs download').then(function (gltf) {
     tuneOrganMaterials(gltf.scene);
     organsGLTFCache = gltf.scene;
     return organsGLTFCache;
@@ -420,62 +769,56 @@ function ensureOrgansLoaded() {
 
 var organsBuildToken = 0;
 
+/** The bundled organ set is authored in the same 200-unit scene space as
+    the body, so it normally drops straight in. This only rescales an
+    asset that is in some completely different unit system (a metres-based
+    export, say), which would otherwise be an invisible speck at the
+    origin. */
+function placeOrgans(root) {
+  if (!bodyBox) return root;
+  var box = new THREE.Box3().setFromObject(root);
+  var size = box.getSize(new THREE.Vector3());
+  var bodyHeight = Math.max(bodyBox.max.y - bodyBox.min.y, 1);
+  if (size.y > bodyHeight * 0.05 && size.y < bodyHeight * 3) return root;
+  var wrapper = new THREE.Group();
+  wrapper.add(root);
+  var scale = (bodyHeight * 0.5) / Math.max(size.y, 0.0001);
+  wrapper.scale.setScalar(scale);
+  wrapper.updateMatrixWorld(true);
+  var scaled = new THREE.Box3().setFromObject(wrapper);
+  var scaledCenter = scaled.getCenter(new THREE.Vector3());
+  var bodyCenter = bodyBox.getCenter(new THREE.Vector3());
+  wrapper.position.set(
+    bodyCenter.x - scaledCenter.x,
+    bodyCenter.y + bodyHeight * 0.12 - scaledCenter.y,
+    bodyCenter.z - scaledCenter.z
+  );
+  return wrapper;
+}
+
 async function buildOrgans() {
   var token = ++organsBuildToken;
   clearGroup(organGroup);
-  if (!state.organs || state.kids) return;
+  if (!state.organs) { refit(); return; }
   var template = await ensureOrgansLoaded();
   // Bail if state changed, or a newer buildOrgans() call has since superseded this one.
-  if (!template || token !== organsBuildToken || !state.organs || state.kids) return;
-  organGroup.add(template.clone(true));
+  if (!template || token !== organsBuildToken || !state.organs) { refit(); return; }
+  organGroup.add(placeOrgans(template.clone(true)));
+  // The framing subject just changed, so re-fit against it.
+  refit();
 }
 
 function buildFocusMarker() {
   clearGroup(markerGroup);
   if (!state.focusRegion) return;
-  var p = regionTarget(state.focusRegion);
+  var box = regionBox(state.focusRegion);
+  if (!box || box.isEmpty()) return;
+  var center = box.getCenter(new THREE.Vector3());
+  var size = box.getSize(new THREE.Vector3());
   var marker = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16), highlightMaterial);
-  marker.position.set(p.x, p.y, p.z);
-  marker.scale.set(p.sx, p.sy, p.sz);
+  marker.position.copy(center);
+  marker.scale.set(size.x * 0.62, size.y * 0.62, size.z * 0.62);
   markerGroup.add(marker);
-}
-
-function regionTarget(key) {
-  var map = {
-    head: { x: 0, y: 184, z: 0, sx: 20, sy: 18, sz: 18 },
-    neck: { x: 0, y: 164, z: 0, sx: 16, sy: 12, sz: 12 },
-    chest: { x: 0, y: 140, z: 0, sx: 32, sy: 26, sz: 18 },
-    abdomen: { x: 0, y: 112, z: 0, sx: 30, sy: 26, sz: 18 },
-    pelvis: { x: 0, y: 88, z: 0, sx: 30, sy: 18, sz: 18 },
-    back: { x: 0, y: 124, z: -8, sx: 30, sy: 48, sz: 10 },
-    arm_left: { x: -48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
-    arm_right: { x: 48, y: 122, z: 0, sx: 18, sy: 44, sz: 18 },
-    hand_left: { x: -58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
-    hand_right: { x: 58, y: 82, z: 2, sx: 14, sy: 14, sz: 14 },
-    leg_left: { x: -16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
-    leg_right: { x: 16, y: 50, z: 0, sx: 16, sy: 46, sz: 16 },
-    foot_left: { x: -16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 },
-    foot_right: { x: 16, y: 5, z: 8, sx: 16, sy: 8, sz: 18 }
-  };
-  return map[key] || { x: 0, y: 105, z: 0, sx: 28, sy: 28, sz: 18 };
-}
-
-function classifyPoint(point) {
-  var x = point.x;
-  var y = point.y;
-  var ax = Math.abs(x);
-  var side = x < 0 ? 'left' : 'right';
-  if (y >= 168) return { region: 'head', part: 'head' };
-  if (y >= 155 && ax < 18) return { region: 'neck', part: 'neck' };
-  if (ax > 34 && y >= 86) {
-    if (y < 94 || ax > 56) return { region: 'hand_' + side, part: 'hand' };
-    return { region: 'arm_' + side, part: y > 123 ? 'arm' : 'forearm' };
-  }
-  if (y >= 126) return { region: 'chest', part: 'chest' };
-  if (y >= 100) return { region: 'abdomen', part: 'abdomen' };
-  if (y >= 78) return { region: 'pelvis', part: 'pelvis' };
-  if (y >= 14) return { region: 'leg_' + side, part: y > 48 ? 'thigh' : 'calf' };
-  return { region: 'foot_' + side, part: 'foot' };
 }
 
 // --- Camera: eased/damped toward state.* targets (see animate()) ---
@@ -483,9 +826,9 @@ function snapCamera() {
   cam.yaw = state.yaw;
   cam.pitch = state.pitch;
   cam.zoom = state.zoom;
-  cam.tgt.x = state.tgt.x; cam.tgt.y = state.tgt.y; cam.tgt.z = state.tgt.z;
-  cam.pan.x = state.viewPan.x; cam.pan.y = state.viewPan.y; cam.pan.z = state.viewPan.z;
-  cam.shiftX = state.shiftX;
+  cam.pivot.x = state.pivot.x; cam.pivot.y = state.pivot.y; cam.pivot.z = state.pivot.z;
+  cam.distance = state.baseDistance;
+  cam.pan.x = state.pan.x; cam.pan.y = state.pan.y;
 }
 
 function dampCamera(dt) {
@@ -494,36 +837,57 @@ function dampCamera(dt) {
   cam.yaw = THREE.MathUtils.damp(cam.yaw, state.yaw, lambdaFast, dt);
   cam.pitch = THREE.MathUtils.damp(cam.pitch, state.pitch, lambdaFast, dt);
   cam.zoom = THREE.MathUtils.damp(cam.zoom, state.zoom, lambdaSlow, dt);
-  cam.tgt.x = THREE.MathUtils.damp(cam.tgt.x, state.tgt.x, lambdaSlow, dt);
-  cam.tgt.y = THREE.MathUtils.damp(cam.tgt.y, state.tgt.y, lambdaSlow, dt);
-  cam.tgt.z = THREE.MathUtils.damp(cam.tgt.z, state.tgt.z, lambdaSlow, dt);
-  cam.pan.x = THREE.MathUtils.damp(cam.pan.x, state.viewPan.x, lambdaSlow, dt);
-  cam.pan.y = THREE.MathUtils.damp(cam.pan.y, state.viewPan.y, lambdaSlow, dt);
-  cam.pan.z = THREE.MathUtils.damp(cam.pan.z, state.viewPan.z, lambdaSlow, dt);
-  cam.shiftX = THREE.MathUtils.damp(cam.shiftX, state.shiftX, lambdaSlow, dt);
+  cam.pivot.x = THREE.MathUtils.damp(cam.pivot.x, state.pivot.x, lambdaSlow, dt);
+  cam.pivot.y = THREE.MathUtils.damp(cam.pivot.y, state.pivot.y, lambdaSlow, dt);
+  cam.pivot.z = THREE.MathUtils.damp(cam.pivot.z, state.pivot.z, lambdaSlow, dt);
+  cam.distance = THREE.MathUtils.damp(cam.distance, state.baseDistance, lambdaSlow, dt);
+  cam.pan.x = THREE.MathUtils.damp(cam.pan.x, state.pan.x, lambdaSlow, dt);
+  cam.pan.y = THREE.MathUtils.damp(cam.pan.y, state.pan.y, lambdaSlow, dt);
 }
 
+var camDir = new THREE.Vector3();
+var camRight = new THREE.Vector3();
+var camUp = new THREE.Vector3();
+var camTarget = new THREE.Vector3();
+
 function updateCamera() {
-  var isFullBody = (cam.zoom || 1) <= 1.05 && !state.focusRegion;
-  var baseTarget = isFullBody ? state.fullBodyTarget : cam.tgt;
-  var target = new THREE.Vector3(baseTarget.x || 0, baseTarget.y || 100, baseTarget.z || 0);
-  target.add(new THREE.Vector3(cam.pan.x || 0, cam.pan.y || 0, cam.pan.z || 0));
-  var pitch = Math.max(-35, Math.min(35, cam.pitch)) * DEG;
+  var zoomLevel = clamp(cam.zoom || 1, ZOOM_MIN, ZOOM_MAX);
+  var distance = Math.max((cam.distance || 600) / zoomLevel, 8);
+  var pitch = clamp(cam.pitch, -PITCH_LIMIT, PITCH_LIMIT) * DEG;
   var yaw = cam.yaw * DEG;
-  var baseDistance = isFullBody ? state.fullBodyDistance : 280;
-  var distance = baseDistance / Math.max(cam.zoom || 1, 0.2);
-  var offset = new THREE.Vector3(
-    Math.sin(yaw) * Math.cos(pitch) * distance,
-    Math.sin(pitch) * distance,
-    Math.cos(yaw) * Math.cos(pitch) * distance
-  );
-  var right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-  target.addScaledVector(right, -(cam.shiftX || 0) / Math.max(cam.zoom || 1, 1) * 0.18);
-  camera.position.copy(target).add(offset);
-  camera.lookAt(target);
-  camera.near = Math.max(distance / 120, 0.1);
-  camera.far = 1200;
+  var sy = Math.sin(yaw), cy = Math.cos(yaw);
+  var sp = Math.sin(pitch), cp = Math.cos(pitch);
+  camDir.set(sy * cp, sp, cy * cp);
+  camRight.set(cy, 0, -sy);
+  camUp.set(-sp * sy, cp, -sp * cy);
+  camTarget.set(cam.pivot.x, cam.pivot.y, cam.pivot.z)
+    .addScaledVector(camRight, cam.pan.x)
+    .addScaledVector(camUp, cam.pan.y);
+  camera.position.copy(camTarget).addScaledVector(camDir, distance);
+  camera.up.set(0, 1, 0);
+  camera.lookAt(camTarget);
+  camera.near = Math.max(distance / 200, 0.1);
+  // Far must track the orbit distance, otherwise geometry gets clipped
+  // away as you pull back or swing around.
+  camera.far = distance + 2400;
+  applyViewOffset();
   camera.updateProjectionMatrix();
+}
+
+/** World units per CSS pixel at the current orbit distance - used to turn
+    finger/button pixel deltas into pan amounts that track exactly. */
+function worldPerPixel() {
+  var s = canvasSize();
+  var zoomLevel = clamp(cam.zoom || 1, ZOOM_MIN, ZOOM_MAX);
+  var distance = Math.max((cam.distance || 600) / zoomLevel, 8);
+  return (2 * Math.tan((camera.fov / 2) * DEG) * distance) / s.h;
+}
+
+/** Move the model by (dx, dy) screen pixels. */
+function panByPixels(dx, dy) {
+  var u = worldPerPixel();
+  state.pan.x -= dx * u;
+  state.pan.y += dy * u;
 }
 
 function clearGroup(group) {
@@ -540,119 +904,262 @@ function clearGroup(group) {
   }
 }
 
-function makePinLabel(text, locked) {
-  if (!text) return null;
+function makeGlowTexture(locked) {
   var canvas = document.createElement('canvas');
-  canvas.width = 280;
-  canvas.height = 84;
+  canvas.width = 128;
+  canvas.height = 128;
   var ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = '700 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  var label = String(text).slice(0, 24);
-  var textWidth = Math.min(ctx.measureText(label).width, 220);
-  var boxWidth = Math.max(100, textWidth + (locked ? 60 : 40));
-  var x = (canvas.width - boxWidth) / 2;
-  var y = 18;
-  var width = boxWidth;
-  var height = 44;
-  var radius = 22;
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(8,13,26,0.82)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.strokeStyle = locked ? 'rgba(245,158,11,0.55)' : 'rgba(52,211,153,0.55)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y + 1);
-  ctx.lineTo(x + width - radius, y + 1);
-  ctx.stroke();
-  ctx.restore();
-  ctx.fillStyle = locked ? '#fbbf24' : '#34d399';
-  ctx.beginPath();
-  ctx.arc(x + 18, y + height / 2, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#f8fafc';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, x + 30, y + height / 2 + 1, boxWidth - 40);
-  var texture = new THREE.CanvasTexture(canvas);
-  texture.needsUpdate = true;
-  var material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false
-  });
-  var sprite = new THREE.Sprite(material);
-  sprite.renderOrder = 30;
-  // Fixed height, width scaled to the drawn box so labels stay readable regardless of text length.
-  sprite.scale.set(9 * (boxWidth / 44), 9, 1);
-  return sprite;
-}
-
-function cylinderBetween(a, b, radius, material) {
-  var dir = new THREE.Vector3().subVectors(b, a);
-  var geo = new THREE.CylinderGeometry(radius, radius, Math.max(dir.length(), 0.01), 18, 1);
-  var mesh = new THREE.Mesh(geo, material);
-  mesh.position.copy(a).add(b).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-  return mesh;
+  var grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  if (locked) {
+    grad.addColorStop(0, 'rgba(251,191,36,0.9)');
+    grad.addColorStop(0.35, 'rgba(251,191,36,0.35)');
+    grad.addColorStop(1, 'rgba(251,191,36,0)');
+  } else {
+    grad.addColorStop(0, 'rgba(52,211,153,0.9)');
+    grad.addColorStop(0.35, 'rgba(52,211,153,0.35)');
+    grad.addColorStop(1, 'rgba(52,211,153,0)');
+  }
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(canvas);
 }
 
 function buildPins() {
   clearGroup(pinGroup);
-  var dotGeo = new THREE.SphereGeometry(1.6, 20, 12);
-  var glowGeo = new THREE.RingGeometry(2.2, 4.2, 28);
-  var dotMatEmerald = new THREE.MeshPhysicalMaterial({ color: 0x34d399, roughness: 0.3, clearcoat: 0.6, emissive: 0x065f46, emissiveIntensity: 0.4 });
-  var dotMatAmber = new THREE.MeshPhysicalMaterial({ color: 0xfbbf24, roughness: 0.3, clearcoat: 0.6, emissive: 0x78350f, emissiveIntensity: 0.4 });
-  var glowMatEmerald = new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
-  var glowMatAmber = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
-  var leaderMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
+  var dotGeo = new THREE.SphereGeometry(1.6, 24, 16);
+  var dotMatEmerald = new THREE.MeshPhysicalMaterial({ color: 0x34d399, roughness: 0.3, clearcoat: 0.6, emissive: 0x059669, emissiveIntensity: 0.6 });
+  var dotMatAmber = new THREE.MeshPhysicalMaterial({ color: 0xfbbf24, roughness: 0.3, clearcoat: 0.6, emissive: 0xb45309, emissiveIntensity: 0.6 });
 
   for (var i = 0; i < state.pins.length; i++) {
     var pin = state.pins[i];
     var locked = !!pin.locked;
     var group = new THREE.Group();
-    var origin = new THREE.Vector3(Number(pin.x) || 0, Number(pin.y) || 0, Number(pin.z) || 0);
-    group.position.copy(origin);
+    group.position.set(Number(pin.x) || 0, Number(pin.y) || 0, Number(pin.z) || 0);
     group.userData = { id: pin.id, body_part_id: pin.body_part_id, pin: true };
 
     var dot = new THREE.Mesh(dotGeo, locked ? dotMatAmber : dotMatEmerald);
     dot.userData = group.userData;
     group.add(dot);
 
-    var glow = new THREE.Mesh(glowGeo, locked ? glowMatAmber : glowMatEmerald);
-    glow.userData = group.userData;
+    // Billboarded radial-gradient halo: stays face-on from every angle and
+    // doubles as a generous tap target for the pin itself.
+    var glow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: makeGlowTexture(locked),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    }));
+    glow.scale.set(8, 8, 1);
+    glow.userData = Object.assign({ baseScale: 8 }, group.userData);
     glow.renderOrder = 20;
     group.add(glow);
 
-    var labelOffset = new THREE.Vector3(0, 7.5, 2.2);
-    var leader = cylinderBetween(new THREE.Vector3(0, 0.4, 0.2), labelOffset.clone().multiplyScalar(0.85), 0.12, leaderMat);
-    group.add(leader);
-
-    var label = makePinLabel(pin.label || pin.name, locked);
-    if (label) {
-      label.position.copy(labelOffset);
-      group.add(label);
-    }
     pinGroup.add(group);
   }
 }
 
-// --- Camera drag (rotate) with release momentum ---
+// ---------------------------------------------------------------------
+// Pin labels (DOM overlay)
+// ---------------------------------------------------------------------
+var labelItems = [];
+var labelsDirty = true;
+var occlusionAt = 0;
+
+function clearLabels() {
+  for (var i = 0; i < labelItems.length; i++) {
+    var it = labelItems[i];
+    if (it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el);
+    if (it.line && it.line.parentNode) it.line.parentNode.removeChild(it.line);
+  }
+  labelItems = [];
+}
+
+function buildLabels() {
+  clearLabels();
+  for (var i = 0; i < state.pins.length; i++) {
+    var pin = state.pins[i];
+    var text = pin.label || pin.name || '';
+    if (!text) continue;
+    var el = document.createElement('div');
+    el.className = 'pin-label' + (pin.locked ? ' locked' : '');
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', String(text));
+    var dot = document.createElement('span');
+    dot.className = 'pin-label-dot';
+    var span = document.createElement('span');
+    span.className = 'pin-label-text';
+    span.textContent = String(text);
+    el.appendChild(dot);
+    el.appendChild(span);
+    if (pin.locked) {
+      var lock = document.createElement('span');
+      lock.className = 'pin-label-lock';
+      lock.textContent = 'PRO';
+      el.appendChild(lock);
+    }
+    labelLayer.appendChild(el);
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    line.setAttribute('class', 'leader');
+    leaderSvg.appendChild(line);
+    labelItems.push({
+      pin: pin, el: el, line: line,
+      w: 0, h: 0, x: 0, y: 0, ax: 0, ay: 0,
+      side: -1, visible: false, occluded: false
+    });
+  }
+  labelsDirty = true;
+}
+
+function measureLabels() {
+  for (var i = 0; i < labelItems.length; i++) {
+    var it = labelItems[i];
+    var r = it.el.getBoundingClientRect();
+    it.w = r.width || 128;
+    it.h = r.height || 30;
+  }
+  labelsDirty = false;
+}
+
+/** Cheap depth test: a pin sitting behind the body (an organ pin seen
+    from the front) is dimmed rather than hidden, so it stays reachable
+    but visibly reads as "inside". */
+function updateOcclusion() {
+  if (bodyMeshes.length === 0) return;
+  var origin = camera.position;
+  var dir = new THREE.Vector3();
+  var point = new THREE.Vector3();
+  var savedFar = raycaster.far;
+  for (var i = 0; i < labelItems.length; i++) {
+    var it = labelItems[i];
+    point.set(Number(it.pin.x) || 0, Number(it.pin.y) || 0, Number(it.pin.z) || 0);
+    dir.subVectors(point, origin);
+    var dist = dir.length();
+    if (dist < 1) { it.occluded = false; continue; }
+    dir.multiplyScalar(1 / dist);
+    raycaster.set(origin, dir);
+    raycaster.far = dist - 1.2;
+    it.occluded = raycaster.intersectObjects(bodyMeshes, false).length > 0;
+  }
+  raycaster.far = savedFar;
+}
+
+var projected = new THREE.Vector3();
+
+/**
+ * Screen-space label layout.
+ *
+ * Labels are pushed out to the left and right of the model and stacked
+ * vertically inside their column. Because each column's labels occupy
+ * disjoint vertical bands, and the two columns never cross the model's
+ * centre line, no two labels can overlap - the failure the sprite labels
+ * had, where five head pins piled into one unreadable heap. Leader lines
+ * keep each label tied to its dot.
+ */
+function layoutLabels() {
+  if (labelItems.length === 0) return;
+  if (labelsDirty) measureLabels();
+  var rect = chromeRect();
+  var W = rect.canvasW;
+  var H = rect.canvasH;
+  var visible = [];
+
+  for (var i = 0; i < labelItems.length; i++) {
+    var it = labelItems[i];
+    projected.set(Number(it.pin.x) || 0, Number(it.pin.y) || 0, Number(it.pin.z) || 0).project(camera);
+    var behindCamera = projected.z > 1;
+    it.ax = (projected.x * 0.5 + 0.5) * W;
+    it.ay = (-projected.y * 0.5 + 0.5) * H;
+    it.visible = !behindCamera && it.ax > -80 && it.ax < W + 80 && it.ay > -80 && it.ay < H + 80;
+    if (it.visible) visible.push(it);
+    else it.el.classList.remove('on');
+  }
+
+  if (visible.length === 0) {
+    for (var j = 0; j < labelItems.length; j++) labelItems[j].line.setAttribute('d', '');
+    return;
+  }
+
+  // Split into a left and a right column, balanced around the pins'
+  // own centre of mass so a symmetric cluster fans out evenly.
+  var byX = visible.slice().sort(function (a, b) { return a.ax - b.ax || a.ay - b.ay; });
+  var half = Math.ceil(byX.length / 2);
+  for (var k = 0; k < byX.length; k++) byX[k].side = k < half ? -1 : 1;
+
+  var midX = 0;
+  for (var n = 0; n < visible.length; n++) midX += visible[n].ax;
+  midX = clamp(midX / visible.length, rect.x + rect.w * 0.28, rect.x + rect.w * 0.72);
+
+  var gapY = 8;
+  var leader = 18;
+  var sides = [-1, 1];
+  for (var s = 0; s < sides.length; s++) {
+    var side = sides[s];
+    var column = [];
+    for (var c = 0; c < visible.length; c++) {
+      if (visible[c].side === side) column.push(visible[c]);
+    }
+    if (column.length === 0) continue;
+    column.sort(function (a, b) { return a.ay - b.ay; });
+
+    // Stack downward from each label's natural height, never letting one
+    // start before the previous one ends.
+    var cursor = rect.y;
+    for (var p = 0; p < column.length; p++) {
+      var item = column[p];
+      item.y = Math.max(item.ay - item.h / 2, cursor);
+      cursor = item.y + item.h + gapY;
+    }
+    // If the stack ran past the bottom of the usable area, slide the whole
+    // column up by as much as the top allows, then clamp what is left.
+    var overflow = cursor - gapY - (rect.y + rect.h);
+    if (overflow > 0) {
+      var headroom = Math.max(column[0].y - rect.y, 0);
+      var shift = Math.min(overflow, headroom);
+      for (var q = 0; q < column.length; q++) column[q].y -= shift;
+    }
+    for (var r2 = 0; r2 < column.length; r2++) {
+      var lbl = column[r2];
+      lbl.y = clamp(lbl.y, rect.y, Math.max(rect.y, rect.y + rect.h - lbl.h));
+      if (side < 0) {
+        lbl.x = clamp(Math.min(lbl.ax - leader - lbl.w, midX - 6 - lbl.w), rect.x, midX - 6 - lbl.w);
+      } else {
+        lbl.x = clamp(Math.max(lbl.ax + leader, midX + 6), midX + 6, Math.max(midX + 6, rect.x + rect.w - lbl.w));
+      }
+    }
+  }
+
+  for (var t = 0; t < labelItems.length; t++) {
+    var e = labelItems[t];
+    if (!e.visible) { e.line.setAttribute('d', ''); continue; }
+    e.el.style.transform = 'translate3d(' + Math.round(e.x) + 'px,' + Math.round(e.y) + 'px,0)';
+    e.el.classList.add('on');
+    e.el.classList.toggle('behind', !!e.occluded);
+    e.el.classList.toggle('active', state.activePinId != null && String(e.pin.id) === String(state.activePinId));
+    var anchorX = e.side < 0 ? e.x + e.w : e.x;
+    var anchorY = e.y + e.h / 2;
+    var midPointX = (anchorX + e.ax) / 2;
+    e.line.setAttribute('d', 'M' + e.ax.toFixed(1) + ',' + e.ay.toFixed(1) +
+      ' Q' + midPointX.toFixed(1) + ',' + e.ay.toFixed(1) +
+      ' ' + anchorX.toFixed(1) + ',' + anchorY.toFixed(1));
+    e.line.setAttribute('class', 'leader' + (e.occluded ? ' behind' : ''));
+  }
+}
+
+function labelItemFromEvent(target) {
+  var node = target;
+  while (node && node !== labelLayer) {
+    if (node.classList && node.classList.contains('pin-label')) {
+      for (var i = 0; i < labelItems.length; i++) {
+        if (labelItems[i].el === node) return labelItems[i];
+      }
+      return null;
+    }
+    node = node.parentNode;
+  }
+  return null;
+}
+
+// --- Camera drag (rotate), pinch (zoom) and two-finger pan ---
 function setPointer(clientX, clientY) {
   var rect = renderer.domElement.getBoundingClientRect();
   pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -660,11 +1167,17 @@ function setPointer(clientX, clientY) {
 }
 
 function raycastPins() {
-  var meshes = [];
+  var targets = [];
   pinGroup.traverse(function (node) {
-    if (node.isMesh) meshes.push(node);
+    if (node.isMesh || node.isSprite) targets.push(node);
   });
-  return raycaster.intersectObjects(meshes, false);
+  return raycaster.intersectObjects(targets, false);
+}
+
+function selectPin(pin) {
+  if (!pin) return;
+  state.activePinId = pin.id != null ? pin.id : null;
+  send({ type: 'pin_tapped', id: pin.id, body_part_id: pin.body_part_id });
 }
 
 function handleTap(clientX, clientY) {
@@ -672,8 +1185,7 @@ function handleTap(clientX, clientY) {
   raycaster.setFromCamera(pointer, camera);
   var pinHits = raycastPins();
   if (!state.placement && pinHits.length > 0) {
-    var pin = pinHits[0].object.userData || {};
-    send({ type: 'pin_tapped', id: pin.id, body_part_id: pin.body_part_id });
+    selectPin(pinHits[0].object.userData || {});
     return;
   }
   var bodyHits = raycaster.intersectObjects(bodyMeshes, true);
@@ -702,12 +1214,33 @@ function pos(e) {
   return { x: touch.clientX, y: touch.clientY };
 }
 
+function touchSpread(e) {
+  var a = e.touches[0];
+  var b = e.touches[1];
+  var dx = a.clientX - b.clientX;
+  var dy = a.clientY - b.clientY;
+  return {
+    distance: Math.sqrt(dx * dx + dy * dy),
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2
+  };
+}
+
 function onDown(e) {
   dragging = true;
   moved = 0;
   inertia.active = false;
   dragVel.yaw = 0;
   dragVel.pitch = 0;
+  if (e.touches && e.touches.length >= 2) {
+    var spread = touchSpread(e);
+    gestureMode = 'pinch';
+    pinchDistance = spread.distance;
+    pinchCenter.x = spread.x;
+    pinchCenter.y = spread.y;
+    return;
+  }
+  gestureMode = 'rotate';
   var p = pos(e);
   lastX = p.x;
   lastY = p.y;
@@ -715,6 +1248,29 @@ function onDown(e) {
 
 function onMove(e) {
   if (!dragging) return;
+  if (e.touches && e.touches.length >= 2) {
+    // Pinch to zoom, two fingers to pan - the pair of gestures every
+    // reader expects from a 3D viewer, and neither is reachable from the
+    // dock alone.
+    var spread = touchSpread(e);
+    if (gestureMode !== 'pinch') {
+      gestureMode = 'pinch';
+      pinchDistance = spread.distance;
+      pinchCenter.x = spread.x;
+      pinchCenter.y = spread.y;
+      return;
+    }
+    moved += 20;
+    if (pinchDistance > 8 && spread.distance > 8) {
+      state.zoom = clamp(state.zoom * (spread.distance / pinchDistance), ZOOM_MIN, ZOOM_MAX);
+    }
+    panByPixels(spread.x - pinchCenter.x, spread.y - pinchCenter.y);
+    pinchDistance = spread.distance;
+    pinchCenter.x = spread.x;
+    pinchCenter.y = spread.y;
+    return;
+  }
+  if (gestureMode === 'pinch') return;
   var p = pos(e);
   var dx = p.x - lastX;
   var dy = p.y - lastY;
@@ -725,18 +1281,24 @@ function onMove(e) {
   var dYaw = dx * 0.45;
   var dPitch = -dy * 0.22;
   state.yaw += dYaw;
-  state.pitch = Math.max(-35, Math.min(35, state.pitch + dPitch));
+  state.pitch = clamp(state.pitch + dPitch, -PITCH_LIMIT, PITCH_LIMIT);
   dragVel.yaw = dragVel.yaw * 0.6 + dYaw * 0.4;
   dragVel.pitch = dragVel.pitch * 0.6 + dPitch * 0.4;
 }
 
-function onUp(e) {
+function onUp(e, labelItem) {
   if (!dragging) return;
   dragging = false;
-  if (moved < 8) {
+  var wasPinch = gestureMode === 'pinch';
+  gestureMode = 'rotate';
+  if (moved < 8 && !wasPinch) {
+    if (labelItem) {
+      selectPin(labelItem.pin);
+      return;
+    }
     var p = pos(e);
     handleTap(p.x, p.y);
-  } else if (state.directControls) {
+  } else if (state.directControls && !wasPinch) {
     inertia.yaw = dragVel.yaw;
     inertia.pitch = dragVel.pitch;
     inertia.active = Math.abs(inertia.yaw) + Math.abs(inertia.pitch) > 0.01;
@@ -745,25 +1307,58 @@ function onUp(e) {
 
 renderer.domElement.addEventListener('mousedown', onDown);
 window.addEventListener('mousemove', onMove);
-window.addEventListener('mouseup', onUp);
 renderer.domElement.addEventListener('touchstart', function (e) { onDown(e); }, { passive: true });
 renderer.domElement.addEventListener('touchmove', function (e) { onMove(e); e.preventDefault(); }, { passive: false });
-renderer.domElement.addEventListener('touchend', onUp);
+renderer.domElement.addEventListener('touchend', function (e) { onUp(e, null); });
+
+// Labels forward their gestures into the same pipeline, so a drag that
+// happens to start on a label still rotates the model and only a genuine
+// tap opens the body part.
+var labelDownItem = null;
+labelLayer.addEventListener('mousedown', function (e) {
+  labelDownItem = labelItemFromEvent(e.target);
+  if (labelDownItem) { e.preventDefault(); onDown(e); }
+});
+labelLayer.addEventListener('touchstart', function (e) {
+  labelDownItem = labelItemFromEvent(e.target);
+  if (labelDownItem) onDown(e);
+}, { passive: true });
+labelLayer.addEventListener('touchmove', function (e) {
+  if (!labelDownItem) return;
+  onMove(e);
+  e.preventDefault();
+}, { passive: false });
+labelLayer.addEventListener('touchend', function (e) {
+  if (!labelDownItem) return;
+  var item = labelDownItem;
+  labelDownItem = null;
+  onUp(e, item);
+});
+// Single mouseup owner for the whole scene: registering one on the canvas
+// path and another on the label path would run both, and the canvas one
+// would raycast an empty spot and cancel the label's own tap.
+window.addEventListener('mouseup', function (e) {
+  var item = labelDownItem;
+  labelDownItem = null;
+  onUp(e, item);
+});
 
 function handle(m) {
   if (!m || !m.type) return;
   switch (m.type) {
     case 'init':
+      // Acknowledged — stop re-announcing.
+      stopReadyRetry();
       if (m.model_urls) state.modelUrls = Object.assign({}, state.modelUrls, m.model_urls);
       if (m.view_profile) state.viewProfile = m.view_profile;
       if (typeof m.direct_controls === 'boolean') state.directControls = m.direct_controls;
-      applyFullBodyFrame();
+      if (m.insets) state.insets = Object.assign({}, state.insets, m.insets);
       if (m.gender) state.gender = m.gender;
       if (Array.isArray(m.pins)) state.pins = m.pins;
       if (typeof m.organs === 'boolean') state.organs = m.organs;
       if (typeof m.placement === 'boolean') state.placement = m.placement;
-      if (typeof m.kids === 'boolean') state.kids = m.kids;
       buildPins();
+      buildLabels();
       buildOrgans();
       loadBody(state.gender);
       break;
@@ -774,25 +1369,43 @@ function handle(m) {
     case 'set_view_profile':
       state.viewProfile = m.profile || 'admin';
       if (typeof m.direct_controls === 'boolean') state.directControls = m.direct_controls;
-      applyFullBodyFrame();
+      refit();
+      break;
+    case 'set_insets':
+      state.insets = {
+        top: Number(m.top) || 0,
+        right: Number(m.right) || 0,
+        bottom: Number(m.bottom) || 0,
+        left: Number(m.left) || 0
+      };
+      refit();
       break;
     case 'pan_screen':
-      state.viewPan.x -= (Number(m.x) || 0) / Math.max(state.zoom || 1, 1);
-      state.viewPan.y -= (Number(m.y) || 0) / Math.max(state.zoom || 1, 1);
-      state.viewPan.z -= (Number(m.z) || 0) / Math.max(state.zoom || 1, 1);
+      // Legacy sign convention: +x pans the model right, +y pans it up.
+      panByPixels(Number(m.x) || 0, -(Number(m.y) || 0));
       break;
     case 'zoom_step':
-      state.zoom = clamp((state.zoom || 1) + (Number(m.delta) || 0), 0.72, 4);
+      state.zoom = clamp((state.zoom || 1) + (Number(m.delta) || 0), ZOOM_MIN, ZOOM_MAX);
+      break;
+    case 'zoom_by':
+      state.zoom = clamp((state.zoom || 1) * (Number(m.factor) || 1), ZOOM_MIN, ZOOM_MAX);
       break;
     case 'rotate_yaw':
+      inertia.active = false;
       state.yaw += Number(m.delta) || 0;
       break;
+    case 'set_yaw':
+      inertia.active = false;
+      state.yaw = Number(m.yaw) || 0;
+      if (typeof m.pitch === 'number') state.pitch = clamp(m.pitch, -PITCH_LIMIT, PITCH_LIMIT);
+      break;
     case 'recenter_view':
-      state.viewPan = { x: 0, y: 0, z: 0 };
+      inertia.active = false;
+      state.pan = { x: 0, y: 0 };
       state.zoom = 1;
       state.pitch = 0;
-      state.yaw = 0;
-      applyFullBodyFrame();
+      state.yaw = defaultYawFor(state.focusRegion);
+      refit();
       break;
     case 'set_gender':
       state.gender = m.gender || 'female';
@@ -800,17 +1413,21 @@ function handle(m) {
       break;
     case 'set_pins':
       state.pins = Array.isArray(m.pins) ? m.pins : [];
+      state.activePinId = null;
       buildPins();
+      buildLabels();
+      // Pin count decides the label gutters, so the framing has to be
+      // recomputed once the region's pins actually arrive.
+      refit();
+      break;
+    case 'set_active_pin':
+      state.activePinId = m.id != null ? m.id : null;
       break;
     case 'set_organs':
       state.organs = !!m.visible;
+      applyBodyVisibility();
       buildOrgans();
-      break;
-    case 'set_kids':
-      state.kids = !!m.on;
-      if (state.kids) state.organs = false;
-      if (bodyRoot) tuneMaterials(bodyRoot);
-      buildOrgans();
+      setStatus(state.organs ? 'Organs layer on - body hidden' : 'Organs layer off');
       break;
     case 'set_placement':
       state.placement = !!m.on;
@@ -818,31 +1435,46 @@ function handle(m) {
       break;
     case 'set_focus_region':
       state.focusRegion = m.key || null;
+      refit();
       buildFocusMarker();
       break;
     case 'shift_model':
-      state.shiftX = Number(m.x) || 0;
+      // Legacy: a negative x used to slide the model left to clear a side
+      // panel. Expressed as a right-hand inset it survives rotation.
+      state.insets.right = Math.max(0, -(Number(m.x) || 0)) * 2;
+      refit();
       break;
-    case 'zoom_region':
-      state.zoom = Number(m.zoom) || 2.2;
-      state.tgt = { x: Number(m.x) || 0, y: Number(m.y) || 120, z: Number(m.z) || 0 };
-      state.viewPan = { x: 0, y: 0, z: 0 };
-      if (typeof m.yaw === 'number') state.yaw = m.yaw;
+    case 'zoom_region': {
+      // The camera frames the region's measured bounding box inside the
+      // usable viewport - no preset zoom, no preset target. Presets are
+      // authored against an idealised body and drift from whatever mesh is
+      // actually loaded, which is what left tapped regions off-centre.
       state.focusRegion = m.key || state.focusRegion;
-      state.pins = Array.isArray(m.pins) ? m.pins : state.pins;
-      buildPins();
+      state.zoom = 1;
+      state.pan = { x: 0, y: 0 };
+      state.pitch = 0;
+      state.yaw = (typeof m.yaw === 'number' && m.yaw !== 0) ? m.yaw : defaultYawFor(state.focusRegion);
+      state.activePinId = null;
+      if (Array.isArray(m.pins)) {
+        state.pins = m.pins;
+        buildPins();
+        buildLabels();
+      }
+      refit();
       buildFocusMarker();
       break;
+    }
     case 'reset_view':
+      state.focusRegion = null;
       state.zoom = 1;
-      state.viewPan = { x: 0, y: 0, z: 0 };
-      applyFullBodyFrame();
-      state.tgt = state.fullBodyTarget || { x: 0, y: 100, z: 0 };
+      state.pan = { x: 0, y: 0 };
       state.yaw = 0;
       state.pitch = 0;
-      state.focusRegion = null;
       state.pins = [];
+      state.activePinId = null;
       buildPins();
+      buildLabels();
+      refit();
       buildFocusMarker();
       break;
   }
@@ -863,20 +1495,37 @@ function animate() {
     var dt = clock.getDelta();
     if (inertia.active) {
       state.yaw += inertia.yaw;
-      state.pitch = Math.max(-35, Math.min(35, state.pitch + inertia.pitch));
+      state.pitch = clamp(state.pitch + inertia.pitch, -PITCH_LIMIT, PITCH_LIMIT);
       inertia.yaw *= 0.92;
       inertia.pitch *= 0.92;
       if (Math.abs(inertia.yaw) + Math.abs(inertia.pitch) < 0.01) inertia.active = false;
     }
     dampCamera(dt);
     updateCamera();
-    pinGroup.children.forEach(function (pin) {
+    // Pins are authored at a fixed world size, which means they balloon as
+    // the camera closes in - at head zoom the markers swallowed the face.
+    // Scaling them against the orbit distance keeps them a roughly constant
+    // size on screen at every zoom level.
+    var pinScale = clamp(
+      (cam.distance || 400) / Math.max(cam.zoom || 1, 0.001) / 300,
+      0.35,
+      1.5
+    );
+    pinGroup.children.forEach(function (pin, idx) {
+      pin.scale.setScalar(pinScale);
       var glow = pin.children[1];
       if (glow) {
-        var pulse = 1 + 0.18 * Math.sin(Date.now() / 320);
-        glow.scale.setScalar(pulse);
+        var base = (glow.userData && glow.userData.baseScale) || 1;
+        var pulse = 1 + 0.18 * Math.sin(Date.now() / 320 + idx * 0.9);
+        glow.scale.setScalar(base * pulse);
       }
     });
+    var now = Date.now();
+    if (labelItems.length > 0 && now - occlusionAt > 140) {
+      occlusionAt = now;
+      updateOcclusion();
+    }
+    layoutLabels();
     renderer.render(scene, camera);
   } catch (err) {
     // Surface a render-loop crash instead of a silent blank canvas.
@@ -890,12 +1539,76 @@ function animate() {
 }
 
 renderer.setAnimationLoop(animate);
-send({ type: 'ready' });
+
+/**
+ * Announce readiness until the host actually answers with 'init'.
+ *
+ * A single fire-and-forget 'ready' is a silent single point of failure:
+ * it is posted the instant the module finishes executing, and if that one
+ * message is dropped — the bridge not yet listening, the host mounting
+ * slightly later — nobody ever sends 'init', nothing ever calls
+ * loadBody(), and the loader spins forever with no error anywhere.
+ * Re-announcing until acknowledged makes the handshake self-healing.
+ */
+var readyTimer = null;
+var readyAttempts = 0;
+
+function stopReadyRetry() {
+  if (readyTimer) {
+    window.clearTimeout(readyTimer);
+    readyTimer = null;
+  }
+}
+
+function announceReady() {
+  send({ type: 'ready', attempt: readyAttempts });
+  readyAttempts++;
+  if (readyAttempts > 12) {
+    stopReadyRetry();
+    if (!bodyRoot) {
+      setLoading(false);
+      setStatus('The viewer could not start. Pull back and reopen this screen.', true);
+      send({ type: 'model_error', gender: state.gender, message: 'init_handshake_timeout: no init received after ' + readyAttempts + ' ready announcements' });
+    }
+    return;
+  }
+  readyTimer = window.setTimeout(announceReady, 700);
+}
+
+announceReady();
+
 window.setTimeout(function () {
   if (!bodyRoot && !(window.ReactNativeWebView && window.ReactNativeWebView.postMessage)) {
     loadBody(state.gender);
   }
 }, 350);
+window.__moduleBooted = true;
+</script>
+<script>
+// Watchdog, deliberately NOT type="module" so it runs even if the module
+// script above fails to fetch/execute (e.g. the three.js CDN import
+// getting blocked on-device) - that failure is otherwise silent: nothing
+// after a failed static import ever runs, not even the ready handshake,
+// so RN never hears about it and just shows an empty scene forever.
+(function () {
+  window.setTimeout(function () {
+    if (window.__moduleBooted) return;
+    var el = document.getElementById('status');
+    if (el) {
+      el.textContent = 'Failed to load the 3D engine - check your connection and retry.';
+      el.classList.remove('hidden');
+    }
+    var loaderEl = document.getElementById('loader');
+    if (loaderEl) loaderEl.classList.add('hidden');
+    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'model_error',
+        gender: 'unknown',
+        message: 'engine_boot_timeout: the three.js module script never finished executing'
+      }));
+    }
+  }, 8000);
+})();
 </script>
 </body>
 </html>

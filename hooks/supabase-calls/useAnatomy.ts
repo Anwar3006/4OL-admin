@@ -636,7 +636,6 @@ export interface AnatomyPremiumLayers {
   organs: boolean;
   tours: boolean;
   quiz: boolean;
-  kids: boolean;
 }
 
 export interface AnatomyPremiumConfigResponse {

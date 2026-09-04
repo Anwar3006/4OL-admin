@@ -44,13 +44,6 @@ const LAYER_META: {
     description:
       "Which-body-part quiz generated from the Diseases & Conditions mapping (P3).",
   },
-  {
-    key: "kids",
-    icon: "🧒",
-    name: "Kids mode",
-    description:
-      "Cartoon palette + friendly face for family use (P4).",
-  },
 ];
 
 const PremiumLayersTab = () => {
@@ -61,7 +54,6 @@ const PremiumLayersTab = () => {
     organs: true,
     tours: true,
     quiz: true,
-    kids: true,
   });
   const [premiumRegions, setPremiumRegions] = useState<string[]>([]);
 

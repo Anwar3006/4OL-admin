@@ -13,7 +13,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
  * free for everyone; ON gates it behind 4OurLife Premium.
  */
 
-const DEFAULT_LAYERS = { organs: true, tours: true, quiz: true, kids: true };
+const DEFAULT_LAYERS = { organs: true, tours: true, quiz: true };
 const LAYER_KEYS = Object.keys(DEFAULT_LAYERS) as (keyof typeof DEFAULT_LAYERS)[];
 
 export async function GET() {
