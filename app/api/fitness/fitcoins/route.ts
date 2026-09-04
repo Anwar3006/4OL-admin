@@ -63,13 +63,19 @@ async function listRewards() {
   return data ?? [];
 }
 
-async function listRedemptions(limit: number, offset: number) {
+async function listRedemptions(limit: number, offset: number, status?: string | null) {
   const admin = getSupabaseAdmin();
-  const { data, error, count } = await admin
+  let query = admin
     .from("fitcoin_rewards_redemption")
-    .select("id, user_id, reward_id, cost_at_redemption, redeemed_at, fitcoin_rewards(name)", { count: "exact" })
+    .select(
+      "id, user_id, reward_id, cost_at_redemption, redeemed_at, status, reviewed_by, reviewed_at, fulfilled_at, rejection_reason, fitcoin_rewards(name)",
+      { count: "exact" },
+    )
     .order("redeemed_at", { ascending: false })
     .range(offset, offset + limit - 1);
+  if (status) query = query.eq("status", status);
+
+  const { data, error, count } = await query;
   if (error) throw new Error(error.message);
 
   const userIds = [...new Set((data ?? []).map((r) => r.user_id))];
@@ -123,7 +129,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(await listLedger(limit, offset, url.searchParams.get("userId")));
     }
     if (resource === "redemptions") {
-      return NextResponse.json(await listRedemptions(limit, offset));
+      return NextResponse.json(await listRedemptions(limit, offset, url.searchParams.get("status")));
     }
     if (resource === "tiers") {
       return NextResponse.json({ tiers: await listTiers() });

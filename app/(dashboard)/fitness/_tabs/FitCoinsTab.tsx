@@ -34,11 +34,15 @@ type Reward = {
   is_active: boolean;
 };
 
+type RedemptionStatus = "pending" | "approved" | "rejected" | "fulfilled";
+
 type RedemptionRow = {
   id: string;
   user_name: string;
   cost_at_redemption: number;
   redeemed_at: string;
+  status: RedemptionStatus;
+  rejection_reason: string | null;
   fitcoin_rewards?: { name: string } | null;
 };
 
@@ -190,6 +194,37 @@ const FitCoinsTab = () => {
       toast.error((err as Error).message);
     } finally {
       setCreatingReward(false);
+    }
+  };
+
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+
+  const reviewRedemption = async (
+    redemptionId: string,
+    action: "approve" | "reject" | "fulfill",
+  ) => {
+    let reason: string | undefined;
+    if (action === "reject") {
+      reason = window.prompt("Reason for rejecting this redemption (coins will be refunded):") ?? undefined;
+      if (!reason?.trim()) return;
+    }
+    setReviewingId(redemptionId);
+    try {
+      const res = await fetch(`/api/fitness/fitcoins/redemptions/${redemptionId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, reason }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Review failed");
+      toast.success(
+        action === "approve" ? "Redemption approved" : action === "fulfill" ? "Marked fulfilled" : "Redemption rejected, coins refunded",
+      );
+      loadOverview();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setReviewingId(null);
     }
   };
 
@@ -395,6 +430,10 @@ const FitCoinsTab = () => {
         {/* ── Recent redemptions ── */}
         <div className="card bg-white">
           <h3 className="text-xl font-black text-slate-800 mb-4">🧾 Recent Redemptions</h3>
+          <p className="text-[11px] text-slate-400 font-medium mb-3">
+            Coins are reserved the moment a user requests a reward. Approve once fulfilment is
+            confirmed on your end, or reject to refund the coins.
+          </p>
           {redemptions.length === 0 ? (
             <p className="text-sm text-slate-400 font-medium py-4">No redemptions yet.</p>
           ) : (
@@ -410,10 +449,61 @@ const FitCoinsTab = () => {
                       {r.fitcoin_rewards?.name ?? "Reward"} ·{" "}
                       {new Date(r.redeemed_at).toLocaleDateString()}
                     </div>
+                    {r.status === "rejected" && r.rejection_reason && (
+                      <div className="text-[9px] text-red-500 mt-0.5 truncate">
+                        Rejected: {r.rejection_reason}
+                      </div>
+                    )}
                   </div>
-                  <span className="badge badge-red h-5 text-[9px] font-black shrink-0">
-                    −{r.cost_at_redemption.toLocaleString()} 🪙
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="badge badge-red h-5 text-[9px] font-black">
+                      −{r.cost_at_redemption.toLocaleString()} 🪙
+                    </span>
+                    <span
+                      className={`badge h-5 text-[9px] uppercase font-black ${
+                        r.status === "pending"
+                          ? "badge-amber"
+                          : r.status === "approved"
+                            ? "badge-blue"
+                            : r.status === "fulfilled"
+                              ? "badge-green"
+                              : "badge-slate"
+                      }`}
+                    >
+                      {r.status}
+                    </span>
+                    {canManage && r.status === "pending" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={reviewingId === r.id}
+                          onClick={() => reviewRedemption(r.id, "approve")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={reviewingId === r.id}
+                          onClick={() => reviewRedemption(r.id, "reject")}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                    {canManage && r.status === "approved" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={reviewingId === r.id}
+                        onClick={() => reviewRedemption(r.id, "fulfill")}
+                      >
+                        Mark fulfilled
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
