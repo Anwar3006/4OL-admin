@@ -26,6 +26,10 @@ const GrantSchema = z.object({
   // lifetime. Never <= 0.
   durationDays: z.number().int().min(1).max(3650).optional(),
   note: z.string().trim().max(500).optional(),
+  // all_access (default) bridges to full Plasence access via
+  // get_my_entitlement(); fitness_only does not (Mapping Audit "three
+  // scoped passes" gap-closure).
+  scope: z.enum(["all_access", "fitness_only"]).optional(),
 });
 
 const RevokeSchema = z.object({
@@ -48,7 +52,7 @@ export async function GET(req: NextRequest) {
   const admin = getSupabaseAdmin();
   let query = admin
     .from("user_subscriptions")
-    .select("id, user_id, tier_id, status, source, granted_by, starts_at, expires_at, paystack_reference, note, created_at, subscription_tiers(key, name)", { count: "exact" })
+    .select("id, user_id, tier_id, status, source, scope, granted_by, starts_at, expires_at, paystack_reference, note, created_at, subscription_tiers(key, name)", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
   if (userId) query = query.eq("user_id", userId);
@@ -94,7 +98,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
   }
-  const { userId, tierKey, durationDays, note } = parsed.data;
+  const { userId, tierKey, durationDays, note, scope } = parsed.data;
 
   const admin = getSupabaseAdmin();
 
@@ -141,6 +145,7 @@ export async function POST(req: NextRequest) {
       starts_at: startsAt,
       expires_at: expiresAt,
       note: note ?? null,
+      scope: scope ?? "all_access",
     })
     .select("id")
     .single();
@@ -153,7 +158,7 @@ export async function POST(req: NextRequest) {
     p_action_type: "subscription_grant",
     p_target_table: "user_subscriptions",
     p_record_id: inserted.id,
-    p_description: `Assigned ${tier.name} to user ${userId}${expiresAt ? ` until ${expiresAt}` : " (lifetime)"}`,
+    p_description: `Assigned ${tier.name} (${scope ?? "all_access"}) to user ${userId}${expiresAt ? ` until ${expiresAt}` : " (lifetime)"}`,
   });
 
   // Best-effort in-app notice through the shared notifications pipeline.

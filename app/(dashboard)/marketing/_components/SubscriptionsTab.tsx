@@ -23,11 +23,19 @@ import {
   useMarketingSubscriptions,
   useMarketingSubscribers,
   useRemindSubscribers,
+  useUpgradeRequests,
+  useReviewUpgradeRequest,
   TUserSubscriptionRow,
 } from "@/hooks/supabase-calls/useSubscriptions";
 import { TMarketingSubscriptionOutput } from "@/schemas/marketing-subscription.schema";
 
-type SubTab = "all" | "at_risk" | "billing";
+type SubTab = "all" | "at_risk" | "billing" | "requests";
+
+const PASS_TYPE_LABEL: Record<string, string> = {
+  all_access: "All-Access",
+  fitness_only: "Fitness only",
+  plasence_only: "Plasence only",
+};
 
 const FILTER_SELECT_CLASS =
   "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
@@ -145,6 +153,8 @@ function PlanCard({
 
 export default function SubscriptionsTab() {
   const [subTab, setSubTab] = useState<SubTab>("all");
+  const upgradeRequests = useUpgradeRequests("pending");
+  const reviewRequest = useReviewUpgradeRequest();
   const [planFilter, setPlanFilter] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [renewalWindow, setRenewalWindow] = useState("");
@@ -291,6 +301,7 @@ export default function SubscriptionsTab() {
           [
             { id: "all", label: "All Subscribers" },
             { id: "at_risk", label: `⚠️ At Risk (${kpis?.at_risk ?? 0})` },
+            { id: "requests", label: `🎫 Pass Requests (${upgradeRequests.data?.total ?? 0})` },
             { id: "billing", label: "💳 Billing History" },
           ] as { id: SubTab; label: string }[]
         ).map((tab) => (
@@ -425,6 +436,74 @@ export default function SubscriptionsTab() {
       )}
 
       {/* ── Billing History (deferred M-D5/K-D7) ── */}
+      {/* ── Pass Requests (three scoped passes gap-closure) ── */}
+      {subTab === "requests" && (
+        <div className="space-y-3">
+          <p className="text-[11px] font-bold text-slate-400">
+            Mobile's "Choose your pass" screen has no self-serve payment yet — a request lands
+            here, and fulfilling it performs the real grant (All-Access / Fitness-only via
+            user_subscriptions, Plasence-only via period_premium_grants).
+          </p>
+          {upgradeRequests.isLoading ? (
+            <div className="py-10 text-center text-[11px] font-bold text-slate-400">Loading…</div>
+          ) : (upgradeRequests.data?.requests ?? []).length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-10 text-center">
+              <div className="text-3xl mb-3">🎫</div>
+              <div className="text-[13px] font-black uppercase tracking-widest text-slate-700">
+                No pending requests
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
+              {(upgradeRequests.data?.requests ?? []).map((r) => (
+                <div key={r.id} className="flex items-center justify-between gap-3 p-4">
+                  <div className="min-w-0">
+                    <div className="text-[13px] font-black text-slate-800">{r.user_name}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {r.user_email} · requested {new Date(r.requested_at).toLocaleDateString()}
+                    </div>
+                    {r.note && (
+                      <div className="text-[11px] text-slate-400 mt-1 italic truncate max-w-md">
+                        "{r.note}"
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="badge badge-blue h-5 text-[9px] uppercase font-black">
+                      {PASS_TYPE_LABEL[r.pass_type] ?? r.pass_type}
+                    </span>
+                    <span className="badge badge-slate h-5 text-[9px] uppercase font-black font-mono">
+                      {r.tier_key}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reviewRequest.isPending}
+                      onClick={() => reviewRequest.mutate({ requestId: r.id, action: "fulfill" })}
+                    >
+                      Fulfil
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reviewRequest.isPending}
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => {
+                        const reason = window.prompt("Reason for declining this request:");
+                        if (!reason?.trim()) return;
+                        reviewRequest.mutate({ requestId: r.id, action: "decline", reason });
+                      }}
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {subTab === "billing" && (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-10 text-center">
           <div className="text-3xl mb-3">💳</div>
