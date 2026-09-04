@@ -1,12 +1,12 @@
 {
-  "version": "2026-09-01.nih-hra-skin-standard",
+  "version": "2026-09-04.nih-hra-skin-plus-bodyparts3d-organs",
   "defaultVariant": "standard",
   "decoderRequired": [],
   "models": {
     "female": {
       "publicUrl": "/anatomy/models/body-female-skin-standard.glb",
-      "bytes": 3215404,
-      "triangles": 133924,
+      "bytes": 1171224,
+      "triangles": 65000,
       "sourceEntryId": "3DPX-020992",
       "sourceUrl": "https://3d.nih.gov/entries/20992?version=1"
     },
@@ -16,6 +16,15 @@
       "triangles": 64858,
       "sourceEntryId": "3DPX-021022",
       "sourceUrl": "https://3d.nih.gov/entries/21022?version=1"
+    },
+    "organs": {
+      "publicUrl": "/anatomy/models/body-organs-standard.glb",
+      "bytes": 279368,
+      "triangles": 21952,
+      "shared": true,
+      "source": "BodyParts3D 4.0 (DBCLS), CC BY-SA 2.1 Japan",
+      "sourceUrl": "https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html",
+      "parts": ["heart", "liver", "small_intestine", "large_intestine", "right_lung", "left_lung", "right_kidney", "left_kidney", "brain", "stomach", "esophagus"]
     }
   }
 }

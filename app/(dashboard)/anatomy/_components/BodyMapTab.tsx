@@ -77,30 +77,50 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
       {/* System sub-tabs + toggles */}
       <div className="card p-3">
         <div className="flex flex-wrap items-center gap-2">
-          {BODY_SYSTEMS.map((s) => (
-            <button
-              key={s}
-              className={`btn btn-sm ${system === s ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setSystem(s)}
-            >
-              {SYSTEM_LABELS[s]}
-            </button>
-          ))}
+          <div className="flex flex-wrap gap-1 rounded-full bg-slate-100 p-1">
+            {BODY_SYSTEMS.map((s) => (
+              <button
+                key={s}
+                className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                  system === s
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-white"
+                }`}
+                onClick={() => setSystem(s)}
+              >
+                {SYSTEM_LABELS[s]}
+              </button>
+            ))}
+          </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            <div className="flex rounded-full bg-slate-100 p-1">
+              <button
+                className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                  view === "front"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-white"
+                }`}
+                onClick={() => setView("front")}
+              >
+                Front
+              </button>
+              <button
+                className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                  view === "back"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-white"
+                }`}
+                onClick={() => setView("back")}
+              >
+                Back
+              </button>
+            </div>
             <button
-              className={`btn btn-sm ${view === "front" ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setView("front")}
-            >
-              Front
-            </button>
-            <button
-              className={`btn btn-sm ${view === "back" ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setView("back")}
-            >
-              Back
-            </button>
-            <button
-              className={`btn btn-sm ${showOrgans ? "btn-primary" : "btn-secondary"}`}
+              className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                showOrgans
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
               onClick={() => setShowOrgans((v) => !v)}
             >
               🔬 {showOrgans ? "Hide Organs" : "Show Organs"}
@@ -120,32 +140,58 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
           </div>
 
           {visibleHotspots.length > 0 ? (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex justify-center rounded-2xl bg-linear-to-b from-slate-50 to-slate-100 py-4">
               <svg viewBox="0 0 200 400" className="h-[480px] w-auto">
+                <defs>
+                  <linearGradient id="bodyGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f8fafc" />
+                    <stop offset="100%" stopColor="#e2e8f0" />
+                  </linearGradient>
+                  <radialGradient id="hotspotGlow">
+                    <stop offset="0%" stopColor="rgba(52,211,153,0.55)" />
+                    <stop offset="100%" stopColor="rgba(52,211,153,0)" />
+                  </radialGradient>
+                  <filter id="bodyShadow" x="-20%" y="-10%" width="140%" height="120%">
+                    <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#0f172a" floodOpacity="0.12" />
+                  </filter>
+                </defs>
                 <path
                   d={SILHOUETTE_PATH}
-                  fill="#f1f5f9"
+                  fill="url(#bodyGradient)"
                   stroke="#cbd5e1"
                   strokeWidth="1.5"
+                  filter="url(#bodyShadow)"
                 />
                 {visibleHotspots.map((h) => {
                   const part = partById.get(h.body_part_id);
                   const active = selectedId === h.body_part_id;
                   return (
-                    <ellipse
+                    <g
                       key={h.id}
-                      cx={h.cx}
-                      cy={h.cy}
-                      rx={h.rx}
-                      ry={h.ry}
-                      className="cursor-pointer transition"
-                      fill={active ? "rgba(5,150,105,0.45)" : "rgba(5,150,105,0.18)"}
-                      stroke={active ? "#047857" : "#10b981"}
-                      strokeWidth={active ? 2 : 1}
+                      className="cursor-pointer"
                       onClick={() => setSelectedId(h.body_part_id)}
                     >
-                      <title>{part?.name ?? "Body region"}</title>
-                    </ellipse>
+                      <ellipse
+                        cx={h.cx}
+                        cy={h.cy}
+                        rx={Number(h.rx) * (active ? 2.2 : 1.8)}
+                        ry={Number(h.ry) * (active ? 2.2 : 1.8)}
+                        fill="url(#hotspotGlow)"
+                        className={active ? "opacity-100" : "opacity-0 transition-opacity group-hover:opacity-70"}
+                      />
+                      <ellipse
+                        cx={h.cx}
+                        cy={h.cy}
+                        rx={h.rx}
+                        ry={h.ry}
+                        className="transition"
+                        fill={active ? "rgba(5,150,105,0.5)" : "rgba(5,150,105,0.2)"}
+                        stroke={active ? "#047857" : "#10b981"}
+                        strokeWidth={active ? 2 : 1}
+                      >
+                        <title>{part?.name ?? "Body region"}</title>
+                      </ellipse>
+                    </g>
                   );
                 })}
               </svg>

@@ -61,14 +61,14 @@ export default function AnatomyPage() {
         title="🧍 Human Anatomy"
         subtitle="Interactive body map · symptom & condition mapping · gender-aware content"
       >
-        {/* Header actions (mockup): gender toggle · Export · + Add Body Part */}
-        <div className="flex rounded-lg border border-slate-200 overflow-hidden">
+        {/* Header actions: gender toggle · Export · + Add Body Part */}
+        <div className="flex rounded-full bg-slate-100 p-1">
           <button
             className={cn(
-              "px-3 py-2 text-xs font-bold transition",
+              "rounded-full px-3 py-1.5 text-xs font-bold transition",
               gender === "female"
-                ? "bg-emerald-600 text-white"
-                : "bg-white text-slate-500 hover:bg-slate-50",
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "text-slate-500 hover:bg-white",
             )}
             onClick={() => setGender("female")}
           >
@@ -76,10 +76,10 @@ export default function AnatomyPage() {
           </button>
           <button
             className={cn(
-              "px-3 py-2 text-xs font-bold transition",
+              "rounded-full px-3 py-1.5 text-xs font-bold transition",
               gender === "male"
-                ? "bg-emerald-600 text-white"
-                : "bg-white text-slate-500 hover:bg-slate-50",
+                ? "bg-emerald-600 text-white shadow-sm"
+                : "text-slate-500 hover:bg-white",
             )}
             onClick={() => setGender("male")}
           >

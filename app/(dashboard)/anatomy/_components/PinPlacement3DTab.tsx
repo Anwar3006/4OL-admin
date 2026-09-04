@@ -163,18 +163,20 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
           </div>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-inner">
           <iframe
             ref={iframeRef}
             src="/anatomy/scene.html"
             title="Anatomy 3D pin placement editor"
-            className="h-[480px] w-full"
+            className="aspect-[16/10] max-h-[70vh] w-full"
           />
         </div>
         <p className="mt-2 text-[11px] text-slate-400">
           Drag to rotate. With placement enabled, tap the model to capture
-          model-space coordinates for the selected body part. The same scene
-          engine ships inside the mobile app.
+          model-space coordinates for the selected body part. This is the same
+          rendering engine (skin, real organ geometry, lighting) that ships
+          inside the mobile app — mobile drives it with native buttons instead
+          of drag gestures.
         </p>
       </div>
 

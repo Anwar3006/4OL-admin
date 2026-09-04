@@ -6,6 +6,11 @@
 <style>
   html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
   #scene { width: 100vw; height: 100vh; touch-action: none; }
+  #scene canvas { display: block; }
+  #bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 18%, #1e293b 0%, #0f172a 55%, #060a14 100%);
+  }
   #status {
     position: fixed; left: 14px; top: 14px; right: 148px; z-index: 5;
     border-radius: 999px; background: rgba(15,23,42,0.72); color: #fff;
@@ -14,6 +19,24 @@
     pointer-events: none; transition: opacity 180ms ease, transform 180ms ease;
   }
   #status.hidden { opacity: 0; transform: translateY(-8px); }
+  #loader {
+    position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 14px; background: rgba(6,10,20,0.001);
+    pointer-events: none; transition: opacity 320ms ease;
+  }
+  #loader.hidden { opacity: 0; }
+  .loader-ring {
+    width: 46px; height: 46px; border-radius: 999px;
+    background: conic-gradient(from 0deg, rgba(52,211,153,0) 0%, #34d399 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+    animation: loader-spin 900ms linear infinite;
+  }
+  .loader-label {
+    font: 600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase; color: rgba(226,232,240,0.75);
+  }
+  @keyframes loader-spin { to { transform: rotate(360deg); } }
 </style>
 <script type="importmap">
 {
@@ -25,7 +48,9 @@
 </script>
 </head>
 <body>
+<div id="bg"></div>
 <div id="scene"></div>
+<div id="loader"><div class="loader-ring"></div><div class="loader-label">Loading anatomy</div></div>
 <div id="status">Loading anatomy...</div>
 <script type="module">
 import * as THREE from 'three';
@@ -33,6 +58,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 var container = document.getElementById('scene');
 var statusEl = document.getElementById('status');
+var loaderEl = document.getElementById('loader');
 var DPR = Math.min(window.devicePixelRatio || 1, 2);
 var DEG = Math.PI / 180;
 var query = new URLSearchParams(window.location.search || '');
@@ -59,13 +85,25 @@ var state = {
   pins: [],
   modelUrls: {
     female: '/anatomy/models/body-female-skin-standard.glb',
-    male: '/anatomy/models/body-male-skin-standard.glb'
+    male: '/anatomy/models/body-male-skin-standard.glb',
+    organs: '/anatomy/models/body-organs-standard.glb'
   }
 };
+
+// Rendered camera state — eased toward state.* every frame (see updateCamera).
+var cam = {
+  yaw: 0, pitch: 0, zoom: 1,
+  tgt: { x: 0, y: 100, z: 0 },
+  pan: { x: 0, y: 0, z: 0 },
+  shiftX: 0
+};
+var camReady = false;
 
 var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(DPR);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
 container.appendChild(renderer.domElement);
 
 var scene = new THREE.Scene();
@@ -73,30 +111,40 @@ var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 1200);
 var raycaster = new THREE.Raycaster();
 var pointer = new THREE.Vector2();
 var loader = new GLTFLoader();
+var clock = new THREE.Clock();
 var modelCache = {};
 var bodyRoot = null;
 var bodyMeshes = [];
 var pinGroup = new THREE.Group();
 var organGroup = new THREE.Group();
 var markerGroup = new THREE.Group();
+var shadowGroup = new THREE.Group();
+scene.add(shadowGroup);
 scene.add(pinGroup);
 scene.add(organGroup);
 scene.add(markerGroup);
 
-scene.add(new THREE.HemisphereLight(0xf8fafc, 0x172033, 1.15));
-var key = new THREE.DirectionalLight(0xffffff, 1.05);
+// Note: deliberately no PMREMGenerator/environment map here — it requires
+// WebGL2 and reliable shader compilation, which some Android WebView GPU
+// drivers don't handle well; the lighting rig below covers materials fine
+// without it. envMapIntensity on materials is simply inert without one.
+scene.add(new THREE.HemisphereLight(0xdbeafe, 0x0b1220, 0.55));
+var key = new THREE.DirectionalLight(0xfff3e0, 1.35);
 key.position.set(120, 260, 280);
 scene.add(key);
-var rim = new THREE.DirectionalLight(0x7dd3fc, 0.35);
-rim.position.set(-220, 180, -260);
+var fill = new THREE.DirectionalLight(0xbfdbfe, 0.4);
+fill.position.set(-180, 140, 220);
+scene.add(fill);
+var rim = new THREE.DirectionalLight(0x7dd3fc, 0.65);
+rim.position.set(-220, 220, -260);
 scene.add(rim);
 
 var skinColor = new THREE.Color(0.46, 0.255, 0.14);
 var kidsColor = new THREE.Color(0.82, 0.46, 0.27);
 var highlightMaterial = new THREE.MeshBasicMaterial({
-  color: 0x10b981,
+  color: 0x34d399,
   transparent: true,
-  opacity: 0.12,
+  opacity: 0.14,
   depthWrite: false
 });
 
@@ -104,6 +152,8 @@ var dragging = false;
 var moved = 0;
 var lastX = 0;
 var lastY = 0;
+var dragVel = { yaw: 0, pitch: 0 };
+var inertia = { yaw: 0, pitch: 0, active: false };
 var statusTimer = null;
 
 function setStatus(text, sticky) {
@@ -117,6 +167,15 @@ function setStatus(text, sticky) {
   }
 }
 
+function setLoading(active, label) {
+  if (active) {
+    loaderEl.querySelector('.loader-label').textContent = label || 'Loading anatomy';
+    loaderEl.classList.remove('hidden');
+  } else {
+    loaderEl.classList.add('hidden');
+  }
+}
+
 function send(obj) {
   var msg = JSON.stringify(obj);
   if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
@@ -125,6 +184,18 @@ function send(obj) {
     window.parent.postMessage(msg, '*');
   }
 }
+
+window.addEventListener('error', function (e) {
+  var msg = (e && e.error && e.error.message) || (e && e.message) || 'unknown error';
+  setStatus('Scene error: ' + msg, true);
+  send({ type: 'model_error', gender: state.gender, message: 'uncaught: ' + msg });
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var reason = e && e.reason;
+  var msg = (reason && reason.message) || String(reason);
+  setStatus('Scene error: ' + msg, true);
+  send({ type: 'model_error', gender: state.gender, message: 'unhandled rejection: ' + msg });
+});
 
 function resize() {
   var w = Math.max(container.clientWidth, 1);
@@ -208,10 +279,16 @@ function tuneMaterials(root) {
   root.traverse(function (node) {
     if (!node.isMesh) return;
     node.frustumCulled = true;
-    node.material = new THREE.MeshStandardMaterial({
+    node.material = new THREE.MeshPhysicalMaterial({
       color: state.kids ? kidsColor : skinColor,
-      roughness: 0.82,
+      roughness: 0.58,
       metalness: 0,
+      sheen: 0.35,
+      sheenRoughness: 0.7,
+      sheenColor: state.kids ? kidsColor : skinColor,
+      clearcoat: 0.05,
+      clearcoatRoughness: 0.6,
+      envMapIntensity: 0.55,
       side: THREE.FrontSide
     });
   });
@@ -224,9 +301,36 @@ function collectBodyMeshes(root) {
   });
 }
 
+function buildContactShadow() {
+  clearGroup(shadowGroup);
+  if (!state.bodyMetrics) return;
+  var size = state.bodyMetrics.size;
+  var canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  var ctx = canvas.getContext('2d');
+  var grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grad.addColorStop(0, 'rgba(0,0,0,0.42)');
+  grad.addColorStop(0.6, 'rgba(0,0,0,0.22)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+  var texture = new THREE.CanvasTexture(canvas);
+  var radius = Math.max(size.x, size.z) * 0.62;
+  var mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(radius, 48),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(state.bodyMetrics.center.x, 0.3, state.bodyMetrics.center.z);
+  shadowGroup.add(mesh);
+}
+
 async function loadBody(gender) {
   var url = state.modelUrls[gender] || state.modelUrls.female;
   if (!url) return;
+  var firstLoad = !bodyRoot;
+  if (firstLoad) setLoading(true, 'Preparing ' + gender + ' model');
   setStatus('Loading ' + gender + ' body...', true);
   try {
     if (!modelCache[gender] || modelCache[gender].url !== url) {
@@ -241,158 +345,89 @@ async function loadBody(gender) {
     collectBodyMeshes(bodyRoot);
     scene.add(bodyRoot);
     buildFocusMarker();
+    buildContactShadow();
+    if (!camReady) { snapCamera(); camReady = true; }
     setStatus(gender.charAt(0).toUpperCase() + gender.slice(1) + ' body ready', false);
+    setLoading(false);
     send({ type: 'model_ready', gender: gender });
   } catch (err) {
     setStatus('Could not load anatomy model', true);
+    setLoading(false);
     send({ type: 'model_error', gender: gender, message: err && err.message ? err.message : String(err) });
   }
 }
 
-function updateCamera() {
-  var isFullBody = (state.zoom || 1) <= 1.05 && !state.focusRegion;
-  var baseTarget = isFullBody ? state.fullBodyTarget : state.tgt;
-  var target = new THREE.Vector3(baseTarget.x || 0, baseTarget.y || 100, baseTarget.z || 0);
-  target.add(new THREE.Vector3(state.viewPan.x || 0, state.viewPan.y || 0, state.viewPan.z || 0));
-  var pitch = Math.max(-35, Math.min(35, state.pitch)) * DEG;
-  var yaw = state.yaw * DEG;
-  var baseDistance = isFullBody ? state.fullBodyDistance : 280;
-  var distance = baseDistance / Math.max(state.zoom || 1, 0.2);
-  var offset = new THREE.Vector3(
-    Math.sin(yaw) * Math.cos(pitch) * distance,
-    Math.sin(pitch) * distance,
-    Math.cos(yaw) * Math.cos(pitch) * distance
-  );
-  var right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-  target.addScaledVector(right, -(state.shiftX || 0) / Math.max(state.zoom || 1, 1) * 0.18);
-  camera.position.copy(target).add(offset);
-  camera.lookAt(target);
-  camera.near = Math.max(distance / 120, 0.1);
-  camera.far = 1200;
-  camera.updateProjectionMatrix();
-}
+// --- Organs (real BodyParts3D-derived geometry, loaded once and reused) ---
+var organsGLTFCache = null;
+var organsLoadPromise = null;
 
-function clearGroup(group) {
-  group.traverse(function (child) {
-    if (child === group) return;
-    if (child.geometry) child.geometry.dispose();
-    if (child.material) {
-      if (child.material.map) child.material.map.dispose();
-      child.material.dispose();
-    }
-  });
-  while (group.children.length) {
-    group.children.pop();
+var ORGAN_NAMES = [
+  'heart', 'liver', 'small_intestine', 'large_intestine', 'right_lung', 'left_lung',
+  'right_kidney', 'left_kidney', 'brain', 'stomach', 'esophagus'
+];
+
+function findOrganName(node) {
+  var cursor = node;
+  while (cursor) {
+    if (cursor.name && ORGAN_NAMES.indexOf(cursor.name) !== -1) return cursor.name;
+    cursor = cursor.parent;
   }
+  return '';
 }
 
-function makePinLabel(text) {
-  if (!text) return null;
-  var canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 80;
-  var ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = '700 26px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  var label = String(text).slice(0, 24);
-  var textWidth = Math.min(ctx.measureText(label).width, 216);
-  var boxWidth = Math.max(96, textWidth + 36);
-  var x = (canvas.width - boxWidth) / 2;
-  var y = 16;
-  var width = boxWidth;
-  var height = 42;
-  var radius = 21;
-  ctx.fillStyle = 'rgba(15,23,42,0.86)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.92)';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, canvas.width / 2, 38, 216);
-  var texture = new THREE.CanvasTexture(canvas);
-  texture.needsUpdate = true;
-  var material = new THREE.SpriteMaterial({
-    map: texture,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false
+function tuneOrganMaterials(root) {
+  var deepRed = new THREE.Color(0.62, 0.19, 0.17);
+  var soft = new THREE.Color(0.79, 0.47, 0.42);
+  var neutral = new THREE.Color(0.72, 0.6, 0.58);
+  root.traverse(function (node) {
+    if (!node.isMesh) return;
+    var name = findOrganName(node);
+    var tint = soft;
+    if (name === 'heart' || name === 'right_kidney' || name === 'left_kidney') tint = deepRed;
+    if (name === 'brain') tint = neutral;
+    node.material = new THREE.MeshPhysicalMaterial({
+      color: tint,
+      roughness: 0.42,
+      metalness: 0,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.35,
+      transmission: state.viewProfile === 'mobile' ? 0 : 0.08,
+      transparent: true,
+      opacity: 0.86,
+      envMapIntensity: 0.5,
+      side: THREE.FrontSide
+    });
   });
-  var sprite = new THREE.Sprite(material);
-  sprite.renderOrder = 30;
-  sprite.scale.set(24, 7.5, 1);
-  return sprite;
 }
 
-function buildPins() {
-  clearGroup(pinGroup);
-  var outer = new THREE.SphereGeometry(3.4, 20, 12);
-  var inner = new THREE.SphereGeometry(1.35, 16, 8);
-  var mat = new THREE.MeshBasicMaterial({ color: 0x059669 });
-  var core = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  for (var i = 0; i < state.pins.length; i++) {
-    var pin = state.pins[i];
-    var group = new THREE.Group();
-    group.position.set(Number(pin.x) || 0, Number(pin.y) || 0, Number(pin.z) || 0);
-    group.userData = { id: pin.id, body_part_id: pin.body_part_id, pin: true };
-    var shell = new THREE.Mesh(outer, mat);
-    var dot = new THREE.Mesh(inner, core);
-    shell.userData = group.userData;
-    dot.userData = group.userData;
-    group.add(shell);
-    group.add(dot);
-    var label = makePinLabel(pin.label || pin.name);
-    if (label) {
-      label.position.set(0, 7.4, 2.5);
-      group.add(label);
-    }
-    pinGroup.add(group);
-  }
+function ensureOrgansLoaded() {
+  if (organsGLTFCache) return Promise.resolve(organsGLTFCache);
+  if (organsLoadPromise) return organsLoadPromise;
+  var url = state.modelUrls.organs;
+  if (!url) return Promise.resolve(null);
+  organsLoadPromise = loader.loadAsync(url).then(function (gltf) {
+    tuneOrganMaterials(gltf.scene);
+    organsGLTFCache = gltf.scene;
+    return organsGLTFCache;
+  }).catch(function (err) {
+    send({ type: 'model_error', gender: 'organs', message: err && err.message ? err.message : String(err) });
+    return null;
+  }).finally(function () {
+    organsLoadPromise = null;
+  });
+  return organsLoadPromise;
 }
 
-function cylinderBetween(a, b, radius, material) {
-  var dir = new THREE.Vector3().subVectors(b, a);
-  var geo = new THREE.CylinderGeometry(radius, radius, Math.max(dir.length(), 0.01), 18, 1);
-  var mesh = new THREE.Mesh(geo, material);
-  mesh.position.copy(a).add(b).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-  return mesh;
-}
+var organsBuildToken = 0;
 
-function buildOrgans() {
+async function buildOrgans() {
+  var token = ++organsBuildToken;
   clearGroup(organGroup);
   if (!state.organs || state.kids) return;
-  var red = new THREE.MeshStandardMaterial({ color: 0xc0564f, roughness: 0.68, transparent: true, opacity: 0.72 });
-  var soft = new THREE.MeshStandardMaterial({ color: 0xe0917f, roughness: 0.72, transparent: true, opacity: 0.62 });
-  var bone = new THREE.MeshStandardMaterial({ color: 0xe7c9a9, roughness: 0.8, transparent: true, opacity: 0.62 });
-  function sphere(x, y, z, sx, sy, sz, mat) {
-    var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), mat);
-    mesh.position.set(x, y, z);
-    mesh.scale.set(sx, sy, sz);
-    organGroup.add(mesh);
-  }
-  sphere(0, 186, 0, 9, 7, 7, soft);
-  sphere(-4, 142, 8, 5, 6, 4, red);
-  sphere(-10, 146, 4, 7, 15, 4, soft);
-  sphere(10, 146, 4, 7, 15, 4, soft);
-  sphere(-5, 124, 7, 11, 5, 4, red);
-  sphere(5, 116, 8, 7, 5, 4, soft);
-  sphere(-8, 111, -4, 4, 6, 3, red);
-  sphere(8, 111, -4, 4, 6, 3, red);
-  sphere(0, 102, 7, 12, 9, 5, soft);
-  organGroup.add(cylinderBetween(new THREE.Vector3(0, 160, -7), new THREE.Vector3(0, 70, -7), 2.2, bone));
+  var template = await ensureOrgansLoaded();
+  // Bail if state changed, or a newer buildOrgans() call has since superseded this one.
+  if (!template || token !== organsBuildToken || !state.organs || state.kids) return;
+  organGroup.add(template.clone(true));
 }
 
 function buildFocusMarker() {
@@ -443,6 +478,181 @@ function classifyPoint(point) {
   return { region: 'foot_' + side, part: 'foot' };
 }
 
+// --- Camera: eased/damped toward state.* targets (see animate()) ---
+function snapCamera() {
+  cam.yaw = state.yaw;
+  cam.pitch = state.pitch;
+  cam.zoom = state.zoom;
+  cam.tgt.x = state.tgt.x; cam.tgt.y = state.tgt.y; cam.tgt.z = state.tgt.z;
+  cam.pan.x = state.viewPan.x; cam.pan.y = state.viewPan.y; cam.pan.z = state.viewPan.z;
+  cam.shiftX = state.shiftX;
+}
+
+function dampCamera(dt) {
+  var lambdaFast = 8;
+  var lambdaSlow = 5;
+  cam.yaw = THREE.MathUtils.damp(cam.yaw, state.yaw, lambdaFast, dt);
+  cam.pitch = THREE.MathUtils.damp(cam.pitch, state.pitch, lambdaFast, dt);
+  cam.zoom = THREE.MathUtils.damp(cam.zoom, state.zoom, lambdaSlow, dt);
+  cam.tgt.x = THREE.MathUtils.damp(cam.tgt.x, state.tgt.x, lambdaSlow, dt);
+  cam.tgt.y = THREE.MathUtils.damp(cam.tgt.y, state.tgt.y, lambdaSlow, dt);
+  cam.tgt.z = THREE.MathUtils.damp(cam.tgt.z, state.tgt.z, lambdaSlow, dt);
+  cam.pan.x = THREE.MathUtils.damp(cam.pan.x, state.viewPan.x, lambdaSlow, dt);
+  cam.pan.y = THREE.MathUtils.damp(cam.pan.y, state.viewPan.y, lambdaSlow, dt);
+  cam.pan.z = THREE.MathUtils.damp(cam.pan.z, state.viewPan.z, lambdaSlow, dt);
+  cam.shiftX = THREE.MathUtils.damp(cam.shiftX, state.shiftX, lambdaSlow, dt);
+}
+
+function updateCamera() {
+  var isFullBody = (cam.zoom || 1) <= 1.05 && !state.focusRegion;
+  var baseTarget = isFullBody ? state.fullBodyTarget : cam.tgt;
+  var target = new THREE.Vector3(baseTarget.x || 0, baseTarget.y || 100, baseTarget.z || 0);
+  target.add(new THREE.Vector3(cam.pan.x || 0, cam.pan.y || 0, cam.pan.z || 0));
+  var pitch = Math.max(-35, Math.min(35, cam.pitch)) * DEG;
+  var yaw = cam.yaw * DEG;
+  var baseDistance = isFullBody ? state.fullBodyDistance : 280;
+  var distance = baseDistance / Math.max(cam.zoom || 1, 0.2);
+  var offset = new THREE.Vector3(
+    Math.sin(yaw) * Math.cos(pitch) * distance,
+    Math.sin(pitch) * distance,
+    Math.cos(yaw) * Math.cos(pitch) * distance
+  );
+  var right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+  target.addScaledVector(right, -(cam.shiftX || 0) / Math.max(cam.zoom || 1, 1) * 0.18);
+  camera.position.copy(target).add(offset);
+  camera.lookAt(target);
+  camera.near = Math.max(distance / 120, 0.1);
+  camera.far = 1200;
+  camera.updateProjectionMatrix();
+}
+
+function clearGroup(group) {
+  group.traverse(function (child) {
+    if (child === group) return;
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) {
+      if (child.material.map) child.material.map.dispose();
+      child.material.dispose();
+    }
+  });
+  while (group.children.length) {
+    group.children.pop();
+  }
+}
+
+function makePinLabel(text, locked) {
+  if (!text) return null;
+  var canvas = document.createElement('canvas');
+  canvas.width = 280;
+  canvas.height = 84;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = '700 25px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  var label = String(text).slice(0, 24);
+  var textWidth = Math.min(ctx.measureText(label).width, 220);
+  var boxWidth = Math.max(100, textWidth + (locked ? 60 : 40));
+  var x = (canvas.width - boxWidth) / 2;
+  var y = 18;
+  var width = boxWidth;
+  var height = 44;
+  var radius = 22;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(8,13,26,0.82)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.strokeStyle = locked ? 'rgba(245,158,11,0.55)' : 'rgba(52,211,153,0.55)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y + 1);
+  ctx.lineTo(x + width - radius, y + 1);
+  ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = locked ? '#fbbf24' : '#34d399';
+  ctx.beginPath();
+  ctx.arc(x + 18, y + height / 2, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#f8fafc';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x + 30, y + height / 2 + 1, boxWidth - 40);
+  var texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  var material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false
+  });
+  var sprite = new THREE.Sprite(material);
+  sprite.renderOrder = 30;
+  // Fixed height, width scaled to the drawn box so labels stay readable regardless of text length.
+  sprite.scale.set(9 * (boxWidth / 44), 9, 1);
+  return sprite;
+}
+
+function cylinderBetween(a, b, radius, material) {
+  var dir = new THREE.Vector3().subVectors(b, a);
+  var geo = new THREE.CylinderGeometry(radius, radius, Math.max(dir.length(), 0.01), 18, 1);
+  var mesh = new THREE.Mesh(geo, material);
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  return mesh;
+}
+
+function buildPins() {
+  clearGroup(pinGroup);
+  var dotGeo = new THREE.SphereGeometry(1.6, 20, 12);
+  var glowGeo = new THREE.RingGeometry(2.2, 4.2, 28);
+  var dotMatEmerald = new THREE.MeshPhysicalMaterial({ color: 0x34d399, roughness: 0.3, clearcoat: 0.6, emissive: 0x065f46, emissiveIntensity: 0.4 });
+  var dotMatAmber = new THREE.MeshPhysicalMaterial({ color: 0xfbbf24, roughness: 0.3, clearcoat: 0.6, emissive: 0x78350f, emissiveIntensity: 0.4 });
+  var glowMatEmerald = new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+  var glowMatAmber = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+  var leaderMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
+
+  for (var i = 0; i < state.pins.length; i++) {
+    var pin = state.pins[i];
+    var locked = !!pin.locked;
+    var group = new THREE.Group();
+    var origin = new THREE.Vector3(Number(pin.x) || 0, Number(pin.y) || 0, Number(pin.z) || 0);
+    group.position.copy(origin);
+    group.userData = { id: pin.id, body_part_id: pin.body_part_id, pin: true };
+
+    var dot = new THREE.Mesh(dotGeo, locked ? dotMatAmber : dotMatEmerald);
+    dot.userData = group.userData;
+    group.add(dot);
+
+    var glow = new THREE.Mesh(glowGeo, locked ? glowMatAmber : glowMatEmerald);
+    glow.userData = group.userData;
+    glow.renderOrder = 20;
+    group.add(glow);
+
+    var labelOffset = new THREE.Vector3(0, 7.5, 2.2);
+    var leader = cylinderBetween(new THREE.Vector3(0, 0.4, 0.2), labelOffset.clone().multiplyScalar(0.85), 0.12, leaderMat);
+    group.add(leader);
+
+    var label = makePinLabel(pin.label || pin.name, locked);
+    if (label) {
+      label.position.copy(labelOffset);
+      group.add(label);
+    }
+    pinGroup.add(group);
+  }
+}
+
+// --- Camera drag (rotate) with release momentum ---
 function setPointer(clientX, clientY) {
   var rect = renderer.domElement.getBoundingClientRect();
   pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -495,6 +705,9 @@ function pos(e) {
 function onDown(e) {
   dragging = true;
   moved = 0;
+  inertia.active = false;
+  dragVel.yaw = 0;
+  dragVel.pitch = 0;
   var p = pos(e);
   lastX = p.x;
   lastY = p.y;
@@ -509,8 +722,12 @@ function onMove(e) {
   lastX = p.x;
   lastY = p.y;
   if (!state.directControls) return;
-  state.yaw += dx * 0.45;
-  state.pitch = Math.max(-35, Math.min(35, state.pitch - dy * 0.22));
+  var dYaw = dx * 0.45;
+  var dPitch = -dy * 0.22;
+  state.yaw += dYaw;
+  state.pitch = Math.max(-35, Math.min(35, state.pitch + dPitch));
+  dragVel.yaw = dragVel.yaw * 0.6 + dYaw * 0.4;
+  dragVel.pitch = dragVel.pitch * 0.6 + dPitch * 0.4;
 }
 
 function onUp(e) {
@@ -519,6 +736,10 @@ function onUp(e) {
   if (moved < 8) {
     var p = pos(e);
     handleTap(p.x, p.y);
+  } else if (state.directControls) {
+    inertia.yaw = dragVel.yaw;
+    inertia.pitch = dragVel.pitch;
+    inertia.active = Math.abs(inertia.yaw) + Math.abs(inertia.pitch) > 0.01;
   }
 }
 
@@ -533,7 +754,7 @@ function handle(m) {
   if (!m || !m.type) return;
   switch (m.type) {
     case 'init':
-      if (m.model_urls) state.modelUrls = m.model_urls;
+      if (m.model_urls) state.modelUrls = Object.assign({}, state.modelUrls, m.model_urls);
       if (m.view_profile) state.viewProfile = m.view_profile;
       if (typeof m.direct_controls === 'boolean') state.directControls = m.direct_controls;
       applyFullBodyFrame();
@@ -547,7 +768,7 @@ function handle(m) {
       loadBody(state.gender);
       break;
     case 'set_models':
-      if (m.model_urls) state.modelUrls = m.model_urls;
+      if (m.model_urls) state.modelUrls = Object.assign({}, state.modelUrls, m.model_urls);
       loadBody(state.gender);
       break;
     case 'set_view_profile':
@@ -635,13 +856,37 @@ window.addEventListener('message', function (e) {
   } catch (err) {}
 });
 
+var animateErrorReported = false;
+
 function animate() {
-  updateCamera();
-  pinGroup.children.forEach(function (pin) {
-    var scale = 1 + 0.08 * Math.sin(Date.now() / 280);
-    pin.scale.setScalar(scale);
-  });
-  renderer.render(scene, camera);
+  try {
+    var dt = clock.getDelta();
+    if (inertia.active) {
+      state.yaw += inertia.yaw;
+      state.pitch = Math.max(-35, Math.min(35, state.pitch + inertia.pitch));
+      inertia.yaw *= 0.92;
+      inertia.pitch *= 0.92;
+      if (Math.abs(inertia.yaw) + Math.abs(inertia.pitch) < 0.01) inertia.active = false;
+    }
+    dampCamera(dt);
+    updateCamera();
+    pinGroup.children.forEach(function (pin) {
+      var glow = pin.children[1];
+      if (glow) {
+        var pulse = 1 + 0.18 * Math.sin(Date.now() / 320);
+        glow.scale.setScalar(pulse);
+      }
+    });
+    renderer.render(scene, camera);
+  } catch (err) {
+    // Surface a render-loop crash instead of a silent blank canvas.
+    if (!animateErrorReported) {
+      animateErrorReported = true;
+      var msg = err && err.message ? err.message : String(err);
+      setStatus('Render error: ' + msg, true);
+      send({ type: 'model_error', gender: state.gender, message: 'render loop: ' + msg });
+    }
+  }
 }
 
 renderer.setAnimationLoop(animate);
