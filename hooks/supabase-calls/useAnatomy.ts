@@ -233,38 +233,34 @@ export const useAnatomySymptoms = ({
 export interface AnatomyTipRow {
   tip_id: string;
   tip_name: string;
+  slug: string | null;
+  description: string | null;
   status: string | null;
   body_part_id: string;
   body_part_name: string;
+  body_system: string | null;
+  source: string | null;
 }
 
-export const useAnatomyTips = (bodyPartId?: string) => {
+/**
+ * healthy_living_body_parts has RLS enabled with no policies, so the browser
+ * client cannot read or write it — this goes through the service-role API
+ * route like the drug and exercise links do. Returns a flat array (BodyMapTab
+ * and HealthyTipsTab both consume it that way).
+ */
+export const useAnatomyTips = (bodyPartId?: string, search?: string) => {
   return useQuery({
-    queryKey: ["anatomy-tips", bodyPartId],
+    queryKey: ["anatomy-tips", bodyPartId, search],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
-      let query = supabase
-        .from("healthy_living_body_parts")
-        .select(
-          "tip_id, body_part_id, body_parts(id, name), healthy_living_info(id, name, status)",
-        )
-        .limit(200);
-      if (bodyPartId) query = query.eq("body_part_id", bodyPartId);
-
-      const { data, error } = await query;
-      if (error) {
-        // Junction table appears with the anatomy_extension migration.
-        return [] as AnatomyTipRow[];
-      }
-
-      return (data ?? []).map((link: any) => ({
-        tip_id: link.tip_id,
-        tip_name: link.healthy_living_info?.name ?? "—",
-        status: link.healthy_living_info?.status ?? null,
-        body_part_id: link.body_part_id,
-        body_part_name: link.body_parts?.name ?? "—",
-      })) as AnatomyTipRow[];
+      const qs = new URLSearchParams();
+      if (bodyPartId) qs.set("body_part_id", bodyPartId);
+      if (search) qs.set("search", search);
+      const res = await fetch(`/api/anatomy/tip-links?${qs.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load healthy-tip links.");
+      return (json.links ?? []) as AnatomyTipRow[];
     },
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -302,6 +298,68 @@ export const useAnatomyDrugLinks = ({
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to load drug links.");
       return json as { links: AnatomyDrugLinkRow[]; total: number };
+    },
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+// ── Tab 6: Exercises linked to body parts ─────────────────────────────────
+// Junction is fitness_body_parts; its content column is `workout_id` but it
+// references fitness_exercises.id.
+
+export interface AnatomyExerciseLinkRow {
+  body_part_id: string;
+  body_part_name: string;
+  body_system: string | null;
+  workout_id: string;
+  exercise_name: string;
+  category: string | null;
+  primary_muscle_group: string | null;
+  secondary_muscles: string | null;
+  difficulty_level: string | null;
+  equipment_required: string | null;
+  tier: string | null;
+  status: string | null;
+  is_active: boolean | null;
+  source: string | null;
+}
+
+export interface AnatomyLinkPage<T> {
+  links: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pageCount: number;
+  hasMore: boolean;
+}
+
+/**
+ * Paged server-side. `total` is an exact count of the whole filtered set, not
+ * the page — 4k+ exercise links make a client-side filter unusable.
+ * placeholderData keeps the previous page on screen while the next one loads,
+ * so paging and typing never blank the table.
+ */
+export const useAnatomyExerciseLinks = ({
+  search,
+  bodyPartId,
+  page = 1,
+  limit = 25,
+}: {
+  search?: string;
+  bodyPartId?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ["anatomy-exercise-links", search, bodyPartId, page, limit],
+    queryFn: async () => {
+      const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (search) qs.set("search", search);
+      if (bodyPartId) qs.set("body_part_id", bodyPartId);
+      const res = await fetch(`/api/anatomy/exercise-links?${qs.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load exercise links.");
+      return json as AnatomyLinkPage<AnatomyExerciseLinkRow>;
     },
     placeholderData: (previousData) => previousData,
   });
@@ -370,16 +428,43 @@ export const useLinkTipToBodyPart = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ tipId, bodyPartId }: { tipId: string; bodyPartId: string }) => {
-      const supabase = await getSupabaseClient();
-      const { error } = await supabase
-        .from("healthy_living_body_parts")
-        .insert({ tip_id: tipId, body_part_id: bodyPartId });
-      if (error) throw error;
+      const res = await fetch("/api/anatomy/tip-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tip_id: tipId, body_part_id: bodyPartId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to link tip.");
+      return json;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["anatomy-tips"] });
       queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
       toast.success("Tip linked to body part.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useUnlinkTipFromBodyPart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ tipId, bodyPartId }: { tipId: string; bodyPartId: string }) => {
+      const qs = new URLSearchParams({
+        tip_id: tipId,
+        body_part_id: bodyPartId,
+      });
+      const res = await fetch(`/api/anatomy/tip-links?${qs.toString()}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to unlink tip.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-tips"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Tip body-part link removed.");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -438,6 +523,64 @@ export const useUnlinkDrugFromBodyPart = () => {
       queryClient.invalidateQueries({ queryKey: ["anatomy-drug-links"] });
       queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
       toast.success("Drug body-part link removed.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useLinkExerciseToBodyPart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      workoutId,
+      bodyPartId,
+    }: {
+      workoutId: string;
+      bodyPartId: string;
+    }) => {
+      const res = await fetch("/api/anatomy/exercise-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workout_id: workoutId, body_part_id: bodyPartId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to link exercise.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-exercise-links"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Exercise linked to body part.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+};
+
+export const useUnlinkExerciseFromBodyPart = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      workoutId,
+      bodyPartId,
+    }: {
+      workoutId: string;
+      bodyPartId: string;
+    }) => {
+      const qs = new URLSearchParams({
+        workout_id: workoutId,
+        body_part_id: bodyPartId,
+      });
+      const res = await fetch(`/api/anatomy/exercise-links?${qs.toString()}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to unlink exercise.");
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anatomy-exercise-links"] });
+      queryClient.invalidateQueries({ queryKey: ["anatomy-overview"] });
+      toast.success("Exercise body-part link removed.");
     },
     onError: (error) => toast.error(error.message),
   });

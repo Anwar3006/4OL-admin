@@ -179,6 +179,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // body_parts.path (ltree) and level are derived by the
+  // trg_body_parts_set_path trigger from parent_id + name — see migration
+  // 20260904_anatomy_breasts_and_symptom_backfill.sql. Before that trigger
+  // existed this insert always failed on path's NOT NULL constraint.
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
     .from("body_parts")
@@ -195,7 +199,44 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    console.error("[anatomy/body-map] create error:", error.message);
+    console.error("[anatomy/body-map] create error:", error.code, error.message);
+
+    // Surface the causes an admin can actually act on instead of a blanket 500.
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { error: `A body part named "${parsed.data.name}" already exists.` },
+        { status: 409 },
+      );
+    }
+    if (error.code === "23503") {
+      return NextResponse.json(
+        { error: "The selected parent body part no longer exists." },
+        { status: 400 },
+      );
+    }
+    if (error.code === "23514") {
+      return NextResponse.json(
+        { error: "Invalid gender scope for this body part." },
+        { status: 400 },
+      );
+    }
+    // P0001 = raise exception from trg_body_parts_set_path (unusable name, or
+    // a parent row that vanished mid-request).
+    if (error.code === "P0001") {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error.code === "23502") {
+      return NextResponse.json(
+        {
+          error:
+            "Could not derive the body-part path. Apply migration " +
+            "20260904_anatomy_breasts_and_symptom_backfill.sql, which installs " +
+            "the trg_body_parts_set_path trigger.",
+        },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to create body part." },
       { status: 500 },

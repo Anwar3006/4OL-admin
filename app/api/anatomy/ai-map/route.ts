@@ -25,7 +25,7 @@ const NAME_SOURCES: Record<MappingContentType, { table: string; nameCol: string 
   condition: { table: "conditions", nameCol: "name" },
   symptom: { table: "symptoms", nameCol: "name" },
   tip: { table: "healthy_living_info", nameCol: "name" },
-  workout: { table: "workouts", nameCol: "exercise_name" },
+  workout: { table: "fitness_exercises", nameCol: "exercise_name" },
   drug: { table: "drugs", nameCol: "name" },
 };
 

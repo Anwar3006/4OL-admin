@@ -47,10 +47,13 @@ const SOURCES: Record<MappingContentType, ContentSource> = {
     sourceColumn: "source",
   },
   workout: {
-    table: "workouts",
+    // NOTE: the fitness catalog table is `fitness_exercises`; the junction
+    // column is still named workout_id for historical reasons.
+    table: "fitness_exercises",
     junction: "fitness_body_parts",
     junctionContentCol: "workout_id",
     label: "Fitness",
+    sourceColumn: "source",
   },
   drug: {
     table: "drugs",

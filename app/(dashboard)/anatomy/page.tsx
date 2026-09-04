@@ -12,6 +12,7 @@ import ConditionsLinkedTab from "./_components/ConditionsLinkedTab";
 import SymptomsLinkedTab from "./_components/SymptomsLinkedTab";
 import HealthyTipsTab from "./_components/HealthyTipsTab";
 import DrugsLinkedTab from "./_components/DrugsLinkedTab";
+import ExercisesLinkedTab from "./_components/ExercisesLinkedTab";
 import ConnectedModulesTab from "./_components/ConnectedModulesTab";
 import BusinessStrategyTab from "./_components/BusinessStrategyTab";
 import PinPlacement3DTab from "./_components/PinPlacement3DTab";
@@ -30,6 +31,7 @@ const AnatomyTabs = [
   { id: "conditions", label: "🦠 Linked Conditions" },
   { id: "symptoms",   label: "🩺 Linked Symptoms" },
   { id: "tips",       label: "🌿 Healthy Tips" },
+  { id: "exercises",  label: "💪 Linked Exercises" },
   { id: "modules",    label: "🔗 Connected Modules" },
   { id: "strategy",   label: "💼 Business Strategy" },
 ];
@@ -198,6 +200,9 @@ export default function AnatomyPage() {
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="tips">
             <HealthyTipsTab />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="exercises">
+            <ExercisesLinkedTab />
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="modules">
             <ConnectedModulesTab />

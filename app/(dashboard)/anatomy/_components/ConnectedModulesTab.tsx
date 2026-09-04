@@ -4,7 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useBodyParts, useUpdateBodyPartGenderScope } from "@/hooks/supabase-calls/useAnatomy";
+import {
+  useAnatomyOverview,
+  useBodyParts,
+  useUpdateBodyPartGenderScope,
+} from "@/hooks/supabase-calls/useAnatomy";
 
 // Tab 5 — Connected Modules: live head-count cards into every module that
 // consumes the body-part taxonomy, plus suggested connections and the
@@ -19,7 +23,17 @@ const headCount = async (table: string): Promise<number> => {
   return count ?? 0;
 };
 
-const MODULE_CARDS = [
+interface ModuleCard {
+  icon: string;
+  title: string;
+  table: string;
+  href: string;
+  detail: string;
+  /** Read the count from get_anatomy_overview_stats() instead of a head count. */
+  statKey?: "condition_links" | "symptom_links" | "healthy_tip_links" | "hotspots";
+}
+
+const MODULE_CARDS: ModuleCard[] = [
   {
     icon: "🦠",
     title: "Diseases & Conditions",
@@ -37,9 +51,20 @@ const MODULE_CARDS = [
   {
     icon: "🥗",
     title: "Healthy Living",
+    // healthy_living_body_parts is RLS-locked to the browser client, so the
+    // count comes from get_anatomy_overview_stats() (SECURITY DEFINER) instead
+    // of a head count.
     table: "healthy_living_body_parts",
+    statKey: "healthy_tip_links" as const,
     href: "/healthy_living",
-    detail: "body-part linked tips · surfaced in Body Map detail panel",
+    detail: "healthy_living_body_parts junction · surfaced in Body Map detail panel",
+  },
+  {
+    icon: "💪",
+    title: "Fitness",
+    table: "fitness_body_parts",
+    href: "/anatomy?tab=exercises",
+    detail: "fitness_body_parts junction · primary_muscle_group → body parts",
   },
   {
     icon: "💊",
@@ -65,7 +90,6 @@ const MODULE_CARDS = [
 ];
 
 const SUGGESTED = [
-  { icon: "💪", label: "Fitness", note: "map primary_muscle_group → body parts" },
   { icon: "🥦", label: "Nutrition", note: "diet plans by affected body part" },
   { icon: "🧪", label: "Labs", note: "test panels by body system" },
   { icon: "📅", label: "Period Tracker", note: "reproductive system linkage" },
@@ -132,11 +156,13 @@ function GenderRulesEditor() {
 }
 
 export default function ConnectedModulesTab() {
+  const { data: overview } = useAnatomyOverview();
   const counts = useQuery({
     queryKey: ["anatomy-connected-counts"],
     queryFn: async () => {
+      const headCounted = MODULE_CARDS.filter((card) => !card.statKey);
       const entries = await Promise.all(
-        MODULE_CARDS.map(async (card) => [card.table, await headCount(card.table)] as const),
+        headCounted.map(async (card) => [card.table, await headCount(card.table)] as const),
       );
       return Object.fromEntries(entries) as Record<string, number>;
     },
@@ -147,7 +173,9 @@ export default function ConnectedModulesTab() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {MODULE_CARDS.map((card) => {
-          const count = counts.data?.[card.table];
+          const count = card.statKey
+            ? overview?.stats?.[card.statKey]
+            : counts.data?.[card.table];
           return (
             <Link key={card.title} href={card.href} className="card block p-5 transition hover:shadow-md">
               <div className="flex items-start justify-between">

@@ -12,6 +12,7 @@ import {
   useAnatomyTips,
   useBodyParts,
   useLinkTipToBodyPart,
+  useUnlinkTipFromBodyPart,
 } from "@/hooks/supabase-calls/useAnatomy";
 import {
   useCreateHealthyLiving,
@@ -186,6 +187,7 @@ export default function HealthyTipsTab() {
 
   const { data: parts } = useBodyParts("all");
   const { data: rows, isLoading } = useAnatomyTips(bodyPartId || undefined);
+  const unlinkTip = useUnlinkTipFromBodyPart();
 
   const bodyPartOptions = useMemo(
     () => (parts?.parts ?? []).slice().sort((a, b) => a.name.localeCompare(b.name)),
@@ -223,19 +225,21 @@ export default function HealthyTipsTab() {
               <th className="px-5 py-3">Body Part</th>
               <th className="px-5 py-3">Healthy Tip</th>
               <th className="px-5 py-3">Status</th>
+              <th className="px-5 py-3">Source</th>
+              <th className="px-5 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={3} className="px-5 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-5 py-10 text-center text-slate-400">
                   Loading tips…
                 </td>
               </tr>
             )}
             {!isLoading && (rows ?? []).length === 0 && (
               <tr>
-                <td colSpan={3} className="px-5 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-5 py-10 text-center text-slate-400">
                   No healthy-living tips linked yet. Use <strong>+ Add Tip</strong> to link or
                   create one.
                 </td>
@@ -247,7 +251,14 @@ export default function HealthyTipsTab() {
                   key={`${row.tip_id}-${row.body_part_id}`}
                   className="border-b border-slate-50 hover:bg-slate-50/60"
                 >
-                  <td className="px-5 py-3 font-bold text-slate-800">{row.body_part_name}</td>
+                  <td className="px-5 py-3 font-bold text-slate-800">
+                    {row.body_part_name}
+                    {row.body_system && (
+                      <div className="text-[10px] font-medium text-slate-400">
+                        {row.body_system}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/healthy_living?id=${row.tip_id}`}
@@ -260,6 +271,29 @@ export default function HealthyTipsTab() {
                     <span className={row.status === "published" ? "badge badge-green" : "badge badge-slate"}>
                       {row.status || "—"}
                     </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span
+                      className={
+                        row.source === "ai" ? "badge badge-amber" : "badge badge-slate"
+                      }
+                    >
+                      {row.source || "manual"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      disabled={unlinkTip.isPending}
+                      onClick={() =>
+                        unlinkTip.mutate({
+                          tipId: row.tip_id,
+                          bodyPartId: row.body_part_id,
+                        })
+                      }
+                    >
+                      Unlink
+                    </button>
                   </td>
                 </tr>
               ))}
