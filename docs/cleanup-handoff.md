@@ -448,23 +448,98 @@ and none of those are nav routes. They were probed directly instead, and the
 three that had a pre-change baseline render byte-identical bodies (1716, 1698,
 1711 chars).
 
-### Two real bugs found while probing — not fixed, not mine
+### Two bugs found while probing — **both fixed**
 
-Both show up in the console on any `/categories/**` page:
+Both had one root cause, and it was not what the first pass reported.
 
-1. **`POST /rest/v1/rpc/issue_canary` → 404.** This is `SecurityCanary`, from
-   the security layer that E1.1 brought to life. The handoff predicted this
-   ("four features waking up"); here is the first concrete instance. The RPC
-   does not exist in the database. Either create it or gate the canary behind
-   a flag.
-2. **`GET /rest/v1/healthy_living?select=…` → 404 against `localhost:3000`.**
-   A PostgREST call is being sent to the Next server instead of the Supabase
-   host, so a browser-client read on these legacy pages cannot ever return
-   rows. Note the shape: the page renders fine and shows nothing. This is
-   E1.3's silent-empty-read failure mode with a misconfigured base URL rather
-   than an RLS policy as the cause.
+**Correction to the earlier note in this file.** It said a PostgREST call was
+being sent to `localhost:3000` instead of Supabase. That was wrong. The probe
+printed `new URL(r.url()).pathname`, discarding the origin, and the origin was
+then inferred rather than observed. Re-probed with full URLs, every request
+goes to the correct Supabase host. Print the whole URL.
 
-`GET /api/admin/session` also 500s on those pages.
+#### `gen_random_bytes` unreachable from a pinned `search_path`
+
+Two `SECURITY DEFINER` functions call pgcrypto's `gen_random_bytes()` while
+declaring `SET search_path = public`. In Supabase pgcrypto is installed into
+the **`extensions`** schema, so the function is not on the path and every call
+fails with SQLSTATE 42883.
+
+Pinning `search_path` is correct hardening — it stops a caller shadowing an
+unqualified name. It also makes every extension function unreachable unless
+schema-qualified. Both functions were written unqualified.
+
+| Function | Symptom |
+| --- | --- |
+| `public.issue_canary` | **HTTP 404** on the RPC |
+| `public.start_admin_session` | **HTTP 500** from `/api/admin/session`, on every dashboard page load |
+
+The 404 is the interesting one. **PostgREST maps SQLSTATE 42883 to HTTP 404**,
+so a function that exists, is granted to `authenticated`, and has a matching
+signature reported as "not found". It reads exactly like an unapplied
+migration — which is what this file previously concluded. The only way to see
+the real cause is to read the *response body*, not the status:
+
+```
+{"code":"42883","message":"function gen_random_bytes(integer) does not exist"}
+```
+
+Fixed in `supabase/migrations/20260905_fix_pgcrypto_search_path.sql` (applied)
+by qualifying the calls as `extensions.gen_random_bytes(...)` rather than
+widening `search_path`, which keeps the hardening.
+
+Find the rest of this class with:
+
+```sql
+select p.proname, array_to_string(p.proconfig, ', ')
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.prosrc ~ '(gen_random_bytes|\mcrypt\M|\mdigest\M|\mhmac\M|gen_salt)'
+  and not p.prosrc ~ 'extensions\.'
+  and (p.proconfig is null or not exists (
+        select 1 from unnest(p.proconfig) c
+        where c like 'search_path=%' and c like '%extensions%'));
+```
+
+It returned exactly those two. Both are now clean, and `/dashboard`,
+`/healthy_living`, `/diseases` and `/period` load with **zero failing
+requests**.
+
+**`SecurityCanary` has now issued its first token, ever.** It is in the DOM as
+an invisible zero-box span, absent from the rendered page but present in an
+`innerText` scrape — which is what AK-D7 was for. It has never worked in
+production: before E1.1 the security layer never mounted, and once it did, the
+RPC 404'd.
+
+#### The `healthy_living` 404 was not a bug to fix
+
+`GET /rest/v1/healthy_living` 404'd because **the table does not exist**. Nor
+do the tables behind the two sibling trees. These pages were built against a
+schema that has since been replaced:
+
+| Legacy route | Queries | State | Live replacement |
+| --- | --- | --- | --- |
+| `categories/healthy_living` | `healthy_living` | dropped | `/healthy_living` → `healthy_living_info` |
+| `categories/illness_and_complications` | `illness_and_conditions` | dropped | `/diseases` → `conditions` |
+| `categories/period_tracker` | `tracker_logs` | dropped | `/period` |
+
+Not a rename: the columns the pages read (`topic_name`, `about`, `headline`,
+`more_information`) have no counterpart in `healthy_living_info`
+(`name`, `slug`, `description`, `content`). Pointing the service at the new
+table would have been a guess dressed as a fix.
+
+All three trees had **zero inbound links**, were absent from the nav, and are
+superseded by a live nav route. Deleted — 27 files: the 12 route files, the 7
+service modules they were the only consumers of, and an 8-file
+`period_tracker` island (`hooks/usePeriodTracker.js`, its utils, five unused
+components and a stylesheet).
+
+⚠️ **`components/period_tracker/TopicCategorySelect.tsx` was kept.** Five of
+the six files in that directory were dead; that one is imported by
+`/period/page.tsx` and `ai-hub/period/_components/Workspace.tsx`. A
+directory-level delete would have broken two live pages. The first search that
+suggested the whole directory was dead matched the bare string
+`period_tracker` anywhere in a file — always match the import specifier.
 
 ### The saved smoke session expires
 
