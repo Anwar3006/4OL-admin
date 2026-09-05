@@ -1,30 +1,254 @@
 {
-  "activate_fitness_plan": { "args": "p_plan_id uuid", "returns": "fitness_user_assignments", "security_definer": true, "volatility": "volatile" },
-  "get_anatomy_body_part_bundle": { "args": "p_body_part_id uuid, p_gender text, p_preview_limit integer", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_anatomy_body_part_items": { "args": "p_body_part_id uuid, p_kind text, p_gender text, p_search text, p_limit integer, p_offset integer", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_anatomy_premium_config": { "args": "", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "get_anatomy_quiz": { "args": "p_limit integer", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "get_anatomy_region_content": { "args": "p_region text, p_gender text, p_include_items boolean", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_facilities_map": { "args": "minlng double precision, minlat double precision, maxlng double precision, maxlat double precision, zoom_level integer, p_facility_name text, p_region text, p_district text, p_facility_type text, p_status text, p_is_top_rated boolean", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "get_fitcoins_dashboard": { "args": "p_user_id uuid", "returns": "json", "security_definer": false, "volatility": "stable" },
-  "get_fitness_activity_history": { "args": "p_user_id uuid, p_limit integer, p_offset integer", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_fitness_dashboard": { "args": "p_user_id uuid", "returns": "json", "security_definer": true, "volatility": "stable" },
-  "get_fitness_social_proof": { "args": "", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_fitness_week": { "args": "p_user_id uuid", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_home_carousel": { "args": "", "returns": "jsonb", "security_definer": true, "volatility": "stable" },
-  "get_outdoor_route_pins": { "args": "", "returns": "TABLE(id uuid, name text, category text, difficulty text, distance_km numeric, region text, area text, route_class text, rating numeric, start_lat double precision, start_lng double precision, pin_source text, has_gps boolean)", "security_definer": true, "volatility": "stable" },
-  "get_public_faqs": { "args": "", "returns": "TABLE(id uuid, question text, answer text, category_name text, view_count integer)", "security_definer": true, "volatility": "volatile" },
-  "global_search": { "args": "search_term text", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "global_search_v2": { "args": "p_search_term text, p_result_limit integer", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "increment_challenge_view_count": { "args": "challenge_id_param uuid, user_id_param uuid", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "increment_condition_view_count": { "args": "condition_id_param uuid, user_id_param uuid", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "increment_exercise_view_count": { "args": "exercise_id_param uuid, user_id_param uuid", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "increment_healthy_living_view_count": { "args": "healthy_living_id_param uuid, user_id_param uuid", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "increment_symptom_view_count": { "args": "symptom_id_param uuid, user_id_param uuid", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "join_fitness_challenge": { "args": "challenge_id_param uuid, user_id_param uuid", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "log_anatomy_interaction": { "args": "p_body_part_id uuid, p_action text", "returns": "boolean", "security_definer": true, "volatility": "volatile" },
-  "log_device_attestation": { "args": "p_platform text, p_token_present boolean, p_mechanism text", "returns": "void", "security_definer": true, "volatility": "volatile" },
-  "log_manual_activity": { "args": "p_user_id uuid, p_activity_type text, p_duration_minutes integer, p_started_at timestamp with time zone, p_intensity text, p_note text", "returns": "jsonb", "security_definer": true, "volatility": "volatile" },
-  "redeem_fitcoin_reward": { "args": "p_user_id uuid, p_reward_id uuid", "returns": "json", "security_definer": true, "volatility": "volatile" },
-  "request_subscription_upgrade": { "args": "p_pass_type text, p_tier_key text, p_note text", "returns": "uuid", "security_definer": true, "volatility": "volatile" }
+  "activate_fitness_plan": {
+    "args": "p_plan_id uuid",
+    "returns": "fitness_user_assignments",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_anatomy_body_part_bundle": {
+    "args": "p_body_part_id uuid, p_gender text, p_preview_limit integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_anatomy_body_part_items": {
+    "args": "p_body_part_id uuid, p_kind text, p_gender text, p_search text, p_limit integer, p_offset integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_anatomy_premium_config": {
+    "args": "",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_anatomy_quiz": {
+    "args": "p_limit integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_anatomy_region_content": {
+    "args": "p_region text, p_gender text, p_include_items boolean",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_app_review_prompt_state": {
+    "args": "",
+    "returns": "json",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_device_sign_in_status": {
+    "args": "p_request_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_facilities_map": {
+    "args": "minlng double precision, minlat double precision, maxlng double precision, maxlat double precision, zoom_level integer, p_facility_name text, p_region text, p_district text, p_facility_type text, p_status text, p_is_top_rated boolean",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_fitcoins_dashboard": {
+    "args": "p_user_id uuid",
+    "returns": "json",
+    "security_definer": false,
+    "volatility": "stable"
+  },
+  "get_fitness_activity_history": {
+    "args": "p_user_id uuid, p_limit integer, p_offset integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_fitness_dashboard": {
+    "args": "p_user_id uuid",
+    "returns": "json",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_fitness_social_proof": {
+    "args": "",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_fitness_week": {
+    "args": "p_user_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_home_carousel": {
+    "args": "",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_outdoor_route_pins": {
+    "args": "",
+    "returns": "TABLE(id uuid, name text, category text, difficulty text, distance_km numeric, region text, area text, route_class text, rating numeric, start_lat double precision, start_lng double precision, pin_source text, has_gps boolean)",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_public_faqs": {
+    "args": "",
+    "returns": "TABLE(id uuid, question text, answer text, category_name text, view_count integer)",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "get_streak_detail": {
+    "args": "p_user_id uuid, p_month_start date",
+    "returns": "json",
+    "security_definer": false,
+    "volatility": "stable"
+  },
+  "global_search": {
+    "args": "search_term text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "global_search_v2": {
+    "args": "p_search_term text, p_result_limit integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "increment_challenge_view_count": {
+    "args": "challenge_id_param uuid, user_id_param uuid",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "increment_condition_view_count": {
+    "args": "condition_id_param uuid, user_id_param uuid",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "increment_exercise_view_count": {
+    "args": "exercise_id_param uuid, user_id_param uuid",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "increment_healthy_living_view_count": {
+    "args": "healthy_living_id_param uuid, user_id_param uuid",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "increment_symptom_view_count": {
+    "args": "symptom_id_param uuid, user_id_param uuid",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "join_fitness_challenge": {
+    "args": "challenge_id_param uuid, user_id_param uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "list_my_devices": {
+    "args": "",
+    "returns": "TABLE(id uuid, device_name text, platform text, os_version text, app_version text, last_seen_at timestamp with time zone, created_at timestamp with time zone, is_current boolean)",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "log_anatomy_interaction": {
+    "args": "p_body_part_id uuid, p_action text",
+    "returns": "boolean",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "log_device_attestation": {
+    "args": "p_platform text, p_token_present boolean, p_mechanism text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "log_manual_activity": {
+    "args": "p_user_id uuid, p_activity_type text, p_duration_minutes integer, p_started_at timestamp with time zone, p_intensity text, p_note text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "log_marketing_event": {
+    "args": "p_campaign_id uuid, p_event_type text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "record_app_review_prompt": {
+    "args": "p_action text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "redeem_fitcoin_reward": {
+    "args": "p_user_id uuid, p_reward_id uuid",
+    "returns": "json",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "register_push_token": {
+    "args": "p_token text, p_platform text, p_device_name text, p_os_version text, p_app_version text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "report_chat_content": {
+    "args": "p_content_type text, p_content_id text, p_report_reason text, p_report_detail text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "report_device_signal": {
+    "args": "p_signal_type text, p_detail jsonb",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "request_device_sign_in": {
+    "args": "p_expo_push_token text, p_device_name text, p_platform text, p_os_version text, p_location_label text, p_ip_address text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "request_subscription_upgrade": {
+    "args": "p_pass_type text, p_tier_key text, p_note text",
+    "returns": "uuid",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "resolve_device_sign_in": {
+    "args": "p_request_id uuid, p_approve boolean, p_resolver_token text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "revoke_my_device": {
+    "args": "p_device_id uuid",
+    "returns": "boolean",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "submit_app_review": {
+    "args": "p_rating integer, p_comment_text text, p_app_version text, p_platform text, p_prompt_source text",
+    "returns": "json",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "unregister_push_token": {
+    "args": "p_token text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  }
 }

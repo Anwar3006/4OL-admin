@@ -21,7 +21,25 @@ if [ ! -d "$MOBILE" ]; then
   exit 1
 fi
 
-command -v rg >/dev/null 2>&1 || { echo "ripgrep (rg) required" >&2; exit 1; }
+# Use ripgrep when a REAL binary is present, else fall back to grep.
+#
+# `command -v rg` is not a sufficient test here: some shells (Claude Code's
+# among them) define `rg` as a shell FUNCTION, which passes that check and
+# then does not exist inside this script's plain-bash subshell. This script
+# used to exit 1 with "ripgrep required" on a machine where `rg` worked fine
+# at the prompt — so the one tool that guards the mobile contract could not
+# be run at all. Test for an executable file, not a name.
+if [ -x "$(command -v rg 2>/dev/null)" ]; then
+  SCAN() { rg -o --no-filename "$@"; }
+else
+  # grep -o with -E covers the same ground for these three patterns.
+  SCAN() {
+    local pattern="$1"; shift
+    grep -rhoE "$pattern" "$@" \
+      --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+      2>/dev/null
+  }
+fi
 
 cd "$MOBILE"
 SRC=(hooks services lib context app components store utils features)
@@ -32,18 +50,18 @@ echo "▸ scanning: ${EXISTING[*]}"
 echo
 
 echo "── Admin API routes ─────────────────────────────────────────────────"
-rg -o --no-filename '/api/[A-Za-z0-9/_-]+' "${EXISTING[@]}" \
+SCAN '/api/[A-Za-z0-9/_-]+' "${EXISTING[@]}" \
   | grep -Ev '/api/(distancematrix|directions)/' \
   | sort -u
 echo
 
 echo "── Postgres RPCs ────────────────────────────────────────────────────"
-rg -o --no-filename "\.rpc\(\s*['\"][a-z0-9_]+" "${EXISTING[@]}" \
+SCAN "\.rpc\(['\"][a-z0-9_]+" "${EXISTING[@]}" \
   | sed "s/.*['\"]//" | sort -u
 echo
 
 echo "── Tables read/written directly ─────────────────────────────────────"
-rg -o --no-filename "\.from\(\s*['\"][a-z0-9_]+" "${EXISTING[@]}" \
+SCAN "\.from\(['\"][a-z0-9_]+" "${EXISTING[@]}" \
   | sed "s/.*['\"]//" | sort -u
 echo
 

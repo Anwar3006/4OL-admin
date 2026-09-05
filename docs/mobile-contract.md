@@ -1,5 +1,70 @@
 # The mobile contract
 
+> **Updated 5 Sept 2026 — the contract nearly doubled.** It is now **31 routes,
+> 42 RPCs, 38 tables** (was 16 / 28 / 34). Nothing about the mobile app
+> changed; the list finally caught up with it. See "Why this was wrong twice"
+> below before trusting any earlier number in this file.
+
+## Why this was wrong twice
+
+**Pass 1** grepped `hooks/` and `services/` only: 13 routes, missed three
+called from `lib/` and `context/` — including the device sign-in flow.
+
+**Pass 2** was hand-built at 16 routes and missed **fifteen** more. They live
+in the mobile app's `app/`, `components/`, `features/` and `hooks/chat/`
+directories, which that pass never read:
+
+| Missed | Consumer |
+| --- | --- |
+| `/api/chat/{conversations,messages,messages/read,groups,members,attachment}` | `hooks/chat/*` |
+| `/api/period/{me,library,trivia,trivia/fulfillment}` | `features/plasence/api.ts` |
+| `/api/jobs/attachment`, `/api/medenquiry/attachment` | screens under `app/(app)/(auth)/` |
+| `/api/send-otp`, `/api/verify-otp` | `components/auth/OTPForm.tsx` |
+| `/api/user/redeem-promo` | the fitness premium screen |
+
+Plus 14 RPCs (device sign-in, push tokens, app review) and 4 tables.
+
+**Why nobody noticed:** `scripts/cleanup/regenerate-mobile-contract.sh` exists
+to prevent exactly this, and it could not run. It gated on
+`command -v rg`, which **succeeds when a shell defines `rg` as a function** —
+as Claude Code's shell does — and then fails inside the script's own bash
+subshell with "ripgrep (rg) required". So the guard against a stale contract
+was itself broken, silently, and the list was never once diffed against the
+Expo repo. The script now falls back to `grep`.
+
+That is the same shape as every other bug on this branch: **a check that
+cannot run reports the same thing as a check that passes.**
+
+## One live mobile bug found while regenerating
+
+`lib/device-approval.ts:187` in the Expo app calls
+`verify_device_sign_in_otp`. **That function does not exist in the database**,
+and there is no near-name match — the family is `request_device_sign_in`,
+`resolve_device_sign_in`, `get_device_sign_in_status`. The OTP step of device
+sign-in cannot work.
+
+It is deliberately **not** in `CONTRACT_RPCS`: that list is asserted against
+the live database, so adding it would turn a mobile bug into a permanently red
+admin test. Fixing it means creating the function or removing the call, both
+outside this repo. **Not yet reported to the mobile team.**
+
+## Regenerating
+
+```bash
+bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App
+```
+
+Diff the output against `tests/contract/mobile-contract.ts`. Run it before any
+release that moves a route, renames an RPC, or tightens an RLS policy.
+
+The live signature check now runs green against production with credentials
+set:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
+```
+
+
 The Expo app (`4-Our-Life-App`) depends on this repo and this database in
 three ways. Together they are the only surface a restructure can break from
 outside. Everything else — 220-odd API routes, every other RPC, every other

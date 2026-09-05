@@ -76,6 +76,18 @@ describe("mobile API contract", () => {
     // A guard against someone "tidying" an entry out of mobile-contract.ts.
     // If the mobile app genuinely stops using a route, delete it here AND
     // note it in docs/mobile-contract.md in the same commit.
-    expect(CONTRACT_ROUTES).toHaveLength(16);
+    //
+    // 16 -> 31 on 5 Sept 2026. That was not a change in what mobile uses; it
+    // was the list finally catching up with it. The regeneration script had
+    // never been runnable (it tested for ripgrep with `command -v rg`, which
+    // succeeds when a shell defines `rg` as a function and then fails inside
+    // the script's own subshell), so nobody had ever diffed this file against
+    // the Expo repo. Fifteen live dependencies were unprotected: the whole
+    // chat surface, all four Period Tracker routes, three attachment
+    // endpoints, the OTP pair and redeem-promo.
+    //
+    // Before changing this number, run:
+    //   bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App
+    expect(CONTRACT_ROUTES).toHaveLength(31);
   });
 });

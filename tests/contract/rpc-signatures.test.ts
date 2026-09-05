@@ -5,8 +5,12 @@ import snapshot from "./rpc-signatures.json";
 import { CONTRACT_RPCS } from "./mobile-contract";
 
 /**
- * The 28 Postgres functions the Expo app calls, pinned to a snapshot of their
+ * The 42 Postgres functions the Expo app calls, pinned to a snapshot of their
  * real signatures taken from production on 5 Sept 2026.
+ *
+ * It was 28 until the regeneration script could be run for the first time —
+ * see the provenance note in mobile-contract.ts. The extra 14 are the device
+ * sign-in, push-token and app-review families.
  *
  * Why this matters more than it looks: PostgREST resolves an RPC by argument
  * NAME. Renaming `p_limit` to `p_page_size`, reordering parameters, or

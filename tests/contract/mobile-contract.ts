@@ -52,6 +52,25 @@ export const CONTRACT_ROUTES: ContractRoute[] = [
   { path: "/api/subscriptions/requests",       file: "app/api/subscriptions/requests/route.ts",       methods: ["GET", "PATCH"],          consumer: "hooks/use-subscription-upgrade.ts" },
   { path: "/api/auth/device-context",          file: "app/api/auth/device-context/route.ts",          methods: ["GET"],                   consumer: "lib/device-approval.ts" },
   { path: "/api/auth/device-sign-in/send-otp", file: "app/api/auth/device-sign-in/send-otp/route.ts", methods: ["POST"],                  consumer: "lib/device-approval.ts" },
+
+  // ── Added 5 Sept 2026, when the regeneration script could finally run ─
+  // All fifteen were live mobile dependencies the whole time; see the
+  // provenance note above for how they were missed twice.
+  { path: "/api/chat/conversations",           file: "app/api/chat/conversations/route.ts",         methods: ["GET"],                           consumer: "hooks/chat/useConversationList.ts" },
+  { path: "/api/chat/messages",                file: "app/api/chat/messages/route.ts",              methods: ["GET", "POST", "PATCH", "DELETE"], consumer: "hooks/chat/useDirectMessages.ts" },
+  { path: "/api/chat/messages/read",           file: "app/api/chat/messages/read/route.ts",         methods: ["POST"],                          consumer: "hooks/chat/useDirectMessages.ts" },
+  { path: "/api/chat/groups",                  file: "app/api/chat/groups/route.ts",                methods: ["POST"],                          consumer: "hooks/chat/useCreateGroup.ts" },
+  { path: "/api/chat/members",                 file: "app/api/chat/members/route.ts",               methods: ["GET", "POST", "PATCH"],          consumer: "hooks/chat/useGroupMembers.ts" },
+  { path: "/api/chat/attachment",              file: "app/api/chat/attachment/route.ts",            methods: ["GET"],                           consumer: "app/(app)/(auth)/Chat/[id].tsx" },
+  { path: "/api/period/me",                    file: "app/api/period/me/route.ts",                  methods: ["GET", "POST"],                   consumer: "features/plasence/api.ts" },
+  { path: "/api/period/library",               file: "app/api/period/library/route.ts",             methods: ["GET", "POST"],                   consumer: "features/plasence/api.ts" },
+  { path: "/api/period/trivia",                file: "app/api/period/trivia/route.ts",              methods: ["GET", "POST"],                   consumer: "features/plasence/api.ts" },
+  { path: "/api/period/trivia/fulfillment",    file: "app/api/period/trivia/fulfillment/route.ts",  methods: ["POST"],                          consumer: "features/plasence/api.ts" },
+  { path: "/api/jobs/attachment",              file: "app/api/jobs/attachment/route.ts",            methods: ["GET"],                           consumer: "app/(app)/(auth)/Jobs/apply/[id].tsx" },
+  { path: "/api/medenquiry/attachment",        file: "app/api/medenquiry/attachment/route.ts",      methods: ["GET"],                           consumer: "app/(app)/(auth)/Medication/index.tsx" },
+  { path: "/api/send-otp",                     file: "app/api/send-otp/route.ts",                   methods: ["POST"],                          consumer: "components/auth/OTPForm.tsx" },
+  { path: "/api/verify-otp",                   file: "app/api/verify-otp/route.ts",                 methods: ["POST"],                          consumer: "components/auth/OTPForm.tsx" },
+  { path: "/api/user/redeem-promo",            file: "app/api/user/redeem-promo/route.ts",          methods: ["POST"],                          consumer: "app/(app)/(auth)/(tabs)/(fitness)/premium.tsx" },
 ];
 
 /**
@@ -65,6 +84,22 @@ export const DEPRECATED_ROUTES = [
 ];
 
 /** Postgres functions the mobile app calls. Signatures are frozen. */
+/**
+ * ⚠️ `verify_device_sign_in_otp` is deliberately NOT in this list.
+ *
+ * The mobile app calls it — `lib/device-approval.ts:187` — and **it does not
+ * exist in the database.** There is no near-name match either; the device
+ * sign-in family is `request_device_sign_in`, `resolve_device_sign_in` and
+ * `get_device_sign_in_status`. So the OTP step of that flow cannot work.
+ *
+ * It is excluded rather than listed because this list is asserted against the
+ * live database: adding it would turn a real mobile bug into a permanently
+ * red admin test. Fixing it means either creating the function or removing
+ * the call, and both live outside this repo.
+ *
+ * Found 5 Sept 2026 while regenerating the contract. Not reported to the
+ * mobile team by this session — someone should.
+ */
 export const CONTRACT_RPCS = [
   "activate_fitness_plan",
   "get_anatomy_body_part_bundle",
@@ -94,6 +129,23 @@ export const CONTRACT_RPCS = [
   "log_manual_activity",
   "redeem_fitcoin_reward",
   "request_subscription_upgrade",
+
+  // Added 5 Sept 2026 with the route expansion — the device sign-in, push
+  // token and app-review families. All 14 verified to exist in the database.
+  "get_app_review_prompt_state",
+  "get_device_sign_in_status",
+  "get_streak_detail",
+  "list_my_devices",
+  "log_marketing_event",
+  "record_app_review_prompt",
+  "register_push_token",
+  "report_chat_content",
+  "report_device_signal",
+  "request_device_sign_in",
+  "resolve_device_sign_in",
+  "revoke_my_device",
+  "submit_app_review",
+  "unregister_push_token",
 ] as const;
 
 /**
@@ -139,4 +191,10 @@ export const CONTRACT_TABLES = [
   "user_notes",
   "user_profiles",
   "workout_reminders",
+
+  // Added 5 Sept 2026 with the route expansion.
+  "analytics_events",
+  "fitness_outdoor_events",
+  "fitness_outdoor_routes",
+  "onboarding_requests",
 ] as const;

@@ -686,6 +686,55 @@ broken import, not separate problems.
 
 `hooks/supabase-calls/` is down to 42 files. E3.2 finishes when it is empty.
 
+### ⚠️ The mobile contract was protecting half of what mobile uses
+
+Discovered while starting E3.2 on `period`. **This is the most important
+finding on the branch so far**, and it blocked that migration.
+
+`lib/period-request-auth.ts` exists because "native mobile has no cookie jar
+and sends `Authorization: Bearer <token>`" — so the Period Tracker API routes
+are mobile-facing. **None of them was in the contract manifest.** Migrating
+`period` would have moved four live mobile routes with the contract test
+reporting green.
+
+Regenerating found the manifest was short by **15 routes, 14 RPCs and 4
+tables**. It is now 31 / 42 / 38, and the contract suite went from 34 to 66
+assertions.
+
+**The regeneration script had never been runnable.** It gated on
+`command -v rg`, which succeeds when a shell defines `rg` as a *function* —
+Claude Code's does — then failed inside its own bash subshell with
+"ripgrep (rg) required". The guard against a stale contract was itself
+silently broken. It falls back to `grep` now.
+
+Same shape as everything else on this branch: **a check that cannot run
+reports the same thing as a check that passes.**
+
+The live RPC signature test also ran for the first time, against production,
+with credentials from `.env.local` — 42 signatures verified, no skips:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
+```
+
+**A live mobile bug, not fixed, not reported:** the Expo app's
+`lib/device-approval.ts:187` calls `verify_device_sign_in_otp`, which does not
+exist in the database and has no near-name match. The OTP step of device
+sign-in cannot work. It is deliberately excluded from `CONTRACT_RPCS` — that
+list is asserted against the live database, so listing it would turn a mobile
+bug into a permanently red admin test. **Someone should tell the mobile team.**
+
+### E3.2 — `period` NOT migrated, deliberately
+
+Four of its seven API routes (`/api/period/{me,library,trivia,trivia/fulfillment}`)
+are mobile contract. It also has no `_components/` at all — one 117 KB
+`page.tsx` — so the move is not the mechanical exercise the last three were.
+
+The right order is E4.1 first: split `page.tsx` and `api/period/data/route.ts`
+into reviewable pieces *behind unchanged URLs*, then migrate the result. Doing
+it the other way means one commit that both moves and rewrites the largest
+file in the repo, against routes old phones depend on.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that
