@@ -304,6 +304,55 @@ the same too-early-sampling problem as defect 2 above, on the two slowest
 pages. If it recurs, move that block to `networkidle` as well rather than
 adding a retry.
 
+### E2 — redirect stubs converted to config rules — **done, sweep-verified**
+
+Twelve `page.tsx` files whose only statement was `redirect(...)` are now rules
+in `next.config.ts`, and the directories are gone:
+
+| Was | Now redirects to |
+| --- | --- |
+| `/human-anatomy` | `/anatomy` |
+| `/platform-schematic` | `/schematic` |
+| `/security-center` | `/security` |
+| `/medication-enquiry` + `/{delivery,escrow,pending}` | `/medenquiry` (+ `?tab=`) |
+| `/ai-hub` + `/{analytics,models,moderation,recommendations}` | `/ai` (+ `?tab=`) |
+
+Verified with an authenticated probe: all twelve land on the right path **with
+the query string intact**, and the two survivors render byte-identical bodies
+to before the change (3102 and 2347 chars). 59 smoke tests pass.
+
+**`permanent: false` is deliberate.** It matches what the stubs already did —
+`redirect()` defaults to 307 — so this change is behaviour-preserving. A 308
+would be semantically truer, but browsers cache it indefinitely: if one of
+these paths ever has to become a real page again, every admin who visited it
+once keeps redirecting with no server-side way to stop them. For an
+authenticated panel the extra round trip costs nothing.
+
+**The sources are exact, not wildcards.** `/ai-hub/:path*` would be tidier and
+would silently swallow `/ai-hub/period` and `/ai-hub/period/content`.
+
+Two new blocking test groups guard this, in `tests/smoke/admin-routes.spec.ts`:
+
+- **`live but unlinked — must not be deleted`** — asserts `/ai-hub/period` and
+  `/ai-hub/period/content` still render. They are the two pages a future
+  `rm -rf app/(dashboard)/ai-hub` would take out, and nothing links to them.
+- **`retired routes still redirect`** — asserts all twelve mappings. A
+  `next.config.ts` rule is easy to lose in a merge, and a dropped redirect
+  breaks an admin's bookmark with no error anywhere.
+
+Unlike the informational orphan block, both of these **fail the build**.
+
+⚠️ **Operational trap, cost 20 minutes.** Do not `rm -rf .next` while a
+`next start` from a previous build is still running. The old process keeps
+serving, finds no chunk files, returns 500s with a `text/plain` MIME type, and
+**15 nav routes fail with error boundaries and console errors** — which reads
+exactly like a real regression. `/unauthorized` even rendered a plausible
+157-char body instead of its usual 1754. Kill the server first:
+
+```bash
+pkill -f "next start"; lsof -ti:3000 | xargs kill -9
+```
+
 ### 2. E2 — retire the duplicates
 
 Reachability was checked against `app/(dashboard)/_components/admin-shell/navigation.ts`.

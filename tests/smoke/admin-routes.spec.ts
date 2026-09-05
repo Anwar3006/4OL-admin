@@ -65,7 +65,6 @@ const ORPHAN_CANDIDATES = [
   "/categories",
   "/human-anatomy",
   "/medication-enquiry",
-  "/new-fitness",
   "/onboarding-requests",
   "/platform-schematic",
   "/referrals",
@@ -133,7 +132,66 @@ test.describe("admin routes render", () => {
  * other two traps in this codebase (see docs/cleanup-handoff.md). Nothing
  * errors; the wrong answer just looks like a real one.
  */
+
 const SOFT_NOT_FOUND = /Page not found/i;
+
+/**
+ * Routes that survived an epic that deleted their siblings, and that nothing
+ * links to. These are the ones a future cleanup is most likely to take out by
+ * accident, so unlike the informational block below, **these fail the build**.
+ *
+ * /ai-hub/period and /ai-hub/period/content are the case in point. The audit
+ * described /ai-hub as "8 files incl. a 23 KB Workspace — substantial, check
+ * first", which reads as one duplicate feature. Five of its seven routes were
+ * redirect stubs to /ai and are now rules in next.config.ts. These two are
+ * real, unique pages with their own API route (/api/ai-hub/period) and they
+ * appear in no sidebar. `rm -rf app/(dashboard)/ai-hub` — the obvious next
+ * move for anyone reading "duplicate of /ai" — silently removes them.
+ *
+ * The redirects that replaced their siblings are asserted here too. A
+ * next.config.ts rule is easy to drop in a merge, and a lost redirect breaks
+ * an admin's bookmark with no error anywhere.
+ */
+const MUST_SURVIVE = ["/ai-hub/period", "/ai-hub/period/content"];
+
+const MUST_REDIRECT: Array<[string, string]> = [
+  ["/human-anatomy", "/anatomy"],
+  ["/platform-schematic", "/schematic"],
+  ["/security-center", "/security"],
+  ["/medication-enquiry", "/medenquiry"],
+  ["/medication-enquiry/delivery", "/medenquiry?tab=delivery"],
+  ["/medication-enquiry/escrow", "/medenquiry?tab=escrow"],
+  ["/medication-enquiry/pending", "/medenquiry?tab=pending"],
+  ["/ai-hub", "/ai"],
+  ["/ai-hub/analytics", "/ai?tab=analytics"],
+  ["/ai-hub/models", "/ai?tab=models"],
+  ["/ai-hub/moderation", "/ai?tab=moderation"],
+  ["/ai-hub/recommendations", "/ai?tab=recommendations"],
+];
+
+test.describe("live but unlinked — must not be deleted", () => {
+  for (const route of MUST_SURVIVE) {
+    test(`${route} still renders`, async ({ page }) => {
+      await page.goto(route, { waitUntil: "networkidle" });
+      const body = (await page.locator("body").innerText()).trim();
+      expect(
+        SOFT_NOT_FOUND.test(body),
+        `${route} is gone — it is served by the [...not-found] catch-all now`,
+      ).toBe(false);
+      expect(body.length, `${route} rendered an empty body`).toBeGreaterThan(20);
+    });
+  }
+});
+
+test.describe("retired routes still redirect", () => {
+  for (const [from, to] of MUST_REDIRECT) {
+    test(`${from} → ${to}`, async ({ page }) => {
+      await page.goto(from, { waitUntil: "networkidle" });
+      const url = new URL(page.url());
+      expect(url.pathname + url.search, `${from} no longer redirects to ${to}`).toBe(to);
+    });
+  }
+});
 
 test.describe("orphan route candidates (informational)", () => {
   for (const route of ORPHAN_CANDIDATES) {
