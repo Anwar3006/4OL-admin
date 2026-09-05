@@ -47,7 +47,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
 | **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
 | **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, `server-only` guard on admin. |
-| **E1.3** RLS/idiom audit | **Not started.** The highest-value remaining safety work — see below. |
+| **E1.3** RLS/idiom audit | **Swept.** The silent-empty direction is clear. The sweep found the opposite problem instead — 9 tables exposed to `anon` — and a migration is written but **not applied**. See below. |
 | **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
 | **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
@@ -78,30 +78,71 @@ Then keep going until `hooks/supabase-calls/` is empty. That is E3.2's finish
 line. `lib/fitness/` is the analogue of the five `lib/period-*` modules the
 period migration pulled in — expect it to move too.
 
-### 2. E1.3 — the RLS audit
+### 2. E1.3 — apply the RLS fix (swept 5 Sept 2026; decision pending)
 
-**The highest-value thing left that is not a refactor.** Three features shipped
-broken because a browser-client read hit an RLS-locked table and returned an
-empty set instead of an error. Nobody has swept for the rest:
+**The sweep is done. It found nothing in the direction it was aimed, and
+something worse in the other direction.**
+
+#### The query in this file was wrong
+
+The version previously shipped here flagged tables with no policy naming
+`authenticated`. In Postgres `public` is not "the public schema" and not
+"logged-in users" — it is **every** role. A policy `TO public` therefore does
+cover `authenticated`, and the old query reported 72 tables of which 23 were
+false positives. Corrected:
 
 ```sql
 select c.relname
 from pg_class c join pg_namespace n on n.oid = c.relnamespace
-where n.nspname = 'public' and c.relrowsecurity
+where n.nspname='public' and c.relrowsecurity and c.relkind='r'
   and not exists (
     select 1 from pg_policies p
-    where p.schemaname = 'public' and p.tablename = c.relname
-      and 'authenticated' = any(p.roles));
+    where p.schemaname='public' and p.tablename=c.relname
+      and (p.roles && array['authenticated','public']::name[]));
 ```
 
-That query is verified to run and currently returns **30+ tables** — RLS on,
-no `authenticated` policy. Most are admin-only and correctly reached through
-service-role API routes, which is fine. The bug is the intersection: a table on
-that list that something reads with `getBrowserClient()`. Cross-reference, and
-every match is a feature silently rendering nothing.
+That returns **49** genuinely invisible tables. Cross-referenced against every
+browser-, legacy- and server-client call site in the tree: **no intersection.**
+No feature is currently reading a table that is invisible to it. The bug class
+that broke `healthy_living_body_parts`, `fitness_body_parts` and
+`drug_body_parts` has no live instances left.
 
-Start with the junction and content tables; `admin_*` tables are expected to be
-service-role only.
+#### What the sweep found instead
+
+Nine tables carry `admin_full_access_*` policies written as
+`FOR ALL TO public USING (true)`, plus blanket `GRANT ALL … TO anon`. The name
+says admin; the grant says everyone. Querying **as the `anon` role**:
+
+| Table | Readable as anon |
+| --- | --- |
+| `admin_sessions` | **701 rows** — `session_token`, `ip_address`, `user_agent`, `location`, all `is_active` |
+| the other eight | 0 rows — because they are *empty*, not protected |
+
+The anon key is `NEXT_PUBLIC_*`. It ships in the web bundle and in every
+installed Expo build. Treat all 701 session tokens as disclosed.
+
+`supabase/migrations/20260905_e13_revoke_public_admin_table_access.sql` fixes
+eight of the nine and is **written but not applied** — applying it is a
+production change and wants a human. It is safe for those eight: each is read
+only from `app/api/**` via `getAdminClient()`, and `service_role` has
+`rolbypassrls = true`, verified call site by call site.
+
+**`fitness_content_schedule` is excluded on purpose.** It is the one of the
+nine still read from the browser — `hooks/supabase-calls/useFitnessContentSchedule.ts`,
+on the legacy anon client. Dropping its policy would blank that feature
+silently. It gets fixed when `features/fitness` moves that read behind an API
+route, which is the task above this one.
+
+#### Also worth knowing
+
+- **A head count is the wrong instrument on a row-scoped table.** The anatomy
+  Connected Modules tab counted `drugs` from the browser and got 2,633 of
+  3,530 — RLS scoped the count and nothing errored.
+- **Two of its seven cards counted tables that do not exist** (`hcp_profiles`,
+  `facilities`), so `headCount` returned `-1` and both cards rendered
+  "Not available" permanently. Fixed to `hcp_verifications` and
+  `facility_profile`. A regex sweep for `.from("literal")` will not find this
+  class — the call was `.from(table)` over a config array.
 
 ### 3. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
 

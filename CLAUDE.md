@@ -32,6 +32,12 @@ anything on an RLS-locked table, goes through an API route with
 
 Full reasoning and the SQL to check a table: `lib/db/README.md`.
 
+**When you write that check, remember `public` is every role, not "logged-in
+users".** A policy `TO public` does cover `authenticated` — a check that looks
+only for the literal role name reports tables as locked when they are not, and
+stays silent about the ones exposed to `anon`. The E1.3 sweep found nine of
+those; see `docs/cleanup-handoff.md`.
+
 `@/lib/supabase*` are deprecated shims. Do not add new imports of them. Note
 that `lib/supabase.ts` exports two clients that **do not share a session** —
 see its file comment before touching any caller.

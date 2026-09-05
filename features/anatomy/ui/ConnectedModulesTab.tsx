@@ -69,6 +69,9 @@ const MODULE_CARDS: ModuleCard[] = [
   {
     icon: "💊",
     title: "Medications",
+    // Under-reports: RLS scopes `drugs` to the caller, so this counts 2,633 of
+    // 3,530. A head count is the wrong instrument for an admin total on any
+    // row-scoped table — see docs/cleanup-handoff.md (E1.3).
     table: "drugs",
     href: "/medication-reminder?tab=database",
     detail: "drug catalog categories · interaction checker",
@@ -76,14 +79,20 @@ const MODULE_CARDS: ModuleCard[] = [
   {
     icon: "🧑‍⚕️",
     title: "Specialist / HCP",
-    table: "hcp_profiles",
+    // Was `hcp_profiles`, which does not exist — the head count errored and the
+    // card read "Not available" permanently. The /hcp page reads
+    // hcp_verifications. Note RLS scopes it to the caller's own rows, so this
+    // is 0 today because the table is empty, not because it is readable.
+    table: "hcp_verifications",
     href: "/hcp",
     detail: "specialist matching via conditions.specialist",
   },
   {
     icon: "🏥",
     title: "Nearby Facilities",
-    table: "facilities",
+    // Was `facilities`, which does not exist. The table is facility_profile
+    // (21 other call sites agree); authenticated sees all 3 rows.
+    table: "facility_profile",
     href: "/facilities",
     detail: "GPS-based facility discovery by specialism",
   },
