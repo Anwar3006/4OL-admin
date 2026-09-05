@@ -1,4 +1,4 @@
--- E1.3 — RLS audit finding. NOT YET APPLIED; see docs/cleanup-handoff.md.
+-- E1.3 — RLS audit finding. APPLIED 5 Sept 2026; see docs/cleanup-handoff.md.
 --
 -- Nine tables carry a policy named `admin_full_access_*` defined as
 --   FOR ALL TO public USING (true)
@@ -51,8 +51,26 @@ revoke all on public.admin_activity_logs,
               public.platform_metrics_snapshots
   from anon, authenticated;
 
+-- content_moderation_flags also carries a correctly scoped policy,
+-- `content_moderation_flags_select_admin`: TO authenticated USING
+-- (is_app_admin()). The blanket revoke above takes the table grant that policy
+-- needs, silently disabling a deliberate access path. Give SELECT back; the
+-- over-permissive TO public policy stays dropped.
+--
+-- (Applied as a second migration, e13_restore_moderation_flags_admin_select.
+-- Folded in here so a replay reaches the same end state in one pass — compare
+-- these files with the applied list on content, not on name.)
+grant select on public.content_moderation_flags to authenticated;
+
 commit;
 
+-- Verified after applying, by querying as each role:
+--   all eight tables ............ anon and authenticated both 42501, a hard
+--                                 permission denial rather than silent empty
+--   content_moderation_flags .... anon 42501; authenticated reaches the
+--                                 is_app_admin() policy
+--   service role ................ unchanged, still reads all 701 sessions
+--
 -- Rotate afterwards: the 701 admin_sessions rows were readable for as long as
 -- this policy existed, so every session_token in that table must be treated as
 -- disclosed. Ending those sessions is an application action, not a migration.

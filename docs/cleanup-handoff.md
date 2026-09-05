@@ -47,7 +47,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
 | **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
 | **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, `server-only` guard on admin. |
-| **E1.3** RLS/idiom audit | **Swept.** The silent-empty direction is clear. The sweep found the opposite problem instead — 9 tables exposed to `anon` — and a migration is written but **not applied**. See below. |
+| **E1.3** RLS/idiom audit | **Swept and fixed.** The silent-empty direction is clear. The sweep found the opposite problem — 9 tables exposed to `anon` — and 8 are now closed. `fitness_content_schedule` waits on the fitness migration. See below. |
 | **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
 | **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
@@ -78,7 +78,7 @@ Then keep going until `hooks/supabase-calls/` is empty. That is E3.2's finish
 line. `lib/fitness/` is the analogue of the five `lib/period-*` modules the
 period migration pulled in — expect it to move too.
 
-### 2. E1.3 — apply the RLS fix (swept 5 Sept 2026; decision pending)
+### 2. E1.3 — swept and fixed 5 Sept 2026; one table still open
 
 **The sweep is done. It found nothing in the direction it was aimed, and
 something worse in the other direction.**
@@ -121,11 +121,25 @@ says admin; the grant says everyone. Querying **as the `anon` role**:
 The anon key is `NEXT_PUBLIC_*`. It ships in the web bundle and in every
 installed Expo build. Treat all 701 session tokens as disclosed.
 
-`supabase/migrations/20260905_e13_revoke_public_admin_table_access.sql` fixes
-eight of the nine and is **written but not applied** — applying it is a
-production change and wants a human. It is safe for those eight: each is read
-only from `app/api/**` via `getAdminClient()`, and `service_role` has
+`supabase/migrations/20260905_e13_revoke_public_admin_table_access.sql` fixed
+eight of the nine and **has been applied.** It was safe for those eight: each
+is read only from `app/api/**` via `getAdminClient()`, and `service_role` has
 `rolbypassrls = true`, verified call site by call site.
+
+Verified after applying, by querying as each role: all eight now return
+**42501**, a hard permission denial rather than a silent empty set; service
+role still reads all 701 sessions, so the dashboard is unaffected.
+
+One correction worth copying: the blanket `revoke` also took the grant behind
+`content_moderation_flags_select_admin`, a **correctly** scoped
+`TO authenticated USING (is_app_admin())` policy — silently disabling a
+deliberate access path. `SELECT` was granted back. When you revoke broadly,
+check what else was standing on that grant.
+
+⚠️ **The 701 `admin_sessions` tokens are still live.** They were readable for
+as long as the policy existed, so they should be treated as disclosed and the
+sessions ended. That is an application action, not a migration, and has not
+been done.
 
 **`fitness_content_schedule` is excluded on purpose.** It is the one of the
 nine still read from the browser — `hooks/supabase-calls/useFitnessContentSchedule.ts`,
@@ -351,6 +365,7 @@ database actually has.
 | `20260905_fix_pgcrypto_search_path.sql` | qualified `extensions.gen_random_bytes` in `issue_canary` and `start_admin_session` |
 | `20260905_reapply_epic21_delete_account_vocabulary.sql` | re-applied a migration that never landed |
 | `20260905_device_sign_in_otp_functions.sql` | wrote the two missing OTP functions, and adds `otp_issued_at` |
+| `20260905_e13_revoke_public_admin_table_access.sql` | E1.3: dropped 8 `admin_full_access_*` policies that were `TO public USING (true)`, revoked the matching anon/authenticated grants, restored `SELECT` for the one correctly scoped policy that depended on it |
 
 Earlier session (anatomy): `body_parts` path trigger, junction backfills tagged
 `source='heuristic'`, `get_anatomy_body_part_bundle(p_preview_limit)`,
