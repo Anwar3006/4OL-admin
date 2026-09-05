@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PERIOD_TAB_IDS } from "@/lib/period-tracker";
+import { PERIOD_TAB_IDS } from "@/features/period/schema/period-tracker";
 
 /**
  * Request validation for /api/period/data.

@@ -251,6 +251,12 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "submit_period_trivia": {
+    "args": "p_event_id uuid, p_user_id uuid, p_device_hash text, p_mobile_hash text, p_score smallint, p_answers jsonb, p_duration_seconds integer, p_full_name_ciphertext text, p_mobile_ciphertext text, p_social_platform text, p_social_handle_ciphertext text, p_consent_version text, p_campaign_code text, p_utm_source text, p_utm_medium text, p_utm_campaign text",
+    "returns": "uuid",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "unregister_push_token": {
     "args": "p_token text",
     "returns": "void",

@@ -1,5 +1,5 @@
-import AiHubPeriodWorkspace from "./_components/Workspace";
-
-export default function AiHubPeriodPage() {
-  return <AiHubPeriodWorkspace scope="trivia" />;
-}
+/**
+ * Route entry only. The feature lives in features/period.
+ * Edit features/period/ui/AiHubTriviaPage.tsx instead.
+ */
+export { default } from "@/features/period/ui/AiHubTriviaPage";

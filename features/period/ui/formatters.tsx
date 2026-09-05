@@ -2,7 +2,7 @@ import { Check, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import type { Row } from "./types";
+import type { Row } from "@/features/period/schema/types";
 
 /**
  * Cell formatters shared by the tab tables. Extracted verbatim from

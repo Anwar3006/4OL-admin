@@ -2,9 +2,9 @@
 
 import DataTable, { type Column } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
-import type { Row } from "../_lib/types";
-import { pct } from "../_lib/formatters";
-import { columns } from "../_lib/columns";
+import type { Row } from "@/features/period/schema/types";
+import { pct } from "./formatters";
+import { columns } from "./columns";
 
 
 export default function Overview({ payload }: { payload: any }) {

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getServerClient } from "@/lib/db/server";
 
 function bearerToken(request: NextRequest) {
   const header = request.headers.get("authorization");
@@ -29,7 +29,7 @@ export async function getPeriodRequestClient(request: NextRequest) {
     const { data: { user }, error } = await supabase.auth.getUser();
     return { supabase, user: error ? null : user };
   }
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   return { supabase, user: error ? null : user };
 }

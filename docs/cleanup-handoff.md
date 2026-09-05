@@ -53,41 +53,32 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **3 done:** anatomy, facility-scout, bed-tracker. **42 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **4 done:** anatomy, facility-scout, bed-tracker, period. **42 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. Period had none, so the count is unchanged. |
 | **E3.3** kebab-case routes | **Not started.** Needs redirects. |
 | **E3.4** split `lib/` | **Not started.** |
-| **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files). `ai/page.tsx` (1,236) next. |
+| **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
 | **E4.2** dialog store | **Not started.** `stores/dialog-store.ts`, 30 KB, global. |
 | **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79. |
 | **E5.2** generated DB types | **Not started.** Every `schema/types.ts` is hand-written and can drift. |
 | **E5.3** lint everything | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`. |
-| **E6.1** knip | **Configured**, first batches deleted. 53 unused files remain. |
+| **E6.1** knip | **Configured**, first batches deleted. 41 unused files remain. |
 | **E6.2** prune deps | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps. |
 | **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB. |
 | **E7** documentation | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file. |
-| **E8** mobile contract | **Done.** 31 routes / 44 RPCs / 38 tables, all verified live. |
+| **E8** mobile contract | **Done.** 31 routes / 45 RPCs / 38 tables, all verified live. The verb check now follows re-exports. |
 | **E9** extract the blueprint | **Not started.** |
 
 ---
 
 ## Do next, in order
 
-### 1. `features/period` — finish what E4.1 set up
-
-`period` is split but not moved. It is now the mechanical migration the other
-three were: `ui/`, `api/`, `data/`, `schema/`, thin re-exports under `app/`.
-
-⚠️ **Four of its seven API routes are mobile contract** —
-`/api/period/{me,library,trivia,trivia/fulfillment}`. Leave those alone or move
-them with re-exports that keep the URL byte-identical. `/api/period/data`,
-`analytics` and `categories` are admin-only and free.
-
-### 2. `features/fitness` — the last big one
+### 1. `features/fitness` — the last big one
 
 Then keep going until `hooks/supabase-calls/` is empty. That is E3.2's finish
-line.
+line. `lib/fitness/` is the analogue of the five `lib/period-*` modules the
+period migration pulled in — expect it to move too.
 
-### 3. E1.3 — the RLS audit
+### 2. E1.3 — the RLS audit
 
 **The highest-value thing left that is not a refactor.** Three features shipped
 broken because a browser-client read hit an RLS-locked table and returned an
@@ -112,7 +103,7 @@ every match is a feature silently rendering nothing.
 Start with the junction and content tables; `admin_*` tables are expected to be
 service-role only.
 
-### 4. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
+### 3. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
 
 Use the Period method: **capture a per-endpoint or per-tab baseline first**,
 split, then diff against it. That is what made a 1,166-line extraction safe to
@@ -216,6 +207,28 @@ Two FKs between the same pair of tables and an unqualified embed does not pick
 one — it 500s the route and the page renders its shell with no data. Name the
 constraint: `facility_profile!ambulance_dispatches_destination_facility_id_fkey`.
 Fixing one ambiguity can reveal another behind it.
+
+### Route segment config does not survive a re-export
+
+`export const runtime = "nodejs"` is read by Next's static analysis of the
+route file itself. Move it into a feature module and re-export the handler,
+and the config is silently gone — nothing errors, nothing warns. It stays in
+`app/`. (In Next 16 `nodejs` is the default and `edge` is deprecated, so the
+period routes lost nothing either way — but do not rely on that for a route
+that sets `maxDuration`.)
+
+### A structural check can fail a refactor it should have allowed
+
+`tests/contract/api-routes.test.ts` matched `export function GET` in the route
+file. Once a contracted route became a re-export, all four period routes
+reported "no longer exports GET" — a true-looking failure about a route that
+was fine. The fix was to follow the specifier and read the verbs from the
+module that defines them, **not** to relax the regex into a substring match:
+that would have turned a real check into a decorative one.
+
+It was mutation-tested before being trusted — rename the handler's `GET`,
+delete the handler module, and name a verb in the re-export that the handler
+does not define. All three fail. A check nobody has seen fail is not evidence.
 
 ### grep is fooled by substrings; knip by extensionless specifiers
 

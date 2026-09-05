@@ -1,9 +1,9 @@
 "use client";
 
 import DataTable, { type Column, type RowAction } from "@/components/redesign/DataTable";
-import type { Row } from "../_lib/types";
-import { dateTime, status } from "../_lib/formatters";
-import { columns } from "../_lib/columns";
+import type { Row } from "@/features/period/schema/types";
+import { dateTime, status } from "./formatters";
+import { columns } from "./columns";
 
 
 export default function PrivacyRequests({

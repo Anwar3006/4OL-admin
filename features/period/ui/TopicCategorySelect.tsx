@@ -7,8 +7,8 @@ type Category = { slug: string; label: string };
 const CUSTOM_VALUE = "__custom__";
 
 // Shared "Topic" control for the Period Library content forms (manual
-// create in app/(dashboard)/period/page.tsx, AI generation in
-// app/(dashboard)/ai-hub/period/_components/Workspace.tsx). Backed by
+// create in ui/LibraryOperations.tsx, AI generation in
+// ui/AiHubWorkspace.tsx). Backed by
 // period_content_categories so editors pick a consistent label instead of
 // retyping free text, with a "Custom…" escape hatch since
 // period_content.topic (and period_trivia_questions.topic) stay free-text

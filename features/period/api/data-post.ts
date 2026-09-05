@@ -6,10 +6,10 @@ import {
   containsSensitiveAudience,
   latestConsents,
   type ConsentRecord,
-} from "@/lib/period-tracker";
+} from "@/features/period/schema/period-tracker";
 
-import { WriteSchema } from "../_lib/schema";
-import { slugify, unsafeHtml, writeAudit } from "../_lib/helpers";
+import { WriteSchema } from "@/features/period/schema/data-requests";
+import { slugify, unsafeHtml, writeAudit } from "./data-helpers";
 
 /** Every mutation the Period Tracker admin screen performs. */
 

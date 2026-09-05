@@ -144,6 +144,14 @@ export const CONTRACT_RPCS = [
   "unregister_push_token",
   "issue_device_sign_in_otp",
   "verify_device_sign_in_otp",
+
+  // Added 5 Sept 2026 with the features/period migration. `/api/period/trivia`
+  // is a contracted route and its POST delegates here, so the RPC was as
+  // exposed as the route while being free to change — the same gap that let
+  // /api/auth/device-sign-in/send-otp call a function that did not exist.
+  // Verified to exist with this signature; service_role only, which is why
+  // mobile reaches it through the route rather than calling it directly.
+  "submit_period_trivia",
 ] as const;
 
 /**

@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
  * "is this user premium?" (FITNESS_MOCKUP_GAP_ANALYSIS.md, decision D6).
  *
  * Identity comes from the caller's own JWT: we build a token-scoped client
- * (same pattern as lib/period-request-auth.ts) so `get_my_entitlement()`
+ * (same pattern as features/period/data/request-auth.ts) so `get_my_entitlement()`
  * resolves auth.uid() inside Postgres — there is NO user-id parameter to
  * spoof. Paystack wiring is deliberately absent: once payment collection is
  * enabled it only inserts rows into user_subscriptions (source='paystack'),

@@ -3,8 +3,8 @@
 import { Users } from "lucide-react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { cn } from "@/lib/utils";
-import type { Row } from "../_lib/types";
-import { status } from "../_lib/formatters";
+import type { Row } from "@/features/period/schema/types";
+import { status } from "./formatters";
 
 
 export default function TtcOperations({

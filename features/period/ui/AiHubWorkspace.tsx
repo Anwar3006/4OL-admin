@@ -6,7 +6,7 @@ import Link from "next/link";
 import DataTable, { type Column } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
-import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
+import TopicCategorySelect from "./TopicCategorySelect";
 import { cn } from "@/lib/utils";
 import { useAiJobContext } from "@/stores/ai-job-context";
 

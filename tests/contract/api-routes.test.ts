@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
@@ -25,11 +25,64 @@ import {
 
 const repoRoot = resolve(__dirname, "../..");
 
-const HTTP_VERB = /export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b/g;
+const VERB = "GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS";
+const HTTP_VERB = new RegExp(`export\\s+(?:async\\s+)?function\\s+(${VERB})\\b`, "g");
 
-function exportedVerbs(relativePath: string): string[] {
-  const source = readFileSync(resolve(repoRoot, relativePath), "utf8");
-  return [...source.matchAll(HTTP_VERB)].map((match) => match[1]).sort();
+/**
+ * `export { GET, POST } from "@/features/period/api/me";`
+ *
+ * Under E3.2 a route file is a re-export and the handler lives in
+ * `features/<name>/api/`. Reading only the route file would find no
+ * `export function GET` and report the route as gutted — a false alarm of
+ * exactly the shape this suite exists to avoid producing.
+ *
+ * So the specifier is followed and the verbs are read from the module that
+ * actually defines them. That is strictly stronger than matching the names in
+ * the re-export line: it fails if the handler module is missing, or if it
+ * stopped exporting the verb the re-export names.
+ */
+const RE_EXPORT = new RegExp(
+  `export\\s*\\{([^}]*)\\}\\s*from\\s*["']([^"']+)["']`,
+  "g",
+);
+
+function resolveSpecifier(specifier: string, fromFile: string): string | null {
+  const base = specifier.startsWith("@/")
+    ? resolve(repoRoot, specifier.slice(2))
+    : specifier.startsWith(".")
+      ? resolve(dirname(resolve(repoRoot, fromFile)), specifier)
+      : null;
+  if (!base) return null; // a bare package specifier cannot hold a route handler
+  for (const candidate of [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`]) {
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+function exportedVerbs(relativePath: string, seen = new Set<string>()): string[] {
+  const absolute = resolve(repoRoot, relativePath);
+  if (seen.has(absolute)) return []; // cycle guard
+  seen.add(absolute);
+
+  const source = readFileSync(absolute, "utf8");
+  const verbs = new Set([...source.matchAll(HTTP_VERB)].map((match) => match[1]));
+
+  for (const [, clause, specifier] of source.matchAll(RE_EXPORT)) {
+    const named = clause
+      .split(",")
+      .map((part) => part.trim().split(/\s+as\s+/)[0].trim())
+      .filter((name) => new RegExp(`^(?:${VERB})$`).test(name));
+    if (named.length === 0) continue;
+
+    const target = resolveSpecifier(specifier, relativePath);
+    if (!target) continue;
+    const defined = exportedVerbs(relative(repoRoot, target), seen);
+    for (const name of named) {
+      // Only credit a verb the target module really defines.
+      if (defined.includes(name)) verbs.add(name);
+    }
+  }
+  return [...verbs].sort();
 }
 
 describe("mobile API contract", () => {

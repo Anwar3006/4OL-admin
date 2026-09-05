@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
-import { decryptLead, maskMobile } from "@/lib/period-trivia-security";
+import { decryptLead, maskMobile } from "@/features/period/data/trivia-security";
 import {
   PERIOD_METRIC_DEFINITIONS,
   average,
@@ -15,10 +15,10 @@ import {
   safeAudienceSummary,
   type ConsentRecord,
   type CycleRecord,
-} from "@/lib/period-tracker";
+} from "@/features/period/schema/period-tracker";
 
-import { StatusSchema, TabSchema } from "../_lib/schema";
-import { loadProfiles, maskName, pageRows, profileMaps } from "../_lib/helpers";
+import { StatusSchema, TabSchema } from "@/features/period/schema/data-requests";
+import { loadProfiles, maskName, pageRows, profileMaps } from "./data-helpers";
 
 /**
  * Reads for every Period Tracker tab.

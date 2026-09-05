@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { type PeriodTabId } from "@/lib/period-tracker";
-import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
-import type { Row } from "../_lib/types";
+import { type PeriodTabId } from "@/features/period/schema/period-tracker";
+import TopicCategorySelect from "./TopicCategorySelect";
+import type { Row } from "@/features/period/schema/types";
 
 
 export default function LibraryOperations({

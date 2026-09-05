@@ -38,7 +38,7 @@ see its file comment before touching any caller.
 
 ### 2. Changes to the mobile contract must be additive
 
-**31 API routes, 44 RPCs and 38 tables** are consumed by the Expo app. Old
+**31 API routes, 45 RPCs and 38 tables** are consumed by the Expo app. Old
 builds live on phones for months. Never drop a field, rename a route, reorder an RPC
 parameter, or tighten an RLS policy on a listed table without shipping a
 mobile release first. New parameters get defaults.
@@ -59,7 +59,14 @@ function and then fails inside its own subshell.
 
 Also: **a contracted route can delegate to an RPC that is not contracted**, and
 that RPC is then free to vanish. `/api/auth/device-sign-in/send-otp` did, and
-the function it calls did not exist. List the RPC too.
+the function it calls did not exist. List the RPC too. `submit_period_trivia`
+was the same gap, found during the `features/period` migration and now listed.
+
+A route file that is a **re-export** (`export { GET } from "@/features/…"`)
+still satisfies the contract: `tests/contract/api-routes.test.ts` follows the
+specifier and reads the verbs from the module that defines them. It does not
+merely match the names in the re-export line — a re-export naming a verb the
+handler never defines still fails.
 
 Details: `docs/mobile-contract.md`.
 
@@ -119,9 +126,14 @@ kept a hand-copied subset of five of nine and the Body Map filter 400'd for
 months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
-Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`.
-Next: `period` — already split by E4.1, so the move is mechanical — then
-`fitness`. E3.2 is finished when `hooks/supabase-calls/` (42 files) is empty.
+Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
+`period`. Next: `fitness`. E3.2 is finished when `hooks/supabase-calls/`
+(42 files) is empty.
+
+**Route segment config stays in `app/`.** Next reads `export const runtime`
+by statically analysing the route file, so it does not follow a re-export.
+Moving those lines into a feature module drops the config silently. See
+`features/period/README.md`.
 
 When you migrate one, grep its `ui/` for `from "../page"` — all three
 features had a shared type parked in the page component, because without a

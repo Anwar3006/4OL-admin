@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import type { Row } from "../_lib/types";
-import { date, dateTime, shortId, status } from "../_lib/formatters";
+import type { Row } from "@/features/period/schema/types";
+import { date, dateTime, shortId, status } from "./formatters";
 
 
 export default function AiSuggestions({

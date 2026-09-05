@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 import type { Column } from "@/components/redesign/DataTable";
-import type { PeriodTabId } from "@/lib/period-tracker";
+import type { PeriodTabId } from "@/features/period/schema/period-tracker";
 
-import type { Row } from "./types";
+import type { Row } from "@/features/period/schema/types";
 import { bool, consentState, date, dateTime, pct, shortId, status } from "./formatters";
 
 /**

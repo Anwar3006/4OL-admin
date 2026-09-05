@@ -1,7 +1,7 @@
 "use client";
 
-import type { Row } from "../_lib/types";
-import { status } from "../_lib/formatters";
+import type { Row } from "@/features/period/schema/types";
+import { status } from "./formatters";
 
 
 export default function FeatureFlags({

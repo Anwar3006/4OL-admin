@@ -2,7 +2,7 @@ import {
   Activity, Baby, BookOpenCheck, BrainCircuit, CalendarCheck, ClipboardList,
   Flag, Gem, HeartHandshake, Megaphone, Settings2, ShieldCheck, Sparkles, Users,
 } from "lucide-react";
-import type { PeriodTabId } from "@/lib/period-tracker";
+import type { PeriodTabId } from "@/features/period/schema/period-tracker";
 
 /**
  * Shared vocabulary for the Period Tracker screens.
