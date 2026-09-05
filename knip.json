@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+
+  "entry": [
+    "tests/smoke/auth.setup.ts",
+    "scripts/**/*.{ts,js,mjs}",
+    "supabase/migrations/*.mjs",
+    "proxy.ts"
+  ],
+
+  "project": ["**/*.{ts,tsx,js,jsx,mjs}"],
+
+  "ignore": [
+    "redesign/**",
+    "Claude outputs/**",
+    ".next/**"
+  ],
+
+  "ignoreDependencies": [
+    "supabase"
+  ],
+
+  "ignoreBinaries": ["supabase"]
+}
