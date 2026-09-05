@@ -10,7 +10,7 @@ import { getAdminClient } from "@/lib/db/admin";
  * `proposed`. NOTHING is auto-published: junction rows are only written
  * after an admin approves a suggestion (decideMapping).
  *
- * OpenAI pattern mirrors lib/fitness/generate-plan.ts (structured outputs,
+ * OpenAI pattern mirrors features/fitness/data/generate-plan.ts (structured outputs,
  * retry with backoff, cost awareness).
  */
 

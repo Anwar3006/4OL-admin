@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { UserSearchSelect } from "@/app/(dashboard)/fitness/_components/user-search-select";
+import { UserSearchSelect } from "@/components/UserSearchSelect";
 import { cn } from "@/lib/utils";
 import { useHasPermission } from "@/stores/permission-context";
 import ghanaLocations from "@/constant/ghana-locations.json";

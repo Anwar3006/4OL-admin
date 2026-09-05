@@ -133,17 +133,22 @@ months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
 Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
-`period`. Next: `fitness`. E3.2 is finished when `hooks/supabase-calls/`
-(42 files) is empty.
+`period`, `fitness`. E3.2 is finished when `hooks/supabase-calls/` is empty —
+**35 files left**, down from 42.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.
 Moving those lines into a feature module drops the config silently. See
 `features/period/README.md`.
 
-When you migrate one, grep its `ui/` for `from "../page"` — all three
-features had a shared type parked in the page component, because without a
-`schema/` slot there is nowhere neutral to put one.
+When you migrate one, grep its `ui/` for `from "../page"` — three features
+had a shared type parked in the page component, because without a `schema/`
+slot there is nowhere neutral to put one.
+
+**Also grep for `from "@/app/`.** Fitness had no `../page` import and still
+had the same problem one level up: the Map feature reached into
+`@/app/(dashboard)/fitness/_components/user-search-select`. A relative-import
+sweep does not see that; it is now `components/UserSearchSelect.tsx`.
 
 ---
 

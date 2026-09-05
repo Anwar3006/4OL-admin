@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **4 done:** anatomy, facility-scout, bed-tracker, period. **42 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. Period had none, so the count is unchanged. |
+| **E3.2** migrate features | **5 done:** anatomy, facility-scout, bed-tracker, period, fitness. **35 files remain** in `hooks/supabase-calls/` (fitness took 7) — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Not started.** Needs redirects. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -72,11 +72,25 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ## Do next, in order
 
-### 1. `features/fitness` — the last big one
+### 1. Empty `hooks/supabase-calls/` — 35 files left
 
-Then keep going until `hooks/supabase-calls/` is empty. That is E3.2's finish
-line. `lib/fitness/` is the analogue of the five `lib/period-*` modules the
-period migration pulled in — expect it to move too.
+The five big features are migrated. What remains in that directory is the
+long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
+done when it is empty.
+
+**Do `useFitnessContentSchedule`'s table first, though — it is a security
+blocker, not just a refactor.** `fitness_content_schedule` is the one table
+the E1.3 sweep left exposed to `anon`, and it is exposed *because* that hook
+reads it from the browser. Move the read behind an API route with
+`getAdminClient()`, then drop the policy:
+
+```sql
+drop policy if exists "admin_full_access_fit_sched" on public.fitness_content_schedule;
+revoke all on public.fitness_content_schedule from anon, authenticated;
+```
+
+That closes the ninth of the nine. The hook itself already moved to
+`features/fitness/data/` — only the client it uses needs changing.
 
 ### 2. E1.3 — swept and fixed 5 Sept 2026; one table still open
 
@@ -262,6 +276,20 @@ Two FKs between the same pair of tables and an unqualified embed does not pick
 one — it 500s the route and the page renders its shell with no data. Name the
 constraint: `facility_profile!ambulance_dispatches_destination_facility_id_fkey`.
 Fixing one ambiguity can reveal another behind it.
+
+### A cross-feature import can hide behind an absolute path
+
+The migration guidance says to grep a moved feature's `ui/` for
+`from "../page"`. Fitness had none — and still had the same class of problem,
+one level up. The Map feature imported a picker from
+`@/app/(dashboard)/fitness/_components/user-search-select`: an absolute
+specifier into another feature's private `_components` directory, which no
+relative-import sweep sees and which `tsc` only complains about *after* the
+directory is gone.
+
+**Grep for `from "@/app/` as well.** Two hits in this tree; the fitness one is
+now `components/UserSearchSelect.tsx`, since a generic user picker used by two
+features belongs in neither.
 
 ### Route segment config does not survive a re-export
 
