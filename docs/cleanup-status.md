@@ -179,3 +179,98 @@ and its `include` lists only `.ts` and `.tsx`. The 79 `.js`/`.jsx` files under
 
 Converting those files blind, with no way to run `tsc` between edits, is how a
 cleanup becomes an outage. This one needs the build loop working first.
+
+---
+
+## E0 · Safety net — **built, needs one run from you**
+
+Note on numbering: your list last turn was the four *faults*, not the epics.
+The mapping is — fault 1 → story E1.1, fault 2 → E1.2, fault 3 → **epic E2**,
+fault 4 → **epic E5**. So E1 is done; E2 (retire duplicates) is classified but
+not executed, and E5 (types) has not started.
+
+### What was added
+
+| File | Purpose |
+| --- | --- |
+| `tests/contract/mobile-contract.ts` | The frozen surface: 16 routes, 28 RPCs, 34 tables |
+| `tests/contract/api-routes.test.ts` | Route files exist and export their verbs |
+| `tests/contract/rpc-signatures.json` | Real signatures, read from production |
+| `tests/contract/rpc-signatures.test.ts` | Live DB vs snapshot |
+| `tests/smoke/auth.setup.ts` | Signs in once, saves the session |
+| `tests/smoke/admin-routes.spec.ts` | Sweeps 34 nav routes + 11 orphan candidates |
+| `playwright.config.ts` | Smoke config, skips without credentials |
+| `scripts/cleanup/regenerate-mobile-contract.sh` | Re-derives the contract from the Expo repo |
+| `docs/mobile-contract.md` | The contract, written down |
+| `.github/workflows/ci.yml` | Added a **build** job; contract tests get DB secrets |
+
+Migration `20260905_contract_rpc_signatures_reader.sql` adds one read-only
+`pg_proc` reader, service-role only. It exists because the obvious
+implementation — probe each RPC by calling it — would have written rows to
+production: `join_fitness_challenge`, `redeem_fitcoin_reward`,
+`log_manual_activity` and the `increment_*` family are all volatile.
+
+### The contract was wrong
+
+It is **16 routes, not 13.** The audit grepped only `hooks/` and `services/`
+and missed three called from `lib/` and `context/`:
+
+- `/api/auth/device-context`
+- `/api/auth/device-sign-in/send-otp`
+- `/api/user/push-token`
+
+Any of those three could have been renamed during E3 and shipped a broken
+sign-in flow to every installed build. Hence
+`regenerate-mobile-contract.sh` — the manifest is a cache, the script is the
+source of truth.
+
+Also found: **two of the 16 contract routes are untyped `.js`** —
+`user/delete-account-request` and `search/dynamic`. The highest-risk files in
+the repo are the ones `tsc` never looks at. Convert those two first in E5.
+
+### Run it
+
+```bash
+bash scripts/cleanup/02-run.sh
+```
+
+The sweep's "orphan route candidates" block is the evidence E2 needs — it
+reports, per route, whether it renders, redirects, or is already broken.
+
+---
+
+## E3 · Feature modules — **blocked on tooling, not on decisions**
+
+E3 is ~330 file moves. I have no shell on your machine, so I cannot `git mv`,
+cannot `rg` for import sites, and cannot run `tsc` between steps. Doing it
+through single-file writes would mean hundreds of blind edits with no
+verification loop — precisely the failure this plan exists to avoid.
+
+Two ways forward, in order of preference:
+
+1. **Get the local workspace running again** (it has failed to start all
+   session). Then E3 is a normal refactor with a verify loop.
+2. **Run the sweep above, paste the orphan block**, and we do E2 first — it
+   removes ~11 route modules and one of the two UI kits, which shrinks E3's
+   surface before it starts.
+
+E3.1 — proving the pattern on Anatomy alone — is worth doing either way, and
+is small enough to do through file writes. Say the word.
+
+---
+
+## E4 · God files — **ready to start, tractable without a shell**
+
+Splitting a file is additive: write the new modules, rewrite the original as a
+composition. No deletes, no moves. The four targets:
+
+| File | Size |
+| --- | --- |
+| `app/(dashboard)/period/page.tsx` | 117 KB |
+| `app/api/period/data/route.ts` | 76 KB |
+| `app/(dashboard)/ai/page.tsx` | 44 KB |
+| `stores/dialog-store.ts` | 30 KB |
+
+`period/page.tsx` is the obvious first cut — 117 KB in one file, and the
+route is in the sidebar so the smoke sweep already covers it. It needs the
+safety net running first, which is why E0 came before it.
