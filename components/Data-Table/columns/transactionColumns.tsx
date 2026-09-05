@@ -3,6 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TransactionRow } from "@/hooks/supabase-calls/useTransactions";
+import { formatCurrency } from "@/lib/format";
 
 export const CATEGORY_LABELS: Record<TransactionRow["category"], string> = {
   subscription_fee: "Subscription Fee",
@@ -23,7 +24,7 @@ const STATUS_STYLES: Record<TransactionRow["status"], string> = {
   cancelled: "bg-slate-100 text-slate-500 border-slate-200",
 };
 
-const formatMoney = (amount: number) => `₵${Number(amount).toLocaleString()}`;
+const formatMoney = (amount: number) => formatCurrency(amount);
 
 export const formatProcessedAt = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });

@@ -18,6 +18,7 @@ import EscrowTab from "./_components/EscrowTab";
 import DeliveryTab from "./_components/DeliveryTab";
 import PharmacyResponsesTab from "./_components/PharmacyResponsesTab";
 import DisputesTab from "./_components/DisputesTab";
+import { formatCurrency } from "@/lib/format";
 
 const CONNECTED_MENUS = [
   { label: "🏥 Pharmacies (Facilities)", href: "/facilities" },
@@ -189,7 +190,7 @@ export default function MedEnquiryPage() {
           value={kpis?.escrow_active_count ?? "—"}
           delta={
             kpis?.escrow_amount_held !== undefined
-              ? `₵${Number(kpis.escrow_amount_held).toLocaleString()} held`
+              ? `${formatCurrency(kpis.escrow_amount_held)} held`
               : undefined
           }
           deltaType="neutral"

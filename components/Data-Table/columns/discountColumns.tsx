@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TDiscountRow } from "@/schemas/marketing-discount.schema";
+import { formatCurrency } from "@/lib/format";
 import {
   useCreateMarketingDiscount,
   useDeleteMarketingDiscount,
@@ -49,7 +50,7 @@ const discountLabel = (row: TDiscountRow) => {
     case "percentage":
       return `${row.discount_value}%`;
     case "fixed":
-      return `₵${Number(row.discount_value).toFixed(0)}`;
+      return formatCurrency(row.discount_value, { decimals: 0 });
     case "free_trial":
       return `${row.discount_value} day trial`;
     case "bogo":

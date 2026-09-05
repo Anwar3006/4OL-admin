@@ -394,6 +394,90 @@ behaviour rather than file existence.
 They stream CSV in a Response, share none of the DOM code, and repeat the
 escaping among themselves. That is a separate unification.
 
+### E2.3 — one date library, one currency formatter — **done**
+
+E2.3 asked for one CSV helper, one date formatter and one currency formatter.
+CSV was done earlier on this branch; this is the other two.
+
+#### moment is gone — one date library
+
+`moment` was imported by exactly three files, and all three were dead or
+nearly so: `app/services/dashboard.js` and `app/services/banners_ads.js` (zero
+importers, knip-unused), and `app/utils/helpers.js`, whose only live export
+was a moment-based `formatDate`.
+
+`formatDate` now lives in `lib/format.ts`, built on `Intl` rather than
+date-fns so it pulls in no library at all — `en-CA` is the locale whose short
+date format *is* ISO, which avoids hand-assembling the string and getting the
+timezone wrong.
+
+**`moment` and `crypto-js` are removed from `package.json`** (crypto-js was
+used only by the deleted `helpers.js`). 121 runtime dependencies → 119, and
+date-fns is now the only date library.
+
+⚠️ `formatDate` renders in the **viewer's timezone**, matching what
+`moment(x).format("YYYY-MM-DD")` did. For a UTC calendar day — an export
+filename, a database key — keep using `toISOString().slice(0, 10)`. The two
+disagree either side of midnight.
+
+#### One currency formatter
+
+29 hand-rolled currency expressions, including five more local
+`formatMoney`-style helpers, now call `formatCurrency` from `lib/format.ts`.
+There are **zero** hand-rolled `₵${…}` value sites left.
+
+`lib/format.ts` already had a currency-capable helper — `formatKpiValue({
+currency: true })` — with **one importer**. Writing a shared helper is not the
+hard part; the hard part is that nobody finds it.
+
+Two defects in the pattern it replaces, both invisible until they are not:
+
+1. **`toLocaleString()` takes the locale from the runtime.** A browser set to
+   de-DE renders `1234.5` as `1.234,5` — the separators swap meaning. The
+   admins are in Ghana; their machines and any server render are not
+   guaranteed to be. `formatCurrency` pins `en-GH`.
+2. **It allows three fraction digits.** `1234.567` rendered as `₵1,234.567`,
+   which is not a currency amount. Capped at two.
+
+**A visible change, deliberately made:** displayed amounts rendered as both
+`₵` (42 occurrences) and `GH₵` (7). All *amounts* are now `₵`, from the single
+`CEDI` constant — `/users` and `/ibp` premium tiers changed from `GH₵60` to
+`₵60`. The three surviving `GH₵` are form labels naming the unit
+(`label="Budget (GH₵)"`), which is legitimate copy, not formatting.
+
+**Left alone deliberately:** the revenue chart's Y-axis
+(`₵${Math.round(value / 1000)}k`) is a thousands axis, not a money value.
+`formatCurrency(v, { compact: true })` would render `₵12.4K` and change the
+chart, so only the symbol was centralised.
+
+`formatCurrency` defaults to 0–2 decimals rather than forcing `.00`, because
+the call sites already rendered `₵1,200` and adding decimals everywhere is a
+visible change across every financial screen. Pass `decimals: 2` where
+alignment matters — that is the better display for money and is worth adopting
+screen by screen, not as a side effect of a refactor.
+
+12 new unit tests in `tests/unit/format.test.ts` pin both defects and the
+fallback behaviour. 85 unit+contract tests now pass.
+
+### `pnpm build` earned its keep again
+
+The currency work deleted `app/utils/helpers.js` after checking its importers
+across `app components hooks lib actions stores utils`. **`constant/` was not
+in that list**, and `constant/facility-labels-data.js` imported `formatDate`
+from it.
+
+`pnpm type-check` passed. The file is `.js`, and `tsconfig` sets
+`checkJs: false` with an `include` of only `.ts`/`.tsx` — so tsc never looked
+at it. `pnpm build` failed with `Module not found`, naming the file.
+
+This is the sharp edge at the bottom of `CLAUDE.md` biting for real. When
+checking importers, search the repo, not a remembered list of directories:
+
+```bash
+grep -rn --include='*.{ts,tsx,js,jsx,mjs}' "<module path>" . \
+  --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git
+```
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that

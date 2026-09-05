@@ -3,6 +3,7 @@
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { useTransactionsOverview } from "@/hooks/supabase-calls/useTransactions";
+import { formatCurrency } from "@/lib/format";
 
 const HIDDEN_VALUE = "🔒 Hidden";
 
@@ -11,7 +12,7 @@ export default function TransactionStats() {
   const kpis = data?.overview?.kpis;
 
   const formatMoney = (value: number | null | undefined) =>
-    value === null || value === undefined ? "—" : `₵${Number(value).toLocaleString()}`;
+    formatCurrency(value, { fallback: "—" });
   const formatCount = (value: number | null | undefined) =>
     value === null || value === undefined ? "—" : Number(value).toLocaleString();
 

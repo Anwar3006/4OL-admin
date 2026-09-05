@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import FinanceVisibilityDialog from "./FinanceVisibilityDialog";
+import { formatCurrency } from "@/lib/format";
 import {
   useExpenses,
   useSaveExpense,
@@ -119,7 +120,7 @@ export default function ExpensesTab() {
                   <div key={row.id}>
                     <div className="flex justify-between text-[10px] font-bold mb-1">
                       <span className="text-slate-600">{CATEGORY_LABELS[row.category] ?? row.category}</span>
-                      <span className="text-slate-900 font-black">₵{Number(row.amount).toLocaleString()} ({pct}%)</span>
+                      <span className="text-slate-900 font-black">{formatCurrency(row.amount)} ({pct}%)</span>
                     </div>
                     <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
                       <div
@@ -141,20 +142,20 @@ export default function ExpensesTab() {
           <div className="space-y-2 text-xs font-bold">
             <div className="flex justify-between border-b border-slate-50 pb-2">
               <span className="text-slate-500 font-medium">Total Revenue</span>
-              <span className="text-emerald-600 font-black">₵{revenue.toLocaleString()}</span>
+              <span className="text-emerald-600 font-black">{formatCurrency(revenue)}</span>
             </div>
             <div className="flex justify-between border-b border-slate-50 pb-2">
               <span className="text-slate-500 font-medium">Total Expenses (all months)</span>
-              <span className="text-red-500 font-black">₵{expenseTotal.toLocaleString()}</span>
+              <span className="text-red-500 font-black">{formatCurrency(expenseTotal)}</span>
             </div>
             <div className="flex justify-between border-b border-slate-50 pb-2">
               <span className="text-slate-500 font-medium">Expenses — {month}</span>
-              <span className="text-red-400 font-black">₵{monthTotal.toLocaleString()}</span>
+              <span className="text-red-400 font-black">{formatCurrency(monthTotal)}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-black">
               <span className="text-slate-800">Net Profit</span>
               <span className={netProfit >= 0 ? "text-emerald-600" : "text-red-600"}>
-                ₵{netProfit.toLocaleString()}
+                {formatCurrency(netProfit)}
               </span>
             </div>
           </div>

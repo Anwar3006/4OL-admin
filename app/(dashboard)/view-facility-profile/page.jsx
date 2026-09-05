@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/app/utils/supabaseClient";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatDate } from "@/app/utils/helpers";
+import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
 import Loading from "@/components/Loading";

@@ -3,6 +3,7 @@
 import React from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useTransactionsOverview } from "@/hooks/supabase-calls/useTransactions";
+import { CEDI } from "@/lib/format";
 
 export default function RevenueAnalytics() {
   const { data } = useTransactionsOverview();
@@ -41,7 +42,7 @@ export default function RevenueAnalytics() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
               <XAxis dataKey="month" stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(value) => `₵${Math.round(Number(value) / 1000)}k`} />
+              <YAxis stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(value) => `${CEDI}${Math.round(Number(value) / 1000)}k`} />
               <Tooltip />
               <Area type="monotone" dataKey="revenue" stroke="#10B981" fillOpacity={1} fill="url(#colorRev)" />
             </AreaChart>

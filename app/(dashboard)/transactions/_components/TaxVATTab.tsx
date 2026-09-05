@@ -2,6 +2,7 @@
 
 import React from "react";
 import { downloadCsv } from "@/lib/csv";
+import { formatCurrency } from "@/lib/format";
 import {
   useTaxData,
   useUpdateTaxFiling,
@@ -14,8 +15,8 @@ const FILING_BADGES: Record<TaxFilingRow["status"], string> = {
   not_started: "badge-secondary",
 };
 
-const money = (value: unknown) =>
-  value === null || value === undefined ? "—" : `₵${Number(value).toLocaleString()}`;
+const money = (value: number | string | null | undefined) =>
+  formatCurrency(value, { fallback: "—" });
 
 export default function TaxVATTab() {
   const { data, isLoading } = useTaxData();

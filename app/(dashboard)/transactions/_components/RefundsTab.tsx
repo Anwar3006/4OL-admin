@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatProcessedAt } from "@/components/Data-Table/columns/transactionColumns";
+import { formatCurrency } from "@/lib/format";
 import {
   useRefunds,
   useFileRefund,
@@ -109,7 +110,7 @@ export default function RefundsTab() {
         header: "Amount",
         cell: ({ row }) => (
           <span className="font-black text-amber-600">
-            ₵{Number(row.original.amount).toLocaleString()}
+            {formatCurrency(row.original.amount)}
           </span>
         ),
       },

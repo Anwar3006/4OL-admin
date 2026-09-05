@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
+import { formatCurrency } from "@/lib/format";
 import {
   transactionColumns,
   formatProcessedAt,
@@ -121,13 +122,13 @@ export default function ServiceChargeTab() {
               <div className="flex justify-between items-center py-2 border-b border-slate-50 text-xs font-bold">
                 <span className="text-slate-500 font-medium">Service Fee Revenue (MTD)</span>
                 <span className="text-ek-blue">
-                  ₵{Number(serviceFees?.total_mtd ?? 0).toLocaleString()}
+                  {formatCurrency(serviceFees?.total_mtd ?? 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-slate-50 text-xs font-bold">
                 <span className="text-slate-500 font-medium">Year to Date</span>
                 <span className="text-ek-blue">
-                  ₵{Number(serviceFees?.ytd ?? 0).toLocaleString()}
+                  {formatCurrency(serviceFees?.ytd ?? 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-slate-100 text-xs font-black">

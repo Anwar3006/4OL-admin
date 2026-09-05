@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import KpiGrid from "@/components/redesign/KpiGrid";
-import { formatKpiValue, formatKpiPercent } from "@/lib/format";
+import { formatCurrency, formatKpiValue, formatKpiPercent } from "@/lib/format";
 import {
   useAiModels,
   useDeployAiModel,
@@ -1189,7 +1189,7 @@ function AnalyticsPanel({
                   label="API Cost"
                   value={formatKpiValue(metrics?.totalCost ?? 0, { currency: true })}
                 />
-                <MetricRow label="Cost / Query" value={costPerQuery != null ? `₵${costPerQuery}` : "—"} />
+                <MetricRow label="Cost / Query" value={formatCurrency(costPerQuery, { decimals: 2, fallback: "—" })} />
                 <MetricRow label="Tokens" value={formatKpiValue(metrics?.totalTokens ?? 0, { compact: true })} />
                 <MetricRow label="Success Rate" value={`${metrics?.successRate ?? 0}%`} />
               </>

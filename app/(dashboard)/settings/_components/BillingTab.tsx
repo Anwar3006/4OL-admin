@@ -7,6 +7,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 import KpiGrid from "@/components/redesign/KpiGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -27,7 +28,7 @@ type InfraCost = {
 
 function formatCedis(value: number | null) {
   if (value == null) return "—";
-  return `₵${new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)}`;
+  return formatCurrency(value, { decimals: 0 });
 }
 
 /**

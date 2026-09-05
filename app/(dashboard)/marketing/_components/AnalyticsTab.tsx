@@ -4,6 +4,7 @@ import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { apiFetch } from "@/lib/api-fetch";
 import { useQuery } from "@tanstack/react-query";
+import { formatCurrency } from "@/lib/format";
 
 type AnalyticsPayload = {
   performance: {
@@ -76,7 +77,7 @@ export default function AnalyticsTab() {
         <KpiCard icon="🖱️" label="Clicks" value={dash(performance.clicks)} variant="green" delta="All campaigns" deltaType="neutral" />
         <KpiCard icon="🎯" label="Avg CTR" value={dash(performance.avg_ctr, "%")} variant="teal" delta="Clicks ÷ impressions" deltaType="neutral" />
         <KpiCard icon="🔄" label="Conversions" value={dash(performance.conversions)} variant="amber" delta="Recorded to date" deltaType="neutral" />
-        <KpiCard icon="💰" label="Ad Spend" value={`₵${performance.ad_spend.toLocaleString()}`} variant="indigo" delta="Budgets entered" deltaType="neutral" />
+        <KpiCard icon="💰" label="Ad Spend" value={formatCurrency(performance.ad_spend)} variant="indigo" delta="Budgets entered" deltaType="neutral" />
       </div>
 
       {/* ROI Summary */}

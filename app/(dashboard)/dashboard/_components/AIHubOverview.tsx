@@ -1,5 +1,6 @@
 import React from "react";
 import { PlatformOverviewMetrics } from "./dashboard-types";
+import { formatCurrency } from "@/lib/format";
 
 export default function AIHubOverview({
   metrics,
@@ -12,7 +13,7 @@ export default function AIHubOverview({
     { label: "Calls", value: metrics?.ai.calls ?? 0, variant: "indigo" },
     { label: "Last 24h", value: metrics?.ai.calls_last_24h ?? 0, variant: "blue" },
     { label: "Flags", value: metrics?.queues.pending_moderation_flags ?? 0, variant: "amber" },
-    { label: "Cost", value: `₵${Number(metrics?.ai.estimated_cost ?? 0).toFixed(2)}`, variant: "green" },
+    { label: "Cost", value: formatCurrency(metrics?.ai.estimated_cost ?? 0, { decimals: 2 }), variant: "green" },
   ];
 
   return (

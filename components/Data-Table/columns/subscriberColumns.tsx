@@ -11,6 +11,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import {
   TUserSubscriptionRow,
   useRemindSubscribers,
@@ -174,7 +175,7 @@ export const createSubscriberColumns = (options?: {
         header: "Monthly Value",
         cell: ({ row }) => (
           <span className="text-[11px] font-black text-slate-700">
-            ₵{Number(row.original.subscription_tiers?.price_ghs ?? 0).toFixed(2)}
+            {formatCurrency(row.original.subscription_tiers?.price_ghs ?? 0, { decimals: 2 })}
           </span>
         ),
       },

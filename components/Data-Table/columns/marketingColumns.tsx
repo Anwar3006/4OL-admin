@@ -12,6 +12,7 @@ import {
 import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
 import { MarketingStatusMap } from "@/constants/marketing.const";
 import { format } from "date-fns";
+import { formatCurrency } from "@/lib/format";
 
 /**
  * Gap Analysis Part M (M3/M4) + mockup parity build: lifecycle row actions
@@ -197,7 +198,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     header: "Budget",
     cell: ({ row }) => (
       <span className="text-[11px] font-black text-slate-700 tabular-nums">
-        {row.original.budget != null ? `₵${Number(row.original.budget).toLocaleString()}` : "—"}
+        {formatCurrency(row.original.budget, { fallback: "—" })}
       </span>
     ),
   },

@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { formatProcessedAt } from "@/components/Data-Table/columns/transactionColumns";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/format";
 import {
   useTransactions,
   useTransactionAction,
@@ -52,7 +53,7 @@ export default function FailedTransactionsTab() {
         accessorKey: "amount",
         header: "Amount",
         cell: ({ row }) => (
-          <span className="font-black text-red-500">₵{Number(row.original.amount).toLocaleString()}</span>
+          <span className="font-black text-red-500">{formatCurrency(row.original.amount)}</span>
         ),
       },
       {
@@ -120,7 +121,7 @@ export default function FailedTransactionsTab() {
         <span>⚠️</span>
         <strong>{failed?.count ?? rows.length} failed transaction(s)</strong>
         <span>
-          totalling ₵{Number(failed?.amount_at_risk ?? rows.reduce((acc, r) => acc + Number(r.amount), 0)).toLocaleString()} at risk.
+          totalling {formatCurrency(failed?.amount_at_risk ?? rows.reduce((acc, r) => acc + Number(r.amount), 0))} at risk.
         </span>
       </div>
       <div className="card p-0 overflow-hidden">

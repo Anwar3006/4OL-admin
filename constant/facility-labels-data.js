@@ -1,4 +1,4 @@
-import { formatDate } from "@/app/utils/helpers";
+import { formatDate } from "@/lib/format";
 
 export const facilityFields = [
     { label: "Facility Name", key: "facility_name" },

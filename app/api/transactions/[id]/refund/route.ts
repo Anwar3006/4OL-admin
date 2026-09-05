@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { formatCurrency } from "@/lib/format";
 
 const REASONS = [
   "accidental_purchase",
@@ -57,7 +58,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const amount = body.amount ?? Number(txn.amount);
     if (amount > Number(txn.amount)) {
       return NextResponse.json(
-        { error: `Refund amount cannot exceed the charge of ₵${txn.amount}` },
+        { error: `Refund amount cannot exceed the charge of ${formatCurrency(txn.amount)}` },
         { status: 422 },
       );
     }

@@ -28,6 +28,7 @@ import {
   TUserSubscriptionRow,
 } from "@/hooks/supabase-calls/useSubscriptions";
 import { TMarketingSubscriptionOutput } from "@/schemas/marketing-subscription.schema";
+import { formatCurrency } from "@/lib/format";
 
 type SubTab = "all" | "at_risk" | "billing" | "requests";
 
@@ -115,7 +116,7 @@ function PlanCard({
       </div>
 
       <div className="text-2xl font-black text-slate-900">
-        ₵{Number(plan.price).toFixed(0)}
+        {formatCurrency(plan.price, { decimals: 0 })}
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
           {cycleSuffix(plan)}
         </span>
@@ -221,7 +222,7 @@ export default function SubscriptionsTab() {
         <KpiCard
           icon={<Wallet className="size-4" />}
           label="Monthly Recurring Revenue"
-          value={`₵${(kpis?.mrr ?? 0).toLocaleString()}`}
+          value={formatCurrency(kpis?.mrr ?? 0)}
           variant="green"
           isLoading={overview.isLoading}
           isError={overview.isError}

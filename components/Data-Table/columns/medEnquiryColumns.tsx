@@ -2,6 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import type { MedEnquiryRow } from "@/hooks/supabase-calls/useMedEnquiry";
+import { formatCurrency } from "@/lib/format";
 
 export const STATUS_LABELS: Record<string, string> = {
   pending_match: "Pending Match",
@@ -38,7 +39,7 @@ const TYPE_STYLES: Record<string, string> = {
 export const formatEnqId = (id: string) => `ENQ-${String(id).slice(0, 6).toUpperCase()}`;
 
 export const formatMoney = (amount: number | null | undefined) =>
-  amount === null || amount === undefined ? "—" : `₵${Number(amount).toLocaleString()}`;
+  formatCurrency(amount, { fallback: "—" });
 
 export const formatSubmittedAt = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });

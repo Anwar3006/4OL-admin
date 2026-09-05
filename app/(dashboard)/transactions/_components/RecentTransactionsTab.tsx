@@ -11,6 +11,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { downloadCsv } from "@/lib/csv";
+import { formatCurrency } from "@/lib/format";
 import {
   useTransactions,
   useTransactionAction,
@@ -180,7 +181,7 @@ export default function RecentTransactionsTab() {
       ),
     },
     fields: [
-      { id: "amount", label: "Amount", render: (row) => `₵${Number(row.amount).toLocaleString()}` },
+      { id: "amount", label: "Amount", render: (row) => formatCurrency(row.amount) },
       { id: "category", label: "Type", render: (row) => CATEGORY_LABELS[row.category] ?? row.category },
     ],
     actions: [{ label: "View Details", onClick: (row) => setDetail(row) }],
@@ -273,7 +274,7 @@ export default function RecentTransactionsTab() {
           {detail && (
             <div className="space-y-2 text-xs font-bold">
               {[
-                ["Amount", `₵${Number(detail.amount).toLocaleString()} ${detail.currency}`],
+                ["Amount", `${formatCurrency(detail.amount)} ${detail.currency}`],
                 ["Payer", `${detail.payer_name || "—"} (${detail.payer_code})`],
                 ["Segment", detail.payer_class === "business" ? "Business" : "User"],
                 ["Type", CATEGORY_LABELS[detail.category] ?? detail.category],

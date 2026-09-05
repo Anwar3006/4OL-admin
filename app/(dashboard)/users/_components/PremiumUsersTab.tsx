@@ -9,6 +9,7 @@ import { DataTable } from "@/components/Data-Table/data-table";
 import { usePagination } from "@/hooks/use-pagination";
 import { useViewUserDialog } from "@/stores/dialog-store";
 import { useHasPermission } from "@/stores/permission-context";
+import { formatCurrency } from "@/lib/format";
 import {
   AdminUserRow,
   useAdminUsers,
@@ -18,9 +19,9 @@ import {
 // NOTE: plan pricing is provisional (C-D5) — confirm against the
 // subscription_plans seed before billing goes live (Epic 16).
 const PLAN_TIERS = [
-  { value: "standard", label: "Standard", price: "GH₵60/mo", icon: Star, variant: "blue" },
-  { value: "premium", label: "Premium", price: "GH₵150/mo", icon: Crown, variant: "purple" },
-  { value: "featured", label: "Featured", price: "GH₵350/mo", icon: Sparkles, variant: "green" },
+  { value: "standard", label: "Standard", price: `${formatCurrency(60)}/mo`, icon: Star, variant: "blue" },
+  { value: "premium", label: "Premium", price: `${formatCurrency(150)}/mo`, icon: Crown, variant: "purple" },
+  { value: "featured", label: "Featured", price: `${formatCurrency(350)}/mo`, icon: Sparkles, variant: "green" },
 ] as const;
 
 const displayName = (row: AdminUserRow) =>

@@ -10,6 +10,7 @@ import { useHasPermission } from "@/stores/permission-context";
 import { IbpRow, useIbpOverview, useIbps } from "@/hooks/supabase-calls/useIBP";
 import { IBP_PLAN_PRICING } from "@/lib/ibp-constants";
 import { formatDate, formatMoney, IbpViewDialog, STATUS_BADGES } from "./ibp-shared";
+import { formatCurrency } from "@/lib/format";
 
 // Pricing is reference-only (decision C-D5) — confirm against the
 // subscription_plans seed before invoicing goes live.
@@ -113,7 +114,7 @@ export default function PremiumIbpsTab() {
               key={tier.key}
               icon={<Icon className="h-5 w-5" />}
               label={`${tier.label} Plan`}
-              value={`GH₵${IBP_PLAN_PRICING[tier.key]}/mo`}
+              value={`${formatCurrency(IBP_PLAN_PRICING[tier.key])}/mo`}
               variant={tier.variant}
               delta="Reference pricing (C-D5)"
               deltaType="neutral"
