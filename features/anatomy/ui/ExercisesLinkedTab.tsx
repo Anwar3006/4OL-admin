@@ -11,7 +11,7 @@ import {
   useRunAiMap,
   useUnlinkExerciseFromBodyPart,
   type AiMappingRow,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useExercises } from "@/hooks/supabase-calls/useExercise";
 import { cn } from "@/lib/utils";

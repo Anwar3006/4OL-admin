@@ -6,7 +6,7 @@ import {
   useDecideAiMapping,
   useRunAiMap,
   type AiMappingRow,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 
 /**
  * AI Pin Mapper (Gap Analysis Part AL, AL-D8). Runs the LLM over unmapped

@@ -7,7 +7,7 @@ import {
   useHotspots3D,
   useUpsertHotspot3D,
   useDeleteHotspot3D,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 
 /**
  * 3D Pin Placement editor (Gap Analysis Part AL, AL-D3). Embeds the same

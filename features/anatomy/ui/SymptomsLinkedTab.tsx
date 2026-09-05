@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { useAnatomySymptoms, useBodyParts } from "@/hooks/supabase-calls/useAnatomy";
+import { useAnatomySymptoms, useBodyParts } from "@/features/anatomy/data/useAnatomy";
 
 const inputCls =
   "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";

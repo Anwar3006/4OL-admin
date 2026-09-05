@@ -13,7 +13,7 @@ import {
   useBodyParts,
   useLinkTipToBodyPart,
   useUnlinkTipFromBodyPart,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 import {
   useCreateHealthyLiving,
   useHealthyLivings,

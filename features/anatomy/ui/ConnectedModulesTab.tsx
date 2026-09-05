@@ -3,19 +3,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import {
   useAnatomyOverview,
   useBodyParts,
   useUpdateBodyPartGenderScope,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 
 // Tab 5 — Connected Modules: live head-count cards into every module that
 // consumes the body-part taxonomy, plus suggested connections and the
 // gender-aware content rules editor (writes body_parts.gender_scope).
 
 const headCount = async (table: string): Promise<number> => {
-  const supabase = await getSupabaseClient();
+  const supabase = getBrowserClient();
   const { count, error } = await supabase
     .from(table)
     .select("*", { count: "exact", head: true });

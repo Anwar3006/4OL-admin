@@ -478,6 +478,86 @@ grep -rn --include='*.{ts,tsx,js,jsx,mjs}' "<module path>" . \
   --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git
 ```
 
+### E3.1 — Anatomy moved to `features/anatomy` — **done, needs review**
+
+The exemplar the rest of E3 copies. **Review the shape before a second feature
+moves** — that is the whole point of doing one first.
+
+25 files moved. `features/anatomy/README.md` is the artefact to read.
+
+```
+features/anatomy/
+  ui/       13 components (AnatomyPage + 11 tabs + AddBodyPartDialog)
+  api/      10 route handlers, one module per endpoint
+  data/     useAnatomy.ts (react-query) + ai-pin-mapper.ts
+  schema/   types.ts (14 row/response shapes) + body-systems.ts
+```
+
+`app/` keeps one re-export per route and no logic:
+
+```ts
+export { GET, POST, DELETE } from "@/features/anatomy/api/drug-links";
+```
+
+**All 11 URLs are byte-identical** — verified against the build manifest, and
+every one of the 9 GET endpoints returns 200 with real data through the
+re-export. `/anatomy` renders with its 11 tabs and zero failing requests.
+
+Three things done while holding the file, each defensible on its own:
+
+- **The types were extracted to `schema/types.ts`.** `useAnatomy.ts` was 824
+  lines of hooks and interfaces interleaved; it is 701 + 178 now. They are
+  re-exported from the hook module so no call site changed.
+- **The feature uses `lib/db/*` only.** All 12 modules were on the deprecated
+  `@/lib/supabase*` shims. The shims are literal re-exports, so this is
+  behaviour-neutral — but the exemplar should not teach the deprecated import.
+- **`BODY_SYSTEMS` moved into `schema/`, which fixed a live bug.** See below.
+
+#### The bug that justifies the `schema/` slot
+
+`BODY_SYSTEMS` (nine systems) lived in `ui/AddBodyPartDialog.tsx`. A server
+module cannot sensibly import a constant out of a dialog component, so
+`api/body-map.ts` kept a **hand-copied subset in its zod enum — five of the
+nine**, missing `general`, `digestive`, `muscular`, `urinary`, `reproductive`.
+
+`BodyMapTab` defaults its filter to `general`. So
+`GET /api/anatomy/body-map?bodySystem=general` returned **400 Invalid query
+parameters** on first paint, and five of nine filter options were dead. The
+route rejected a value its own `inferSystem()` produces as a fallback.
+
+Confirmed pre-existing: the enum is byte-identical at `HEAD` before the move.
+
+Both halves now import from `schema/body-systems.ts`. All ten filters return
+200 (`all` 52 parts, `general` 13, `cardiovascular` 7, …) and `/anatomy` logs
+nothing.
+
+That is the argument for the layout in one example: the drift was not
+carelessness, it was the directory structure making the correct thing
+impossible.
+
+### The sweep was green partly because it stopped watching too early
+
+The nav block used `waitUntil: "domcontentloaded"`. These pages fetch after
+hydration, so it sampled an empty shell — producing "rendered an empty body"
+on a **rotating** handful of the slowest routes, green on the next run. Three
+sessions lost time to it. It now uses `networkidle`, and the suite is stable
+across repeated runs.
+
+**Moving to `networkidle` immediately surfaced four broken pages** that the
+old wait had been hiding. None is a regression; all four predate this branch:
+
+| Route | Fault |
+| --- | --- |
+| `/bedtracker` | `GET /api/bedtracker` **500** — PostgREST cannot embed `ambulance_dispatches` with `facility_profile`: more than one FK, so the join needs an explicit hint |
+| `/facilityscout` | `GET /api/facilityscout` **500** — same ambiguous-embed fault, `data_collectors` ↔ `user_profiles` |
+| `/map` | `GET /api/map/collectors` **500** — `column user_profiles_1.email does not exist` |
+| `/delete-account-request` | `get_delete_account_request_stats` **404 (PGRST202)** — the RPC genuinely does not exist. Unlike the `issue_canary` 404, which was a 42883 in disguise |
+
+They are in `KNOWN_BROKEN` in the spec. Each entry carries its root cause, the
+route is **still asserted to render**, and the test **fails if a quarantined
+route comes back clean** — so the list cannot rot into a permanent excuse.
+Fixing these four is the obvious next non-E3 task.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that

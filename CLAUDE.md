@@ -73,6 +73,39 @@ same blind spot:
 - **a route that builds is not a route anyone uses.** The build manifest
   proves existence, never reachability. Only the smoke sweep does that.
 
+### 4. A feature lives in one directory
+
+Being trialled on Anatomy (E3.1). Read `features/anatomy/README.md` before
+moving a second feature — the shape is a proposal, not settled law.
+
+```
+features/<name>/
+  ui/       components
+  api/      route handlers, one module per endpoint
+  data/     hooks, queries, mutations
+  schema/   the shapes and vocabularies both halves agree on
+  README.md what it owns, its tables and RPCs, whether mobile depends on it
+```
+
+`app/` keeps one file per route that re-exports and holds no logic:
+
+```ts
+// app/api/anatomy/regions/route.ts
+export { GET } from "@/features/anatomy/api/regions";
+```
+
+**The `app/` tree is a URL contract, not an organisational choice.** Next
+derives routes from those directories, so a folder rename there is a URL
+change. The re-export files are what let code be organised by feature while
+URLs stay put.
+
+`schema/` is the slot that earns its keep: it holds what `ui/` and `api/` must
+agree on. `BODY_SYSTEMS` used to live inside a dialog component, so the API
+kept a hand-copied subset — five of nine — and the Body Map tab's default
+filter returned 400 for months.
+
+---
+
 ---
 
 ## Commands

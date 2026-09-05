@@ -9,8 +9,8 @@ import {
   useAnatomyTips,
   useBodyParts,
   type AnatomyBodyPart,
-} from "@/hooks/supabase-calls/useAnatomy";
-import { BODY_SYSTEMS } from "./AddBodyPartDialog";
+} from "@/features/anatomy/data/useAnatomy";
+import { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
 
 const SYSTEM_LABELS: Record<string, string> = {
   general: "🧍 General",

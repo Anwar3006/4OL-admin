@@ -7,24 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateBodyPart } from "@/hooks/supabase-calls/useAnatomy";
+import { useCreateBodyPart } from "@/features/anatomy/data/useAnatomy";
+
+// The canonical list lives in schema/ so api/ can import it too.
+export { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
+import { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
 
 const inputCls =
   "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
   "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
-export const BODY_SYSTEMS = [
-  "general",
-  "cardiovascular",
-  "digestive",
-  "respiratory",
-  "nervous",
-  "skeletal",
-  "muscular",
-  "urinary",
-  "reproductive",
-] as const;
 
 export default function AddBodyPartDialog({
   open,

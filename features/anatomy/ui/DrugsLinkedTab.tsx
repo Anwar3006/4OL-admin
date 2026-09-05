@@ -11,7 +11,7 @@ import {
   useRunAiMap,
   useUnlinkDrugFromBodyPart,
   type AiMappingRow,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDrugs, type DrugRow } from "@/hooks/supabase-calls/useDrugs";
 import { cn } from "@/lib/utils";

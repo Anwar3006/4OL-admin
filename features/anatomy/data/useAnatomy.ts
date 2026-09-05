@@ -1,20 +1,48 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
+
+import type {
+  AiMappingRow,
+  AnatomyBodyPart,
+  AnatomyConditionRow,
+  AnatomyDrugLinkRow,
+  AnatomyExerciseLinkRow,
+  AnatomyHotspot,
+  AnatomyLinkPage,
+  AnatomyOverviewStats,
+  AnatomyPremiumConfigResponse,
+  AnatomyPremiumLayers,
+  AnatomyRegion3D,
+  AnatomySymptomRow,
+  AnatomyTipRow,
+  Hotspot3D,
+} from "@/features/anatomy/schema/types";
+
+// Re-exported so existing imports of these types from the hook module
+// keep working. New code should import from the schema module directly.
+export type {
+  AiMappingRow,
+  AnatomyBodyPart,
+  AnatomyConditionRow,
+  AnatomyDrugLinkRow,
+  AnatomyExerciseLinkRow,
+  AnatomyHotspot,
+  AnatomyLinkPage,
+  AnatomyOverviewStats,
+  AnatomyPremiumConfigResponse,
+  AnatomyPremiumLayers,
+  AnatomyRegion3D,
+  AnatomySymptomRow,
+  AnatomyTipRow,
+  Hotspot3D,
+};
+
 
 // Hooks for the Human Anatomy page (Gap Analysis Part A).
 // Overview + body-map go through the RBAC-enforced API routes; the junction
 // views (conditions/symptoms/tips) read directly via the authenticated
 // client like the existing content hooks.
-
-export interface AnatomyOverviewStats {
-  body_parts_mapped: number;
-  condition_links: number;
-  symptom_links: number;
-  map_interactions_30d: number;
-  healthy_tip_links: number;
-  hotspots: number;
-}
 
 export const useAnatomyOverview = () => {
   return useQuery({
@@ -29,22 +57,6 @@ export const useAnatomyOverview = () => {
   });
 };
 
-export interface AnatomyBodyPart {
-  id: string;
-  name: string;
-  parent_id: string | null;
-  mesh_id: string | null;
-  path: string;
-  level: number | null;
-  body_system: string;
-  gender_scope?: string | null;
-  icon?: string | null;
-  description?: string | null;
-  display_order?: number | null;
-  symptom_count: number;
-  condition_count: number;
-}
-
 export const useBodyParts = (bodySystem: string = "all") => {
   return useQuery({
     queryKey: ["anatomy-body-parts", bodySystem],
@@ -57,25 +69,11 @@ export const useBodyParts = (bodySystem: string = "all") => {
   });
 };
 
-export interface AnatomyHotspot {
-  id: string;
-  body_part_id: string;
-  gender: "female" | "male" | "shared";
-  view: "front" | "back";
-  body_system: string | null;
-  svg_path_id: string | null;
-  cx: number;
-  cy: number;
-  rx: number;
-  ry: number;
-  is_organ: boolean;
-}
-
 export const useAnatomyHotspots = () => {
   return useQuery({
     queryKey: ["anatomy-hotspots"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = getBrowserClient();
       const { data, error } = await supabase
         .from("anatomy_hotspots")
         .select("*")
@@ -91,17 +89,6 @@ export const useAnatomyHotspots = () => {
 
 // ── Tab 2: Conditions linked to body parts ─────────────────────────────────
 
-export interface AnatomyConditionRow {
-  condition_id: string;
-  condition_name: string;
-  icd11_code: string | null;
-  severity: string | null;
-  specialist: string | null;
-  status: string | null;
-  body_part_id: string;
-  body_part_name: string;
-}
-
 export const useAnatomyConditions = ({
   search,
   bodyPartId,
@@ -112,7 +99,7 @@ export const useAnatomyConditions = ({
   return useQuery({
     queryKey: ["anatomy-conditions", search, bodyPartId],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = getBrowserClient();
       let query = supabase
         .from("condition_body_parts")
         .select(
@@ -160,15 +147,6 @@ export const useAnatomyConditions = ({
 
 // ── Tab 3: Symptoms linked to body parts ───────────────────────────────────
 
-export interface AnatomySymptomRow {
-  symptom_id: string;
-  symptom_name: string;
-  severity: string | null;
-  is_systemic: boolean | null;
-  body_part_id: string;
-  body_part_name: string;
-}
-
 export const useAnatomySymptoms = ({
   search,
   bodyPartId,
@@ -181,7 +159,7 @@ export const useAnatomySymptoms = ({
   return useQuery({
     queryKey: ["anatomy-symptoms", search, bodyPartId, severity],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = getBrowserClient();
       let query = supabase
         .from("symptom_body_parts")
         .select(
@@ -230,18 +208,6 @@ export const useAnatomySymptoms = ({
 
 // ── Tab 4: Healthy tips linked to body parts ───────────────────────────────
 
-export interface AnatomyTipRow {
-  tip_id: string;
-  tip_name: string;
-  slug: string | null;
-  description: string | null;
-  status: string | null;
-  body_part_id: string;
-  body_part_name: string;
-  body_system: string | null;
-  source: string | null;
-}
-
 /**
  * healthy_living_body_parts has RLS enabled with no policies, so the browser
  * client cannot read or write it — this goes through the service-role API
@@ -265,21 +231,6 @@ export const useAnatomyTips = (bodyPartId?: string, search?: string) => {
 };
 
 // ── Tab 5: Drugs linked to body parts ─────────────────────────────────────
-
-export interface AnatomyDrugLinkRow {
-  body_part_id: string;
-  body_part_name: string;
-  body_system: string | null;
-  drug_id: string;
-  drug_name: string;
-  generic_name: string | null;
-  category: string | null;
-  availability: string | null;
-  dosage_form: string | null;
-  strength: string | null;
-  strength_unit: string | null;
-  status: string | null;
-}
 
 export const useAnatomyDrugLinks = ({
   search,
@@ -306,32 +257,6 @@ export const useAnatomyDrugLinks = ({
 // ── Tab 6: Exercises linked to body parts ─────────────────────────────────
 // Junction is fitness_body_parts; its content column is `workout_id` but it
 // references fitness_exercises.id.
-
-export interface AnatomyExerciseLinkRow {
-  body_part_id: string;
-  body_part_name: string;
-  body_system: string | null;
-  workout_id: string;
-  exercise_name: string;
-  category: string | null;
-  primary_muscle_group: string | null;
-  secondary_muscles: string | null;
-  difficulty_level: string | null;
-  equipment_required: string | null;
-  tier: string | null;
-  status: string | null;
-  is_active: boolean | null;
-  source: string | null;
-}
-
-export interface AnatomyLinkPage<T> {
-  links: T[];
-  total: number;
-  page: number;
-  limit: number;
-  pageCount: number;
-  hasMore: boolean;
-}
 
 /**
  * Paged server-side. `total` is an exact count of the whole filtered set, not
@@ -408,7 +333,7 @@ export const useUpdateBodyPartGenderScope = () => {
       id: string;
       genderScope: "female" | "male" | "shared" | "unspecified";
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = getBrowserClient();
       const { error } = await supabase
         .from("body_parts")
         .update({ gender_scope: genderScope })
@@ -588,17 +513,6 @@ export const useUnlinkExerciseFromBodyPart = () => {
 
 // ── Part AL: 3D anatomy explorer (mobile) ─────────────────────────────────
 
-export interface AnatomyRegion3D {
-  key: string;
-  label: string;
-  target_x: number;
-  target_y: number;
-  target_z: number;
-  zoom: number;
-  default_yaw: number;
-  display_order: number;
-}
-
 export const useAnatomyRegions3D = () => {
   return useQuery({
     queryKey: ["anatomy-regions-3d"],
@@ -611,18 +525,6 @@ export const useAnatomyRegions3D = () => {
     staleTime: 1000 * 60 * 5,
   });
 };
-
-export interface Hotspot3D {
-  id: string;
-  body_part_id: string;
-  region_key: string;
-  gender: "female" | "male" | "shared";
-  x: number;
-  y: number;
-  z: number;
-  source: string;
-  body_parts?: { id: string; name: string; body_system: string | null } | null;
-}
 
 export const useHotspots3D = (region?: string) => {
   return useQuery({
@@ -686,19 +588,6 @@ export const useDeleteHotspot3D = () => {
 };
 
 // ── Part AL: AI Pin Mapper ─────────────────────────────────────────────────
-
-export interface AiMappingRow {
-  id: string;
-  content_type: "condition" | "symptom" | "tip" | "workout" | "drug";
-  content_id: string;
-  content_name: string;
-  confidence: number;
-  rationale: string | null;
-  status: "proposed" | "approved" | "rejected";
-  model: string | null;
-  created_at: string;
-  body_parts?: { id: string; name: string } | null;
-}
 
 export const useAiMappings = (status: string, contentType?: string) => {
   return useQuery({
@@ -774,18 +663,6 @@ export const useDecideAiMapping = () => {
 };
 
 // ── Part AM: premium layers configuration (P2–P5) ─────────────────────────
-
-export interface AnatomyPremiumLayers {
-  organs: boolean;
-  tours: boolean;
-  quiz: boolean;
-}
-
-export interface AnatomyPremiumConfigResponse {
-  layers: AnatomyPremiumLayers;
-  regions: { key: string; label: string; is_premium: boolean }[];
-  applied: boolean;
-}
 
 export const useAnatomyPremiumConfig = () => {
   return useQuery({

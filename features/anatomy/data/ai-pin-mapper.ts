@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * AI Pin Mapper (Gap Analysis Part AL, AL-D8).
@@ -111,7 +111,7 @@ export async function runAiPinMapping(opts: {
     return { ok: false, error: "OpenAI API key missing (OPENAI_API_KEY)." };
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const batchSize = Math.min(Math.max(opts.batchSize || 10, 1), MAX_BATCH_SIZE);
 
   // ── Body-part vocabulary (the only ids the model may return) ──
@@ -312,7 +312,7 @@ export async function decideMapping(opts: {
   decision: "approved" | "rejected";
   reviewerId: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: mapping, error: fetchError } = await admin
     .from("ai_body_part_mappings")

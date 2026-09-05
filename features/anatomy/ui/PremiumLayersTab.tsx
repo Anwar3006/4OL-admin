@@ -15,7 +15,7 @@ import {
   useAnatomyPremiumConfig,
   useUpdateAnatomyPremiumConfig,
   type AnatomyPremiumLayers,
-} from "@/hooks/supabase-calls/useAnatomy";
+} from "@/features/anatomy/data/useAnatomy";
 
 const LAYER_META: {
   key: keyof AnatomyPremiumLayers;

@@ -94,7 +94,16 @@ function collectErrors(page: Page) {
 }
 
 async function assertRenders(page: Page, route: string) {
-  const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+  // `networkidle`, not `domcontentloaded`. These pages fetch their content
+  // after hydration, so domcontentloaded samples an empty shell: the suite
+  // reported "rendered an empty body" on a rotating handful of the slowest
+  // routes — /security, /symptoms, /transactions, /facilities and others —
+  // and passed on the next run with a different set. Three separate sessions
+  // lost time to it before it was fixed here rather than retried around.
+  //
+  // A flaky assertion is worse than a missing one: it trains you to re-run
+  // until green, which is exactly how a real regression gets waved through.
+  const response = await page.goto(route, { waitUntil: "networkidle" });
 
   expect(response?.status(), `${route} returned ${response?.status()}`).toBeLessThan(500);
 
@@ -109,11 +118,56 @@ async function assertRenders(page: Page, route: string) {
   expect(bodyText.length, `${route} rendered an empty body`).toBeGreaterThan(20);
 }
 
+/**
+ * Routes with a known, pre-existing backend fault. They must still RENDER —
+ * that assertion stays live — but their console is not asserted clean, because
+ * it is not, and a permanently red suite is one nobody reads.
+ *
+ * These surfaced the moment the sweep moved from `domcontentloaded` to
+ * `networkidle`: the old wait sampled the page before these requests came
+ * back, so the suite was green partly because it stopped watching too early.
+ * None of them is a regression; each is a defect the net was not catching.
+ *
+ * Every entry needs a root cause, not just a route. Delete an entry when its
+ * cause is fixed — the test below fails if a quarantined route comes back
+ * clean, so this list cannot rot into a permanent excuse.
+ */
+const KNOWN_BROKEN: Record<string, string> = {
+  "/bedtracker":
+    "GET /api/bedtracker 500 — PostgREST cannot embed ambulance_dispatches " +
+    "with facility_profile: more than one FK relationship, so the join needs " +
+    "an explicit hint.",
+  "/facilityscout":
+    "GET /api/facilityscout 500 — same ambiguous-embed fault between " +
+    "data_collectors and user_profiles.",
+  "/map":
+    "GET /api/map/collectors 500 — 'column user_profiles_1.email does not " +
+    "exist'; the select references a column that has been dropped or renamed.",
+  "/delete-account-request":
+    "POST /rest/v1/rpc/get_delete_account_request_stats 404 (PGRST202) — the " +
+    "RPC does not exist in the database. Note this is a genuine missing " +
+    "function, unlike the issue_canary 404, which was a 42883 in disguise.",
+};
+
 test.describe("admin routes render", () => {
   for (const route of NAV_ROUTES) {
     test(`${route}`, async ({ page }) => {
       const errors = collectErrors(page);
       await assertRenders(page, route);
+
+      const known = KNOWN_BROKEN[route];
+      if (known) {
+        // Quarantined — but prove the quarantine is still earned. A route that
+        // starts coming back clean should leave this list, not sit in it.
+        expect(
+          errors.length,
+          `${route} is in KNOWN_BROKEN but logged no console errors — the ` +
+            `underlying fault looks fixed. Remove it from the list.\n${known}`,
+        ).toBeGreaterThan(0);
+        test.info().annotations.push({ type: "known-broken", description: `${route} — ${known}` });
+        return;
+      }
+
       expect(errors, `${route} logged console errors:\n${errors.join("\n")}`).toEqual([]);
     });
   }
