@@ -27,14 +27,14 @@ export async function GET() {
     admin
       .from("collector_submissions")
       .select(
-        "id, collector_id, submission_type, facility_id, data, photos, gps_location, status, reviewed_at, review_notes, created_at, data_collectors(employee_id, region, assigned_areas, user_profiles(first_name, last_name, phone_number)), facility_profile(facility_name, area, region)",
+        "id, collector_id, submission_type, facility_id, data, photos, gps_location, status, reviewed_at, review_notes, created_at, data_collectors(employee_id, region, assigned_areas, user_profiles!data_collectors_user_id_fkey(first_name, last_name, phone_number)), facility_profile(facility_name, area, region)",
       )
       .order("created_at", { ascending: false })
       .limit(75),
     admin
       .from("data_collectors")
       .select(
-        "id, user_id, employee_id, region, assigned_areas, total_submissions, approved_submissions, rejected_submissions, pending_submissions, last_active_at, is_active, vehicle_assigned, user_profiles(first_name, last_name, phone_number, status)",
+        "id, user_id, employee_id, region, assigned_areas, total_submissions, approved_submissions, rejected_submissions, pending_submissions, last_active_at, is_active, vehicle_assigned, user_profiles!data_collectors_user_id_fkey(first_name, last_name, phone_number, status)",
       )
       .order("last_active_at", { ascending: false, nullsFirst: false })
       .limit(50),
@@ -48,7 +48,7 @@ export async function GET() {
     admin
       .from("facility_scout_submissions")
       .select(
-        "id, submission_ref, submitted_by, facility_name, facility_type, gps_location, photos, region, match_status, matched_facility_id, status, assigned_collector_id, priority, sla_due_at, admin_notes, reviewed_at, review_notes, created_at, user_profiles(user_id, first_name, last_name), data_collectors(employee_id), matched_facility:facility_profile!facility_scout_submissions_matched_facility_id_fkey(facility_name)",
+        "id, submission_ref, submitted_by, facility_name, facility_type, gps_location, photos, region, match_status, matched_facility_id, status, assigned_collector_id, priority, sla_due_at, admin_notes, reviewed_at, review_notes, created_at, user_profiles!facility_scout_submissions_submitted_by_fkey(user_id, first_name, last_name), data_collectors(employee_id), matched_facility:facility_profile!facility_scout_submissions_matched_facility_id_fkey(facility_name)",
       )
       .order("created_at", { ascending: false })
       .limit(250),

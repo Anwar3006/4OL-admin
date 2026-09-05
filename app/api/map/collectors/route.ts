@@ -10,12 +10,20 @@ export async function GET() {
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getSupabaseAdmin();
+  // No email in the embed below: user_profiles has no such column, and asking
+  // for one fails the whole query ("column user_profiles_1.email does not
+  // exist"), 500ing the collectors tab. The address lives in auth.users, which
+  // PostgREST does not expose, and public."user" has no FK to join on — so
+  // surfacing it needs a service-role lookup or a view, not a select.
+  //
+  // Note this select is a template literal: a // comment inside it becomes
+  // part of the select string and PostgREST rejects the lot.
   const { data, error } = await admin
     .from("map_collectors")
     .select(
       `
       id, user_id, assigned_region, gps_status, notes, created_at,
-      user:user_profiles(first_name, last_name, email, phone_number, role)
+      user:user_profiles(first_name, last_name, phone_number, role)
     `,
     )
     .order("created_at", { ascending: false });

@@ -119,35 +119,20 @@ async function assertRenders(page: Page, route: string) {
 }
 
 /**
- * Routes with a known, pre-existing backend fault. They must still RENDER —
- * that assertion stays live — but their console is not asserted clean, because
- * it is not, and a permanently red suite is one nobody reads.
+ * Routes with a known, pre-existing backend fault. Empty — and it should stay
+ * that way.
  *
- * These surfaced the moment the sweep moved from `domcontentloaded` to
- * `networkidle`: the old wait sampled the page before these requests came
- * back, so the suite was green partly because it stopped watching too early.
- * None of them is a regression; each is a defect the net was not catching.
+ * Four routes lived here briefly: /bedtracker, /facilityscout, /map and
+ * /delete-account-request, all surfaced the moment the sweep moved from
+ * `domcontentloaded` to `networkidle` (the old wait sampled the page before
+ * their requests came back). All four are fixed; see the commit that emptied
+ * this list.
  *
- * Every entry needs a root cause, not just a route. Delete an entry when its
- * cause is fixed — the test below fails if a quarantined route comes back
- * clean, so this list cannot rot into a permanent excuse.
+ * If you add an entry, give it a root cause, not just a route. The assertion
+ * below fails when a quarantined route comes back clean, so the list cannot
+ * rot into a permanent excuse.
  */
-const KNOWN_BROKEN: Record<string, string> = {
-  "/bedtracker":
-    "GET /api/bedtracker 500 — PostgREST cannot embed ambulance_dispatches " +
-    "with facility_profile: more than one FK relationship, so the join needs " +
-    "an explicit hint.",
-  "/facilityscout":
-    "GET /api/facilityscout 500 — same ambiguous-embed fault between " +
-    "data_collectors and user_profiles.",
-  "/map":
-    "GET /api/map/collectors 500 — 'column user_profiles_1.email does not " +
-    "exist'; the select references a column that has been dropped or renamed.",
-  "/delete-account-request":
-    "POST /rest/v1/rpc/get_delete_account_request_stats 404 (PGRST202) — the " +
-    "RPC does not exist in the database. Note this is a genuine missing " +
-    "function, unlike the issue_canary 404, which was a 42883 in disguise.",
-};
+const KNOWN_BROKEN: Record<string, string> = {};
 
 test.describe("admin routes render", () => {
   for (const route of NAV_ROUTES) {
