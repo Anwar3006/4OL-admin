@@ -12,7 +12,7 @@ products. **Read `docs/cleanup-handoff.md` before making structural changes.**
 
 ---
 
-## Three rules that are not style preferences
+## Four rules that are not style preferences
 
 ### 1. Pick the database client by where your code runs
 
@@ -38,8 +38,8 @@ see its file comment before touching any caller.
 
 ### 2. Changes to the mobile contract must be additive
 
-16 API routes, 28 RPCs and 34 tables are consumed by the Expo app. Old builds
-live on phones for months. Never drop a field, rename a route, reorder an RPC
+**31 API routes, 44 RPCs and 38 tables** are consumed by the Expo app. Old
+builds live on phones for months. Never drop a field, rename a route, reorder an RPC
 parameter, or tighten an RLS policy on a listed table without shipping a
 mobile release first. New parameters get defaults.
 
@@ -50,9 +50,18 @@ source of truth. **Regenerate before any release that touches these:**
 bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App
 ```
 
-It was wrong once already — a pass over `hooks/` and `services/` alone missed
-three routes called from `lib/` and `context/`, including the device sign-in
-flow. Details: `docs/mobile-contract.md`.
+**It has been wrong twice.** Pass 1 covered `hooks/` and `services/` only and
+missed the device sign-in flow. Pass 2 was hand-built at 16 routes and missed
+**fifteen** more — the whole chat surface, all four Period Tracker routes, the
+OTP pair. The regeneration script existed to prevent that and could not run:
+it gated on `command -v rg`, which succeeds when a shell defines `rg` as a
+function and then fails inside its own subshell.
+
+Also: **a contracted route can delegate to an RPC that is not contracted**, and
+that RPC is then free to vanish. `/api/auth/device-sign-in/send-otp` did, and
+the function it calls did not exist. List the RPC too.
+
+Details: `docs/mobile-contract.md`.
 
 ### 3. Delete on evidence, never on reading
 
@@ -75,8 +84,8 @@ same blind spot:
 
 ### 4. A feature lives in one directory
 
-Being trialled on Anatomy (E3.1). Read `features/anatomy/README.md` before
-moving a second feature — the shape is a proposal, not settled law.
+Proven on three features. Read `features/anatomy/README.md` — it is the
+exemplar and explains the reasoning.
 
 ```
 features/<name>/
@@ -104,21 +113,19 @@ Feature directories are **kebab-case and need not match the URL segment** —
 Renaming the route is E3.3's job and needs a redirect.
 
 `schema/` is the slot that earns its keep: it holds what `ui/` and `api/` must
-agree on. Both features moved so far had a shared contract parked in whichever
-file happened to declare it first — `BODY_SYSTEMS` inside a dialog, so the API
+agree on. **All three features moved so far** had a shared contract parked in
+whichever file happened to declare it first — `BODY_SYSTEMS` inside a dialog, so the API
 kept a hand-copied subset of five of nine and the Body Map filter 400'd for
 months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
-Migrated so far: `anatomy` (E3.1, the exemplar), `facility-scout`,
-`bed-tracker`. The pattern is proven on three; `period` and `fitness` are
-now in scope.
+Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`.
+Next: `period` — already split by E4.1, so the move is mechanical — then
+`fitness`. E3.2 is finished when `hooks/supabase-calls/` (42 files) is empty.
 
 When you migrate one, grep its `ui/` for `from "../page"` — all three
 features had a shared type parked in the page component, because without a
 `schema/` slot there is nowhere neutral to put one.
-
----
 
 ---
 
@@ -141,11 +148,17 @@ code, or a bad dynamic import.
 
 ## Known sharp edges
 
-- **79 `.js`/`.jsx` files under `app/` are never type-checked.** `tsconfig`
+- **55 `.js`/`.jsx` files under `app/` are never type-checked.** `tsconfig`
   sets `strict: true` but also `checkJs: false`, and `include` lists only
-  `.ts`/`.tsx`. Two of them are mobile-contract routes.
+  `.ts`/`.tsx`. Two of them are mobile-contract routes. This is why
+  `pnpm build` catches things `pnpm type-check` cannot — a module deleted out
+  from under one of these fails only at build.
 - **`eslint.config.mjs` excludes `redesign/**`** entirely.
 - **`stores/dialog-store.ts` (30 KB) is global.** Every feature's dialogs reach
   into it; it is the tightest coupling in the repo.
 - **`constants/liftmanual_all_workouts.json` is 4.1 MB.** The build needs a
   4 GB heap because of files like it.
+- **Email does not send.** `lib/email.ts` is wired to AWS SES but no AWS
+  credentials or `SES_FROM_EMAIL` are set — admin invites, login alerts and the
+  device sign-in OTP are all affected. See the pending-items section of
+  `docs/cleanup-handoff.md`.
