@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
 
 import { supabaseServiceKey, supabaseUrl } from "./env";
@@ -20,14 +22,18 @@ import { supabaseServiceKey, supabaseUrl } from "./env";
  *    anywhere, including by accident from a client component — built a client
  *    holding the service key.
  *
- * 2. The browser guard below is a backstop, not a permission slip. It throws
- *    at runtime if this module is ever evaluated in a browser bundle.
+ * 2. The guard is two-layered, and neither layer is a permission slip.
  *
- *    A build-time failure would be better than a runtime one. Installing the
- *    zero-dependency `server-only` package and adding `import "server-only";`
- *    as the first line of this file turns any client import into a build
- *    error naming the offending file. Worth doing; left out here only to
- *    avoid adding a dependency inside a cleanup branch.
+ *    `import "server-only"` (first line, zero dependencies) is the real one:
+ *    if any module reachable from a client component imports this file, the
+ *    BUILD fails and names the offending file. That is the failure you want —
+ *    it happens on your machine, not on a user's.
+ *
+ *    The `typeof window` throw below is the backstop for the paths the
+ *    bundler does not police: a runtime `require`, a test harness with a DOM
+ *    environment, or a future bundler that resolves the `browser` condition
+ *    differently. Keep both. They fail at different times, which is the
+ *    point.
  */
 if (typeof window !== "undefined") {
   throw new Error(
