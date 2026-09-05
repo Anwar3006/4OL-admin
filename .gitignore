@@ -48,3 +48,10 @@ Fitness_IMG/
 
 # TypeScript incremental build artifact — regenerated on every build
 *.tsbuildinfo
+
+# Playwright run output
+test-results/
+playwright-report/
+
+# Local scratch, not source
+Claude outputs/

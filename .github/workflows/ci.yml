@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "build-ready", "prod/**", "clearing"]
+    branches: [main, "build-ready", "prod/**", "clearing", cleanup]
   pull_request:
 
 jobs:
@@ -32,5 +32,40 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
-      - name: Unit tests
+      # Unit tests plus the mobile contract suite (tests/contract). The RPC
+      # signature check skips itself when SUPABASE_SECRET_KEY is absent — on
+      # fork PRs, for instance — so this stays green without secrets.
+      - name: Unit and contract tests
         run: pnpm test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The restructure moves a lot of files. Typecheck alone does not catch a
+      # broken route-group layout, a client component importing server-only
+      # code, or a bad dynamic import — the build does.
+      - name: Build
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
