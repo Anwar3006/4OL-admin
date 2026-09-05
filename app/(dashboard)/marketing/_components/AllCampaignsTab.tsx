@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { marketingColumns } from "@/components/Data-Table/columns/marketingColumns";
 import { Button } from "@/components/ui/button";
-import { exportCsv } from "@/lib/export-csv";
+import { downloadCsv } from "@/lib/csv";
 import {
   useBatchMarketingProfiles,
   useMarketingProfiles,
@@ -102,30 +102,19 @@ export default function AllCampaignsTab() {
       batch.mutate({ ids: rows.map((row) => row.id), action });
 
   const handleExport = () => {
-    exportCsv(
-      `campaigns-${new Date().toISOString().slice(0, 10)}.csv`,
-      [
-        "Headline",
-        "Type",
-        "Status",
-        "Target",
-        "Start",
-        "End",
-        "Budget (GHS)",
-        "Impressions",
-        "Clicks",
-      ],
-      filtered.map((row) => [
-        row.headline,
-        row.campaign_type ?? row.marketingType,
-        row.status,
-        row.target_segment ?? "",
-        row.startDate,
-        row.endDate,
-        row.budget ?? "",
-        row.impressions ?? 0,
-        row.clicks ?? 0,
-      ]),
+    downloadCsv(
+      filtered.map((row) => ({
+        Headline: row.headline,
+        Type: row.campaign_type ?? row.marketingType,
+        Status: row.status,
+        Target: row.target_segment ?? "",
+        Start: row.startDate,
+        End: row.endDate,
+        "Budget (GHS)": row.budget ?? "",
+        Impressions: row.impressions ?? 0,
+        Clicks: row.clicks ?? 0,
+      })),
+      "campaigns",
     );
   };
 

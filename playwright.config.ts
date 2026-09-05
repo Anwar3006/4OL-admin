@@ -16,9 +16,18 @@ const baseURL = process.env.E2E_BASE_URL || "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./tests/smoke",
-  // Route sweeps are IO-bound; a little parallelism, but not enough to make
-  // the admin session or the database the bottleneck.
-  workers: process.env.CI ? 2 : 4,
+  // Two workers, everywhere. This started at 4 locally on the theory that a
+  // route sweep is IO-bound, and that turned out to be wrong in a way that
+  // wasted an hour: at 4 the suite intermittently reported 11-15 failures --
+  // "rendered an empty body" on the slowest pages, page.goto throwing
+  // ERR_NETWORK_IO_SUSPENDED, and 45s timeouts on redirect assertions. Every
+  // one was contention between the workers, a single `next start` and one
+  // Supabase project in eu-west-1, and every one reads exactly like a real
+  // regression. At 2 the same commit passes 59/59 repeatedly.
+  //
+  // A sweep that cries wolf gets ignored, which costs more than the ~20s it
+  // saves. If you raise this, raise it in CI first where the box is dedicated.
+  workers: 2,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

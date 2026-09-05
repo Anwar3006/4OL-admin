@@ -8,6 +8,7 @@ import {
 import { useAiGeneratePlanDialog } from "@/stores/dialog-store";
 import AiGeneratePlanDialog from "../_components/ai-generate-plan-dialog";
 import { toast } from "sonner";
+import { downloadCsv } from "@/lib/csv";
 
 /**
  * AI Log tab (Gap Analysis Part V, tab 9). Read-side cost/usage audit over
@@ -66,33 +67,19 @@ const AiLogTab = () => {
       toast.error("Nothing to export for the current filters.");
       return;
     }
-    const header = ["Date", "User", "Model", "Status", "Tokens", "Cost", "Latency (ms)", "Error"];
-    const esc = (value: unknown) => {
-      const text = String(value ?? "");
-      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-    };
-    const lines = filtered.map((row) =>
-      [
-        row.created_at,
-        row.user_name || row.user_id || "",
-        row.model_name,
-        row.status,
-        row.token_usage ?? 0,
-        row.estimated_cost ?? 0,
-        row.response_time_ms ?? "",
-        row.error_message || "",
-      ]
-        .map(esc)
-        .join(","),
+    downloadCsv(
+      filtered.map((row) => ({
+        Date: row.created_at,
+        User: row.user_name || row.user_id || "",
+        Model: row.model_name,
+        Status: row.status,
+        Tokens: row.token_usage ?? 0,
+        Cost: row.estimated_cost ?? 0,
+        "Latency (ms)": row.response_time_ms ?? "",
+        Error: row.error_message || "",
+      })),
+      "fitness-ai-log",
     );
-    const csv = [header.map(esc).join(","), ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `fitness-ai-log-${new Date().toISOString().slice(0, 10)}.csv`;
-    anchor.click();
-    URL.revokeObjectURL(url);
     toast.success(`Exported ${filtered.length} AI calls.`);
   };
 

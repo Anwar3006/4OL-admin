@@ -353,6 +353,58 @@ exactly like a real regression. `/unauthorized` even rendered a plausible
 pkill -f "next start"; lsof -ti:3000 | xargs kill -9
 ```
 
+### E2.3 — one CSV helper — **done**
+
+The audit named two CSV exporters, `lib/csv-export.ts` and `lib/export-csv.ts`.
+There were **ten**. The other eight were inlined into components, which is why
+a grep for the two module names missed them; the search that finds them is for
+the mechanism, not the name:
+
+```bash
+grep -rn "new Blob(\[.*csv\|text/csv" app components lib | grep -v ^app/api/
+```
+
+All ten now call `downloadCsv` from `lib/csv.ts`. Both old modules are gone and
+the name no longer invites the `csv-export` / `export-csv` coin-flip.
+
+**Three behaviour differences had to be resolved, and two were live bugs:**
+
+1. **The byte-order mark.** Only `exportCsv` (3 of 15 call sites) wrote one.
+   Excel assumes the host's legacy codepage for a BOM-less file, so any
+   non-ASCII name exported from the other twelve arrived mojibaked. Now always
+   written. This is a fix, not a preference.
+2. **The anchor was never in the document.** Four inlined copies created an
+   `<a>`, set `download` and called `.click()` without appending it. Chrome
+   tolerates it; Firefox ignores the click and the export silently does
+   nothing. The shared helper appends first.
+3. **The filename.** One stamped the date, the other did not. Stamping won.
+
+The signature is objects-only — `downloadCsv(rows, "stem")` — with no
+`headers` parameter. The array-of-arrays form that four copies used kept
+labels and values in two lists that had to stay in the same order;
+`SubscriptionsTab` had them **eleven lines apart**, which is one careless
+insertion away from silently mislabelling a column. Object keys carry the
+label, so they cannot drift.
+
+`toCsv` is split out as a pure function and covered by 12 unit tests in
+`tests/unit/csv.test.ts` — the first unit tests in the repo that assert
+behaviour rather than file existence.
+
+**Not covered:** the eleven server-side exporters under `app/api/**/export/`.
+They stream CSV in a Response, share none of the DOM code, and repeat the
+escaping among themselves. That is a separate unification.
+
+### The sweep's worker count — a net that cried wolf
+
+`playwright.config.ts` ran 4 workers locally. Twice during this session that
+produced 11-15 failures that looked exactly like real regressions — "rendered
+an empty body" on the slowest pages, `ERR_NETWORK_IO_SUSPENDED` from
+`page.goto`, 45-second timeouts on redirect assertions. All of it was
+contention between the workers, one `next start` and one Supabase project in
+eu-west-1. The same commit passes 59/59 at 2 workers, repeatedly.
+
+It is now 2 everywhere. Raise it in CI first, on a dedicated box, if at all.
+
 ### 2. E2 — retire the duplicates
 
 Reachability was checked against `app/(dashboard)/_components/admin-shell/navigation.ts`.
@@ -392,7 +444,7 @@ Also pending, same epic:
 - ~~`components/redesign/Sidebar.tsx`~~ — **deleted**, 0 importers.
 - ~~`AdminDashboardShell.tsx`~~ — **deleted**, 0 import specifiers. Only
   `NewAdminDashboardShell` is referenced, from `DashboardWrapper`.
-- `lib/csv-export.ts` vs `lib/export-csv.ts` — same job, different signatures.
+- ~~`lib/csv-export.ts` vs `lib/export-csv.ts`~~ — **done.** Ten implementations, not two; all now `lib/csv.ts`.
 - `components/ui/*.jsx` (legacy kit) vs `components/ui/*.tsx` (shadcn). The
   four dead ones are gone. **Five are still live and have no `.tsx`
   counterpart** — `HtmlRenderer`, `Icon`, `Modal`, `Pagination`, `Textinput`.

@@ -13,7 +13,7 @@ import {
   TYPE_LABELS,
 } from "@/components/Data-Table/columns/medEnquiryColumns";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import {
   MED_ENQUIRY_STATUSES,
   useMedEnquiries,

@@ -15,7 +15,7 @@ import RefundsTab from "./_components/RefundsTab";
 import TaxVATTab from "./_components/TaxVATTab";
 import ExpensesTab from "./_components/ExpensesTab";
 import { CATEGORY_LABELS, formatProcessedAt } from "@/components/Data-Table/columns/transactionColumns";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import { apiFetch } from "@/lib/api-fetch";
 import { useTransactionsOverview, type TransactionRow } from "@/hooks/supabase-calls/useTransactions";
 import { toast } from "sonner";

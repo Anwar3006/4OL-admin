@@ -19,7 +19,7 @@ import {
   SUPPORT_TYPES,
   ticketDisplayId,
 } from "@/lib/chats-constants";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import AddTicketDialog from "./add-ticket-dialog";
 
 const PRIORITY_BADGE: Record<string, string> = {

@@ -10,7 +10,7 @@ import {
 } from "@/components/Data-Table/columns/transactionColumns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import {
   useTransactions,
   useTransactionAction,

@@ -19,7 +19,7 @@ import { useUsers } from "@/hooks/supabase-calls/useUser";
 import { useHasPermission } from "@/stores/permission-context";
 import { getSupabaseClient } from "@/lib/supabase";
 import { groupCategoryLabel, groupTypeLabel } from "@/lib/chats-constants";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 
 interface GroupAdminRow {
   user_id: string;

@@ -15,7 +15,7 @@ import { DataTable } from "@/components/Data-Table/data-table";
 import { createSubscriberColumns } from "@/components/Data-Table/columns/subscriberColumns";
 import { Button } from "@/components/ui/button";
 import PlanDialog from "./plan-dialog";
-import { exportCsv } from "@/lib/export-csv";
+import { downloadCsv } from "@/lib/csv";
 import { usePagination } from "@/hooks/use-pagination";
 import { cn } from "@/lib/utils";
 import {
@@ -62,26 +62,19 @@ const cycleSuffix = (plan: TMarketingSubscriptionOutput) =>
       ? "/yr"
       : " one-time";
 
+// Labels and values in one place. They used to be two lists — a headers array
+// and a positional row mapper eleven lines apart — which stay correct only as
+// long as nobody inserts a column into one and not the other.
 const exportSubscriberRows = (rows: TUserSubscriptionRow[]) =>
-  rows.map((row) => [
-    row.user_profiles?.email ?? row.user_id,
-    row.subscription_tiers?.name ?? "",
-    row.status,
-    row.payment_method ?? "",
-    row.subscribed_at ?? "",
-    row.next_renewal_at ?? row.expires_at ?? "",
-    row.auto_renew ? "yes" : "no",
-  ]);
-
-const EXPORT_HEADERS = [
-  "User",
-  "Plan",
-  "Status",
-  "Payment Method",
-  "Subscribed At",
-  "Next Renewal",
-  "Auto-Renew",
-];
+  rows.map((row) => ({
+    User: row.user_profiles?.email ?? row.user_id,
+    Plan: row.subscription_tiers?.name ?? "",
+    Status: row.status,
+    "Payment Method": row.payment_method ?? "",
+    "Subscribed At": row.subscribed_at ?? "",
+    "Next Renewal": row.next_renewal_at ?? row.expires_at ?? "",
+    "Auto-Renew": row.auto_renew ? "yes" : "no",
+  }));
 
 function PlanCard({
   plan,
@@ -210,11 +203,7 @@ export default function SubscriptionsTab() {
 
   const handleExport = () => {
     const rows = subTab === "at_risk" ? atRiskRows : subscriberRows;
-    exportCsv(
-      `subscribers-${subTab}-${new Date().toISOString().slice(0, 10)}.csv`,
-      EXPORT_HEADERS,
-      exportSubscriberRows(rows),
-    );
+    downloadCsv(exportSubscriberRows(rows), `subscribers-${subTab}`);
   };
 
   return (

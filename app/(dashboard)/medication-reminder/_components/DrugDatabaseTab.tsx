@@ -18,6 +18,7 @@ import {
 import AddEditDrugDialog from "./AddEditDrugDialog";
 import ImportDrugsDialog from "./ImportDrugsDialog";
 import VerificationQueue from "./VerificationQueue";
+import { downloadCsv } from "@/lib/csv";
 
 const PAGE_SIZE = 20;
 
@@ -86,20 +87,22 @@ export default function DrugDatabaseTab() {
     const res = await fetch(`/api/medication/drugs?${qs.toString()}`);
     const json = await res.json();
     const drugs: DrugRow[] = json.drugs ?? [];
-    const header = "name,generic_name,category,availability,dosage_form,strength,strength_unit,pack_size,manufacturer,status,atc_code";
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const lines = drugs.map((d) =>
-      [d.name, d.generic_name, d.category, d.availability, d.dosage_form, d.strength, d.strength_unit, d.pack_size, d.manufacturer, d.status, d.atc_code]
-        .map(esc)
-        .join(","),
+    downloadCsv(
+      drugs.map((d) => ({
+        name: d.name,
+        generic_name: d.generic_name,
+        category: d.category,
+        availability: d.availability,
+        dosage_form: d.dosage_form,
+        strength: d.strength,
+        strength_unit: d.strength_unit,
+        pack_size: d.pack_size,
+        manufacturer: d.manufacturer,
+        status: d.status,
+        atc_code: d.atc_code,
+      })),
+      "drug-database-export",
     );
-    const blob = new Blob([[header, ...lines].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `drug-database-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const columns = useMemo<ColumnDef<DrugRow>[]>(

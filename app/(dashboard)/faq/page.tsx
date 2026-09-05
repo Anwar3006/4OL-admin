@@ -7,6 +7,7 @@ import FAQStats from "./_components/FAQStats";
 import FAQAccordion, { FAQAccordionCategory } from "./_components/FAQAccordion";
 import { useAddFAQDialog } from "@/stores/dialog-store";
 import AddFAQDialog from "./_components/add-faq-dialog";
+import { downloadCsv } from "@/lib/csv";
 import {
   useDeleteFAQ,
   useFAQCategories,
@@ -88,30 +89,23 @@ const FAQPage = () => {
       toast.error("No FAQs to export.");
       return;
     }
-    const header = "question,answer,category,status";
-    const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
     const categoryNameById = new Map<string, string>(
       ((categoriesData ?? []) as { id: string; name: string }[]).map((c) => [
         c.id,
         c.name,
       ]),
     );
-    const lines = rows.map((r) =>
-      [
-        escape(r.question),
-        escape(r.answer),
-        escape(r.category_id ? categoryNameById.get(r.category_id) ?? "General" : "General"),
-        escape(r.status),
-      ].join(","),
+    downloadCsv(
+      rows.map((r) => ({
+        question: r.question,
+        answer: r.answer,
+        category: r.category_id
+          ? categoryNameById.get(r.category_id) ?? "General"
+          : "General",
+        status: r.status,
+      })),
+      "faqs",
     );
-    const csv = [header, ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `faqs-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
     toast.success("FAQ export downloaded.");
   };
 

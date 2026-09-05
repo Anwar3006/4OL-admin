@@ -18,7 +18,7 @@ import {
   groupPermissionSummary,
   type GroupPermissionKey,
 } from "@/lib/chats-constants";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 
 export interface GroupRow {
   id: string;

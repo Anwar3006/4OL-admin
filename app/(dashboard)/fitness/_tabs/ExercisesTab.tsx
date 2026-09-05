@@ -17,6 +17,7 @@ import ViewExerciseDialog from "../_components/view-exercise-dialog";
 import { useSearchParams } from "next/navigation";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { toast } from "sonner";
+import { downloadCsv } from "@/lib/csv";
 
 /**
  * Exercises tab (Gap Analysis Part V) — mockup toolbar: search + 6 filter
@@ -109,48 +110,22 @@ const ExercisesTab = () => {
       toast.error("Nothing to export for the current filters.");
       return;
     }
-    const header = [
-      "Name",
-      "Category",
-      "Primary Muscle Group",
-      "Equipment",
-      "Difficulty",
-      "Sets",
-      "Reps/Duration",
-      "Rest (s)",
-      "Tier",
-      "Featured",
-      "Status",
-    ];
-    const esc = (value: unknown) => {
-      const text = String(value ?? "");
-      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-    };
-    const lines = exercises.map((row: any) =>
-      [
-        row.exercise_name,
-        row.category,
-        row.primary_muscle_group,
-        row.equipment_required,
-        row.difficulty_level,
-        row.default_sets,
-        row.default_reps_duration,
-        row.rest_time_seconds,
-        row.tier,
-        row.is_featured ? "yes" : "no",
-        row.status,
-      ]
-        .map(esc)
-        .join(","),
+    downloadCsv(
+      exercises.map((row: any) => ({
+        Name: row.exercise_name,
+        Category: row.category,
+        "Primary Muscle Group": row.primary_muscle_group,
+        Equipment: row.equipment_required,
+        Difficulty: row.difficulty_level,
+        Sets: row.default_sets,
+        "Reps/Duration": row.default_reps_duration,
+        "Rest (s)": row.rest_time_seconds,
+        Tier: row.tier,
+        Featured: row.is_featured ? "yes" : "no",
+        Status: row.status,
+      })),
+      "fitness-exercises",
     );
-    const csv = [header.map(esc).join(","), ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `fitness-exercises-${new Date().toISOString().slice(0, 10)}.csv`;
-    anchor.click();
-    URL.revokeObjectURL(url);
     toast.success(`Exported ${exercises.length} exercises.`);
   };
 

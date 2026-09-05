@@ -17,6 +17,7 @@ import { usePermissionContext } from "@/stores/permission-context";
 import { maskName } from "@/lib/masking";
 import { toast } from "sonner";
 import PharmacyCampaignModal from "./PharmacyCampaignModal";
+import { downloadCsv } from "@/lib/csv";
 
 const PAGE_SIZE = 10;
 
@@ -66,27 +67,17 @@ export default function LoggedRemindersTab() {
   };
 
   const handleExport = () => {
-    const header = "drug_name,drug_type,dosage_amount,interval,status,logged_on";
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const lines = rows.map((r) =>
-      [
-        r.drug_name,
-        r.drug_type,
-        r.dosage_amount,
-        formatReminderInterval(r.interval, r.interval_unit),
-        getReminderStatus(r),
-        new Date(r.created_at).toISOString(),
-      ]
-        .map(esc)
-        .join(","),
+    downloadCsv(
+      rows.map((r) => ({
+        drug_name: r.drug_name,
+        drug_type: r.drug_type,
+        dosage_amount: r.dosage_amount,
+        interval: formatReminderInterval(r.interval, r.interval_unit),
+        status: getReminderStatus(r),
+        logged_on: new Date(r.created_at).toISOString(),
+      })),
+      "logged-reminders",
     );
-    const blob = new Blob([[header, ...lines].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `logged-reminders-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const columns = useMemo<ColumnDef<LoggedReminderRow>[]>(

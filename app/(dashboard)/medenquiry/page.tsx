@@ -6,7 +6,7 @@ import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import { apiFetch } from "@/lib/api-fetch";
 import { toast } from "sonner";
 import { useMedEnquiryOverview } from "@/hooks/supabase-calls/useMedEnquiry";

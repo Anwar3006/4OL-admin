@@ -10,7 +10,7 @@ import {
 } from "@/hooks/supabase-calls/useConversation";
 import { useHasPermission } from "@/stores/permission-context";
 import { FLAG_REASONS } from "@/lib/chats-constants";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 
 const STATUS_BADGE: Record<string, string> = {
   pending_review: "bg-amber-100 text-amber-800",

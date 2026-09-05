@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn, getColorForId } from "@/lib/utils";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import { useHasPermission } from "@/stores/permission-context";
 import {
   collectorDisplayId,

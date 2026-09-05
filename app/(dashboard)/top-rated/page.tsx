@@ -10,7 +10,7 @@ import TopRatedItemsTable from "./_components/TopRatedItemsTable";
 import AddTopRatedItemDialog from "./_components/AddTopRatedItemDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
-import { downloadCsv } from "@/lib/csv-export";
+import { downloadCsv } from "@/lib/csv";
 import {
   fetchTopRatedItemsForExport,
   getTopRatedWindowStatus,

@@ -40,6 +40,7 @@ import Modal from "@/components/redesign/Modal";
 import { cn } from "@/lib/utils";
 import { PERIOD_TAB_IDS, type PeriodTabId } from "@/lib/period-tracker";
 import TopicCategorySelect from "@/components/period_tracker/TopicCategorySelect";
+import { downloadCsv } from "@/lib/csv";
 
 type Row = Record<string, any>;
 type Tab = {
@@ -992,20 +993,12 @@ function PeriodWorkspace() {
       "trigger_summary",
     ]);
     const keys = Object.keys(rows[0]).filter((key) => !excluded.has(key));
-    const escape = (value: unknown) =>
-      `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const csv = [
-      keys.map(escape).join(","),
-      ...rows.map((row: Row) => keys.map((key) => escape(row[key])).join(",")),
-    ].join("\n");
-    const url = URL.createObjectURL(
-      new Blob([csv], { type: "text/csv;charset=utf-8" }),
+    downloadCsv(
+      rows.map((row: Row) =>
+        Object.fromEntries(keys.map((key) => [key, row[key] as string | number | null])),
+      ),
+      `period-${activeTab}`,
     );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `period-${activeTab}-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
     setSaving(false);
     setShowExport(false);
     setMessage("Aggregate export created and recorded in the admin audit log.");

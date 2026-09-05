@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { downloadCsv } from "@/lib/csv";
 import {
   Dialog,
   DialogContent,
@@ -22,45 +23,21 @@ const BULK_PLANS = [
   { value: "featured", label: "Featured" },
 ] as const;
 
-function downloadCsv(rows: AdminUserRow[]) {
-  const escape = (value: unknown) => {
-    const str = value === null || value === undefined ? "" : String(value);
-    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-  };
-  const headers = [
-    "Public ID",
-    "Name",
-    "Email",
-    "Phone",
-    "Plan",
-    "NHIS",
-    "Region",
-    "Status",
-    "Joined",
-  ];
-  const lines = rows.map((row) =>
-    [
-      row.public_id ?? "",
-      row.full_name || `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim(),
-      row.email ?? "",
-      row.phone_number ?? "",
-      row.plan,
-      row.nhis_number ?? "",
-      row.region ?? "",
-      row.status ?? "",
-      row.created_at,
-    ]
-      .map(escape)
-      .join(","),
+function downloadSelectedUsers(rows: AdminUserRow[]) {
+  downloadCsv(
+    rows.map((row) => ({
+      "Public ID": row.public_id ?? "",
+      Name: row.full_name || `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim(),
+      Email: row.email ?? "",
+      Phone: row.phone_number ?? "",
+      Plan: row.plan,
+      NHIS: row.nhis_number ?? "",
+      Region: row.region ?? "",
+      Status: row.status ?? "",
+      Joined: row.created_at,
+    })),
+    "users-selected",
   );
-  const csv = [headers.join(","), ...lines].join("\n");
-  const blob = new Blob([csv], { type: "text/csv; charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `users-selected-${new Date().toISOString().slice(0, 10)}.csv`;
-  anchor.click();
-  URL.revokeObjectURL(url);
 }
 
 interface BulkUserActionsDialogProps {
@@ -130,7 +107,7 @@ export default function BulkUserActionsDialog({
           <button
             className="btn btn-secondary w-full justify-center"
             onClick={() => {
-              downloadCsv(rows);
+              downloadSelectedUsers(rows);
               toast.success("Selected users exported to CSV.");
             }}
           >

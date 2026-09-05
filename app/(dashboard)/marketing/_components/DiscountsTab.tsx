@@ -14,7 +14,7 @@ import { DataTable } from "@/components/Data-Table/data-table";
 import { createDiscountColumns } from "@/components/Data-Table/columns/discountColumns";
 import { Button } from "@/components/ui/button";
 import DiscountDialog from "./discount-dialog";
-import { exportCsv } from "@/lib/export-csv";
+import { downloadCsv } from "@/lib/csv";
 import { usePagination } from "@/hooks/use-pagination";
 import { toast } from "sonner";
 import {
@@ -78,34 +78,21 @@ export default function DiscountsTab() {
   );
 
   const handleExport = () => {
-    exportCsv(
-      `discounts-${new Date().toISOString().slice(0, 10)}.csv`,
-      [
-        "Code",
-        "Name",
-        "Type",
-        "Value",
-        "Eligible Users",
-        "Uses",
-        "Limit",
-        "Starts",
-        "Expires",
-        "Campaign",
-        "Status",
-      ],
-      discounts.map((row) => [
-        row.code,
-        row.name,
-        row.discount_type,
-        row.discount_value,
-        row.eligible_users ?? "all",
-        row.current_uses ?? 0,
-        row.max_uses ?? "",
-        row.valid_from,
-        row.valid_until ?? "",
-        row.campaign_name ?? "",
-        row.status ?? "active",
-      ]),
+    downloadCsv(
+      discounts.map((row) => ({
+        Code: row.code,
+        Name: row.name,
+        Type: row.discount_type,
+        Value: row.discount_value,
+        "Eligible Users": row.eligible_users ?? "all",
+        Uses: row.current_uses ?? 0,
+        Limit: row.max_uses ?? "",
+        Starts: row.valid_from,
+        Expires: row.valid_until ?? "",
+        Campaign: row.campaign_name ?? "",
+        Status: row.status ?? "active",
+      })),
+      "discounts",
     );
   };
 
