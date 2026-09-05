@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import sgMail from "@sendgrid/mail";
+import { isEmailConfigured, missingEmailConfig, sendEmail } from "@/lib/email";
 
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -22,10 +22,14 @@ function otpEmailHtml(code: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  const from = process.env.SENDGRID_FROM_EMAIL || "life@4ourlife.com";
-
-  if (!apiKey) {
+  // Checked before issuing a code: issuing one we cannot deliver would burn
+  // the request's resend cooldown and leave the user waiting for an email
+  // that is never coming.
+  if (!isEmailConfigured()) {
+    console.error(
+      "[device-sign-in/send-otp] cannot send:",
+      `set ${missingEmailConfig().join(" and ")}`,
+    );
     return NextResponse.json(
       { error: "Email service is not configured." },
       { status: 500 },
@@ -93,18 +97,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  sgMail.setApiKey(apiKey);
+  const sent = await sendEmail({
+    to: data.email,
+    subject: "Your 4 Our Life sign-in code",
+    text: `Your 4 Our Life sign-in code is ${data.otp}. It expires when the current sign-in request expires.`,
+    html: otpEmailHtml(data.otp),
+  });
 
-  try {
-    await sgMail.send({
-      to: data.email,
-      from,
-      subject: "Your 4 Our Life sign-in code",
-      text: `Your 4 Our Life sign-in code is ${data.otp}. It expires when the current sign-in request expires.`,
-      html: otpEmailHtml(data.otp),
-    });
-  } catch (sendError) {
-    console.error("[device-sign-in/send-otp] SendGrid error:", sendError);
+  if (!sent.success) {
+    console.error("[device-sign-in/send-otp] send failed:", sent.error);
     return NextResponse.json(
       { error: "Failed to send verification code." },
       { status: 500 },

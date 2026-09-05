@@ -753,6 +753,67 @@ into reviewable pieces *behind unchanged URLs*, then migrate the result. Doing
 it the other way means one commit that both moves and rewrites the largest
 file in the repo, against routes old phones depend on.
 
+### Email moved to AWS SES — and the OTP flow was broken twice over
+
+The device sign-in fix earlier in this session was reported as "installed
+builds should start working". **That was wrong**, and this is the correction.
+
+`/api/auth/device-sign-in/send-otp` guards on `SENDGRID_API_KEY` and returns
+500 *before* reaching the RPC that was fixed. That key is set in **no env file
+and documented in no `.env.example`** — while `AWS_REGION`, `SMS_*` and
+`RESEND_API_KEY` all are. SendGrid was left over from before the move to AWS.
+
+So the flow had two independent faults stacked: a missing RPC, and behind it
+an unconfigured mail provider.
+
+**What the tree actually had:** four messaging providers.
+
+| Channel | Provider | State |
+| --- | --- | --- |
+| SMS | `@aws-sdk/client-pinpoint-sms-voice-v2` (AWS End User Messaging) in `lib/sms.ts` | live — `/api/send-otp`, `/api/verify-otp`, share-facility-login |
+| SMS | `twilio` in `lib/twilio.ts` | still present; one file imports **both** |
+| Email | `@sendgrid/mail` ×3 | unconfigured — now removed |
+| Email | `resend` ×1 (`/api/support`) | configured, still there |
+
+**Now:** `lib/email.ts` wraps SES v2, and the three SendGrid call sites use it
+— the device OTP, admin login alerts, and admin invites. `@sendgrid/mail` is
+uninstalled. Shaped like `lib/sms.ts`: same `AWS_REGION`, same
+`{ success, error }` return instead of throwing.
+
+Two behaviour fixes came with it:
+
+- **`/api/admin/session` set `emailSent = true` without checking the send.**
+  That value reaches the UI, so the admin was told an alert had gone out when
+  it may not have. It now reflects the result.
+- **The invite action rolls its invite row back when send fails.** `sendEmail`
+  reports rather than throws, so the call site re-throws to keep that
+  rollback — an invite nobody received must not be left looking valid.
+
+⚠️ **This does not send mail yet.** AWS was confirmed as not set up. Required:
+
+```
+AWS_REGION              already in .env.example as eu-north-1
+SES_FROM_EMAIL          must be a VERIFIED SES identity in that region
+AWS_ACCESS_KEY_ID       omit both if the runtime supplies a role
+AWS_SECRET_ACCESS_KEY
+SES_CONFIGURATION_SET   optional, for bounce/complaint tracking
+```
+
+Until then `missingEmailConfig()` names exactly which variable is absent, and
+the OTP route checks **before issuing a code** — issuing one it cannot deliver
+would burn the 60-second resend cooldown and leave the user waiting for mail
+that is never coming.
+
+Note `AWS_REGION` is `eu-north-1` while Postgres is `eu-west-1`. SES only sees
+identities verified in its own region, and the failure reads
+"Email address is not verified" — which looks like a verification problem
+rather than a region one. Check the region first.
+
+A new SES account is also sandboxed until AWS grants production access, and
+can only send to verified addresses.
+
+6 unit tests cover the config guard. Nothing was sent to a real address.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that

@@ -11,6 +11,9 @@ importers:
       '@aws-sdk/client-pinpoint-sms-voice-v2':
         specifier: ^3.1125.0
         version: 3.1125.0
+      '@aws-sdk/client-sesv2':
+        specifier: ^3.1126.0
+        version: 3.1126.0
       '@fullcalendar/core':
         specifier: ^6.1.4
         version: 6.1.20
@@ -152,9 +155,6 @@ importers:
       '@react-google-maps/api':
         specifier: ^2.19.3
         version: 2.20.8(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@sendgrid/mail':
-        specifier: ^8.1.6
-        version: 8.1.6
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.105.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))
@@ -461,6 +461,10 @@ packages:
 
   '@aws-sdk/client-pinpoint-sms-voice-v2@3.1125.0':
     resolution: {integrity: sha512-5H9KKjHM2RAT3x8ueJhn/ihal6vKwnmmMlTaYPTQQMKXkLNoIKpR2TEEA2zjvWGekTzmjawYTfcyV6F0nqjDDg==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-sesv2@3.1126.0':
+    resolution: {integrity: sha512-Cj4o8aOEvfsCyt4MHzJumqVe3rtCji9yJ1vMiJkzeXsadrl2A3n2AVX9UoMH0zFQry9gr25SeeSPNm8pylVvdA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.977.9':
@@ -2734,18 +2738,6 @@ packages:
 
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
-
-  '@sendgrid/client@8.1.6':
-    resolution: {integrity: sha512-/BHu0hqwXNHr2aLhcXU7RmmlVqrdfrbY9KpaNj00KZHlVOVoRxRVrpOCabIB+91ISXJ6+mLM9vpaVUhK6TwBWA==}
-    engines: {node: '>=12.*'}
-
-  '@sendgrid/helpers@8.0.0':
-    resolution: {integrity: sha512-Ze7WuW2Xzy5GT5WRx+yEv89fsg/pgy3T1E3FS0QEx0/VvRmigMZ5qyVGhJz4SxomegDkzXv/i0aFPpHKN8qdAA==}
-    engines: {node: '>= 12.0.0'}
-
-  '@sendgrid/mail@8.1.6':
-    resolution: {integrity: sha512-/ZqxUvKeEztU9drOoPC/8opEPOk+jLlB2q4+xpx6HVLq6aFu3pMpalkTpAQz8XfRfpLp8O25bh6pGPcHDCYpqg==}
-    engines: {node: '>=12.*'}
 
   '@smithy/core@3.33.3':
     resolution: {integrity: sha512-CsOeKq/9kA3y6VJHt+/+VTCtBaxJ4OTFpgrjIUhPpDIKxBci1k2bJaQASF2h/ELWrulGp+t97DZ0mevfAD8idg==}
@@ -6195,6 +6187,18 @@ snapshots:
       '@smithy/types': 4.17.2
       tslib: 2.8.1
 
+  '@aws-sdk/client-sesv2@3.1126.0':
+    dependencies:
+      '@aws-sdk/core': 3.977.9
+      '@aws-sdk/credential-provider-node': 3.972.82
+      '@aws-sdk/signature-v4-multi-region': 3.996.46
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.33.3
+      '@smithy/fetch-http-handler': 5.7.2
+      '@smithy/node-http-handler': 4.11.3
+      '@smithy/types': 4.17.2
+      tslib: 2.8.1
+
   '@aws-sdk/core@3.977.9':
     dependencies:
       '@aws-sdk/types': 3.974.5
@@ -8256,26 +8260,6 @@ snapshots:
     dependencies:
       domhandler: 5.0.3
       selderee: 0.11.0
-
-  '@sendgrid/client@8.1.6':
-    dependencies:
-      '@sendgrid/helpers': 8.0.0
-      axios: 1.19.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-
-  '@sendgrid/helpers@8.0.0':
-    dependencies:
-      deepmerge: 4.3.1
-
-  '@sendgrid/mail@8.1.6':
-    dependencies:
-      '@sendgrid/client': 8.1.6
-      '@sendgrid/helpers': 8.0.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
 
   '@smithy/core@3.33.3':
     dependencies:

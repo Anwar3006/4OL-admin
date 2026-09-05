@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import sgMail from "@sendgrid/mail";
+import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { render } from "@react-email/render";
 import React from "react";
 import { UAParser } from "ua-parser-js";
@@ -111,9 +111,7 @@ async function raiseNewDeviceLoginAlert(
   // and the modal land at the same moment.
   let emailSent = false;
   try {
-    const apiKey = process.env.SENDGRID_API_KEY;
-    if (apiKey && user.email) {
-      sgMail.setApiKey(apiKey);
+    if (isEmailConfigured() && user.email) {
       const html = await render(
         React.createElement(LoginAlertEmail, {
           email: user.email,
@@ -122,13 +120,13 @@ async function raiseNewDeviceLoginAlert(
           countdownSeconds: LOGIN_ALERT_COUNTDOWN_SECONDS,
         }),
       );
-      await sgMail.send({
+      const sent = await sendEmail({
         to: user.email,
-        from: process.env.SENDGRID_FROM_EMAIL || "life@4ourlife.com",
         subject: "Security alert: new device signed in to your admin account",
         html,
       });
-      emailSent = true;
+      // Only claim it was sent if it was. This value reaches the UI.
+      emailSent = sent.success;
     }
   } catch (sendError) {
     // The modal still works without the email — never block on delivery.

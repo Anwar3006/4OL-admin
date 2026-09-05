@@ -4,12 +4,10 @@ import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type { TAdminInviteSchema } from "@/schemas/user-profile.schema";
 import { nanoid } from "nanoid";
-import sgMail from "@sendgrid/mail";
+import { sendEmail } from "@/lib/email";
 import { render } from "@react-email/render";
 import InviteAdminEmail from "@/components/emails/invite-admin";
 import * as React from "react";
-
-sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
 // ── helper: get authed user + their profile role ──────────────────────────────
 async function getSessionUserWithRole() {
@@ -178,14 +176,15 @@ export async function inviteAdminAction(email: string, role: string) {
         React.createElement(InviteAdminEmail, { email, inviteLink }),
       );
 
-      console.log(`[inviteAdminAction] Sending email via SendGrid to ${email}`);
-      await sgMail.send({
+      const sent = await sendEmail({
         to: email,
-        from: process.env.SENDGRID_FROM_EMAIL || "life@4ourlife.com",
         subject: "Invitation to join 4 Our Life",
         html,
       });
-      console.log(`[inviteAdminAction] Email sent successfully to ${email}`);
+      // sendEmail reports failure rather than throwing, so turn it back into
+      // one: the catch below rolls the invite row back, and an invite nobody
+      // received must not be left looking valid.
+      if (!sent.success) throw new Error(sent.error);
     } catch (sendError: any) {
       const admin = getSupabaseAdmin();
       await admin.from("user_invites").delete().eq("id", invite.id);
