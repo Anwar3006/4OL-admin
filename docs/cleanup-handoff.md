@@ -631,6 +631,61 @@ downstream of that one broken import, not four separate problems.
 Two features migrated. The plan says prove the pattern on three small ones
 before `period` and `fitness`; one more to go.
 
+### E3.2 — third migration: `bed-tracker` — **done. The pattern is proven.**
+
+Three features now live under `features/`, and the shape has not needed to
+change once:
+
+| Feature | ui | api | data | schema | Page chars vs baseline |
+| --- | --- | --- | --- | --- | --- |
+| `anatomy` (E3.1) | 13 | 10 | 2 | 15 types + BODY_SYSTEMS | 2575, clean |
+| `facility-scout` | 7 | 6 | 1 | 4 types | 2765 = baseline |
+| `bed-tracker` | 9 | 7 | 1 | 3 types | 2596 = baseline |
+
+Every URL unchanged in all three — 11, 7 and 8 respectively, checked against
+the build manifest, with the handlers exercised through the re-exports rather
+than assumed.
+
+The plan asked for the pattern to be proven on three smaller modules before
+`period` and `fitness`. **That is done.**
+
+#### The finding worth carrying into the rest of E3
+
+All three features had a shared contract parked in whichever file happened to
+declare it first, and in all three it was a module with no business owning it:
+
+| Feature | Shape | Lived in | Consequence |
+| --- | --- | --- | --- |
+| `anatomy` | `BODY_SYSTEMS` | a dialog component | the API kept a hand-copied subset of 5 of 9; the Body Map filter 400'd |
+| `facility-scout` | `FacilityScoutTabProps` | the page component | 5 tabs imported from `../page` |
+| `bed-tracker` | `BedTrackerTabProps` | the page component | 6 tabs imported from `../page` |
+
+This is not carelessness three times over. **With no `schema/` slot there is
+nowhere neutral to put a shape two modules share**, so it lands in whichever
+file declares it first and everything else reaches across to grab it. That is
+the strongest argument the layout has earned so far, and it is worth checking
+for deliberately when migrating the next feature.
+
+A practical tell: after moving a feature, `grep -rn 'from "\.\./page"'` in
+its `ui/` directory. Both times it returned rows, and the cascade of
+`TS7006 implicit any` errors that followed were downstream of that single
+broken import, not separate problems.
+
+#### Mechanical notes for the next migration
+
+- **Do the file moves with `git mv`, but write the route entries with Python.**
+  A bash helper using `local path=...` silently clobbers `PATH` in zsh — the
+  redirect still creates the files, so you get six zero-byte `route.ts` and a
+  build that fails much later.
+- **Dynamic `[id]` routes need nothing special.** The folder stays in `app/`;
+  handlers still receive their `params`.
+- **Verify handlers, not just the build.** POST to each and read the body: a
+  handler's own `{"error":"…"}` means it ran, Next's HTML 404 page means the
+  route is gone. Status codes alone do not distinguish them — `bed-tracker`
+  returns a legitimate 404 from `facilities/[id]` and a 409 from `alerts/[id]`.
+
+`hooks/supabase-calls/` is down to 42 files. E3.2 finishes when it is empty.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that

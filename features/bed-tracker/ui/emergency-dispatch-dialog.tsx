@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateAmbulanceDispatch,
   useRouteSuggestions,
-} from "@/hooks/supabase-calls/useBedTracker";
+} from "@/features/bed-tracker/data/useBedTracker";
 
 const CASE_TYPES = [
   "RTA",

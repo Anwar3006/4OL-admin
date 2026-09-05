@@ -26,8 +26,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUpdateBedTrackerFacility } from "@/hooks/supabase-calls/useBedTracker";
-import type { BedTrackerTabProps } from "../page";
+import { useUpdateBedTrackerFacility } from "@/features/bed-tracker/data/useBedTracker";
+import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 export default function BedTrackerFacilitiesTab({
   data,

@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useResolveBedTrackerAlert } from "@/hooks/supabase-calls/useBedTracker";
-import type { BedTrackerTabProps } from "../page";
+import { useResolveBedTrackerAlert } from "@/features/bed-tracker/data/useBedTracker";
+import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 const WARD_LABELS: Record<string, string> = {
   general: "General",

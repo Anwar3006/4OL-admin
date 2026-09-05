@@ -30,8 +30,8 @@ import {
 import {
   useUpdateBedTrackerWard,
   type BedTrackerWard,
-} from "@/hooks/supabase-calls/useBedTracker";
-import type { BedTrackerTabProps } from "../page";
+} from "@/features/bed-tracker/data/useBedTracker";
+import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 const WARD_LABELS: Record<string, string> = {
   general: "General",

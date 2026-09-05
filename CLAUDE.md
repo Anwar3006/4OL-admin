@@ -110,7 +110,13 @@ kept a hand-copied subset of five of nine and the Body Map filter 400'd for
 months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
-Migrated so far: `anatomy` (E3.1, the exemplar), `facility-scout` (E3.2).
+Migrated so far: `anatomy` (E3.1, the exemplar), `facility-scout`,
+`bed-tracker`. The pattern is proven on three; `period` and `fitness` are
+now in scope.
+
+When you migrate one, grep its `ui/` for `from "../page"` — all three
+features had a shared type parked in the page component, because without a
+`schema/` slot there is nowhere neutral to put one.
 
 ---
 

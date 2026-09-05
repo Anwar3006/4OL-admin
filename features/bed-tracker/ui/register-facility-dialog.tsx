@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api-fetch";
-import { useRegisterBedTrackerFacility } from "@/hooks/supabase-calls/useBedTracker";
+import { useRegisterBedTrackerFacility } from "@/features/bed-tracker/data/useBedTracker";
 
 const WARD_TYPES = [
   "general",

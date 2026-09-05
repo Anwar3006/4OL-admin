@@ -8,46 +8,24 @@ import { apiFetch, jsonBody } from "@/lib/api-fetch";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import type {
+  BedTrackerOverview,
+  BedTrackerWard,
+} from "@/features/bed-tracker/schema/types";
+
+// Re-exported for existing importers. New code should take these from
+// the schema module directly.
+export type {
+  BedTrackerOverview,
+  BedTrackerWard,
+};
+
+
 export const BEDTRACKER_QUERY_KEYS = {
   all: ["bedtracker"] as const,
   overview: () => [...BEDTRACKER_QUERY_KEYS.all, "overview"] as const,
   routeSuggestions: (params: Record<string, unknown>) =>
     [...BEDTRACKER_QUERY_KEYS.all, "route-suggestions", params] as const,
-};
-
-export type BedTrackerWard = {
-  id: string;
-  bed_tracker_facility_id: string;
-  ward_type: string;
-  total_beds: number;
-  occupied_beds: number;
-  available_beds: number;
-  last_updated_at: string | null;
-  update_source: string | null;
-  bed_tracker_facilities: {
-    facility_id: string | null;
-    facility_profile: { facility_name: string | null; region: string | null } | null;
-  } | null;
-};
-
-export type BedTrackerOverview = {
-  facilities: any[];
-  wards: BedTrackerWard[];
-  fleet: any[];
-  alerts: any[];
-  dispatches: any[];
-  metrics: {
-    trackedFacilities: number;
-    facilitiesOnline: number;
-    totalBeds: number;
-    availableBeds: number;
-    occupancyPct: number;
-    criticalWards: number;
-    ambulances: number;
-    ambulancesActive: number;
-    activeAlerts: number;
-    activeDispatches: number;
-  };
 };
 
 export const useBedTrackerOverview = () =>

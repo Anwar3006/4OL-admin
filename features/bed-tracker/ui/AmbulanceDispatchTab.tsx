@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { BedTrackerTabProps } from "../page";
+import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 const FLEET_STATUS: Record<string, string> = {
   available: "emerald",

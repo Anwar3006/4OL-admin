@@ -8,7 +8,7 @@
 
 import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { BedTrackerTabProps } from "../page";
+import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 function MetricLine({ label, value }: { label: string; value: React.ReactNode }) {
   return (
