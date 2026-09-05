@@ -47,7 +47,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
 | **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
 | **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, `server-only` guard on admin. |
-| **E1.3** RLS/idiom audit | **Swept and fixed.** The silent-empty direction is clear. The sweep found the opposite problem — 9 tables exposed to `anon` — and 8 are now closed. `fitness_content_schedule` waits on the fitness migration. See below. |
+| **E1.3** RLS/idiom audit | **Done.** Silent-empty direction clear; all 9 tables exposed to `anon` are closed. No table in the database still grants `public`/`anon` unrestricted ALL/UPDATE/DELETE. |
 | **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
 | **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
@@ -78,19 +78,11 @@ The five big features are migrated. What remains in that directory is the
 long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
 done when it is empty.
 
-**Do `useFitnessContentSchedule`'s table first, though — it is a security
-blocker, not just a refactor.** `fitness_content_schedule` is the one table
-the E1.3 sweep left exposed to `anon`, and it is exposed *because* that hook
-reads it from the browser. Move the read behind an API route with
-`getAdminClient()`, then drop the policy:
-
-```sql
-drop policy if exists "admin_full_access_fit_sched" on public.fitness_content_schedule;
-revoke all on public.fitness_content_schedule from anon, authenticated;
-```
-
-That closes the ninth of the nine. The hook itself already moved to
-`features/fitness/data/` — only the client it uses needs changing.
+`useFitnessContentSchedule` is the worked example of how to do one where the
+table is also RLS-exposed: move the read behind an API route **first**, verify
+the route serves against a real session, and only then drop the policy. Doing
+it in the other order blanks the feature silently. See
+`features/fitness/api/content-schedule.ts`.
 
 ### 2. E1.3 — swept and fixed 5 Sept 2026; one table still open
 
@@ -150,9 +142,20 @@ One correction worth copying: the blanket `revoke` also took the grant behind
 deliberate access path. `SELECT` was granted back. When you revoke broadly,
 check what else was standing on that grant.
 
+**All nine are now closed.** `fitness_content_schedule` was the last; its read
+moved to `/api/fitness/content-schedule` first, then the policy was dropped —
+verified as each role (anon and authenticated both 42501, service role
+unchanged) and with 59/59 smoke tests after. Re-running the over-exposure query
+now returns **zero rows**: no table still grants `public`/`anon` unrestricted
+`ALL`/`UPDATE`/`DELETE`.
+
+The `TO public` SELECT policies that remain — `facility_profile`,
+`facility_reviews`, `faq_categories`, `fitcoin_tiers`, `marketing_*` — are
+deliberate public-read catalogues. Left alone on purpose.
+
 ⚠️ **The 701 `admin_sessions` tokens are still live.** They were readable for
 as long as the policy existed, so they should be treated as disclosed and the
-sessions ended. That is an application action, not a migration, and has not
+sessions ended. That is an application action, not a migration, and has **not**
 been done.
 
 **`fitness_content_schedule` is excluded on purpose.** It is the one of the
@@ -394,6 +397,7 @@ database actually has.
 | `20260905_reapply_epic21_delete_account_vocabulary.sql` | re-applied a migration that never landed |
 | `20260905_device_sign_in_otp_functions.sql` | wrote the two missing OTP functions, and adds `otp_issued_at` |
 | `20260905_e13_revoke_public_admin_table_access.sql` | E1.3: dropped 8 `admin_full_access_*` policies that were `TO public USING (true)`, revoked the matching anon/authenticated grants, restored `SELECT` for the one correctly scoped policy that depended on it |
+| `20260905_e13_close_fitness_content_schedule.sql` | E1.3: the ninth, after its browser read moved to `/api/fitness/content-schedule` |
 
 Earlier session (anatomy): `body_parts` path trigger, junction backfills tagged
 `source='heuristic'`, `get_anatomy_body_part_bundle(p_preview_limit)`,

@@ -23,7 +23,8 @@ features/fitness/
 
 ## Routes
 
-All eight URLs unchanged; `app/` holds a re-export per route and no logic.
+The seven pre-existing URLs are unchanged; `app/` holds a re-export per route
+and no logic. `/api/fitness/content-schedule` is new — see the RLS note below.
 
 | URL | Verbs | Handler | Permission |
 | --- | --- | --- | --- |
@@ -31,6 +32,7 @@ All eight URLs unchanged; `app/` holds a re-export per route and no logic.
 | `/api/fitness/fitcoins/redemptions/[id]/status` | PATCH | `api/fitcoins-redemption-status.ts` | `fitcoins.manage` |
 | `/api/fitness/generate` | POST | `api/generate.ts` | caller's own JWT |
 | `/api/fitness/generate-admin` | POST | `api/generate-admin.ts` | caller's own JWT |
+| `/api/fitness/content-schedule` | GET | `api/content-schedule.ts` | `fitness.view` |
 | `/api/fitness/notifications` | POST | `api/notifications.ts` | `fitness_notifications.send` |
 | `/api/fitness/outdoor-incentives` | GET, PUT | `api/outdoor-incentives.ts` | `fitness.view` / `fitness.edit` |
 | `/api/fitness/outdoor-routes/[id]/verify` | POST | `api/outdoor-routes-verify.ts` | `fitness.edit` |
@@ -70,13 +72,16 @@ modules that did.
 
 ## Things that will surprise you
 
-- **`fitness_content_schedule` is readable by `anon`.** It carries an
+- **`fitness_content_schedule` was readable by `anon`** — an
   `admin_full_access_fit_sched` policy written `FOR ALL TO public USING (true)`,
-  and `public` in Postgres means every role. It is the one table the E1.3 sweep
-  left open, because `data/useFitnessContentSchedule.ts` is the only browser
-  read of it — closing the policy first would blank the Schedule tab silently.
-  **Move that read behind an API route, then drop the policy.** See
-  `docs/cleanup-handoff.md`.
+  and `public` in Postgres means every role. It was the ninth and last table
+  found by the E1.3 sweep and the only one that could not be closed
+  immediately, because `data/useFitnessContentSchedule.ts` was the only browser
+  read of it and dropping the policy first would have blanked the Schedule tab
+  silently. The read moved to `api/content-schedule.ts` first, was verified
+  serving against a real session, and only then was the policy dropped. **That
+  order is the point** — it is the worked example for any remaining table in
+  the same position.
 - **`UserSearchSelect` used to live here** and the Map feature reached across
   for it with `@/app/(dashboard)/fitness/_components/...`. It is generic, so it
   is `components/UserSearchSelect.tsx` now.
