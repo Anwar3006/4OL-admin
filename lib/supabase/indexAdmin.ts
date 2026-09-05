@@ -1,27 +1,24 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-// NOTE: never add a NEXT_PUBLIC_-prefixed fallback here — Next.js inlines
-// NEXT_PUBLIC_* vars into the client bundle, so naming a secret that way is
-// a footgun even if nothing currently sets it.
-const supabaseServiceKey =
-  process.env.SUPABASE_SECRET_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SERVICE_KEY;
+import { getAdminClient } from "@/lib/db/admin";
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.warn(
-    "[supabaseAdmin] Missing NEXT_PUBLIC_SUPABASE_URL or secret/service key env. Storage admin actions may fail.",
-  );
-}
-
-export const supabaseAdmin = createClient(
-  supabaseUrl || "",
-  supabaseServiceKey || "",
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+/**
+ * @deprecated Import `getAdminClient` from `@/lib/db/admin` and call it where
+ * you need a client. Remove once `rg "supabaseAdmin"` comes back empty.
+ *
+ * This used to construct a service-role client at import time, so importing
+ * the module — from anywhere, including by accident — built a client holding
+ * the service key. The Proxy below keeps the old *shape* (a value you can
+ * use directly) while deferring construction to first property access, so
+ * importing this file no longer does anything.
+ *
+ * Behaviour change to be aware of: the old module logged a warning and built
+ * a client with empty credentials when the env vars were missing, which
+ * failed later with a confusing PostgREST error. This one throws on first
+ * use, naming the missing variable.
+ */
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_target, property, receiver) {
+    return Reflect.get(getAdminClient(), property, receiver);
   },
-);
+}) as SupabaseClient;
