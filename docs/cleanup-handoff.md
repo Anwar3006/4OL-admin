@@ -814,6 +814,60 @@ can only send to verified addresses.
 
 6 unit tests cover the config guard. Nothing was sent to a real address.
 
+### E4.1 — both Period god files split — **done**
+
+The two largest files in the repo, split behind unchanged URLs.
+
+| | Was | Now |
+| --- | --- | --- |
+| `app/(dashboard)/period/page.tsx` | 3,419 | **876** + 12 files |
+| `app/api/period/data/route.ts` | 1,166 | **13** + 4 files |
+
+**The page** splits by tab, not by line count, so a change to one tab touches
+one file: `_lib/{types,formatters,columns}.tsx` and `_components/` with one
+file per tab. Verified by clicking through all fourteen tabs against the
+running app — every one renders with no console errors.
+
+**The route** splits into `_lib/{schema,helpers}.ts` and
+`_handlers/{get,post}.ts`. Directories prefixed `_` are private to Next's
+router, so none of them becomes a URL.
+
+Verified against a **baseline captured before the split**: every one of the 14
+tabs returns the same status and the same response shape, byte-for-byte
+identical. POST still routes (a deliberately invalid action returns the zod
+error, not a 404).
+
+#### Why GET was NOT split into 13 readers
+
+It reads as a chain of `if (tab === "…")` early returns and looks like it wants
+to be a lookup table of independent readers. **It is not, and that split would
+be a performance regression.**
+
+Everything below the `consent` branch shares one expensive prelude: a
+5,000-row `period_cycles` scan plus profile, consent, note and daily-log
+lookups keyed off it. The twelve branches above it return before that runs and
+never pay for it. **The ordering is the optimisation.** Put new cheap tabs
+above the prelude; only go below it if the tab genuinely needs cycle data.
+
+That is why `_handlers/get.ts` is 531 lines with a comment explaining itself
+rather than 13 tidy files.
+
+#### Notes for the next god file
+
+- **Capture a per-endpoint baseline first.** The byte-identical comparison is
+  what makes a 1,166-line extraction safe to claim; without it the only
+  evidence is that it compiles.
+- Three helpers (`CreateForm`, `TriviaBatchModal`, `SummaryNote`) turned out to
+  be used by the workspace, not only by the tab they sat next to.
+- Extracted files inherited a shared import header; **392 unused imports** were
+  trimmed afterwards, and that trim silently dropped `"use client"` from all
+  nine components. They were still client components transitively via
+  `page.tsx`, so nothing broke — but the first server-component import would
+  have broken it. Restored.
+
+`period` is now ready to migrate to `features/period` as the mechanical move
+it was for the other three.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that
