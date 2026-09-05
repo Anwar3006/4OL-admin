@@ -405,6 +405,79 @@ eu-west-1. The same commit passes 59/59 at 2 workers, repeatedly.
 
 It is now 2 everywhere. Raise it in CI first, on a dedicated box, if at all.
 
+### E2.2 — one UI kit — **done**
+
+`components/ui/` holds no `.jsx` files. The five legacy components that were
+still live are TypeScript now, and the two dead ones are gone:
+
+| Component | Consumers | Note |
+| --- | --- | --- |
+| `Icon.tsx` | 5 | props derived from Iconify's own via `Pick<ComponentProps<…>>` |
+| `Pagination.tsx` | 3 | page list typed `number \| "start-ellipsis" \| "end-ellipsis"` |
+| `Textinput.tsx` | 2 | react-hook-form `register` typed and optional |
+| `Modal.tsx` | 4 | headless-ui v1 `Transition`/`Dialog` |
+| `HtmlRenderer.tsx` | 4 | + `SafeHtmlRenderer` |
+| ~~`ProgressBar/{Bar,index}.jsx`~~ | 0 | deleted — knip + zero importers |
+
+**They were converted, not replaced.** `Modal` overlaps shadcn's `dialog.tsx`
+and `Textinput` overlaps `input.tsx`, but swapping them is a visual change
+across pages the smoke sweep does not cover, and it is not what "one kit"
+needs to mean here. Conversion removes the real hazard — the extensionless
+specifier ambiguity that made knip mis-report `button.tsx` — and it lands E5.1
+for these files at the same time. Porting to shadcn stays available.
+
+Two changes are not pure conversions and are commented in place:
+
+- `HtmlRenderer`'s 161-line `<style jsx global>` block is now
+  `styles/html-content.css`, imported by the component. The rules were already
+  global — `jsx global` applies no scoping — so nothing about what they match
+  changed, and Next code-splits the file to the pages that import it.
+  Verified by computed style rather than by eye: `.html-content ul` resolves
+  to `list-style-type: disc`, `display: list-item`, `padding-left: 22.5px`.
+  Tailwind's preflight resets those, so if the stylesheet had failed to load
+  the bullets would be gone.
+- `Modal`'s controlled branch wrote `{!disableBackdrop && <div/>}`, handing
+  `Transition.Child` the value `false`. Its types require an element, so the
+  falsy arm is an empty `<div/>` now. Safe only because **`disableBackdrop`
+  and `uncontrol` are never passed by any call site** — roughly 70 lines of
+  `Modal` are dead configuration.
+
+**Verification note.** A green sweep proves nothing about this change: every
+consumer of these five components is under `/categories/**` or `/(auth)/**`
+and none of those are nav routes. They were probed directly instead, and the
+three that had a pre-change baseline render byte-identical bodies (1716, 1698,
+1711 chars).
+
+### Two real bugs found while probing — not fixed, not mine
+
+Both show up in the console on any `/categories/**` page:
+
+1. **`POST /rest/v1/rpc/issue_canary` → 404.** This is `SecurityCanary`, from
+   the security layer that E1.1 brought to life. The handoff predicted this
+   ("four features waking up"); here is the first concrete instance. The RPC
+   does not exist in the database. Either create it or gate the canary behind
+   a flag.
+2. **`GET /rest/v1/healthy_living?select=…` → 404 against `localhost:3000`.**
+   A PostgREST call is being sent to the Next server instead of the Supabase
+   host, so a browser-client read on these legacy pages cannot ever return
+   rows. Note the shape: the page renders fine and shows nothing. This is
+   E1.3's silent-empty-read failure mode with a misconfigured base URL rather
+   than an RLS policy as the cause.
+
+`GET /api/admin/session` also 500s on those pages.
+
+### The saved smoke session expires
+
+`tests/smoke/.auth/admin.json` goes stale, and when it does **every page
+returns 200 with a plausible body** — the login screen, ~506 chars, reading
+"This account doesn't have access to the admin dashboard". Six different
+pages returning byte-identical 506-char bodies is the tell. It cost a false
+regression report during E2.2. Refresh it with:
+
+```bash
+pnpm exec playwright test --project=setup
+```
+
 ### 2. E2 — retire the duplicates
 
 Reachability was checked against `app/(dashboard)/_components/admin-shell/navigation.ts`.
@@ -445,10 +518,8 @@ Also pending, same epic:
 - ~~`AdminDashboardShell.tsx`~~ — **deleted**, 0 import specifiers. Only
   `NewAdminDashboardShell` is referenced, from `DashboardWrapper`.
 - ~~`lib/csv-export.ts` vs `lib/export-csv.ts`~~ — **done.** Ten implementations, not two; all now `lib/csv.ts`.
-- `components/ui/*.jsx` (legacy kit) vs `components/ui/*.tsx` (shadcn). The
-  four dead ones are gone. **Five are still live and have no `.tsx`
-  counterpart** — `HtmlRenderer`, `Icon`, `Modal`, `Pagination`, `Textinput`.
-  Porting those is the remaining E2.2 work.
+- ~~`components/ui/*.jsx` vs `*.tsx`~~ — **done.** No `.jsx` remains in
+  `components/ui/`.
 
 Renames for consistency (`healthy_living` → `healthy-living`, `medenquiry` →
 `medication-enquiry`) must ship **with redirects** — admins have these

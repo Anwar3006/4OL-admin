@@ -1,5 +1,33 @@
-import React, { useState } from "react";
+import { type InputHTMLAttributes, type ReactNode, useState } from "react";
+import type { FieldError, UseFormRegister } from "react-hook-form";
+
 import Icon from "@/components/ui/Icon";
+
+export interface TextinputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {
+  label?: ReactNode;
+  classLabel?: string;
+  className?: string;
+  classGroup?: string;
+  /**
+   * react-hook-form's `register`. Optional — the field works as a plain
+   * controlled input without it, which is how the OTP and reset-password
+   * screens use it.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  register?: UseFormRegister<any>;
+  /** Legacy spelling of `readOnly`; kept because the call sites pass it. */
+  readonly?: boolean;
+  error?: FieldError;
+  icon?: string;
+  horizontal?: boolean;
+  /** Success message. Truthy also switches the field into its valid style. */
+  validate?: string;
+  msgTooltip?: boolean;
+  description?: ReactNode;
+  /** Show the password reveal toggle. Only has an effect when type="password". */
+  hasicon?: boolean;
+}
 
 const Textinput = ({
   type,
@@ -8,7 +36,7 @@ const Textinput = ({
   classLabel = "form-label",
   className = "",
   classGroup = "",
-  register, // Optional
+  register,
   name,
   readonly,
   value,
@@ -27,7 +55,7 @@ const Textinput = ({
   required,
   autoComplete,
   ...rest
-}) => {
+}: TextinputProps) => {
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -54,19 +82,19 @@ const Textinput = ({
       <div className={`relative ${horizontal ? "flex-1" : ""}`}>
         <input
           type={type === "password" && open ? "text" : type}
-          {...(register && register(name))} // Only use register if defined
+          {...(register && name ? register(name) : {})}
           className={`${
             error ? "has-error" : ""
           } form-control py-2 ${className}`}
           placeholder={placeholder}
           readOnly={readonly}
-          value={value} // Use controlled component
+          value={value}
           disabled={disabled}
           id={id}
           onChange={onChange}
           onFocus={onFocus}
           autoComplete={autoComplete}
-          {...rest} // Include other rest props
+          {...rest}
         />
         {type === "password" && hasicon && (
           <span
@@ -80,11 +108,6 @@ const Textinput = ({
             )}
           </span>
         )}
-        {/* {error && (
-          <span className="text-danger-500 absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Icon icon="heroicons-outline:information-circle" />
-          </span>
-        )} */}
         {validate && (
           <span className="text-success-500 absolute right-3 top-1/2 transform -translate-y-1/2">
             <Icon icon="bi:check-lg" />

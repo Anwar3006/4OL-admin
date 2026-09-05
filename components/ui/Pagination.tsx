@@ -1,5 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
 import Icon from "@/components/ui/Icon";
+
+type PageItem = number | "start-ellipsis" | "end-ellipsis";
+
+export interface PaginationProps {
+  totalPages: number;
+  currentPage: number;
+  handlePageChange: (page: number) => void;
+  /** Render "Previous"/"Next" as words instead of chevrons. */
+  text?: boolean;
+  className?: string;
+}
 
 const Pagination = ({
   totalPages,
@@ -7,43 +19,38 @@ const Pagination = ({
   handlePageChange,
   text,
   className = "custom-class",
-}) => {
-  const [pagesToShow, setPagesToShow] = useState([]);
+}: PaginationProps) => {
+  const [pagesToShow, setPagesToShow] = useState<PageItem[]>([]);
 
   useEffect(() => {
-    const generatePages = () => {
-      const pages = [];
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
+    const pages: PageItem[] = [];
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
 
-      pages.push(1); // First page
+    pages.push(1);
 
-      if (startPage > 2) {
-        pages.push("start-ellipsis");
-      }
+    if (startPage > 2) {
+      pages.push("start-ellipsis");
+    }
 
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
 
-      if (endPage < totalPages - 1) {
-        pages.push("end-ellipsis");
-      }
+    if (endPage < totalPages - 1) {
+      pages.push("end-ellipsis");
+    }
 
-      if (totalPages > 1) {
-        pages.push(totalPages); // Last page
-      }
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
 
-      setPagesToShow(pages);
-    };
-
-    generatePages();
+    setPagesToShow(pages);
   }, [totalPages, currentPage]);
 
   return (
     <div className={className}>
       <ul className="pagination flex items-center space-x-2">
-        {/* Previous */}
         <li>
           {text ? (
             <button
@@ -64,11 +71,10 @@ const Pagination = ({
           )}
         </li>
 
-        {/* Page Numbers */}
         {pagesToShow.map((page, idx) => {
           if (page === "start-ellipsis" || page === "end-ellipsis") {
             return (
-              <li key={page + idx} className="text-slate-500 text-sm px-2">
+              <li key={page + String(idx)} className="text-slate-500 text-sm px-2">
                 ...
               </li>
             );
@@ -91,7 +97,6 @@ const Pagination = ({
           );
         })}
 
-        {/* Next */}
         <li>
           {text ? (
             <button

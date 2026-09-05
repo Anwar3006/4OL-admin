@@ -1,6 +1,35 @@
 import { Dialog, Transition } from "@headlessui/react";
-import React, { Fragment, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
+
 import Icon from "@/components/ui/Icon";
+
+export interface ModalProps {
+  /** Controlled open state. Ignored when `uncontrol` is set. */
+  activeModal?: boolean;
+  onClose?: () => void;
+  /** Skip the enter/leave transitions. */
+  noFade?: boolean;
+  /** Hide the dim backdrop and stop a click outside from closing the modal. */
+  disableBackdrop?: boolean;
+  className?: string;
+  children?: ReactNode;
+  footerContent?: ReactNode;
+  /** Vertically centre the panel instead of pinning it to the top. */
+  centered?: boolean;
+  /** Cap the body height and scroll it. */
+  scrollContent?: boolean;
+  themeClass?: string;
+  title?: string;
+  /**
+   * Self-managed variant: renders its own trigger button and owns the open
+   * state, ignoring `activeModal` and `onClose`.
+   */
+  uncontrol?: boolean;
+  /** Trigger button text. Only used when `uncontrol` is set. */
+  label?: string;
+  labelClass?: string;
+  titleClass?: string;
+}
 
 const Modal = ({
   activeModal,
@@ -18,8 +47,7 @@ const Modal = ({
   label = "Basic Modal",
   labelClass,
   titleClass = "text-white font-medium ",
-  ref,
-}) => {
+}: ModalProps) => {
   const [showModal, setShowModal] = useState(false);
 
   const closeModal = () => {
@@ -29,9 +57,8 @@ const Modal = ({
   const openModal = () => {
     setShowModal(!showModal);
   };
-  const returnNull = () => {
-    return null;
-  };
+
+  const returnNull = () => {};
 
   return (
     <>
@@ -113,8 +140,12 @@ const Modal = ({
           </Transition>
         </>
       ) : (
-        <Transition appear show={activeModal} as={Fragment}>
-          <Dialog as="div" className="relative z-[99999]" onClose={onClose}>
+        <Transition appear show={!!activeModal} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-[99999]"
+            onClose={onClose ?? returnNull}
+          >
             <Transition.Child
               as={Fragment}
               enter={noFade ? "" : "duration-300 ease-out"}
@@ -124,8 +155,23 @@ const Modal = ({
               leaveFrom={noFade ? "" : "opacity-100"}
               leaveTo={noFade ? "" : "opacity-0"}
             >
-              {!disableBackdrop && (
+              {/*
+                The .jsx original wrote this as `{!disableBackdrop && <div…/>}`,
+                which hands Transition.Child the value `false` when the backdrop
+                is disabled. Transition.Child's types require an element, so the
+                falsy arm is an empty <div/> here instead.
+
+                That is a real difference in what renders — an empty div rather
+                than nothing — and it is safe only because `disableBackdrop` is
+                never passed by any of the four call sites, so the arm is dead.
+                If you start passing it, note that the uncontrolled branch above
+                guards the whole Transition.Child while this one guards only its
+                child; they were never equivalent.
+              */}
+              {!disableBackdrop ? (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-filter backdrop-blur-sm" />
+              ) : (
+                <div />
               )}
             </Transition.Child>
 
