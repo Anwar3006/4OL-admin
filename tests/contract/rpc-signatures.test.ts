@@ -5,7 +5,7 @@ import snapshot from "./rpc-signatures.json";
 import { CONTRACT_RPCS } from "./mobile-contract";
 
 /**
- * The 42 Postgres functions the Expo app calls, pinned to a snapshot of their
+ * The 44 Postgres functions the Expo app depends on, pinned to a snapshot of their
  * real signatures taken from production on 5 Sept 2026.
  *
  * It was 28 until the regeneration script could be run for the first time —

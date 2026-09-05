@@ -85,20 +85,16 @@ export const DEPRECATED_ROUTES = [
 
 /** Postgres functions the mobile app calls. Signatures are frozen. */
 /**
- * ⚠️ `verify_device_sign_in_otp` is deliberately NOT in this list.
+ * `verify_device_sign_in_otp` and `issue_device_sign_in_otp` were BOTH missing
+ * from the database when this list was regenerated on 5 Sept 2026 — the email
+ * OTP fallback of device sign-in could not work at all. They exist now
+ * (20260905_device_sign_in_otp_functions.sql).
  *
- * The mobile app calls it — `lib/device-approval.ts:187` — and **it does not
- * exist in the database.** There is no near-name match either; the device
- * sign-in family is `request_device_sign_in`, `resolve_device_sign_in` and
- * `get_device_sign_in_status`. So the OTP step of that flow cannot work.
- *
- * It is excluded rather than listed because this list is asserted against the
- * live database: adding it would turn a real mobile bug into a permanently
- * red admin test. Fixing it means either creating the function or removing
- * the call, and both live outside this repo.
- *
- * Found 5 Sept 2026 while regenerating the contract. Not reported to the
- * mobile team by this session — someone should.
+ * `issue_device_sign_in_otp` is listed even though the Expo app never calls it
+ * directly: it is called by /api/auth/device-sign-in/send-otp, which mobile
+ * DOES call. A route in the contract whose RPC is not is exactly how this was
+ * missed — the route looked protected while the thing it delegates to was
+ * free to vanish.
  */
 export const CONTRACT_RPCS = [
   "activate_fitness_plan",
@@ -146,6 +142,8 @@ export const CONTRACT_RPCS = [
   "revoke_my_device",
   "submit_app_review",
   "unregister_push_token",
+  "issue_device_sign_in_otp",
+  "verify_device_sign_in_otp",
 ] as const;
 
 /**

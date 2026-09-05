@@ -149,6 +149,12 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "issue_device_sign_in_otp": {
+    "args": "p_request_id uuid, p_user_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "join_fitness_challenge": {
     "args": "challenge_id_param uuid, user_id_param uuid",
     "returns": "jsonb",
@@ -248,6 +254,12 @@
   "unregister_push_token": {
     "args": "p_token text",
     "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "verify_device_sign_in_otp": {
+    "args": "p_request_id uuid, p_otp text",
+    "returns": "jsonb",
     "security_definer": true,
     "volatility": "volatile"
   }

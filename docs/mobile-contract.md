@@ -35,18 +35,47 @@ Expo repo. The script now falls back to `grep`.
 That is the same shape as every other bug on this branch: **a check that
 cannot run reports the same thing as a check that passes.**
 
-## One live mobile bug found while regenerating
+## The live mobile bug found while regenerating — **fixed**
 
-`lib/device-approval.ts:187` in the Expo app calls
-`verify_device_sign_in_otp`. **That function does not exist in the database**,
-and there is no near-name match — the family is `request_device_sign_in`,
-`resolve_device_sign_in`, `get_device_sign_in_status`. The OTP step of device
-sign-in cannot work.
+The Expo app's device sign-in has four steps. Two of them did not exist.
 
-It is deliberately **not** in `CONTRACT_RPCS`: that list is asserted against
-the live database, so adding it would turn a mobile bug into a permanently red
-admin test. Fixing it means creating the function or removing the call, both
-outside this repo. **Not yet reported to the mobile team.**
+| Step | Mechanism | Was |
+| --- | --- | --- |
+| 1. request | `request_device_sign_in` | worked |
+| 2. send code | `POST /api/auth/device-sign-in/send-otp` → `issue_device_sign_in_otp` | **route 500'd — RPC missing** |
+| 3. verify code | `verify_device_sign_in_otp` | **404 PGRST202 — RPC missing** |
+| 4. approve from a trusted device | `resolve_device_sign_in` | worked |
+
+So a user signing in on a new device **with no other trusted device to approve
+from** could not complete the email fallback at all — the only path open to
+them was broken end to end.
+
+`device_sign_in_requests` already carried `otp_hash`, `otp_expires_at` and
+`otp_attempts`: the schema was designed for this flow and the functions were
+simply never written. Nothing in `supabase/migrations/` defined them.
+
+Both now exist (`20260905_device_sign_in_otp_functions.sql`) and both are in
+`CONTRACT_RPCS`.
+
+**Note why step 2 hid:** `/api/auth/device-sign-in/send-otp` *was* in the
+contract, so it looked protected. The RPC it delegates to was not, so the
+thing doing the actual work was free to vanish. When a contracted route
+delegates to an RPC, list the RPC too.
+
+Verified against the database, not by reading:
+
+| Check | Result |
+| --- | --- |
+| issue | 6-digit code, expiry set |
+| resend inside 60s | `too_many_sends` |
+| wrong code | `invalid_otp`, attempts counted down 4→0 |
+| correct code | `approved`, `resolved_by=email_otp`, hash cleared |
+| replay | refused (`approved`) |
+| another user's request | `not_found` |
+| 6th wrong code | `too_many_attempts` — and the **correct** code is refused after lockout |
+
+Not tested: the SendGrid send inside the route, which would have emailed a
+real person.
 
 ## Regenerating
 

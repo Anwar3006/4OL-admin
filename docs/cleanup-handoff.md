@@ -717,12 +717,30 @@ with credentials from `.env.local` — 42 signatures verified, no skips:
 NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
 ```
 
-**A live mobile bug, not fixed, not reported:** the Expo app's
-`lib/device-approval.ts:187` calls `verify_device_sign_in_otp`, which does not
-exist in the database and has no near-name match. The OTP step of device
-sign-in cannot work. It is deliberately excluded from `CONTRACT_RPCS` — that
-list is asserted against the live database, so listing it would turn a mobile
-bug into a permanently red admin test. **Someone should tell the mobile team.**
+**The live mobile bug is fixed.** Device sign-in has four steps and **two did
+not exist**: `issue_device_sign_in_otp` (which `/api/auth/device-sign-in/
+send-otp` delegates to, so that route 500'd) and `verify_device_sign_in_otp`
+(404 PGRST202). A user signing in on a new device with no other trusted device
+to approve from had only the email fallback, and it was broken end to end.
+
+The table already had `otp_hash`, `otp_expires_at` and `otp_attempts` — the
+schema was designed for it and the functions were never written.
+
+Written, applied and tested against the database
+(`20260905_device_sign_in_otp_functions.sql`): 6-digit CSPRNG code, sha256
+hash salted with the request id, 60-second resend cooldown, 5-attempt lockout
+that refuses even the correct code afterwards, single-use, and ownership
+enforced via `auth.uid()`. Both RPCs are now in `CONTRACT_RPCS` (44 total).
+
+⚠️ **The first version of the cooldown was wrong and testing caught it.** It
+derived issued-at as `otp_expires_at - 10 minutes`, but the expiry is clamped
+to the request's own 5-minute deadline, so the derived value sat permanently
+in the past and the cooldown never fired. It reads a stored `otp_issued_at`
+now. Reading the code would not have found this.
+
+**Why step 2 hid:** the route was in the contract, so it looked protected; the
+RPC it delegates to was not. **When a contracted route delegates to an RPC,
+list the RPC too.**
 
 ### E3.2 — `period` NOT migrated, deliberately
 
