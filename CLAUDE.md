@@ -99,10 +99,18 @@ derives routes from those directories, so a folder rename there is a URL
 change. The re-export files are what let code be organised by feature while
 URLs stay put.
 
+Feature directories are **kebab-case and need not match the URL segment** —
+`features/facility-scout` serves `/facilityscout`. Only `app/` is a URL.
+Renaming the route is E3.3's job and needs a redirect.
+
 `schema/` is the slot that earns its keep: it holds what `ui/` and `api/` must
-agree on. `BODY_SYSTEMS` used to live inside a dialog component, so the API
-kept a hand-copied subset — five of nine — and the Body Map tab's default
-filter returned 400 for months.
+agree on. Both features moved so far had a shared contract parked in whichever
+file happened to declare it first — `BODY_SYSTEMS` inside a dialog, so the API
+kept a hand-copied subset of five of nine and the Body Map filter 400'd for
+months; `FacilityScoutTabProps` inside the page component, so all five tabs
+imported from `../page` and broke the moment it was renamed.
+
+Migrated so far: `anatomy` (E3.1, the exemplar), `facility-scout` (E3.2).
 
 ---
 

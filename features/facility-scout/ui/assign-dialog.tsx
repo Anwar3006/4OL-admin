@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAssignScoutSubmission } from "@/hooks/supabase-calls/useFacilityScout";
+import { useAssignScoutSubmission } from "@/features/facility-scout/data/useFacilityScout";
 
 type Collector = {
   id: string;

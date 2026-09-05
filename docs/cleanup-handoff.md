@@ -558,6 +558,79 @@ route is **still asserted to render**, and the test **fails if a quarantined
 route comes back clean** — so the list cannot rot into a permanent excuse.
 Fixing these four is the obvious next non-E3 task.
 
+### The four surfaced bugs — **all fixed**, quarantine empty
+
+`KNOWN_BROKEN` in the smoke spec is now `{}`. The sweep passes 59/59 with
+every nav route rendering on a clean console, which had never been true before.
+
+**Two ambiguous PostgREST embeds.** An embed with more than one candidate
+foreign key does not pick one — it fails the whole query, so the route 500s
+and the page renders its shell with no data:
+
+| Embed | Candidates |
+| --- | --- |
+| `ambulance_dispatches` → `facility_profile` | `destination_facility_id`, `rerouted_from_facility_id` |
+| `data_collectors` → `user_profiles` | `user_id`, `supervisor_id` |
+
+Both now name the constraint. `facilityscout` had a **third** ambiguity hidden
+behind the first — `facility_scout_submissions` has FKs to `user_profiles` on
+both `submitted_by` and `reviewed_by`. Fixing one ambiguity can reveal another;
+re-run after each.
+
+**A column that does not exist.** `/api/map/collectors` selected
+`user_profiles(… email …)`; `user_profiles` has no `email`. Removed. It is
+genuinely unreachable from there — `user_profiles.user_id` points at
+`auth.users`, which PostgREST does not expose, and `public."user"` has no FK to
+join on. Surfacing it needs a service-role lookup or a view.
+
+⚠️ While fixing that I put the explanatory comment **inside the select's
+template literal**, so `//` became part of the select string and PostgREST
+rejected the lot with a different 500. Comments go above the call.
+
+**A migration that never landed.** `/delete-account-request` 404'd on
+`get_delete_account_request_stats`. Checking `information_schema` rather than
+trusting the one visible symptom showed the whole `20260812` migration was
+absent: `grace_period_started_at`, the status CHECK, the status default and the
+function. `expire_delete_account_grace_periods` **did** exist and reads
+`grace_period_started_at` — so it had been broken since creation. Re-applied
+as `20260905_reapply_epic21_delete_account_vocabulary.sql`.
+
+The lesson generalises: when a migration's symptom is one missing object, check
+whether the rest of the file landed.
+
+### E3.2 — first migration: `facility-scout` — **done**
+
+The E3.1 shape applied to a second feature, unchanged. 14 files.
+
+```
+features/facility-scout/
+  ui/       FacilityScoutPage + 5 tabs + assign-dialog
+  api/      6 handlers      data/  useFacilityScout.ts
+  schema/   types.ts (4 shapes)
+```
+
+All 7 URLs unchanged. The page renders **2765 chars — byte-identical to the
+baseline captured before the move** — with zero console problems.
+
+**Dynamic routes work the same.** `[id]` folders stay in `app/`; only the file
+they point at moved, and handlers still receive their `params`. Verified by
+POSTing to each: the 404s that come back are the handlers' own JSON
+(`{"error":"No matching reward rows"}`), while a control path returns Next's
+HTML 404 page. Status alone would not have told them apart.
+
+**`schema/` earned its slot again.** `FacilityScoutTabProps` lived in the page
+component and all five tabs imported it from `../page` — so every tab depended
+on the page module to know its own props, and the import broke the instant the
+page was renamed. The resulting `TS7006 implicit any` errors in the tabs were
+downstream of that one broken import, not four separate problems.
+
+**Naming:** the directory is `facility-scout`, the route is still
+`/facilityscout`. Feature directories are kebab-case and need not match the URL
+— only `app/` is a URL. Renaming the route needs a redirect and is E3.3.
+
+Two features migrated. The plan says prove the pattern on three small ones
+before `period` and `fitness`; one more to go.
+
 ### The sweep's worker count — a net that cried wolf
 
 `playwright.config.ts` ran 4 workers locally. Twice during this session that

@@ -33,9 +33,9 @@ import {
   useRejectScoutSubmission,
   useRegisterScoutSubmission,
   type ScoutSubmission,
-} from "@/hooks/supabase-calls/useFacilityScout";
+} from "@/features/facility-scout/data/useFacilityScout";
 import { AssignScoutDialog } from "./assign-dialog";
-import type { FacilityScoutTabProps } from "../page";
+import type { FacilityScoutTabProps } from "@/features/facility-scout/schema/types";
 
 const STATUS_BADGE: Record<string, string> = {
   pending: "amber",

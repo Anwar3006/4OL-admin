@@ -20,8 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useDisburseScoutReward } from "@/hooks/supabase-calls/useFacilityScout";
-import type { FacilityScoutTabProps } from "../page";
+import { useDisburseScoutReward } from "@/features/facility-scout/data/useFacilityScout";
+import type { FacilityScoutTabProps } from "@/features/facility-scout/schema/types";
 
 const NETWORK_LABEL: Record<string, string> = {
   mtn: "MTN",

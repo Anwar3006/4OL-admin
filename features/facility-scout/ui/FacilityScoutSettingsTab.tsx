@@ -11,8 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useUpdateScoutConfig } from "@/hooks/supabase-calls/useFacilityScout";
-import type { FacilityScoutTabProps } from "../page";
+import { useUpdateScoutConfig } from "@/features/facility-scout/data/useFacilityScout";
+import type { FacilityScoutTabProps } from "@/features/facility-scout/schema/types";
 
 type FormState = {
   reward_hospital_mb: number;

@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { FacilityScoutTabProps } from "../page";
+import type { FacilityScoutTabProps } from "@/features/facility-scout/schema/types";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
