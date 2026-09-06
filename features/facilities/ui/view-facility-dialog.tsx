@@ -37,7 +37,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { FacilityRatingSection } from "./facility-rating";
-import { useAdminFacilityAudit } from "@/hooks/supabase-calls/useReviews";
+import { useAdminFacilityAudit } from "@/features/reviews/data/useReviews";
 import { GalleryModal } from "@/components/GalleryModal";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";

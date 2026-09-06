@@ -18,9 +18,9 @@ import {
   useIsTopRated,
   useUpsertTopRatedItem,
   useRemoveTopRatedItem,
-} from "@/hooks/supabase-calls/useTopRatedItems";
+} from "@/features/top-rated/data/useTopRatedItems";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
-import { TOP_RATED_MODULES } from "@/schemas/top-rated.schema";
+import { TOP_RATED_MODULES } from "@/features/top-rated/schema/types";
 
 type TopRatedModule = (typeof TOP_RATED_MODULES)[number];
 

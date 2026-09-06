@@ -7,7 +7,7 @@ import {
   DeleteAccountRequest,
   useDeleteAccountRequests,
   useUpdateDeleteRequestStatus,
-} from "@/hooks/supabase-calls/useDeleteAccountRequests";
+} from "@/features/delete-account-requests/data/useDeleteAccountRequests";
 import { usePagination } from "@/hooks/use-pagination";
 import { useHasPermission } from "@/stores/permission-context";
 
