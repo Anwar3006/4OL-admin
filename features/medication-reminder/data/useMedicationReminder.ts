@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
 
 // Senior Approach: `interval` is a bare number whose unit varies per row
@@ -66,7 +66,7 @@ export const useMedicationReminders = ({
   return useQuery<any, Error>({
     queryKey: ["medication-reminders", { limit, page, search, isEnabled }],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       let query = supabase.from("medication_reminders").select("*");
 
       const from = (page - 1) * limit;
@@ -145,7 +145,7 @@ export const useLoggedReminders = ({
   return useQuery({
     queryKey: ["logged-reminders-list", pageIndex, pageSize, search],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const from = (pageIndex - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -238,7 +238,7 @@ export const useMedicationAdherence = ({
   return useQuery({
     queryKey: ["medication-adherence-list", pageIndex, pageSize, status],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const from = (pageIndex - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -300,7 +300,7 @@ export const useMedicationReminder = (reminderId: string) => {
   return useQuery<any, Error>({
     queryKey: ["medication-reminder", reminderId],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("medication_reminders")
         .select("*")
@@ -330,7 +330,7 @@ export const useUpsertMedication = () => {
       reminderId: string | null;
       values: any;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc(
         "admin_upsert_medication_reminder",
         {
@@ -363,7 +363,7 @@ export const useDeleteMedication = () => {
       adminId: string;
       reminderId: string;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc("admin_delete_medication_reminder", {
         p_admin_id: adminId,
         p_reminder_id: reminderId,
@@ -390,7 +390,7 @@ export const useToggleUserMedicationNotification = () => {
       isEnabled: boolean;
       userId: string;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc(
         "toggle_user_medication_notification",
         {

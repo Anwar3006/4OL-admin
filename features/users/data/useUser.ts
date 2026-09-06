@@ -1,5 +1,5 @@
 import { getUsers, getUserProfile } from "@/actions/user.actions";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { getAdminClient } from "@/lib/db/admin";
 import type {
   TAdminInviteSchema,
@@ -117,7 +117,7 @@ export const useGetInvitedAdmin = ({ token }: { token: string }) => {
   return useQuery<any, Error>({
     queryKey: USER_QUERY_KEYS.invites,
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("user_invites")
         .select()
@@ -133,7 +133,7 @@ export const useRegistrarTrails = (daysBack: number = 1) => {
   return useQuery({
     queryKey: ["registrar_trails", daysBack],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_registrar_trails", {
         days_back: daysBack,
       });
@@ -149,7 +149,7 @@ export const useCreateUserProfile = () => {
 
   return useMutation<TUserProfileRegistrationInput, Error, any>({
     mutationFn: async (data: TUserProfileRegistrationInput) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data: result, error } = await supabase
         .from("user_profiles")
         .insert({
@@ -184,7 +184,7 @@ export const useUpdateProfile = () => {
 
   return useMutation<TUserProfileRegistrationInput, Error, any>({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data: result, error } = await supabase
         .from("user_profiles")
         .update({
@@ -255,7 +255,7 @@ export const useAdminInvites = (params: AdminInvitesPagination = {}) => {
   return useQuery<AdminInvitesResponse, Error>({
     queryKey: [...USER_QUERY_KEYS.invites, "list", page, limit],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
@@ -286,7 +286,7 @@ export const useRevokeAdminInvite = () => {
 
   return useMutation<void, Error, { id: string; revokedBy: string }>({
     mutationFn: async ({ id, revokedBy }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase
         .from("user_invites")
         .update({

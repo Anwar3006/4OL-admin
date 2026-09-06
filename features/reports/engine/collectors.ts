@@ -10,7 +10,7 @@
  * raw tables twice for the same period.
  */
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import {
   deltaPct,
   type ReportSection,
@@ -18,7 +18,7 @@ import {
   type SectionResult,
 } from "./types";
 
-type Admin = ReturnType<typeof getSupabaseAdmin>;
+type Admin = ReturnType<typeof getAdminClient>;
 
 const awaiting = (section: ReportSection, note: string): SectionResult => ({
   section,
@@ -367,7 +367,7 @@ export async function collectReportMetrics(
   sections: ReportSection[],
   window: ReportWindow,
 ): Promise<{ metrics: Record<string, SectionResult>; anomalies: string[]; awaiting: string[] }> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const metrics: Record<string, SectionResult> = {};
   const anomalies: string[] = [];
   const awaitingList: string[] = [];

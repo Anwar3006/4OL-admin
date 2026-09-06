@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -8,7 +8,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const path = `avatars/${user.id}/${nanoid(8)}.jpg`;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data, error } = await admin.storage
     .from(BUCKET)
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Path does not belong to this user" }, { status: 403 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const avatar_url = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
 
   // Store avatar_url in user_profiles (no longer depends on the BetterAuth user table)

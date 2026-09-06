@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useQuery } from "@tanstack/react-query";
 
 export interface FitnessDashboardMetrics {
@@ -75,7 +75,7 @@ export const useFitnessDashboardKpis = () => {
   return useQuery({
     queryKey: ["fitness-dashboard-kpis"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_fitness_dashboard_kpis");
 
       if (error) throw error;

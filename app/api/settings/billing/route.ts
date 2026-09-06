@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Billing & GRA tab (Gap Analysis Part P, P-D5). Infra cost budgets are live;
@@ -11,7 +11,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("settings.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("infra_cost_budgets")
     .select("id, service, provider, budget_30d, usage_30d, notes")

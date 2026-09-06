@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
 import {
   TFitnessOutdoorRouteInput,
@@ -10,7 +10,7 @@ import {
   TFitnessOutdoorReviewOutput,
 } from "@/schemas/fitness-outdoor.schema";
 
-const supabase = getSupabaseBrowserClient();
+const supabase = getBrowserClient();
 
 export const OUTDOOR_QUERY_KEYS = {
   allRoutes: ["fitness_outdoor_routes"] as const,

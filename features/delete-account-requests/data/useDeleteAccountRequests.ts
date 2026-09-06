@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { setUserAuthBan } from "@/actions/user.actions";
 import { toast } from "sonner";
 
@@ -73,7 +73,7 @@ export const useDeleteAccountRequests = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       // Base query — always order pending first, then by created_at desc
       let query = supabase
         .from("delete_account_requests")
@@ -173,7 +173,7 @@ export const useUpdateDeleteRequestStatus = () => {
       userId,
       newStatus,
     }: UpdateStatusPayload) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
 
       const updatePayload: Record<string, unknown> = { status: newStatus };
       if (newStatus === "grace_period") {
@@ -312,7 +312,7 @@ export const useDeleteRequestStatsQuery = () =>
   useQuery({
     queryKey: ["delete-account-request-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_delete_account_request_stats");
       if (error) throw error;
       return data as {

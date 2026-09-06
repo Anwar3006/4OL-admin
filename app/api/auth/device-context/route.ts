@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * GET /api/auth/device-context
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const {
     data: { user },
     error,

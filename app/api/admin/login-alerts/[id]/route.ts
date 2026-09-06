@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const ResolveSchema = z.object({
   action: z.enum(["acknowledge", "lockout"]),
@@ -34,7 +34,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: alert, error: fetchError } = await admin
     .from("admin_login_alerts")
     .select("id, admin_id, status, new_session_id, new_session_jwt")

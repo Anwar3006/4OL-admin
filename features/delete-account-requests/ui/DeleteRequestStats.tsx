@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import KpiCard from "@/components/redesign/KpiCard";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 
 interface DeleteAccountRequestStatsData {
   pending_review: number;
@@ -18,7 +18,7 @@ export default function DeleteRequestStats() {
   const { data: stats, isLoading, isError } = useQuery<DeleteAccountRequestStatsData>({
     queryKey: ["delete-account-request-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_delete_account_request_stats");
       if (error) throw error;
       return data as DeleteAccountRequestStatsData;

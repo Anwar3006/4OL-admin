@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "type and description are required" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.from("activity_logs").insert({
     user_id: user.id,
     user_name: user.email,
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("activity_logs")
     .select("*")

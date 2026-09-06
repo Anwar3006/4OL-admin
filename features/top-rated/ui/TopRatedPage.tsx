@@ -9,7 +9,7 @@ import { TOP_RATED_MODULES } from "@/features/top-rated/schema/types";
 import TopRatedItemsTable from "./TopRatedItemsTable";
 import AddTopRatedItemDialog from "./AddTopRatedItemDialog";
 import { useQuery } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { downloadCsv } from "@/lib/csv";
 import {
   fetchTopRatedItemsForExport,
@@ -54,7 +54,7 @@ const TopRatedPage = () => {
   const { data: moduleCounts } = useQuery({
     queryKey: ["top-rated-module-counts"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("top_rated_items")
         .select("module")

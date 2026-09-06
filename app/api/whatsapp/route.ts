@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * WhatsApp Community aggregate (Gap Analysis Part T, T-D1/T-D2). WhatsApp is
@@ -12,7 +12,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("whatsapp.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const [statsResult, groupsResult, templatesResult, broadcastsResult] = await Promise.all([
     admin.rpc("get_whatsapp_stats"),
     admin

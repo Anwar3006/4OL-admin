@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const MAX_PAGE_SIZE = 50;
 const DEFAULT_PAGE_SIZE = 20;
@@ -25,7 +25,7 @@ function isValidType(value: string | null): value is NotificationType {
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // ---- Unread count (cheap, indexed, no row data returned) ----
   if (searchParams.get("count") === "true") {
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("notifications")
     .insert({
@@ -202,7 +202,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   if (body.markAllRead === true) {
     const { error, count } = await admin

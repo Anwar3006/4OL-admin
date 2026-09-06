@@ -3,7 +3,7 @@
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { useQuery } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 
 interface HealthyLivingKpiData {
   total_articles: number;
@@ -21,7 +21,7 @@ export default function HealthyLivingStats() {
   } = useQuery<HealthyLivingKpiData | null>({
     queryKey: ["healthy-living-kpi-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_healthy_living_kpi_stats");
 
       if (error) {

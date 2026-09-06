@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 export async function GET() {
   const auth = await requireAdminApiUser("settings.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("subscription_tiers")
     .select(

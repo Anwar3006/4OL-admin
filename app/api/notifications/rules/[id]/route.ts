@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const UpdateRuleSchema = z.object({
   name: z.string().trim().min(1).max(160).optional(),
@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("notification_automation_rules")
     .update({
@@ -43,7 +43,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.from("notification_automation_rules").delete().eq("id", id);
 
   if (error) {

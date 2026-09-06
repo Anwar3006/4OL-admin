@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as fs from "fs";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getAdminClient } from "../lib/db/admin";
 
 // Load environment variables from .env.local
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
@@ -66,7 +66,7 @@ interface MediaPair {
 async function main() {
   console.log("🏋️  Starting fitness media seeder...");
 
-  const client = getSupabaseAdmin();
+  const client = getAdminClient();
   const mediaDirPath = path.join(process.cwd(), MEDIA_DIR);
 
   if (!fs.existsSync(mediaDirPath)) {

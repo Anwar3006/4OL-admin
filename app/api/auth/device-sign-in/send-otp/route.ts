@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isEmailConfigured, missingEmailConfig, sendEmail } from "@/lib/email";
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 function maskEmail(email: string) {
   const [local, domain] = email.split("@");
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const {
     data: { user },
     error: userError,

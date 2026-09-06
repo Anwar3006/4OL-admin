@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * PATCH /api/user/push-token
@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // getUser() validates the JWT cryptographically using the project's JWT secret
   const { data: { user }, error: authError } = await admin.auth.getUser(token);

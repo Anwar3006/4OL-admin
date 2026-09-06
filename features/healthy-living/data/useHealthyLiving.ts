@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { apiFetch, jsonBody } from "@/lib/api-fetch";
 import { toast } from "sonner";
 import {
@@ -28,7 +28,7 @@ export const useCategoriesForHealthyLiving = () => {
   return useQuery<any, Error>({
     queryKey: HEALTHY_LIVING_QUERY_KEYS.categories,
     queryFn: async () => {
-      const { data, error } = await (await getSupabaseClient())
+      const { data, error } = await (await getBrowserClient())
         .from("categories")
         .select("*")
         .eq("type", "healthy_living")
@@ -57,7 +57,7 @@ export const useHealthyLivings = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      let query = (await getSupabaseClient())
+      let query = (await getBrowserClient())
         .from("healthy_living_info")
         .select("*, healthy_living_categories (categories (id, name))", { count: "exact" });
 
@@ -103,7 +103,7 @@ export const useHealthyLiving = (id: string | null) => {
   return useQuery<THealthyLivingOutput, Error>({
     queryKey: HEALTHY_LIVING_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const { data, error } = await (await getSupabaseClient())
+      const { data, error } = await (await getBrowserClient())
         .from("healthy_living_info")
         .select("*, healthy_living_categories (category_id, categories (id, name))")
         .eq("id", id!)
@@ -124,7 +124,7 @@ export const useCreateHealthyLiving = () => {
 
   return useMutation<THealthyLivingOutput, Error, THealthyLivingInput>({
     mutationFn: async (input) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("healthy_living_info")
         .insert([
@@ -174,7 +174,7 @@ export const useUpdateHealthyLiving = () => {
     { id: string; data: THealthyLivingInput }
   >({
     mutationFn: async ({ id, data: input }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("healthy_living_info")
         .update({
@@ -231,7 +231,7 @@ export const useDeleteHealthyLiving = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const { error } = await (await getSupabaseClient())
+      const { error } = await (await getBrowserClient())
         .from("healthy_living_info")
         .delete()
         .eq("id", id);
@@ -313,7 +313,7 @@ export const useFeatureHealthyLiving = () => {
 /** Carousel tab data — featured set (slot order) + published candidates. */
 export const useHealthyLivingCarousel = () => {
   const fetchCarouselData = async () => {
-    const supabase = await getSupabaseClient();
+    const supabase = await getBrowserClient();
     const [featuredRes, availableRes] = await Promise.all([
       supabase
         .from("healthy_living_info")

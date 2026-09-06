@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const ThreatQuerySchema = z.object({
   threatLevel: z.enum(["low", "medium", "high", "critical"]).optional(),
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("security_threats")
     .select(
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   // threat_status's real enum labels are open/mitigated/monitoring/review/
   // resolved/auto_resolved — 'false_positive' has never been a valid value
   // (nor was the frontend's other assumed status, 'investigating'). There's

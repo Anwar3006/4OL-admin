@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as fs from "fs";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getAdminClient } from "../lib/db/admin";
 
 // Load .env.local configuration
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
@@ -95,7 +95,7 @@ async function seedSymptoms() {
   console.log("⏳ Starting symptoms seeder process...");
 
   try {
-    const client = getSupabaseAdmin();
+    const client = getAdminClient();
     const seedDataPath = path.join(
       process.cwd(),
       "scripts/seed-data/nhs_symptoms_seed.json",

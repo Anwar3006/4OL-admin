@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const CampaignSchema = z.object({
   title: z.string().trim().min(1).max(160),
@@ -17,7 +17,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("notifications.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const [notificationsResult, campaignsResult, templatesResult, rulesResult, analyticsResult] =
     await Promise.all([
       admin
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("notification_campaigns")
     .insert({

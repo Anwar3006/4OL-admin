@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * WhatsApp broadcast queue (Gap Analysis Part T, T-D4). Queue-time
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // T-D4: only Meta-approved templates may be queued.
   const { data: template, error: templateError } = await admin

@@ -76,10 +76,10 @@ and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
 | Task | Why it is fully covered |
 | --- | --- |
 | **E5.1** convert the 52 `.js`/`.jsx` files | `tsc` + `pnpm build` are exactly the right net. Start with the trivial ones (`app/loading.js`, `hooks/useDarkMode.js`, `components/Loading.jsx`). |
-| **E5.3** lint `redesign/**` | `pnpm lint` is the whole test. Expect a large first pass. |
+| **E5.3** lint `redesign/**` | **Already done.** It was a no-op: that directory holds no code. |
 | **E6.2** prune dependencies | `pnpm knip` finds them, `pnpm build` proves nothing needed them. |
 | **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
-| **E3.4** split `lib/` | Pure moves; `tsc` and `build` catch every broken specifier. |
+| **E3.4** split `lib/`         | **Done.** Feature-owned modules moved out; `reports/` and `supabase/indexAdmin.ts` retired; the three pure re-export shims deleted after migrating 129 callers. `lib/supabase.ts` (anon client) survives with 2 callers that need database verification. |
 | **E6.3** move the 4.1 MB seed JSON | Only `scripts/seeder.ts` reads it — no app code imports it, so the build proves the move. Running the seeder needs a database; moving the file does not. |
 | **E7** documentation | No execution required. |
 
@@ -146,14 +146,14 @@ signature half.
 | **E3.1** feature layout        | **Done.** `features/anatomy` is the exemplar.                                                                                                                                                           |
 | **E3.2** migrate features      | **DONE.** 28 features under `features/`, each with a README. `hooks/supabase-calls/` no longer exists — `tests/unit/feature-layout.test.ts` asserts it stays gone.                                      |
 | **E3.3** kebab-case routes     | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started.           |
-| **E3.4** split `lib/`          | **Not started.**                                                                                                                                                                                        |
+| **E3.4** split `lib/`         | **Done.** Feature-owned modules moved out; `reports/` and `supabase/indexAdmin.ts` retired; the three pure re-export shims deleted after migrating 129 callers. `lib/supabase.ts` (anon client) survives with 2 callers that need database verification. |
 | **E4.1** god files             | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next.                                                                                     |
 | **E4.2** dialog store          | **Not started.** `stores/dialog-store.ts`, 30 KB, global.                                                                                                                                               |
 | **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79.                                                                                                                                                                          |
 | **E5.2** generated DB types    | **Not started.** Every `schema/types.ts` is hand-written and can drift.                                                                                                                                 |
-| **E5.3** lint everything       | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`.                                                                                                                                   |
-| **E6.1** knip                  | **Configured**, first batches deleted. 36 unused files remain.                                                                                                                                          |
-| **E6.2** prune deps            | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps.                                                                                                                               |
+| **E5.3** lint everything       | **Done — and it was a no-op.** The exclusion is gone, but `redesign/**` holds no code (9 files: markdown, SQL, a PNG). The live components are in `components/redesign/`, which was never excluded. |
+| **E6.1** knip                  | **Done.** knip reports **0 unused files and 0 unused dependencies**. |
+| **E6.2** prune deps            | **Done.** 120 → 82 runtime deps (21 → 17 dev). `tailwindcss-animate` is a knip false positive — loaded from CSS — and is now in `ignoreDependencies`. |
 | **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB.                                                                                                                                    |
 | **E7** documentation           | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file.                                                                                                                           |
 | **E8** mobile contract         | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to.                                    |
@@ -419,9 +419,24 @@ Decide and delete the losers.
 
 ### Smaller, still open
 
-- **`redesign/**`is excluded from eslint** and ignored by knip. Its fate is a
-decision nobody has made;`PageHeader`(36 importers) and`KpiCard` (52) are
-  very much alive inside it, so it is not simply dead.
+- **`redesign/**` is not what earlier notes here claimed.** This file used to
+  say `PageHeader` (36 importers) and `KpiCard` (52) were "very much alive
+  inside it". They are not — they live in `components/redesign/`, a
+  **different** directory that has never been excluded from eslint or knip.
+  The root `redesign/` holds nine files and every one is documentation, SQL or
+  an image, which is why removing the eslint exclusion (E5.3) changed the lint
+  output by exactly zero problems.
+- **Two files still read through the anon client.**
+  `features/medication-reminder/ui/MedicationStats.tsx` and
+  `components/editor/plugins/drag-drop-paste-plugin.tsx` import `supabase`
+  from `lib/supabase.ts`, whose session lives in localStorage rather than
+  cookies — so they query as `anon`, and an RLS-protected table returns an
+  empty set without erroring. This is the shape that already broke
+  `view-medication-reminder-details`. **MedicationStats is the one to check
+  first**: it renders counts, and a count of zero looks like real data.
+  Verifying either needs credentials, so both were left alone rather than
+  swept. Everything else is off the deprecated shims; the other three are
+  deleted.
 - **`constants/liftmanual_all_workouts.json` is 4.1 MB** and is why the build
   needs a 4 GB heap.
 - **53 files knip calls unused.** Each still needs the two-proof rule.

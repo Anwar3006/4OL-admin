@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { logSettingsChange } from "@/lib/settings-audit";
 
 const MaintenanceSchema = z.object({
@@ -24,7 +24,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("settings.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("platform_settings")
     .select(
@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("platform_settings")
     .upsert({

@@ -11,7 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const CONTENT_TYPES = ["condition", "symptom", "healthy_living", "fitness_exercise"] as const;
 const ACTIONS = ["like", "save"] as const;
@@ -25,7 +25,7 @@ type Action = (typeof ACTIONS)[number];
  * yield GenericStringError).
  */
 async function fetchContentTitles(
-  admin: ReturnType<typeof getSupabaseAdmin>,
+  admin: ReturnType<typeof getAdminClient>,
   contentType: ContentType,
   ids: string[],
 ): Promise<{ id: string; title: string }[]> {
@@ -53,7 +53,7 @@ async function fetchContentTitles(
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
   const user = await getRequestUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("content_engagement")
     .select("content_type, content_id, action, created_at")
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.from("content_engagement").insert({
     user_id: user.id,
     content_type: parsed.contentType,
@@ -163,7 +163,7 @@ export async function DELETE(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("content_engagement")
     .delete()

@@ -1,5 +1,5 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getServerClient } from "@/lib/db/server";
+import { getAdminClient } from "@/lib/db/admin";
 import { isAdminRole, SUPER_ADMIN_ROLE, type AdminRole } from "@/lib/admin-roles";
 import { ROLE_DEFAULTS, isRbacMigrationMissing } from "@/lib/permissions";
 import { PermissionProviderClient } from "@/stores/permission-context";
@@ -11,7 +11,7 @@ export const PermissionsProvider = async ({
   children: ReactNode;
 }) => {
   // Read the session from cookies — set by proxy.ts on every request.
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { user },
     error: userError,
@@ -27,7 +27,7 @@ export const PermissionsProvider = async ({
 
   let role: string | null = null;
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { data, error } = await admin
       .from("user_profiles")
       .select("role,status")
@@ -67,7 +67,7 @@ export const PermissionsProvider = async ({
 };
 
 async function resolvePermissions(userId: string, role: AdminRole): Promise<string[]> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("get_effective_admin_permissions", {
     p_user_id: userId,
   });

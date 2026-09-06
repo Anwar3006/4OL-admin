@@ -38,9 +38,17 @@ only for the literal role name reports tables as locked when they are not, and
 stays silent about the ones exposed to `anon`. The E1.3 sweep found nine of
 those; see `docs/cleanup-handoff.md`.
 
-`@/lib/supabase*` are deprecated shims. Do not add new imports of them. Note
-that `lib/supabase.ts` exports two clients that **do not share a session** —
-see its file comment before touching any caller.
+`lib/supabase-admin.ts`, `-browser.ts` and `-server.ts` are **gone** — they
+were one-line renamed re-exports, so their 129 callers moved to `lib/db/*`
+mechanically.
+
+**`lib/supabase.ts` remains, and it is the anon client.** Its session lives in
+localStorage, not the cookies sign-in writes to, so a caller queries as `anon`
+and an RLS-protected table comes back EMPTY rather than erroring. Two callers
+are left — `features/medication-reminder/ui/MedicationStats.tsx` and
+`components/editor/plugins/drag-drop-paste-plugin.tsx` — and moving them is a
+real behaviour change that must be checked against the database per call site,
+not swept.
 
 There is one deliberate exception to the table above:
 `lib/db/isolated-auth.ts`, whose session is intentionally NOT the app's. It

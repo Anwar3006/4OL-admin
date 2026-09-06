@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
 import {
   TFitnessPlanInput,
   TFitnessPlanOutput,
 } from "@/schemas/fitness-plan.schema";
 
-const supabase = getSupabaseBrowserClient();
+const supabase = getBrowserClient();
 
 export const FITNESS_PLAN_QUERY_KEYS = {
   all: ["fitness_plans"] as const,

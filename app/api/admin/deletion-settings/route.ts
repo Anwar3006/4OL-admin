@@ -9,7 +9,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const DEFAULTS = {
   grace_days: 30,
@@ -29,7 +29,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("deleteaccount.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("platform_settings")
     .select("deletion_settings")
@@ -64,7 +64,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: current } = await admin
     .from("platform_settings")
     .select("deletion_settings")

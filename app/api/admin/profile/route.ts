@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const PATCH_SCHEMA = z
   .object({
@@ -34,7 +34,7 @@ export async function GET() {
   const auth = await requireAdminApiUser();
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: profile, error } = await admin
     .from("user_profiles")
     .select(PROFILE_FIELDS)
@@ -74,7 +74,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("user_profiles")
     .update({ ...parsed.data, updated_at: new Date().toISOString() })

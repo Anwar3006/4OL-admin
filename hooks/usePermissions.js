@@ -1,7 +1,7 @@
 // hooks/usePermissions.js
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { getUserProfile } from "@/actions/user.actions";
 import {
   isRouteAllowed,
@@ -35,7 +35,7 @@ export const usePermissions = () => {
         }
       }
 
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       const sessionUser = session?.user;
 

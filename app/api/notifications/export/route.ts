@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Notification log CSV export (Gap Analysis Part R, R-D7). Server-side CSV
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const params = req.nextUrl.searchParams;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   let query = admin
     .from("notifications")

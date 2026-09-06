@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import {
   clearLoginFailures,
   getLoginLock,
@@ -77,7 +77,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
     }
 
     try {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       
       const { data: authData, error: supabaseError } = await supabase.auth.signInWithPassword({
         email: data.email,

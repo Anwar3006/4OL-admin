@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GHANA_REGIONS } from "@/lib/shared-constants";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useDrugs } from "@/features/medication-reminder/data/useDrugs";
 import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
@@ -72,7 +72,7 @@ export default function PharmacyCampaignModal({
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data } = await supabase
         .from("ibp")
         .select("id, business_name, region, business_category")

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const envKeyMap = [
   { name: "Google Maps", provider: "google", env: "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" },
@@ -21,7 +21,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("settings.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("platform_api_keys")
     .select("id, name, provider, environment, key_hint, active, last_used, created_at")

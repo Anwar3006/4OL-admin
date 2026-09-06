@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getServerClient } from "@/lib/db/server";
 import { getAdminClient } from "@/lib/db/admin";
 
 /**
@@ -10,7 +10,7 @@ import { getAdminClient } from "@/lib/db/admin";
 export async function getPresignedUploadUrl(filePath: string) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -68,7 +68,7 @@ export async function uploadToSignedUrl(
 ) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -102,7 +102,7 @@ export async function uploadToSignedUrl(
 export async function deleteFile(filePath: string) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -152,7 +152,7 @@ export async function deleteFile(filePath: string) {
 export async function deleteFiles(filePaths: string[]) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -206,7 +206,7 @@ export async function deleteFiles(filePaths: string[]) {
 export async function getSignedUrl(filePath: string, expiresIn = 3600) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -254,7 +254,7 @@ export async function getSignedUrl(filePath: string, expiresIn = 3600) {
 export async function moveFile(filePath: string, newFolder: string) {
   try {
     // Verify user is authenticated
-    const supabase = await getSupabaseServerClient();
+    const supabase = await getServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

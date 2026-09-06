@@ -1,7 +1,7 @@
 "use server";
 
-import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getServerClient } from "@/lib/db/server";
+import { getAdminClient } from "@/lib/db/admin";
 import { headers } from "next/headers";
 
 // ── shared helper ─────────────────────────────────────────────────────────────
@@ -10,7 +10,7 @@ import { headers } from "next/headers";
  * Used by all server actions in this file.
  */
 async function getSessionUser() {
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { user },
     error,
@@ -25,7 +25,7 @@ export async function getUserProfile() {
   if (!user) return { data: null, error: "Unauthorized" };
 
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { data, error } = await admin
       .from("user_profiles")
       .select("*")
@@ -48,7 +48,7 @@ export async function getProfileById(targetId: string) {
   const user = await getSessionUser();
   if (!user) return { data: null, error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -101,7 +101,7 @@ export async function updateProfileById(id: string, formData: any) {
   const user = await getSessionUser();
   if (!user) return { error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -143,7 +143,7 @@ export async function flagUserProfile(targetId: string, reason: string) {
   const user = await getSessionUser();
   if (!user) return { error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -182,7 +182,7 @@ export async function clearUserFlag(targetId: string) {
   const user = await getSessionUser();
   if (!user) return { error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -221,7 +221,7 @@ export async function getFlaggedUsers(pageIndex: number, pageSize: number) {
   const user = await getSessionUser();
   if (!user) return { data: [], count: 0, error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -266,7 +266,7 @@ export async function getAllProfiles(pageIndex: number, pageSize: number) {
   const user = await getSessionUser();
   if (!user) return { data: [], count: 0, error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -311,7 +311,7 @@ export async function getUsers(params: {
   const user = await getSessionUser();
   if (!user) return { data: [], count: 0, error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const from = (params.page - 1) * params.limit;
   const to = from + params.limit - 1;
   const isAdminQuery = params.admin === true;
@@ -429,7 +429,7 @@ export async function setUserAuthBan(targetId: string, banned: boolean) {
   const user = await getSessionUser();
   if (!user) return { error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")
@@ -495,7 +495,7 @@ export async function getDeviceAnalytics(): Promise<{
   const user = await getSessionUser();
   if (!user) return { data: null, error: "Unauthorized" };
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile, error: callerError } = await admin
     .from("user_profiles")

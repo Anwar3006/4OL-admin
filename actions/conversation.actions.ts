@@ -1,7 +1,7 @@
 "use server";
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getAdminClient } from "@/lib/db/admin";
+import { getServerClient } from "@/lib/db/server";
 
 /**
  * assignAdminWithRulesAction
@@ -23,7 +23,7 @@ export async function assignAdminWithRulesAction(
   role: string = "admin",
 ): Promise<{ error: string | null }> {
   // ── Auth guard ────────────────────────────────────────────────────────────
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const { data: { user: callerUser } } = await supabase.auth.getUser();
 
   if (!callerUser) {
@@ -37,7 +37,7 @@ export async function assignAdminWithRulesAction(
 
   // ── RPC call ──────────────────────────────────────────────────────────────
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
 
     const { error } = await admin.rpc("fn_assign_admin_with_rules", {
       p_conversation_id: conversation_id,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * GET /api/user/app-config — public, read-only platform configuration for
@@ -22,7 +22,7 @@ const FALLBACKS = {
 
 export async function GET() {
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { data, error } = await admin
       .from("platform_settings")
       .select(

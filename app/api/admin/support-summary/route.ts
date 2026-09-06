@@ -16,7 +16,7 @@ import {
   adminAuthErrorResponse,
   requireAdminApiUser,
 } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * `chat_support.status` is stored capitalised ("Open", "Escalated",
@@ -40,7 +40,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("chats.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const [ticketCount, unassignedCount, flagCount, recentTickets] =
     await Promise.all([

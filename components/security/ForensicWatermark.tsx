@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 
 /**
  * Part AK (AK-D6) — forensic watermark overlay.
@@ -32,7 +32,7 @@ export default function ForensicWatermark() {
     let cancelled = false;
     (async () => {
       try {
-        const supabase = getSupabaseBrowserClient();
+        const supabase = getBrowserClient();
         const {
           data: { user },
         } = await supabase.auth.getUser();

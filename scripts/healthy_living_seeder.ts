@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import * as path from "path";
 import * as fs from "fs";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getAdminClient } from "../lib/db/admin";
 
 // Load environment variables from .env.local
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
@@ -163,7 +163,7 @@ function estimateReadingTimeMinutes(item: any): number | null {
 async function seedHealthyLiving() {
   console.log("🚀 Starting Healthy Living database seeding process...");
 
-  const client = getSupabaseAdmin();
+  const client = getAdminClient();
 
   const filePath = path.join(process.cwd(), SEED_FILE);
   if (!fs.existsSync(filePath)) {

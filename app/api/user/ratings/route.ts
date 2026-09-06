@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "facilityId and rating are required" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: existing, error: existingError } = await admin
     .from("facility_reviews")
     .select("id")
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "facilityId is required" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("facility_reviews")
     .select("*, user_profiles(user_id, first_name, last_name)")

@@ -17,7 +17,7 @@ import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
 import { useUpdateConversation } from "@/features/chat/data/useConversation";
 import { useUsers } from "@/features/users/data/useUser";
 import { useHasPermission } from "@/stores/permission-context";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { groupCategoryLabel, groupTypeLabel } from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 
@@ -46,7 +46,7 @@ export default function ViewGroupDialog() {
     queryKey: ["group-admins", groupId],
     enabled: isOpen && !!groupId,
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data: rows, error } = await supabase
         .from("conversation_members")
         .select("user_id, role, user_profiles(user_id, first_name, last_name)")
@@ -73,7 +73,7 @@ export default function ViewGroupDialog() {
     updateMutation.mutate({ id: group.id, status: next });
 
   const setMemberRole = async (userId: string, role: string) => {
-    const supabase = await getSupabaseClient();
+    const supabase = await getBrowserClient();
     const { error } = await supabase
       .from("conversation_members")
       .update({ role })
@@ -88,7 +88,7 @@ export default function ViewGroupDialog() {
   };
 
   const exportMembers = async () => {
-    const supabase = await getSupabaseClient();
+    const supabase = await getBrowserClient();
     const { data: rows, error } = await supabase
       .from("conversation_members")
       .select("user_id, role, joined_at, user_profiles(first_name, last_name, phone_number)")

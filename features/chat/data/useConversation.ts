@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { TConversationOutput } from "@/features/chat/schema/conversation";
 import { toast } from "sonner";
 import { assignAdminWithRulesAction } from "@/actions/conversation.actions";
@@ -29,7 +29,7 @@ export const useConversations = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const {
         data: conversations,
         count,
@@ -114,7 +114,7 @@ export const useDeleteConversation = () => {
 
   return useMutation({
     mutationFn: async (conversationId: string) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase
         .from("conversations")
         .update({ is_deleted: true })
@@ -148,7 +148,7 @@ export const useCreateConversation = () => {
       group_rules?: string | null;
       assign_admin_id?: string | null;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
 
       const {
         data: { user },
@@ -245,7 +245,7 @@ export const useUpdateConversation = () => {
       group_rules?: string | null;
       status?: string;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const payload: Record<string, any> = {};
       if (name !== undefined) {
         payload.name = name;
@@ -314,7 +314,7 @@ export const useAdminConversations = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
 
       let query = supabase
         .from("conversations")
@@ -426,7 +426,7 @@ export const useChatTabCounts = () => {
   return useQuery({
     queryKey: [...CONVERSATION_QUERY_KEYS.all, "tab-counts"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_chat_tab_counts");
 
       if (error) throw new Error(error.message);
@@ -503,7 +503,7 @@ export const useChatKpiStats = () => {
   return useQuery({
     queryKey: [...CONVERSATION_QUERY_KEYS.all, "kpi-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_chat_kpi_stats");
 
       if (error) throw new Error(error.message);
@@ -547,7 +547,7 @@ export const useFlaggedContent = () => {
   return useQuery({
     queryKey: [...CONVERSATION_QUERY_KEYS.all, "flagged-content"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_flagged_content");
 
       if (error) throw new Error(error.message);
@@ -571,7 +571,7 @@ export const useModerateContent = () => {
       action: "dismiss" | "warn" | "remove" | "ban";
       action_notes?: string;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc("moderate_content", {
         p_flag_id: flag_id,
         p_action: action,
@@ -604,7 +604,7 @@ export const useMakeGroupLeader = () => {
       user_id: string;
     }) => {
       // Call the RPC
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc("fn_make_group_leader", {
         p_conversation_id: conversation_id,
         p_user_id: user_id,

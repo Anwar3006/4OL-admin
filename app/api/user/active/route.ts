@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const user = await getRequestUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("user_profiles")
     .update({ last_active: new Date().toISOString() })

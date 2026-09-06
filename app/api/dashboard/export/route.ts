@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 // Dashboard report export (Gap Analysis Part D) — flattens the overview
 // metrics into a two-column CSV. Gated by dashboard.export.
@@ -8,7 +8,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("dashboard.export");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("get_platform_overview_metrics", {
     time_filter: "30",
   });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuthErrorResponse, getSessionPermissions, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * GET /api/admin/search?q=<term>
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("admin_global_search", {
     search_term: q,
     result_limit: 6,

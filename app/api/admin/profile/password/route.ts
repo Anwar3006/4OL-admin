@@ -11,8 +11,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getAdminClient } from "@/lib/db/admin";
+import { getServerClient } from "@/lib/db/server";
 
 const SCHEMA = z.object({
   current_password: z.string().min(1),
@@ -44,13 +44,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // 1. Verify the current password against the caller's own session via
   //    GoTrue's /verify_password endpoint (the installed gotrue-js build
   //    predates auth.verifyPassword(); signInWithPassword on the
   //    service-role key is rejected by GoTrue).
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();

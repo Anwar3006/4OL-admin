@@ -5,7 +5,7 @@ import {
   requireAdminApiUser,
 } from "@/lib/admin-api-auth";
 import { PERMISSION_KEYS } from "@/lib/permissions";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Per-user permission overrides (grants/revokes on top of role defaults).
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { userId, permissionKey, effect, reason } = parsed.data;
 
   const { error } = await admin.from("admin_user_overrides").upsert(
@@ -76,7 +76,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "userId and valid permissionKey required" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("admin_user_overrides")
     .delete()

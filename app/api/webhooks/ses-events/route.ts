@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { verifySnsMessage } from "@/lib/sns-verify";
 
 type SesBouncedRecipient = { emailAddress: string };
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   if (body.Type === "Notification") {
     const message = JSON.parse(body.Message) as SesEventMessage;
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
 
     if (message.eventType === "Bounce" && message.bounce && message.bounce.bounceType === "Permanent") {
       const rows = message.bounce.bouncedRecipients.map((r: SesBouncedRecipient) => ({

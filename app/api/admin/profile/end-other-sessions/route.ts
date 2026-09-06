@@ -10,14 +10,14 @@
 
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { isRbacMigrationMissing } from "@/lib/permissions";
 
 export async function POST() {
   const auth = await requireAdminApiUser();
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("end_other_admin_sessions", {
     p_admin_id: auth.user.id,
     p_reason: "ended_by_admin_self_service",

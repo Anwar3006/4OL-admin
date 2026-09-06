@@ -16,7 +16,7 @@ import {
   adminAuthErrorResponse,
   requireAdminApiUser,
 } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const PAGE_SIZE = 20;
 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const unreadOnly = url.searchParams.get("unread") === "1";
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   let query = admin
     .from("notifications")
@@ -91,7 +91,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const now = new Date().toISOString();
 
   // eq("user_id") on every branch is the ownership check: a forged id list

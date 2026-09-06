@@ -1,9 +1,9 @@
 "use server";
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 export async function adminRegisterFacilityWithProfile(payload: any) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc(
     "register_facility_with_profile",
     payload,
@@ -13,7 +13,7 @@ export async function adminRegisterFacilityWithProfile(payload: any) {
 }
 
 export async function adminUpdateFacilityProfile(payload: any) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc(
     "admin_update_facility_profile",
     payload,
@@ -23,7 +23,7 @@ export async function adminUpdateFacilityProfile(payload: any) {
 }
 
 export async function adminChangeFacilityStatus(payload: any) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc(
     "admin_change_facility_status",
     payload,
@@ -33,14 +33,14 @@ export async function adminChangeFacilityStatus(payload: any) {
 }
 
 export async function adminDeleteFacilityAction(payload: any) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("admin_delete_facility", payload);
   if (error) throw new Error(error.message);
   return data;
 }
 
 export async function adminToggleFacilityFeatured(id: string, value: boolean) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("facility_profile")
     .update({ is_featured: value })
@@ -50,7 +50,7 @@ export async function adminToggleFacilityFeatured(id: string, value: boolean) {
 }
 
 export async function adminToggleFacilityTopRated(id: string, value: boolean) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // Get facility data for denormalized fields
   const { data: facility, error: fetchError } = await admin
@@ -102,7 +102,7 @@ export async function adminToggleFacilityTopRated(id: string, value: boolean) {
 }
 
 export async function adminDeleteFacilityOfferings(facilityId: string) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("facility_offerings")
     .delete()
@@ -111,7 +111,7 @@ export async function adminDeleteFacilityOfferings(facilityId: string) {
 }
 
 export async function adminInsertFacilityOfferings(offerings: any[]) {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.from("facility_offerings").insert(offerings);
   if (error) throw new Error(error.message);
 }

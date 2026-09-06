@@ -21,7 +21,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { UAParser } from "ua-parser-js";
 import { toast } from "sonner";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { LOGIN_ALERT_COUNTDOWN_SECONDS } from "@/lib/login-alerts";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,7 +90,7 @@ export default function LoginAlertGuard() {
 
   // Realtime: instant pop-up the moment a concurrent login is flagged.
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = getBrowserClient();
     let channel: ReturnType<typeof supabase.channel> | undefined;
     let disposed = false;
 

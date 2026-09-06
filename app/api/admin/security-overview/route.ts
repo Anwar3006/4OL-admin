@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { ADMIN_ROLES } from "@/lib/admin-roles";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 export async function GET() {
   const auth = await requireAdminApiUser("security.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: profiles, error: profilesError } = await admin
     .from("user_profiles")

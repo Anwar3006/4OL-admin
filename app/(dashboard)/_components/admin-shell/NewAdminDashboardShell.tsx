@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, ChevronDown, LogOut, User, Settings } from "lucide-react";
 import { dashboardNavSections } from "./navigation";
 import { cn } from "@/lib/utils";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { usePermissionContext } from "@/stores/permission-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -127,7 +127,7 @@ export default function NewAdminDashboardShell({
   // Fetch user profile from Supabase
   useEffect(() => {
     const fetchProfile = async () => {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -206,7 +206,7 @@ export default function NewAdminDashboardShell({
   };
 
   const handleLogout = async () => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = getBrowserClient();
     await supabase.auth.signOut();
     router.push("/login");
   };

@@ -1,28 +1,27 @@
 import { createClient } from "@supabase/supabase-js";
 
-import { getBrowserClient } from "@/lib/db/browser";
-
 /**
  * @deprecated Import `getBrowserClient` from `@/lib/db/browser` instead.
  *
- * ⚠️ THESE TWO EXPORTS DO NOT SHARE A SESSION. Read this before migrating
- * anything off them.
+ * ⚠️ THIS IS THE ANON CLIENT. It is a plain supabase-js client keeping its
+ * session in localStorage — NOT the cookies that sign-in actually writes to,
+ * and not what Server Components and middleware read. So a component using it
+ * very likely queries as the `anon` role rather than as the signed-in admin,
+ * and any table requiring `authenticated` comes back EMPTY rather than
+ * erroring — the silent-empty failure mode that hid three broken features in
+ * this codebase, and a fourth (`view-medication-reminder-details`) found in
+ * September 2026. See lib/db/README.md.
  *
- * `supabase` is a plain supabase-js client. It keeps its session in
- * localStorage. `getSupabaseClient()` is an @supabase/ssr browser client and
- * keeps its session in COOKIES — which is where sign-in actually writes it,
- * and where Server Components and middleware read it from.
+ * **Two callers remain**, and neither has been verified:
+ *   features/medication-reminder/ui/MedicationStats.tsx
+ *   components/editor/plugins/drag-drop-paste-plugin.tsx
  *
- * So a component using `supabase` is very likely querying as the `anon` role
- * rather than as the signed-in admin, and any table that requires
- * `authenticated` will come back EMPTY rather than erroring — the same
- * silent-empty failure mode that hid three broken features in this codebase
- * (see lib/db/README.md).
- *
- * Migrating a caller from `supabase` to `getBrowserClient()` is therefore a
- * real behaviour change: it may start returning rows where it previously
- * returned none. That is usually the fix, but verify each call site rather
- * than sweeping them.
+ * Moving them to `getBrowserClient()` is a REAL BEHAVIOUR CHANGE — it may
+ * start returning rows where it previously returned none, which is usually
+ * the fix but must be checked per call site against the database. That needs
+ * credentials; it was deliberately not swept blind. The sibling export
+ * `getSupabaseClient()` was a pure alias for `getBrowserClient()` and its 23
+ * callers were migrated mechanically; it is gone.
  *
  * NOTE ON ENV: read inline with the original non-null assertions rather than
  * through lib/db/env.ts. The helpers there throw on a missing variable, and
@@ -43,4 +42,3 @@ export const supabase = createClient(legacyUrl, legacyKey);
  *
  * Kept `async` because existing callers `await` it. Behaviour unchanged.
  */
-export const getSupabaseClient = async () => getBrowserClient();

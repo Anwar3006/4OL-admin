@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import {
   TConditionsInput,
   TConditionsOutput,
@@ -41,7 +41,7 @@ export const useConditions = ({
   return useQuery<any, Error>({
     queryKey: CONDITIONS_QUERY_KEYS.list(params),
     queryFn: async () => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       try {
         const { limit, page, search } = params;
         const from = (page - 1) * limit;
@@ -118,7 +118,7 @@ export const useCondition = ({
   return useQuery<TConditionsOutput, Error>({
     queryKey: CONDITIONS_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       const { data, error } = await client
         .from("conditions")
         .select(
@@ -163,7 +163,7 @@ export const useConditionStats = (enabled: boolean) => {
   return useQuery({
     queryKey: ["conditions-stats"],
     queryFn: async () => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       // 1. Get Total Categories Count
       const { count: totalCategories } = await client
         .from("categories")
@@ -230,7 +230,7 @@ export const useCreateCondition = () => {
 
   return useMutation<string, Error, TConditionsInput>({
     mutationFn: async (input) => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       const { bodyParts, categories, types, causes, ...c_payload } = input;
 
       console.log("c_payload: ", c_payload);
@@ -246,7 +246,7 @@ export const useCreateCondition = () => {
       );
 
       if (error) {
-        const supabase = await getSupabaseClient();
+        const supabase = await getBrowserClient();
         await supabase.storage
           .from("conditions")
           .remove(new Array(input.image_url as string));
@@ -272,7 +272,7 @@ export const useUpdateCondition = () => {
 
   return useMutation<string, Error, TConditionsOutput>({
     mutationFn: async (input) => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       const { bodyParts, categories, types, causes, ...c_payload } = input;
 
       const { data: conditionId, error } = await client.rpc(
@@ -313,7 +313,7 @@ export const useDeleteCondition = () => {
       id: string;
       imagePath: string[];
     }) => {
-      const client = await getSupabaseClient();
+      const client = await getBrowserClient();
       await Promise.all([
         client.from("conditions").delete().eq("id", id),
 

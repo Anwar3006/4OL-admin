@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { TFAQInput, TFAQOutput } from "@/features/faq/schema/types";
 import { toast } from "sonner";
 
@@ -42,7 +42,7 @@ export const useFAQs = ({ page, limit, search }: UseFAQsParams) => {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       let query = supabase
         .from("faqs")
         .select("*", { count: "exact" });
@@ -83,7 +83,7 @@ export const useFAQ = (id: string | null) => {
   return useQuery<TFAQOutput, Error>({
     queryKey: FAQ_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("faqs")
         .select("*")
@@ -101,7 +101,7 @@ export const useFAQCategories = () => {
   return useQuery<any, Error>({
     queryKey: ["categories"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("faq_categories")
         .select("*")
@@ -125,7 +125,7 @@ export const useFAQStats = () => {
   return useQuery({
     queryKey: [...FAQ_QUERY_KEYS.all, "stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const [faqsResult, categoriesResult] = await Promise.all([
         supabase
           .from("faqs")
@@ -175,7 +175,7 @@ export const useCreateFAQ = () => {
 
   return useMutation<TFAQOutput, Error, TFAQInput>({
     mutationFn: async (faqData) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("faqs")
         .insert({
@@ -212,7 +212,7 @@ export const useUpdateFAQ = () => {
     { id: string; data: Partial<TFAQInput> }
   >({
     mutationFn: async ({ id, data: faqData }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("faqs")
         .update({
@@ -247,7 +247,7 @@ export const useDeleteFAQ = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.from("faqs").delete().eq("id", id);
 
       if (error) throw new Error(error.message);
@@ -268,7 +268,7 @@ export const useCreateFAQCategory = () => {
 
   return useMutation<void, Error, any>({
     mutationFn: async ({ name }: { name: string }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("faq_categories")
         .insert({ name })

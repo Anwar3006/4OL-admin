@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * POST /api/user/delete-account-request
@@ -22,7 +22,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: { user }, error: authError } = await admin.auth.getUser(token);
   if (authError || !user?.id || !user?.email) {
@@ -88,7 +88,7 @@ export async function GET(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error: authError } = await admin.auth.getUser(token);
   if (authError || !user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -128,7 +128,7 @@ export async function PATCH(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error: authError } = await admin.auth.getUser(token);
   if (authError || !user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

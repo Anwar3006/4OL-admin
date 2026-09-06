@@ -6,8 +6,8 @@ import React from "react";
 import { UAParser } from "ua-parser-js";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getAdminClient } from "@/lib/db/admin";
+import { getServerClient } from "@/lib/db/server";
 import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { LoginAlertEmail } from "@/components/emails/login-alert";
 import {
@@ -80,7 +80,7 @@ async function raiseNewDeviceLoginAlert(
   // The new device's access token is what lets "Sign out that device" revoke
   // the session later (auth.admin.signOut). It lives only in the RLS-owner-
   // readable alert row and expires within the hour regardless.
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { session: callerSession },
   } = await supabase.auth.getSession();
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
   const user = auth.user;
 
   const { ip, userAgent } = getClientMeta(req);
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("start_admin_session", {
     p_admin_id: user.id,
     p_ip_address: ip,
@@ -188,7 +188,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.rpc("admin_session_heartbeat", {
     p_session_token: parsed.data.sessionToken,
   });
@@ -211,7 +211,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.rpc("end_admin_session", {
     p_session_token: parsed.data.sessionToken,
     p_reason: "logout",

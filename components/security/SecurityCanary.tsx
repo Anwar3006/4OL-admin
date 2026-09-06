@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 
 /**
  * Part AK (AK-D7) — DOM canary token.
@@ -27,7 +27,7 @@ export default function SecurityCanary() {
     let cancelled = false;
     (async () => {
       try {
-        const supabase = getSupabaseBrowserClient();
+        const supabase = getBrowserClient();
         const { data, error } = await supabase.rpc("issue_canary", {
           p_context: "dashboard_dom",
         });

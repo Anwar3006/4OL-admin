@@ -7,11 +7,11 @@ import * as path from "path";
 // credentials in `.env.local` (the file Next.js loads automatically in dev).
 // Standalone scripts run via tsx don't go through Next's loader, so we have
 // to point dotenv at it explicitly or NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY
-// never get set and getSupabaseAdmin() throws.
+// never get set and getAdminClient() throws.
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 
 import * as fs from "fs";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getAdminClient } from "../lib/db/admin";
 
 // Helper function to assign an estimated MET value based on difficulty
 const generateMetValue = (difficulty?: string) => {
@@ -76,7 +76,7 @@ async function seed() {
     // 3. Chunk the data into batches of 50 to prevent parameter limit errors in Postgres
     const BATCH_SIZE = 50;
     const batches = chunkArray(formattedData, BATCH_SIZE);
-    const client = await getSupabaseAdmin();
+    const client = await getAdminClient();
 
     console.log(`📦 Sliced data into ${batches.length} batches of up to ${BATCH_SIZE}.`);
 

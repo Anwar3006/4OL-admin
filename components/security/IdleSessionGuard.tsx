@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 
 /**
  * Part AK (AK-D9) — idle session termination.
@@ -45,7 +45,7 @@ export default function IdleSessionGuard() {
       signOutStarted.current = true;
       clearInterval(interval);
       try {
-        const supabase = getSupabaseBrowserClient();
+        const supabase = getBrowserClient();
         await supabase.auth.signOut();
       } finally {
         // Hard redirect regardless of the signOut result — a stale cookie

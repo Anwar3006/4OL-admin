@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const ActionSchema = z.object({
   action: z.enum(["update", "submit", "approve", "reject", "revise", "send", "cancel"]),
@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: campaign, error } = await admin
     .from("notification_campaigns")
@@ -77,7 +77,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: existing } = await admin
     .from("notification_campaigns")

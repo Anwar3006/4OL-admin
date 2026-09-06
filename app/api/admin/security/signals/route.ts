@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Part AK (AK-D8/D9) — browser-side security signal intake.
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { error } = await admin.from("bot_signals").insert({
       admin_id: auth.user.id,
       kind: parsed.data.kind,

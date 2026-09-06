@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const QuerySchema = z.object({
   period: z.enum(["24h", "7d", "30d", "90d"]).default("30d"),
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin.rpc("get_user_dashboard_metrics", {
     time_filter: parsed.data.period,
   });

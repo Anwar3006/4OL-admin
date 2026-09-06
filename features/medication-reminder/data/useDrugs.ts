@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
 import type { NormalizedDrugRow } from "@/features/medication-reminder/data/drug-import-mapping";
 
@@ -64,7 +64,7 @@ export const useDrugKpiStats = () => {
   return useQuery({
     queryKey: ["drug-kpi-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_drug_kpi_stats");
       if (error) throw error;
       // RETURNS TABLE(...) — PostgREST returns a one-element array, so the
@@ -86,7 +86,7 @@ export const useDrugAdherenceStats = () => {
   return useQuery({
     queryKey: ["drug-adherence-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_drug_adherence_stats");
       if (error) throw error;
       return data as {

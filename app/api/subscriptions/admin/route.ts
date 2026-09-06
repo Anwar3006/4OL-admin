@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Admin subscriptions management (FITNESS_MOCKUP_GAP_ANALYSIS.md, D6).
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(url.searchParams.get("limit") ?? 50) || 50, 200);
   const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("user_subscriptions")
     .select("id, user_id, tier_id, status, source, scope, granted_by, starts_at, expires_at, paystack_reference, note, created_at, subscription_tiers(key, name)", { count: "exact" })
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
   }
   const { userId, tierKey, durationDays, note, scope } = parsed.data;
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: profile } = await admin
     .from("user_profiles")
@@ -190,7 +190,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("user_subscriptions")
     .update({ status: "revoked", note: "Revoked by admin" })

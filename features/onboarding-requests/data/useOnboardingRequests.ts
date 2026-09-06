@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export const useOnboardingRequests = ({
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       let query = supabase
         .from("onboarding_requests")
         .select("*", { count: "exact" })
@@ -109,7 +109,7 @@ export const useUpdateOnboardingRequestStatus = () => {
       id: string;
       status: OnboardingRequestStatus;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase
         .from("onboarding_requests")
         .update({ status })
@@ -133,7 +133,7 @@ export const useDeleteOnboardingRequest = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase
         .from("onboarding_requests")
         .delete()

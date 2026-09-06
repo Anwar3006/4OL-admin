@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * POST /api/supabase-token
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Validate the token against Supabase Auth directly.
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const {
     data: { user },
     error: userError,

@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import NewAdminDashboardShell from "./admin-shell/NewAdminDashboardShell";
 import LoginAlertGuard from "./LoginAlertGuard";
 
@@ -17,7 +17,7 @@ export default function DashboardWrapper({
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = getBrowserClient();
 
     const checkSession = async () => {
       const {

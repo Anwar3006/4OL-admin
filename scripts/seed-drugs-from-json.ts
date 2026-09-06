@@ -16,7 +16,7 @@ import {
   type DrugStatus,
   type NormalizedDrugRow,
 } from "../features/medication-reminder/data/drug-import-mapping";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getAdminClient } from "../lib/db/admin";
 
 type PillsJsonRow = {
   original_name?: unknown;
@@ -179,7 +179,7 @@ async function seed() {
     return;
   }
 
-  const client = getSupabaseAdmin();
+  const client = getAdminClient();
   const existingSlugs = new Set<string>();
   for (let offset = 0; ; offset += READ_PAGE_SIZE) {
     const { data, error } = await client

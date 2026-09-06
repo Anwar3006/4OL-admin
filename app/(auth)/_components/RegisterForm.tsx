@@ -17,7 +17,7 @@ import CustomSelect from "@/components/CustomSelect";
 import CustomDatePicker from "@/components/CustomDatePicker";
 import { PUBLIC_ROLE_OPTIONS, SEX_OPTIONS } from "@/types/formInput";
 import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { isHoneypotTripped } from "@/lib/auth-guard";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -61,7 +61,7 @@ const RegisterForm = ({
     }
     setIsSubmitting(true);
     try {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,

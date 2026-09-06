@@ -4,7 +4,7 @@
  * consistent. Never call from client components.
  */
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 function envStatus(name: string) {
   return Boolean(process.env[name]) ? "configured" : "missing";
@@ -22,7 +22,7 @@ export async function getPlatformHealth(): Promise<PlatformHealth> {
 
   let supabaseStatus = "healthy";
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { error } = await admin.from("user_profiles").select("user_id").limit(1);
     if (error) supabaseStatus = "unhealthy";
   } catch {

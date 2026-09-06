@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { logSettingsChange } from "@/lib/settings-audit";
 import { generatePlatformKey, hashPlatformKey, keyHint } from "@/lib/api-keys";
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: existing, error: findError } = await admin
     .from("platform_api_keys")
     .select("id, name, provider, environment, active")

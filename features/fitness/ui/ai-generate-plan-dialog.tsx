@@ -36,7 +36,7 @@ import { Bot, Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAiGeneratePlanDialog } from "@/stores/dialog-store";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 
 // ─── Form Schema ──────────────────────────────────────────────────────────────
 
@@ -161,7 +161,7 @@ const AiGeneratePlanDialog = () => {
 
   useEffect(() => {
     const getToken = async () => {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       const {
         data: { session },
       } = await supabase.auth.getSession();

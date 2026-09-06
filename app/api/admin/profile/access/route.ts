@@ -18,7 +18,7 @@ import {
   adminAuthErrorResponse,
   requireAdminApiUser,
 } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { SUPER_ADMIN_ROLE, type AdminRole } from "@/lib/admin-roles";
 import {
   PERMISSION_CATALOG,
@@ -32,7 +32,7 @@ export async function GET() {
   const auth = await requireAdminApiUser();
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const isSuperAdmin = auth.role === SUPER_ADMIN_ROLE;
 
   let permissionKeys: string[] | null = null;

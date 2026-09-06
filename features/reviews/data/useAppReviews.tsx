@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -47,7 +47,7 @@ export const useAppReviewsList = ({
   return useQuery({
     queryKey: ["app-reviews-list", pageIndex, pageSize, search, status],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const from = (pageIndex - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -110,7 +110,7 @@ export const useAppReviewKpiStats = () => {
   return useQuery({
     queryKey: ["app-review-kpi-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_app_review_kpi_stats");
 
       if (error) throw error;
@@ -134,7 +134,7 @@ export const useModerateAppReview = () => {
       status: "approved" | "rejected";
       note?: string | null;
     }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc("admin_moderate_app_review", {
         p_review_id: reviewId,
         p_status: status,

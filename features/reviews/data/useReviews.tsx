@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FACILITY_PROFILE_QUERY_KEYS } from "@/features/facilities/data/useFacilities";
@@ -78,7 +78,7 @@ export const useFacilityRatingsList = ({
   return useQuery({
     queryKey: ["facility-ratings-list", pageIndex, pageSize, search, status],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const from = (pageIndex - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -151,7 +151,7 @@ export const useReviewKpiStats = () => {
   return useQuery({
     queryKey: ["review-kpi-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_review_kpi_stats");
 
       if (error) throw error;
@@ -182,7 +182,7 @@ export const useReviews = ({ facilityId }: { facilityId: string }) => {
   return useQuery({
     queryKey: ["facility-reviews", facilityId],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("facility_reviews")
         .select(
@@ -224,7 +224,7 @@ export const useAdminFacilityAudit = ({
   return useQuery({
     queryKey: ["facility-admin-audit", facilityId, adminId],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       // 1. Parallel fetch for Summary Data and Admin-Specific Reviews
       const [summaryRes, countRes, reviewsRes] = await Promise.all([
         supabase
@@ -290,7 +290,7 @@ export const usePerformFacilityReview = () => {
       parentId?: string | null;
     }) => {
       console.log("Called with rating: ", rating);
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc(
         "admin_perform_facility_review_action",
         {

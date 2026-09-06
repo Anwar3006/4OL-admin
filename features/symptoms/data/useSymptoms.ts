@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { apiFetch, jsonBody } from "@/lib/api-fetch";
 import { TSymptomsInput, TSymptomsOutput } from "@/features/symptoms/schema/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -47,7 +47,7 @@ export const useSymptoms = ({
       const to = from + limit - 1;
 
       // Select symptoms with their linked categories and body parts
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       let query = supabase.from("symptoms").select(
         `
           *,
@@ -114,7 +114,7 @@ export const useSymptom = (id: string) => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.detail(id),
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("symptoms")
         .select(
@@ -163,7 +163,7 @@ export const useBodyPartsForSymptoms = () => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.bodyparts,
     queryFn: async () => {
-      const { data, error } = await (await getSupabaseClient())
+      const { data, error } = await (await getBrowserClient())
         .from("body_parts")
         .select("*")
         .order("name", { ascending: true });
@@ -177,7 +177,7 @@ export const useCategoriesForSymptoms = () => {
   return useQuery<any, Error>({
     queryKey: SYMPTOMS_QUERY_KEYS.categories,
     queryFn: async () => {
-      const { data, error } = await (await getSupabaseClient())
+      const { data, error } = await (await getBrowserClient())
         .from("categories")
         .select("*")
         // Symptom taxonomy only — the categories table is shared with
@@ -203,28 +203,28 @@ export const useSymptomStats = () => {
         reviewedResult,
       ] = await Promise.all([
         // Total active categories used by symptoms
-        (await getSupabaseClient())
+        (await getBrowserClient())
           .from("categories")
           .select("id", { count: "exact", head: true }),
 
         // Your custom spatial/ltree RPC
-        (await getSupabaseClient()).rpc("get_body_part_stats"),
+        (await getBrowserClient()).rpc("get_body_part_stats"),
 
         // Systemic vs Localized breakdown
-        (await getSupabaseClient())
+        (await getBrowserClient())
           .from("symptoms")
           .select("is_systemic", { count: "exact" })
           .eq("is_systemic", true),
 
         // Total symptoms (absolute)
-        (await getSupabaseClient())
+        (await getBrowserClient())
           .from("symptoms")
           .select("id", { count: "exact", head: true }),
 
         // Reviewed count — real basis for "Verification Rate" (there's no
         // separate verification table; `reviewed_at` on the row is what
         // exists, so that's what the rate is computed from).
-        (await getSupabaseClient())
+        (await getBrowserClient())
           .from("symptoms")
           .select("id", { count: "exact", head: true })
           .not("reviewed_at", "is", null),
@@ -260,7 +260,7 @@ export const useCreateSymptom = () => {
 
   return useMutation<any, Error, TSymptomsInput>({
     mutationFn: async (data) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data: symptomId, error } = await supabase.rpc(
         "register_symptom_complex",
         {
@@ -306,7 +306,7 @@ export const useUpdateSymptom = () => {
 
   return useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: any }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("update_symptom_complex", {
         s_id: id,
         s_payload: payload,
@@ -338,7 +338,7 @@ export const useDeleteSymptom = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: async (symptomId: string) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       // 1. Fetch the symptom to get the image path
       const { data: symptom } = await supabase
         .from("symptoms")
@@ -445,7 +445,7 @@ export const useFeatureSymptom = () => {
 /** Carousel tab data — featured set (slot order) + published candidates. */
 export const useSymptomsCarousel = () => {
   const fetchCarouselData = async () => {
-    const supabase = await getSupabaseClient();
+    const supabase = await getBrowserClient();
     const [featuredRes, availableRes] = await Promise.all([
       supabase
         .from("symptoms")
@@ -487,7 +487,7 @@ export interface SymptomCategoryRow {
  */
 export const useSymptomCategoriesTab = () => {
   const fetchCategoriesTab = async () => {
-    const supabase = await getSupabaseClient();
+    const supabase = await getBrowserClient();
 
     const { data: categories, error: catError } = await supabase
       .from("categories")

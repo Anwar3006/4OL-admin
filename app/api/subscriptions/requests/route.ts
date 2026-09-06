@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Subscription upgrade requests (Mapping Audit "three scoped passes"
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(url.searchParams.get("limit") ?? 50) || 50, 200);
   const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   let query = admin
     .from("subscription_upgrade_requests")
     .select("id, user_id, pass_type, tier_key, note, status, requested_at, reviewed_by, reviewed_at, decline_reason", { count: "exact" })
@@ -90,7 +90,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "A reason is required to decline a request" }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: request, error: fetchError } = await admin
     .from("subscription_upgrade_requests")
     .select("id, user_id, pass_type, tier_key, status")

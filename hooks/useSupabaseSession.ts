@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 import { Session } from "@supabase/supabase-js";
 
 export function useSupabaseSession() {
@@ -10,7 +10,7 @@ export function useSupabaseSession() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = getBrowserClient();
 
     // Check current session
     const checkSession = async () => {

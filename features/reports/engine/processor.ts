@@ -8,7 +8,7 @@
  * until a mailer is configured — never silently dropped.
  */
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { collectReportMetrics } from "./collectors";
 import {
   generateReportNarrative,
@@ -70,7 +70,7 @@ export function previousWindow(run: Pick<ReportRunRow, "cadence" | "period_start
 
 /** Runs stuck mid-pipeline longer than the guard window are failed. */
 export async function failStuckRuns(): Promise<number> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const cutoff = new Date(Date.now() - STUCK_AFTER_MINUTES * 60_000).toISOString();
   const { data, error } = await admin
     .from("report_runs")
@@ -89,7 +89,7 @@ async function deliverRun(
   run: ReportRunRow,
   definition: ReportDefinitionRow,
 ): Promise<void> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: recipients, error } = await admin
     .from("report_recipients")
     .select("*")
@@ -141,7 +141,7 @@ async function deliverRun(
 }
 
 async function alertFailure(run: ReportRunRow, definition: ReportDefinitionRow, message: string): Promise<void> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   // Audit trail (actor falls back to the schedule creator for cron runs).
   const actor = run.triggered_by ?? definition.created_by;
   if (actor) {
@@ -178,7 +178,7 @@ async function alertFailure(run: ReportRunRow, definition: ReportDefinitionRow, 
  * Process a single queued/failed run end-to-end. Returns the final status.
  */
 export async function processReportRun(runId: string): Promise<ReportRunRow["status"]> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: runRow, error: runError } = await admin
     .from("report_runs")
     .select("*")
@@ -255,7 +255,7 @@ export async function processReportRun(runId: string): Promise<ReportRunRow["sta
 /** Process every queued run (bounded) — used by cron and the manual button. */
 export async function processReportQueue(limit = 10): Promise<{ processed: number; statuses: string[] }> {
   await failStuckRuns();
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: queued, error } = await admin
     .from("report_runs")
     .select("id")

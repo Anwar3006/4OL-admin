@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import {
   TTopRatedItemInput,
   TTopRatedItemOutput,
@@ -106,7 +106,7 @@ export const useTopRatedItems = ({
       const to = from + limit - 1;
       const nowIso = new Date().toISOString();
 
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       let query = supabase
         .from("top_rated_items")
         .select("*", { count: "exact" });
@@ -162,7 +162,7 @@ export const useIsTopRated = (module: string, itemId?: string | null) => {
   return useQuery<TTopRatedItemOutput | null, Error>({
     queryKey: [...TOP_RATED_QUERY_KEYS.all, "is-top-rated", module, itemId],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase
         .from("top_rated_items")
         .select("*")
@@ -188,7 +188,7 @@ export const useUpsertTopRatedItem = () => {
     TTopRatedItemInput & { admin_id: string }
   >({
     mutationFn: async (data) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data: result, error } = await supabase.rpc(
         "admin_upsert_top_rated_item",
         {
@@ -229,7 +229,7 @@ export const useRemoveTopRatedItem = () => {
 
   return useMutation<void, Error, { module: string; item_id: string }>({
     mutationFn: async ({ module, item_id }) => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { error } = await supabase.rpc("admin_remove_top_rated_item", {
         p_module: module,
         p_item_id: item_id,
@@ -259,7 +259,7 @@ export const useRemoveTopRatedItem = () => {
 export const fetchTopRatedItemsForExport = async (
   module?: string,
 ): Promise<TTopRatedItemOutput[]> => {
-  const supabase = await getSupabaseClient();
+  const supabase = await getBrowserClient();
   let query = supabase
     .from("top_rated_items")
     .select("*")

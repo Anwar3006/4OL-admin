@@ -1,7 +1,7 @@
 "use server";
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getAdminClient } from "@/lib/db/admin";
+import { getServerClient } from "@/lib/db/server";
 
 /**
  * Creates a Supabase Auth account for a facility owner.
@@ -24,14 +24,14 @@ export async function createFacilityOwnerAccount(payload: {
   phoneNumber: string;
 }): Promise<{ userId: string | null; isNewUser: boolean; error: string | null }> {
   // Guard: only admins/super_admins may call this action
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const { data: { user: caller } } = await supabase.auth.getUser();
 
   if (!caller?.id) {
     return { userId: null, isNewUser: false, error: "Unauthorized" };
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const { data: callerProfile } = await admin
     .from("user_profiles")

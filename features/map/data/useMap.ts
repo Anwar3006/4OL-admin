@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserClient } from "@/lib/db/browser";
 
 /**
  * Map & Footprint hooks (Gap Analysis Part F). Reads go through the enforced
@@ -310,7 +310,7 @@ export const useOutdoorRoutePins = () => {
   return useQuery<OutdoorRoutePin[], Error>({
     queryKey: MAP_QUERY_KEYS.routePins,
     queryFn: async () => {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       const { data, error } = await supabase.rpc("get_outdoor_route_pins");
       if (error) throw new Error(error.message);
       return (data ?? []) as OutdoorRoutePin[];
@@ -323,7 +323,7 @@ export const useIbpPins = () => {
   return useQuery<IbpPin[], Error>({
     queryKey: MAP_QUERY_KEYS.ibpPins,
     queryFn: async () => {
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserClient();
       const { data, error } = await supabase
         .from("ibp")
         .select("id, business_name, business_category, region, district, latitude, longitude")

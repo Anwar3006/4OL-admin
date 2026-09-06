@@ -1,7 +1,7 @@
 "use server";
 
-import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getServerClient } from "@/lib/db/server";
+import { getAdminClient } from "@/lib/db/admin";
 import type { TAdminInviteSchema } from "@/schemas/user-profile.schema";
 import { nanoid } from "nanoid";
 import { sendEmail } from "@/lib/email";
@@ -11,7 +11,7 @@ import * as React from "react";
 
 // ── helper: get authed user + their profile role ──────────────────────────────
 async function getSessionUserWithRole() {
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { user },
     error,
@@ -19,7 +19,7 @@ async function getSessionUserWithRole() {
 
   if (error || !user?.id) return null;
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: profile } = await admin
     .from("user_profiles")
     .select("role")
@@ -39,7 +39,7 @@ async function getSessionUserWithRole() {
 const createAdminInvite = async (
   input: TAdminInviteSchema & { invited_by?: string },
 ) => {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   // 1. Check if an account already exists for this email.
   //
@@ -186,7 +186,7 @@ export async function inviteAdminAction(email: string, role: string) {
       // received must not be left looking valid.
       if (!sent.success) throw new Error(sent.error);
     } catch (sendError: any) {
-      const admin = getSupabaseAdmin();
+      const admin = getAdminClient();
       await admin.from("user_invites").delete().eq("id", invite.id);
 
       console.error(

@@ -36,7 +36,7 @@ import { useAddTopRatedItemDialog } from "@/stores/dialog-store";
 import { useUpsertTopRatedItem } from "@/features/top-rated/data/useTopRatedItems";
 import { Search, Loader2, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 interface SearchResult {
@@ -79,7 +79,7 @@ const AddTopRatedItemDialog = () => {
   >({
     queryKey: ["search-top-rated-items", module, searchTerm],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("search_top_rated_items", {
         p_table_name: module,
         p_search_term: searchTerm.trim() || null,

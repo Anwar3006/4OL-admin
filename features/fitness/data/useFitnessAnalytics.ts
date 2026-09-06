@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getBrowserClient } from "@/lib/db/browser";
 import { useQuery } from "@tanstack/react-query";
 
 /**
@@ -48,7 +48,7 @@ export const useFitnessUsers = ({
   return useQuery({
     queryKey: ["fitness-users", { page, limit, search }],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_fitness_users", {
         p_limit: limit,
         p_offset: (page - 1) * limit,
@@ -111,7 +111,7 @@ export const useFitnessAiLogStats = (periodDays = 30) => {
   return useQuery({
     queryKey: ["fitness-ai-log-stats", periodDays],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_fitness_ai_log_stats", {
         p_period_days: periodDays,
       });
@@ -167,7 +167,7 @@ export const useFitnessHealthSyncStats = () => {
   return useQuery({
     queryKey: ["fitness-health-sync-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_fitness_health_sync_stats");
 
       if (error) throw error;
@@ -199,7 +199,7 @@ export const useFitnessScheduleStats = () => {
   return useQuery({
     queryKey: ["fitness-schedule-stats"],
     queryFn: async () => {
-      const supabase = await getSupabaseClient();
+      const supabase = await getBrowserClient();
       const { data, error } = await supabase.rpc("get_fitness_schedule_stats");
 
       if (error) throw error;

@@ -15,7 +15,7 @@
  * fail-open — security telemetry must never fail a request.
  */
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /** Reads per trailing hour beyond which a session is flagged. Mirrors
  *  READ_ANOMALY_THRESHOLD in 20260822_anti_screen_reading_ak.sql. */
@@ -32,7 +32,7 @@ export async function auditAdminRead(
   detail: Record<string, unknown> = {},
 ): Promise<boolean> {
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     const { error } = await admin.from("admin_read_audit").insert({
       admin_id: adminId,
       route_key: routeKey,
@@ -78,7 +78,7 @@ export async function issueCanaryFor(
   context: string,
 ): Promise<string | null> {
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
 
     const { data: existing } = await admin
       .from("security_canaries")

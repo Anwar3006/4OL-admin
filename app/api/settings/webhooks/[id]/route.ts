@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 import { logSettingsChange } from "@/lib/settings-audit";
 
 const PatchWebhookSchema = z
@@ -42,7 +42,7 @@ export async function PATCH(
   if (parsed.data.events !== undefined) updates.events = parsed.data.events;
   if (parsed.data.active !== undefined) updates.active = parsed.data.active;
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("platform_webhooks")
     .update(updates)
@@ -76,7 +76,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid webhook id." }, { status: 400 });
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin.from("platform_webhooks").delete().eq("id", id);
 
   if (error) {

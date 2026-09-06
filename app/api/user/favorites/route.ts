@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
   if (!token) return null;
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: { user }, error } = await admin.auth.getUser(token);
   if (error || !user?.id) return null;
   return user;
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const user = await getRequestUser(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data, error } = await admin
     .from("facility_favorites")
     .select("facility_id, facility_profile(*)")
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const facilityId = body?.facilityId;
   if (!facilityId) return NextResponse.json({ error: "facilityId is required" }, { status: 400 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("facility_favorites")
     .insert({ user_id: user.id, facility_id: facilityId });
@@ -56,7 +56,7 @@ export async function DELETE(req: NextRequest) {
   const facilityId = body?.facilityId;
   if (!facilityId) return NextResponse.json({ error: "facilityId is required" }, { status: 400 });
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { error } = await admin
     .from("facility_favorites")
     .delete()

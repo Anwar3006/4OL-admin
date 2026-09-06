@@ -16,8 +16,8 @@ import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { SUPER_ADMIN_ROLE, isAdminRole, type AdminRole } from "@/lib/admin-roles";
 import { ROLE_DEFAULTS, isRbacMigrationMissing } from "@/lib/permissions";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getServerClient } from "@/lib/db/server";
+import { getAdminClient } from "@/lib/db/admin";
 
 export interface AdminApiContext {
   user: User;
@@ -33,7 +33,7 @@ export type AdminCheckResult =
  * Returns null for anonymous callers, suspended accounts and non-admin roles.
  */
 export async function getAdminApiContext(): Promise<AdminApiContext | null> {
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -74,7 +74,7 @@ async function logAdminDenial(
   reason: string,
 ): Promise<void> {
   try {
-    const admin = getSupabaseAdmin();
+    const admin = getAdminClient();
     await admin.from("activity_logs").insert({
       actor_id: userId,
       actor_name: role ?? "unknown",
@@ -115,7 +115,7 @@ export async function requireAdminApiUser(permission?: string): Promise<AdminChe
 }
 
 async function checkPermission(ctx: AdminApiContext, permission: string): Promise<boolean> {
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const { data, error } = await supabase.rpc("has_4ol_permission", {
     p_user_id: ctx.user.id,
     p_key: permission,
@@ -151,7 +151,7 @@ export async function getSessionPermissions(
 ): Promise<string[] | null> {
   if (ctx.role === SUPER_ADMIN_ROLE) return null;
 
-  const supabase = await getSupabaseServerClient();
+  const supabase = await getServerClient();
   const { data, error } = await supabase.rpc("get_effective_admin_permissions", {
     p_user_id: ctx.user.id,
   });

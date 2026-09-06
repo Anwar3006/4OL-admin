@@ -8,13 +8,13 @@
 
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 export async function GET() {
   const auth = await requireAdminApiUser();
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { data: alert, error } = await admin
     .from("admin_login_alerts")
     .select("id, ip_address, user_agent, expires_at, created_at")

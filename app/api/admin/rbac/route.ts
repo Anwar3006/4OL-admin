@@ -6,7 +6,7 @@ import {
 } from "@/lib/admin-api-auth";
 import { ADMIN_ROLES, SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { PERMISSION_KEYS } from "@/lib/permissions";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * RBAC matrix management.
@@ -24,7 +24,7 @@ export async function GET() {
   const auth = await requireAdminApiUser("roles.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   const [rolesRes, defaultsRes, overridesRes] = await Promise.all([
     admin.from("admin_platform_roles").select("*").order("sort_order"),
@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   const { role, permissionKeys } = parsed.data;
 
   // Delete-then-insert inside one plpgsql function so a mid-write failure

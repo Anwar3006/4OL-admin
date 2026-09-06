@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 const AuditLogQuerySchema = z.object({
   severity: z.enum(["info", "warning", "critical"]).optional(),
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
   // Reads from activity_logs, not admin_activity_logs — admin_activity_logs
   // has zero writers anywhere in the codebase (a dead parallel table); this
   // route previously queried it and would have always returned empty.
