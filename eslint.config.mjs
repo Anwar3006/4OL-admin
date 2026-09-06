@@ -31,7 +31,6 @@ const config = [
       "out/**",
       "build/**",
       "coverage/**",
-      "redesign/**",
       "tsconfig.tsbuildinfo",
       "next-env.d.ts",
     ],

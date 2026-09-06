@@ -22,16 +22,30 @@ Knip finds entry points from plugins (Next.js, Vitest, Playwright) and from
 
 ## `ignore`
 
-- **`redesign/**`** — an unfinished parallel UI, already excluded from eslint
-  (`eslint.config.mjs`). Including it here would report its whole tree as
-  unused, which is true and not actionable: it is a decision to make, not a
-  deletion. See E2 in the cleanup plan.
+- **`redesign/**`** — **not code.** This was an unfinished parallel UI when the
+  entry was written; today the directory holds nine files and every one is
+  documentation, SQL or an image (`SCHEMA_ANALYSIS.md`, `TECH_STACK.md`,
+  `SCHEMA_MIGRATION.sql`, `image.png`, …). Knip only analyses JS/TS, so the
+  ignore is now a no-op kept for clarity rather than effect.
+
+  **Do not confuse it with `components/redesign/`**, which is a different
+  directory holding eight live components — `PageHeader` (36 importers),
+  `KpiCard` (52), `DataTable`, `Modal` and friends. That one has never been
+  ignored by anything. Earlier notes in `docs/cleanup-handoff.md` conflated
+  the two and concluded the ignored tree contained live UI; it does not.
 - **`Claude outputs/**`** — scratch, not source.
 
 ## `ignoreDependencies`
 
 - **`supabase`** — the CLI. Invoked as a binary for migrations, never
   imported. Knip is right that no code imports it; it is still required.
+- **`tailwindcss-animate`** — loaded by Tailwind v4 from CSS, not from JS:
+  `app/globals.css` line 3 is `@plugin "tailwindcss-animate";`. Knip analyses
+  JS/TS and cannot see a CSS at-rule, so it reports the package as unused. It
+  is not: 62 components use its `animate-in` / `fade-in-0` / `zoom-in-95`
+  utilities, and removing it silently drops every dialog and popover
+  animation — nothing errors, the UI just stops moving. Found while pruning
+  dependencies for E6.2, where it was the last "unused" entry left.
 
 ## Known false positives, deliberately NOT suppressed
 

@@ -17,7 +17,8 @@
   ],
 
   "ignoreDependencies": [
-    "supabase"
+    "supabase",
+    "tailwindcss-animate"
   ],
 
   "ignoreBinaries": ["supabase"]
