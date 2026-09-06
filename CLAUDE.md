@@ -147,10 +147,13 @@ kept a hand-copied subset of five of nine and the Body Map filter 400'd for
 months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
-Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
-`period`, `fitness`, `symptoms`, `healthy-living`, `facilities`,
-`medication-reminder`, `marketing`, `chat`. E3.2 is finished when
-`hooks/supabase-calls/` is empty — **22 files left**, down from 42.
+**E3.2 is complete.** All 28 features live under `features/`, each with a
+README, and `hooks/supabase-calls/` — the shared-hook dumping ground that held
+42 files — no longer exists. `tests/unit/feature-layout.test.ts` fails if it
+reappears or if a feature ships without a README.
+
+A new hook goes in `features/<name>/data/`, beside the `ui/` and `api/` that
+use it. Not in a shared hooks directory.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.

@@ -1,7 +1,7 @@
 "use client";
 import { redirect, useSearchParams } from "next/navigation";
 import RegisterForm from "../_components/RegisterForm";
-import { useGetInvitedAdmin } from "@/hooks/supabase-calls/useUser";
+import { useGetInvitedAdmin } from "@/features/users/data/useUser";
 import Lottie from "lottie-react";
 import medical_care from "@/public/assets/lottie/medical-care.json";
 import { Heart, Shield, Stethoscope } from "lucide-react";

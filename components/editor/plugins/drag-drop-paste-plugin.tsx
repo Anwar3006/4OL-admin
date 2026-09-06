@@ -10,7 +10,7 @@ import { INSERT_IMAGE_COMMAND } from "@/components/editor/plugins/images-plugin"
 import {
   useGetPresignedUploadUrl,
   useUploadToSupabase,
-} from "@/hooks/supabase-calls/useMediaStorage";
+} from "@/lib/media-storage";
 import { nanoid } from "nanoid";
 import { supabase } from "@/lib/supabase"; // Ensure supabase client is available for public URL generation
 

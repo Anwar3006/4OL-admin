@@ -29,7 +29,7 @@ import {
 import {
   useGetPresignedUploadUrl,
   useDeleteFile,
-} from "@/hooks/supabase-calls/useMediaStorage";
+} from "@/lib/media-storage";
 import imageCompression from "browser-image-compression";
 
 // ─── Allowed image extensions and their MIME types ───────────────────────────

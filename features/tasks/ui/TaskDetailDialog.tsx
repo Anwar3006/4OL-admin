@@ -7,7 +7,7 @@ import {
   useUpdateAdminTask,
   type AdminTask,
 } from "@/features/tasks/data/useAdminTasks";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
+import { useUsers } from "@/features/users/data/useUser";
 import {
   Dialog,
   DialogContent,

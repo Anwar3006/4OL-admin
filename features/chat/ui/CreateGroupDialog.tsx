@@ -17,7 +17,7 @@ import {
   useCreateConversation,
   useUpdateConversation,
 } from "@/features/chat/data/useConversation";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
+import { useUsers } from "@/features/users/data/useUser";
 import { GHANA_REGIONS } from "@/lib/shared-constants";
 import {
   GROUP_CATEGORIES,

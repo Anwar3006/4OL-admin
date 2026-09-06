@@ -1,18 +1,7 @@
-import React from "react";
-// import ViewUserDetails from "@/components/redesign/auth/Users/ViewUserDetials";
-
-export default function page() {
-  return (
-    <>
-      <div className="">
-        <div className="lg-inner-column">
-          <div className="right-column relative w-full">  
-              <div className=" w-full flex flex-col justify-center sm:p-5">
-                {/* <ViewUserDetails /> */}
-              </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
+/**
+ * Route entry only. The feature lives in features/users.
+ * Edit features/users/ui/UserDetailPage.jsx instead.
+ *
+ * Still .jsx, so still never type-checked. Converting it is E5.1.
+ */
+export { default } from "@/features/users/ui/UserDetailPage";

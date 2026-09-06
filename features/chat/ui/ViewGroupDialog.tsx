@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
 import { useUpdateConversation } from "@/features/chat/data/useConversation";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
+import { useUsers } from "@/features/users/data/useUser";
 import { useHasPermission } from "@/stores/permission-context";
 import { getSupabaseClient } from "@/lib/supabase";
 import { groupCategoryLabel, groupTypeLabel } from "@/features/chat/schema/constants";

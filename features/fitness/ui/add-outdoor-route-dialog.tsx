@@ -39,7 +39,7 @@ import {
   useUpdateFitnessOutdoorRoute,
 } from "@/features/fitness/data/useFitnessOutdoor";
 import { GHANA_REGIONS_ENUM } from "@/types/formInput";
-import { parseGpx, computeBoundsFromPoints, type GpxParseResult } from "@/lib/gpx";
+import { parseGpx, computeBoundsFromPoints, type GpxParseResult } from "@/features/fitness/data/gpx";
 
 // Expanded Schema handling Area, Region, and Metadata injection
 const routeFormSchema = z.object({

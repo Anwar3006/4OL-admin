@@ -8,7 +8,7 @@ import {
   useUpdateSupportTicket,
   useDeleteSupportTicket,
 } from "@/features/chat/data/useConversation";
-import { useUsers } from "@/hooks/supabase-calls/useUser";
+import { useUsers } from "@/features/users/data/useUser";
 import { useSupportAnalytics } from "@/features/chat/data/useConversation";
 import { useAddTicketDialog } from "@/stores/dialog-store";
 import { useHasPermission } from "@/stores/permission-context";

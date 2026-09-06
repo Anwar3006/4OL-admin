@@ -31,7 +31,7 @@ E2E_BASE_URL=http://localhost:3000 pnpm test:smoke
 NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
 ```
 
-Current green baseline: **121 unit+contract assertions, 80 smoke tests, 0 lint
+Current green baseline: **123 unit+contract assertions, 80 smoke tests, 0 lint
 errors, clean build.** If you do not have that before you start, fix it before
 changing anything — several bugs on this branch were only visible because the
 baseline was trustworthy.
@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **11 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder, marketing, chat. **22 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **DONE.** 28 features under `features/`, each with a README. `hooks/supabase-calls/` no longer exists — `tests/unit/feature-layout.test.ts` asserts it stays gone. |
 | **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -72,17 +72,23 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ## Do next, in order
 
-### 1. Empty `hooks/supabase-calls/` — 22 files left
+### 1. E3.4 — split `lib/`, and finish E3.3's naming work
 
-The five big features are migrated. What remains in that directory is the
-long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
-done when it is empty.
+E3.2 is done: 28 features, `hooks/supabase-calls/` gone, and a unit test that
+fails if it comes back. What is left of E3 is the two smaller parts.
 
-`useFitnessContentSchedule` is the worked example of how to do one where the
-table is also RLS-exposed: move the read behind an API route **first**, verify
-the route serves against a real session, and only then drop the policy. Doing
-it in the other order blanks the feature silently. See
-`features/fitness/api/content-schedule.ts`.
+**E3.4** — `lib/` still mixes genuinely shared infrastructure (`db/`, `csv.ts`,
+`format.ts`, `admin-api-auth.ts`, `masking.ts`, `rate-limit.ts`) with things
+that belong to one feature. The migrations pulled out `period-*`,
+`fitness/generate-plan`, `ibp-constants`, `map-coverage`, `chats-constants`,
+`drug-import-mapping` and `gpx` as they went, so what remains is closer to
+correct than it was — but `reports/`, `supabase/indexAdmin.ts` and the
+deprecated `supabase*.ts` shims still want a decision.
+
+**E3.3** — the facilities slice is done. The naming work is not:
+`/healthy_living` (underscore), `/facilityscout` and `/bedtracker`
+(unseparated). Each needs a `next.config.ts` redirect and a smoke assertion,
+exactly like the 18 added for facilities and marketing.
 
 ### 2. `app/utils/supabaseClient.js` — resolved, 6 Sept 2026
 
