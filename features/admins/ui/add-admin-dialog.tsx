@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { useAddAdminDialog } from "@/stores/dialog-store";
 import { adminInviteInputSchema } from "@/schemas/user-profile.schema";
 import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
-// @ts-expect-error package exports typing issue in this repo
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ const AddAdminDialog = () => {
     },
   });
 
-  const handleSubmit = async (data) => {
+  const handleSubmit = async (data: { email: string; role: string }) => {
     try {
       setIsSubmitting(true);
       const result = await inviteAdminAction(data.email, data.role);
@@ -41,7 +40,9 @@ const AddAdminDialog = () => {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error("Error: " + error.message);
+      toast.error(
+        "Error: " + (error instanceof Error ? error.message : String(error)),
+      );
     } finally {
       setIsSubmitting(false);
     }

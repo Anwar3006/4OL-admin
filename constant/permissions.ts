@@ -1,4 +1,28 @@
-export const PERMISSION_ITEMS = [
+/**
+ * The legacy permission vocabulary. `PERMISSION_MAPPINGS` maps a resource name
+ * onto the routes, menu items and actions it unlocks.
+ *
+ * ⚠️ Read `hooks/usePermissions.ts` before building on this. That hook is the
+ * only consumer path and it hardcodes an empty permission list, because
+ * `user_profiles` has no `permissions` column — access is role-based. So every
+ * lookup here currently resolves against an empty array. The RBAC that is
+ * actually enforced lives in `lib/permissions.ts` and `requireAdminApiUser()`.
+ */
+
+/** One granted permission: a resource plus the level granted on it. */
+export type UserPermission = {
+  resource: string;
+  assignedPermission: string;
+};
+
+/** What a resource unlocks. `actions` is keyed by assignedPermission level. */
+export type PermissionMapping = {
+  routes: string[];
+  menuItems: string[];
+  actions: Record<string, string[]>;
+};
+
+export const PERMISSION_ITEMS: UserPermission[] = [
   { resource: "Manage users", assignedPermission: "View Only" },
   {
     resource: "Analytics Customization (Refresh, Reset)",
@@ -55,7 +79,7 @@ export const PERMISSION_ITEMS = [
  * Each permission can control multiple routes and have different action levels
  */
 
-export const PERMISSION_MAPPINGS = {
+export const PERMISSION_MAPPINGS: Record<string, PermissionMapping> = {
   "Manage users": {
     routes: ["/users", "/user-management", "/admin/register-account"],
     menuItems: ["Users"],

@@ -1,4 +1,3 @@
-// hooks/usePermissions.js
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { getBrowserClient } from "@/lib/db/browser";
@@ -9,9 +8,10 @@ import {
   getAllowedRoutes,
   getAllowedMenuItems,
 } from "@/utils/permission-helper";
+import type { UserPermission } from "@/constant/permissions";
 
 export const usePermissions = () => {
-  const [permissions, setPermissions] = useState([]);
+  const [permissions, setPermissions] = useState<UserPermission[]>([]);
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -54,8 +54,12 @@ export const usePermissions = () => {
         const { data, error } = await getUserProfile();
 
         if (!error && data) {
-          // permissions column does not exist in user_profiles — role-based access only
-          const userPermissions = [];
+          // `user_profiles` has no `permissions` column — access is role-based,
+          // so this is ALWAYS empty and every lookup below resolves against it.
+          // Typing it makes that explicit rather than letting TypeScript infer
+          // `never[]` and error at each call site. The RBAC actually enforced
+          // is in lib/permissions.ts behind requireAdminApiUser().
+          const userPermissions: UserPermission[] = [];
           const userRole = data.role || "";
 
           setPermissions(userPermissions);
@@ -90,7 +94,7 @@ export const usePermissions = () => {
   }, [role]);
 
   const hasPermission = useCallback(
-    (resource) => {
+    (resource: string) => {
       if (isSuperAdmin()) return true;
       return permissions.some((p) => p.resource === resource);
     },
@@ -98,7 +102,7 @@ export const usePermissions = () => {
   );
 
   const canAccessRoute = useCallback(
-    (route) => {
+    (route: string) => {
       if (isSuperAdmin()) return true;
       return isRouteAllowed(route, permissions);
     },
@@ -106,7 +110,7 @@ export const usePermissions = () => {
   );
 
   const canPerform = useCallback(
-    (resource, action) => {
+    (resource: string, action: string) => {
       if (isSuperAdmin()) return true;
       return canPerformAction(resource, action, permissions);
     },
@@ -132,7 +136,7 @@ export const usePermissions = () => {
   }, [role]);
 
   const getAllowedActions = useCallback(
-    (resource) => {
+    (resource: string): string[] => {
       if (isSuperAdmin()) {
         return [
           "view",

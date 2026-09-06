@@ -3,7 +3,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 
-const Section = ({ title, children }) => (
+const Section = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
   <div className="space-y-3">
     <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
       {title}
@@ -14,7 +20,7 @@ const Section = ({ title, children }) => (
   </div>
 );
 
-const BulletList = ({ items }) => (
+const BulletList = ({ items }: { items: string[] }) => (
   <ul className="list-disc pl-5 space-y-2">
     {items.map((item) => (
       <li

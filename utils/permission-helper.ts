@@ -1,14 +1,14 @@
-import { PERMISSION_MAPPINGS } from "../constant/permissions.js";
+import { PERMISSION_MAPPINGS, type UserPermission } from "../constant/permissions";
 
 /**
  * Helper function to get all allowed routes for a user's permissions
  * @param {Array} userPermissions - Array of permission objects
  * @returns {Array} Array of allowed route patterns
  */
-export const getAllowedRoutes = (userPermissions) => {
+export const getAllowedRoutes = (userPermissions: UserPermission[]): string[] => {
   if (!userPermissions || userPermissions.length === 0) return [];
 
-  const allowedRoutes = new Set();
+  const allowedRoutes = new Set<string>();
 
   userPermissions.forEach((permission) => {
     const mapping = PERMISSION_MAPPINGS[permission.resource];
@@ -25,10 +25,10 @@ export const getAllowedRoutes = (userPermissions) => {
  * @param {Array} userPermissions - Array of permission objects
  * @returns {Array} Array of allowed menu item titles
  */
-export const getAllowedMenuItems = (userPermissions) => {
+export const getAllowedMenuItems = (userPermissions: UserPermission[]): string[] => {
   if (!userPermissions || userPermissions.length === 0) return [];
 
-  const allowedItems = new Set();
+  const allowedItems = new Set<string>();
 
   userPermissions.forEach((permission) => {
     const mapping = PERMISSION_MAPPINGS[permission.resource];
@@ -46,7 +46,7 @@ export const getAllowedMenuItems = (userPermissions) => {
  * @param {Array} userPermissions - Array of permission objects
  * @returns {Boolean} True if route is allowed
  */
-export const isRouteAllowed = (route, userPermissions) => {
+export const isRouteAllowed = (route: string, userPermissions: UserPermission[]): boolean => {
   if (!userPermissions || userPermissions.length === 0) return false;
 
   // Check if any permission grants access to this route
@@ -69,7 +69,11 @@ export const isRouteAllowed = (route, userPermissions) => {
  * @param {Array} userPermissions - Array of permission objects
  * @returns {Boolean} True if action is allowed
  */
-export const canPerformAction = (resource, action, userPermissions) => {
+export const canPerformAction = (
+  resource: string,
+  action: string,
+  userPermissions: UserPermission[],
+): boolean => {
   if (!userPermissions || userPermissions.length === 0) return false;
 
   const userPermission = userPermissions.find((p) => p.resource === resource);
