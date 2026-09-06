@@ -7,10 +7,7 @@ import {
   useExercises,
   useDeleteExercise,
 } from "@/features/fitness/data/useExercise";
-import {
-  useAddExerciseDialog,
-  useViewExerciseDialog,
-} from "@/stores/dialog-store";
+import { useAddExerciseDialog, useViewExerciseDialog } from "@/features/fitness/data/dialog-hooks";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import AddExerciseDialog from "./add-exercise-dialog";
 import ViewExerciseDialog from "./view-exercise-dialog";

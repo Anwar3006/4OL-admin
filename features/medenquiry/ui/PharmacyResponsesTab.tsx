@@ -6,7 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { usePharmacyPerformance, type PharmacyPerfRow } from "@/features/medenquiry/data/useMedEnquiry";
-import { useViewFacilityDialog } from "@/stores/dialog-store";
+import { useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import { cn } from "@/lib/utils";
 
 const formatMinutes = (minutes: number | null) =>

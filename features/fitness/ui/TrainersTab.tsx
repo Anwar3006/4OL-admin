@@ -19,10 +19,7 @@ import {
   useDeleteTrainer,
   useVerifyTrainer,
 } from "@/features/fitness/data/useTrainer";
-import {
-  useAddTrainerDialog,
-  useViewTrainerDialog,
-} from "@/stores/dialog-store";
+import { useAddTrainerDialog, useViewTrainerDialog } from "@/features/fitness/data/dialog-hooks";
 import AddTrainerDialog from "./add-trainer-dialog";
 import ViewTrainerDialog from "./view-trainer-dialog";
 import { cn } from "@/lib/utils";

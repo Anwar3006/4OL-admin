@@ -33,7 +33,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { MapPin, Loader2, UploadCloud, CheckCircle2, X } from "lucide-react";
 import ImageDropZone from "@/components/ImageDropZone";
-import { useAddOutdoorRouteDialog } from "@/stores/dialog-store";
+import { useAddOutdoorRouteDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   useCreateFitnessOutdoorRoute,
   useUpdateFitnessOutdoorRoute,

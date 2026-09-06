@@ -28,7 +28,7 @@ import {
   Ban,
 } from "lucide-react";
 import { MarketingStatusMap } from "@/constants/marketing.const";
-import { useViewMarketingDialog } from "@/stores/dialog-store";
+import { useViewMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 import { isMediaVideo } from "@/components/ImageDropZone";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
@@ -36,7 +36,7 @@ import {
   useUpdateMarketingProfile,
   useDeleteMarketingProfile,
 } from "@/features/marketing/data/useMarketing";
-import { useAddMarketingDialog } from "@/stores/dialog-store";
+import { useAddMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 import { toast } from "sonner";
 
 export function ViewMarketingDialog() {

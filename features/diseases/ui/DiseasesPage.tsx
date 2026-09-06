@@ -28,10 +28,7 @@ import AddConditionDialog from "./add-condition-dialog";
 import CarouselTab from "./carousel-tab";
 import EngagementTab from "./engagement-tab";
 import LinkagesTab from "./linkages-tab";
-import {
-  useAddConditionDialog,
-  useViewConditionDialog,
-} from "@/stores/dialog-store";
+import { useAddConditionDialog, useViewConditionDialog } from "@/features/diseases/data/dialog-hooks";
 import { ViewConditionDialog } from "./view-condition-dialog";
 import { useSearchParams } from "next/navigation";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";

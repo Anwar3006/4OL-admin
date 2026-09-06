@@ -10,7 +10,7 @@ import {
   formatSubmittedAt,
 } from "./medEnquiryColumns";
 import type { MedEnquiryRow } from "@/features/medenquiry/data/useMedEnquiry";
-import { useViewFacilityDialog } from "@/stores/dialog-store";
+import { useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 
 /**
  * Read-only detail sheet for a medication enquiry — Part AB.

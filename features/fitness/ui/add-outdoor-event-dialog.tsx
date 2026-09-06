@@ -36,7 +36,7 @@ import {
   TFitnessOutdoorEventInput,
   CHALLENGE_STATUS,
 } from "@/schemas/fitness-outdoor.schema";
-import { useAddOutdoorEventDialog } from "@/stores/dialog-store";
+import { useAddOutdoorEventDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   useCreateFitnessOutdoorEvent,
   useUpdateFitnessOutdoorEvent,

@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import slugify from "slugify";
-import { useAddHealthyLivingDialog } from "@/stores/dialog-store";
+import { useAddHealthyLivingDialog } from "@/features/healthy-living/data/dialog-hooks";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import ImageDropZone from "@/components/ImageDropZone";
 import { rehydrateHierarchy } from "@/lib/utils";

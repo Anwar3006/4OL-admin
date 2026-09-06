@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
+import { useViewGroupDialog, useAddGroupDialog } from "@/features/chat/data/dialog-hooks";
 import { useUpdateConversation } from "@/features/chat/data/useConversation";
 import { useUsers } from "@/features/users/data/useUser";
 import { useHasPermission } from "@/stores/permission-context";

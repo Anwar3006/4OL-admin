@@ -17,11 +17,7 @@ import {
   useFitnessPlans,
   useDeleteFitnessPlan,
 } from "@/features/fitness/data/useFitnessPlan";
-import {
-  useAddFitnessPlanDialog,
-  useViewFitnessPlanDialog,
-  useAiGeneratePlanDialog,
-} from "@/stores/dialog-store";
+import { useAddFitnessPlanDialog, useViewFitnessPlanDialog, useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
 import AddFitnessPlanDialog from "./add-fitness-plan-dialog";
 import AiGeneratePlanDialog from "./ai-generate-plan-dialog";
 

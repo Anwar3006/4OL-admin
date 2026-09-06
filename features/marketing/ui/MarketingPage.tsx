@@ -14,7 +14,7 @@ import DiscountsTab from "./DiscountsTab";
 import { ViewMarketingDialog } from "./view-marketing-dialog";
 import { cn } from "@/lib/utils";
 import AddMarketingDialog from "./add-marketing-dialog";
-import { useAddMarketingDialog } from "@/stores/dialog-store";
+import { useAddMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 
 const MktTabs = [
   { id: "all", label: "📣 All Campaigns" },

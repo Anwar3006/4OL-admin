@@ -9,7 +9,7 @@ import {
   useUpdateConversation,
   useGlobalMessageSearch,
 } from "@/features/chat/data/useConversation";
-import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
+import { useViewGroupDialog, useAddGroupDialog } from "@/features/chat/data/dialog-hooks";
 import { useHasPermission, usePermissionContext } from "@/stores/permission-context";
 import {
   GROUP_CATEGORIES,

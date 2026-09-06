@@ -6,10 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getPublicImageUrl, hasLexicalContent } from "@/lib/utils";
-import {
-  useAddConditionDialog,
-  useViewConditionDialog,
-} from "@/stores/dialog-store";
+import { useAddConditionDialog, useViewConditionDialog } from "@/features/diseases/data/dialog-hooks";
 import { TSymptomsOutput } from "@/features/symptoms/schema/types";
 
 import {

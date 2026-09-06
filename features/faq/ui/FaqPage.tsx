@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import PageHeader from "@/components/redesign/PageHeader";
 import FAQStats from "./FAQStats";
 import FAQAccordion, { FAQAccordionCategory } from "./FAQAccordion";
-import { useAddFAQDialog } from "@/stores/dialog-store";
+import { useAddFAQDialog } from "@/features/faq/data/dialog-hooks";
 import AddFAQDialog from "./add-faq-dialog";
 import { downloadCsv } from "@/lib/csv";
 import {

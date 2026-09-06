@@ -12,7 +12,7 @@ import {
 } from "@/features/marketing/data/useMarketing";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import { useViewMarketingDialog } from "@/stores/dialog-store";
+import { useViewMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 import { TMarketingProfileOutput } from "@/features/marketing/schema/profile";
 
 const STATUS_OPTIONS = [

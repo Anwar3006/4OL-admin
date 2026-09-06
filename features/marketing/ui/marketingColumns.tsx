@@ -1,10 +1,7 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import {
-  useAddMarketingDialog,
-  useViewMarketingDialog,
-} from "@/stores/dialog-store";
+import { useAddMarketingDialog, useViewMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 import {
   useDeleteMarketingProfile,
   useUpdateMarketingProfile,

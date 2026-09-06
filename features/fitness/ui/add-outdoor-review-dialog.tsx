@@ -36,7 +36,7 @@ import {
   TFitnessOutdoorReviewInput,
   MODERATION_STATUS,
 } from "@/schemas/fitness-outdoor.schema";
-import { useAddOutdoorReviewDialog } from "@/stores/dialog-store";
+import { useAddOutdoorReviewDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   useCreateFitnessOutdoorReview,
   useUpdateFitnessOutdoorReview,

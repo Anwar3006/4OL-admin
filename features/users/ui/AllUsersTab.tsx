@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { usePagination } from "@/hooks/use-pagination";
-import { useViewUserDialog } from "@/stores/dialog-store";
+import { useViewUserDialog } from "@/features/users/data/dialog-hooks";
 import { useHasPermission } from "@/stores/permission-context";
 import {
   AdminUserRow,

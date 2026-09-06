@@ -11,7 +11,7 @@ import FlaggedTab from "./FlaggedTab";
 import ViewGroupDialog from "./ViewGroupDialog";
 import CreateGroupDialog from "./CreateGroupDialog";
 import { useChatTabCounts } from "@/features/chat/data/useConversation";
-import { useAddGroupDialog } from "@/stores/dialog-store";
+import { useAddGroupDialog } from "@/features/chat/data/dialog-hooks";
 import { useHasPermission } from "@/stores/permission-context";
 import { cn } from "@/lib/utils";
 

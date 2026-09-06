@@ -10,7 +10,7 @@ import {
 } from "@/features/chat/data/useConversation";
 import { useUsers } from "@/features/users/data/useUser";
 import { useSupportAnalytics } from "@/features/chat/data/useConversation";
-import { useAddTicketDialog } from "@/stores/dialog-store";
+import { useAddTicketDialog } from "@/features/chat/data/dialog-hooks";
 import { useHasPermission } from "@/stores/permission-context";
 import { TChatOutput } from "@/features/chat/schema/chat";
 import {

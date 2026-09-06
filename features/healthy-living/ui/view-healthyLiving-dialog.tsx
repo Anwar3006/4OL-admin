@@ -5,10 +5,7 @@ import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  useAddHealthyLivingDialog,
-  useViewHealthyLivingDialog,
-} from "@/stores/dialog-store";
+import { useAddHealthyLivingDialog, useViewHealthyLivingDialog } from "@/features/healthy-living/data/dialog-hooks";
 import {
   useDeleteHealthyLiving,
   useHealthyLiving,

@@ -13,7 +13,7 @@ import ActivityLogsTab from "./ActivityLogsTab";
 import SecurityCenterTab from "./SecurityCenterTab";
 import ReportsTab from "./ReportsTab";
 import { cn } from "@/lib/utils";
-import { useAddAdminDialog } from "@/stores/dialog-store";
+import { useAddAdminDialog } from "@/features/admins/data/dialog-hooks";
 import AddAdminDialog from "./add-admin-dialog";
 import { usePermissionContext } from "@/stores/permission-context";
 

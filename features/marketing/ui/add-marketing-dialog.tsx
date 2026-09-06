@@ -34,7 +34,7 @@ import { nanoid } from "nanoid";
 import { Card } from "@/components/ui/card";
 import { Phone, ExternalLink, Calendar, ImageIcon } from "lucide-react";
 
-import { useAddMarketingDialog } from "@/stores/dialog-store";
+import { useAddMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 import {
   useCreateMarketingProfile,
   useUpdateMarketingProfile,

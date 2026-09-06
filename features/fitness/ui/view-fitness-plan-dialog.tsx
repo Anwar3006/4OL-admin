@@ -5,10 +5,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import {
-  useViewFitnessPlanDialog,
-  useAddFitnessPlanDialog,
-} from "@/stores/dialog-store";
+import { useViewFitnessPlanDialog, useAddFitnessPlanDialog } from "@/features/fitness/data/dialog-hooks";
 import { useFitnessPlan } from "@/features/fitness/data/useFitnessPlan";
 import {
   ClipboardList,

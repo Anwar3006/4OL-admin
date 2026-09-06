@@ -16,14 +16,7 @@ import {
   useOutdoorIncentives,
   useUpdateOutdoorIncentives,
 } from "@/features/fitness/data/useFitnessOutdoor";
-import {
-  useAddOutdoorRouteDialog,
-  useViewOutdoorRouteDialog,
-  useAddOutdoorEventDialog,
-  useViewOutdoorEventDialog,
-  useAddOutdoorReviewDialog,
-  useViewOutdoorReviewDialog,
-} from "@/stores/dialog-store";
+import { useAddOutdoorRouteDialog, useViewOutdoorRouteDialog, useAddOutdoorEventDialog, useViewOutdoorEventDialog, useAddOutdoorReviewDialog, useViewOutdoorReviewDialog } from "@/features/fitness/data/dialog-hooks";
 import AddOutdoorRouteDialog from "./add-outdoor-route-dialog";
 import ViewOutdoorRouteDialog from "./view-outdoor-route-dialog";
 import AddOutdoorEventDialog from "./add-outdoor-event-dialog";

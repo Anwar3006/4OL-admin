@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  useAiGeneratePlanDialog,
-} from "@/stores/dialog-store";
+import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
 import { useFitnessAiLogStats } from "@/features/fitness/data/useFitnessAnalytics";
 import { useFitnessDashboardKpis } from "@/features/fitness/data/useFitnessDashboard";
 import AiGeneratePlanDialog from "./ai-generate-plan-dialog";

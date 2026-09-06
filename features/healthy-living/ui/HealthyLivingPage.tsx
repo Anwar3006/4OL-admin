@@ -6,10 +6,7 @@ import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useAddHealthyLivingDialog,
-  useViewHealthyLivingDialog,
-} from "@/stores/dialog-store";
+import { useAddHealthyLivingDialog, useViewHealthyLivingDialog } from "@/features/healthy-living/data/dialog-hooks";
 import {
   useHealthyLivings,
   useDeleteHealthyLiving,

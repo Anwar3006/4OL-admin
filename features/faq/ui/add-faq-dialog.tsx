@@ -3,7 +3,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAddFAQDialog } from "@/stores/dialog-store";
+import { useAddFAQDialog } from "@/features/faq/data/dialog-hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog } from "@radix-ui/react-dialog";
 import React, { useEffect } from "react";

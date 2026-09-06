@@ -35,7 +35,7 @@ import { MultiSelect } from "@/components/MultiSelect";
 import { Bot, Loader2, Sparkles } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAiGeneratePlanDialog } from "@/stores/dialog-store";
+import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
 import { getBrowserClient } from "@/lib/db/browser";
 
 // ─── Form Schema ──────────────────────────────────────────────────────────────

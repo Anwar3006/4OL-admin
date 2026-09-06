@@ -12,7 +12,7 @@ import {
   formatReminderInterval,
   getReminderStatus,
 } from "@/features/medication-reminder/data/useMedicationReminder";
-import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
+import { useViewMediactionReminderDialog } from "@/features/medication-reminder/data/dialog-hooks";
 import { usePermissionContext } from "@/stores/permission-context";
 import { maskName } from "@/lib/masking";
 import { toast } from "sonner";

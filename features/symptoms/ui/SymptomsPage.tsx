@@ -6,10 +6,7 @@ import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/use-debounce";
-import {
-  useAddConditionDialog,
-  useViewConditionDialog,
-} from "@/stores/dialog-store";
+import { useAddConditionDialog, useViewConditionDialog } from "@/features/diseases/data/dialog-hooks";
 import AddSymptomDialog from "./add-symptom-dialog";
 import ViewSymptomDialog from "./view-symptom-dialog";
 import SymptomAnalyticsTab from "./analytics-tab";

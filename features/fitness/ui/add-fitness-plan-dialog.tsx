@@ -37,7 +37,7 @@ import {
   PLAN_DIFFICULTY,
 } from "@/schemas/fitness-plan.schema";
 import { CATEGORIES } from "@/schemas/exercise.schema";
-import { useAddFitnessPlanDialog } from "@/stores/dialog-store";
+import { useAddFitnessPlanDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   useCreateFitnessPlan,
   useUpdateFitnessPlan,

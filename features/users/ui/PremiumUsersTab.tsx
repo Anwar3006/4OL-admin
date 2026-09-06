@@ -7,7 +7,7 @@ import { Crown, Users, Star, Sparkles } from "lucide-react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { usePagination } from "@/hooks/use-pagination";
-import { useViewUserDialog } from "@/stores/dialog-store";
+import { useViewUserDialog } from "@/features/users/data/dialog-hooks";
 import { useHasPermission } from "@/stores/permission-context";
 import { formatCurrency } from "@/lib/format";
 import {

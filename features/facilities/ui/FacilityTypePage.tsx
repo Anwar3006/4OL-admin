@@ -20,10 +20,7 @@ import { useFacilityCardConfig } from "./facilityCardConfig";
 import { createPaginationHandlers } from "@/lib/utils";
 import { useFacilityProfiles } from "@/features/facilities/data/useFacilities";
 import { useDebounce } from "@/hooks/use-debounce";
-import {
-  useAddFacilityDialog,
-  useViewFacilityDialog,
-} from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import AddFacilityDialog from "./add-facility-dialog";
 import FacilityViewDialog from "./view-facility-dialog";
 

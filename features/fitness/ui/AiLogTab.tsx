@@ -5,7 +5,7 @@ import {
   useFitnessAiLogStats,
   type FitnessAiCallRow,
 } from "@/features/fitness/data/useFitnessAnalytics";
-import { useAiGeneratePlanDialog } from "@/stores/dialog-store";
+import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
 import AiGeneratePlanDialog from "./ai-generate-plan-dialog";
 import { toast } from "sonner";
 import { downloadCsv } from "@/lib/csv";

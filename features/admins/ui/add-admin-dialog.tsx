@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { useAddAdminDialog } from "@/stores/dialog-store";
+import { useAddAdminDialog } from "@/features/admins/data/dialog-hooks";
 import { adminInviteInputSchema } from "@/schemas/user-profile.schema";
 import { ADMIN_ROLE_OPTIONS } from "@/lib/admin-roles";
 import { zodResolver } from "@hookform/resolvers/zod";

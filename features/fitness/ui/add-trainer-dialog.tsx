@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAddTrainerDialog } from '@/stores/dialog-store';
+import { useAddTrainerDialog } from "@/features/fitness/data/dialog-hooks";
 import { trainerSchema, TTrainerInput, TRAINER_STATUS } from "@/features/fitness/schema/trainer";
 import { useCreateTrainer, useUpdateTrainer } from "@/features/fitness/data/useTrainer";
 import { Loader2, Award, Video, Globe, X, Plus } from 'lucide-react';

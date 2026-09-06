@@ -40,7 +40,7 @@ import {
   DIFFICULTY_LEVELS,
   EXERCISE_STATUS,
 } from "@/schemas/exercise.schema";
-import { useAddExerciseDialog } from "@/stores/dialog-store";
+import { useAddExerciseDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   useCreateExercise,
   useUpdateExercise,

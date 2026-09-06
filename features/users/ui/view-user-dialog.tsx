@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useViewUserDialog, useFlagUserDialog } from "@/stores/dialog-store";
+import { useViewUserDialog, useFlagUserDialog } from "@/features/users/data/dialog-hooks";
 import { useUser } from "@/features/users/data/useUser";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";

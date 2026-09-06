@@ -2,10 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  useAddExerciseDialog,
-  useViewExerciseDialog,
-} from "@/stores/dialog-store";
+import { useAddExerciseDialog, useViewExerciseDialog } from "@/features/fitness/data/dialog-hooks";
 import { useDeleteExercise } from "@/features/fitness/data/useExercise";
 import { Badge } from "@/components/ui/badge";
 

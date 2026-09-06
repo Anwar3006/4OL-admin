@@ -17,10 +17,7 @@ import {
   useChallenges,
   useDeleteChallenge,
 } from "@/features/fitness/data/useChallenge";
-import {
-  useAddChallengeDialog,
-  useViewChallengeDialog,
-} from "@/stores/dialog-store";
+import { useAddChallengeDialog, useViewChallengeDialog } from "@/features/fitness/data/dialog-hooks";
 import AddChallengeDialog from "./add-challenge-dialog";
 import ViewChallengeDialog from "./view-challenge-dialog";
 import { cn } from "@/lib/utils";

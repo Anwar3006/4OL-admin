@@ -215,8 +215,12 @@ code, or a bad dynamic import.
   details page initialising object state to `[]` so a failed query rendered
   blanks instead of an error.
 - **`eslint.config.mjs` excludes `redesign/**`** entirely.
-- **`stores/dialog-store.ts` (30 KB) is global.** Every feature's dialogs reach
-  into it; it is the tightest coupling in the repo.
+- **`stores/dialog-store.ts` holds the state; the hooks live with their
+  features.** E4.2 split it 991 → 185 lines: one Zustand store still owns all
+  dialog state (so `useCloseAllDialogs` and `useOpenDialogCount` still work
+  across features), while each feature's per-dialog hooks sit in
+  `features/<name>/data/dialog-hooks.ts`. A new dialog adds its type to
+  `DialogTypes` in the store and its hook to the owning feature.
 - **Seed JSON lives in `scripts/seed-data/`, not the app tree.** Nothing under
   `app/`, `features/` or `lib/` imports it, which is why the build heap is
   2048 MB rather than the 4096 it used to need.

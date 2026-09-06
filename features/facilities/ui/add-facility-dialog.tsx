@@ -33,7 +33,7 @@ import { MultiSelect } from "@/components/MultiSelect";
 import { cn, getPublicImageUrl } from "@/lib/utils";
 import ImageDropZone, { isMediaVideo } from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
-import { useAddFacilityDialog } from "@/stores/dialog-store";
+import { useAddFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import FacilityCredentialsModal from "./facility-credentials-modal";
 import {

@@ -10,10 +10,7 @@ import {
   Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  useAddFacilityDialog,
-  useViewFacilityDialog,
-} from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import { cn, toUppercaseFirstLetter } from "@/lib/utils";
 import { useDeleteFacility } from "@/features/facilities/data/useFacilities";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";

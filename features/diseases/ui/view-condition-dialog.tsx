@@ -27,10 +27,7 @@ import {
   HeartPulse,
   X,
 } from "lucide-react";
-import {
-  useAddConditionDialog,
-  useViewConditionDialog,
-} from "@/stores/dialog-store";
+import { useAddConditionDialog, useViewConditionDialog } from "@/features/diseases/data/dialog-hooks";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
 import { useCondition } from "@/features/diseases/data/useCondition";

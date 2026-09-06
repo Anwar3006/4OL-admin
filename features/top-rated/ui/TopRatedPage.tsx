@@ -16,7 +16,7 @@ import {
   getTopRatedWindowStatus,
 } from "@/features/top-rated/data/useTopRatedItems";
 import { toast } from "sonner";
-import { useAddTopRatedItemDialog } from "@/stores/dialog-store";
+import { useAddTopRatedItemDialog } from "@/features/top-rated/data/dialog-hooks";
 
 const TopRatedTabs = [
   { id: "all", label: "🏆 All Items" },

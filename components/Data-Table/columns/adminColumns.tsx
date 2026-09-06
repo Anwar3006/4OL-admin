@@ -1,11 +1,8 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { Phone, Calendar, Activity } from "lucide-react";
-import {
-  useViewAdminDialog,
-  useAddAdminDialog,
-  useMakeGroupLeaderDialog,
-} from "@/stores/dialog-store";
+import { useViewAdminDialog, useAddAdminDialog } from "@/features/admins/data/dialog-hooks";
+import { useMakeGroupLeaderDialog } from "@/features/chat/data/dialog-hooks";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 

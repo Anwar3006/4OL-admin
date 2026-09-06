@@ -20,7 +20,7 @@ import {
   useMedEnquiryAction,
   type MedEnquiryRow,
 } from "@/features/medenquiry/data/useMedEnquiry";
-import { useViewFacilityDialog } from "@/stores/dialog-store";
+import { useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import EnquiryDetailDialog from "./EnquiryDetailDialog";
 
 const TYPES = [

@@ -7,10 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import {
-  useViewExerciseDialog,
-  useAddExerciseDialog,
-} from "@/stores/dialog-store";
+import { useViewExerciseDialog, useAddExerciseDialog } from "@/features/fitness/data/dialog-hooks";
 import { useExercise } from "@/features/fitness/data/useExercise";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
 import {

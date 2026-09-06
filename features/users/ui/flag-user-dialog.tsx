@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useFlagUserDialog } from "@/stores/dialog-store";
+import { useFlagUserDialog } from "@/features/users/data/dialog-hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

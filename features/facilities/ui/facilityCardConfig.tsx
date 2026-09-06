@@ -4,10 +4,7 @@ import { Mail, Phone, MapPin, Star } from "lucide-react";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { StatusMap } from "@/constants/facility.const";
 import { toUppercaseFirstLetter } from "@/lib/utils";
-import {
-  useAddFacilityDialog,
-  useViewFacilityDialog,
-} from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 
 type FacilityRow = {
   id: string;

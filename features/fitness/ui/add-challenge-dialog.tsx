@@ -21,7 +21,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAddChallengeDialog } from "@/stores/dialog-store";
+import { useAddChallengeDialog } from "@/features/fitness/data/dialog-hooks";
 import {
   challengeSchema,
   TChallengeInput,

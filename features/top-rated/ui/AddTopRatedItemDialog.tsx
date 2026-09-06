@@ -32,7 +32,7 @@ import {
   TTopRatedItemInput,
   TOP_RATED_MODULES,
 } from "@/features/top-rated/schema/types";
-import { useAddTopRatedItemDialog } from "@/stores/dialog-store";
+import { useAddTopRatedItemDialog } from "@/features/top-rated/data/dialog-hooks";
 import { useUpsertTopRatedItem } from "@/features/top-rated/data/useTopRatedItems";
 import { Search, Loader2, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";

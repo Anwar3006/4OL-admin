@@ -22,11 +22,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import {
-  useAddFacilityDialog,
-  useGalleryModal,
-  useViewFacilityDialog,
-} from "@/stores/dialog-store";
+import { useGalleryModal } from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import BusinessHoursDisplay from "./business-hours-display";
 import {
   useApproveFacility,

@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-react";
 import { getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
 import ImageDropZone from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
-import { useAddConditionDialog } from "@/stores/dialog-store";
+import { useAddConditionDialog } from "@/features/diseases/data/dialog-hooks";
 import {
   conditionsSchema,
   TConditionsInput,

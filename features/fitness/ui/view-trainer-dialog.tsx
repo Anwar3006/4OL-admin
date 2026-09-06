@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useViewTrainerDialog, useAddTrainerDialog } from '@/stores/dialog-store';
+import { useViewTrainerDialog, useAddTrainerDialog } from "@/features/fitness/data/dialog-hooks";
 import { useTrainer } from "@/features/fitness/data/useTrainer";
 import { Phone, Mail, MessageSquare, Award, CheckCircle, User, Activity } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

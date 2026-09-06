@@ -6,10 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import {
-  useViewOutdoorReviewDialog,
-  useAddOutdoorReviewDialog,
-} from "@/stores/dialog-store";
+import { useViewOutdoorReviewDialog, useAddOutdoorReviewDialog } from "@/features/fitness/data/dialog-hooks";
 import { useFitnessOutdoorReview } from "@/features/fitness/data/useFitnessOutdoor";
 import {
   MessageSquare,

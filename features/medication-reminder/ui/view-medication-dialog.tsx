@@ -30,7 +30,7 @@ import {
   formatReminderInterval,
 } from "@/features/medication-reminder/data/useMedicationReminder";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
+import { useViewMediactionReminderDialog } from "@/features/medication-reminder/data/dialog-hooks";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 

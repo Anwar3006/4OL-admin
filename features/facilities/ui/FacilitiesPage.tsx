@@ -8,10 +8,7 @@ import { facilityColumns } from "./facilityColumns";
 import KpiCard from "@/components/redesign/KpiCard";
 
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
-import {
-  useAddFacilityDialog,
-  useViewFacilityDialog,
-} from "@/stores/dialog-store";
+import { useAddFacilityDialog, useViewFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import { cn } from "@/lib/utils";
 import AddFacilityDialog from "./add-facility-dialog";
 

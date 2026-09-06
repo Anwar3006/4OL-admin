@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { usePagination } from "@/hooks/use-pagination";
-import { useViewUserDialog } from "@/stores/dialog-store";
+import { useViewUserDialog } from "@/features/users/data/dialog-hooks";
 import {
   AdminUserRow,
   useAdminUsers,
