@@ -79,8 +79,11 @@ export const CONTRACT_ROUTES: ContractRoute[] = [
  * "restores" it — it used to run unauthenticated `select *` scans over
  * facility_profile and leak PII.
  */
+// Tracked BY FILE PATH, so a `.js` -> `.ts` conversion has to be reflected
+// here. E5.1 renamed this one and the suite failed immediately, which is the
+// check working: the URL is unchanged and the route still returns 410.
 export const DEPRECATED_ROUTES = [
-  { path: "/api/search/dynamic", file: "app/api/search/dynamic/route.js", expectedStatus: 410 },
+  { path: "/api/search/dynamic", file: "app/api/search/dynamic/route.ts", expectedStatus: 410 },
 ];
 
 /** Postgres functions the mobile app calls. Signatures are frozen. */

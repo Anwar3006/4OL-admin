@@ -1,10 +1,12 @@
 "use client";
 
+import type React from "react";
+
 import useRtl from "@/hooks/useRtl";
 import useDarkMode from "@/hooks/useDarkMode";
 import useSkin from "@/hooks/useSkin";
 
-export default function AuthLayout({ children }) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const [isRtl] = useRtl();
   const [isDark] = useDarkMode();
   const [skin] = useSkin();

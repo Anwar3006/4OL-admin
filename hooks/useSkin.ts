@@ -3,20 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import themeConfig from "@/configs/themeConfig";
 
-const readStoredValue = (key, fallback) => {
-  if (typeof window === "undefined") return fallback;
-  const stored = window.localStorage.getItem(key);
-  return stored === null ? fallback : JSON.parse(stored);
-};
+import { readStoredValue } from "./stored-preference";
 
-const useSkin = () => {
-  const [skin, setSkinState] = useState(themeConfig.layout.skin);
+/** `[skin, setSkin]`. Tuple, not an array — destructuring depends on it. */
+const useSkin = (): [string, (mode: string) => void] => {
+  const [skin, setSkinState] = useState<string>(themeConfig.layout.skin);
 
   useEffect(() => {
     setSkinState(readStoredValue("skin", themeConfig.layout.skin));
   }, []);
 
-  const setSkin = useCallback((mode) => {
+  const setSkin = useCallback((mode: string) => {
     setSkinState(mode);
     window.localStorage.setItem("skin", JSON.stringify(mode));
   }, []);
