@@ -10,6 +10,36 @@ import Textinput from "@/components/ui/Textinput";
 import Link from "next/link";
 import useDarkmode from "@/hooks/useDarkMode";
 
+/**
+ * ⚠️ THIS FLOW HAS NO IMPLEMENTATION.
+ *
+ * The call below was `verifyOtpSentToEmail(...)` — a bare identifier that is defined
+ * nowhere in this repo, so submitting this form threw `ReferenceError` at
+ * runtime. It was invisible because the file was `.jsx` and `tsconfig` only
+ * type-checks `.ts`/`.tsx`; converting it under E5.1 is what surfaced it.
+ *
+ * The client half of the email password-reset flow was deleted along with
+ * `components/redesign/auth/`, the same directory the `/facilities/*` shells
+ * point at. `/forgot-password` still has its component commented out.
+ *
+ * **It was deliberately NOT wired to `/api/verify-otp`**, which looks like the
+ * obvious fix and is not: that route verifies a PHONE NUMBER over SMS
+ * (`checkVerificationCode(phoneNumber, otp)`), while this page carries an
+ * email. Connecting them would send an email address where a phone number is
+ * expected and "work" until someone tried it.
+ *
+ * Nothing in the app links to `/forgot-password`, `/verify-otp` or
+ * `/reset-password`. Rebuilding or retiring the flow is a product decision —
+ * see docs/cleanup-handoff.md. Until then this throws explicitly rather than
+ * failing as an undefined-variable crash.
+ */
+function verifyOtpSentToEmail(..._args: unknown[]): never {
+  throw new Error(
+    "Password reset is not implemented: verifyOtpSentToEmail has no implementation in this " +
+      "codebase. See the note in this file before wiring it to /api/verify-otp.",
+  );
+}
+
 const schema = yup
   .object({
     otp: yup.string().required("OTP is required"),
@@ -18,7 +48,7 @@ const schema = yup
 
 const VerifyOtp = () => {
   const [isDark] = useDarkmode();
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const {
     register,
     formState: { errors },
@@ -29,7 +59,7 @@ const VerifyOtp = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: { otp: string }) => {
     const { otp } = data;
     setLoading(true);
     setErrorMessage(null);
@@ -49,7 +79,7 @@ const VerifyOtp = () => {
       }
     } catch (err) {
       console.error("Unexpected error:", err);
-      setErrorMessage(err.message || "Verification failed.");
+      setErrorMessage(err instanceof Error ? err.message : "Verification failed.");
     } finally {
       setLoading(false);
     }

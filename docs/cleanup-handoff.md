@@ -426,6 +426,28 @@ Decide and delete the losers.
   The root `redesign/` holds nine files and every one is documentation, SQL or
   an image, which is why removing the eslint exclusion (E5.3) changed the lint
   output by exactly zero problems.
+- **The email password-reset flow has no implementation, and never had one on
+  this branch.** Converting the auth pages under E5.1 surfaced it: both
+  `/reset-password` and `/verify-otp` called bare identifiers —
+  `resetPassword(...)` and `verifyOtpSentToEmail(...)` — that are defined
+  nowhere in the repo, so submitting either form threw `ReferenceError`. They
+  were invisible because the files were `.jsx` and `tsconfig` type-checks only
+  `.ts`/`.tsx`. `/forgot-password` completes the set: its component is
+  commented out and points at `components/redesign/auth/`, the same deleted
+  directory the hollow `/facilities/*` shells referenced.
+
+  **Do not wire these to `/api/verify-otp`.** It is the obvious move and it is
+  wrong: that route verifies a PHONE NUMBER over SMS
+  (`checkVerificationCode(phoneNumber, otp)`), while these pages carry an
+  email from `localStorage`. Connecting them would pass an email where a phone
+  number is expected and appear to work until someone used it.
+
+  Nothing in the app links to any of the three routes. The pages now throw an
+  explicit, named error instead of an undefined-variable crash — same failure,
+  legible — and each carries a header explaining the situation. **Rebuilding
+  or retiring the flow is a product decision**, and rebuilding needs auth and
+  database verification this session could not do.
+
 - **Two files still read through the anon client.**
   `features/medication-reminder/ui/MedicationStats.tsx` and
   `components/editor/plugins/drag-drop-paste-plugin.tsx` import `supabase`
