@@ -98,7 +98,7 @@ async function seedSymptoms() {
     const client = getSupabaseAdmin();
     const seedDataPath = path.join(
       process.cwd(),
-      "constant/nhs_symptoms_seed.json",
+      "scripts/seed-data/nhs_symptoms_seed.json",
     );
     if (!fs.existsSync(seedDataPath)) {
       console.error("❌ Missing seed_data.json");

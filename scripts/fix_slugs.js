@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const filePath = path.join(process.cwd(), "constant", "disease_seed_data.json");
+const filePath = path.join(process.cwd(), "scripts", "seed-data", "disease_seed_data.json");
 
 const slugMap = {
   "blood.and.lymph": "blood-and-lymph",

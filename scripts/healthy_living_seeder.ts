@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 // CONFIGURATION
 // ─────────────────────────────────────────────────────────────
 const BATCH_SIZE = 50;
-const SEED_FILE = "constant/nhs_healthy_living_seed.json";
+const SEED_FILE = "scripts/seed-data/nhs_healthy_living_seed.json";
 
 // ─────────────────────────────────────────────────────────────
 // SCHEMA NOTE (rewritten to match the live `healthy_living_info` table)

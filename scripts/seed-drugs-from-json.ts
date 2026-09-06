@@ -31,7 +31,7 @@ type SeedRow = NormalizedDrugRow & {
 
 const DEFAULT_SOURCE_FILE = path.join(
   process.cwd(),
-  "PILLS LIST_FINAL_MEDICATIONS.json",
+  "scripts/seed-data/PILLS LIST_FINAL_MEDICATIONS.json",
 );
 const BATCH_SIZE = 500;
 const READ_PAGE_SIZE = 1000;

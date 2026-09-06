@@ -41,7 +41,7 @@ async function seed() {
 
   try {
     // 1. Read and parse the JSON file
-    const filePath = path.join(process.cwd(), "constant/liftmanual_all_workouts_transformed.json");
+    const filePath = path.join(process.cwd(), "scripts/seed-data/liftmanual_all_workouts_transformed.json");
     const fileContent = fs.readFileSync(filePath, "utf-8");
     const exercisesData = JSON.parse(fileContent);
 

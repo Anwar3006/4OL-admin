@@ -734,7 +734,7 @@ async function seed() {
     const client = getSupabaseAdmin();
     const seedDataPath = path.join(
       process.cwd(),
-      "constant/disease_seed_data.json",
+      "scripts/seed-data/disease_seed_data.json",
     );
     if (!fs.existsSync(seedDataPath)) {
       console.error("❌ Missing seed_data.json");
