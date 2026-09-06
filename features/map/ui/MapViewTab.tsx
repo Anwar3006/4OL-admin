@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import GoogleMapContainer from "./GoogleMapContainer";
 import FilterDropdown from "./FilterDropdown";
-import ghanaLocations from "@/constant/ghana-locations.json";
+import ghanaLocations from "@/constants/ghana-locations.json";
 import { FACILITY_TYPE_OPTIONS } from "@/types/formInput";
 import { cn } from "@/lib/utils";
 import { useMapCollectors } from "@/features/map/data/useMap";

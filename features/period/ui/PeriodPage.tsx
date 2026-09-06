@@ -544,7 +544,7 @@ function PeriodWorkspace() {
   return (
     <div className="page space-y-4">
       <PageHeader
-        title="Period Tracker Operations"
+        title="🩸 Period Tracker Operations"
         subtitle="Privacy-minimized operations for Plasence cycles, safety, learning, engagement and forecast quality"
       >
         <button
@@ -605,7 +605,7 @@ function PeriodWorkspace() {
       </PageHeader>
 
       <div
-        className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950"
+        className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-[11px] text-blue-950"
         role="note"
       >
         <strong>Restricted health operations.</strong> Identity and free-text
@@ -662,7 +662,7 @@ function PeriodWorkspace() {
 
       {error && (
         <div
-          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900"
+          className="rounded-lg border border-red-200 bg-red-50 p-3 text-[11px] text-red-900"
           role="alert"
         >
           {error}
@@ -670,7 +670,7 @@ function PeriodWorkspace() {
       )}
       {message && (
         <div
-          className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
+          className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-[11px] text-emerald-900"
           role="status"
         >
           {message}
@@ -695,7 +695,7 @@ function PeriodWorkspace() {
               required
               minLength={5}
               maxLength={300}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
               placeholder="Why is this aggregate export needed?"
             />
           </label>
@@ -820,7 +820,7 @@ function PeriodWorkspace() {
               <div className="card-header flex-wrap gap-3">
                 <div>
                   <div className="card-title">{selected.label}</div>
-                  <div className="mt-1 text-xs text-slate-500">
+                  <div className="mt-1 text-[10px] text-slate-500">
                     {selected.description} ·{" "}
                     {payload.pagination?.total ?? payload.data?.length ?? 0}{" "}
                     records
@@ -832,7 +832,7 @@ function PeriodWorkspace() {
                 <input
                   id="period-search"
                   type="search"
-                  className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
                   value={query}
                   onChange={(event) => {
                     setQuery(event.target.value);

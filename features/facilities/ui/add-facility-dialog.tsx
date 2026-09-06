@@ -19,7 +19,7 @@ import {
   FACILITY_REQUIREMENTS,
   FACILITY_TYPE_OPTIONS,
 } from "@/types/formInput";
-import ghanaLocations from "@/constant/ghana-locations.json";
+import ghanaLocations from "@/constants/ghana-locations.json";
 import { Button } from "@/components/ui/button";
 import { BusinessHoursSection } from "./business-hours";
 import CustomInput from "@/components/CustomInput";

@@ -66,7 +66,14 @@ export default function DataTable<T extends Record<string, any>>({
         <thead>
           <tr className="border-b bg-slate-50">
             {columns.map((column) => (
-              <th key={column.key} className="p-3 font-medium text-slate-600">
+              <th
+                key={column.key}
+                // Matches components/Data-Table/data-table.tsx, which the other
+                // 17 features use. This component's only consumer is Period,
+                // and plain sentence-case headers here were the whole reason
+                // that page read as a different typeface to the rest.
+                className="p-3 text-[10px] font-black uppercase tracking-widest text-slate-500"
+              >
                 {column.label}
               </th>
             ))}

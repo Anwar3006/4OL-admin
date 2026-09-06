@@ -53,7 +53,7 @@ export default function TriviaOperations({
             <h3 id="trivia-events-heading" className="card-title">
               Friday schedules
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-[10px] text-slate-500">
               The quiz unlocks only during its reviewed start/end window.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default function TriviaOperations({
           </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-[11px]">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="p-3">Event</th>
@@ -80,7 +80,7 @@ export default function TriviaOperations({
                   <td className="p-3">
                     {dateTime(item.starts_at)}
                     <br />
-                    <span className="text-xs text-slate-500">
+                    <span className="text-[10px] text-slate-500">
                       to {dateTime(item.ends_at)}
                     </span>
                   </td>
@@ -124,7 +124,7 @@ export default function TriviaOperations({
             <h3 id="trivia-leads-heading" className="card-title">
               Trivia leads
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-[10px] text-slate-500">
               Consent-gated, encrypted and linked to user records when signed
               in.
             </p>
@@ -132,7 +132,7 @@ export default function TriviaOperations({
           <span className="badge badge-blue">{leads.length} records</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-[11px]">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="p-3">Lead</th>
@@ -153,19 +153,19 @@ export default function TriviaOperations({
                       {lead.socialPlatform ?? "Social"}
                     </span>
                     <br />
-                    <span className="text-xs text-slate-500">
+                    <span className="text-[10px] text-slate-500">
                       {lead.socialHandle}
                     </span>
                   </td>
                   <td className="p-3">
-                    <code className="text-xs">
+                    <code className="text-[10px]">
                       {lead.user_id ? shortId(lead.user_id) : "Guest"}
                     </code>
                   </td>
                   <td className="p-3">
                     {lead.consent_version}
                     <br />
-                    <span className="text-xs text-slate-500">
+                    <span className="text-[10px] text-slate-500">
                       {dateTime(lead.consented_at)}
                     </span>
                   </td>
@@ -194,7 +194,7 @@ export default function TriviaOperations({
             <h3 id="trivia-fulfillment-heading" className="card-title">
               Winners &amp; prize fulfillment
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-[10px] text-slate-500">
               One row per winner × prize tier. Mark <strong>Sent</strong> once
               the prize is paid out — the winner then receives the in-app
               fulfillment prompt. <strong>Fulfilled</strong> closes the loop.
@@ -209,7 +209,7 @@ export default function TriviaOperations({
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-[11px]">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="p-3">Tier</th>
@@ -249,7 +249,7 @@ export default function TriviaOperations({
                       ) : null}
                     </td>
                     <td className="p-3">
-                      <code className="text-xs">
+                      <code className="text-[10px]">
                         {submission?.user_id
                           ? shortId(submission.user_id)
                           : "Guest"}
@@ -257,13 +257,13 @@ export default function TriviaOperations({
                     </td>
                     <td className="p-3">
                       {lead?.mobile ?? (
-                        <span className="text-xs text-slate-500">
+                        <span className="text-[10px] text-slate-500">
                           No consented lead
                         </span>
                       )}
                     </td>
                     <td className="p-3">{status(item.prize_status)}</td>
-                    <td className="p-3 text-xs text-slate-500">
+                    <td className="p-3 text-[10px] text-slate-500">
                       {item.prize_status === "fulfilled"
                         ? `Sent ${date(item.sent_at)} · confirmed ${date(item.confirmed_at)}`
                         : item.prize_status === "sent"
@@ -336,7 +336,7 @@ export default function TriviaOperations({
               <h3 id="trivia-blocked-heading" className="card-title">
                 Blocked devices &amp; users
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-[10px] text-slate-500">
                 Privacy-hashed identifiers only — never raw device tokens or
                 phone numbers. Active blocks are rejected on submit.
               </p>
@@ -346,7 +346,7 @@ export default function TriviaOperations({
             </span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-[11px]">
               <thead>
                 <tr className="border-b bg-slate-50">
                   <th className="p-3">Device hash</th>
@@ -363,10 +363,10 @@ export default function TriviaOperations({
                 {blockedDevices.map((item) => (
                   <tr key={item.id} className="border-b">
                     <td className="p-3">
-                      <code className="text-xs">{shortId(item.device_hash)}</code>
+                      <code className="text-[10px]">{shortId(item.device_hash)}</code>
                     </td>
                     <td className="p-3">
-                      <code className="text-xs">
+                      <code className="text-[10px]">
                         {item.mobile_hash ? shortId(item.mobile_hash) : "—"}
                       </code>
                     </td>
@@ -415,14 +415,14 @@ export default function TriviaOperations({
               <h3 id="trivia-rules-heading" className="card-title">
                 Trivia rules settings
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-[10px] text-slate-500">
                 Every change is audit-logged. The per-device question shuffle
                 keeps scoring question-ID based.
               </p>
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-[11px]">
               <thead>
                 <tr className="border-b bg-slate-50">
                   <th className="p-3">Rule</th>
@@ -438,14 +438,14 @@ export default function TriviaOperations({
                       <div className="font-medium">
                         {String(rule.key).replaceAll("_", " ")}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-[10px] text-slate-500">
                         {rule.description}
                       </div>
                     </td>
                     <td className="p-3">
-                      <code className="text-xs">{rule.value}</code>
+                      <code className="text-[10px]">{rule.value}</code>
                     </td>
-                    <td className="p-3 text-xs">{rule.enforced_by}</td>
+                    <td className="p-3 text-[10px]">{rule.enforced_by}</td>
                     <td className="p-3">
                       <button
                         type="button"
@@ -608,17 +608,17 @@ export function TriviaBatchModal({
               <div className="flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
                   {status(question.status)}
-                  <span className="text-xs text-slate-500">
+                  <span className="text-[10px] text-slate-500">
                     validation: {question.validation_status}
                   </span>
                   {question.position != null && (
-                    <span className="text-xs text-slate-400">
+                    <span className="text-[10px] text-slate-400">
                       #{question.position}
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-medium">{question.question}</p>
-                <ul className="mt-1 space-y-0.5 text-xs text-slate-600">
+                <p className="text-[11px] font-medium">{question.question}</p>
+                <ul className="mt-1 space-y-0.5 text-[10px] text-slate-600">
                   {(question.options ?? []).map(
                     (option: string, index: number) => (
                       <li
@@ -635,7 +635,7 @@ export function TriviaBatchModal({
                   )}
                 </ul>
                 {question.explanation && (
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-[10px] text-slate-500">
                     {question.explanation}
                   </p>
                 )}
@@ -644,7 +644,7 @@ export function TriviaBatchModal({
           </div>
         ))}
         {!questions.length && (
-          <p className="text-sm text-slate-500">
+          <p className="text-[11px] text-slate-500">
             This batch has no questions.
           </p>
         )}

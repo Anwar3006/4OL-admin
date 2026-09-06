@@ -26,7 +26,7 @@ export default function AiSuggestions({
           <h3 id="ai-suggestions-heading" className="card-title">
             AI content suggestions
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-[10px] text-slate-500">
             Grounded in approved encyclopedia sources (Diseases &amp;
             Conditions, Symptoms, Healthy Living). Admin sets the schedule
             date, frequency cap and duration — AI never self-publishes.
@@ -37,7 +37,7 @@ export default function AiSuggestions({
         </span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-[11px]">
           <thead>
             <tr className="border-b bg-slate-50">
               <th className="p-3">Job</th>
@@ -59,12 +59,12 @@ export default function AiSuggestions({
                     <div className="font-medium">
                       {String(item.job_type ?? "").replaceAll("_", " ")}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-[10px] text-slate-500">
                       {dateTime(item.created_at)} ·{" "}
                       <code className="text-[11px]">{shortId(item.id)}</code>
                     </div>
                   </td>
-                  <td className="p-3 text-xs">
+                  <td className="p-3 text-[10px]">
                     {(item.source_menus ?? []).join(", ") || "—"}
                   </td>
                   <td className="p-3">{status(item.status)}</td>
@@ -124,7 +124,7 @@ export default function AiSuggestions({
                             name="scheduledAt"
                             type="datetime-local"
                             required
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
                           />
                         </label>
                         <label className="form-label">
@@ -132,7 +132,7 @@ export default function AiSuggestions({
                           <select
                             name="frequencyCapDays"
                             defaultValue="14"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
                           >
                             <option value="7">1 per 7 days</option>
                             <option value="14">1 per 14 days</option>
@@ -144,7 +144,7 @@ export default function AiSuggestions({
                           <select
                             name="surfaceDurationWeeks"
                             defaultValue="2"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
                           >
                             <option value="1">1 week</option>
                             <option value="2">2 weeks</option>
@@ -156,7 +156,7 @@ export default function AiSuggestions({
                           <select
                             name="surfaceChannel"
                             defaultValue="plasence_library"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
                           >
                             <option value="plasence_library">Library — Featured</option>
                             <option value="push_digest">Push digest</option>

@@ -9,7 +9,7 @@ import { Icon } from "@iconify/react";
 import Loading from "@/components/Loading";
 import { useApproveFacility } from "@/features/facilities/data/useFacilities";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
-import { facilityFields } from "@/constant/facility-labels-data";
+import { facilityFields } from "@/constants/facility-labels-data";
 
 export default function Page() {
   const router = useRouter();

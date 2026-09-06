@@ -1,9 +1,9 @@
 /**
  * Shared helpers for the Map & Footprint server routes (Gap Analysis Part F).
- * Coverage denominator comes from constant/ghana-locations.json (decision
+ * Coverage denominator comes from constants/ghana-locations.json (decision
  * F-D2): districts with >=1 active facility / districts listed per region.
  */
-import ghanaLocations from "@/constant/ghana-locations.json";
+import ghanaLocations from "@/constants/ghana-locations.json";
 
 const LOCATION_MAP = ghanaLocations as Record<string, string[]>;
 

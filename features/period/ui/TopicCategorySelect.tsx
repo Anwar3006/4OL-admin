@@ -58,14 +58,14 @@ export default function TopicCategorySelect({
           maxLength={120}
           defaultValue={defaultValue}
           placeholder="Type a custom topic"
-          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
         />
       ) : (
         <select
           name={name}
           required={required}
           defaultValue={defaultValue}
-          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
           onChange={(event) => {
             if (event.target.value === CUSTOM_VALUE) setCustom(true);
           }}

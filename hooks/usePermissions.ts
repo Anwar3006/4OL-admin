@@ -8,7 +8,7 @@ import {
   getAllowedRoutes,
   getAllowedMenuItems,
 } from "@/utils/permission-helper";
-import type { UserPermission } from "@/constant/permissions";
+import type { UserPermission } from "@/constants/permissions";
 
 export const usePermissions = () => {
   const [permissions, setPermissions] = useState<UserPermission[]>([]);

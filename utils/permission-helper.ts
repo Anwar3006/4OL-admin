@@ -1,4 +1,4 @@
-import { PERMISSION_MAPPINGS, type UserPermission } from "../constant/permissions";
+import { PERMISSION_MAPPINGS, type UserPermission } from "@/constants/permissions";
 
 /**
  * Helper function to get all allowed routes for a user's permissions

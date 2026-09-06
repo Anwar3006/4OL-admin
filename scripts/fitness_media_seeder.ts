@@ -9,7 +9,11 @@ dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 // ─────────────────────────────────────────────────────────────
 // CONFIGURATION
 // ─────────────────────────────────────────────────────────────
-const MEDIA_DIR = "constant/Fitness_IMG";
+// Operator-supplied media, not in the repo — drop the folder here before
+// running. Was "constant/Fitness_IMG"; that directory has never existed in
+// git, and constant/ was merged into constants/, so the path now points at
+// where E6.3 put every other seed input.
+const MEDIA_DIR = "scripts/seed-data/Fitness_IMG";
 const BUCKET_NAME =
   process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 

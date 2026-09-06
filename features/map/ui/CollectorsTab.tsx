@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { UserSearchSelect } from "@/components/UserSearchSelect";
 import { cn } from "@/lib/utils";
 import { useHasPermission } from "@/stores/permission-context";
-import ghanaLocations from "@/constant/ghana-locations.json";
+import ghanaLocations from "@/constants/ghana-locations.json";
 import {
   collectorDisplayId,
   useAddCollector,

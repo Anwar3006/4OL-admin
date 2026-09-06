@@ -16,7 +16,7 @@ export default function FeatureFlags({
   return (
     <div className="card p-4">
       <div className="card-title">Staged rollout controls</div>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-[10px] text-slate-500">
         Changes are audited. A disabled flag always has an effective rollout of
         0%.
       </p>
@@ -28,17 +28,17 @@ export default function FeatureFlags({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-slate-900">
+                <div className="text-[11px] font-semibold text-slate-900">
                   {flag.key.replaceAll("_", " ")}
                 </div>
-                <div className="mt-1 text-xs text-slate-500">
+                <div className="mt-1 text-[10px] text-slate-500">
                   {flag.description}
                 </div>
               </div>
               {status(flag.enabled ? "active" : "paused")}
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <label className="text-xs text-slate-600">
+              <label className="text-[10px] text-slate-600">
                 Rollout{" "}
                 <input
                   id={`rollout-${flag.key}`}
@@ -77,7 +77,7 @@ export default function FeatureFlags({
         ))}
       </div>
       {!flags.length && (
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 text-[11px] text-slate-500">
           No feature flags are configured.
         </p>
       )}

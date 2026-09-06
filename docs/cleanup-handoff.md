@@ -405,6 +405,29 @@ query string survives, which matters here because several in-app links carry
 `?tab=` and `?id=`. Page *rendering* still needs the sweep; the redirect itself
 does not.
 
+### One feature looked like a different typeface. It was a different table.
+
+Period Tracker read as visually apart from every other page. It was not the
+font: **every page computes to Inter**, measured on body, headings and 40
+sampled elements. Nor was it a per-page override — Period sets no font class.
+
+`features/period` was the **only** consumer of
+`components/redesign/DataTable.tsx`. The other seventeen features use
+`components/Data-Table/data-table.tsx`, whose headers are
+`text-[10px] font-black uppercase tracking-widest`. The redesign one rendered
+`p-3 font-medium text-slate-600` — sentence case. Uppercase column headers
+against sentence-case ones is what reads as "a different font".
+
+Fixed in one line in that component, which is safe precisely because Period is
+its only consumer. Period's ad-hoc `text-xs`/`text-sm` were also snapped onto
+the px scale the rest of the repo uses, and its page title gained the emoji
+every other feature's title carries.
+
+**If you chase a visual inconsistency here, measure `getComputedStyle` first.**
+The font-family was never the variable, and three plausible theories
+(`tailwind.config.js` not being read under v4, a per-page override, a missing
+`@config`) were all wrong before measurement settled it.
+
 ### `reply_to` was silently dropped on the support email
 
 `app/api/support/route.ts` passed `reply_to: email` to Resend, which expects
