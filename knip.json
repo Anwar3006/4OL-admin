@@ -11,6 +11,7 @@
   "project": ["**/*.{ts,tsx,js,jsx,mjs}"],
 
   "ignore": [
+    "lib/db/database.types.ts",
     "redesign/**",
     "Claude outputs/**",
     ".next/**"

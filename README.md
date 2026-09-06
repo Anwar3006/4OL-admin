@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 4 Our Life — Admin Dashboard
+
+Next.js admin panel for Ghanaian healthcare platform.
+
+## Architecture & Documentation
+
+- **[Architecture Blueprint](docs/ARCHITECTURE_BLUEPRINT.md)**: Feature module layout, 3-tier Supabase database clients, Zustand dialog store pattern, and contract safeguards.
+- **[CLAUDE.md](CLAUDE.md)**: Developer guidelines, data access rules, and repo constraints.
+- **[Mobile Contract](docs/mobile-contract.md)**: Contracted API endpoints and RPC signatures for companion Expo mobile app.
+- **[Cleanup Handoff](docs/cleanup-handoff.md)**: Codebase cleanup history and status.
+
+---
 
 ## Getting Started
 

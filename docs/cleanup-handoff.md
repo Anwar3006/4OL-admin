@@ -81,7 +81,7 @@ and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
 | **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
 | **E3.4** split `lib/` | **Already done.** |
 | **E6.3** move the 4.1 MB seed JSON | Only `scripts/seeder.ts` reads it — no app code imports it, so the build proves the move. Running the seeder needs a database; moving the file does not. |
-| **E7** documentation           | **Partial.** `CLAUDE.md`, **28 feature READMEs** (one per feature, enforced by `tests/unit/feature-layout.test.ts`), `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md` and this file. E7.4 — archiving the ~700 KB of gap-analysis/TASKS files at the repo root — is not started. |
+| **E7** documentation           | **Done.** `CLAUDE.md`, 28 feature READMEs, `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md`, this file, and (E7.4) 11 root gap-analysis/TASKS files moved to `docs/archive/`. |
 
 **The third proof, offline.** Rule 3 wants two proofs and grep and knip each
 have a blind spot. A third, which needs no database, is whether the file
@@ -100,14 +100,16 @@ This is what proved `users/_components/view-user-dialog.jsx` dead while its
 
 | Task | What you can prove | What you cannot |
 | --- | --- | --- |
-| **E4.1** split `ai/page.tsx` (1,236 lines) | It compiles and builds | That each tab still renders. The Period split captured a live per-endpoint baseline first; you cannot. Split by tab, keep every block verbatim, and say in the commit that only compilation was verified. |
-| **E4.2** `stores/dialog-store.ts` | Types line up across all callers | That dialogs still open. It is a typed Zustand store, so `tsc` covers most of the risk — but not wiring. |
-| **E9** extract the blueprint | Structure and docs | Anything runtime. |
+| **E4.1** split `ai/page.tsx` | **Done.** Verified structurally: four tabs imported and rendered once each, trigger mechanism carried over verbatim. That each tab *renders* still needs the sweep. |
+| **E4.2** `stores/dialog-store.ts` | **Done.** All 47 hooks accounted for one by one; one store retained. That dialogs *open* still needs the sweep. |
+| **E9** extract the blueprint | **Done.** `docs/ARCHITECTURE_BLUEPRINT.md`, linked from a rewritten `README.md`. |
 
 ### Do not attempt without access
 
-- **E5.2 generated DB types** — definitionally needs introspection. There is no
-  `gen:types` script yet; adding one is fine, running it is not.
+- ~~**E5.2 generated DB types**~~ — **done**, and it did need introspection.
+  `lib/db/database.types.ts` is committed, so a session without credentials can
+  now *use* it freely; only regenerating it (`pnpm gen:types`) needs access.
+  Do not wire `<Database>` into the shared clients — it crashes `tsc`.
 - ~~**E3.3 route renames**~~ — **this entry was wrong, and it is done.** It
   claimed the guard is the smoke sweep and that you cannot run the assertion
   without credentials. A redirect declared in `next.config.ts` fires **before**
@@ -155,14 +157,14 @@ signature half.
 | **E4.1** god files             | **Done.** Period (4,585 → 889 + 16 files) and `ai/page.tsx` (1,236 → 235 + 5 files: four tabs, `shared.tsx`, `schema/types.ts`). |
 | **E4.2** dialog store          | **Done.** 991 → 185 lines. One Zustand store still holds all state; the 47 per-dialog hooks moved to `features/<name>/data/dialog-hooks.ts`. Cross-cutting hooks (`useCloseAllDialogs`, `useOpenDialogCount`, `useGalleryModal`) stayed central. |
 | **E5.1** convert `.js/.jsx` | **Done.** Zero `.js`/`.jsx` left in app code (was 79, then 52). `@types/google.maps` added so the map container could use real Maps types rather than `any`. |
-| **E5.2** generated DB types    | **Not started.** Every `schema/types.ts` is hand-written and can drift.                                                                                                                                 |
+| **E5.2** generated DB types    | **Done.** `lib/db/database.types.ts` (15,100 lines) + `pnpm gen:types`. Used per-module, **not** on the shared clients — that instantiation crashes `tsc` at 2 GB. See `lib/db/README.md`. |
 | **E5.3** lint everything       | **Done — and it was a no-op.** The exclusion is gone, but `redesign/**` holds no code (9 files: markdown, SQL, a PNG). The live components are in `components/redesign/`, which was never excluded. |
 | **E6.1** knip                  | **Done.** knip reports **0 unused files and 0 unused dependencies**. |
 | **E6.2** prune deps            | **Done.** 120 → 82 runtime deps (21 → 17 dev). `tailwindcss-animate` is a knip false positive — loaded from CSS — and is now in `ignoreDependencies`. |
 | **E6.3** seed data out of tree | **Done.** The three seed JSONs (incl. the 4.1 MB workouts file) live in `scripts/seed-data/`; no app code imports them. The build heap dropped 4096 → 2048 MB as a result, verified building at 1024. |
-| **E7** documentation           | **Partial.** `CLAUDE.md`, **28 feature READMEs** (one per feature, enforced by `tests/unit/feature-layout.test.ts`), `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md` and this file. E7.4 — archiving the ~700 KB of gap-analysis/TASKS files at the repo root — is not started. |
+| **E7** documentation           | **Done.** `CLAUDE.md`, 28 feature READMEs, `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md`, this file, and (E7.4) 11 root gap-analysis/TASKS files moved to `docs/archive/`. |
 | **E8** mobile contract         | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to.                                    |
-| **E9** extract the blueprint   | **Not started.**                                                                                                                                                                                        |
+| **E9** extract the blueprint   | **Done.** `docs/ARCHITECTURE_BLUEPRINT.md`, linked from a rewritten `README.md`. |
 
 ---
 

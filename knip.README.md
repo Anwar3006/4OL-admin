@@ -34,6 +34,12 @@ Knip finds entry points from plugins (Next.js, Vitest, Playwright) and from
   ignored by anything. Earlier notes in `docs/cleanup-handoff.md` conflated
   the two and concluded the ignored tree contained live UI; it does not.
 - **`Claude outputs/**`** — scratch, not source.
+- **`lib/db/database.types.ts`** — generated (E5.2), and deliberately not
+  imported by the shared clients: typing `createClient<Database>` instantiates
+  a 15,100-line type across ~700 call sites and crashes `tsc` at 2 GB. It is
+  meant to be imported per-module where a real row type is wanted, so at any
+  given moment it may legitimately have zero importers. Regenerate with
+  `pnpm gen:types`; see `lib/db/README.md`.
 
 ## `ignoreDependencies`
 

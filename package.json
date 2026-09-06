@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=2048 next build",
+    "gen:types": "supabase gen types typescript --project-id rhbbxttxnvcziyqzptqs --schema public > lib/db/database.types.ts",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",

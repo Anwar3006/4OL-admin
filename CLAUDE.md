@@ -7,8 +7,7 @@ Next.js admin panel for a Ghanaian healthcare platform. A companion Expo app
 `eu-west-1`; users are in Ghana, so every round trip costs ~100–160 ms before
 the database does any work — payload size matters more than query time.
 
-This codebase is being cleaned up to serve as the blueprint for several more
-products. **Read `docs/cleanup-handoff.md` before making structural changes.**
+This codebase serves as the blueprint for several companion products. **Read `docs/ARCHITECTURE_BLUEPRINT.md` and `docs/cleanup-handoff.md` before making structural changes.**
 
 ---
 
@@ -31,6 +30,13 @@ anything on an RLS-locked table, goes through an API route with
 `getAdminClient()` — after `requireAdminApiUser(permission)`.
 
 Full reasoning and the SQL to check a table: `lib/db/README.md`.
+
+**Check a column against `lib/db/database.types.ts` before writing a query.**
+It is generated from the live schema (`pnpm gen:types`) and is the answer to
+"is this column real?" — an unknown column does not degrade, it fails the
+whole PostgREST request, which is how the Marketing Subscribers tab 500'd for
+months on a `user_profiles.email` that does not exist. Use it per-module;
+do **not** type the shared clients with `<Database>` — that crashes `tsc`.
 
 **When you write that check, remember `public` is every role, not "logged-in
 users".** A policy `TO public` does cover `authenticated` — a check that looks

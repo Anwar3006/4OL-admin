@@ -65,3 +65,55 @@ Anything this returns is invisible to `getBrowserClient()` and
 The Expo app talks to this database directly through its own Supabase client
 under RLS — 34 tables and 28 RPCs — plus 13 API routes in this repo. Changing
 an RLS policy is therefore a mobile change. See `docs/mobile-contract.md`.
+
+---
+
+## Generated types (E5.2)
+
+`database.types.ts` is the live `public` schema, generated from the Supabase
+project. Regenerate it with:
+
+```bash
+pnpm gen:types      # supabase gen types typescript --project-id … 
+```
+
+It is the answer to "is this column real?". The Marketing Subscribers tab
+returned a 500 for months because it selected `user_profiles(…, email, …)` and
+that column does not exist — email lives in `auth.users`. These types catch
+that at compile time:
+
+```ts
+type UserRow = Database["public"]["Tables"]["user_profiles"]["Row"];
+const x: UserRow["email"] = "…";
+// Property 'email' does not exist on type '{ admin_permissions: Json; … }'
+```
+
+### The clients are NOT globally typed, and that is deliberate
+
+The obvious move is `createClient<Database>(…)` in `admin.ts`, `browser.ts` and
+`server.ts`. **Do not** — it was tried and measured. `Database` is ~15,100
+lines, and instantiating it across every call site in the app takes `tsc` past
+2 GB and **crashes it after roughly three minutes**:
+
+```
+FATAL ERROR: Ineffective mark-compacts near heap limit
+JavaScript heap out of memory
+```
+
+The file merely *existing* costs nothing — typecheck stays at ~7 seconds. It is
+the generic across ~700 call sites that does not fit. Raising the heap would
+trade a fast check for a slow, fragile one on every CI run, right after E6.3
+got the build heap down from 4 GB to 2 GB.
+
+**So use them per-module, where the payoff is worth it:**
+
+```ts
+import type { Database } from "@/lib/db/database.types";
+type Row = Database["public"]["Tables"]["facility_profile"]["Row"];
+```
+
+That is also how to check a hand-written `schema/types.ts` against reality:
+derive from `Database` and let the compiler tell you where the two disagree.
+Those hand-written files were not rewritten wholesale — each one is a
+narrower, UI-shaped view of a row, and replacing them mechanically would lose
+that. They are now checkable, which is what E5.2 was for.
