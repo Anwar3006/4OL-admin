@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
-import { processReportQueue } from "@/lib/reports/processor";
+import { processReportQueue } from "@/features/reports/engine/processor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;

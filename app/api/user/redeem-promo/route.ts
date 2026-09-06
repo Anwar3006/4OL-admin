@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/lib/supabase/indexAdmin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * POST /api/user/redeem-promo — promo-code redemption from the mobile paywall
@@ -24,6 +24,7 @@ function bearerToken(request: NextRequest) {
 const GRANTABLE_TYPES = new Set(["free_trial", "partner"]);
 
 export async function POST(req: NextRequest) {
+  const supabaseAdmin = getAdminClient();
   const token = bearerToken(req);
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -22,10 +22,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
-import { computeReportWindow, REPORT_CADENCES, REPORT_SECTIONS, runIdempotencyKey } from "@/lib/reports/types";
-import type { ReportRecipientRow, ReportRunRow, ReportSection } from "@/lib/reports/types";
-import { narrativeProviderConfigured, narrativeModel } from "@/lib/reports/narrative";
-import { processReportQueue, processReportRun } from "@/lib/reports/processor";
+import { computeReportWindow, REPORT_CADENCES, REPORT_SECTIONS, runIdempotencyKey } from "@/features/reports/engine/types";
+import type { ReportRecipientRow, ReportRunRow, ReportSection } from "@/features/reports/engine/types";
+import { narrativeProviderConfigured, narrativeModel } from "@/features/reports/engine/narrative";
+import { processReportQueue, processReportRun } from "@/features/reports/engine/processor";
 
 export const dynamic = "force-dynamic";
 

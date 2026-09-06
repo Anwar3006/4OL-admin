@@ -1,7 +1,7 @@
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase-server";
-import { supabaseAdmin } from "@/lib/supabase/indexAdmin";
+import { getAdminClient } from "@/lib/db/admin";
 
 /**
  * Get presigned upload URL from Supabase Storage
@@ -24,6 +24,8 @@ export async function getPresignedUploadUrl(filePath: string) {
 
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+
+    const supabaseAdmin = getAdminClient();
 
     // Create signed upload URL using admin client (bypasses RLS)
     const { data, error } = await supabaseAdmin.storage
@@ -115,6 +117,8 @@ export async function deleteFile(filePath: string) {
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
+    const supabaseAdmin = getAdminClient();
+
     // Delete file using admin client (bypasses RLS)
     const { error } = await supabaseAdmin.storage
       .from(bucketName)
@@ -167,6 +171,8 @@ export async function deleteFiles(filePaths: string[]) {
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
+    const supabaseAdmin = getAdminClient();
+
     // Delete files using admin client
     const { error } = await supabaseAdmin.storage
       .from(bucketName)
@@ -215,6 +221,8 @@ export async function getSignedUrl(filePath: string, expiresIn = 3600) {
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
 
+    const supabaseAdmin = getAdminClient();
+
     const { data, error } = await supabaseAdmin.storage
       .from(bucketName)
       .createSignedUrl(filePath, expiresIn);
@@ -260,6 +268,8 @@ export async function moveFile(filePath: string, newFolder: string) {
 
     const bucketName =
       process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+
+    const supabaseAdmin = getAdminClient();
 
     const { data, error } = await supabaseAdmin.storage
       .from(bucketName)

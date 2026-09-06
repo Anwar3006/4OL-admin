@@ -1,5 +1,5 @@
 import { Twilio } from "twilio";
-import { supabaseAdmin } from "./supabase/indexAdmin";
+import { getAdminClient } from "./db/admin";
 
 export const client = new Twilio(
   process.env.TWILIO_ACCOUNT_SID!,
@@ -14,6 +14,7 @@ export async function initiateWhatsAppHandshake(
   gpsAddress: string,
 ) {
   try {
+    const supabaseAdmin = getAdminClient();
     const templateSid = contentSid || process.env.TWILIO_CONTENT_TEMPLATE_SID;
     
     if (!templateSid) {

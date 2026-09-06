@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { PinpointSMSVoiceV2Client, SendTextMessageCommand } from "@aws-sdk/client-pinpoint-sms-voice-v2";
-import { supabaseAdmin } from "./supabase/indexAdmin";
+import { getAdminClient } from "./db/admin";
 
 const smsClient = new PinpointSMSVoiceV2Client({ region: process.env.AWS_REGION });
 
@@ -62,6 +62,7 @@ export async function sendVerificationCode(phoneNumber: string) {
     const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
 
+    const supabaseAdmin = getAdminClient();
     const { error: dbError } = await supabaseAdmin.from("otp_verifications").insert({
       phone_number: phoneNumber,
       otp_code: hashOtp(code),
@@ -94,6 +95,7 @@ export async function sendVerificationCode(phoneNumber: string) {
  */
 export async function checkVerificationCode(phoneNumber: string, code: string) {
   try {
+    const supabaseAdmin = getAdminClient();
     const { data: pending, error: fetchError } = await supabaseAdmin
       .from("otp_verifications")
       .select("id, otp_code, attempts")

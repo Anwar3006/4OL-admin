@@ -12,8 +12,16 @@ features/reports/
   ui/       5 files — components
   api/      2 files — route handlers, one module per endpoint
   data/     1 files — hooks and queries
+  engine/   4 files — the run pipeline (collectors → narrative → processor)
+            plus the shared section/cadence vocabulary
   schema/   (empty)
 ```
+
+`engine/` arrived from `lib/reports/` in E3.4 — it was feature-local to
+reports (only `api/reports.ts` and `api/cron.ts` imported it), so it lives
+with the feature that owns it. Its collectors and processor still use the
+deprecated `getSupabaseAdmin()` shim; converting them to `getAdminClient()`
+rides along whenever this feature is next touched.
 
 ## Routes
 
