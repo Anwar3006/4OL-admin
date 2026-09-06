@@ -9,7 +9,7 @@
 
 import React, { useState } from "react";
 import { GHANA_REGIONS_ENUM } from "@/types/formInput";
-import { useFacilitiesApiList } from "@/hooks/supabase-calls/useFacilitiesApi";
+import { useFacilitiesApiList } from "@/features/facilities/data/useFacilitiesApi";
 import {
   JOB_TYPES,
   usePostJob,

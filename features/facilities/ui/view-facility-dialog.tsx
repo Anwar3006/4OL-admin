@@ -27,12 +27,12 @@ import {
   useGalleryModal,
   useViewFacilityDialog,
 } from "@/stores/dialog-store";
-import BusinessHoursDisplay from "@/app/(dashboard)/facilities/_components/business-hours-display";
+import BusinessHoursDisplay from "./business-hours-display";
 import {
   useApproveFacility,
   useFacilityProfile,
   useRejectFacility,
-} from "@/hooks/supabase-calls/useFacilities";
+} from "@/features/facilities/data/useFacilities";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";

@@ -1,4 +1,4 @@
-import { BusinessDay } from "../schemas/facility-profile.schema";
+import { BusinessDay } from "@/features/facilities/schema/types";
 import { ADMIN_ROLES, ADMIN_ROLE_OPTIONS } from "../lib/admin-roles";
 
 // Define the sex options

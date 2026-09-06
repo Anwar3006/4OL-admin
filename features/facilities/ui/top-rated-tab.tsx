@@ -16,7 +16,7 @@ import {
   useRemoveTopRatedApi,
   useSetTopRatedApi,
   type FacilityRow,
-} from "@/hooks/supabase-calls/useFacilitiesApi";
+} from "@/features/facilities/data/useFacilitiesApi";
 
 const SLOT_CAP = 10;
 

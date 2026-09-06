@@ -13,7 +13,7 @@ import {
   TFacilityProfileInput,
   TFacilityProfileOutput,
   facilityProfileSchema,
-} from "@/schemas/facility-profile.schema";
+} from "@/features/facilities/schema/types";
 import {
   DEFAULT_BUSINESS_HOURS,
   FACILITY_REQUIREMENTS,
@@ -39,7 +39,7 @@ import FacilityCredentialsModal from "./facility-credentials-modal";
 import {
   useCreateFacilityProfile,
   useUpdateFacilityProfile,
-} from "@/hooks/supabase-calls/useFacilities";
+} from "@/features/facilities/data/useFacilities";
 import { notifyFacilityRegistration } from "@/actions/share-facility-login";
 import { createFacilityOwnerAccount } from "@/actions/facility-owner.actions";
 

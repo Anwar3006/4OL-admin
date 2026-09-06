@@ -1,34 +1,5 @@
 /**
- * GET /api/facilities/options — lightweight facility picker feed.
- * Used by BedTracker's register dialog (Part L Phase 5 interconnection:
- * resolve against facility_profile instead of free-text names).
+ * Route entry only — see features/facilities/README.md.
+ * Handler lives in features/facilities/api/options.ts.
  */
-
-import { NextResponse } from "next/server";
-import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
-
-export async function GET(request: Request) {
-  const auth = await requireAdminApiUser("facilities.view");
-  if (!auth.ok) return adminAuthErrorResponse(auth);
-
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get("search")?.trim() ?? "";
-
-  const admin = getSupabaseAdmin();
-  let query = admin
-    .from("facility_profile")
-    .select("id, facility_name, facility_type, area, region, status")
-    .order("facility_name", { ascending: true })
-    .limit(30);
-  if (search) {
-    query = query.ilike("facility_name", `%${search}%`);
-  }
-
-  const { data, error } = await query;
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ options: data ?? [] });
-}
+export { GET } from "@/features/facilities/api/options";

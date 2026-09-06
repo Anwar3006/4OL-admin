@@ -14,7 +14,7 @@ import {
   useFacilitiesApiList,
   usePauseFeaturedApi,
   useSetFeaturedApi,
-} from "@/hooks/supabase-calls/useFacilitiesApi";
+} from "@/features/facilities/data/useFacilitiesApi";
 
 const FeaturedTab = () => {
   const canFeature = useHasPermission("facilities.feature");

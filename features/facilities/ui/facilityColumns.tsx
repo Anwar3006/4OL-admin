@@ -15,7 +15,7 @@ import {
   useViewFacilityDialog,
 } from "@/stores/dialog-store";
 import { cn, toUppercaseFirstLetter } from "@/lib/utils";
-import { useDeleteFacility } from "@/hooks/supabase-calls/useFacilities";
+import { useDeleteFacility } from "@/features/facilities/data/useFacilities";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 export const facilityColumns: ColumnDef<any>[] = [

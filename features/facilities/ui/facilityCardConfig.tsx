@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail, Phone, MapPin, Star } from "lucide-react";
-import { MobileCardConfig } from "../mobile-card-types";
+import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { StatusMap } from "@/constants/facility.const";
 import { toUppercaseFirstLetter } from "@/lib/utils";
 import {

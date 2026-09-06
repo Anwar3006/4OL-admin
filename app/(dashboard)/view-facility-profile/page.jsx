@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
 import Loading from "@/components/Loading";
-import { useApproveFacility } from "@/hooks/supabase-calls/useFacilities";
+import { useApproveFacility } from "@/features/facilities/data/useFacilities";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { facilityFields } from "@/constant/facility-labels-data";
 

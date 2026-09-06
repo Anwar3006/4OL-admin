@@ -11,7 +11,7 @@ import { apiFetch } from "@/lib/api-fetch";
 import { toast } from "sonner";
 import { useMedEnquiryOverview } from "@/hooks/supabase-calls/useMedEnquiry";
 import { STATUS_LABELS, TYPE_LABELS, formatEnqId, formatSubmittedAt } from "@/components/Data-Table/columns/medEnquiryColumns";
-import FacilityViewDialog from "../facilities/_components/view-facility-dialog";
+import FacilityViewDialog from "@/features/facilities/ui/view-facility-dialog";
 import AllEnquiriesTab from "./_components/AllEnquiriesTab";
 import PendingEnquiriesTab from "./_components/PendingEnquiriesTab";
 import EscrowTab from "./_components/EscrowTab";

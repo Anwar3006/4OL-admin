@@ -17,7 +17,7 @@ import {
   FACILITY_PROFILE_QUERY_KEYS,
   FEATURED_QUERY_KEYS,
   TOP_RATED_QUERY_KEYS,
-} from "@/hooks/supabase-calls/useFacilities";
+} from "@/features/facilities/data/useFacilities";
 
 export const FACILITIES_API_KEYS = {
   all: ["facilities-api"] as const,

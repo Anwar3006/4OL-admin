@@ -1,5 +1,5 @@
 import z from "zod";
-import { FACILITY_TYPE_ENUM, GHANA_REGIONS_ENUM } from "../types/formInput";
+import { FACILITY_TYPE_ENUM, GHANA_REGIONS_ENUM } from "@/types/formInput";
 
 export const timeString = z
   .string()

@@ -53,8 +53,8 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **7 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living. **31 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
-| **E3.3** kebab-case routes | **Not started.** Needs redirects. |
+| **E3.2** migrate features | **8 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities. **29 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.3** kebab-case routes | **Not started.** Needs redirects. Now also owns the 17 hollow `/facilities/*` routes and the `/healthy_living` underscore — see below. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
 | **E4.2** dialog store | **Not started.** `stores/dialog-store.ts`, 30 KB, global. |
@@ -72,7 +72,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ## Do next, in order
 
-### 1. Empty `hooks/supabase-calls/` — 35 files left
+### 1. Empty `hooks/supabase-calls/` — 29 files left
 
 The five big features are migrated. What remains in that directory is the
 long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
@@ -84,7 +84,7 @@ the route serves against a real session, and only then drop the policy. Doing
 it in the other order blanks the feature silently. See
 `features/fitness/api/content-schedule.ts`.
 
-### 2. E1.3 — swept and fixed 5 Sept 2026; one table still open
+### 2. E1.3 — swept and fixed; all nine closed
 
 **The sweep is done. It found nothing in the direction it was aimed, and
 something worse in the other direction.**
@@ -175,7 +175,42 @@ route, which is the task above this one.
   `facility_profile`. A regex sweep for `.from("literal")` will not find this
   class — the call was `.from(table)` over a config array.
 
-### 3. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
+### 3. E3.3 — retire the 17 hollow `/facilities/*` routes (decision needed)
+
+Found during the facilities migration and **left alone deliberately**, because
+it is a product decision rather than a refactor.
+
+`app/(dashboard)/facilities/` holds 17 hand-written `.jsx` pages —
+`hospitals`, `dental`, `pharmacies`, `eye-care`, `homes`, `diagnostic-labs`,
+`osteopathy`, `physiotherapy`, `prosthetics`, `health-school`, five `*/create`
+pages and `add-facility`. **Every one renders an empty div.** The real
+component in each is commented out and the directory those comments name,
+`components/redesign/auth/Facilities/`, does not exist.
+
+Worse than empty: **a static segment beats a dynamic one in Next**, so these
+shadow `/facilities/[type]`, which is a complete working listing. Measured
+against a running build with an admin session:
+
+```
+/facilities/hospitals   18,396 bytes   no search box, no type header
+/facilities/pharmacy    21,962 bytes   renders "Pharmacy" and the search box
+```
+
+The shadowed pages come back within six bytes of each other — the same
+"identical bodies is the tell" signature as an expired smoke session.
+
+What stops it being urgent: **nothing in the app links to any
+`/facilities/<type>` URL**, so the whole family is orphaned; and the static
+slugs do not match the data anyway — `facility_type` is `dental_clinic`,
+`home`, `pharmacy` while the pages are `dental`, `homes`, `pharmacies`.
+
+So deleting the hollow pages un-shadows `[type]` but leaves
+`/facilities/hospitals` rendering an empty table for a type that does not
+exist. **The decision needed is what these URLs should do at all** — redirect
+to `/facilities?type=…`, map slug to `facility_type`, or 410. Any of those is
+E3.3 work with a redirect, not a file move.
+
+### 4. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
 
 Use the Period method: **capture a per-endpoint or per-tab baseline first**,
 split, then diff against it. That is what made a 1,166-line extraction safe to
@@ -300,6 +335,24 @@ looped over instead of counting rows affected, so featuring a deleted id
 reported success and wrote an audit line describing a change that never
 happened. The unfeature path in the same function used `.select("id")` and
 counted honestly, so the two halves disagreed. Fixed.
+
+### Cross-feature imports come in at least four shapes
+
+Grepping for `@/` finds one of them. The facilities migration hit three more,
+each caught only by `tsc` after the source directory was already gone:
+
+| Shape | Example | Found by |
+| --- | --- | --- |
+| absolute into `app/` | `@/app/(dashboard)/fitness/_components/user-search-select` | grep for `from "@/app/` |
+| sibling-relative | `../facilities/_components/view-facility-dialog` from `medenquiry` | `tsc` |
+| same-directory | `./useFacilities` from `useReviews.tsx` | `tsc` |
+| parent-relative out of the moved file | `../types/formInput` inside a moved schema | `tsc` |
+
+The last one is the nastiest: the file itself is fine before and after, but its
+relative specifier silently re-points at a **different** directory once moved,
+and if a file happens to exist at the new path it resolves to the wrong module
+with no error at all. After moving anything, `grep -rn 'from "\.' ` the new
+directory and confirm every hit still means what it did.
 
 ### A cross-feature import can hide behind an absolute path
 

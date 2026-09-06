@@ -23,8 +23,8 @@ import {
   useApproveFacility,
   useFacilityProfile,
   useRejectFacility,
-} from "@/hooks/supabase-calls/useFacilities";
-import { useUpdateFacilityStatusApi } from "@/hooks/supabase-calls/useFacilitiesApi";
+} from "@/features/facilities/data/useFacilities";
+import { useUpdateFacilityStatusApi } from "@/features/facilities/data/useFacilitiesApi";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 
 const SLA_DAYS = 3;

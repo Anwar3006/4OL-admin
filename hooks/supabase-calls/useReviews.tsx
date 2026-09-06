@@ -1,7 +1,7 @@
 import { getSupabaseClient } from "@/lib/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FACILITY_PROFILE_QUERY_KEYS } from "./useFacilities";
+import { FACILITY_PROFILE_QUERY_KEYS } from "@/features/facilities/data/useFacilities";
 
 export interface FacilityRatingRow {
   id: string;

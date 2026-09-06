@@ -3,7 +3,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import {
   TFacilityProfileInput,
   TFacilityProfileOutput,
-} from "@/schemas/facility-profile.schema";
+} from "@/features/facilities/schema/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { normalizeLocationName } from "@/lib/utils";

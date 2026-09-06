@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useMakeGroupLeaderDialog } from "@/stores/dialog-store";
 import { useMakeGroupLeader } from "@/hooks/supabase-calls/useConversation";
-import { useFacilityProfiles } from "@/hooks/supabase-calls/useFacilities";
+import { useFacilityProfiles } from "@/features/facilities/data/useFacilities";
 import CustomSelect from "@/components/CustomSelect";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { z } from "zod";

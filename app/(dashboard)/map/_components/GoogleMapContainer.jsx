@@ -8,7 +8,7 @@ import {
 } from "@react-google-maps/api";
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useGetFacilitiesMapData } from "@/hooks/supabase-calls/useFacilities";
+import { useGetFacilitiesMapData } from "@/features/facilities/data/useFacilities";
 import { useRegistrarTrails } from "@/hooks/supabase-calls/useUser";
 import { useIbpPins, useOutdoorRoutePins } from "@/hooks/supabase-calls/useMap";
 import { getColorForId } from "@/lib/utils";
