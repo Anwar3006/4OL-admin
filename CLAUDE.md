@@ -133,8 +133,8 @@ months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
 Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
-`period`, `fitness`. E3.2 is finished when `hooks/supabase-calls/` is empty —
-**35 files left**, down from 42.
+`period`, `fitness`, `symptoms`. E3.2 is finished when `hooks/supabase-calls/`
+is empty — **32 files left**, down from 42.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.

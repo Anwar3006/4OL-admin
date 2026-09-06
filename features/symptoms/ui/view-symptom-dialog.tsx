@@ -10,7 +10,7 @@ import {
   useAddConditionDialog,
   useViewConditionDialog,
 } from "@/stores/dialog-store";
-import { TSymptomsOutput } from "@/types/symptoms";
+import { TSymptomsOutput } from "@/features/symptoms/schema/types";
 
 import {
   AlertTriangle,
@@ -34,7 +34,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   useDeleteSymptom,
   useSymptom,
-} from "@/hooks/supabase-calls/useSymptoms";
+} from "@/features/symptoms/data/useSymptoms";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";

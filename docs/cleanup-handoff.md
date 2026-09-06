@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **5 done:** anatomy, facility-scout, bed-tracker, period, fitness. **35 files remain** in `hooks/supabase-calls/` (fitness took 7) — that directory emptying is the finish line. |
+| **E3.2** migrate features | **6 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms. **32 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Not started.** Needs redirects. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -61,7 +61,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79. |
 | **E5.2** generated DB types | **Not started.** Every `schema/types.ts` is hand-written and can drift. |
 | **E5.3** lint everything | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`. |
-| **E6.1** knip | **Configured**, first batches deleted. 41 unused files remain. |
+| **E6.1** knip | **Configured**, first batches deleted. 38 unused files remain. |
 | **E6.2** prune deps | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps. |
 | **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB. |
 | **E7** documentation | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file. |
@@ -279,6 +279,27 @@ Two FKs between the same pair of tables and an unqualified embed does not pick
 one — it 500s the route and the page renders its shell with no data. Name the
 constraint: `facility_profile!ambulance_dispatches_destination_facility_id_fkey`.
 Fixing one ambiguity can reveal another behind it.
+
+### Do not probe a mutating endpoint with an empty body
+
+The "prove the handler runs, don't infer it from a status" recipe below is for
+**GET**. Applied to `PUT /api/symptoms/[id]/feature` with `-d '{}'` it did
+something else: the zod schema declares `featured: z.boolean().default(true)`,
+so an empty body means *feature this thing*, and the route obligingly ran
+against production with a made-up id.
+
+Nothing was written — `setCarouselSlots` only ever `UPDATE ... WHERE id = ?`,
+and no row matched — but that was luck, not care. For a mutating verb, either
+send a body that is explicitly inert (`{"featured":false}`), or use an id you
+have already confirmed does not exist, and check the table afterwards.
+
+It did surface a real bug, which is the only reason it is written up rather
+than quietly forgotten: the route replied `{"ok":true,"updated":1}` for an id
+that matched nothing. `setCarouselSlots` incremented its counter once per id it
+looped over instead of counting rows affected, so featuring a deleted id
+reported success and wrote an audit line describing a change that never
+happened. The unfeature path in the same function used `.select("id")` and
+counted honestly, so the two halves disagreed. Fixed.
 
 ### A cross-feature import can hide behind an absolute path
 

@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase";
 import { apiFetch, jsonBody } from "@/lib/api-fetch";
-import { TSymptomsInput, TSymptomsOutput } from "@/types/symptoms";
+import { TSymptomsInput, TSymptomsOutput } from "@/features/symptoms/schema/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 

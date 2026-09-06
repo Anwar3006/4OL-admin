@@ -12,7 +12,7 @@
 import React from "react";
 import Link from "next/link";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useSymptomAnalyticsApi } from "@/hooks/supabase-calls/useSymptoms";
+import { useSymptomAnalyticsApi } from "@/features/symptoms/data/useSymptoms";
 
 const Leaderboard = ({
   title,

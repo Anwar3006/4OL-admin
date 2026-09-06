@@ -18,7 +18,7 @@ import { getDeepestNodes, rehydrateHierarchy } from "@/lib/utils";
 import ImageDropZone from "@/components/ImageDropZone";
 import { nanoid } from "nanoid";
 import { useAddConditionDialog } from "@/stores/dialog-store";
-import { symptomsSchema, TSymptomsInput } from "@/types/symptoms";
+import { symptomsSchema, TSymptomsInput } from "@/features/symptoms/schema/types";
 import { TreeMultiSelectForm } from "@/components/TreeMultiSelect";
 import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import {
@@ -26,7 +26,7 @@ import {
   useCategoriesForSymptoms,
   useCreateSymptom,
   useUpdateSymptom,
-} from "@/hooks/supabase-calls/useSymptoms";
+} from "@/features/symptoms/data/useSymptoms";
 
 const RichTextEditor = dynamic(
   () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),

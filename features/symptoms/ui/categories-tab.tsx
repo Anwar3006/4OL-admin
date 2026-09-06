@@ -13,7 +13,7 @@ import React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useSymptomCategoriesTab } from "@/hooks/supabase-calls/useSymptoms";
+import { useSymptomCategoriesTab } from "@/features/symptoms/data/useSymptoms";
 import { cn } from "@/lib/utils";
 
 const SymptomCategoriesTab = () => {

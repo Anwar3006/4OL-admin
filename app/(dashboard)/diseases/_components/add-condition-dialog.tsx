@@ -29,7 +29,7 @@ import { EMPTY_LEXICAL_STATE } from "@/constants/rich-text-editor";
 import {
   useBodyPartsForSymptoms,
   useCategoriesForSymptoms,
-} from "@/hooks/supabase-calls/useSymptoms";
+} from "@/features/symptoms/data/useSymptoms";
 import {
   useCreateConditionApi,
   useUpdateConditionApi,

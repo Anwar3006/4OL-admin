@@ -5,7 +5,7 @@
  * assignment, bulk ids, 409 when full.
  */
 
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminClient } from "@/lib/db/admin";
 
 export const CAROUSEL_SLOT_CAP = 12;
 
@@ -23,7 +23,7 @@ export async function setCarouselSlots(
   featured: boolean,
   position?: number,
 ): Promise<FeatureResult> {
-  const admin = getSupabaseAdmin();
+  const admin = getAdminClient();
 
   if (!featured) {
     const { data, error } = await admin
@@ -82,16 +82,22 @@ export async function setCarouselSlots(
       position !== undefined
         ? (isReorder ? position : orders.shift() ?? position)
         : orders.shift() ?? nextOrder++;
-    const { error } = await admin
+    const { data, error } = await admin
       .from(table)
       .update({
         is_featured: true,
         featured_order: order,
         featured_from: new Date().toISOString(),
       })
-      .eq("id", ids[i]);
+      .eq("id", ids[i])
+      .select("id");
     if (error) return { error, count };
-    count += 1;
+    // Count rows the update actually matched, not ids we looped over. Without
+    // the .select() this incremented unconditionally, so featuring an id that
+    // no longer exists returned {"ok":true,"updated":1} and wrote an audit
+    // entry describing a change that never happened. The unfeature path above
+    // already counted honestly, so the two disagreed.
+    count += data?.length ?? 0;
   }
   return { error: null, count };
 }

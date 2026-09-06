@@ -1,4 +1,4 @@
-import { TSymptomsOutput as TConditionsOutput } from "@/types/symptoms";
+import { TSymptomsOutput as TConditionsOutput } from "@/features/symptoms/schema/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 

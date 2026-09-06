@@ -13,7 +13,7 @@ import CarouselManager from "@/components/redesign/carousel-manager";
 import {
   useFeatureSymptom,
   useSymptomsCarousel,
-} from "@/hooks/supabase-calls/useSymptoms";
+} from "@/features/symptoms/data/useSymptoms";
 
 const SymptomCarouselTab = () => {
   const { data, isLoading } = useSymptomsCarousel();
