@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/app/utils/supabaseClient";
+import { getBrowserClient } from "@/lib/db/browser";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ export default function Page() {
     const fetchFacility = async () => {
       if (!id) return;
 
+      // facility_profile is readable here only because it carries a TO public
+      // SELECT policy; this used to run on an anon client and "worked" by
+      // that accident. Cookie-backed now, so it reads as the signed-in admin.
+      const supabase = getBrowserClient();
       const { data, error } = await supabase
         .from("facility_profile")
         .select("*")

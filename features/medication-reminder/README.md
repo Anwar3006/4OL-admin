@@ -31,9 +31,12 @@ All seven URLs unchanged; `app/` holds a re-export per route and no logic.
 Pages: `/medication-reminder` → `ui/MedicationReminderPage`,
 `/view-medication-reminder-details` → `ui/ReminderDetailsPage`.
 
-**`/api/send-reminders` is not part of this feature.** It is a six-line
-placeholder returning 501 and was left in `app/` because there is no logic to
-move. If reminder dispatch is ever built, it belongs here.
+**`/api/send-reminders` is not part of this feature**, and is not where
+reminders are sent. It is a six-line placeholder returning 501, left in `app/`
+because there is no logic to move. The real dispatch already exists elsewhere:
+a `pg_cron` job (`medication-reminder-job`, every minute) POSTs to the
+`send-reminders` **Supabase edge function**. Do not "implement" the placeholder
+without checking whether you would be double-sending.
 
 ## A fourth Supabase client, and the page it broke
 

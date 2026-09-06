@@ -46,7 +46,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | --- | --- |
 | **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
 | **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
-| **E1.2** Supabase clients | **Mostly.** Five → three under `lib/db/` — but a **fourth** survived: `app/utils/supabaseClient.js`, missed because it is `.js`. Six importers, one already fixed. See below. |
+| **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, plus `isolated-auth.ts` for the one flow that needs a separate session. The fourth client E1.2 missed (`app/utils/supabaseClient.js`, a `.js` file) is deleted. |
 | **E1.3** RLS/idiom audit | **Done.** Silent-empty direction clear; all 9 tables exposed to `anon` are closed. No table in the database still grants `public`/`anon` unrestricted ALL/UPDATE/DELETE. |
 | **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
 | **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
@@ -61,7 +61,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79. |
 | **E5.2** generated DB types | **Not started.** Every `schema/types.ts` is hand-written and can drift. |
 | **E5.3** lint everything | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`. |
-| **E6.1** knip | **Configured**, first batches deleted. 38 unused files remain. |
+| **E6.1** knip | **Configured**, first batches deleted. 36 unused files remain. |
 | **E6.2** prune deps | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps. |
 | **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB. |
 | **E7** documentation | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file. |
@@ -84,43 +84,48 @@ the route serves against a real session, and only then drop the policy. Doing
 it in the other order blanks the feature silently. See
 `features/fitness/api/content-schedule.ts`.
 
-### 2. `app/utils/supabaseClient.js` — the fourth client E1.2 missed
+### 2. `app/utils/supabaseClient.js` — resolved, 6 Sept 2026
 
-`CLAUDE.md` rule 1 lists three clients. There are four. `app/utils/supabaseClient.js`
-is a plain `createClient`, so it keeps its session in **localStorage rather
-than cookies** and queries as **`anon`**, not as the signed-in admin — the same
-trap `lib/supabase.ts` documents at length for its own legacy export. It
-survived E1.2 because it is a `.js` file, and four of its six importers are
-`.jsx`/`.js` and therefore never type-checked.
+`CLAUDE.md` rule 1 lists three clients. For a while there were four:
+`app/utils/supabaseClient.js`, a plain `createClient` holding its session in
+**localStorage rather than cookies**, so it queried as **`anon`**. It survived
+E1.2 because it is a `.js` file, and four of its six importers are `.jsx`/`.js`
+and therefore never type-checked. It is gone; rule 1 is true again.
 
-Measured by querying as `anon`:
+Each importer was measured as `anon` and resolved on its own terms:
 
-| File | Reads | anon sees | Truth |
-| --- | --- | --- | --- |
-| `features/medication-reminder/ui/ReminderDetailsPage.jsx` | `medication_reminders` | 0 | 3 — **fixed** |
-| `utils/activityLogger.js` | `activity_logs` | 0 | **10,977** |
-| `app/(dashboard)/view-reviews/page.jsx` | `facility_ratings` | — | **table does not exist** |
-| `app/api/places/route.js` | `api_usage` | — | **table does not exist** |
-| `app/(dashboard)/view-facility-profile/page.jsx` | `facility_profile` | 3 | 3 — works, via a `TO public` read policy |
-| `app/(auth)/delete-account/page.tsx` | `delete_account_requests` | 0 | 0 — indeterminate while empty |
+| File | Was | Now |
+| --- | --- | --- |
+| `medication-reminder/ui/ReminderDetailsPage.jsx` | read `medication_reminders`, saw 0 of 3 | `getBrowserClient()` — renders |
+| `utils/activityLogger.js` | read `activity_logs`, saw 0 of **10,977** | **deleted** — dead on three proofs |
+| `app/api/places/route.js` | read `api_usage`, which does not exist | **deleted** — always 500'd |
+| `app/services/fetchNearbyPlaces.js` | its only caller | **deleted** — dead with it |
+| `view-facility-profile/page.jsx` | worked only via a `TO public` policy | `getBrowserClient()` — renders |
+| `view-reviews/page.jsx` | read `facility_ratings`, which does not exist | `getBrowserClient()` — still broken, see below |
+| `(auth)/delete-account/page.tsx` | isolated on purpose | `lib/db/isolated-auth.ts` |
 
-Only the first is fixed, as part of the medication-reminder migration. The
-others each need their own decision rather than a sweep:
+Two of those deserve more than a table row.
 
-- **`utils/activityLogger.js` is dead** — no importer by grep, and knip agrees.
-  Two proofs, no `.jsx` sibling to confuse either. Delete it and the question
-  disappears.
-- **`view-reviews` and `api/places` read tables that do not exist.** Those are
-  not client bugs, they are dead features wearing a working-looking page.
-  `/view-reviews` is already in the sweep's orphan list.
-- **`view-facility-profile` only works by accident**, because
-  `facility_profile` has a `TO public` SELECT policy. Change that policy and
-  the page goes blank silently.
-- **`app/api/places/route.js` is an API route using a browser client**, which
-  rule 1 forbids outright.
+**`delete-account` was right all along.** It is a public page that signs a user
+in, writes their deletion request, and signs them out. Moving it to
+`getBrowserClient()` would have been an active regression: cookies are where
+the admin panel keeps its session, so a visitor's `signInWithPassword` would
+replace the signed-in admin's session and the `signOut` would log the admin
+out. The isolation was the feature. It now has an explicit, documented home in
+`lib/db/isolated-auth.ts` — one caller, and it should stay that way. Note the
+client is constructed at **module scope** there: the sign-in, the insert and
+the sign-out must share one client or the insert never sees the session.
 
-Once those are resolved, delete `app/utils/supabaseClient.js` and rule 1's
-"three clients" is true again.
+**`view-reviews` is still broken, and not because of its client.** It reads
+`facility_ratings`, a table that does not exist — the real one is
+`facility_reviews`. Confirmed in a browser: the page sits on "Loading …"
+forever. Nothing links to it and it is already in the sweep's orphan list. It
+needs the same decision the `/facilities/*` shells got: fix the table name and
+the column mapping, or retire the route. **Not** a client problem, so it was
+not fixed while pretending it was.
+
+`app/utils/uploadMedia.js` still sits in that directory and knip flags it as
+unused; it was out of scope here and is untouched.
 
 ### 3. E1.3 — swept and fixed; all nine closed
 
@@ -191,10 +196,25 @@ The `TO public` SELECT policies that remain — `facility_profile`,
 `facility_reviews`, `faq_categories`, `fitcoin_tiers`, `marketing_*` — are
 deliberate public-read catalogues. Left alone on purpose.
 
-⚠️ **The 701 `admin_sessions` tokens are still live.** They were readable for
-as long as the policy existed, so they should be treated as disclosed and the
-sessions ended. That is an application action, not a migration, and has **not**
-been done.
+**On the `admin_sessions` rows — an earlier note in this file overstated the
+risk, and the correction matters.** `session_token` is **not a credential**:
+`requireAdminApiUser()` never consults `admin_sessions`, and every endpoint
+that accepts a `sessionToken` authenticates the caller first and uses the token
+only to select a row. Real auth is the Supabase JWT in cookies, which was never
+in that table. So a leaked token does not permit sign-in or session hijacking,
+and "rotating" them would have achieved nothing.
+
+What *was* disclosed is still worth knowing: `admin_id`, `ip_address`,
+`user_agent`, `location` and activity times. PII and opsec, not access.
+
+The real defect that surfaced while checking: **nothing ever closed a session
+row.** Not one row in the table had `ended_at` set — not the 24 from real
+August use, not the 1,328 the smoke sweep created. The only thing that ends a
+session is a `DELETE` fired from the `SIGNED_OUT` handler, and closing a tab or
+a headless browser never fires it. `get_admin_dashboard_metrics` counts
+`distinct admin_id`, so `online_now` was never wrong; the cost was the
+per-admin device list and unbounded growth. Fixed by
+`expire_stale_admin_sessions(30)` on a `*/15` cron — see the migration table.
 
 **`fitness_content_schedule` is excluded on purpose.** It is the one of the
 nine still read from the browser — `hooks/supabase-calls/useFitnessContentSchedule.ts`,
@@ -514,6 +534,7 @@ database actually has.
 | `20260905_device_sign_in_otp_functions.sql` | wrote the two missing OTP functions, and adds `otp_issued_at` |
 | `20260905_e13_revoke_public_admin_table_access.sql` | E1.3: dropped 8 `admin_full_access_*` policies that were `TO public USING (true)`, revoked the matching anon/authenticated grants, restored `SELECT` for the one correctly scoped policy that depended on it |
 | `20260905_e13_close_fitness_content_schedule.sql` | E1.3: the ninth, after its browser read moved to `/api/fitness/content-schedule` |
+| `20260906_admin_sessions_expire_stale.sql` | `expire_stale_admin_sessions()` + `*/15` cron; nothing had ever closed a session row. Backfill closed 1,178 |
 
 Earlier session (anatomy): `body_parts` path trigger, junction backfills tagged
 `source='heuristic'`, `get_anatomy_body_part_bundle(p_preview_limit)`,

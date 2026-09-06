@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { supabase } from "@/app/utils/supabaseClient";
+import { getIsolatedAuthClient } from "@/lib/db/isolated-auth";
+
+// Module scope on purpose: signInWithPassword, the insert and signOut below
+// must all run on the SAME client, or the insert will not see the session the
+// sign-in just created. Deliberately session-isolated from the admin panel —
+// see lib/db/isolated-auth.ts.
+const supabase = getIsolatedAuthClient();
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Step = "verify" | "confirm" | "done" | "already_pending";

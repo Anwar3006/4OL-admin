@@ -42,12 +42,16 @@ those; see `docs/cleanup-handoff.md`.
 that `lib/supabase.ts` exports two clients that **do not share a session** —
 see its file comment before touching any caller.
 
-**There is also a fourth client the table above does not list:**
-`app/utils/supabaseClient.js`. It is a plain `createClient` — localStorage
-session, so it queries as `anon`, not as the signed-in admin — and it survived
-the client consolidation because it is a `.js` file. It has six importers and
-has already caused one silent-empty page. Do not add a seventh; see
-`docs/cleanup-handoff.md`.
+There is one deliberate exception to the table above:
+`lib/db/isolated-auth.ts`, whose session is intentionally NOT the app's. It
+exists for the public `/delete-account` page, which signs a user in and out
+without disturbing the admin signed into the same browser. One caller, and it
+should stay that way — it is `anon` until something signs in on it, so reads
+through it come back empty rather than erroring.
+
+It replaced `app/utils/supabaseClient.js`, an undocumented fourth client that
+survived E1.2 because it was a `.js` file and had drifted six importers, two of
+them reading tables that do not exist. See `docs/cleanup-handoff.md`.
 
 ### 2. Changes to the mobile contract must be additive
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "@/app/utils/supabaseClient";
+import { getBrowserClient } from "@/lib/db/browser";
 import Loading from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -19,6 +19,11 @@ const ViewReviews = () => {
     if (!id) return;
 
     try {
+      // NOTE: facility_ratings DOES NOT EXIST in the database — this page has
+      // never returned data. The client is fixed here so the stray anon client
+      // could be deleted; the missing table is a separate question, and the
+      // page is an orphan nothing links to. See docs/cleanup-handoff.md.
+      const supabase = getBrowserClient();
       const { data, error } = await supabase
         .from("facility_ratings")
         .select(
