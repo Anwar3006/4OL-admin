@@ -24,7 +24,7 @@ export default function PendingTasks({
     {
       label: `${metrics?.queues.pending_facility_scout_submissions ?? 0} FacilityScout submissions pending`,
       variant: "blue",
-      href: "/facilityscout?tab=pending",
+      href: "/facility-scout?tab=pending",
       count: metrics?.queues.pending_facility_scout_submissions ?? 0,
     },
     {

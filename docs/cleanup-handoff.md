@@ -79,7 +79,7 @@ and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
 | **E5.3** lint `redesign/**` | **Already done.** It was a no-op: that directory holds no code. |
 | **E6.2** prune dependencies | `pnpm knip` finds them, `pnpm build` proves nothing needed them. |
 | **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
-| **E3.4** split `lib/`         | **Done.** Feature-owned modules moved out; `reports/` and `supabase/indexAdmin.ts` retired; the three pure re-export shims deleted after migrating 129 callers. `lib/supabase.ts` (anon client) survives with 2 callers that need database verification. |
+| **E3.4** split `lib/` | **Already done.** |
 | **E6.3** move the 4.1 MB seed JSON | Only `scripts/seeder.ts` reads it — no app code imports it, so the build proves the move. Running the seeder needs a database; moving the file does not. |
 | **E7** documentation | No execution required. |
 
@@ -108,10 +108,15 @@ This is what proved `users/_components/view-user-dialog.jsx` dead while its
 
 - **E5.2 generated DB types** — definitionally needs introspection. There is no
   `gen:types` script yet; adding one is fine, running it is not.
-- **E3.3 route renames** (`/healthy_living`, `/facilityscout`, `/bedtracker`) —
-  the guard *is* the smoke sweep. You can write the `next.config.ts` redirect
-  and the assertion, but you cannot run the assertion, and a redirect that
-  silently fails is precisely this repo's worst failure mode. Leave it.
+- ~~**E3.3 route renames**~~ — **this entry was wrong, and it is done.** It
+  claimed the guard is the smoke sweep and that you cannot run the assertion
+  without credentials. A redirect declared in `next.config.ts` fires **before**
+  the auth middleware, so `curl` against a local `pnpm start` verifies it with
+  no session at all — status, `Location`, and whether the query string
+  survives. Checked against the pre-existing redirects first, then used to
+  verify all three renames. The build manifest supplies the other half: the new
+  route present, the old one gone. **Correct the guidance you are given when
+  you can disprove it.**
 - **Deleting or moving any route** — reachability needs the sweep. Deleting a
   dead *file* is fine; deleting a `route.ts` is not.
 - **Anything touching RLS, policies, grants or migrations** — E1.3 is finished,
@@ -145,7 +150,7 @@ signature half.
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`.                                                                                                                |
 | **E3.1** feature layout        | **Done.** `features/anatomy` is the exemplar.                                                                                                                                                           |
 | **E3.2** migrate features      | **DONE.** 28 features under `features/`, each with a README. `hooks/supabase-calls/` no longer exists — `tests/unit/feature-layout.test.ts` asserts it stays gone.                                      |
-| **E3.3** kebab-case routes     | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started.           |
+| **E3.3** kebab-case routes    | **Done.** `/healthy_living` → `/healthy-living`, `/facilityscout` → `/facility-scout`, `/bedtracker` → `/bed-tracker`, plus the 17 hollow `/facilities/*` shells retired earlier. Old spellings redirect; the sweep asserts all 21. API prefixes deliberately unchanged. |
 | **E3.4** split `lib/`         | **Done.** Feature-owned modules moved out; `reports/` and `supabase/indexAdmin.ts` retired; the three pure re-export shims deleted after migrating 129 callers. `lib/supabase.ts` (anon client) survives with 2 callers that need database verification. |
 | **E4.1** god files             | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next.                                                                                     |
 | **E4.2** dialog store          | **Not started.** `stores/dialog-store.ts`, 30 KB, global.                                                                                                                                               |
@@ -380,6 +385,23 @@ claim.
 ## Pending items — deferred, not forgotten
 
 Logged here because they were raised mid-task and consciously postponed.
+
+### A config redirect is verifiable without credentials
+
+Worth knowing before deciding a route change is un-testable offline.
+`next.config.ts` redirects run **ahead of the auth middleware**, so an
+unauthenticated request still shows the real answer:
+
+```bash
+pnpm build && pnpm start &
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' localhost:3000/bedtracker
+# 307 http://localhost:3000/bed-tracker
+```
+
+That covers status, destination and — the part worth checking — whether the
+query string survives, which matters here because several in-app links carry
+`?tab=` and `?id=`. Page *rendering* still needs the sweep; the redirect itself
+does not.
 
 ### `reply_to` was silently dropped on the support email
 

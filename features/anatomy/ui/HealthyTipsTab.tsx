@@ -261,7 +261,7 @@ export default function HealthyTipsTab() {
                   </td>
                   <td className="px-5 py-3">
                     <Link
-                      href={`/healthy_living?id=${row.tip_id}`}
+                      href={`/healthy-living?id=${row.tip_id}`}
                       className="font-semibold text-emerald-700 hover:underline"
                     >
                       {row.tip_name}

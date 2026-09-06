@@ -68,3 +68,13 @@ does not call Facility Scout. Free to change shape.
   a tab, take its props from there.
 - **Assign is also the bulk endpoint.** `POST …/submissions/[id]/assign` with
   `{ ids: [...] }` in the body assigns many and ignores the path `id`.
+
+## Route naming (E3.3)
+
+The page is **`/facility-scout`**. It was `/facilityscout` until E3.3; the old spelling
+redirects from `next.config.ts` and the smoke sweep asserts it.
+
+**The API prefix is still `/api/facilityscout`** and was deliberately left alone. No mobile
+route depends on it, but it is a URL contract for the admin app and renaming it
+was outside what E3.3 asked for. So page and API spellings differ here — that
+is intentional, not an oversight.

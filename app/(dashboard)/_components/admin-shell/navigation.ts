@@ -108,7 +108,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Diseases & Conditions", href: "/diseases", icon: "🦠", permission: "diseases.view" },
       { title: "Human Anatomy", href: "/anatomy", icon: "🫁", permission: "anatomy.view" },
       { title: "Symptoms", href: "/symptoms", icon: "🩺", permission: "symptoms.view" },
-      { title: "Healthy Living", href: "/healthy_living", icon: "🥗", permission: "healthyliving.view" },
+      { title: "Healthy Living", href: "/healthy-living", icon: "🥗", permission: "healthyliving.view" },
       { title: "Fitness", href: "/fitness", icon: "💪", permission: "fitness.view" },
       { title: "Period Tracker", href: "/period", icon: "📅", permission: "period.view" },
       { title: "Medication Reminder", href: "/medication-reminder", icon: "💊", permission: "medication.view" },
@@ -135,7 +135,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
       },
       {
         title: "BedTracker (PKM)",
-        href: "/bedtracker",
+        href: "/bed-tracker",
         icon: "🛏️",
         badge: "LIVE",
         permission: "bedtracker.view",
@@ -167,7 +167,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
       },
       {
         title: "FacilityScout",
-        href: "/facilityscout",
+        href: "/facility-scout",
         icon: "🔍",
         permission: "facilityscout.view",
       },

@@ -56,7 +56,7 @@ const MODULE_CARDS: ModuleCard[] = [
     // of a head count.
     table: "healthy_living_body_parts",
     statKey: "healthy_tip_links" as const,
-    href: "/healthy_living",
+    href: "/healthy-living",
     detail: "healthy_living_body_parts junction · surfaced in Body Map detail panel",
   },
   {

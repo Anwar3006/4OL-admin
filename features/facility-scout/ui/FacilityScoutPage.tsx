@@ -60,7 +60,7 @@ export default function FacilityScoutPage() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    router.push(value === "submissions" ? "/facilityscout" : `/facilityscout?tab=${value}`, {
+    router.push(value === "submissions" ? "/facility-scout" : `/facility-scout?tab=${value}`, {
       scroll: false,
     });
   };

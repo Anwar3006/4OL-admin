@@ -65,7 +65,7 @@ export default function BedTrackerPage() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    router.push(value === "overview" ? "/bedtracker" : `/bedtracker?tab=${value}`, {
+    router.push(value === "overview" ? "/bed-tracker" : `/bed-tracker?tab=${value}`, {
       scroll: false,
     });
   };

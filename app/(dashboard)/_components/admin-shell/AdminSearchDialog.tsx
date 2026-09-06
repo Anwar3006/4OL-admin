@@ -70,7 +70,7 @@ const ENTITY_ROUTE: Record<
   facility: { path: "/facilities", dialog: "view-facility" },
   user: { path: "/users", dialog: "view-user" },
   exercise: { path: "/fitness?tab=exercises", dialog: "view-exercise" },
-  healthy_living: { path: "/healthy_living", dialog: "view-healthy-living" },
+  healthy_living: { path: "/healthy-living", dialog: "view-healthy-living" },
   // No view dialog exists yet for these — land on the list page only.
   job: { path: "/jobs" },
   faq: { path: "/faq" },

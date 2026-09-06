@@ -17,17 +17,17 @@ const NAV_ROUTES = [
   "/admins",
   "/ai",
   "/anatomy",
-  "/bedtracker",
+  "/bed-tracker",
   "/chats",
   "/delete-account-request",
   "/devops",
   "/diseases",
   "/facilities",
-  "/facilityscout",
+  "/facility-scout",
   "/faq",
   "/fitness",
   "/hcp",
-  "/healthy_living",
+  "/healthy-living",
   "/ibp",
   "/jobs",
   "/map",
@@ -239,6 +239,12 @@ const MUST_REDIRECT: Array<[string, string]> = [
   // server-side redirect() stubs before E3.2 moved them into next.config.ts.
   ["/marketing/discounts", "/marketing?tab=discounts"],
   ["/marketing/subscriptions", "/marketing?tab=subscriptions"],
+
+  // Kebab-case page routes (E3.3). The old spellings stay reachable for
+  // bookmarks; every in-app link points at the new ones.
+  ["/healthy_living", "/healthy-living"],
+  ["/facilityscout", "/facility-scout"],
+  ["/bedtracker", "/bed-tracker"],
 ];
 
 test.describe("live but unlinked — must not be deleted", () => {

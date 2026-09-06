@@ -103,6 +103,24 @@ const nextConfig: NextConfig = {
       // client-side kind — but a config redirect skips rendering entirely.
       { source: "/marketing/discounts", destination: "/marketing?tab=discounts", permanent: false },
       { source: "/marketing/subscriptions", destination: "/marketing?tab=subscriptions", permanent: false },
+
+      // ── Kebab-case page routes (E3.3) ─────────────────────────────────
+      //
+      // /healthy_living used an underscore; /facilityscout and /bedtracker ran
+      // the words together. The features were already kebab-case
+      // (features/healthy-living, facility-scout, bed-tracker) — only the URLs
+      // lagged. Every in-app link was updated in the same commit, so these
+      // exist for bookmarks and anything outside the repo.
+      //
+      // The `/api/*` prefixes are deliberately NOT renamed. /api/facilityscout
+      // and /api/bedtracker keep their spelling: no mobile route depends on
+      // them, but they are a URL contract for the admin app and renaming them
+      // buys nothing this epic asked for. The page/API spelling mismatch is
+      // the same one /healthy_living vs /api/healthy-living already had, now
+      // in the other direction, and it is written up in each feature README.
+      { source: "/healthy_living", destination: "/healthy-living", permanent: false },
+      { source: "/facilityscout", destination: "/facility-scout", permanent: false },
+      { source: "/bedtracker", destination: "/bed-tracker", permanent: false },
     ];
   },
 

@@ -38,7 +38,7 @@ export default function CriticalAlerts({
         {openThreats} security threats · {bedAlerts} bed alerts · {moderation} moderation flags
         <div className="flex gap-2 mt-1">
           <a href="/security" className="text-amber-700 font-bold hover:underline">Security Center</a>
-          <a href="/bedtracker" className="text-amber-700 font-bold hover:underline">BedTracker</a>
+          <a href="/bed-tracker" className="text-amber-700 font-bold hover:underline">BedTracker</a>
         </div>
       </div>
     </div>

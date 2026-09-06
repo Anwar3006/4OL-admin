@@ -340,7 +340,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                   {(tips ?? []).slice(0, 5).map((t) => (
                     <li key={t.tip_id}>
                       <Link
-                        href={`/healthy_living?id=${t.tip_id}`}
+                        href={`/healthy-living?id=${t.tip_id}`}
                         className="text-emerald-700 hover:underline"
                       >
                         {t.tip_name}

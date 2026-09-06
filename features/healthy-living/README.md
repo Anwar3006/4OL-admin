@@ -27,11 +27,10 @@ All three URLs unchanged; `app/` holds a re-export per route and no logic.
 
 Page: `/healthy_living` → `ui/HealthyLivingPage`.
 
-⚠️ **The page URL uses an underscore and the API uses a hyphen** —
-`/healthy_living` but `/api/healthy-living`. Both predate this migration, both
-are a URL contract, and the mismatch is preserved deliberately. The directory
-here is kebab-case like every other feature and matches neither; that is fine,
-only `app/` is a URL. Renaming the page route is E3.3 and needs a redirect.
+The page URL was `/healthy_living` until E3.3; it is `/healthy-living` now,
+with the old spelling redirecting from `next.config.ts` and asserted by the
+smoke sweep. **The API is still `/api/healthy-living`** — it always was, and
+the two now agree.
 
 ## Mobile contract
 
