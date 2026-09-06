@@ -1,7 +1,7 @@
-// import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 // import nodemailer from "nodemailer";
 
-// export async function POST(req) {
+// export async function POST(req: NextRequest) {
 //   try {
 //     const body = await req.json();
 //     const { name, email, message } = body;
@@ -86,7 +86,7 @@
 //   } catch (error) {
 //     console.error("Error sending email:", error);
 //     return NextResponse.json(
-//       { error: "Failed to send email", details: error.message },
+//       { error: "Failed to send email", details: (error instanceof Error ? error.message : String(error)) },
 //       { status: 500 }
 //     );
 //   }
@@ -103,7 +103,7 @@ if (!process.env.RESEND_API_KEY) {
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
 
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, message } = body;
@@ -174,7 +174,11 @@ export async function POST(req) {
     const result = await resend.emails.send({
       from: fromEmail,
       to: teamEmail,
-      reply_to: email,
+      // `replyTo`, not `reply_to`. Resend's typed client rejects the snake_case
+      // key, so this field was silently dropped for as long as the file was
+      // .jsx and unchecked — support replies went to the from-address instead
+      // of the person who wrote in. Surfaced by the E5.1 conversion.
+      replyTo: email,
       subject: `New Support Request from ${name}`,
       html: htmlContent,
       text: `
@@ -200,16 +204,16 @@ ${message}
 
     // Provide more specific error messages
     let errorMessage = "Failed to send email";
-    let errorDetails = error.message;
+    let errorDetails = (error instanceof Error ? error.message : String(error));
 
     // Check for common Resend errors
-    if (error.message?.includes("API key")) {
+    if ((error instanceof Error ? error.message : String(error))?.includes("API key")) {
       errorMessage = "Invalid or missing Resend API key";
       errorDetails = "Please check your RESEND_API_KEY environment variable";
-    } else if (error.message?.includes("domain") || error.message?.includes("verify")) {
+    } else if ((error instanceof Error ? error.message : String(error))?.includes("domain") || (error instanceof Error ? error.message : String(error))?.includes("verify")) {
       errorMessage = "Domain verification required";
       errorDetails = "The email domain needs to be verified in Resend. When using onboarding@resend.dev, you can only send to verified email addresses.";
-    } else if (error.message?.includes("rate limit") || error.message?.includes("quota")) {
+    } else if ((error instanceof Error ? error.message : String(error))?.includes("rate limit") || (error instanceof Error ? error.message : String(error))?.includes("quota")) {
       errorMessage = "Email sending rate limit exceeded";
       errorDetails = "Please try again later or upgrade your Resend plan";
     }
@@ -218,7 +222,7 @@ ${message}
       {
         error: errorMessage,
         details: errorDetails,
-        fullError: process.env.NODE_ENV === "development" ? error.message : undefined
+        fullError: process.env.NODE_ENV === "development" ? (error instanceof Error ? error.message : String(error)) : undefined
       },
       { status: 500 }
     );

@@ -17,12 +17,12 @@ import Loading from "./Loading";
  * @example
  * export default withPermissions(UserManagementPage, "Manage users", "view");
  */
-export const withPermissions = (
-  Component,
-  requiredResource,
-  requiredAction = "view"
+export const withPermissions = <P extends object>(
+  Component: React.ComponentType<P>,
+  requiredResource: string,
+  requiredAction: string = "view"
 ) => {
-  return function PermissionGuardedComponent(props) {
+  return function PermissionGuardedComponent(props: P) {
     const router = useRouter();
     const { canPerform, hasPermission, loading, isSuperAdmin } =
       usePermissions();
@@ -172,6 +172,11 @@ export const PermissionCheck = ({
   action = "view",
   fallback = null,
   children,
+}: {
+  resource: string;
+  action?: string;
+  fallback?: React.ReactNode;
+  children: React.ReactNode;
 }) => {
   const { canPerform, hasPermission, isSuperAdmin, loading } = usePermissions();
 
@@ -215,7 +220,10 @@ export const PermissionCheck = ({
  *   );
  * }
  */
-export const usePermissionCheck = (resource, action = null) => {
+export const usePermissionCheck = (
+  resource: string,
+  action: string | null = null,
+) => {
   const { canPerform, hasPermission, isSuperAdmin, loading } = usePermissions();
 
   const hasAccess = loading
@@ -248,6 +256,11 @@ export const PermissionSwitch = ({
   viewOnly = null,
   canEdit = null,
   fullAccess = null,
+}: {
+  resource: string;
+  viewOnly?: React.ReactNode;
+  canEdit?: React.ReactNode;
+  fullAccess?: React.ReactNode;
 }) => {
   const { canPerform, isSuperAdmin, loading } = usePermissions();
 
@@ -289,7 +302,7 @@ export const PermissionSwitch = ({
  *   );
  * }
  */
-export const useResourceActions = (resource) => {
+export const useResourceActions = (resource: string) => {
   const { canPerform, hasPermission, isSuperAdmin, loading } = usePermissions();
 
   if (loading) {

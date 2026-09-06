@@ -18,7 +18,8 @@
 
   "ignoreDependencies": [
     "supabase",
-    "tailwindcss-animate"
+    "tailwindcss-animate",
+    "@types/google.maps"
   ],
 
   "ignoreBinaries": ["supabase"]

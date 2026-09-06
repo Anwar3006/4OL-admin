@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
 /**
@@ -14,7 +14,7 @@ import { getAdminClient } from "@/lib/db/admin";
  *
  * Body: { reason?: string }
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
 
@@ -80,7 +80,7 @@ export async function POST(request) {
  * show the status of an in-flight request on revisit (pending banner +
  * cancel option). Returns the caller's most recent request, or null.
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
 
@@ -120,7 +120,7 @@ export async function GET(request) {
  *
  * Body: { action: "cancel" }
  */
-export async function PATCH(request) {
+export async function PATCH(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
 

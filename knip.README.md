@@ -46,6 +46,10 @@ Knip finds entry points from plugins (Next.js, Vitest, Playwright) and from
   utilities, and removing it silently drops every dialog and popover
   animation — nothing errors, the UI just stops moving. Found while pruning
   dependencies for E6.2, where it was the last "unused" entry left.
+- **`@types/google.maps`** — an ambient type package. Nothing imports it;
+  `features/map/ui/GoogleMapContainer.tsx` uses the `google.maps.*` namespace
+  it declares, which knip does not count as a reference. Added during E5.1 so
+  that file could be typed with the real Maps types instead of `any` stand-ins.
 
 ## Known false positives, deliberately NOT suppressed
 

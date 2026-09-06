@@ -204,11 +204,16 @@ code, or a bad dynamic import.
 
 ## Known sharp edges
 
-- **55 `.js`/`.jsx` files under `app/` are never type-checked.** `tsconfig`
-  sets `strict: true` but also `checkJs: false`, and `include` lists only
-  `.ts`/`.tsx`. Two of them are mobile-contract routes. This is why
-  `pnpm build` catches things `pnpm type-check` cannot — a module deleted out
-  from under one of these fails only at build.
+- **The `.js`/`.jsx` blind spot is closed.** There are none left in app code
+  (E5.1). `tsconfig` still sets `checkJs: false` with an `include` of only
+  `.ts`/`.tsx`, so the hazard returns the moment someone adds one — and
+  `pnpm build` remains the only net for files `tsc` does not see.
+
+  Converting them found three live bugs nothing else could have: the email
+  password-reset flow calling two functions that do not exist, a support email
+  passing `reply_to` where Resend expects `replyTo` (silently dropped), and a
+  details page initialising object state to `[]` so a failed query rendered
+  blanks instead of an error.
 - **`eslint.config.mjs` excludes `redesign/**`** entirely.
 - **`stores/dialog-store.ts` (30 KB) is global.** Every feature's dialogs reach
   into it; it is the tightest coupling in the repo.

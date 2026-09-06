@@ -13,9 +13,18 @@ import { facilityFields } from "@/constant/facility-labels-data";
 
 export default function Page() {
   const router = useRouter();
-  const [facility, setFacility] = useState(null);
+  /** Row shape read by `?id=`; fields are optional because the select is `*`. */
+  type FacilityRow = {
+    id: string;
+    status?: string | null;
+    media_urls?: string[] | null;
+    featured_image_url?: string | null;
+    business_hours?: Record<string, { opening?: string; closing?: string }> | null;
+    [key: string]: unknown;
+  };
+  const [facility, setFacility] = useState<FacilityRow | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const { data: session } = useSupabaseSession();
@@ -50,7 +59,7 @@ export default function Page() {
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
 
-  const handleEdit = (id) => {
+  const handleEdit = (id: string) => {
     router.push(`/edit-facility-profile-form?id=${id}`);
   };
 
@@ -80,7 +89,7 @@ export default function Page() {
                   {facility[key]
                     ? format
                       ? format(facility[key])
-                      : facility[key]
+                      : String(facility[key])
                     : "Not Available"}
                 </div>
               </div>
@@ -127,8 +136,8 @@ export default function Page() {
                     className="flex justify-between items-center xl:w-[30%] sm:w-[50%]"
                   >
                     <div className="font-medium flex-1 capitalize">{day}</div>
-                    <div className="flex-1 text-center">{hours.opening}</div>
-                    <div className="flex-1 text-center">{hours.closing}</div>
+                    <div className="flex-1 text-center">{hours?.opening}</div>
+                    <div className="flex-1 text-center">{hours?.closing}</div>
                   </div>
                 ))}
               </div>
@@ -149,10 +158,10 @@ export default function Page() {
               onClick={() => {
                 approveFacility(
                   {
-                    adminId: session?.user?.id,
+                    adminId: session?.user?.id ?? "",
                     id: facility.id,
                     media_urls: facility.media_urls || [],
-                    featured_image_url: facility.featured_image_url,
+                    featured_image_url: facility.featured_image_url ?? "",
                   },
                   { onSuccess: () => router.back() }
                 );

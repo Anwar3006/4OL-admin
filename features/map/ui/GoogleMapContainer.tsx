@@ -24,31 +24,67 @@ const center = {
 };
 
 
-/**
- * @param {{
- *   filters: any,
- *   layers?: { facilities: boolean, footprints: boolean, ibp: boolean, outdoorRoutes: boolean },
- *   focusRouteId?: string | null,
- *   selectedCollectorId?: string | null,
- * }} props
- */
+/** Promoted from the JSDoc that documented these props while the file was .jsx. */
+type MapLayers = {
+  facilities: boolean;
+  footprints: boolean;
+  ibp: boolean;
+  outdoorRoutes: boolean;
+};
+
+/** Outdoor-route marker payload from get_outdoor_route_pins. */
+type RoutePin = {
+  id: string;
+  category?: string | null;
+  name?: string | null;
+  start_lat: number;
+  start_lng: number;
+  distance_km?: number | null;
+  difficulty?: string | null;
+  rating?: number | null;
+  route_class?: string | null;
+  has_gps?: boolean | null;
+};
+
+/** IBP business marker payload. */
+/** One registrar trail from useRegistrarTrails. */
+type RegistrarTrail = { registrar_id: string; trail: unknown };
+
+type IbpPin = {
+  id: string;
+  business_name?: string | null;
+  business_category?: string | null;
+  district?: string | null;
+  region?: string | null;
+  latitude: number;
+  longitude: number;
+};
+
+type GoogleMapContainerProps = {
+  /** Region/district/type/status filter bag, passed straight to the map RPCs. */
+  filters: Record<string, unknown>;
+  layers?: MapLayers;
+  focusRouteId?: string | null;
+  selectedCollectorId?: string | null;
+};
+
 const GoogleMapContainer = ({
   filters,
   layers = { facilities: true, footprints: true, ibp: false, outdoorRoutes: false },
   focusRouteId = null,
   selectedCollectorId = null,
-}) => {
+}: GoogleMapContainerProps) => {
   const router = useRouter();
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
-  const [map, setMap] = useState(null);
-  const [bounds, setBounds] = useState(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [bounds, setBounds] = useState<[number, number, number, number] | null>(null);
   const [zoom, setZoom] = useState(11);
-  const [selectedRoutePin, setSelectedRoutePin] = useState(null);
-  const [selectedIbpPin, setSelectedIbpPin] = useState(null);
+  const [selectedRoutePin, setSelectedRoutePin] = useState<RoutePin | null>(null);
+  const [selectedIbpPin, setSelectedIbpPin] = useState<IbpPin | null>(null);
 
   const { data: geojson, isLoading } = useGetFacilitiesMapData({
     minLng: bounds?.[0] ?? 0,
@@ -76,7 +112,7 @@ const GoogleMapContainer = ({
   }, [map, focusRouteId, routePins]);
 
 
-  const onLoad = useCallback(function callback(currentMap) {
+  const onLoad = useCallback(function callback(currentMap: google.maps.Map) {
     setMap(currentMap);
   }, []);
 
@@ -87,10 +123,11 @@ const GoogleMapContainer = ({
   const onBoundsChanged = () => {
     if (map) {
       const newBounds = map.getBounds();
+      if (!newBounds) return;
       const ne = newBounds.getNorthEast();
       const sw = newBounds.getSouthWest();
       setBounds([sw.lng(), sw.lat(), ne.lng(), ne.lat()]);
-      setZoom(map.getZoom());
+      setZoom(map.getZoom() ?? zoom);
     }
   };
 
@@ -135,13 +172,13 @@ const GoogleMapContainer = ({
     }
   }, [filters?.region, filters?.district, filters?.facilityType, filters?.status, map]);
 
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<google.maps.Data | null>(null);
   const { data: trails } = useRegistrarTrails(1);
 
   useEffect(() => {
     if (!data) return;
     // Remove stale trail features before re-adding (layer toggle aware).
-    const stale = [];
+    const stale: google.maps.Data.Feature[] = [];
     data.forEach((feature) => {
       if (feature.getProperty("type") === "trail") stale.push(feature);
     });
@@ -150,12 +187,12 @@ const GoogleMapContainer = ({
     if (layers.footprints && trails) {
       trails
         .filter(
-          (item) =>
+          (item: RegistrarTrail) =>
             !selectedCollectorId ||
             selectedCollectorId === "all" ||
             item.registrar_id === selectedCollectorId,
         )
-        .forEach((item) => {
+        .forEach((item: RegistrarTrail) => {
           const feature = {
             type: "Feature",
             geometry: item.trail,
@@ -284,7 +321,7 @@ const GoogleMapContainer = ({
   const pinPath =
     "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z";
 
-  const makePinIcon = (fillColor) => ({
+  const makePinIcon = (fillColor: string) => ({
     path: pinPath,
     fillColor,
     fillOpacity: 1,
@@ -320,7 +357,7 @@ const GoogleMapContainer = ({
               if (type === "LineString") {
                 const registrarId = feature.getProperty("registrar_id");
                 return {
-                  strokeColor: getColorForId(registrarId),
+                  strokeColor: getColorForId(String(registrarId ?? "")),
                   strokeWeight: 4,
                   strokeOpacity: 0.8,
                   icons: [
@@ -341,8 +378,9 @@ const GoogleMapContainer = ({
                 inactive: "#6b7280",
                 rejected: "#ef4444",
               };
-              const status = feature.getProperty("status");
-              const fillColor = statusColors[status?.toLowerCase()] || "#10b981";
+              const status = String(feature.getProperty("status") ?? "").toLowerCase();
+              const fillColor =
+                statusColors[status as keyof typeof statusColors] || "#10b981";
 
               return {
                 icon: {

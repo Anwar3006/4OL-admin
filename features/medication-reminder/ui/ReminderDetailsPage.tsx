@@ -9,8 +9,34 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
 
+/**
+ * One medication reminder, read by `?id=`.
+ *
+ * `.single()` returns an OBJECT, but this state was initialised to `[]` and
+ * the failure path did `setData(data || [])` — so a failed or empty query left
+ * an array behind and every field below read `undefined` off it, rendering a
+ * page of blanks rather than an error. Converting the file under E5.1 is what
+ * exposed it: TypeScript inferred `never[]` and rejected every field access.
+ * The shape is now object-or-null and the empty case is handled explicitly.
+ */
+type ReminderRow = {
+  id: string;
+  medication_name?: string | null;
+  condition?: string | null;
+  medication_type?: string | null;
+  color?: string | null;
+  imageUrl?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  medication_amount?: string | number | null;
+  medication_dose?: string | number | null;
+  intake_amount?: string | number | null;
+  reminder_timestamps?: string[] | null;
+  user_profiles?: { first_name?: string | null; last_name?: string | null } | null;
+};
+
 const viewPilldetails = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<ReminderRow | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -36,7 +62,7 @@ const viewPilldetails = () => {
         console.error("Error fetching pills details", error);
       }
 
-      setData(data || []);
+      setData(data ?? null);
     } catch (error) {
       console.error("Error fetching pills details", error);
     } finally {
@@ -77,7 +103,7 @@ const viewPilldetails = () => {
             {/* Key-Value Pairs */}
             <div className=" text-black-500 whitespace-nowrap">Full Name</div>
             <div className=" text-gray-700">
-              {data.user_profiles.first_name} {data.user_profiles.last_name}
+              {data.user_profiles?.first_name} {data.user_profiles?.last_name}
             </div>
 
             <div className=" text-black-500 break-words min-w-[120px]">
@@ -100,11 +126,12 @@ const viewPilldetails = () => {
             <div className=" text-black-500 whitespace-nowrap">Color</div>
             <div
               className="w-10 h-10 rounded border border-gray-200"
-              style={{ backgroundColor: data.color }}
+              style={{ backgroundColor: data.color ?? undefined }}
             />
 
             <div className=" text-black-500 whitespace-nowrap">Image</div>
             <div className="flex items-center">
+              {data.imageUrl ? (
               <Image
                 src={data.imageUrl}
                 alt="Medication"
@@ -113,13 +140,16 @@ const viewPilldetails = () => {
                 unoptimized
                 className="rounded-md object-cover w-24 h-24"
               />
+              ) : (
+                <span className="text-gray-400">—</span>
+              )}
             </div>
 
             <div className=" text-black-500 whitespace-nowrap">Start Date</div>
-            <div className="text-gray-700">{data.start_date.slice(0, 10)}</div>
+            <div className="text-gray-700">{data.start_date?.slice(0, 10) ?? "—"}</div>
 
             <div className=" text-black-500 whitespace-nowrap">End Date</div>
-            <div className="text-gray-700">{data.end_date.slice(0, 10)}</div>
+            <div className="text-gray-700">{data.end_date?.slice(0, 10) ?? "—"}</div>
 
             <div className=" text-black-500 whitespace-nowrap">Amount</div>
             <div className="text-gray-700">{data.medication_amount}</div>
@@ -145,9 +175,9 @@ const viewPilldetails = () => {
                     key={colIndex}
                     className="flex flex-col space-y-1 text-sm"
                   >
-                    {data.reminder_timestamps
-                      .filter((_, i) => i % 3 === colIndex)
-                      .map((ts, index) => {
+                    {(data.reminder_timestamps ?? [])
+                      .filter((_: string, i: number) => i % 3 === colIndex)
+                      .map((ts: string, index: number) => {
                         const date = new Date(ts);
                         const formatted = date
                           .toLocaleDateString("en-US", {

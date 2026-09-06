@@ -9,7 +9,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const ViewReviews = () => {
-  const [reviewData, setReviewData] = useState(null);
+  /**
+   * NOTE: this page reads `facility_ratings`, a table that DOES NOT EXIST —
+   * the real one is `facility_reviews`. It has never returned data; the query
+   * errors and the page sits on its loading state. Typing it under E5.1 does
+   * not fix that. See docs/cleanup-handoff.md.
+   */
+  type ReviewRow = {
+    id: string;
+    comment?: string | null;
+    rating?: number | null;
+    user_profiles?: { first_name?: string | null; last_name?: string | null } | null;
+    facility_profile?: { facility_name?: string | null } | null;
+  };
+  const [reviewData, setReviewData] = useState<ReviewRow | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -35,7 +48,7 @@ const ViewReviews = () => {
       if (error) {
         console.error("Error fetching Reviews", error);
       }
-      setReviewData(data || []);
+      setReviewData((data as ReviewRow | null) ?? null);
     } catch (error) {
       console.error("Error fetching Reviews", error);
     } finally {
@@ -77,7 +90,7 @@ const ViewReviews = () => {
             <div className="flex">
               <p className="w-1/3 text-gray-900">Full Name</p>
               <p className="w-2/3">
-                {reviewData.user_profiles.first_name || "N/A"}{" "}
+                {reviewData.user_profiles?.first_name || "N/A"}{" "}
                 {reviewData?.user_profiles?.last_name || "N/A"}
               </p>
             </div>
@@ -85,7 +98,7 @@ const ViewReviews = () => {
             <div className="flex">
               <p className="w-1/3 text-gray-900">Facility Name</p>
               <p className="w-2/3">
-                {reviewData.facility_profile.facility_name || "N/A"}
+                {reviewData.facility_profile?.facility_name || "N/A"}
               </p>
             </div>
 

@@ -75,7 +75,7 @@ and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
 
 | Task | Why it is fully covered |
 | --- | --- |
-| **E5.1** convert the 52 `.js`/`.jsx` files | `tsc` + `pnpm build` are exactly the right net. Start with the trivial ones (`app/loading.js`, `hooks/useDarkMode.js`, `components/Loading.jsx`). |
+| **E5.1** convert `.js`/`.jsx` | **Already done.** Zero remain in app code. |
 | **E5.3** lint `redesign/**` | **Already done.** It was a no-op: that directory holds no code. |
 | **E6.2** prune dependencies | `pnpm knip` finds them, `pnpm build` proves nothing needed them. |
 | **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
@@ -149,7 +149,7 @@ signature half.
 | **E3.4** split `lib/`         | **Done.** Feature-owned modules moved out; `reports/` and `supabase/indexAdmin.ts` retired; the three pure re-export shims deleted after migrating 129 callers. `lib/supabase.ts` (anon client) survives with 2 callers that need database verification. |
 | **E4.1** god files             | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next.                                                                                     |
 | **E4.2** dialog store          | **Not started.** `stores/dialog-store.ts`, 30 KB, global.                                                                                                                                               |
-| **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79.                                                                                                                                                                          |
+| **E5.1** convert `.js/.jsx` | **Done.** Zero `.js`/`.jsx` left in app code (was 79, then 52). `@types/google.maps` added so the map container could use real Maps types rather than `any`. |
 | **E5.2** generated DB types    | **Not started.** Every `schema/types.ts` is hand-written and can drift.                                                                                                                                 |
 | **E5.3** lint everything       | **Done — and it was a no-op.** The exclusion is gone, but `redesign/**` holds no code (9 files: markdown, SQL, a PNG). The live components are in `components/redesign/`, which was never excluded. |
 | **E6.1** knip                  | **Done.** knip reports **0 unused files and 0 unused dependencies**. |
@@ -380,6 +380,15 @@ claim.
 ## Pending items — deferred, not forgotten
 
 Logged here because they were raised mid-task and consciously postponed.
+
+### `reply_to` was silently dropped on the support email
+
+`app/api/support/route.ts` passed `reply_to: email` to Resend, which expects
+`replyTo`. The typed client rejects the snake_case key — but the file was
+`.jsx` and unchecked, so it compiled and shipped with the field discarded.
+Support replies went to the from-address instead of the person who wrote in.
+Fixed during E5.1. Worth knowing because the same shape can hide in any
+untyped call into a typed SDK.
 
 ### AWS SES is not configured — email does not send
 

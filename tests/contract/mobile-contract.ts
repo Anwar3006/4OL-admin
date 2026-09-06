@@ -45,7 +45,7 @@ export const CONTRACT_ROUTES: ContractRoute[] = [
   { path: "/api/user/notifications",           file: "app/api/user/notifications/route.ts",           methods: ["GET", "PATCH", "POST"],  consumer: "hooks/use-notifications.ts" },
   { path: "/api/user/favorites",               file: "app/api/user/favorites/route.ts",               methods: ["GET", "POST", "DELETE"], consumer: "hooks/use-facilities.ts" },
   { path: "/api/user/content-engagement",      file: "app/api/user/content-engagement/route.ts",      methods: ["GET", "POST", "DELETE"], consumer: "hooks/use-content-engagement.ts" },
-  { path: "/api/user/delete-account-request",  file: "app/api/user/delete-account-request/route.js",  methods: ["GET", "POST", "PATCH"],  consumer: "hooks/use-my-account.ts" },
+  { path: "/api/user/delete-account-request",  file: "app/api/user/delete-account-request/route.ts",  methods: ["GET", "POST", "PATCH"],  consumer: "hooks/use-my-account.ts" },
   { path: "/api/user/push-token",              file: "app/api/user/push-token/route.ts",              methods: ["PATCH"],                 consumer: "lib/push-tokens.ts" },
   { path: "/api/chat/support",                 file: "app/api/chat/support/route.ts",                 methods: ["GET", "POST", "PATCH"],  consumer: "hooks/use-support-tickets.ts" },
   { path: "/api/fitness/generate",             file: "app/api/fitness/generate/route.ts",             methods: ["POST"],                  consumer: "hooks/use-fitness-onboarding.ts" },

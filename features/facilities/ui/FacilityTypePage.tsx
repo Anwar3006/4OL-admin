@@ -39,7 +39,9 @@ const formatFacilityType = (rawType = "") =>
 
 const FacilityTypePage = () => {
   const params = useParams();
-  const decodedType = decodeURIComponent(params?.type || "");
+  const decodedType = decodeURIComponent(
+    typeof params?.type === "string" ? params.type : "",
+  );
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,7 +68,7 @@ const FacilityTypePage = () => {
     status: currentStatus || undefined,
   });
 
-  const handleStatusChange = (status) => {
+  const handleStatusChange = (status: string | null) => {
     const paramsObj = new URLSearchParams(searchParams.toString());
     if (status) paramsObj.set("status", status);
     else paramsObj.delete("status");
@@ -95,7 +97,7 @@ const FacilityTypePage = () => {
   );
 
   const onRowClick = useCallback(
-    (facility) => viewFacility.open(facility.id),
+    (facility: { id: string }) => viewFacility.open(facility.id),
     [viewFacility],
   );
 
