@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useMakeGroupLeaderDialog } from "@/stores/dialog-store";
-import { useMakeGroupLeader } from "@/hooks/supabase-calls/useConversation";
+import { useMakeGroupLeader } from "@/features/chat/data/useConversation";
 import { useFacilityProfiles } from "@/features/facilities/data/useFacilities";
 import CustomSelect from "@/components/CustomSelect";
 import { ShieldCheck, Loader2 } from "lucide-react";

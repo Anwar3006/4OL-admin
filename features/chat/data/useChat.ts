@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
-import { TChatInput, TChatOutput } from "@/schemas/chat.schema";
+import { TChatInput, TChatOutput } from "@/features/chat/schema/chat";
 import { toast } from "sonner";
 
 // Query Keys

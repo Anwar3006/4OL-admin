@@ -7,9 +7,9 @@ import {
   useFlaggedContent,
   useModerateContent,
   FlaggedContentItem,
-} from "@/hooks/supabase-calls/useConversation";
+} from "@/features/chat/data/useConversation";
 import { useHasPermission } from "@/stores/permission-context";
-import { FLAG_REASONS } from "@/lib/chats-constants";
+import { FLAG_REASONS } from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 
 const STATUS_BADGE: Record<string, string> = {

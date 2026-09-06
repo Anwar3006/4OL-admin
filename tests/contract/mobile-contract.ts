@@ -152,6 +152,21 @@ export const CONTRACT_RPCS = [
   // Verified to exist with this signature; service_role only, which is why
   // mobile reaches it through the route rather than calling it directly.
   "submit_period_trivia",
+
+  // Added 6 Sept 2026 with the features/chat migration. Three of the seven
+  // contracted /api/chat/* routes delegate to these, so mobile depends on them
+  // transitively while nothing protected them — the same gap as
+  // /api/auth/device-sign-in/send-otp and submit_period_trivia:
+  //   /api/chat/messages       -> dispatch_notification
+  //   /api/chat/messages/read  -> fn_mark_conversation_read
+  //   /api/chat/groups         -> fn_create_group_conversation
+  // All three verified to exist with these signatures.
+  //
+  // fn_make_group_leader is deliberately NOT here: its only caller is the
+  // admin-side useConversation hook, not a contracted route.
+  "dispatch_notification",
+  "fn_create_group_conversation",
+  "fn_mark_conversation_read",
 ] as const;
 
 /**

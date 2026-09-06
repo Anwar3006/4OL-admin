@@ -3,22 +3,22 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { useChats } from "@/hooks/supabase-calls/useChat";
+import { useChats } from "@/features/chat/data/useChat";
 import {
   useUpdateSupportTicket,
   useDeleteSupportTicket,
-} from "@/hooks/supabase-calls/useConversation";
+} from "@/features/chat/data/useConversation";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
-import { useSupportAnalytics } from "@/hooks/supabase-calls/useConversation";
+import { useSupportAnalytics } from "@/features/chat/data/useConversation";
 import { useAddTicketDialog } from "@/stores/dialog-store";
 import { useHasPermission } from "@/stores/permission-context";
-import { TChatOutput } from "@/schemas/chat.schema";
+import { TChatOutput } from "@/features/chat/schema/chat";
 import {
   SUPPORT_STATUSES,
   SUPPORT_STATUS_BADGES,
   SUPPORT_TYPES,
   ticketDisplayId,
-} from "@/lib/chats-constants";
+} from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 import AddTicketDialog from "./add-ticket-dialog";
 

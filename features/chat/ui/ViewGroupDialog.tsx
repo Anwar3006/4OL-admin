@@ -14,11 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
-import { useUpdateConversation } from "@/hooks/supabase-calls/useConversation";
+import { useUpdateConversation } from "@/features/chat/data/useConversation";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
 import { useHasPermission } from "@/stores/permission-context";
 import { getSupabaseClient } from "@/lib/supabase";
-import { groupCategoryLabel, groupTypeLabel } from "@/lib/chats-constants";
+import { groupCategoryLabel, groupTypeLabel } from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 
 interface GroupAdminRow {

@@ -8,7 +8,7 @@ import {
   useDeleteConversation,
   useUpdateConversation,
   useGlobalMessageSearch,
-} from "@/hooks/supabase-calls/useConversation";
+} from "@/features/chat/data/useConversation";
 import { useViewGroupDialog, useAddGroupDialog } from "@/stores/dialog-store";
 import { useHasPermission, usePermissionContext } from "@/stores/permission-context";
 import {
@@ -17,7 +17,7 @@ import {
   groupTypeLabel,
   groupPermissionSummary,
   type GroupPermissionKey,
-} from "@/lib/chats-constants";
+} from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 
 export interface GroupRow {

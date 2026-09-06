@@ -16,7 +16,7 @@ import { useAddGroupDialog } from "@/stores/dialog-store";
 import {
   useCreateConversation,
   useUpdateConversation,
-} from "@/hooks/supabase-calls/useConversation";
+} from "@/features/chat/data/useConversation";
 import { useUsers } from "@/hooks/supabase-calls/useUser";
 import { GHANA_REGIONS } from "@/lib/shared-constants";
 import {
@@ -26,7 +26,7 @@ import {
   GROUP_PERMISSION_DEFAULTS,
   normalizeGroupCategory,
   type GroupPermissionKey,
-} from "@/lib/chats-constants";
+} from "@/features/chat/schema/constants";
 import { Loader2 } from "lucide-react";
 
 const MAX_MEMBERS_DEFAULT = 500;

@@ -5,6 +5,24 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "dispatch_notification": {
+    "args": "p_recipients jsonb, p_campaign_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_create_group_conversation": {
+    "args": "p_name text, p_description text, p_created_by text, p_avatar_url text, p_member_ids text[], p_facility_id uuid",
+    "returns": "uuid",
+    "security_definer": false,
+    "volatility": "volatile"
+  },
+  "fn_mark_conversation_read": {
+    "args": "p_conversation_id uuid, p_user_id text",
+    "returns": "void",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "get_anatomy_body_part_bundle": {
     "args": "p_body_part_id uuid, p_gender text, p_preview_limit integer",
     "returns": "jsonb",

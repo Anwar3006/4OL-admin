@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **10 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder, marketing. **24 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **11 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder, marketing, chat. **22 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -65,14 +65,14 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E6.2** prune deps | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps. |
 | **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB. |
 | **E7** documentation | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file. |
-| **E8** mobile contract | **Done.** 31 routes / 45 RPCs / 38 tables, all verified live. The verb check now follows re-exports. |
+| **E8** mobile contract | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to. |
 | **E9** extract the blueprint | **Not started.** |
 
 ---
 
 ## Do next, in order
 
-### 1. Empty `hooks/supabase-calls/` — 24 files left
+### 1. Empty `hooks/supabase-calls/` — 22 files left
 
 The five big features are migrated. What remains in that directory is the
 long tail: whichever feature each hook belongs to, moved the same way. E3.2 is

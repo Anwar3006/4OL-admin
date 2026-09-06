@@ -2,7 +2,7 @@
 
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useSupportAnalytics } from "@/hooks/supabase-calls/useConversation";
+import { useSupportAnalytics } from "@/features/chat/data/useConversation";
 
 export default function ChatStats() {
   const { data: analytics, isLoading } = useSupportAnalytics("30");

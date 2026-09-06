@@ -55,7 +55,7 @@ them reading tables that do not exist. See `docs/cleanup-handoff.md`.
 
 ### 2. Changes to the mobile contract must be additive
 
-**31 API routes, 45 RPCs and 38 tables** are consumed by the Expo app. Old
+**31 API routes, 48 RPCs and 38 tables** are consumed by the Expo app. Old
 builds live on phones for months. Never drop a field, rename a route, reorder an RPC
 parameter, or tighten an RLS policy on a listed table without shipping a
 mobile release first. New parameters get defaults.
@@ -77,7 +77,11 @@ function and then fails inside its own subshell.
 Also: **a contracted route can delegate to an RPC that is not contracted**, and
 that RPC is then free to vanish. `/api/auth/device-sign-in/send-otp` did, and
 the function it calls did not exist. List the RPC too. `submit_period_trivia`
-was the same gap, found during the `features/period` migration and now listed.
+was the same gap, found during the `features/period` migration; the
+`features/chat` migration found **three more at once**
+(`dispatch_notification`, `fn_mark_conversation_read`,
+`fn_create_group_conversation`). All four are listed now. **Check this every
+time you migrate a feature that owns a contracted route.**
 
 A route file that is a **re-export** (`export { GET } from "@/features/…"`)
 still satisfies the contract: `tests/contract/api-routes.test.ts` follows the
@@ -145,8 +149,8 @@ imported from `../page` and broke the moment it was renamed.
 
 Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
 `period`, `fitness`, `symptoms`, `healthy-living`, `facilities`,
-`medication-reminder`, `marketing`. E3.2 is finished when
-`hooks/supabase-calls/` is empty — **24 files left**, down from 42.
+`medication-reminder`, `marketing`, `chat`. E3.2 is finished when
+`hooks/supabase-calls/` is empty — **22 files left**, down from 42.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.

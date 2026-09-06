@@ -10,7 +10,7 @@ import { useAddTicketDialog } from "@/stores/dialog-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { TChatInput, chatInputSchema } from "@/schemas/chat.schema";
+import { TChatInput, chatInputSchema } from "@/features/chat/schema/chat";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import {
@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUpdateChat } from "@/hooks/supabase-calls/useChat";
+import { useUpdateChat } from "@/features/chat/data/useChat";
 
 const PRIORITY_META: Record<string, { emoji: string; badge: string }> = {
   Low: { emoji: "🟢", badge: "badge-blue" },

@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
-import { TConversationOutput } from "@/schemas/conversation.schema";
+import { TConversationOutput } from "@/features/chat/schema/conversation";
 import { toast } from "sonner";
 import { assignAdminWithRulesAction } from "@/actions/conversation.actions";
-import { GROUP_CATEGORY_LEGACY_MAP } from "@/lib/chats-constants";
+import { GROUP_CATEGORY_LEGACY_MAP } from "@/features/chat/schema/constants";
 import { CHAT_QUERY_KEYS } from "./useChat";
 
 export const CONVERSATION_QUERY_KEYS = {
