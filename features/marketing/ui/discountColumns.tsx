@@ -12,13 +12,13 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { TDiscountRow } from "@/schemas/marketing-discount.schema";
+import { TDiscountRow } from "@/features/marketing/schema/discount";
 import { formatCurrency } from "@/lib/format";
 import {
   useCreateMarketingDiscount,
   useDeleteMarketingDiscount,
   useUpdateMarketingDiscount,
-} from "@/hooks/supabase-calls/useDiscounts";
+} from "@/features/marketing/data/useDiscounts";
 
 const TYPE_LABELS: Record<string, string> = {
   percentage: "% Off",

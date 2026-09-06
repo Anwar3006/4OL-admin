@@ -13,7 +13,7 @@ import { apiFetch } from "@/lib/api-fetch";
 import {
   TMarketingSubscriptionInput,
   TMarketingSubscriptionOutput,
-} from "@/schemas/marketing-subscription.schema";
+} from "@/features/marketing/schema/subscription";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

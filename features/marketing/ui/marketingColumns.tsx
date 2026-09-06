@@ -8,8 +8,8 @@ import {
 import {
   useDeleteMarketingProfile,
   useUpdateMarketingProfile,
-} from "@/hooks/supabase-calls/useMarketing";
-import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
+} from "@/features/marketing/data/useMarketing";
+import { TMarketingProfileOutput } from "@/features/marketing/schema/profile";
 import { MarketingStatusMap } from "@/constants/marketing.const";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/format";

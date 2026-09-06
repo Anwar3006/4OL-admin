@@ -11,7 +11,7 @@ import React, { useMemo, useState } from "react";
 import { Tag, BarChart3, Percent } from "lucide-react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { createDiscountColumns } from "@/components/Data-Table/columns/discountColumns";
+import { createDiscountColumns } from "./discountColumns";
 import { Button } from "@/components/ui/button";
 import DiscountDialog from "./discount-dialog";
 import { downloadCsv } from "@/lib/csv";
@@ -21,8 +21,8 @@ import {
   useMarketingDiscounts,
   useUpdateMarketingDiscount,
   useDeleteMarketingDiscount,
-} from "@/hooks/supabase-calls/useDiscounts";
-import { TDiscountRow } from "@/schemas/marketing-discount.schema";
+} from "@/features/marketing/data/useDiscounts";
+import { TDiscountRow } from "@/features/marketing/schema/discount";
 
 const FILTER_SELECT_CLASS =
   "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";

@@ -234,6 +234,11 @@ const MUST_REDIRECT: Array<[string, string]> = [
   ["/facilities/diagnostic-labs/create", "/facilities?type=diagnostic_lab"],
   ["/facilities/featured", "/facilities?tab=featured"],
   ["/facilities/top-rated", "/facilities?tab=top-rated"],
+
+  // Marketing sub-routes collapsed into the unified page (M-D6). These were
+  // server-side redirect() stubs before E3.2 moved them into next.config.ts.
+  ["/marketing/discounts", "/marketing?tab=discounts"],
+  ["/marketing/subscriptions", "/marketing?tab=subscriptions"],
 ];
 
 test.describe("live but unlinked — must not be deleted", () => {

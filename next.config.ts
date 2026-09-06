@@ -97,6 +97,12 @@ const nextConfig: NextConfig = {
       // Same destinations, moved ahead of rendering.
       { source: "/facilities/featured", destination: "/facilities?tab=featured", permanent: false },
       { source: "/facilities/top-rated", destination: "/facilities?tab=top-rated", permanent: false },
+
+      // Marketing sub-routes collapsed into the unified page (M-D6). These
+      // were server-side `redirect()` stubs, which is already ahead of the
+      // client-side kind — but a config redirect skips rendering entirely.
+      { source: "/marketing/discounts", destination: "/marketing?tab=discounts", permanent: false },
+      { source: "/marketing/subscriptions", destination: "/marketing?tab=subscriptions", permanent: false },
     ];
   },
 

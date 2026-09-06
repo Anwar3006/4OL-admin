@@ -26,13 +26,13 @@ import {
   marketingDiscountSchema,
   TDiscountRow,
   TMarketingDiscountInput,
-} from "@/schemas/marketing-discount.schema";
+} from "@/features/marketing/schema/discount";
 import {
   useCreateMarketingDiscount,
   useUpdateMarketingDiscount,
-} from "@/hooks/supabase-calls/useDiscounts";
-import { useMarketingSubscriptions } from "@/hooks/supabase-calls/useSubscriptions";
-import { useMarketingProfiles } from "@/hooks/supabase-calls/useMarketing";
+} from "@/features/marketing/data/useDiscounts";
+import { useMarketingSubscriptions } from "@/features/marketing/data/useSubscriptions";
+import { useMarketingProfiles } from "@/features/marketing/data/useMarketing";
 
 const TYPE_OPTIONS = [
   { value: "percentage", label: "% Off" },

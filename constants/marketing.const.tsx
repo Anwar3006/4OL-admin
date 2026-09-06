@@ -1,4 +1,4 @@
-import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
+import { TMarketingProfileOutput } from "@/features/marketing/schema/profile";
 import { JSX } from "react";
 
 export const MarketingStatusMap: Record<

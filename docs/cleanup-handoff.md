@@ -31,7 +31,7 @@ E2E_BASE_URL=http://localhost:3000 pnpm test:smoke
 NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
 ```
 
-Current green baseline: **121 unit+contract assertions, 78 smoke tests, 0 lint
+Current green baseline: **121 unit+contract assertions, 80 smoke tests, 0 lint
 errors, clean build.** If you do not have that before you start, fix it before
 changing anything — several bugs on this branch were only visible because the
 baseline was trustworthy.
@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **9 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder. **27 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **10 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder, marketing. **24 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -72,7 +72,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ## Do next, in order
 
-### 1. Empty `hooks/supabase-calls/` — 27 files left
+### 1. Empty `hooks/supabase-calls/` — 24 files left
 
 The five big features are migrated. What remains in that directory is the
 long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
@@ -397,6 +397,18 @@ looped over instead of counting rows affected, so featuring a deleted id
 reported success and wrote an audit line describing a change that never
 happened. The unfeature path in the same function used `.select("id")` and
 counted honestly, so the two halves disagreed. Fixed.
+
+### A "sweep the whole repo" grep with a directory allowlist is not one
+
+The marketing migration's stale-reference check listed
+`app components features hooks lib schemas types stores scripts` — a list that
+looks exhaustive and is not. `constants/marketing.const.tsx` imported a moved
+schema and the sweep reported clean. `tsc` caught it a minute later, but only
+because the importer happened to be `.tsx`; under `constants/*.js` it would
+have reached `pnpm build` at best.
+
+Grep the repo root and exclude `node_modules` and `.next`, rather than naming
+the directories you expect to matter.
 
 ### Cross-feature imports come in at least four shapes
 

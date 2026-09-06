@@ -16,7 +16,7 @@ import {
   TMarketingProfileInput,
   marketingProfileSchema,
   CAMPAIGN_CHANNEL_OPTIONS,
-} from "@/schemas/marketing-profile.schema";
+} from "@/features/marketing/schema/profile";
 import { toast } from "sonner";
 import CustomSelect from "@/components/CustomSelect";
 import {
@@ -38,7 +38,7 @@ import { useAddMarketingDialog } from "@/stores/dialog-store";
 import {
   useCreateMarketingProfile,
   useUpdateMarketingProfile,
-} from "@/hooks/supabase-calls/useMarketing";
+} from "@/features/marketing/data/useMarketing";
 
 const STEP_1_FIELDS: (keyof TMarketingProfileInput)[] = [
   "marketingType",

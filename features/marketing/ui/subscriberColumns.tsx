@@ -16,7 +16,7 @@ import {
   TUserSubscriptionRow,
   useRemindSubscribers,
   useUpdateSubscriber,
-} from "@/hooks/supabase-calls/useSubscriptions";
+} from "@/features/marketing/data/useSubscriptions";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   mtn_momo: "MTN MoMo",

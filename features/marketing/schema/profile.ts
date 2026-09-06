@@ -1,5 +1,5 @@
 import z from "zod";
-import { MARKETING_TYPE_ENUM } from "../types/formInput";
+import { MARKETING_TYPE_ENUM } from "@/types/formInput";
 
 export const CAMPAIGN_TYPE_OPTIONS = [
   "app_promotion",

@@ -28,11 +28,11 @@ import {
   TMarketingSubscriptionInput,
   TMarketingSubscriptionOutput,
   SUBSCRIPTION_PERIODS,
-} from "@/schemas/marketing-subscription.schema";
+} from "@/features/marketing/schema/subscription";
 import {
   useCreateMarketingSubscription,
   useUpdateMarketingSubscription,
-} from "@/hooks/supabase-calls/useSubscriptions";
+} from "@/features/marketing/data/useSubscriptions";
 
 const PERIOD_OPTIONS = SUBSCRIPTION_PERIODS.map((period) => ({
   value: period,

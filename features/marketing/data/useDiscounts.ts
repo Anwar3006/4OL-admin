@@ -10,7 +10,7 @@ import {
   TDiscountRow,
   TMarketingDiscountInput,
   TMarketingDiscountOutput,
-} from "@/schemas/marketing-discount.schema";
+} from "@/features/marketing/schema/discount";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

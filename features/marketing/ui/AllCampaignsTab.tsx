@@ -3,17 +3,17 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { marketingColumns } from "@/components/Data-Table/columns/marketingColumns";
+import { marketingColumns } from "./marketingColumns";
 import { Button } from "@/components/ui/button";
 import { downloadCsv } from "@/lib/csv";
 import {
   useBatchMarketingProfiles,
   useMarketingProfiles,
-} from "@/hooks/supabase-calls/useMarketing";
+} from "@/features/marketing/data/useMarketing";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { useViewMarketingDialog } from "@/stores/dialog-store";
-import { TMarketingProfileOutput } from "@/schemas/marketing-profile.schema";
+import { TMarketingProfileOutput } from "@/features/marketing/schema/profile";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All Statuses" },

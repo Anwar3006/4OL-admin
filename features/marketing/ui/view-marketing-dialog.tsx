@@ -35,7 +35,7 @@ import {
   useMarketingProfile,
   useUpdateMarketingProfile,
   useDeleteMarketingProfile,
-} from "@/hooks/supabase-calls/useMarketing";
+} from "@/features/marketing/data/useMarketing";
 import { useAddMarketingDialog } from "@/stores/dialog-store";
 import { toast } from "sonner";
 

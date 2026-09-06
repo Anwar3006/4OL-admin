@@ -9,7 +9,7 @@ import { apiFetch } from "@/lib/api-fetch";
 import {
   TMarketingProfileInput,
   TMarketingProfileOutput,
-} from "@/schemas/marketing-profile.schema";
+} from "@/features/marketing/schema/profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

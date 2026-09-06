@@ -145,8 +145,8 @@ imported from `../page` and broke the moment it was renamed.
 
 Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
 `period`, `fitness`, `symptoms`, `healthy-living`, `facilities`,
-`medication-reminder`. E3.2 is finished when `hooks/supabase-calls/` is empty —
-**27 files left**, down from 42.
+`medication-reminder`, `marketing`. E3.2 is finished when
+`hooks/supabase-calls/` is empty — **24 files left**, down from 42.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.

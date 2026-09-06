@@ -12,7 +12,7 @@ import React, { useMemo, useState } from "react";
 import { Users, Wallet, RefreshCw, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { DataTable } from "@/components/Data-Table/data-table";
-import { createSubscriberColumns } from "@/components/Data-Table/columns/subscriberColumns";
+import { createSubscriberColumns } from "./subscriberColumns";
 import { Button } from "@/components/ui/button";
 import PlanDialog from "./plan-dialog";
 import { downloadCsv } from "@/lib/csv";
@@ -26,8 +26,8 @@ import {
   useUpgradeRequests,
   useReviewUpgradeRequest,
   TUserSubscriptionRow,
-} from "@/hooks/supabase-calls/useSubscriptions";
-import { TMarketingSubscriptionOutput } from "@/schemas/marketing-subscription.schema";
+} from "@/features/marketing/data/useSubscriptions";
+import { TMarketingSubscriptionOutput } from "@/features/marketing/schema/subscription";
 import { formatCurrency } from "@/lib/format";
 
 type SubTab = "all" | "at_risk" | "billing" | "requests";
