@@ -31,7 +31,7 @@ import {
   useCategoriesForHealthyLiving,
   useCreateHealthyLiving,
   useUpdateHealthyLiving,
-} from "@/hooks/supabase-calls/useHealthyLiving";
+} from "@/features/healthy-living/data/useHealthyLiving";
 
 const RichTextEditor = dynamic(
   () => import("@/components/RichTextInput").then((mod) => mod.RichTextEditor),

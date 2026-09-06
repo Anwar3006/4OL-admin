@@ -12,7 +12,7 @@ import {
 import {
   useDeleteHealthyLiving,
   useHealthyLiving,
-} from "@/hooks/supabase-calls/useHealthyLiving";
+} from "@/features/healthy-living/data/useHealthyLiving";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { hasLexicalContent, getPublicImageUrl } from "@/lib/utils";
 import {

@@ -17,7 +17,7 @@ import {
 import {
   useCreateHealthyLiving,
   useHealthyLivings,
-} from "@/hooks/supabase-calls/useHealthyLiving";
+} from "@/features/healthy-living/data/useHealthyLiving";
 
 const inputCls =
   "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";

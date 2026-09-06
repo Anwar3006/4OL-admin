@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   THealthyLivingInput,
   THealthyLivingOutput,
-} from "@/schemas/healthyLiving.schema";
+} from "@/features/healthy-living/schema/types";
 
 // Query Keys
 export const HEALTHY_LIVING_QUERY_KEYS = {

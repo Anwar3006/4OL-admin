@@ -11,7 +11,7 @@
 import React from "react";
 import Link from "next/link";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useHealthyLivingAnalyticsApi } from "@/hooks/supabase-calls/useHealthyLiving";
+import { useHealthyLivingAnalyticsApi } from "@/features/healthy-living/data/useHealthyLiving";
 
 const Leaderboard = ({
   title,

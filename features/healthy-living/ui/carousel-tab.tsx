@@ -13,7 +13,7 @@ import CarouselManager from "@/components/redesign/carousel-manager";
 import {
   useFeatureHealthyLiving,
   useHealthyLivingCarousel,
-} from "@/hooks/supabase-calls/useHealthyLiving";
+} from "@/features/healthy-living/data/useHealthyLiving";
 
 const HealthyLivingCarouselTab = () => {
   const { data, isLoading } = useHealthyLivingCarousel();

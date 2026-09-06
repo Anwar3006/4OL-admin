@@ -53,7 +53,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **6 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms. **32 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **7 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living. **31 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Not started.** Needs redirects. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
