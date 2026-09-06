@@ -184,6 +184,12 @@ pnpm knip               # dead files, exports and deps — the evidence for rule
 pnpm build              # production build — catches what tsc cannot
 ```
 
+**Without Supabase credentials, `pnpm test` reports "123 passed, 1 skipped"
+and looks green — the skipped test is the live RPC signature check, and
+`pnpm test:smoke` cannot run at all.** Read "Working without Supabase access"
+in `docs/cleanup-handoff.md` before picking up work in that state; it lists
+which epics are still fully verifiable and which are not.
+
 `pnpm build` is not optional after a structural change. Typecheck does not
 catch a broken route-group layout, a client component importing server-only
 code, or a bad dynamic import.

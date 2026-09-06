@@ -23,7 +23,7 @@ pnpm knip                                        # dead-code evidence
 The smoke sweep and the live RPC check need credentials:
 
 ```bash
-export E2E_ADMIN_EMAIL='…' E2E_ADMIN_PASSWORD='…'
+export E2E_ADMIN_EMAIL='testsa@gmail.com' E2E_ADMIN_PASSWORD='mypassword'
 pnpm build && pnpm start &                       # sweep runs against a build
 E2E_BASE_URL=http://localhost:3000 pnpm test:smoke
 
@@ -40,33 +40,124 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ---
 
+## Working without Supabase access
+
+If you are picking this up **without credentials for the Supabase project**,
+read this first. Most of the remaining work is fine; a specific slice is not,
+and one failure mode will actively mislead you.
+
+### ⚠️ The suite looks green when it is half-blind
+
+With no credentials, `pnpm test` reports:
+
+```
+Test Files  9 passed (9)
+Tests  123 passed | 1 skipped (124)
+```
+
+**That "1 skipped" is the live RPC signature check** — the one that proves the
+48 contracted Postgres functions still exist with the signatures the Expo app
+calls. It skips deliberately so a fresh clone stays green, and skipping looks
+almost identical to passing. This file's own trap list opens with that failure
+shape for a reason.
+
+You also cannot run **`pnpm test:smoke`** (80 tests). It needs a built app, a
+live database and an admin login. That is the only thing in this repo that
+proves a route is *reachable* rather than merely present — the build manifest
+proves existence, never reachability.
+
+**What you still have, and it is a lot:** `pnpm type-check`, `pnpm lint`,
+123 unit + structural-contract assertions, `pnpm build`, and `pnpm knip`.
+`pnpm build` in particular catches what `tsc` cannot, because `checkJs: false`
+and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
+
+### Safe — the offline gate proves these completely
+
+| Task | Why it is fully covered |
+| --- | --- |
+| **E5.1** convert the 52 `.js`/`.jsx` files | `tsc` + `pnpm build` are exactly the right net. Start with the trivial ones (`app/loading.js`, `hooks/useDarkMode.js`, `components/Loading.jsx`). |
+| **E5.3** lint `redesign/**` | `pnpm lint` is the whole test. Expect a large first pass. |
+| **E6.2** prune dependencies | `pnpm knip` finds them, `pnpm build` proves nothing needed them. |
+| **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
+| **E3.4** split `lib/` | Pure moves; `tsc` and `build` catch every broken specifier. |
+| **E6.3** move the 4.1 MB seed JSON | Only `scripts/seeder.ts` reads it — no app code imports it, so the build proves the move. Running the seeder needs a database; moving the file does not. |
+| **E7** documentation | No execution required. |
+
+**The third proof, offline.** Rule 3 wants two proofs and grep and knip each
+have a blind spot. A third, which needs no database, is whether the file
+appears in a real build artifact:
+
+```bash
+pnpm build
+grep -rl 'YourComponent' .next | grep -v tsbuildinfo
+```
+
+Exclude `.tsbuildinfo` — it lists every file `tsc` *read*, not what shipped.
+This is what proved `users/_components/view-user-dialog.jsx` dead while its
+`.tsx` twin was live, in a case where knip reported the opposite.
+
+### Doable, but the net is thinner — say so in the commit
+
+| Task | What you can prove | What you cannot |
+| --- | --- | --- |
+| **E4.1** split `ai/page.tsx` (1,236 lines) | It compiles and builds | That each tab still renders. The Period split captured a live per-endpoint baseline first; you cannot. Split by tab, keep every block verbatim, and say in the commit that only compilation was verified. |
+| **E4.2** `stores/dialog-store.ts` | Types line up across all callers | That dialogs still open. It is a typed Zustand store, so `tsc` covers most of the risk — but not wiring. |
+| **E9** extract the blueprint | Structure and docs | Anything runtime. |
+
+### Do not attempt without access
+
+- **E5.2 generated DB types** — definitionally needs introspection. There is no
+  `gen:types` script yet; adding one is fine, running it is not.
+- **E3.3 route renames** (`/healthy_living`, `/facilityscout`, `/bedtracker`) —
+  the guard *is* the smoke sweep. You can write the `next.config.ts` redirect
+  and the assertion, but you cannot run the assertion, and a redirect that
+  silently fails is precisely this repo's worst failure mode. Leave it.
+- **Deleting or moving any route** — reachability needs the sweep. Deleting a
+  dead *file* is fine; deleting a `route.ts` is not.
+- **Anything touching RLS, policies, grants or migrations** — E1.3 is finished,
+  but do not extend it blind.
+- **Adding entries to `CONTRACT_RPCS`** — each needs its live signature pinned
+  in `rpc-signatures.json`. Adding a name without the verified signature makes
+  the suite assert something nobody checked.
+
+### If you change a contracted route anyway
+
+The seven `/api/chat/*`, four `/api/period/*`, and the `/api/jobs/attachment`,
+`/api/medenquiry/attachment` and `/api/fitness/generate` entries are frozen for
+mobile. `tests/contract/api-routes.test.ts` runs **without** credentials and
+follows re-exports, so it does still protect the *structure* — route exists,
+verbs unchanged. That part of the net is intact. What is not intact is the RPC
+signature half.
+
+---
+
 ## Where the work stands
 
-| Epic | State |
-| --- | --- |
-| **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
-| **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
-| **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, plus `isolated-auth.ts` for the one flow that needs a separate session. The fourth client E1.2 missed (`app/utils/supabaseClient.js`, a `.js` file) is deleted. |
-| **E1.3** RLS/idiom audit | **Done.** Silent-empty direction clear; all 9 tables exposed to `anon` are closed. No table in the database still grants `public`/`anon` unrestricted ALL/UPDATE/DELETE. |
-| **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
-| **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
-| **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
-| **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
-| **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **DONE.** 28 features under `features/`, each with a README. `hooks/supabase-calls/` no longer exists — `tests/unit/feature-layout.test.ts` asserts it stays gone. |
-| **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
-| **E3.4** split `lib/` | **Not started.** |
-| **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
-| **E4.2** dialog store | **Not started.** `stores/dialog-store.ts`, 30 KB, global. |
-| **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79. |
-| **E5.2** generated DB types | **Not started.** Every `schema/types.ts` is hand-written and can drift. |
-| **E5.3** lint everything | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`. |
-| **E6.1** knip | **Configured**, first batches deleted. 36 unused files remain. |
-| **E6.2** prune deps | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps. |
-| **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB. |
-| **E7** documentation | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file. |
-| **E8** mobile contract | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to. |
-| **E9** extract the blueprint | **Not started.** |
+| Epic                           | State                                                                                                                                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **E0** safety net              | **Done and running.** Contract suite, smoke sweep, CI with a build job.                                                                                                                                 |
+| **E1.1** duplicate layout      | **Done.** One `layout.tsx`; the security layer executes for the first time.                                                                                                                             |
+| **E1.2** Supabase clients      | **Done.** Five → three under `lib/db/`, plus `isolated-auth.ts` for the one flow that needs a separate session. The fourth client E1.2 missed (`app/utils/supabaseClient.js`, a `.js` file) is deleted. |
+| **E1.3** RLS/idiom audit       | **Done.** Silent-empty direction clear; all 9 tables exposed to `anon` are closed. No table in the database still grants `public`/`anon` unrestricted ALL/UPDATE/DELETE.                                |
+| **E1.4** data-access rule      | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`.                                                                                                                                                |
+| **E2.1** retire duplicates     | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted.                                                                                                                             |
+| **E2.2** one UI kit            | **Done.** No `.jsx` under `components/ui/`.                                                                                                                                                             |
+| **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`.                                                                                                                |
+| **E3.1** feature layout        | **Done.** `features/anatomy` is the exemplar.                                                                                                                                                           |
+| **E3.2** migrate features      | **DONE.** 28 features under `features/`, each with a README. `hooks/supabase-calls/` no longer exists — `tests/unit/feature-layout.test.ts` asserts it stays gone.                                      |
+| **E3.3** kebab-case routes     | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started.           |
+| **E3.4** split `lib/`          | **Not started.**                                                                                                                                                                                        |
+| **E4.1** god files             | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next.                                                                                     |
+| **E4.2** dialog store          | **Not started.** `stores/dialog-store.ts`, 30 KB, global.                                                                                                                                               |
+| **E5.1** convert 55 `.js/.jsx` | **Not started.** Down from 79.                                                                                                                                                                          |
+| **E5.2** generated DB types    | **Not started.** Every `schema/types.ts` is hand-written and can drift.                                                                                                                                 |
+| **E5.3** lint everything       | **Not started.** `redesign/**` still excluded in `eslint.config.mjs`.                                                                                                                                   |
+| **E6.1** knip                  | **Configured**, first batches deleted. 36 unused files remain.                                                                                                                                          |
+| **E6.2** prune deps            | **Partial.** moment, crypto-js, @sendgrid/mail removed. 120 runtime deps.                                                                                                                               |
+| **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB.                                                                                                                                    |
+| **E7** documentation           | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file.                                                                                                                           |
+| **E8** mobile contract         | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to.                                    |
+| **E9** extract the blueprint   | **Not started.**                                                                                                                                                                                        |
 
 ---
 
@@ -100,15 +191,15 @@ and therefore never type-checked. It is gone; rule 1 is true again.
 
 Each importer was measured as `anon` and resolved on its own terms:
 
-| File | Was | Now |
-| --- | --- | --- |
-| `medication-reminder/ui/ReminderDetailsPage.jsx` | read `medication_reminders`, saw 0 of 3 | `getBrowserClient()` — renders |
-| `utils/activityLogger.js` | read `activity_logs`, saw 0 of **10,977** | **deleted** — dead on three proofs |
-| `app/api/places/route.js` | read `api_usage`, which does not exist | **deleted** — always 500'd |
-| `app/services/fetchNearbyPlaces.js` | its only caller | **deleted** — dead with it |
-| `view-facility-profile/page.jsx` | worked only via a `TO public` policy | `getBrowserClient()` — renders |
-| `view-reviews/page.jsx` | read `facility_ratings`, which does not exist | `getBrowserClient()` — still broken, see below |
-| `(auth)/delete-account/page.tsx` | isolated on purpose | `lib/db/isolated-auth.ts` |
+| File                                             | Was                                           | Now                                            |
+| ------------------------------------------------ | --------------------------------------------- | ---------------------------------------------- |
+| `medication-reminder/ui/ReminderDetailsPage.jsx` | read `medication_reminders`, saw 0 of 3       | `getBrowserClient()` — renders                 |
+| `utils/activityLogger.js`                        | read `activity_logs`, saw 0 of **10,977**     | **deleted** — dead on three proofs             |
+| `app/api/places/route.js`                        | read `api_usage`, which does not exist        | **deleted** — always 500'd                     |
+| `app/services/fetchNearbyPlaces.js`              | its only caller                               | **deleted** — dead with it                     |
+| `view-facility-profile/page.jsx`                 | worked only via a `TO public` policy          | `getBrowserClient()` — renders                 |
+| `view-reviews/page.jsx`                          | read `facility_ratings`, which does not exist | `getBrowserClient()` — still broken, see below |
+| `(auth)/delete-account/page.tsx`                 | isolated on purpose                           | `lib/db/isolated-auth.ts`                      |
 
 Two of those deserve more than a table row.
 
@@ -168,10 +259,10 @@ Nine tables carry `admin_full_access_*` policies written as
 `FOR ALL TO public USING (true)`, plus blanket `GRANT ALL … TO anon`. The name
 says admin; the grant says everyone. Querying **as the `anon` role**:
 
-| Table | Readable as anon |
-| --- | --- |
+| Table            | Readable as anon                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------- |
 | `admin_sessions` | **701 rows** — `session_token`, `ip_address`, `user_agent`, `location`, all `is_active` |
-| the other eight | 0 rows — because they are *empty*, not protected |
+| the other eight  | 0 rows — because they are _empty_, not protected                                        |
 
 The anon key is `NEXT_PUBLIC_*`. It ships in the web bundle and in every
 installed Expo build. Treat all 701 session tokens as disclosed.
@@ -210,7 +301,7 @@ only to select a row. Real auth is the Supabase JWT in cookies, which was never
 in that table. So a leaked token does not permit sign-in or session hijacking,
 and "rotating" them would have achieved nothing.
 
-What *was* disclosed is still worth knowing: `admin_id`, `ip_address`,
+What _was_ disclosed is still worth knowing: `admin_id`, `ip_address`,
 `user_agent`, `location` and activity times. PII and opsec, not access.
 
 The real defect that surfaced while checking: **nothing ever closed a session
@@ -306,7 +397,7 @@ Two things likely to bite:
 
 1. **`AWS_REGION` is `eu-north-1` while Postgres is `eu-west-1`.** SES only
    sees identities verified in its own region, and the failure reads
-   *"Email address is not verified"* — which looks like a verification problem
+   _"Email address is not verified"_ — which looks like a verification problem
    rather than a region one. Check the region first.
 2. **A new SES account is sandboxed** until AWS grants production access, and
    can only send to verified addresses.
@@ -319,17 +410,17 @@ deliver would burn the 60-second resend cooldown.
 
 ### Four messaging providers, should be two
 
-| Channel | Live | Also present |
-| --- | --- | --- |
-| SMS | `lib/sms.ts` — AWS End User Messaging | `lib/twilio.ts` (one file imports **both**) |
-| Email | `lib/email.ts` — AWS SES | `resend` in `app/api/support/route.js` |
+| Channel | Live                                  | Also present                                |
+| ------- | ------------------------------------- | ------------------------------------------- |
+| SMS     | `lib/sms.ts` — AWS End User Messaging | `lib/twilio.ts` (one file imports **both**) |
+| Email   | `lib/email.ts` — AWS SES              | `resend` in `app/api/support/route.js`      |
 
 Decide and delete the losers.
 
 ### Smaller, still open
 
-- **`redesign/**` is excluded from eslint** and ignored by knip. Its fate is a
-  decision nobody has made; `PageHeader` (36 importers) and `KpiCard` (52) are
+- **`redesign/**`is excluded from eslint** and ignored by knip. Its fate is a
+decision nobody has made;`PageHeader`(36 importers) and`KpiCard` (52) are
   very much alive inside it, so it is not simply dead.
 - **`constants/liftmanual_all_workouts.json` is 4.1 MB** and is why the build
   needs a 4 GB heap.
@@ -351,7 +442,7 @@ proofs.
 This branch's defining bug shape, hit four separate ways:
 
 - **The contract regeneration script had never run.** It gated on
-  `command -v rg`, which succeeds when a shell defines `rg` as a *function*
+  `command -v rg`, which succeeds when a shell defines `rg` as a _function_
   and then fails inside its own bash subshell. The mobile contract was
   therefore never diffed against the Expo repo, and was protecting **16 of 31
   routes**. It falls back to `grep` now.
@@ -388,7 +479,7 @@ Fixing one ambiguity can reveal another behind it.
 The "prove the handler runs, don't infer it from a status" recipe below is for
 **GET**. Applied to `PUT /api/symptoms/[id]/feature` with `-d '{}'` it did
 something else: the zod schema declares `featured: z.boolean().default(true)`,
-so an empty body means *feature this thing*, and the route obligingly ran
+so an empty body means _feature this thing_, and the route obligingly ran
 against production with a made-up id.
 
 Nothing was written — `setCarouselSlots` only ever `UPDATE ... WHERE id = ?`,
@@ -421,12 +512,12 @@ the directories you expect to matter.
 Grepping for `@/` finds one of them. The facilities migration hit three more,
 each caught only by `tsc` after the source directory was already gone:
 
-| Shape | Example | Found by |
-| --- | --- | --- |
-| absolute into `app/` | `@/app/(dashboard)/fitness/_components/user-search-select` | grep for `from "@/app/` |
-| sibling-relative | `../facilities/_components/view-facility-dialog` from `medenquiry` | `tsc` |
-| same-directory | `./useFacilities` from `useReviews.tsx` | `tsc` |
-| parent-relative out of the moved file | `../types/formInput` inside a moved schema | `tsc` |
+| Shape                                 | Example                                                            | Found by                |
+| ------------------------------------- | ------------------------------------------------------------------ | ----------------------- |
+| absolute into `app/`                  | `@/app/(dashboard)/fitness/_components/user-search-select`         | grep for `from "@/app/` |
+| sibling-relative                      | `../facilities/_components/view-facility-dialog` from `medenquiry` | `tsc`                   |
+| same-directory                        | `./useFacilities` from `useReviews.tsx`                            | `tsc`                   |
+| parent-relative out of the moved file | `../types/formInput` inside a moved schema                         | `tsc`                   |
 
 The last one is the nastiest: the file itself is fine before and after, but its
 relative specifier silently re-points at a **different** directory once moved,
@@ -441,7 +532,7 @@ The migration guidance says to grep a moved feature's `ui/` for
 one level up. The Map feature imported a picker from
 `@/app/(dashboard)/fitness/_components/user-search-select`: an absolute
 specifier into another feature's private `_components` directory, which no
-relative-import sweep sees and which `tsc` only complains about *after* the
+relative-import sweep sees and which `tsc` only complains about _after_ the
 directory is gone.
 
 **Grep for `from "@/app/` as well.** Two hits in this tree; the fitness one is
@@ -544,15 +635,15 @@ fix is `apply_epic21_delete_account_status_vocabulary` in the database and
 content, not on name — and `supabase.list_migrations` is the record of what the
 database actually has.
 
-| Migration | What |
-| --- | --- |
-| `20260905_contract_rpc_signatures_reader.sql` | read-only `pg_proc` reader for the contract test |
-| `20260905_fix_pgcrypto_search_path.sql` | qualified `extensions.gen_random_bytes` in `issue_canary` and `start_admin_session` |
-| `20260905_reapply_epic21_delete_account_vocabulary.sql` | re-applied a migration that never landed |
-| `20260905_device_sign_in_otp_functions.sql` | wrote the two missing OTP functions, and adds `otp_issued_at` |
-| `20260905_e13_revoke_public_admin_table_access.sql` | E1.3: dropped 8 `admin_full_access_*` policies that were `TO public USING (true)`, revoked the matching anon/authenticated grants, restored `SELECT` for the one correctly scoped policy that depended on it |
-| `20260905_e13_close_fitness_content_schedule.sql` | E1.3: the ninth, after its browser read moved to `/api/fitness/content-schedule` |
-| `20260906_admin_sessions_expire_stale.sql` | `expire_stale_admin_sessions()` + `*/15` cron; nothing had ever closed a session row. Backfill closed 1,178 |
+| Migration                                               | What                                                                                                                                                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20260905_contract_rpc_signatures_reader.sql`           | read-only `pg_proc` reader for the contract test                                                                                                                                                             |
+| `20260905_fix_pgcrypto_search_path.sql`                 | qualified `extensions.gen_random_bytes` in `issue_canary` and `start_admin_session`                                                                                                                          |
+| `20260905_reapply_epic21_delete_account_vocabulary.sql` | re-applied a migration that never landed                                                                                                                                                                     |
+| `20260905_device_sign_in_otp_functions.sql`             | wrote the two missing OTP functions, and adds `otp_issued_at`                                                                                                                                                |
+| `20260905_e13_revoke_public_admin_table_access.sql`     | E1.3: dropped 8 `admin_full_access_*` policies that were `TO public USING (true)`, revoked the matching anon/authenticated grants, restored `SELECT` for the one correctly scoped policy that depended on it |
+| `20260905_e13_close_fitness_content_schedule.sql`       | E1.3: the ninth, after its browser read moved to `/api/fitness/content-schedule`                                                                                                                             |
+| `20260906_admin_sessions_expire_stale.sql`              | `expire_stale_admin_sessions()` + `*/15` cron; nothing had ever closed a session row. Backfill closed 1,178                                                                                                  |
 
 Earlier session (anatomy): `body_parts` path trigger, junction backfills tagged
 `source='heuristic'`, `get_anatomy_body_part_bundle(p_preview_limit)`,
