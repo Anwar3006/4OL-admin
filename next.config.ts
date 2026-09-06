@@ -49,6 +49,54 @@ const nextConfig: NextConfig = {
       { source: "/ai-hub/models", destination: "/ai?tab=models", permanent: false },
       { source: "/ai-hub/moderation", destination: "/ai?tab=moderation", permanent: false },
       { source: "/ai-hub/recommendations", destination: "/ai?tab=recommendations", permanent: false },
+
+      // ── Hollow facility-type routes (E3.3) ────────────────────────────
+      //
+      // Each of these was a hand-written page.jsx rendering an empty div,
+      // with its real component commented out and the directory those
+      // comments named — components/redesign/auth/Facilities/ — long gone.
+      //
+      // They were worse than empty. A static segment beats a dynamic one in
+      // Next, so /facilities/hospitals resolved to the empty shell and
+      // shadowed /facilities/[type], which is a complete working listing.
+      // Measured before this change: the shadowed pages returned ~18,396
+      // bytes with no search box, the real one ~21,962 bytes with one.
+      //
+      // Deleting the shells alone would NOT have fixed it. The slugs below
+      // do not match the data: facility_type is `dental_clinic`, `home`,
+      // `pharmacy`, while the pages were `dental`, `homes`, `pharmacies`, so
+      // falling through to [type] would render an empty table for a type
+      // that does not exist. The destinations map each legacy slug onto the
+      // real FACILITY_TYPE_ENUM value and hand it to /facilities, which
+      // already filters on `?type=` (-> .eq("facility_type", type)).
+      //
+      // `hospital_/_clinic` genuinely contains a slash; %2F is required.
+      { source: "/facilities/hospitals", destination: "/facilities?type=hospital_%2F_clinic", permanent: false },
+      { source: "/facilities/dental", destination: "/facilities?type=dental_clinic", permanent: false },
+      { source: "/facilities/pharmacies", destination: "/facilities?type=pharmacy", permanent: false },
+      { source: "/facilities/eye-care", destination: "/facilities?type=eye_clinic", permanent: false },
+      { source: "/facilities/homes", destination: "/facilities?type=home", permanent: false },
+      { source: "/facilities/diagnostic-labs", destination: "/facilities?type=diagnostic_lab", permanent: false },
+      { source: "/facilities/osteopathy", destination: "/facilities?type=osteopathy_center", permanent: false },
+      { source: "/facilities/physiotherapy", destination: "/facilities?type=physiotherapy_center", permanent: false },
+      { source: "/facilities/prosthetics", destination: "/facilities?type=prosthetics_center", permanent: false },
+      { source: "/facilities/health-school", destination: "/facilities?type=health_school", permanent: false },
+
+      // The matching "create" shells. /facilities carries the Add Facility
+      // dialog, so the type filter is the closest honest landing spot.
+      { source: "/facilities/add-facility", destination: "/facilities", permanent: false },
+      { source: "/facilities/hospitals/create", destination: "/facilities?type=hospital_%2F_clinic", permanent: false },
+      { source: "/facilities/dental/create", destination: "/facilities?type=dental_clinic", permanent: false },
+      { source: "/facilities/eye-care/create", destination: "/facilities?type=eye_clinic", permanent: false },
+      { source: "/facilities/homes/create", destination: "/facilities?type=home", permanent: false },
+      { source: "/facilities/diagnostic-labs/create", destination: "/facilities?type=diagnostic_lab", permanent: false },
+
+      // These two were already redirects, but client-side ones: a "use
+      // client" page that router.replace()d inside useEffect. That is the
+      // late redirect described above — the dashboard shell renders first.
+      // Same destinations, moved ahead of rendering.
+      { source: "/facilities/featured", destination: "/facilities?tab=featured", permanent: false },
+      { source: "/facilities/top-rated", destination: "/facilities?tab=top-rated", permanent: false },
     ];
   },
 

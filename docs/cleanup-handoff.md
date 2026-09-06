@@ -31,7 +31,7 @@ E2E_BASE_URL=http://localhost:3000 pnpm test:smoke
 NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SECRET_KEY=… pnpm test:contract
 ```
 
-Current green baseline: **121 unit+contract assertions, 59 smoke tests, 0 lint
+Current green baseline: **121 unit+contract assertions, 78 smoke tests, 0 lint
 errors, clean build.** If you do not have that before you start, fix it before
 changing anything — several bugs on this branch were only visible because the
 baseline was trustworthy.
@@ -54,7 +54,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
 | **E3.2** migrate features | **8 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities. **29 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
-| **E3.3** kebab-case routes | **Not started.** Needs redirects. Now also owns the 17 hollow `/facilities/*` routes and the `/healthy_living` underscore — see below. |
+| **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
 | **E4.2** dialog store | **Not started.** `stores/dialog-store.ts`, 30 KB, global. |
@@ -175,40 +175,44 @@ route, which is the task above this one.
   `facility_profile`. A regex sweep for `.from("literal")` will not find this
   class — the call was `.from(table)` over a config array.
 
-### 3. E3.3 — retire the 17 hollow `/facilities/*` routes (decision needed)
+### 3. E3.3 — kebab-case routes (facilities slice done)
 
-Found during the facilities migration and **left alone deliberately**, because
-it is a product decision rather than a refactor.
+The `/facilities/*` shells are **retired**. What remains of E3.3 is the naming
+work: `/healthy_living` (underscore), `/facilityscout` and `/bedtracker`
+(unseparated), each of which needs a redirect the same way.
 
-`app/(dashboard)/facilities/` holds 17 hand-written `.jsx` pages —
-`hospitals`, `dental`, `pharmacies`, `eye-care`, `homes`, `diagnostic-labs`,
-`osteopathy`, `physiotherapy`, `prosthetics`, `health-school`, five `*/create`
-pages and `add-facility`. **Every one renders an empty div.** The real
-component in each is commented out and the directory those comments name,
-`components/redesign/auth/Facilities/`, does not exist.
-
-Worse than empty: **a static segment beats a dynamic one in Next**, so these
-shadow `/facilities/[type]`, which is a complete working listing. Measured
-against a running build with an admin session:
+The facilities slice is the worked example. Seventeen hand-written `.jsx`
+pages each rendered an empty div, their real component commented out and the
+directory those comments named long gone — and because **a static segment
+beats a dynamic one in Next**, ten of them shadowed `/facilities/[type]`,
+which is a complete working listing. Measured before the change:
 
 ```
 /facilities/hospitals   18,396 bytes   no search box, no type header
 /facilities/pharmacy    21,962 bytes   renders "Pharmacy" and the search box
 ```
 
-The shadowed pages come back within six bytes of each other — the same
-"identical bodies is the tell" signature as an expired smoke session.
+Deleting the shells alone would **not** have fixed it: the legacy slugs do not
+match the data (`facility_type` is `dental_clinic`, `home`, `pharmacy`, while
+the pages were `dental`, `homes`, `pharmacies`), so falling through to `[type]`
+would render an empty table for a type that does not exist. The fix maps each
+legacy slug onto its real `FACILITY_TYPE_ENUM` value and redirects to
+`/facilities?type=…`, which already filters (`.eq("facility_type", type)`).
 
-What stops it being urgent: **nothing in the app links to any
-`/facilities/<type>` URL**, so the whole family is orphaned; and the static
-slugs do not match the data anyway — `facility_type` is `dental_clinic`,
-`home`, `pharmacy` while the pages are `dental`, `homes`, `pharmacies`.
+All 18 redirects live in `next.config.ts` beside the E2.1 batch, for the reason
+documented there — a redirect declared in config runs ahead of rendering, while
+the two `page.jsx` stubs this replaced were `"use client"` components calling
+`router.replace()` inside `useEffect`, so the dashboard shell rendered first.
 
-So deleting the hollow pages un-shadows `[type]` but leaves
-`/facilities/hospitals` rendering an empty table for a type that does not
-exist. **The decision needed is what these URLs should do at all** — redirect
-to `/facilities?type=…`, map slug to `facility_type`, or 410. Any of those is
-E3.3 work with a redirect, not a file move.
+**The sweep now guards all of it**: 18 redirect assertions plus one that
+`/facilities/[type]` still renders, since retiring the shells is only correct
+if the route they shadowed works. 59 smoke tests → 78.
+
+One wrinkle worth keeping: `hospital_/_clinic` is a real `facility_type`
+containing a slash. `next.config.ts` writes `%2F`; the browser normalises it
+back to a literal slash in the query string. Both forms filter identically —
+verified against `/api/facilities` — so the smoke expectation asserts the
+normalised form, which is what actually lands.
 
 ### 4. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
 

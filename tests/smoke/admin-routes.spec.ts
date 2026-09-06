@@ -206,6 +206,34 @@ const MUST_REDIRECT: Array<[string, string]> = [
   ["/ai-hub/models", "/ai?tab=models"],
   ["/ai-hub/moderation", "/ai?tab=moderation"],
   ["/ai-hub/recommendations", "/ai?tab=recommendations"],
+
+  // Hollow facility-type shells retired in E3.3. Each rendered an empty div
+  // AND shadowed /facilities/[type], because a static segment beats a dynamic
+  // one in Next. The slugs do not match facility_type, so the destinations map
+  // each onto the real enum value and let /facilities?type= filter.
+  //
+  // next.config.ts writes hospital_%2F_clinic, because `hospital_/_clinic` is
+  // a real facility_type containing a slash. The browser normalises %2F back
+  // to a literal slash in the query string, so that is what lands here — and
+  // both forms filter identically, verified against /api/facilities.
+  ["/facilities/hospitals", "/facilities?type=hospital_/_clinic"],
+  ["/facilities/dental", "/facilities?type=dental_clinic"],
+  ["/facilities/pharmacies", "/facilities?type=pharmacy"],
+  ["/facilities/eye-care", "/facilities?type=eye_clinic"],
+  ["/facilities/homes", "/facilities?type=home"],
+  ["/facilities/diagnostic-labs", "/facilities?type=diagnostic_lab"],
+  ["/facilities/osteopathy", "/facilities?type=osteopathy_center"],
+  ["/facilities/physiotherapy", "/facilities?type=physiotherapy_center"],
+  ["/facilities/prosthetics", "/facilities?type=prosthetics_center"],
+  ["/facilities/health-school", "/facilities?type=health_school"],
+  ["/facilities/add-facility", "/facilities"],
+  ["/facilities/hospitals/create", "/facilities?type=hospital_/_clinic"],
+  ["/facilities/dental/create", "/facilities?type=dental_clinic"],
+  ["/facilities/eye-care/create", "/facilities?type=eye_clinic"],
+  ["/facilities/homes/create", "/facilities?type=home"],
+  ["/facilities/diagnostic-labs/create", "/facilities?type=diagnostic_lab"],
+  ["/facilities/featured", "/facilities?tab=featured"],
+  ["/facilities/top-rated", "/facilities?tab=top-rated"],
 ];
 
 test.describe("live but unlinked — must not be deleted", () => {
@@ -220,6 +248,16 @@ test.describe("live but unlinked — must not be deleted", () => {
       expect(body.length, `${route} rendered an empty body`).toBeGreaterThan(20);
     });
   }
+});
+
+test("the un-shadowed /facilities/[type] route still renders", async ({ page }) => {
+  // Ten hollow static pages used to shadow this dynamic route. Retiring them
+  // is only correct if [type] itself still works — dental_clinic is a real
+  // facility_type value, unlike the legacy slugs that shadowed it.
+  await page.goto("/facilities/dental_clinic", { waitUntil: "networkidle" });
+  const body = (await page.locator("body").innerText()).trim();
+  expect(SOFT_NOT_FOUND.test(body), "/facilities/[type] is gone").toBe(false);
+  expect(body.length, "/facilities/[type] rendered an empty body").toBeGreaterThan(20);
 });
 
 test.describe("retired routes still redirect", () => {

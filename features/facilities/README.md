@@ -41,39 +41,33 @@ is pre-existing and is a URL contract; it is served from this feature anyway.
 Pages: `/facilities` → `ui/FacilitiesPage`, `/facilities/[type]` →
 `ui/FacilityTypePage`.
 
-## ⚠️ Seventeen hollow routes shadow the real one
+## The seventeen hollow routes are retired
 
-`app/(dashboard)/facilities/` still holds 17 hand-written `.jsx` pages —
+`app/(dashboard)/facilities/` used to hold 17 hand-written `.jsx` pages —
 `hospitals`, `dental`, `pharmacies`, `eye-care`, `homes`, `diagnostic-labs`,
-`osteopathy`, `physiotherapy`, `prosthetics`, `health-school`, plus five
-`*/create` pages and `add-facility`. **Every one renders an empty div.** Their
-real component is commented out, and the directory those comments point at,
-`components/redesign/auth/Facilities/`, does not exist — so they cannot be
-restored by uncommenting.
+`osteopathy`, `physiotherapy`, `prosthetics`, `health-school`, five `*/create`
+pages and `add-facility`. **Every one rendered an empty div**, its real
+component commented out and the directory those comments named,
+`components/redesign/auth/Facilities/`, long gone.
 
-They are not merely empty. **A static segment beats a dynamic one in Next**, so
-`/facilities/hospitals` resolves to the hollow page instead of
-`ui/FacilityTypePage`, which is a complete, working listing. Measured against a
-running build with an admin session:
+They were worse than empty. **A static segment beats a dynamic one in Next**,
+so ten of them shadowed `ui/FacilityTypePage`, a complete working listing:
 
 ```
-/facilities/hospitals      18,396 bytes   no search box, no type header
-/facilities/pharmacy       21,962 bytes   renders "Pharmacy" + the search box
+/facilities/hospitals   18,396 bytes   no search box, no type header
+/facilities/pharmacy    21,962 bytes   renders "Pharmacy" and the search box
 ```
 
-The three shadowed pages come back within six bytes of each other — the same
-"identical bodies is the tell" signature as an expired smoke session.
+Deleting them alone would not have been correct — the legacy slugs do not match
+the data (`facility_type` is `dental_clinic`, `home`, `pharmacy`; the pages
+were `dental`, `homes`, `pharmacies`), so `[type]` would have rendered an empty
+table for a type that does not exist. Each slug is now mapped onto its real
+`FACILITY_TYPE_ENUM` value and redirected to `/facilities?type=…`, which
+already filters. The redirects live in `next.config.ts`; the smoke sweep
+asserts all 18, plus that `/facilities/[type]` itself still renders.
 
-Two things stop this being an emergency: **nothing in the app links to any
-`/facilities/<type>` URL** — not the sidebar, not any component — so the whole
-family is orphaned; and the static slugs do not match the database anyway
-(`facility_type` is `dental_clinic`, `home`, `pharmacy`, while the pages are
-`dental`, `homes`, `pharmacies`). Deleting the hollow pages would un-shadow
-`[type]`, but `/facilities/hospitals` would then render an empty table for a
-type that does not exist.
-
-**So it is a route-retirement decision, not a migration fix**, and it was left
-alone deliberately. It belongs with E3.3. See `docs/cleanup-handoff.md`.
+`hospital_/_clinic` really does contain a slash. `next.config.ts` writes `%2F`
+and the browser normalises it back; both forms filter identically.
 
 ## Mobile contract
 
