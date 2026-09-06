@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useViewTrainerDialog, useAddTrainerDialog } from '@/stores/dialog-store';
-import { useTrainer } from '@/hooks/supabase-calls/useTrainer';
+import { useTrainer } from "@/features/fitness/data/useTrainer";
 import { Phone, Mail, MessageSquare, Award, CheckCircle, User, Activity } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 

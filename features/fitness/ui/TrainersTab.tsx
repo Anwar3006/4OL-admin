@@ -18,7 +18,7 @@ import {
   useTrainers,
   useDeleteTrainer,
   useVerifyTrainer,
-} from "@/hooks/supabase-calls/useTrainer";
+} from "@/features/fitness/data/useTrainer";
 import {
   useAddTrainerDialog,
   useViewTrainerDialog,

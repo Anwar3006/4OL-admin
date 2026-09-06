@@ -6,8 +6,13 @@ health-app integrations, WhatsApp broadcasts, and the AI plan generator.
 Fifth and largest feature migrated under E3.2 — ~15,000 lines across 50 files.
 `features/anatomy` is the exemplar; read that README for the reasoning.
 
-**This migration emptied `hooks/supabase-calls/` of its fitness hooks (42 → 35
+**This migration emptied `hooks/supabase-calls/` of its fitness hooks (42 → 33
 files).** That directory reaching zero is E3.2's finish line.
+
+`useTrainer` was missed on the first pass — the sweep that found the other
+seven grepped for `fitness|workout|exercise|challenge|fitcoin`, and "trainer"
+is none of those. Match hooks to a feature by their importers, not by their
+names.
 
 ## Layout
 
@@ -16,9 +21,10 @@ features/fitness/
   ui/       FitnessPage (tab shell) + 14 tabs + 18 dialogs + exerciseColumns.
             tabs.ts is the barrel the page imports.
   api/      7 route handlers, one module per endpoint.
-  data/     7 react-query hooks + generate-plan.ts (the OpenAI plan builder,
+  data/     8 react-query hooks + generate-plan.ts (the OpenAI plan builder,
             server-side, used by both generate routes).
-  schema/   moderation.ts — the vocabularies ui/ and api/ must agree on.
+  schema/   moderation.ts — the vocabularies ui/ and api/ must agree on —
+            and trainer.ts (the trainer shape and TRAINER_STATUS).
 ```
 
 ## Routes
