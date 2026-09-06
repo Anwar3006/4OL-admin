@@ -81,7 +81,7 @@ and an `include` of only `.ts`/`.tsx` leave 52 files unchecked.
 | **E6.1** delete dead **files** | grep for the import specifier, `knip`, **and** absence from `.next` build artifacts — all three work offline. See the note below. |
 | **E3.4** split `lib/` | **Already done.** |
 | **E6.3** move the 4.1 MB seed JSON | Only `scripts/seeder.ts` reads it — no app code imports it, so the build proves the move. Running the seeder needs a database; moving the file does not. |
-| **E7** documentation | No execution required. |
+| **E7** documentation           | **Partial.** `CLAUDE.md`, **28 feature READMEs** (one per feature, enforced by `tests/unit/feature-layout.test.ts`), `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md` and this file. E7.4 — archiving the ~700 KB of gap-analysis/TASKS files at the repo root — is not started. |
 
 **The third proof, offline.** Rule 3 wants two proofs and grep and knip each
 have a blind spot. A third, which needs no database, is whether the file
@@ -159,8 +159,8 @@ signature half.
 | **E5.3** lint everything       | **Done — and it was a no-op.** The exclusion is gone, but `redesign/**` holds no code (9 files: markdown, SQL, a PNG). The live components are in `components/redesign/`, which was never excluded. |
 | **E6.1** knip                  | **Done.** knip reports **0 unused files and 0 unused dependencies**. |
 | **E6.2** prune deps            | **Done.** 120 → 82 runtime deps (21 → 17 dev). `tailwindcss-animate` is a knip false positive — loaded from CSS — and is now in `ignoreDependencies`. |
-| **E6.3** seed data out of tree | **Not started.** `constants/liftmanual_all_workouts.json` is 4.1 MB.                                                                                                                                    |
-| **E7** documentation           | **Partial.** `CLAUDE.md`, three feature READMEs, `knip.README.md`, this file.                                                                                                                           |
+| **E6.3** seed data out of tree | **Done.** The three seed JSONs (incl. the 4.1 MB workouts file) live in `scripts/seed-data/`; no app code imports them. The build heap dropped 4096 → 2048 MB as a result, verified building at 1024. |
+| **E7** documentation           | **Partial.** `CLAUDE.md`, **28 feature READMEs** (one per feature, enforced by `tests/unit/feature-layout.test.ts`), `lib/db/README.md`, `knip.README.md`, `docs/mobile-contract.md` and this file. E7.4 — archiving the ~700 KB of gap-analysis/TASKS files at the repo root — is not started. |
 | **E8** mobile contract         | **Done.** 31 routes / 48 RPCs / 38 tables, all verified live. The verb check now follows re-exports. The chat migration added 3 RPCs that frozen routes delegate to.                                    |
 | **E9** extract the blueprint   | **Not started.**                                                                                                                                                                                        |
 
@@ -490,8 +490,11 @@ Decide and delete the losers.
   Verifying either needs credentials, so both were left alone rather than
   swept. Everything else is off the deprecated shims; the other three are
   deleted.
-- **`constants/liftmanual_all_workouts.json` is 4.1 MB** and is why the build
-  needs a 4 GB heap.
+- **The build heap is 2048 MB, down from 4096.** The seed JSONs moved to
+  `scripts/seed-data/` (E6.3) and no app code imports them, so the ceiling that
+  the 4.1 MB workouts file forced is gone. Verified building at 1024 MB; 2048
+  is deliberate headroom, since Node's default scales with machine RAM and a
+  small CI runner gets far less than this laptop.
 - **53 files knip calls unused.** Each still needs the two-proof rule.
 - **`anatomy_hotspots` (2D) is empty and always has been** — the admin Body Map
   falls back to region cards because of it. `anatomy_hotspots_3d` is in use.

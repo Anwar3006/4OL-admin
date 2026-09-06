@@ -217,8 +217,9 @@ code, or a bad dynamic import.
 - **`eslint.config.mjs` excludes `redesign/**`** entirely.
 - **`stores/dialog-store.ts` (30 KB) is global.** Every feature's dialogs reach
   into it; it is the tightest coupling in the repo.
-- **`constants/liftmanual_all_workouts.json` is 4.1 MB.** The build needs a
-  4 GB heap because of files like it.
+- **Seed JSON lives in `scripts/seed-data/`, not the app tree.** Nothing under
+  `app/`, `features/` or `lib/` imports it, which is why the build heap is
+  2048 MB rather than the 4096 it used to need.
 - **Email does not send.** `lib/email.ts` is wired to AWS SES but no AWS
   credentials or `SES_FROM_EMAIL` are set — admin invites, login alerts and the
   device sign-in OTP are all affected. See the pending-items section of
