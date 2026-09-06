@@ -46,14 +46,14 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 | --- | --- |
 | **E0** safety net | **Done and running.** Contract suite, smoke sweep, CI with a build job. |
 | **E1.1** duplicate layout | **Done.** One `layout.tsx`; the security layer executes for the first time. |
-| **E1.2** Supabase clients | **Done.** Five → three under `lib/db/`, `server-only` guard on admin. |
+| **E1.2** Supabase clients | **Mostly.** Five → three under `lib/db/` — but a **fourth** survived: `app/utils/supabaseClient.js`, missed because it is `.js`. Six importers, one already fixed. See below. |
 | **E1.3** RLS/idiom audit | **Done.** Silent-empty direction clear; all 9 tables exposed to `anon` are closed. No table in the database still grants `public`/`anon` unrestricted ALL/UPDATE/DELETE. |
 | **E1.4** data-access rule | **Done.** `lib/db/README.md`, summarised in `CLAUDE.md`. |
 | **E2.1** retire duplicates | **Done.** 12 redirect stubs → `next.config.ts`; 22 + 27 dead files deleted. |
 | **E2.2** one UI kit | **Done.** No `.jsx` under `components/ui/`. |
 | **E2.3** one CSV/date/currency | **Done.** 10 CSV impls → `lib/csv.ts`; moment gone; `formatCurrency` in `lib/format.ts`. |
 | **E3.1** feature layout | **Done.** `features/anatomy` is the exemplar. |
-| **E3.2** migrate features | **8 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities. **29 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
+| **E3.2** migrate features | **9 done:** anatomy, facility-scout, bed-tracker, period, fitness, symptoms, healthy-living, facilities, medication-reminder. **27 files remain** in `hooks/supabase-calls/` — that directory emptying is the finish line. |
 | **E3.3** kebab-case routes | **Partial.** The 17 hollow `/facilities/*` shells are retired behind redirects and guarded by the sweep. The naming work (`/healthy_living`, `/facilityscout`, `/bedtracker`) is not started. |
 | **E3.4** split `lib/` | **Not started.** |
 | **E4.1** god files | **Period done** (4,585 lines → 889 + 16 files) and now migrated into `features/period`. `ai/page.tsx` (1,236) next. |
@@ -72,7 +72,7 @@ Supabase project: `rhbbxttxnvcziyqzptqs` (Postgres in `eu-west-1`).
 
 ## Do next, in order
 
-### 1. Empty `hooks/supabase-calls/` — 29 files left
+### 1. Empty `hooks/supabase-calls/` — 27 files left
 
 The five big features are migrated. What remains in that directory is the
 long tail: whichever feature each hook belongs to, moved the same way. E3.2 is
@@ -84,7 +84,45 @@ the route serves against a real session, and only then drop the policy. Doing
 it in the other order blanks the feature silently. See
 `features/fitness/api/content-schedule.ts`.
 
-### 2. E1.3 — swept and fixed; all nine closed
+### 2. `app/utils/supabaseClient.js` — the fourth client E1.2 missed
+
+`CLAUDE.md` rule 1 lists three clients. There are four. `app/utils/supabaseClient.js`
+is a plain `createClient`, so it keeps its session in **localStorage rather
+than cookies** and queries as **`anon`**, not as the signed-in admin — the same
+trap `lib/supabase.ts` documents at length for its own legacy export. It
+survived E1.2 because it is a `.js` file, and four of its six importers are
+`.jsx`/`.js` and therefore never type-checked.
+
+Measured by querying as `anon`:
+
+| File | Reads | anon sees | Truth |
+| --- | --- | --- | --- |
+| `features/medication-reminder/ui/ReminderDetailsPage.jsx` | `medication_reminders` | 0 | 3 — **fixed** |
+| `utils/activityLogger.js` | `activity_logs` | 0 | **10,977** |
+| `app/(dashboard)/view-reviews/page.jsx` | `facility_ratings` | — | **table does not exist** |
+| `app/api/places/route.js` | `api_usage` | — | **table does not exist** |
+| `app/(dashboard)/view-facility-profile/page.jsx` | `facility_profile` | 3 | 3 — works, via a `TO public` read policy |
+| `app/(auth)/delete-account/page.tsx` | `delete_account_requests` | 0 | 0 — indeterminate while empty |
+
+Only the first is fixed, as part of the medication-reminder migration. The
+others each need their own decision rather than a sweep:
+
+- **`utils/activityLogger.js` is dead** — no importer by grep, and knip agrees.
+  Two proofs, no `.jsx` sibling to confuse either. Delete it and the question
+  disappears.
+- **`view-reviews` and `api/places` read tables that do not exist.** Those are
+  not client bugs, they are dead features wearing a working-looking page.
+  `/view-reviews` is already in the sweep's orphan list.
+- **`view-facility-profile` only works by accident**, because
+  `facility_profile` has a `TO public` SELECT policy. Change that policy and
+  the page goes blank silently.
+- **`app/api/places/route.js` is an API route using a browser client**, which
+  rule 1 forbids outright.
+
+Once those are resolved, delete `app/utils/supabaseClient.js` and rule 1's
+"three clients" is true again.
+
+### 3. E1.3 — swept and fixed; all nine closed
 
 **The sweep is done. It found nothing in the direction it was aimed, and
 something worse in the other direction.**
@@ -175,7 +213,7 @@ route, which is the task above this one.
   `facility_profile`. A regex sweep for `.from("literal")` will not find this
   class — the call was `.from(table)` over a config array.
 
-### 3. E3.3 — kebab-case routes (facilities slice done)
+### 4. E3.3 — kebab-case routes (facilities slice done)
 
 The `/facilities/*` shells are **retired**. What remains of E3.3 is the naming
 work: `/healthy_living` (underscore), `/facilityscout` and `/bedtracker`
@@ -214,7 +252,7 @@ back to a literal slash in the query string. Both forms filter identically —
 verified against `/api/facilities` — so the smoke expectation asserts the
 normalised form, which is what actually lands.
 
-### 4. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
+### 5. E4.1 continued — `ai/page.tsx` (1,236 lines), then `stores/dialog-store.ts`
 
 Use the Period method: **capture a per-endpoint or per-tab baseline first**,
 split, then diff against it. That is what made a 1,166-line extraction safe to

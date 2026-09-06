@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import {
   useMedicationAdherence,
   AdherenceLogRow,
-} from "@/hooks/supabase-calls/useMedicationReminder";
-import { useDrugAdherenceStats } from "@/hooks/supabase-calls/useDrugs";
+} from "@/features/medication-reminder/data/useMedicationReminder";
+import { useDrugAdherenceStats } from "@/features/medication-reminder/data/useDrugs";
 
 const PAGE_SIZE = 10;
 

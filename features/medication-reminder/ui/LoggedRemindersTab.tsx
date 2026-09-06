@@ -11,7 +11,7 @@ import {
   LoggedReminderRow,
   formatReminderInterval,
   getReminderStatus,
-} from "@/hooks/supabase-calls/useMedicationReminder";
+} from "@/features/medication-reminder/data/useMedicationReminder";
 import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
 import { usePermissionContext } from "@/stores/permission-context";
 import { maskName } from "@/lib/masking";

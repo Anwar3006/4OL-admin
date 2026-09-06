@@ -14,7 +14,7 @@ import {
   useDrugs,
   useDeleteDrug,
   type DrugRow,
-} from "@/hooks/supabase-calls/useDrugs";
+} from "@/features/medication-reminder/data/useDrugs";
 import AddEditDrugDialog from "./AddEditDrugDialog";
 import ImportDrugsDialog from "./ImportDrugsDialog";
 import VerificationQueue from "./VerificationQueue";

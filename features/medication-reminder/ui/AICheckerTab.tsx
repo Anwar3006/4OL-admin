@@ -2,7 +2,7 @@
 
 import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
-import { useDrugKpiStats } from "@/hooks/supabase-calls/useDrugs";
+import { useDrugKpiStats } from "@/features/medication-reminder/data/useDrugs";
 
 /**
  * AI Checker tab (Gap Analysis B.1 tab 5). Version/accuracy/response-time

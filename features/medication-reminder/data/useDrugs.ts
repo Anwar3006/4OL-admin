@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
-import type { NormalizedDrugRow } from "@/lib/drug-import-mapping";
+import type { NormalizedDrugRow } from "@/features/medication-reminder/data/drug-import-mapping";
 
 // Powers the Medication Reminder → Drug Database / Interactions / AI Checker
 // tabs (Gap Analysis Part B). Reads go through the RBAC-enforced admin API

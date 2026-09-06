@@ -12,7 +12,7 @@ import {
   DRUG_CATEGORIES,
   DRUG_STATUSES,
 } from "@/lib/shared-constants";
-import { useCreateDrug, useUpdateDrug, type DrugRow } from "@/hooks/supabase-calls/useDrugs";
+import { useCreateDrug, useUpdateDrug, type DrugRow } from "@/features/medication-reminder/data/useDrugs";
 
 const inputCls =
   "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";

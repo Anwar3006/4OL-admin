@@ -28,7 +28,7 @@ import {
   useDeleteMedication,
   useMedicationReminder,
   formatReminderInterval,
-} from "@/hooks/supabase-calls/useMedicationReminder";
+} from "@/features/medication-reminder/data/useMedicationReminder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useViewMediactionReminderDialog } from "@/stores/dialog-store";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";

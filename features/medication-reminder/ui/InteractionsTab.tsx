@@ -11,7 +11,7 @@ import {
   useCreateInteraction,
   useDrugs,
   type InteractionRow,
-} from "@/hooks/supabase-calls/useDrugs";
+} from "@/features/medication-reminder/data/useDrugs";
 import {
   Dialog,
   DialogContent,

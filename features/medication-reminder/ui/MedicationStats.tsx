@@ -4,7 +4,7 @@ import React from "react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useDrugKpiStats } from "@/hooks/supabase-calls/useDrugs";
+import { useDrugKpiStats } from "@/features/medication-reminder/data/useDrugs";
 
 interface MedKpiData {
   total_reminders: number;

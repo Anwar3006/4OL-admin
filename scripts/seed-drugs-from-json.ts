@@ -15,7 +15,7 @@ import {
   type DrugAvailability,
   type DrugStatus,
   type NormalizedDrugRow,
-} from "../lib/drug-import-mapping";
+} from "../features/medication-reminder/data/drug-import-mapping";
 import { getSupabaseAdmin } from "../lib/supabase-admin";
 
 type PillsJsonRow = {

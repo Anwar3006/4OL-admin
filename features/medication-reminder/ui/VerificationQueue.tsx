@@ -6,7 +6,7 @@ import {
   useVerificationAction,
   useDrugs,
   type VerificationRequest,
-} from "@/hooks/supabase-calls/useDrugs";
+} from "@/features/medication-reminder/data/useDrugs";
 import {
   Dialog,
   DialogContent,

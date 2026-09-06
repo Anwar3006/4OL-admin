@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { GHANA_REGIONS } from "@/lib/shared-constants";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useDrugs } from "@/hooks/supabase-calls/useDrugs";
+import { useDrugs } from "@/features/medication-reminder/data/useDrugs";
 import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
 

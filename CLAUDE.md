@@ -42,6 +42,13 @@ those; see `docs/cleanup-handoff.md`.
 that `lib/supabase.ts` exports two clients that **do not share a session** —
 see its file comment before touching any caller.
 
+**There is also a fourth client the table above does not list:**
+`app/utils/supabaseClient.js`. It is a plain `createClient` — localStorage
+session, so it queries as `anon`, not as the signed-in admin — and it survived
+the client consolidation because it is a `.js` file. It has six importers and
+has already caused one silent-empty page. Do not add a seventh; see
+`docs/cleanup-handoff.md`.
+
 ### 2. Changes to the mobile contract must be additive
 
 **31 API routes, 45 RPCs and 38 tables** are consumed by the Expo app. Old
@@ -133,8 +140,9 @@ months; `FacilityScoutTabProps` inside the page component, so all five tabs
 imported from `../page` and broke the moment it was renamed.
 
 Migrated: `anatomy` (the exemplar), `facility-scout`, `bed-tracker`,
-`period`, `fitness`, `symptoms`, `healthy-living`, `facilities`. E3.2 is
-finished when `hooks/supabase-calls/` is empty — **29 files left**, down from 42.
+`period`, `fitness`, `symptoms`, `healthy-living`, `facilities`,
+`medication-reminder`. E3.2 is finished when `hooks/supabase-calls/` is empty —
+**27 files left**, down from 42.
 
 **Route segment config stays in `app/`.** Next reads `export const runtime`
 by statically analysing the route file, so it does not follow a re-export.

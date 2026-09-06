@@ -13,7 +13,7 @@ import {
   type AiMappingRow,
 } from "@/features/anatomy/data/useAnatomy";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useDrugs, type DrugRow } from "@/hooks/supabase-calls/useDrugs";
+import { useDrugs, type DrugRow } from "@/features/medication-reminder/data/useDrugs";
 import { cn } from "@/lib/utils";
 
 const inputCls =

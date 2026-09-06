@@ -13,8 +13,8 @@ import {
   chunkRows,
   type NormalizedDrugRow,
   type PillsCsvRow,
-} from "@/lib/drug-import-mapping";
-import { useImportDrugs } from "@/hooks/supabase-calls/useDrugs";
+} from "@/features/medication-reminder/data/drug-import-mapping";
+import { useImportDrugs } from "@/features/medication-reminder/data/useDrugs";
 
 /**
  * Excel/CSV import wizard (Gap Analysis B.5 + B.12). Parsing + D1/D2/D3
