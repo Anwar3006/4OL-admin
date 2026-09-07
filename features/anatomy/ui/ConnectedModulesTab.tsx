@@ -116,7 +116,7 @@ function GenderRulesEditor() {
 
   return (
     <div className="card p-5">
-      <h4 className="text-sm font-black uppercase tracking-widest text-slate-700">
+      <h4 className="section-heading">
         ⚧ Gender-Aware Content Rules
       </h4>
       <p className="mt-1 text-xs text-slate-500">
@@ -155,7 +155,7 @@ function GenderRulesEditor() {
       </div>
 
       {selected && (
-        <p className="mt-2 text-[11px] text-slate-400">
+        <p className="mt-2 text-xs text-slate-400">
           Current scope for <strong>{selected.name}</strong>:{" "}
           <span className="badge badge-blue">{selected.gender_scope || "unspecified"}</span>
         </p>
@@ -201,11 +201,11 @@ export default function ConnectedModulesTab() {
                   {count === undefined ? "…" : count === -1 ? "Not available" : count.toLocaleString()}
                 </span>
               </div>
-              <h4 className="mt-3 text-sm font-black uppercase tracking-widest text-slate-700">
+              <h4 className="mt-3 section-heading">
                 {card.title}
               </h4>
-              <p className="mt-1 text-[11px] text-slate-500">{card.detail}</p>
-              <span className="mt-2 inline-block text-[11px] font-bold text-emerald-700">
+              <p className="mt-1 text-xs text-slate-500">{card.detail}</p>
+              <span className="mt-2 inline-block text-xs font-bold text-emerald-700">
                 Open module →
               </span>
             </Link>
@@ -215,7 +215,7 @@ export default function ConnectedModulesTab() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="card p-5">
-          <h4 className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <h4 className="section-heading">
             💡 Suggested Connections
           </h4>
           <p className="mt-1 text-xs text-slate-500">

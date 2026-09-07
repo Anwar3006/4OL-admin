@@ -47,7 +47,7 @@ export const InviteAdminEmail = ({
                     alt="4 Our Life Logo"
                     style={{ marginBottom: "16px", borderRadius: "12px" }}
                   />
-                  <Text className="m-0 font-bold tracking-[3px] text-[11px] uppercase text-white/90">
+                  <Text className="m-0 font-bold tracking-[3px] text-xs uppercase text-white/90">
                     Health Administration Portal
                   </Text>
                 </Column>
@@ -56,16 +56,16 @@ export const InviteAdminEmail = ({
 
             {/* Content Body */}
             <Section className="px-10 py-12">
-              <Heading className="m-0 text-[26px] font-bold text-[#111827] leading-[32px]">
+              <Heading className="m-0 text-3xl font-bold text-[#111827] leading-[32px]">
                 Elevating Healthcare <br />
                 <span style={{ color: "#059669" }}>Management.</span>
               </Heading>
 
-              <Text className="mt-8 text-[16px] leading-[26px] text-[#4b5563]">
+              <Text className="mt-8 text-lg leading-[26px] text-[#4b5563]">
                 Hello <strong>{username}</strong>,
               </Text>
 
-              <Text className="text-[16px] leading-[26px] text-[#4b5563]">
+              <Text className="text-lg leading-[26px] text-[#4b5563]">
                 You have been selected to join the elite network of 4 Our Life
                 administrators. Your role involves managing world-class medical
                 facilities and ensuring operational excellence.
@@ -74,7 +74,7 @@ export const InviteAdminEmail = ({
               {/* Centered Bulletproof Button */}
               <Section align="center" className="mt-10 mb-10">
                 <Button
-                  className="bg-[#059669] px-8 py-4 rounded-md text-white text-[14px] font-bold no-underline text-center"
+                  className="bg-[#059669] px-8 py-4 rounded-md text-white text-base font-bold no-underline text-center"
                   href={inviteLink}
                   style={{
                     display: "inline-block",
@@ -85,7 +85,7 @@ export const InviteAdminEmail = ({
                 </Button>
               </Section>
 
-              <Text className="text-[13px] text-[#6b7280] leading-[20px]">
+              <Text className="text-sm text-[#6b7280] leading-[20px]">
                 If the button above does not work, securely copy and paste this
                 link:
                 <br />
@@ -96,7 +96,7 @@ export const InviteAdminEmail = ({
 
               <Hr className="my-8 border-[#eeeeee]" />
 
-              <Text className="text-[12px] italic text-[#9ca3af] leading-[18px]">
+              <Text className="text-sm italic text-[#9ca3af] leading-[18px]">
                 This invitation was securely generated for{" "}
                 <strong>{email}</strong>. Confidentiality and precision are the
                 pillars of our infrastructure.
@@ -107,10 +107,10 @@ export const InviteAdminEmail = ({
             <Section className="bg-[#f9fafb] px-10 py-8 border-t border-[#f1f1f1]">
               <Row>
                 <Column align="center">
-                  <Text className="m-0 text-[11px] font-semibold text-[#6b7280] uppercase tracking-wider">
+                  <Text className="m-0 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
                     © {new Date().getFullYear()} 4 Our Life
                   </Text>
-                  <Text className="mt-1 text-[11px] text-[#9ca3af]">
+                  <Text className="mt-1 text-xs text-[#9ca3af]">
                     Precision • Security • Vitality
                   </Text>
                 </Column>

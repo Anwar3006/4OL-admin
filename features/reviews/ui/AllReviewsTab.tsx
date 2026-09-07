@@ -59,7 +59,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
       title: (data) => data.user_profiles?.name || "Anonymous",
       subtitle: (data) => data.facility_profile?.facility_name || "N/A",
       badge: (data) => (
-        <span className="flex items-center gap-1 text-[10px] font-black text-amber-500">
+        <span className="flex items-center gap-1 text-2xs font-black text-amber-500">
           {data.rating} <Star className="h-3 w-3 fill-amber-500" />
         </span>
       ),
@@ -68,7 +68,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
       {
         id: "comment",
         render: (data) => data.comment_text,
-        className: "italic text-[11px]",
+        className: "italic text-xs",
       },
     ],
     actions: [
@@ -80,12 +80,12 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search reviews..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
           📥 Export Data
         </button>
       </div>

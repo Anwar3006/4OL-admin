@@ -17,7 +17,7 @@ import { toast } from "sonner";
 const inputCls =
   "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 const PROXIMITY_OPTIONS = [
   { value: "1", label: "Within 1 km" },
@@ -229,7 +229,7 @@ export default function PharmacyCampaignModal({
               <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
                 <span className="text-xs font-bold text-emerald-800">{drugName}</span>
                 <button
-                  className="text-[10px] font-bold text-slate-400 hover:text-red-500 cursor-pointer"
+                  className="text-2xs font-bold text-slate-400 hover:text-red-500 cursor-pointer"
                   onClick={() => setDrugName("")}
                 >
                   Change
@@ -278,7 +278,7 @@ export default function PharmacyCampaignModal({
             />
           </div>
 
-          <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-[11px] font-medium text-slate-600">
+          <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-medium text-slate-600">
             📡 Estimated reach:{" "}
             {reachLoading ? (
               <span className="text-slate-400">calculating…</span>

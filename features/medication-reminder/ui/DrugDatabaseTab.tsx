@@ -113,7 +113,7 @@ export default function DrugDatabaseTab() {
         cell: ({ row }) => (
           <div>
             <div className="font-bold text-slate-800">{row.original.name}</div>
-            <div className="text-[10px] text-slate-400">
+            <div className="text-2xs text-slate-400">
               {[row.original.dosage_form, row.original.manufacturer]
                 .filter(Boolean)
                 .join(" · ") || "—"}

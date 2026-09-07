@@ -631,7 +631,7 @@ function FeatureFlags({
                 <div className="mt-1 text-xs text-slate-500">
                   {flag.description || "No description"}
                 </div>
-                <div className="mt-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <div className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-400">
                   Rollout {flag.rollout_percentage}%
                 </div>
               </div>
@@ -850,7 +850,7 @@ function Field({
 }) {
   return (
     <label className="space-y-2">
-      <span className="block text-[11px] font-black uppercase tracking-widest text-slate-400">
+      <span className="block text-xs font-black uppercase tracking-widest text-slate-400">
         {label}
       </span>
       {children}

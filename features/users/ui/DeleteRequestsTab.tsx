@@ -57,10 +57,10 @@ export default function DeleteRequestsTab() {
         header: "User",
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
           <div className="flex flex-col">
-            <span className="text-[12px] font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800">
               {row.original.first_name} {row.original.last_name}
             </span>
-            <span className="text-[11px] text-slate-400">{row.original.email}</span>
+            <span className="text-xs text-slate-400">{row.original.email}</span>
           </div>
         ),
       },
@@ -68,7 +68,7 @@ export default function DeleteRequestsTab() {
         id: "reason",
         header: "Reason",
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
-          <span className="text-[11px] text-slate-600">
+          <span className="text-xs text-slate-600">
             {row.original.reason || "Privacy concerns"}
           </span>
         ),
@@ -77,7 +77,7 @@ export default function DeleteRequestsTab() {
         id: "requested",
         header: "Requested",
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
-          <span className="text-[11px] text-slate-500">
+          <span className="text-xs text-slate-500">
             {new Date(row.original.created_at).toLocaleDateString("en-GB", {
               day: "numeric",
               month: "short",
@@ -92,7 +92,7 @@ export default function DeleteRequestsTab() {
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => {
           const days = daysRemaining(row.original.created_at);
           if (row.original.status === "completed" || row.original.status === "cancelled") {
-            return <span className="text-[11px] text-slate-400">—</span>;
+            return <span className="text-xs text-slate-400">—</span>;
           }
           const cls =
             days <= 0
@@ -166,7 +166,7 @@ export default function DeleteRequestsTab() {
           ⚠️
         </div>
         <div>
-          <h4 className="text-[11px] font-black uppercase tracking-widest text-amber-900 mb-1">
+          <h4 className="text-xs font-black uppercase tracking-widest text-amber-900 mb-1">
             Attention Required
           </h4>
           <p className="text-xs text-amber-700 leading-relaxed font-medium">

@@ -76,13 +76,13 @@ export default function ActivityLogsTab() {
               )}
               {logs.map((log) => (
                 <tr key={log.id}>
-                  <td className="font-mono text-[10px] text-slate-400">
+                  <td className="font-mono text-2xs text-slate-400">
                     {format(new Date(log.created_at), "yyyy-MM-dd HH:mm:ss")}
                   </td>
                   <td><span className="badge badge-secondary">{log.admin_email || "Unknown"}</span></td>
                   <td className="font-bold text-slate-700">{log.action_type}</td>
-                  <td><span className="text-[10px] font-bold text-slate-500 uppercase">{log.target_table}</span></td>
-                  <td className="font-mono text-[10px]">{log.ip_address || "—"}</td>
+                  <td><span className="text-2xs font-bold text-slate-500 uppercase">{log.target_table}</span></td>
+                  <td className="font-mono text-2xs">{log.ip_address || "—"}</td>
                   <td><span className={`badge font-extrabold ${SEVERITY_BADGE[log.severity] || "badge-secondary"}`}>{log.severity.toUpperCase()}</span></td>
                 </tr>
               ))}

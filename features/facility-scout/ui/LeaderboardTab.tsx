@@ -65,7 +65,7 @@ export default function LeaderboardTab({ data, loading }: FacilityScoutTabProps)
                     <TableCell className="text-lg">{MEDALS[index] ?? `#${index + 1}`}</TableCell>
                     <TableCell>
                       <div className="font-bold">{entry.full_name || "Unknown user"}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="text-2xs text-slate-400 font-mono">
                         {entry.user_id.slice(0, 8)}
                       </div>
                     </TableCell>

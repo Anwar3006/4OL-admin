@@ -21,7 +21,7 @@ export default function RegionalCoverage({
       <div className="card">
         <div className="card-header mb-4">
           <h2 className="card-title">Regional Coverage</h2>
-          <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest">
+          <span className="text-slate-400 text-xs font-black uppercase tracking-widest">
             Facilities
           </span>
         </div>

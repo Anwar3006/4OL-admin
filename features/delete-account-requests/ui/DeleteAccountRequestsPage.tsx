@@ -99,20 +99,20 @@ const DeleteAccountRequestPage = () => {
           📥 Export Log
         </button>
         <button
-          className="btn btn-secondary btn-sm font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-secondary btn-sm font-black uppercase tracking-widest text-3xs"
           onClick={copyPublicLink}
         >
           Copy Public Link
         </button>
         <button
-          className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs"
           onClick={() => setManualOpen(true)}
         >
           + Manual Entry
         </button>
       </PageHeader>
 
-      <div className="alert bg-blue-50 border border-blue-200 text-[11px] font-medium p-4 rounded-xl flex items-start gap-3">
+      <div className="alert bg-blue-50 border border-blue-200 text-xs font-medium p-4 rounded-xl flex items-start gap-3">
         <span className="text-base leading-none mt-0.5 text-blue-700">⚠️</span>
         <div className="flex-1 text-blue-700 leading-relaxed">
           <strong className="font-black">Google Play & App Store Policy Compliance.</strong> Account deletion requests are processed within 30 days per Ghana Data Protection Act (GH-DPA) guidelines.
@@ -129,7 +129,7 @@ const DeleteAccountRequestPage = () => {
               key={tab.id}
               value={tab.id}
               className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none whitespace-nowrap",
+                "px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none whitespace-nowrap",
                 "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
               )}
             >
@@ -168,12 +168,12 @@ const DeleteAccountRequestPage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-sm font-black text-slate-900 mb-1">🗑️ Manual Deletion Entry</h3>
-            <p className="text-[10px] text-slate-400 font-bold mb-4">
+            <p className="text-2xs text-slate-400 font-bold mb-4">
               Record a request received out-of-band (support call, letter). Requires an existing account email.
             </p>
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">User Email *</label>
+                <label className="text-xs font-bold text-slate-600">User Email *</label>
                 <input
                   className="w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   value={manualEmail}
@@ -182,7 +182,7 @@ const DeleteAccountRequestPage = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-600">Reason</label>
+                <label className="text-xs font-bold text-slate-600">Reason</label>
                 <textarea
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   rows={3}

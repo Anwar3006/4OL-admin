@@ -85,7 +85,7 @@ const WorkoutHeatmap = () => {
           <CardTitle className="text-xl font-black">
             🔥 Workout Activity Heatmap
           </CardTitle>
-          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
+          <div className="flex items-center gap-2 text-3xs font-black uppercase tracking-widest text-slate-400">
             Low <span className="w-3 h-3 rounded bg-slate-100" />
             <span className="w-3 h-3 rounded bg-emerald-200" />
             <span className="w-3 h-3 rounded bg-emerald-400" />
@@ -111,13 +111,13 @@ const WorkoutHeatmap = () => {
             <div className="inline-grid gap-1" style={{ gridTemplateColumns: `2.5rem repeat(${weeks.length}, 1.5rem)` }}>
               <div />
               {weeks.map((week) => (
-                <div key={week} className="text-[8px] font-black uppercase text-slate-400 text-center [writing-mode:vertical-rl] rotate-180 h-14">
+                <div key={week} className="text-3xs font-black uppercase text-slate-400 text-center [writing-mode:vertical-rl] rotate-180 h-14">
                   {week}
                 </div>
               ))}
               {WEEKDAY_LABELS.map((day, dayIndex) => (
                 <React.Fragment key={day}>
-                  <div className="text-[9px] font-black uppercase text-slate-400 flex items-center">
+                  <div className="text-3xs font-black uppercase text-slate-400 flex items-center">
                     {day}
                   </div>
                   {weeks.map((week) => {
@@ -136,7 +136,7 @@ const WorkoutHeatmap = () => {
           </div>
         )}
         {data && (
-          <div className="mt-4 flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest">
+          <div className="mt-4 flex flex-wrap gap-4 text-2xs font-black uppercase tracking-widest">
             <span className="text-emerald-700">✅ {data.this_week.completed.toLocaleString()} completed this week</span>
             <span className="text-blue-600">🔄 {data.this_week.in_progress.toLocaleString()} in progress</span>
             <span className="text-red-500">⛔ {data.this_week.abandoned.toLocaleString()} abandoned</span>
@@ -223,22 +223,22 @@ const ScheduleTab = () => {
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow className="border-none">
-                <TableHead className="font-black text-[10px] uppercase tracking-widest px-8">
+                <TableHead className="font-black text-2xs uppercase tracking-widest px-8">
                   Content
                 </TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">
+                <TableHead className="font-black text-2xs uppercase tracking-widest">
                   Type
                 </TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">
+                <TableHead className="font-black text-2xs uppercase tracking-widest">
                   Target
                 </TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">
+                <TableHead className="font-black text-2xs uppercase tracking-widest">
                   Date/Time
                 </TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest">
+                <TableHead className="font-black text-2xs uppercase tracking-widest">
                   Status
                 </TableHead>
-                <TableHead className="font-black text-[10px] uppercase tracking-widest text-right px-8">
+                <TableHead className="font-black text-2xs uppercase tracking-widest text-right px-8">
                   Actions
                 </TableHead>
               </TableRow>
@@ -284,7 +284,7 @@ const ScheduleTab = () => {
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-[9px] tracking-widest px-2"
+                        className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-3xs tracking-widest px-2"
                       >
                         {CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type}
                       </Badge>

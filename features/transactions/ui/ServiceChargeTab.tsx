@@ -61,22 +61,22 @@ export default function ServiceChargeTab() {
               <button
                 onClick={handleSave}
                 disabled={saveRates.isPending || !draft}
-                className="btn btn-primary btn-sm text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+                className="btn btn-primary btn-sm text-2xs font-black uppercase tracking-widest disabled:opacity-50"
               >
                 {saveRates.isPending ? "Saving…" : "Save Rates"}
               </button>
             ) : (
-              <span className="badge badge-secondary text-[9px]">SA edits rates</span>
+              <span className="badge badge-secondary text-3xs">SA edits rates</span>
             )}
           </div>
-          <div className="bg-amber-50 p-2 text-[10px] font-bold text-amber-700 border-b border-amber-100 px-4">
+          <div className="bg-amber-50 p-2 text-2xs font-bold text-amber-700 border-b border-amber-100 px-4">
             💡 Rate changes apply to all new transactions immediately.
           </div>
           <div className="divide-y divide-slate-50">
             {ratesLoading ? (
-              <div className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loading rates…</div>
+              <div className="p-4 text-2xs font-bold text-slate-400 uppercase tracking-widest">Loading rates…</div>
             ) : rates.length === 0 ? (
-              <div className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <div className="p-4 text-2xs font-bold text-slate-400 uppercase tracking-widest">
                 No rates configured yet (apply the transactions ledger migration).
               </div>
             ) : (
@@ -113,7 +113,7 @@ export default function ServiceChargeTab() {
           {overview?.overview?.service_fees_hidden ? (
             <div className="py-8 text-center">
               <div className="text-2xl mb-2">🔒</div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 Hidden by Super Admin
               </p>
             </div>
@@ -147,12 +147,12 @@ export default function ServiceChargeTab() {
           isLoading={txnsLoading}
         />
         {(feeTxns?.rows ?? []).length === 0 && !txnsLoading && (
-          <div className="p-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="p-6 text-center text-2xs font-bold text-slate-400 uppercase tracking-widest">
             No service fee transactions recorded yet. Fees appear here once ledger events are captured.
           </div>
         )}
       </div>
-      <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">
+      <p className="text-3xs text-slate-300 font-bold uppercase tracking-widest">
         Last updated {rates[0] ? formatProcessedAt(rates[0].updated_at) : "—"}
       </p>
     </div>

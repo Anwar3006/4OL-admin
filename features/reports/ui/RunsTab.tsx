@@ -92,13 +92,13 @@ export default function RunsTab() {
                 <TableRow key={run.id}>
                   <TableCell className="font-bold text-slate-800">
                     {names.get(run.definition_id) ?? "—"}
-                    <span className="text-[10px] text-slate-400 ml-1.5 capitalize">{run.cadence}</span>
+                    <span className="text-2xs text-slate-400 ml-1.5 capitalize">{run.cadence}</span>
                   </TableCell>
                   <TableCell className="text-xs text-slate-500">
                     {run.period_start} → {run.period_end}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-md text-[11px] font-bold ${STATUS_TONE[run.status] ?? "bg-slate-100 text-slate-600"}`}>
+                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${STATUS_TONE[run.status] ?? "bg-slate-100 text-slate-600"}`}>
                       {run.status.replace(/_/g, " ")}
                     </span>
                   </TableCell>

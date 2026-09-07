@@ -56,7 +56,7 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
         <div className="space-y-4 pt-2">
           <div className="card bg-slate-50/60">
             <div className="font-black text-sm text-slate-800">{route.name}</div>
-            <div className="text-[11px] text-slate-500 mt-1 capitalize">
+            <div className="text-xs text-slate-500 mt-1 capitalize">
               {route.category} · {route.difficulty} ·{" "}
               {route.distance_km ? `${route.distance_km} km` : "no distance"} ·{" "}
               {route.area}
@@ -64,10 +64,10 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
             </div>
             {!hasGps && (
               <>
-                <div className="mt-2 badge badge-amber text-[9px] font-black uppercase">
+                <div className="mt-2 badge badge-amber text-3xs font-black uppercase">
                   ⚠️ No GPS track — pin falls back to region center
                 </div>
-                <label className="flex items-center gap-2 mt-2 text-[11px] font-semibold text-slate-600">
+                <label className="flex items-center gap-2 mt-2 text-xs font-semibold text-slate-600">
                   <input
                     type="checkbox"
                     className="rounded border-slate-300"
@@ -79,14 +79,14 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
               </>
             )}
             {hasGps && (
-              <div className="mt-2 badge badge-green text-[9px] font-black uppercase">
+              <div className="mt-2 badge badge-green text-3xs font-black uppercase">
                 ✅ GPS track confirmed ({route.gps_data.points.length} points)
               </div>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Route Class
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -116,7 +116,7 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               FitCoins Base Reward
             </label>
             <input
@@ -129,7 +129,7 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Verification Note
             </label>
             <textarea

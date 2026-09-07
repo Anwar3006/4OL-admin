@@ -135,7 +135,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
       {/* Viewer */}
       <div className="card p-5 lg:col-span-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <h3 className="section-heading">
             📍 3D Pin Placement {regionKey ? `— ${regionKey}` : "— full body"}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
@@ -171,7 +171,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
             className="aspect-[16/10] max-h-[70vh] w-full"
           />
         </div>
-        <p className="mt-2 text-[11px] text-slate-400">
+        <p className="mt-2 text-xs text-slate-400">
           Drag to rotate. With placement enabled, tap the model to capture
           model-space coordinates for the selected body part. This is the same
           rendering engine (skin, real organ geometry, lighting) that ships
@@ -183,7 +183,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
       {/* Controls + pin list */}
       <div className="space-y-4">
         <div className="card p-5">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
             Place a pin
           </p>
           <select
@@ -205,7 +205,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
               <p className="text-xs font-bold text-emerald-800">
                 Captured: x={captured.x}, y={captured.y}, z={captured.z}
               </p>
-              <p className="mt-1 text-[11px] text-emerald-700">
+              <p className="mt-1 text-xs text-emerald-700">
                 Detected region: {captured.region ?? "—"}
               </p>
               <div className="mt-2 flex gap-2">
@@ -224,13 +224,13 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
                 </button>
               </div>
               {!bodyPartId && (
-                <p className="mt-2 text-[11px] text-amber-600">
+                <p className="mt-2 text-xs text-amber-600">
                   Select a body part above to enable saving.
                 </p>
               )}
             </div>
           ) : (
-            <p className="mt-3 text-[11px] text-slate-400">
+            <p className="mt-3 text-xs text-slate-400">
               No capture yet — enable placement and tap the model.
             </p>
           )}
@@ -238,7 +238,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
 
         <div className="card p-5">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Pins {regionKey ? `in ${regionKey}` : "(all)"}
             </p>
             <span className="badge badge-blue">{hotspots.length}</span>
@@ -253,7 +253,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
                   <p className="text-xs font-bold text-slate-700">
                     {h.body_parts?.name ?? h.body_part_id}
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-2xs text-slate-400">
                     {h.region_key} · {h.gender} · ({Number(h.x).toFixed(1)},{" "}
                     {Number(h.y).toFixed(1)}, {Number(h.z).toFixed(1)}) ·{" "}
                     {h.source}

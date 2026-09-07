@@ -104,7 +104,7 @@ export default function RouteMapPreview({
         permanent: true,
         direction: "top",
         offset: [0, -8],
-        className: "!text-[10px] !font-bold",
+        className: "!text-2xs !font-bold",
       })
       .addTo(map);
 
@@ -119,7 +119,7 @@ export default function RouteMapPreview({
         permanent: true,
         direction: "top",
         offset: [0, -8],
-        className: "!text-[10px] !font-bold",
+        className: "!text-2xs !font-bold",
       })
       .addTo(map);
 

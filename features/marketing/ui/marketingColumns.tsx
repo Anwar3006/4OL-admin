@@ -149,10 +149,10 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     header: "Campaign",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+        <div className="font-black text-slate-800 text-xs uppercase tracking-tight">
           {row.original.headline}
         </div>
-        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+        <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
           {row.original.marketingType || "Marketing"}
         </div>
       </div>
@@ -162,7 +162,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     accessorKey: "campaign_type",
     header: "Type",
     cell: ({ row }) => (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100">
         {row.original.campaign_type ?? row.original.marketingType}
       </span>
     ),
@@ -171,7 +171,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "target",
     header: "Target",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-slate-600">
+      <span className="text-xs font-bold text-slate-600">
         {row.original.target_segment || "All users"}
       </span>
     ),
@@ -185,7 +185,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "period",
     header: "Period",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
         {fmtDate(row.original.startDate)} → {fmtDate(row.original.endDate)}
       </span>
     ),
@@ -194,7 +194,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "budget",
     header: "Budget",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 tabular-nums">
         {formatCurrency(row.original.budget, { fallback: "—" })}
       </span>
     ),
@@ -203,7 +203,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "impressions",
     header: "Impressions",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 tabular-nums">
         {(row.original.impressions ?? 0).toLocaleString()}
       </span>
     ),
@@ -212,7 +212,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "clicks",
     header: "Clicks",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 tabular-nums">
         {(row.original.clicks ?? 0).toLocaleString()}
       </span>
     ),
@@ -221,7 +221,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "ctr",
     header: "CTR",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-emerald-700 tabular-nums">
+      <span className="text-xs font-black text-emerald-700 tabular-nums">
         {ctr(row.original.impressions ?? 0, row.original.clicks ?? 0)}
       </span>
     ),

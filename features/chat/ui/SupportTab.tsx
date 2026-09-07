@@ -169,10 +169,10 @@ export default function SupportTab() {
         header: "Ticket",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 font-mono text-[11px]">
+            <div className="font-black text-slate-800 font-mono text-xs">
               {ticketDisplayId(row.original.id)}
             </div>
-            <div className="text-[10px] text-slate-500 line-clamp-1">
+            <div className="text-2xs text-slate-500 line-clamp-1">
               {row.original.subject || "No subject"}
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function SupportTab() {
         cell: ({ row }) => {
           const val = row.original.user_profiles;
           return (
-            <div className="text-[11px]">
+            <div className="text-xs">
               <div className="font-bold text-slate-700">
                 {val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown"}
               </div>
@@ -197,7 +197,7 @@ export default function SupportTab() {
         accessorKey: "message",
         header: "Topic / Summary",
         cell: ({ row }) => (
-          <div className="text-[11px] text-slate-500 max-w-[200px] truncate">
+          <div className="text-xs text-slate-500 max-w-[200px] truncate">
             {row.original.message || "—"}
           </div>
         ),
@@ -206,7 +206,7 @@ export default function SupportTab() {
         accessorKey: "category",
         header: "Type",
         cell: ({ row }) => (
-          <span className="text-[11px] font-bold text-slate-600">
+          <span className="text-xs font-bold text-slate-600">
             {row.original.category || "Other"}
           </span>
         ),
@@ -217,12 +217,12 @@ export default function SupportTab() {
         cell: ({ row }) => {
           const minutes = waitMinutes(row.original);
           if (minutes === null) {
-            return <span className="text-[10px] text-emerald-600 font-bold">Resolved</span>;
+            return <span className="text-2xs text-emerald-600 font-bold">Resolved</span>;
           }
           const urgent = minutes > WAIT_THRESHOLD_MINUTES;
           return (
             <span
-              className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+              className={`text-2xs font-black px-1.5 py-0.5 rounded-md ${
                 urgent ? "text-red-600 bg-red-50" : "text-slate-500"
               }`}
             >
@@ -236,7 +236,7 @@ export default function SupportTab() {
         accessorKey: "assigned_to",
         header: "Agent",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-600">
+          <span className="text-2xs font-bold text-slate-600">
             {agentName(row.original.assigned_to) ?? (
               <span className="text-amber-600">Unassigned</span>
             )}
@@ -322,7 +322,7 @@ export default function SupportTab() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
@@ -332,7 +332,7 @@ export default function SupportTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
         >
@@ -342,7 +342,7 @@ export default function SupportTab() {
           <option value="High">High</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={agentFilter}
           onChange={(e) => setAgentFilter(e.target.value)}
         >
@@ -353,7 +353,7 @@ export default function SupportTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -412,8 +412,8 @@ export default function SupportTab() {
 
         {/* Agent Load side panel */}
         <div className="card space-y-3">
-          <h3 className="card-title text-[13px]">🧑‍💼 Agent Load</h3>
-          <div className="alert al-ic text-[10px]">
+          <h3 className="card-title text-sm">🧑‍💼 Agent Load</h3>
+          <div className="alert al-ic text-2xs">
             {agentLoad.openCount} open ticket{agentLoad.openCount !== 1 ? "s" : ""} ·{" "}
             <strong>{agentLoad.unassignedUrgent}</strong> unassigned urgent
           </div>
@@ -425,11 +425,11 @@ export default function SupportTab() {
                   key={a.user_id}
                   className="flex items-center justify-between bg-slate-50 rounded-lg px-2.5 py-1.5 border border-slate-100"
                 >
-                  <span className="text-[11px] font-bold text-slate-700 truncate">
+                  <span className="text-xs font-bold text-slate-700 truncate">
                     {a.name || a.email}
                   </span>
                   <span
-                    className={`badge text-[9px] ${load > 3 ? "badge-red" : load > 0 ? "badge-blue" : "badge-slate"}`}
+                    className={`badge text-3xs ${load > 3 ? "badge-red" : load > 0 ? "badge-blue" : "badge-slate"}`}
                   >
                     {load} open
                   </span>
@@ -437,7 +437,7 @@ export default function SupportTab() {
               );
             })}
             {admins.length === 0 && (
-              <p className="text-[10px] text-slate-400 italic">No agents found</p>
+              <p className="text-2xs text-slate-400 italic">No agents found</p>
             )}
           </div>
         </div>

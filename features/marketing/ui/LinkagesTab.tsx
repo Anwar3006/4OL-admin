@@ -33,7 +33,7 @@ export default function LinkagesTab() {
   return (
     <div className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h3 className="section-heading mb-4">
           Marketing Integrations
         </h3>
         <div className="space-y-3">
@@ -45,16 +45,16 @@ export default function LinkagesTab() {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-xl">{integration.icon}</span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-black text-slate-700 truncate">
+                  <div className="text-xs font-black text-slate-700 truncate">
                     {integration.name}
                   </div>
-                  <div className="text-[10px] font-medium text-slate-400 truncate">
+                  <div className="text-2xs font-medium text-slate-400 truncate">
                     {integration.detail}
                   </div>
                 </div>
               </div>
               <span
-                className={`shrink-0 ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${TONE[integration.tone]}`}
+                className={`shrink-0 ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border ${TONE[integration.tone]}`}
               >
                 {integration.status}
               </span>
@@ -64,7 +64,7 @@ export default function LinkagesTab() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h3 className="section-heading mb-4">
           App Pages Linked to Campaigns
         </h3>
         <div className="space-y-3">
@@ -73,14 +73,14 @@ export default function LinkagesTab() {
               key={link.page}
               className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3"
             >
-              <div className="text-[11px] font-black text-slate-700">{link.page}</div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              <div className="text-xs font-black text-slate-700">{link.page}</div>
+              <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">
                 {link.note}
               </div>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 font-medium mt-4">
+        <p className="text-2xs text-slate-400 font-medium mt-4">
           Campaign links are stored in the campaign&apos;s links payload; deep-page
           targeting rides the Notifications interconnection once channels are wired.
         </p>

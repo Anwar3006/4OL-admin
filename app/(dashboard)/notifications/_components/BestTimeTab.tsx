@@ -123,7 +123,7 @@ export default function BestTimeTab() {
                     className="rounded-lg border border-slate-200 p-4 dark:border-slate-700"
                   >
                     <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{period.label}</div>
-                    <div className="mt-1 text-[22px] font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+                    <div className="mt-1 text-2xl font-semibold tabular-nums text-slate-800 dark:text-slate-100">
                       {period.total.toLocaleString("en-GH")}
                     </div>
                     <div className="text-xs text-slate-400">opens</div>
@@ -147,7 +147,7 @@ export default function BestTimeTab() {
                         style={{ height: `${heightPct}%` }}
                       />
                       {hour % 6 === 0 && (
-                        <div className="text-[9px] tabular-nums text-slate-400">{formatHour(hour)}</div>
+                        <div className="text-3xs tabular-nums text-slate-400">{formatHour(hour)}</div>
                       )}
                     </div>
                   );

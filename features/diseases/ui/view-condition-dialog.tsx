@@ -181,7 +181,7 @@ function NotFoundState({ onClose }: { onClose: () => void }) {
       </div>
       <Button
         onClick={onClose}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-[11px] mt-2"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-xs mt-2"
       >
         Close Panel
       </Button>
@@ -223,7 +223,7 @@ function ConditionDetailView({
             <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
               {condition.name}
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
               Clinical Reference Record
             </p>
           </div>
@@ -232,7 +232,7 @@ function ConditionDetailView({
         <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={onEdit}
-            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
+            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-2xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
           >
             <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
           </Button>
@@ -240,7 +240,7 @@ function ConditionDetailView({
           {condition?.nhs_link && (
             <Button
               variant="outline"
-              className="rounded-none border-slate-200 h-10 px-4 font-bold uppercase tracking-widest text-[10px] text-slate-700 hover:bg-slate-50 hover:border-emerald-200 transition-all hidden sm:inline-flex"
+              className="rounded-none border-slate-200 h-10 px-4 font-bold uppercase tracking-widest text-2xs text-slate-700 hover:bg-slate-50 hover:border-emerald-200 transition-all hidden sm:inline-flex"
               asChild
             >
               <a href={condition.nhs_link} target="_blank" rel="noreferrer">
@@ -278,18 +278,18 @@ function ConditionDetailView({
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
                   {condition?.is_systemic ? (
-                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none">
+                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-none">
                       <Dna className="h-3 w-3 mr-1.5" /> Systemic Condition
                     </Badge>
                   ) : (
-                    <Badge className="bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none">
+                    <Badge className="bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-none">
                       Localized
                     </Badge>
                   )}
                   {condition.status && (
                     <Badge
                       variant="outline"
-                      className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
                     >
                       {condition.status}
                     </Badge>
@@ -305,7 +305,7 @@ function ConditionDetailView({
                     {condition.bodyParts.map((bp: any) => (
                       <span
                         key={bp.body_parts.id}
-                        className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-600 rounded-none"
+                        className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-2xs font-bold uppercase tracking-widest text-slate-600 rounded-none"
                       >
                         {bp.body_parts.name}
                       </span>
@@ -376,7 +376,7 @@ function ConditionDetailView({
                         {type.type_name}
                       </h4>
                     </div>
-                    <div className="text-[15px] text-slate-600 leading-relaxed font-medium">
+                    <div className="text-base text-slate-600 leading-relaxed font-medium">
                       <LexicalRenderer initialState={type.about_type} />
                     </div>
                   </div>
@@ -425,7 +425,7 @@ function ConditionDetailView({
                       {cause.cause_name || `Cause ${i + 1}`}
                     </h4>
                     {cause.other_possible_causes && (
-                      <div className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <div className="text-base text-slate-600 leading-relaxed font-medium">
                         <LexicalRenderer
                           initialState={cause.other_possible_causes}
                         />
@@ -488,11 +488,11 @@ function ConditionDetailView({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <HeartPulse className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+              <span className="text-2xs font-bold uppercase tracking-[0.2em]">
                 Ghana Health Tech Reference Database
               </span>
             </div>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest">
               ID: {condition.id.slice(0, 8)}…
             </p>
           </div>
@@ -518,7 +518,7 @@ function SectionHeader({
       <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">
+      <h3 className="section-heading">
         {title}
       </h3>
     </div>
@@ -568,7 +568,7 @@ function ContentBlock({
         </div>
 
         <div
-          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-[15px] leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
+          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-base leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
         >
           {!isEmpty ? (
             <LexicalRenderer initialState={content} />
@@ -599,7 +599,7 @@ function MetaPill({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
         <Icon className="h-3.5 w-3.5 text-emerald-600" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
@@ -623,7 +623,7 @@ function ImageGallery({
     return (
       <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
         <User className="h-10 w-10 text-slate-300 mb-3" />
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           No Visual Reference
         </span>
       </div>
@@ -667,7 +667,7 @@ function ImageGallery({
 
         {/* Counter badge */}
         {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] font-black text-white tracking-widest rounded-none">
+          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-2xs font-black text-white tracking-widest rounded-none">
             {activeIndex + 1} / {images.length}
           </div>
         )}

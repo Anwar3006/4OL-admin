@@ -59,7 +59,7 @@ export default function FAQAccordion({
     <div className="space-y-8 max-w-4xl">
       {categories.map((cat, catIdx) => (
         <div key={cat.category}>
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
+          <h3 className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-3 ml-1">
             {cat.category} ({cat.items.length})
           </h3>
           <div className="space-y-2">
@@ -113,7 +113,7 @@ export default function FAQAccordion({
                       isOpen ? "max-h-[500px] border-t border-slate-50" : "max-h-0"
                     )}
                   >
-                    <div className="p-4 text-[12px] text-slate-500 leading-relaxed font-medium bg-slate-50/30 whitespace-pre-wrap">
+                    <div className="p-4 text-sm text-slate-500 leading-relaxed font-medium bg-slate-50/30 whitespace-pre-wrap">
                       {item.answer}
                     </div>
                   </div>

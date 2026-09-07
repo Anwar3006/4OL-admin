@@ -25,7 +25,7 @@ export default function LibraryOperations({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="card-title">Plasence Library connection</h3>
-            <p className="mt-1 text-[10px] text-slate-500">
+            <p className="mt-1 text-2xs text-slate-500">
               Every clinically reviewed published item receives a live mobile
               publication automatically.
             </p>
@@ -42,7 +42,7 @@ export default function LibraryOperations({
         <div className="mt-4 grid grid-cols-3 gap-3">
           <div>
             <div className="text-xl font-semibold">{published.length}</div>
-            <div className="text-[10px] text-slate-500">Published</div>
+            <div className="text-2xs text-slate-500">Published</div>
           </div>
           <div>
             <div className="text-xl font-semibold">
@@ -52,7 +52,7 @@ export default function LibraryOperations({
                 ).length
               }
             </div>
-            <div className="text-[10px] text-slate-500">Mobile-visible</div>
+            <div className="text-2xs text-slate-500">Mobile-visible</div>
           </div>
           <div>
             <div className="text-xl font-semibold">
@@ -61,7 +61,7 @@ export default function LibraryOperations({
                 0,
               )}
             </div>
-            <div className="text-[10px] text-slate-500">Source links</div>
+            <div className="text-2xs text-slate-500">Source links</div>
           </div>
         </div>
       </section>
@@ -69,7 +69,7 @@ export default function LibraryOperations({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="card-title">Curated collections</h3>
-            <p className="mt-1 text-[10px] text-slate-500">
+            <p className="mt-1 text-2xs text-slate-500">
               Collections group published items without hiding them from All
               Content.
             </p>
@@ -107,7 +107,7 @@ export default function LibraryOperations({
                 required
                 minLength={2}
                 maxLength={160}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               />
             </label>
             <label className="form-label">
@@ -115,14 +115,14 @@ export default function LibraryOperations({
               <input
                 name="description"
                 maxLength={500}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               />
             </label>
             <label className="form-label">
               Curation
               <select
                 name="curationType"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               >
                 <option value="manual">Manual</option>
                 <option value="ai_suggested">AI suggested</option>
@@ -157,7 +157,7 @@ export default function LibraryOperations({
               Collection
               <select
                 name="collectionId"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               >
                 {collections.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -170,7 +170,7 @@ export default function LibraryOperations({
               Published content
               <select
                 name="contentId"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               >
                 {published.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -184,7 +184,7 @@ export default function LibraryOperations({
               <input
                 name="reason"
                 maxLength={300}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
                 placeholder="Why this item belongs in the collection"
               />
             </label>
@@ -203,8 +203,8 @@ export default function LibraryOperations({
               className="flex items-center justify-between rounded-lg border border-slate-200 p-3"
             >
               <div>
-                <div className="text-[11px] font-medium">{collection.title}</div>
-                <div className="text-[10px] text-slate-500">
+                <div className="text-xs font-medium">{collection.title}</div>
+                <div className="text-2xs text-slate-500">
                   {collection.curation_type?.replaceAll("_", " ")} ·{" "}
                   {collection.period_content_collection_items?.length ?? 0}{" "}
                   items
@@ -231,7 +231,7 @@ export default function LibraryOperations({
             </div>
           ))}
           {!collections.length && (
-            <p className="text-[11px] text-slate-500">No collections yet.</p>
+            <p className="text-xs text-slate-500">No collections yet.</p>
           )}
         </div>
       </section>
@@ -277,14 +277,14 @@ export function CreateForm({
                 name="topic"
                 required
                 maxLength={100}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               />
             </label>
             <label className="form-label">
               Difficulty
               <select
                 name="difficulty"
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               >
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -299,7 +299,7 @@ export function CreateForm({
               required
               minLength={5}
               maxLength={500}
-              className="mt-1 min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             />
           </label>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -309,7 +309,7 @@ export function CreateForm({
                 name="options"
                 required
                 minLength={3}
-                className="mt-1 min-h-28 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 min-h-28 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               />
             </label>
             <label className="form-label">
@@ -321,7 +321,7 @@ export function CreateForm({
                 min="1"
                 max="6"
                 defaultValue="1"
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               />
             </label>
           </div>
@@ -332,7 +332,7 @@ export function CreateForm({
               required
               minLength={5}
               maxLength={2000}
-              className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             />
           </label>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -341,7 +341,7 @@ export function CreateForm({
               <select
                 name="eventId"
                 defaultValue=""
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               >
                 <option value="">Unattached draft</option>
                 {events
@@ -358,7 +358,7 @@ export function CreateForm({
               <select
                 name="rewardId"
                 defaultValue=""
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
               >
                 <option value="">No reward set</option>
                 {rewards.map((item) => (
@@ -376,7 +376,7 @@ export function CreateForm({
             <label className="form-label">
               {campaign ? "Campaign name" : "Title"}
               <input
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                 name={campaign ? "name" : "title"}
                 required
                 maxLength={200}
@@ -386,7 +386,7 @@ export function CreateForm({
               <label className="form-label">
                 Campaign type
                 <input
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   name="campaignType"
                   required
                   maxLength={100}
@@ -401,7 +401,7 @@ export function CreateForm({
                   Channel
                   <select
                     name="channel"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   >
                     <option value="in_app">In-app</option>
                     <option value="push">Push</option>
@@ -413,7 +413,7 @@ export function CreateForm({
                   <input
                     name="region"
                     maxLength={100}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -424,7 +424,7 @@ export function CreateForm({
                     min="100"
                     defaultValue="100"
                     required
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -436,7 +436,7 @@ export function CreateForm({
                     max="90"
                     defaultValue="7"
                     required
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -444,7 +444,7 @@ export function CreateForm({
                   <input
                     name="scheduledAt"
                     type="datetime-local"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -452,7 +452,7 @@ export function CreateForm({
                   <input
                     name="partnerName"
                     maxLength={160}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
               </>
@@ -462,7 +462,7 @@ export function CreateForm({
                   Content type
                   <select
                     name="contentType"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   >
                     <option value="article">Article</option>
                     <option value="quick_read">Quick read</option>
@@ -478,7 +478,7 @@ export function CreateForm({
                     defaultValue="en"
                     required
                     maxLength={12}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -486,7 +486,7 @@ export function CreateForm({
                   <input
                     name="tags"
                     maxLength={500}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                     placeholder="cramps, nutrition, luteal"
                   />
                 </label>
@@ -496,7 +496,7 @@ export function CreateForm({
                     name="coverImageUrl"
                     type="url"
                     maxLength={2000}
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   />
                 </label>
                 <label className="form-label">
@@ -506,7 +506,7 @@ export function CreateForm({
                     type="number"
                     min="1"
                     max="180"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                     placeholder="Auto"
                   />
                 </label>
@@ -515,7 +515,7 @@ export function CreateForm({
                   <select
                     name="readingLevel"
                     defaultValue="general"
-                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                   >
                     <option value="simple">Simple</option>
                     <option value="general">General</option>
@@ -535,7 +535,7 @@ export function CreateForm({
                 <textarea
                   name="summary"
                   maxLength={500}
-                  className="mt-1 min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                  className="mt-1 min-h-20 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                 />
               </label>
               <label className="form-label">
@@ -544,14 +544,14 @@ export function CreateForm({
                   name="bodyHtml"
                   required
                   maxLength={50000}
-                  className="mt-1 min-h-32 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+                  className="mt-1 min-h-32 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
                 />
               </label>
             </>
           )}
         </>
       )}
-      <p className="text-[10px] text-slate-500">
+      <p className="text-2xs text-slate-500">
         {campaign
           ? "Campaigns remain drafts until consent, cohort-size, frequency and approval checks pass. Health attributes are not accepted as audience filters."
           : trivia

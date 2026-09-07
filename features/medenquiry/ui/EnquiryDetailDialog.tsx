@@ -74,10 +74,10 @@ export default function EnquiryDetailDialog({
 
             {enquiry.medication_description && (
               <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
-                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                <div className="text-3xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   Description
                 </div>
-                <p className="text-[11px] font-medium text-slate-600">{enquiry.medication_description}</p>
+                <p className="text-xs font-medium text-slate-600">{enquiry.medication_description}</p>
               </div>
             )}
 
@@ -87,26 +87,26 @@ export default function EnquiryDetailDialog({
                 className="w-full flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-left hover:bg-emerald-100 transition-all"
               >
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-0.5">
+                  <div className="text-3xs font-black uppercase tracking-widest text-emerald-500 mb-0.5">
                     🏥 Matched Pharmacy
                   </div>
-                  <div className="text-[11px] font-black text-emerald-800">
+                  <div className="text-xs font-black text-emerald-800">
                     {enquiry.pharmacy.facility_name ?? "Unknown pharmacy"}
                   </div>
                   {(enquiry.pharmacy.area || enquiry.pharmacy.region) && (
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">
+                    <div className="text-3xs font-bold uppercase tracking-widest text-emerald-500">
                       {[enquiry.pharmacy.area, enquiry.pharmacy.region].filter(Boolean).join(" · ")}
                     </div>
                   )}
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">
+                <span className="text-3xs font-black uppercase tracking-widest text-emerald-600">
                   View Profile →
                 </span>
               </button>
             )}
 
             <div>
-              <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+              <div className="text-3xs font-black uppercase tracking-widest text-slate-400 mb-2">
                 Pharmacy Responses ({enquiry.responses?.length ?? enquiry.response_count})
               </div>
               {enquiry.responses && enquiry.responses.length > 0 ? (
@@ -121,22 +121,22 @@ export default function EnquiryDetailDialog({
                       role={r.facility?.id ? "button" : undefined}
                     >
                       <div>
-                        <div className="text-[11px] font-black text-slate-700">
+                        <div className="text-xs font-black text-slate-700">
                           {r.facility?.facility_name ?? (r.responder_kind === "wholesaler" ? "Wholesaler" : "Pharmacy")}
-                          {r.facility?.id && <span className="ml-1 text-[9px] text-emerald-500">🏥</span>}
+                          {r.facility?.id && <span className="ml-1 text-3xs text-emerald-500">🏥</span>}
                         </div>
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        <div className="text-3xs font-bold uppercase tracking-widest text-slate-400">
                           {r.status} · {r.available ? "Available" : "Unavailable"}
                         </div>
                       </div>
-                      <span className="text-[11px] font-black text-emerald-600">
+                      <span className="text-xs font-black text-emerald-600">
                         {r.price !== null ? formatMoney(r.price) : "—"}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <div className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
                   Awaiting pharmacy responses
                 </div>
               )}

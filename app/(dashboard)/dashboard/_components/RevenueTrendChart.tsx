@@ -16,7 +16,7 @@ export default function RevenueTrendChart({
       <div className="card h-full">
         <div className="flex justify-between items-center mb-4">
           <h2 className="card-title">Revenue Trend</h2>
-          <span className="badge badge-amber text-[9px]">Awaiting data</span>
+          <span className="badge badge-amber text-3xs">Awaiting data</span>
         </div>
         <div className="h-64 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center px-6 text-center text-sm text-slate-500">
           {loading

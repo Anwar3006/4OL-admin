@@ -119,7 +119,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
                 </span>
               )}
             </div>
-            <p className="text-[0.55rem] md:text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            <p className="text-3xs md:text-xs font-bold text-muted-foreground uppercase tracking-widest">
               Total {summary.totalReviews} Reviews
             </p>
           </div>
@@ -152,7 +152,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
 
       {/* 2. Admin Interaction Box */}
       <div className="relative group">
-        <div className="absolute -top-3 left-4 px-2 bg-background text-[10px] font-bold text-primary uppercase tracking-widest z-10">
+        <div className="absolute -top-3 left-4 px-2 bg-background text-2xs font-bold text-primary uppercase tracking-widest z-10">
           Admin Audit Note
         </div>
 
@@ -266,13 +266,13 @@ function ReviewBox({ review }: { review: any }) {
               {isInternalNote && (
                 <Badge
                   variant="outline"
-                  className="text-[9px] uppercase tracking-tighter h-4 px-1.5 bg-slate-50 font-bold"
+                  className="text-3xs uppercase tracking-tighter h-4 px-1.5 bg-slate-50 font-bold"
                 >
                   Internal Audit
                 </Badge>
               )}
             </div>
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-2xs text-slate-400 font-medium">
               {formatDistanceToNow(new Date(review.created_at), {
                 addSuffix: true,
               })}

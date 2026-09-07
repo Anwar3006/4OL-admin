@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 const inputCls =
   "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 // fitness_exercises.primary_muscle_group — the 13 values currently in the
 // catalog. Used to narrow the picker when bulk-linking a body part.
@@ -127,7 +127,7 @@ export default function ExercisesLinkedTab() {
       <div className="card p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <h3 className="section-heading">
               💪 Linked Exercises
             </h3>
             <p className="mt-1 max-w-2xl text-xs text-slate-400">
@@ -214,7 +214,7 @@ export default function ExercisesLinkedTab() {
                       <div className="font-bold text-slate-800">
                         {exercise.exercise_name}
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-2xs text-slate-400">
                         <span className="badge badge-blue">
                           {exercise.primary_muscle_group}
                         </span>
@@ -256,14 +256,14 @@ export default function ExercisesLinkedTab() {
 
       <div className="card">
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-5 py-4">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <h3 className="section-heading">
             Published Exercise Links
           </h3>
           <span className="badge badge-green">
             {linksLoading ? "…" : `${total.toLocaleString()} links`}
           </span>
           {linksFetching && !linksLoading && (
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            <span className="text-2xs font-bold uppercase tracking-widest text-slate-400">
               Updating…
             </span>
           )}
@@ -280,7 +280,7 @@ export default function ExercisesLinkedTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
                 <th className="px-5 py-3">Body Part</th>
                 <th className="px-5 py-3">Exercise</th>
                 <th className="px-5 py-3">Muscle Group</th>
@@ -320,7 +320,7 @@ export default function ExercisesLinkedTab() {
                     <td className="px-5 py-3 font-bold text-slate-800">
                       {row.body_part_name}
                       {row.body_system && (
-                        <div className="text-[10px] font-medium text-slate-400">
+                        <div className="text-2xs font-medium text-slate-400">
                           {row.body_system}
                         </div>
                       )}
@@ -329,7 +329,7 @@ export default function ExercisesLinkedTab() {
                       <div className="font-semibold text-slate-800">
                         {row.exercise_name}
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-2xs text-slate-400">
                         {[row.category, row.equipment_required, row.tier]
                           .filter(Boolean)
                           .join(" · ") || "—"}
@@ -340,7 +340,7 @@ export default function ExercisesLinkedTab() {
                         {row.primary_muscle_group || "—"}
                       </span>
                       {row.secondary_muscles && (
-                        <div className="mt-1 text-[10px] text-slate-400">
+                        <div className="mt-1 text-2xs text-slate-400">
                           + {row.secondary_muscles}
                         </div>
                       )}
@@ -416,7 +416,7 @@ export default function ExercisesLinkedTab() {
       <div className="card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <h3 className="section-heading">
               AI Exercise Mapping Review
             </h3>
             <p className="mt-1 text-xs text-slate-400">
@@ -475,7 +475,7 @@ export default function ExercisesLinkedTab() {
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
                   <th className="py-2 pr-3">Exercise</th>
                   <th className="py-2 pr-3">Body Part</th>
                   <th className="py-2 pr-3">Confidence</th>

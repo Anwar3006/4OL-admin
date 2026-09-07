@@ -120,7 +120,7 @@ export function BusinessHoursSection() {
                 }
                 checked={watch(`business_hours.${index}.isClosed`)}
               />
-              <Label className="text-[0.5rem] md:text-xs">Closed</Label>
+              <Label className="text-3xs md:text-xs">Closed</Label>
             </div>
           </div>
         ))}

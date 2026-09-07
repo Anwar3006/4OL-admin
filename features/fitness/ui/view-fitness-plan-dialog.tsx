@@ -149,23 +149,23 @@ function DetailView({
           <div className="space-y-3 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <Badge
-                className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${statusBadgeClass}`}
+                className={`font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${statusBadgeClass}`}
               >
                 {data.status || "Published"}
               </Badge>
               <Badge
                 variant="outline"
-                className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${diffClass}`}
+                className={`font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${diffClass}`}
               >
                 {data.difficulty_level || "General"}
               </Badge>
               {data.is_premium && (
-                <Badge className="bg-amber-500 text-white font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
+                <Badge className="bg-amber-500 text-white font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
                   👑 Premium
                 </Badge>
               )}
               {data.is_featured && (
-                <Badge className="bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
+                <Badge className="bg-indigo-600 text-white font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm border-none">
                   ✨ Featured
                 </Badge>
               )}
@@ -194,7 +194,7 @@ function DetailView({
 
             <Button
               onClick={onEdit}
-              className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"
+              className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"
             >
               <Pencil className="w-4 h-4 mr-2" /> Edit Plan
             </Button>
@@ -227,11 +227,11 @@ function DetailView({
                 <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                   <ClipboardList className="h-5 w-5" />
                 </div>
-                <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                <h3 className="section-heading">
                   Plan Description
                 </h3>
               </div>
-              <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
+              <p className="text-base text-slate-600 leading-relaxed font-medium">
                 {data.description ||
                   "No description provided for this fitness plan."}
               </p>
@@ -245,7 +245,7 @@ function DetailView({
                   <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                     <Target className="h-5 w-5" />
                   </div>
-                  <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                  <h3 className="section-heading">
                     Target Body Parts
                   </h3>
                 </div>
@@ -274,7 +274,7 @@ function DetailView({
                   <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
-                  <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                  <h3 className="section-heading">
                     Plan Goals
                   </h3>
                 </div>
@@ -304,7 +304,7 @@ function DetailView({
                     <div className="p-2.5 rounded-xl bg-slate-50 text-slate-500">
                       <Tag className="h-5 w-5" />
                     </div>
-                    <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                    <h3 className="section-heading">
                       Tags
                     </h3>
                   </div>
@@ -332,7 +332,7 @@ function DetailView({
                   <Calendar className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                  <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                     Plan Duration
                   </span>
                   <p className="text-sm font-black text-black leading-tight">
@@ -347,7 +347,7 @@ function DetailView({
                   <Clock className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                  <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                     Frequency Split
                   </span>
                   <p className="text-sm font-black text-black leading-tight">
@@ -364,7 +364,7 @@ function DetailView({
                     <User className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                    <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                       Author Category
                     </span>
                     <p className="text-sm font-black text-slate-800 leading-tight capitalize">
@@ -390,7 +390,7 @@ function DetailView({
 
               <div className="grid grid-cols-2 gap-4 relative z-10 pt-2">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                  <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block">
                     Total Completions
                   </span>
                   <p className="text-2xl font-black text-white tracking-tight">
@@ -399,7 +399,7 @@ function DetailView({
                 </div>
 
                 <div className="space-y-1 border-l border-white/10 pl-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                  <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block">
                     Average Rating
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -408,7 +408,7 @@ function DetailView({
                     </p>
                     <Star className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
                   </div>
-                  <span className="text-[10px] text-slate-400 block">
+                  <span className="text-2xs text-slate-400 block">
                     from {data.rating_count ?? 0} scores
                   </span>
                 </div>
@@ -418,7 +418,7 @@ function DetailView({
             {/* Timestamps Meta Box */}
             <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
               <div className="text-center sm:text-left space-y-1">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Date Created
                 </span>
                 <span className="text-xs font-bold text-slate-700">
@@ -430,7 +430,7 @@ function DetailView({
                 </span>
               </div>
               <div className="text-center sm:text-left space-y-1 border-l border-slate-100 pl-4">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Last Updated
                 </span>
                 <span className="text-xs font-bold text-slate-700">

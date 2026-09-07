@@ -175,7 +175,7 @@ export default function RecipientsTab() {
 
                 {definitionSections.length ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mr-1">
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mr-1">
                       Hide sections for this recipient:
                     </span>
                     {definitionSections.map((section) => {
@@ -191,7 +191,7 @@ export default function RecipientsTab() {
                                 : [...row.redactedSections, section],
                             })
                           }
-                          className={`px-2.5 py-1 rounded-full border text-[11px] font-bold ${
+                          className={`px-2.5 py-1 rounded-full border text-xs font-bold ${
                             hidden
                               ? "bg-red-50 border-red-200 text-red-600"
                               : "bg-white border-slate-200 text-slate-500 hover:border-red-200"

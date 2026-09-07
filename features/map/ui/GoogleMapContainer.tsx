@@ -402,7 +402,7 @@ const GoogleMapContainer = ({
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
             <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-full shadow-lg border border-emerald-100">
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-              <span className="text-[12px] font-bold text-emerald-800 tracking-tight">
+              <span className="text-sm font-bold text-emerald-800 tracking-tight">
                 SCANNING AREA...
               </span>
             </div>

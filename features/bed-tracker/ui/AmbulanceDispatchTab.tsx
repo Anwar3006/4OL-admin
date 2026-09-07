@@ -62,7 +62,7 @@ export default function AmbulanceDispatchTab({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             Ambulance Fleet ({units.length})
           </CardTitle>
         </CardHeader>
@@ -117,7 +117,7 @@ export default function AmbulanceDispatchTab({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             Recent Dispatches ({dispatches.length})
           </CardTitle>
         </CardHeader>

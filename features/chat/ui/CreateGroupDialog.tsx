@@ -156,7 +156,7 @@ export default function CreateGroupDialog() {
               <span className="block font-black text-base">
                 {isEditMode ? "Edit Group" : "Create New Group"}
               </span>
-              <span className="block text-[11px] font-medium text-emerald-50/90">
+              <span className="block text-xs font-medium text-emerald-50/90">
                 {isEditMode
                   ? "Update this community group chat"
                   : "Start a new community group chat"}
@@ -168,7 +168,7 @@ export default function CreateGroupDialog() {
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {/* Group Name */}
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
               Group Name <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -182,7 +182,7 @@ export default function CreateGroupDialog() {
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
               Description
             </Label>
             <Textarea
@@ -196,7 +196,7 @@ export default function CreateGroupDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
                 Category
               </Label>
               <select
@@ -210,7 +210,7 @@ export default function CreateGroupDialog() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
                 Group Type
               </Label>
               <select
@@ -227,7 +227,7 @@ export default function CreateGroupDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
                 Max Members (0 = unlimited)
               </Label>
               <Input
@@ -239,7 +239,7 @@ export default function CreateGroupDialog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
                 Region Restriction
               </Label>
               <select
@@ -257,7 +257,7 @@ export default function CreateGroupDialog() {
 
           {!isEditMode && (
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
                 Assign Group Admin (optional)
               </Label>
               <select
@@ -277,7 +277,7 @@ export default function CreateGroupDialog() {
 
           {/* Group permissions */}
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
               Group Permissions
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -290,7 +290,7 @@ export default function CreateGroupDialog() {
                     checked={permissions[opt.key]}
                     onCheckedChange={() => togglePermission(opt.key)}
                   />
-                  <span className="text-[11px] font-bold text-slate-600">{opt.label}</span>
+                  <span className="text-xs font-bold text-slate-600">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -298,7 +298,7 @@ export default function CreateGroupDialog() {
 
           {/* Group rules */}
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+            <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
               Group Rules
             </Label>
             <Textarea
@@ -323,14 +323,14 @@ export default function CreateGroupDialog() {
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="text-[11px] font-black uppercase tracking-widest h-11"
+              className="text-xs font-black uppercase tracking-widest h-11"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest h-11 transition-all"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-widest h-11 transition-all"
             >
               {isSubmitting ? (
                 <>

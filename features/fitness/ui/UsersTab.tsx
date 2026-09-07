@@ -115,7 +115,7 @@ const UsersTab = () => {
         header: "User",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden shrink-0">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden shrink-0">
               {row.original.avatar_url ? (
                 <Image
                   src={row.original.avatar_url}
@@ -130,10 +130,10 @@ const UsersTab = () => {
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-slate-800 text-[11px] truncate">
+              <span className="font-bold text-slate-800 text-xs truncate">
                 {row.original.name || "Unnamed user"}
               </span>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-2xs text-slate-400">
                 Joined {formatDate(row.original.joined_at)}
               </span>
             </div>
@@ -146,14 +146,14 @@ const UsersTab = () => {
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex flex-col gap-0.5">
             <span
-              className={`badge h-5 text-[9px] uppercase font-black w-fit ${
+              className={`badge h-5 text-3xs uppercase font-black w-fit ${
                 row.original.is_premium ? "badge-green" : "badge-slate"
               }`}
             >
               {row.original.tier_name || "Free"}
             </span>
             {row.original.is_premium && (
-              <span className="text-[9px] text-slate-400 font-bold">
+              <span className="text-3xs text-slate-400 font-bold">
                 {row.original.subscription_expires_at
                   ? `Until ${formatDate(row.original.subscription_expires_at)}`
                   : "Lifetime"}
@@ -166,7 +166,7 @@ const UsersTab = () => {
         accessorKey: "level",
         header: "Training Level",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="badge badge-blue h-5 text-[9px] uppercase font-black">
+          <span className="badge badge-blue h-5 text-3xs uppercase font-black">
             {row.original.level || "—"}
           </span>
         ),
@@ -175,7 +175,7 @@ const UsersTab = () => {
         accessorKey: "plan",
         header: "Current Plan",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-[11px] font-semibold text-slate-700">
+          <span className="text-xs font-semibold text-slate-700">
             {row.original.plan}
           </span>
         ),
@@ -184,7 +184,7 @@ const UsersTab = () => {
         accessorKey: "plan_completions",
         header: "Plan Compl.",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-[11px] font-bold text-slate-700">
+          <span className="text-xs font-bold text-slate-700">
             {row.original.plan_completions.toLocaleString()}
           </span>
         ),
@@ -194,10 +194,10 @@ const UsersTab = () => {
         header: "Workouts",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-[11px] font-black text-slate-800">
+            <span className="text-xs font-black text-slate-800">
               {row.original.workouts.toLocaleString()}
             </span>
-            <span className="text-[9px] text-slate-400 font-bold uppercase">
+            <span className="text-3xs text-slate-400 font-bold uppercase">
               {Number(row.original.kcal || 0).toLocaleString()} kcal
             </span>
           </div>
@@ -207,7 +207,7 @@ const UsersTab = () => {
         accessorKey: "fitcoins",
         header: "FitCoins",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-[11px] font-black text-yellow-600">
+          <span className="text-xs font-black text-yellow-600">
             🪙 {row.original.fitcoins.toLocaleString()}
           </span>
         ),
@@ -216,7 +216,7 @@ const UsersTab = () => {
         accessorKey: "ai_calls",
         header: "AI Calls",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-[11px] font-bold text-purple-600">
+          <span className="text-xs font-bold text-purple-600">
             {row.original.ai_calls.toLocaleString()}
           </span>
         ),
@@ -225,7 +225,7 @@ const UsersTab = () => {
         accessorKey: "last_active",
         header: "Last Active",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-[11px] font-medium text-slate-600">
+          <span className="text-xs font-medium text-slate-600">
             {formatDate(row.original.last_active)}
           </span>
         ),
@@ -235,7 +235,7 @@ const UsersTab = () => {
         header: "Status",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <span
-            className={`badge h-5 text-[9px] uppercase font-black ${
+            className={`badge h-5 text-3xs uppercase font-black ${
               row.original.status === "banned"
                 ? "badge-red"
                 : "badge-green"
@@ -259,7 +259,7 @@ const UsersTab = () => {
                   if (row.original.is_premium) handleRevoke(row.original);
                   else handleGrant(row.original);
                 }}
-                className={`h-8 px-2.5 rounded-lg text-[10px] font-black uppercase transition-colors disabled:opacity-50 ${
+                className={`h-8 px-2.5 rounded-lg text-2xs font-black uppercase transition-colors disabled:opacity-50 ${
                   row.original.is_premium
                     ? "text-slate-500 hover:text-red-600 hover:bg-red-50"
                     : "text-emerald-600 hover:bg-emerald-50"
@@ -300,7 +300,7 @@ const UsersTab = () => {
                 Plans, workout volume, FitCoins and AI usage per member
               </p>
             </div>
-            <span className="badge badge-green h-6 text-[10px] uppercase font-black">
+            <span className="badge badge-green h-6 text-2xs uppercase font-black">
               {data ? `${data.meta.total.toLocaleString()} members` : "…"}
             </span>
           </div>

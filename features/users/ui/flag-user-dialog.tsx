@@ -100,7 +100,7 @@ export default function FlagUserDialog() {
               className="min-h-[120px] resize-none text-sm"
               disabled={isSubmitting}
             />
-            <p className="text-[10px] text-slate-400">
+            <p className="text-2xs text-slate-400">
               Be specific and provide details about the violation or concern.
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function FlagUserDialog() {
           <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
-              className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+              className="flex-1 h-11 font-black uppercase tracking-widest text-2xs"
               onClick={handleClose}
               disabled={isSubmitting}
             >
@@ -117,7 +117,7 @@ export default function FlagUserDialog() {
             </Button>
             <Button
               variant="destructive"
-              className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+              className="flex-1 h-11 font-black uppercase tracking-widest text-2xs"
               onClick={handleSubmit}
               disabled={isSubmitting || !reason.trim()}
             >

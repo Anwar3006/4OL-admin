@@ -152,7 +152,7 @@ const CustomDatePicker = <T extends FieldValues>({
                       <div className="border-t md:border-t-0 md:border-l border-slate-100 p-4 bg-slate-50/50 w-full md:w-[180px] flex flex-col justify-center">
                         <div className="flex items-center gap-2 mb-3 px-1">
                           <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
                             Time
                           </span>
                         </div>
@@ -178,7 +178,7 @@ const CustomDatePicker = <T extends FieldValues>({
                         />
                         <Button
                           onClick={() => setIsOpen(false)}
-                          className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg h-8 text-[11px] uppercase tracking-wider"
+                          className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg h-8 text-xs uppercase tracking-wider"
                         >
                           Done
                         </Button>
@@ -190,7 +190,7 @@ const CustomDatePicker = <T extends FieldValues>({
             </div>
 
             {description && (
-              <FormDescription className="text-[11px] text-slate-400 italic px-1">
+              <FormDescription className="text-xs text-slate-400 italic px-1">
                 {description}
               </FormDescription>
             )}

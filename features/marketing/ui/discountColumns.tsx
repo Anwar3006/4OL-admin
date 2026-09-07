@@ -193,10 +193,10 @@ export const createDiscountColumns = (options: {
     header: "Code",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-[11px] tracking-tight font-mono">
+        <div className="font-black text-slate-800 text-xs tracking-tight font-mono">
           {row.original.code}
         </div>
-        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+        <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
           {row.original.description || row.original.name}
         </div>
       </div>
@@ -206,7 +206,7 @@ export const createDiscountColumns = (options: {
     id: "type",
     header: "Type",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
         {TYPE_LABELS[row.original.discount_type] ?? row.original.discount_type}
       </span>
     ),
@@ -215,7 +215,7 @@ export const createDiscountColumns = (options: {
     id: "discount",
     header: "Discount",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-emerald-700">
+      <span className="text-xs font-black text-emerald-700">
         {discountLabel(row.original)}
       </span>
     ),
@@ -224,7 +224,7 @@ export const createDiscountColumns = (options: {
     id: "eligible_users",
     header: "Eligible Users",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-slate-600">
+      <span className="text-xs font-bold text-slate-600">
         {ELIGIBLE_USER_LABELS[row.original.eligible_users ?? "all"] ?? "All users"}
       </span>
     ),
@@ -233,7 +233,7 @@ export const createDiscountColumns = (options: {
     id: "uses",
     header: "Uses",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 tabular-nums">
         {row.original.current_uses ?? 0}
         <span className="text-slate-400 font-bold">
           {" / "}
@@ -246,7 +246,7 @@ export const createDiscountColumns = (options: {
     id: "expiry",
     header: "Expiry",
     cell: ({ row }) => (
-      <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
         {fmtDate(row.original.valid_until)}
       </span>
     ),
@@ -255,7 +255,7 @@ export const createDiscountColumns = (options: {
     id: "campaign",
     header: "Campaign",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-slate-500">
+      <span className="text-xs font-bold text-slate-500">
         {row.original.campaign_name ?? "—"}
       </span>
     ),
@@ -268,7 +268,7 @@ export const createDiscountColumns = (options: {
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             STATUS_STYLES[status] ?? STATUS_STYLES.expired,
           )}
         >

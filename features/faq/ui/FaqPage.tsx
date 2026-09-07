@@ -116,7 +116,7 @@ const FAQPage = () => {
         subtitle="Platform FAQ knowledge base — published articles power the mobile Help Center"
       >
         <button className="btn btn-secondary btn-sm" onClick={handleExport}>📥 Export</button>
-        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]" onClick={() => addFAQ.open()}>+ Add Article</button>
+        <button className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs" onClick={() => addFAQ.open()}>+ Add Article</button>
       </PageHeader>
 
       <FAQStats />
@@ -129,7 +129,7 @@ const FAQPage = () => {
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white outline-none"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white outline-none"
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
         >

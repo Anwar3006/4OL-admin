@@ -54,13 +54,13 @@ export function DeleteConfirmationModal({
         <AlertDialogFooter className="w-full flex justify-end gap-3! sm:gap-0">
           <AlertDialogCancel
             onClick={onClose}
-            className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-bold uppercase tracking-widest text-[10px] h-10 px-6"
+            className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-bold uppercase tracking-widest text-2xs h-10 px-6"
           >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-widest text-[10px] h-10 px-6 shadow-lg shadow-red-100"
+            className="rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-widest text-2xs h-10 px-6 shadow-lg shadow-red-100"
           >
             Delete
           </AlertDialogAction>

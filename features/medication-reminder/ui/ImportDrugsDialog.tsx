@@ -105,7 +105,7 @@ export default function ImportDrugsDialog({
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
-          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
             Upload the classified medication list (CSV, UTF-8). Rows are
             filtered by <code>is_medication = True</code>, non-medication
             indicators are excluded (D2), categories are collapsed to the 9
@@ -134,7 +134,7 @@ export default function ImportDrugsDialog({
               <div className="text-xs font-black text-slate-600 uppercase tracking-widest">
                 Click to select a CSV file
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">
+              <div className="text-2xs text-slate-400 mt-1">
                 Expected columns: original_name, is_medication, generic_name,
                 category, availability, reason
               </div>
@@ -153,25 +153,25 @@ export default function ImportDrugsDialog({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                 <div className="bg-slate-50 rounded-lg p-3">
                   <div className="text-lg font-black text-slate-800">{preview.totalInFile.toLocaleString()}</div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">File Rows</div>
+                  <div className="text-3xs font-bold uppercase tracking-widest text-slate-400">File Rows</div>
                 </div>
                 <div className="bg-emerald-50 rounded-lg p-3">
                   <div className="text-lg font-black text-emerald-700">{preview.rows.length.toLocaleString()}</div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Importable</div>
+                  <div className="text-3xs font-bold uppercase tracking-widest text-emerald-500">Importable</div>
                 </div>
                 <div className="bg-amber-50 rounded-lg p-3">
                   <div className="text-lg font-black text-amber-700">{reviewCount.toLocaleString()}</div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-amber-500">Under Review</div>
+                  <div className="text-3xs font-bold uppercase tracking-widest text-amber-500">Under Review</div>
                 </div>
                 <div className="bg-red-50 rounded-lg p-3">
                   <div className="text-lg font-black text-red-600">
                     {(preview.skippedNotMedication + preview.skippedNonMed).toLocaleString()}
                   </div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-red-400">Skipped</div>
+                  <div className="text-3xs font-bold uppercase tracking-widest text-red-400">Skipped</div>
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-500 font-medium">
+              <div className="text-xs text-slate-500 font-medium">
                 📦 <strong>{fileName}</strong> · {preview.rows.length.toLocaleString()} rows
                 will be upserted in {chunkCount} chunk{chunkCount === 1 ? "" : "s"} of ≤ 500
                 (deduped by slug). Brand aliases seed the autocomplete table.

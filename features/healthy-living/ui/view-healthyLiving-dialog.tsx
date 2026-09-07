@@ -161,7 +161,7 @@ function NotFoundState({ onClose }: { onClose: () => void }) {
       </div>
       <Button
         onClick={onClose}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-[11px] mt-2"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-xs mt-2"
       >
         Close Panel
       </Button>
@@ -227,7 +227,7 @@ function DetailView({
             <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
               {data.name}
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
               Healthy Living Article
             </p>
           </div>
@@ -236,7 +236,7 @@ function DetailView({
         <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={onEdit}
-            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
+            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-2xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
           >
             <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
           </Button>
@@ -269,7 +269,7 @@ function DetailView({
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
-                    className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none border ${
+                    className={`font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-none border ${
                       data.status === "published"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : data.status === "archived"
@@ -281,7 +281,7 @@ function DetailView({
                   </Badge>
                   <Badge
                     variant="outline"
-                    className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                    className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
                   >
                     <Eye className="h-3 w-3 mr-1.5" />
                     {data.view_count ?? 0} views
@@ -293,7 +293,7 @@ function DetailView({
                 </DialogTitle>
 
                 {data.description && (
-                  <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
+                  <p className="text-base text-slate-600 leading-relaxed font-medium">
                     {data.description}
                   </p>
                 )}
@@ -379,11 +379,11 @@ function DetailView({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <Leaf className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+              <span className="text-2xs font-bold uppercase tracking-[0.2em]">
                 Ghana Health Tech Wellness Library
               </span>
             </div>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest">
               ID: {data.id.slice(0, 8)}…
             </p>
           </div>
@@ -409,7 +409,7 @@ function SectionHeader({
       <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">
+      <h3 className="section-heading">
         {title}
       </h3>
     </div>
@@ -459,7 +459,7 @@ function ContentBlock({
         </div>
 
         <div
-          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-[15px] leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
+          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-base leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
         >
           {!isEmpty ? (
             <LexicalRenderer initialState={parseMaybeString(content)} />
@@ -490,7 +490,7 @@ function MetaPill({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
         <Icon className="h-3.5 w-3.5 text-emerald-600" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
@@ -514,7 +514,7 @@ function ImageGallery({
     return (
       <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
         <FolderOpen className="h-10 w-10 text-slate-300 mb-3" />
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           No Visual Reference
         </span>
       </div>
@@ -554,7 +554,7 @@ function ImageGallery({
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
         {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] font-black text-white tracking-widest rounded-none">
+          <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-2xs font-black text-white tracking-widest rounded-none">
             {activeIndex + 1} / {images.length}
           </div>
         )}

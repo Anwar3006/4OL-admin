@@ -58,7 +58,7 @@ const ViewTrainerDialog = () => {
                   <Phone className='h-5 w-5 text-primary' />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phone</span>
+                  <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Phone</span>
                   <span className="text-sm font-semibold text-slate-700">{(data as any).phone}</span>
                 </div>
               </div>
@@ -68,7 +68,7 @@ const ViewTrainerDialog = () => {
                   <Mail className='h-5 w-5 text-primary' />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email</span>
+                  <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Email</span>
                   <span className="text-sm font-semibold text-slate-700 truncate max-w-[150px]">{(data as any).email}</span>
                 </div>
               </div>
@@ -79,7 +79,7 @@ const ViewTrainerDialog = () => {
                     <MessageSquare className='h-5 w-5 text-emerald-500' />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WhatsApp</span>
+                    <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">WhatsApp</span>
                     <span className="text-sm font-semibold text-slate-700">{(data as any).whatsapp}</span>
                   </div>
                 </div>
@@ -90,7 +90,7 @@ const ViewTrainerDialog = () => {
                   <Activity className='h-5 w-5 text-amber-500' />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Specialization</span>
+                  <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Specialization</span>
                   <span className="text-sm font-semibold text-slate-700">{(data as any).specialization}</span>
                 </div>
               </div>

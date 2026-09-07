@@ -125,7 +125,7 @@ export default function BulkUserActionsDialog({
 
           <div className="flex items-center gap-2">
             <select
-              className="h-9 flex-1 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+              className="h-9 flex-1 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
               value={plan}
               onChange={(event) => setPlan(event.target.value)}
             >

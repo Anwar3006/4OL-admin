@@ -582,7 +582,7 @@ const ImageDropZone = ({
                 {file.progress === 0 ? (
                   <>
                     <Loader2 className="w-8 h-8 animate-spin text-white mb-2" />
-                    <span className="text-white text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-white text-2xs font-bold uppercase tracking-wider">
                       Optimizing...
                     </span>
                   </>

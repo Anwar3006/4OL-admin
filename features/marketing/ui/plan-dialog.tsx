@@ -132,7 +132,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
                 control={form.control}
               />
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                   Visibility
                 </Label>
                 <select
@@ -160,7 +160,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                 Features (one per line)
               </Label>
               <Textarea

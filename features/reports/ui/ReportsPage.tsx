@@ -73,7 +73,7 @@ const ReportsPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",

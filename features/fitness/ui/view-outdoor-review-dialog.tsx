@@ -137,7 +137,7 @@ function NotFoundState({ onClose }: { onClose: () => void }) {
       </div>
       <Button
         onClick={onClose}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-[11px] mt-2"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-xs mt-2"
       >
         Close Panel
       </Button>
@@ -179,7 +179,7 @@ function DetailView({
             <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
               Route Review
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
               Moderation Panel
             </p>
           </div>
@@ -188,14 +188,14 @@ function DetailView({
         <div className="flex items-center gap-2 shrink-0">
           {data.moderation_status && (
             <Badge
-              className={`hidden sm:inline-flex rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border ${moderationColor}`}
+              className={`hidden sm:inline-flex rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border ${moderationColor}`}
             >
               {data.moderation_status.replace("_", " ")}
             </Badge>
           )}
 
           {data.is_flagged && (
-            <Badge className="hidden sm:inline-flex rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
+            <Badge className="hidden sm:inline-flex rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
               <Flag className="h-3 w-3 mr-1" />
               Flagged
             </Badge>
@@ -203,7 +203,7 @@ function DetailView({
 
           <Button
             onClick={onEdit}
-            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
+            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-2xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
           >
             <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
           </Button>
@@ -236,13 +236,13 @@ function DetailView({
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
-                    className={`rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border ${moderationColor}`}
+                    className={`rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border ${moderationColor}`}
                   >
                     <CheckCircle2 className="h-3 w-3 mr-1.5" />
                     {data.moderation_status?.replace("_", " ") || "Pending"}
                   </Badge>
                   {data.is_flagged && (
-                    <Badge className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
+                    <Badge className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
                       <Flag className="h-3 w-3 mr-1" />
                       Flagged
                     </Badge>
@@ -270,7 +270,7 @@ function DetailView({
                       / 5
                     </span>
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  <p className="text-2xs font-bold uppercase tracking-widest text-slate-400">
                     Submitted on {formatReviewDate(data.created_at)}
                   </p>
                 </div>
@@ -306,7 +306,7 @@ function DetailView({
                       <p className="text-sm font-black text-slate-900">
                         {data.route.name}
                       </p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      <p className="text-2xs font-bold uppercase tracking-widest text-slate-400">
                         Reviewed Route
                       </p>
                     </div>
@@ -314,7 +314,7 @@ function DetailView({
                   {data.route.category && (
                     <Badge
                       variant="outline"
-                      className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
                     >
                       {data.route.category}
                     </Badge>
@@ -323,7 +323,7 @@ function DetailView({
               ) : (
                 <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
                   <Compass className="h-10 w-10 text-slate-300 mb-3" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
                     No Route Linked
                   </span>
                 </div>
@@ -343,7 +343,7 @@ function DetailView({
                   <h4 className="text-sm font-black uppercase tracking-widest text-red-800 mb-1">
                     Moderation Warning
                   </h4>
-                  <p className="text-[14px] text-red-600 leading-relaxed font-medium">
+                  <p className="text-base text-red-600 leading-relaxed font-medium">
                     This review has been flagged by users or system filters.
                     Review the comment content for violations.
                   </p>
@@ -357,7 +357,7 @@ function DetailView({
             <SectionHeader icon={MessageSquare} title="Comment" />
             <div className="bg-white p-6 md:p-8 border border-slate-200 rounded-none shadow-sm">
               {data.comment ? (
-                <p className="text-[15px] text-slate-600 leading-[1.7] whitespace-pre-wrap">
+                <p className="text-base text-slate-600 leading-[1.7] whitespace-pre-wrap">
                   {data.comment}
                 </p>
               ) : (
@@ -375,11 +375,11 @@ function DetailView({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <HeartPulse className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+              <span className="text-2xs font-bold uppercase tracking-[0.2em]">
                 Ghana Health Tech Outdoor Reviews
               </span>
             </div>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest">
               ID: {data.id.slice(0, 8)}…
             </p>
           </div>
@@ -405,7 +405,7 @@ function SectionHeader({
       <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">
+      <h3 className="section-heading">
         {title}
       </h3>
     </div>
@@ -425,7 +425,7 @@ function MetaPill({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
         <Icon className="h-3.5 w-3.5 text-emerald-600" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>

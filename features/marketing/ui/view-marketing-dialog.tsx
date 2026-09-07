@@ -138,7 +138,7 @@ export function ViewMarketingDialog() {
                 <div className="flex items-center gap-3">
                   <Badge
                     variant="outline"
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${
+                    className={`px-3 py-1 text-2xs font-black uppercase tracking-[0.2em] shadow-sm ${
                       campaign.status === "live"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                         : "bg-amber-50 text-amber-700 border-amber-100"
@@ -147,7 +147,7 @@ export function ViewMarketingDialog() {
                     {MarketingStatusMap[campaign.status]}
                   </Badge>
                   <Separator orientation="vertical" className="h-4" />
-                  <div className="text-[11px] font-bold text-muted-foreground flex items-center gap-2">
+                  <div className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                     <Calendar className="h-3.5 w-3.5" />
                     {formatDate(campaign.startDate)} — {formatDate(campaign.endDate)}
                   </div>
@@ -156,7 +156,7 @@ export function ViewMarketingDialog() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[10px]"
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-2xs"
                     onClick={handleEdit}
                   >
                     <Edit className="h-4 w-4 mr-2" />
@@ -164,7 +164,7 @@ export function ViewMarketingDialog() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[10px]"
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-2xs"
                     onClick={toggleCampaignStatus}
                   >
                     {campaign.status === "live" ? (

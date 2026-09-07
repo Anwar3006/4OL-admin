@@ -67,12 +67,12 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ward type:</span>
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-400">Ward type:</span>
         {["all", ...Object.keys(WARD_LABELS)].map((type) => (
           <button
             key={type}
             onClick={() => setWardFilter(type)}
-            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+            className={`px-3 py-1 rounded-full text-2xs font-black uppercase tracking-widest border transition-all ${
               wardFilter === type
                 ? "bg-emerald-700 text-white border-emerald-700"
                 : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
@@ -93,7 +93,7 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
             return (
               <Card key={type} className={critical ? "border-red-300" : undefined}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-700 flex items-center justify-between">
+                  <CardTitle className="section-heading flex items-center justify-between">
                     {WARD_LABELS[type] ?? type}
                     <Badge variant={critical ? "destructive" : summary.available < 10 ? "amber" : "emerald"}>
                       {critical ? "Full" : summary.available < 10 ? "Low" : "Available"}
@@ -127,7 +127,7 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="section-heading">
               🚨 Active Alerts ({alerts.length})
             </CardTitle>
           </CardHeader>
@@ -162,7 +162,7 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="section-heading">
               ✅ Available Now
             </CardTitle>
           </CardHeader>

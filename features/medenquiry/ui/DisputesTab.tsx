@@ -43,7 +43,7 @@ export default function DisputesTab() {
         id: "reference",
         header: "Escrow Ref",
         cell: ({ row }) => (
-          <span className="font-mono text-[10px] font-black text-slate-500 tracking-tighter">
+          <span className="font-mono text-2xs font-black text-slate-500 tracking-tighter">
             {row.original.transaction_reference ?? row.original.id.slice(0, 8)}
           </span>
         ),
@@ -52,7 +52,7 @@ export default function DisputesTab() {
         id: "medication",
         header: "Medication",
         cell: ({ row }) => (
-          <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+          <span className="font-black text-slate-800 text-xs uppercase tracking-tight">
             {row.original.enquiry?.medication_name ?? "—"}
           </span>
         ),
@@ -61,7 +61,7 @@ export default function DisputesTab() {
         id: "claim",
         header: "Dispute Claim",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-red-600">{row.original.dispute_reason ?? "—"}</span>
+          <span className="text-2xs font-bold text-red-600">{row.original.dispute_reason ?? "—"}</span>
         ),
       },
       {
@@ -70,7 +70,7 @@ export default function DisputesTab() {
         cell: ({ row }) => {
           const user = row.original.enquiry?.user;
           return (
-            <div className="text-[10px] font-bold text-slate-500">
+            <div className="text-2xs font-bold text-slate-500">
               {user ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || "User" : "User"}
               <span className="block text-slate-400">{row.original.enquiry?.pharmacy?.facility_name ?? "—"}</span>
             </div>
@@ -81,14 +81,14 @@ export default function DisputesTab() {
         id: "amount",
         header: "Amount",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-indigo-600">{formatMoney(row.original.amount)}</span>
+          <span className="text-xs font-black text-indigo-600">{formatMoney(row.original.amount)}</span>
         ),
       },
       {
         id: "opened",
         header: "Opened",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+          <span className="text-2xs font-bold text-slate-400 uppercase tracking-tight">
             {formatDate(row.original.dispute_raised_at)}
           </span>
         ),
@@ -101,7 +101,7 @@ export default function DisputesTab() {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(dispute);
@@ -110,7 +110,7 @@ export default function DisputesTab() {
                 👀 Review
               </button>
               <button
-                className="h-7 px-2 rounded-lg border border-emerald-200 text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
+                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDecision({ dispute, verdict: "release_to_pharmacy" });
@@ -119,7 +119,7 @@ export default function DisputesTab() {
                 Release to Pharmacy
               </button>
               <button
-                className="h-7 px-2 rounded-lg border border-red-200 text-[9px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
+                className="h-7 px-2 rounded-lg border border-red-200 text-3xs font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDecision({ dispute, verdict: "refund_user" });
@@ -140,7 +140,7 @@ export default function DisputesTab() {
       title: (row) => row.enquiry?.medication_name ?? "Escrow Dispute",
       subtitle: (row) => row.transaction_reference ?? row.id.slice(0, 8),
       badge: (row) => (
-        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-100">
           {formatMoney(row.amount)}
         </span>
       ),
@@ -156,7 +156,7 @@ export default function DisputesTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
         <span className="text-base leading-none mt-0.5">⚠️</span>
-        <p className="text-[11px] font-bold text-red-700">
+        <p className="text-xs font-bold text-red-700">
           {rows.length > 0 ? (
             <>
               <b>{rows.length} escrow dispute{rows.length === 1 ? "" : "s"}</b> require{rows.length === 1 ? "s" : ""} admin
@@ -209,7 +209,7 @@ export default function DisputesTab() {
                   href={detail.enquiry.delivery_proof_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:underline"
+                  className="inline-flex items-center gap-1 text-2xs font-black uppercase tracking-widest text-blue-600 hover:underline"
                 >
                   📷 Delivery Proof
                 </a>
@@ -229,7 +229,7 @@ export default function DisputesTab() {
           </DialogHeader>
           {decision && (
             <div className="space-y-3">
-              <p className="text-[11px] font-bold text-slate-600">
+              <p className="text-xs font-bold text-slate-600">
                 {decision.verdict === "release_to_pharmacy"
                   ? `Release ${formatMoney(decision.dispute.amount)} to the pharmacy and close enquiry ${decision.dispute.enquiry?.medication_name ?? ""}? This is final and writes a ledger entry.`
                   : `Refund ${formatMoney(decision.dispute.amount)} to the user and cancel the enquiry? This is final and writes a refund ledger entry.`}
@@ -239,19 +239,19 @@ export default function DisputesTab() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
                 placeholder="Resolution notes (logged with the verdict)"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none"
               />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => { setDecision(null); setNotes(""); }}
-                  className="h-9 px-4 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                  className="h-9 px-4 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmVerdict}
                   disabled={resolve.isPending}
-                  className={`h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white disabled:opacity-50 ${
+                  className={`h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest text-white disabled:opacity-50 ${
                     decision.verdict === "release_to_pharmacy"
                       ? "bg-emerald-600 hover:bg-emerald-700"
                       : "bg-red-600 hover:bg-red-700"

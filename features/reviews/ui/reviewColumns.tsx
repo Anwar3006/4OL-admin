@@ -7,7 +7,7 @@ import { format } from "date-fns";
 const RatingStars = ({ rating }: { rating: number | null | undefined }) => {
   if (!rating)
     return (
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+      <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
         No rating
       </span>
     );
@@ -31,10 +31,10 @@ export const reviewColumns: ColumnDef<any>[] = [
     header: "Reviewer",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+        <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
           {row.original.user_profiles?.name || "Anonymous"}
         </div>
-        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+        <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
           {row.original.user_profiles?.email}
         </div>
       </div>
@@ -45,7 +45,7 @@ export const reviewColumns: ColumnDef<any>[] = [
     header: "Facility",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-600 text-[11px] uppercase tracking-tight leading-none mb-1">
+        <div className="font-black text-slate-600 text-xs uppercase tracking-tight leading-none mb-1">
           {row.original.facility_profile?.facility_name || "N/A"}
         </div>
         <RatingStars rating={row.original.rating} />
@@ -57,7 +57,7 @@ export const reviewColumns: ColumnDef<any>[] = [
     header: "Feedback",
     cell: ({ row }) => (
       <div className="max-w-[200px]">
-        <p className="text-[11px] font-medium text-slate-500 line-clamp-2 leading-tight italic">
+        <p className="text-xs font-medium text-slate-500 line-clamp-2 leading-tight italic">
           "{row.original.comment_text}"
         </p>
       </div>
@@ -69,13 +69,13 @@ export const reviewColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <div className="flex flex-col gap-1">
         {row.original.is_verified_visit && (
-          <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600">
+          <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest text-emerald-600">
             <ShieldCheck className="h-3 w-3" /> Verified
           </span>
         )}
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border w-fit",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border w-fit",
             row.original.is_published
               ? "bg-blue-50 text-blue-700 border-blue-100"
               : "bg-slate-50 text-slate-500 border-slate-100",
@@ -90,7 +90,7 @@ export const reviewColumns: ColumnDef<any>[] = [
     accessorKey: "created_at",
     header: "Date",
     cell: ({ row }) => (
-      <div className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+      <div className="text-xs font-black text-slate-600 uppercase tracking-tight">
         {format(new Date(row.original.created_at), "MMM dd, yyyy")}
       </div>
     ),

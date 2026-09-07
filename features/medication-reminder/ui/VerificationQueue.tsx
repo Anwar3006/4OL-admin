@@ -58,7 +58,7 @@ export default function VerificationQueue() {
       {isLoading ? (
         <div className="h-20 animate-pulse bg-slate-100 rounded-xl" />
       ) : requests.length === 0 ? (
-        <div className="text-center py-8 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+        <div className="text-center py-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
           No verification requests in this queue
         </div>
       ) : (
@@ -72,7 +72,7 @@ export default function VerificationQueue() {
                 <div className="text-xs font-bold text-slate-800 truncate">
                   “{req.entered_name}”
                 </div>
-                <div className="text-[10px] text-slate-400">
+                <div className="text-2xs text-slate-400">
                   {new Date(req.created_at).toLocaleString()}
                   {req.matched_drug && (
                     <> → matched: <span className="font-bold text-slate-600">{req.matched_drug.name}</span></>
@@ -160,13 +160,13 @@ function MapToExistingDialog({
               }
             >
               <div className="text-xs font-bold text-slate-800">{drug.name}</div>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-2xs text-slate-400">
                 {drug.generic_name || "—"} · {drug.category || "Uncategorised"}
               </div>
             </button>
           ))}
           {(data?.drugs || []).length === 0 && debounced && (
-            <div className="px-3 py-4 text-[11px] text-slate-400 text-center">
+            <div className="px-3 py-4 text-xs text-slate-400 text-center">
               No catalog matches — try another spelling.
             </div>
           )}

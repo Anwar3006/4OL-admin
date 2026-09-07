@@ -35,8 +35,8 @@ export const formatDate = (value: string | null | undefined) =>
     ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
     : "—";
 
-const labelClass = "text-[10px] font-black uppercase tracking-widest text-slate-400";
-const valueClass = "text-[12px] font-semibold text-slate-700";
+const labelClass = "text-2xs font-black uppercase tracking-widest text-slate-400";
+const valueClass = "text-sm font-semibold text-slate-700";
 
 // ── Activity log dialog ─────────────────────────────────────────────────────
 
@@ -65,9 +65,9 @@ export function IbpActivityDialog({ ibpId, businessName, onClose }: IbpActivityD
             <div key={entry.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
               <div className="flex items-center justify-between">
                 <span className="badge badge-blue">{entry.action}</span>
-                <span className="text-[10px] text-slate-400">{formatDate(entry.created_at)}</span>
+                <span className="text-2xs text-slate-400">{formatDate(entry.created_at)}</span>
               </div>
-              <div className="mt-1 text-[11px] text-slate-500">
+              <div className="mt-1 text-xs text-slate-500">
                 by {entry.admin_name ?? "System"}
                 {Object.keys(entry.details ?? {}).length > 0 && (
                   <span className="ml-2 text-slate-400">
@@ -195,19 +195,19 @@ export function IbpViewDialog({ ibp, onClose }: IbpViewDialogProps) {
             {ibp.rejection_reason && (
               <div className="col-span-2">
                 <div className={labelClass}>Rejection Reason</div>
-                <div className="text-[12px] font-semibold text-red-600">{ibp.rejection_reason}</div>
+                <div className="text-sm font-semibold text-red-600">{ibp.rejection_reason}</div>
               </div>
             )}
             {ibp.suspended_reason && (
               <div className="col-span-2">
                 <div className={labelClass}>Suspension Reason</div>
-                <div className="text-[12px] font-semibold text-amber-600">{ibp.suspended_reason}</div>
+                <div className="text-sm font-semibold text-amber-600">{ibp.suspended_reason}</div>
               </div>
             )}
             {ibp.admin_notes && (
               <div className="col-span-2">
                 <div className={labelClass}>Admin Notes</div>
-                <div className="text-[12px] text-slate-600">{ibp.admin_notes}</div>
+                <div className="text-sm text-slate-600">{ibp.admin_notes}</div>
               </div>
             )}
           </div>
@@ -215,7 +215,7 @@ export function IbpViewDialog({ ibp, onClose }: IbpViewDialogProps) {
           {reasonMode && (
             <div className="flex items-center gap-2 pt-2">
               <input
-                className="flex-1 h-9 px-3 rounded-xl border border-slate-200 text-[12px] outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="flex-1 h-9 px-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20"
                 placeholder={reasonMode === "reject" ? "Reason for rejection…" : "Reason for suspension…"}
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}

@@ -281,7 +281,7 @@ const AddTopRatedItemDialog = () => {
                           name={field.name}
                         />
                       </FormControl>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-2xs text-slate-400">
                         Leave empty to publish immediately
                       </p>
                       <FormMessage />
@@ -305,7 +305,7 @@ const AddTopRatedItemDialog = () => {
                           name={field.name}
                         />
                       </FormControl>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-2xs text-slate-400">
                         Leave empty for no expiry
                       </p>
                       <FormMessage />

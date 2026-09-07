@@ -29,7 +29,7 @@ export default function TtcOperations({
   const totalTests = Math.max(1, Number(ovulationBreakdown?.total ?? 0));
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-[10px] text-purple-900">
+      <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-2xs text-purple-900">
         <strong>Plasence TTC mode — aggregates and masked metadata only.</strong>{" "}
         Intimate per-user details (sexual activity, encrypted notes) are never
         exposed here. Copy stays educational and non-diagnostic: "likely",
@@ -68,7 +68,7 @@ export default function TtcOperations({
               <h3 id="ttc-readiness-heading" className="card-title">
                 Preconception checklist readiness
               </h3>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 Share of TTC users who marked each checklist item done
                 (aggregated).
               </p>
@@ -77,7 +77,7 @@ export default function TtcOperations({
           <div className="space-y-3 p-4">
             {checklistReadiness.map((item) => (
               <div key={item.id} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 truncate text-[11px] text-slate-700">
+                <span className="w-56 shrink-0 truncate text-xs text-slate-700">
                   {item.title}
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -86,13 +86,13 @@ export default function TtcOperations({
                     style={{ width: `${Math.min(100, Number(item.donePercent ?? 0))}%` }}
                   />
                 </div>
-                <span className="w-12 text-right text-[10px] font-semibold text-purple-700">
+                <span className="w-12 text-right text-2xs font-semibold text-purple-700">
                   {item.donePercent ?? "0%"}
                 </span>
               </div>
             ))}
             {!checklistReadiness.length && (
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-slate-500">
                 No checklist items are active yet.
               </p>
             )}
@@ -104,7 +104,7 @@ export default function TtcOperations({
               <h3 id="ttc-tests-heading" className="card-title">
                 Ovulation test results (last 30 days)
               </h3>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 Results never imply pregnancy — escalation copy encourages
                 qualified care.
               </p>
@@ -113,7 +113,7 @@ export default function TtcOperations({
           <div className="space-y-3 p-4">
             {bars.map((bar) => (
               <div key={bar.label} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 truncate text-[11px] text-slate-700">
+                <span className="w-56 shrink-0 truncate text-xs text-slate-700">
                   {bar.label}
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -122,16 +122,16 @@ export default function TtcOperations({
                     style={{ width: `${Math.min(100, (bar.value / totalTests) * 100)}%` }}
                   />
                 </div>
-                <span className={cn("w-12 text-right text-[10px] font-semibold", bar.text)}>
+                <span className={cn("w-12 text-right text-2xs font-semibold", bar.text)}>
                   {bar.value}
                 </span>
               </div>
             ))}
             {!bars.length && (
-              <p className="text-[11px] text-slate-500">No ovulation tests logged.</p>
+              <p className="text-xs text-slate-500">No ovulation tests logged.</p>
             )}
             {ovulationBreakdown?.topBrands && (
-              <p className="text-[11px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 Top brands: {ovulationBreakdown.topBrands}
               </p>
             )}
@@ -144,13 +144,13 @@ export default function TtcOperations({
             <h3 id="ttc-insights-heading" className="card-title">
               Fertility insight cards generated (non-diagnostic)
             </h3>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-2xs text-slate-500">
               Last 7 days · copy uses "likely", "estimated", "may" only.
             </p>
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[11px]">
+          <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="p-3">Insight Type</th>
@@ -174,7 +174,7 @@ export default function TtcOperations({
                   <td className="p-3">{item.averageConfidence ?? "—"}</td>
                   <td className="p-3">{item.shown}</td>
                   <td className="p-3">{item.dismissedPercent}</td>
-                  <td className="p-3 text-[10px]">{item.evidenceFields}</td>
+                  <td className="p-3 text-2xs">{item.evidenceFields}</td>
                   <td className="p-3">{status(item.status)}</td>
                 </tr>
               ))}

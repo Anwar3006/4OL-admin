@@ -72,7 +72,7 @@ export default function DataTable<T extends Record<string, any>>({
                 // 17 features use. This component's only consumer is Period,
                 // and plain sentence-case headers here were the whole reason
                 // that page read as a different typeface to the rest.
-                className="p-3 text-[10px] font-black uppercase tracking-widest text-slate-500"
+                className="p-3 text-2xs font-black uppercase tracking-widest text-slate-500"
               >
                 {column.label}
               </th>

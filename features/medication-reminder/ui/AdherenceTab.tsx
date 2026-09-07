@@ -84,7 +84,7 @@ export default function AdherenceTab() {
       accessorKey: "scheduled_time",
       header: "Scheduled",
       cell: ({ row }) => (
-        <span className="text-[10px] font-bold text-slate-400">
+        <span className="text-2xs font-bold text-slate-400">
           {new Date(row.original.scheduled_time).toLocaleString()}
         </span>
       ),
@@ -93,7 +93,7 @@ export default function AdherenceTab() {
       accessorKey: "action_time",
       header: "Actioned",
       cell: ({ row }) => (
-        <span className="text-[10px] font-bold text-slate-400">
+        <span className="text-2xs font-bold text-slate-400">
           {row.original.action_time ? new Date(row.original.action_time).toLocaleString() : "—"}
         </span>
       ),
@@ -146,7 +146,7 @@ export default function AdherenceTab() {
                   style={{ width: `${Math.min(100, rate)}%` }}
                 />
               </div>
-              <span className="text-[11px] font-black text-slate-700 w-10 text-right">{rate}%</span>
+              <span className="text-xs font-black text-slate-700 w-10 text-right">{rate}%</span>
             </div>
           );
         },
@@ -176,7 +176,7 @@ export default function AdherenceTab() {
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
       {/* Privacy notice — aggregate-only view (mockup) */}
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] text-slate-500 font-medium">
+      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 font-medium">
         <span>🔒</span>
         <span>
           Adherence data is shown as <strong>aggregate per-drug statistics</strong> only.
@@ -246,7 +246,7 @@ export default function AdherenceTab() {
               key={f.label}
               onClick={() => handleFilterChange(f.id)}
               className={cn(
-                "h-8 px-3 rounded-lg border text-[11px] font-bold transition-colors cursor-pointer",
+                "h-8 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                 statusFilter === f.id
                   ? "bg-ek-green-dark text-white border-ek-green-dark"
                   : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",

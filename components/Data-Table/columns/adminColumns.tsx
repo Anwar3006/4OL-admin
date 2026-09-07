@@ -13,15 +13,15 @@ export const adminColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100">
-          <span className="text-[10px] font-black uppercase">
+          <span className="text-2xs font-black uppercase">
             {row.original.name?.substring(0, 2)}
           </span>
         </div>
         <div>
-          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.name}
           </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+          <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
             {row.original.email}
           </div>
         </div>
@@ -34,7 +34,7 @@ export const adminColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Phone className="h-3 w-3 text-slate-400" />
-        <span className="text-[11px] font-black text-slate-600 tracking-tight">
+        <span className="text-xs font-black text-slate-600 tracking-tight">
           {row.original.phone_number || "N/A"}
         </span>
       </div>
@@ -48,7 +48,7 @@ export const adminColumns: ColumnDef<any>[] = [
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             status === "active"
               ? "bg-emerald-50 text-emerald-700 border-emerald-100"
               : "bg-red-50 text-red-700 border-red-100",
@@ -64,13 +64,13 @@ export const adminColumns: ColumnDef<any>[] = [
     header: "Activity",
     cell: ({ row }) => (
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-600 tracking-tight leading-none mb-1">
+        <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 tracking-tight leading-none mb-1">
           <Calendar className="w-3 h-3 text-slate-400" />
           {row.original.created_at
             ? format(new Date(row.original.created_at), "MMM dd, yyyy")
             : "N/A"}
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+        <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-400 uppercase tracking-widest leading-none">
           <Activity className="w-3 h-3 text-slate-400" />
           {row.original.last_active
             ? format(new Date(row.original.last_active), "MMM dd, HH:mm")

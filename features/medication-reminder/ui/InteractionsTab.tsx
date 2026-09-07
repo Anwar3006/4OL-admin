@@ -80,7 +80,7 @@ export default function InteractionsTab() {
         accessorKey: "effect",
         header: "Effect",
         cell: ({ row }) => (
-          <span className="text-[11px] text-slate-600 max-w-[220px] inline-block truncate">
+          <span className="text-xs text-slate-600 max-w-[220px] inline-block truncate">
             {row.original.effect || "—"}
           </span>
         ),
@@ -89,7 +89,7 @@ export default function InteractionsTab() {
         accessorKey: "recommended_action",
         header: "Recommended Action",
         cell: ({ row }) => (
-          <span className="text-[11px] text-slate-600 max-w-[220px] inline-block truncate">
+          <span className="text-xs text-slate-600 max-w-[220px] inline-block truncate">
             {row.original.recommended_action || "—"}
           </span>
         ),
@@ -165,7 +165,7 @@ export default function InteractionsTab() {
 const inputCls =
   "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 function AddInteractionDialog({
   open,
@@ -306,7 +306,7 @@ function DrugPicker({
         <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
           <span className="text-xs font-bold text-emerald-800">{selected.name}</span>
           <button
-            className="text-[10px] font-bold text-slate-400 hover:text-red-500 cursor-pointer"
+            className="text-2xs font-bold text-slate-400 hover:text-red-500 cursor-pointer"
             onClick={() => onSelect("")}
           >
             Change
@@ -333,7 +333,7 @@ function DrugPicker({
                 </button>
               ))}
               {options.length === 0 && (
-                <div className="px-3 py-2 text-[11px] text-slate-400">No matches.</div>
+                <div className="px-3 py-2 text-xs text-slate-400">No matches.</div>
               )}
             </div>
           )}

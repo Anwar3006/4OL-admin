@@ -29,7 +29,7 @@ export default function GlobalError({
               the dashboard and continue from there.
             </p>
             {error.digest && (
-              <p className="mt-3 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="mt-3 font-mono text-2xs font-bold uppercase tracking-wider text-slate-400">
                 Error ID: {error.digest}
               </p>
             )}

@@ -134,7 +134,7 @@ function OnboardingSection() {
               >
                 {tab.label}
                 {tab.value === "pending" && pendingCount > 0 && (
-                  <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
+                  <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-3xs font-bold">
                     {pendingCount}
                   </span>
                 )}

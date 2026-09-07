@@ -75,10 +75,10 @@ export default function PremiumUsersTab() {
         header: "Subscriber",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-[12px] font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800">
               {displayName(row.original)}
             </span>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-xs text-slate-400">
               {row.original.email ?? "—"}
             </span>
           </div>
@@ -100,7 +100,7 @@ export default function PremiumUsersTab() {
         id: "joined",
         header: "Joined",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] text-slate-500">
+          <span className="text-xs text-slate-500">
             {formatDate(row.original.created_at)}
           </span>
         ),
@@ -109,7 +109,7 @@ export default function PremiumUsersTab() {
         id: "renewal",
         header: "Renewal Date",
         cell: () => (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400">
             From Epic 16 billing
           </span>
         ),
@@ -184,7 +184,7 @@ export default function PremiumUsersTab() {
       {noSubscribers && (
         <div className="alert al-ic flex items-start gap-3">
           <span>💳</span>
-          <div className="text-[11px] leading-relaxed">
+          <div className="text-xs leading-relaxed">
             <strong>No paid subscriptions yet.</strong> The
             <code className="mx-1">user_subscriptions</code> table is provisioned
             but billing launches with Epic 16 — this tab populates automatically

@@ -85,17 +85,17 @@ export default function ExpensesTab() {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         />
         <button
           onClick={() => setDialogOpen(true)}
-          className="h-9 px-4 rounded-xl bg-ek-green text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90"
+          className="h-9 px-4 rounded-xl bg-ek-green text-white text-2xs font-black uppercase tracking-widest hover:opacity-90"
         >
           + Add Expense
         </button>
         <button
           onClick={() => setVisibilityOpen(true)}
-          className="h-9 px-4 rounded-xl bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90"
+          className="h-9 px-4 rounded-xl bg-slate-800 text-white text-2xs font-black uppercase tracking-widest hover:opacity-90"
         >
           🔐 Metric Visibility
         </button>
@@ -107,9 +107,9 @@ export default function ExpensesTab() {
             <h2 className="card-title text-xs">💸 Expense Breakdown — {month}</h2>
           </div>
           {isLoading ? (
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-6 text-center">Loading…</p>
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest py-6 text-center">Loading…</p>
           ) : monthRows.length === 0 ? (
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-6 text-center">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest py-6 text-center">
               No expenses recorded for {month}.
             </p>
           ) : (
@@ -118,7 +118,7 @@ export default function ExpensesTab() {
                 const pct = monthTotal > 0 ? Math.round((Number(row.amount) / monthTotal) * 100) : 0;
                 return (
                   <div key={row.id}>
-                    <div className="flex justify-between text-[10px] font-bold mb-1">
+                    <div className="flex justify-between text-2xs font-bold mb-1">
                       <span className="text-slate-600">{CATEGORY_LABELS[row.category] ?? row.category}</span>
                       <span className="text-slate-900 font-black">{formatCurrency(row.amount)} ({pct}%)</span>
                     </div>
@@ -171,7 +171,7 @@ export default function ExpensesTab() {
           </DialogHeader>
           <div className="space-y-3 text-xs font-bold">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Category</label>
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -183,7 +183,7 @@ export default function ExpensesTab() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Amount (₵)</label>
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">Amount (₵)</label>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -194,7 +194,7 @@ export default function ExpensesTab() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Note (optional)</label>
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">Note (optional)</label>
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -204,7 +204,7 @@ export default function ExpensesTab() {
             <button
               onClick={handleAdd}
               disabled={saveExpense.isPending}
-              className="btn btn-primary w-full text-white font-black uppercase text-[10px] tracking-widest disabled:opacity-50"
+              className="btn btn-primary w-full text-white font-black uppercase text-2xs tracking-widest disabled:opacity-50"
             >
               {saveExpense.isPending ? "Saving…" : "Save Expense"}
             </button>

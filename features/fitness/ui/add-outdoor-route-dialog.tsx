@@ -607,7 +607,7 @@ const AddOutdoorRouteDialog = () => {
                   >
                     <UploadCloud className="w-3 h-3 mr-2" /> Upload GPX Route File
                   </Button>
-                  <div className="text-[10px] text-slate-400 mt-2">
+                  <div className="text-2xs text-slate-400 mt-2">
                     Parsed entirely in your browser — no file leaves your machine
                     until you save the route.
                   </div>

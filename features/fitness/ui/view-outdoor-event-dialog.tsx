@@ -161,12 +161,12 @@ function DetailView({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-3 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-emerald-600 text-white font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+              <Badge className="bg-emerald-600 text-white font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
                 <Target className="h-3 w-3 mr-1.5" />{" "}
                 {data.category || "Outdoor Activity"}
               </Badge>
               <Badge
-                className={`font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${statusBadgeClass}`}
+                className={`font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-lg shadow-sm ${statusBadgeClass}`}
               >
                 {data.status || "Upcoming"}
               </Badge>
@@ -187,7 +187,7 @@ function DetailView({
 
             <Button
               onClick={onEdit}
-              className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"
+              className="flex-1 md:flex-none rounded-xl shadow-lg shadow-emerald-600/20 px-6 h-11 font-black uppercase tracking-widest text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95"
             >
               <Pencil className="w-4 h-4 mr-2" /> Edit Event
             </Button>
@@ -220,11 +220,11 @@ function DetailView({
                 <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                   <Compass className="h-5 w-5" />
                 </div>
-                <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                <h3 className="section-heading">
                   Event Description
                 </h3>
               </div>
-              <p className="text-[15px] text-slate-600 leading-relaxed font-medium">
+              <p className="text-base text-slate-600 leading-relaxed font-medium">
                 {data.description || "No event description provided."}
               </p>
             </div>
@@ -235,14 +235,14 @@ function DetailView({
                 <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                   <MapPin className="h-5 w-5" />
                 </div>
-                <h3 className="font-black uppercase tracking-[0.15em] text-sm text-black">
+                <h3 className="section-heading">
                   Location & Geography
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                  <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-1">
                     Area Region
                   </span>
                   <span className="text-sm font-bold text-black flex items-center gap-1.5">
@@ -253,7 +253,7 @@ function DetailView({
 
                 {data.route_id && (
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                    <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-1">
                       Assigned Route
                     </span>
                     <span className="text-sm font-bold text-black flex items-center gap-1.5">
@@ -270,7 +270,7 @@ function DetailView({
                   <div className="flex items-center gap-3">
                     <Globe className="h-5 w-5 text-slate-400" />
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                      <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block">
                         Geo Coordinates
                       </span>
                       <span className="text-xs font-mono font-bold text-slate-700">
@@ -308,7 +308,7 @@ function DetailView({
                 <Clock className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                   Scheduled Start
                 </span>
                 <p className="text-sm font-black text-black leading-tight">
@@ -351,7 +351,7 @@ function DetailView({
                         style={{ width: `${fillPercentage}%` }}
                       />
                     </div>
-                    <p className="text-[11px] font-medium text-slate-400 pt-1">
+                    <p className="text-xs font-medium text-slate-400 pt-1">
                       {spotsLeft > 0
                         ? `${spotsLeft} registration spots remaining`
                         : "This event is currently fully booked."}
@@ -364,7 +364,7 @@ function DetailView({
             {/* Audit Logs Meta Card */}
             <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
               <div className="text-center sm:text-left space-y-1">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Date Created
                 </span>
                 <span className="text-xs font-bold text-slate-700">
@@ -374,7 +374,7 @@ function DetailView({
                 </span>
               </div>
               <div className="text-center sm:text-left space-y-1 border-l border-slate-100 pl-4">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">
+                <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Last Updated
                 </span>
                 <span className="text-xs font-bold text-slate-700">

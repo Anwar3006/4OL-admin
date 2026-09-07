@@ -59,7 +59,7 @@ export default function DensityMenu() {
             <span className="flex-1">
               {label}
               {value === "auto" && hydrated && (
-                <span className="ml-1 text-[10px] text-muted-foreground">
+                <span className="ml-1 text-2xs text-muted-foreground">
                   ({effective})
                 </span>
               )}
@@ -70,7 +70,7 @@ export default function DensityMenu() {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <p className="px-2 py-1.5 text-[10px] leading-relaxed text-muted-foreground">
+        <p className="px-2 py-1.5 text-2xs leading-relaxed text-muted-foreground">
           Auto switches to compact on screens 1024px and narrower.
         </p>
       </DropdownMenuContent>

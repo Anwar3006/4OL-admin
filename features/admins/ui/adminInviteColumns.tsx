@@ -28,7 +28,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Mail className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-[11px] font-black text-slate-800 tracking-tight">
+        <span className="text-xs font-black text-slate-800 tracking-tight">
           {row.original.email}
         </span>
       </div>
@@ -40,7 +40,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-1.5">
         <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-600">
           {row.original.role.replace(/_/g, " ")}
         </span>
       </div>
@@ -54,7 +54,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             status.className,
           )}
         >
@@ -68,11 +68,11 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     header: "Sent / Expires",
     cell: ({ row }) => (
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-600 tracking-tight leading-none mb-1">
+        <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 tracking-tight leading-none mb-1">
           <Calendar className="w-3 h-3 text-slate-400" />
           {format(new Date(row.original.created_at), "MMM dd, yyyy")}
         </div>
-        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+        <div className="text-3xs font-bold text-slate-400 uppercase tracking-widest leading-none">
           Expires {format(new Date(row.original.expires_at), "MMM dd, yyyy")}
         </div>
       </div>

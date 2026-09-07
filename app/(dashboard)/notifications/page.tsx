@@ -188,7 +188,7 @@ function CheckboxGroup({
 }) {
   return (
     <div>
-      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">
+      <Label className="text-2xs font-black uppercase tracking-widest text-slate-500 mb-1.5 block">
         {label}
       </Label>
       <div className="flex flex-wrap gap-1.5">
@@ -198,7 +198,7 @@ function CheckboxGroup({
             type="button"
             onClick={() => onChange(toggleInArray(selected, opt))}
             className={cn(
-              "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border transition-colors",
+              "px-2.5 py-1 rounded-full text-2xs font-bold uppercase tracking-wide border transition-colors",
               selected.includes(opt)
                 ? "bg-ek-green-dark text-white border-ek-green-dark"
                 : "bg-white text-slate-500 border-slate-200 hover:border-slate-300",
@@ -474,7 +474,7 @@ export default function NotificationsPage() {
                   </div>
                 )}
 
-                <div className="text-[11px] font-bold text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+                <div className="text-xs font-bold text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
                   {previewLoading ? "Calculating reach…" : (
                     <>
                       Reaches <span className="text-slate-900">{segmentPreview?.targetable ?? 0}</span> users,{" "}

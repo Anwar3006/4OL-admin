@@ -193,7 +193,7 @@ const AddSymptomDialog = () => {
         {isLoadingForm ? (
           <div className="flex items-center justify-center py-20 bg-white">
             <Loader2 className="animate-spin mr-2 text-emerald-600" />
-            <span className="font-black uppercase tracking-widest text-[10px] text-slate-400">
+            <span className="font-black uppercase tracking-widest text-2xs text-slate-400">
               Loading form...
             </span>
           </div>
@@ -208,7 +208,7 @@ const AddSymptomDialog = () => {
             >
               {/* ── Basic Details ── */}
               <section className="space-y-4">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 border-b pb-2">
                   Basic Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,7 +436,7 @@ const AddSymptomDialog = () => {
               <div className="flex gap-3 pt-6 border-t border-slate-100">
                 <button
                   type="button"
-                  className="btn btn-secondary flex-1 font-black uppercase tracking-widest text-[10px]"
+                  className="btn btn-secondary flex-1 font-black uppercase tracking-widest text-2xs"
                   onClick={close}
                   disabled={isSubmitting}
                 >
@@ -444,7 +444,7 @@ const AddSymptomDialog = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary flex-1 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-100"
+                  className="btn btn-primary flex-1 font-black uppercase tracking-widest text-2xs shadow-lg shadow-emerald-100"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

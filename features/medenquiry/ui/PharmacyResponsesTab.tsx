@@ -16,7 +16,7 @@ const StarRating = ({ rating }: { rating: number | null }) => {
   if (rating === null || rating === undefined) return <span className="text-slate-300">—</span>;
   const full = Math.round(rating);
   return (
-    <span className="text-[10px] font-black text-amber-500">
+    <span className="text-2xs font-black text-amber-500">
       {"⭐".repeat(Math.max(1, Math.min(5, full)))} {Number(rating).toFixed(1)}
     </span>
   );
@@ -49,13 +49,13 @@ export default function PharmacyResponsesTab() {
                 e.stopPropagation();
                 viewFacility.open(perf.pharmacy_id!);
               }}
-              className="font-black text-slate-800 text-[11px] uppercase tracking-tight text-left hover:text-emerald-700 transition-all"
+              className="font-black text-slate-800 text-xs uppercase tracking-tight text-left hover:text-emerald-700 transition-all"
               title="Open facility profile"
             >
-              {perf.pharmacy_name} <span className="text-[9px] text-emerald-500">🏥</span>
+              {perf.pharmacy_name} <span className="text-3xs text-emerald-500">🏥</span>
             </button>
           ) : (
-            <span className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+            <span className="font-black text-slate-800 text-xs uppercase tracking-tight">
               {perf.pharmacy_name}
             </span>
           );
@@ -65,7 +65,7 @@ export default function PharmacyResponsesTab() {
         id: "total_responses",
         header: "Total Responses",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-700">{row.original.total_responses}</span>
+          <span className="text-xs font-black text-slate-700">{row.original.total_responses}</span>
         ),
       },
       {
@@ -76,7 +76,7 @@ export default function PharmacyResponsesTab() {
           return (
             <span
               className={cn(
-                "text-[11px] font-black",
+                "text-xs font-black",
                 minutes !== null && minutes <= 15 ? "text-emerald-600" : "text-amber-500",
               )}
             >
@@ -91,7 +91,7 @@ export default function PharmacyResponsesTab() {
         cell: ({ row }) => (
           <span
             className={cn(
-              "text-[11px] font-black",
+              "text-xs font-black",
               row.original.availability_rate >= 80 ? "text-emerald-600" : "text-amber-500",
             )}
           >
@@ -103,7 +103,7 @@ export default function PharmacyResponsesTab() {
         id: "orders_fulfilled",
         header: "Orders Fulfilled",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-700">{row.original.orders_fulfilled}</span>
+          <span className="text-xs font-black text-slate-700">{row.original.orders_fulfilled}</span>
         ),
       },
       {
@@ -117,7 +117,7 @@ export default function PharmacyResponsesTab() {
         cell: ({ row }) => (
           <span
             className={cn(
-              "inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border",
+              "inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest border",
               row.original.active === false
                 ? "bg-slate-100 text-slate-500 border-slate-200"
                 : "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -137,7 +137,7 @@ export default function PharmacyResponsesTab() {
                 e.stopPropagation();
                 router.push(`/medenquiry?pharmacy=${row.original.pharmacy_id}`, { scroll: false });
               }}
-              className="h-7 px-2 rounded-lg border border-emerald-200 text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
+              className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
               title="Filter the enquiry ledger by this pharmacy"
             >
               🔬 Enquiries
@@ -153,7 +153,7 @@ export default function PharmacyResponsesTab() {
       title: (row) => row.pharmacy_name,
       subtitle: () => "Pharmacy / IBP",
       badge: (row) => (
-        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-100">
           {row.total_responses} responses
         </span>
       ),
@@ -178,7 +178,7 @@ export default function PharmacyResponsesTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div>
         <div className="font-black text-slate-800 text-sm">💊 Pharmacy Response Performance</div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">
           How fast and accurately pharmacies respond to medication enquiries
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function PharmacyResponsesTab() {
       {empty && (
         <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
           <span className="text-base leading-none mt-0.5">📋</span>
-          <p className="text-[11px] font-bold text-slate-500">
+          <p className="text-xs font-bold text-slate-500">
             Performance data appears once the Medication Enquiry depth migration
             (<code>20260822_med_enquiry_depth.sql</code>) is applied and pharmacy responses start
             coming in via the <code>enquiry_responses</code> table.

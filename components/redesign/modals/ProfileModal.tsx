@@ -102,9 +102,9 @@ interface AccessPayload {
 
 const inputCls =
   "w-full h-9 px-3 rounded-md border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:cursor-not-allowed";
-const labelCls = "text-[11px] font-semibold text-muted-foreground";
+const labelCls = "text-xs font-semibold text-muted-foreground";
 const sectionCls =
-  "text-[10px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5 mb-3";
+  "text-2xs font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5 mb-3";
 
 function fmt(value: string | null | undefined, pattern: string): string {
   if (!value) return "—";
@@ -545,7 +545,7 @@ export default function ProfileModal({
                             <span className="text-xs font-bold capitalize">
                               {group.resource}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground">
                               {group.grantedCount}/{group.items.length}
                             </span>
                           </div>
@@ -563,7 +563,7 @@ export default function ProfileModal({
                                 ) : (
                                   <Minus className="size-3.5 shrink-0 text-muted-foreground" />
                                 )}
-                                <span className="w-20 shrink-0 font-mono text-[10px] capitalize text-muted-foreground">
+                                <span className="w-20 shrink-0 font-mono text-2xs capitalize text-muted-foreground">
                                   {item.action}
                                 </span>
                                 <span className="min-w-0 flex-1 truncate">
@@ -626,13 +626,13 @@ export default function ProfileModal({
                             <span className="block truncate font-medium">
                               {s.device_info || shortUa(s.user_agent)}
                             </span>
-                            <span className="block truncate text-[10px] text-muted-foreground">
+                            <span className="block truncate text-2xs text-muted-foreground">
                               {s.ip_address ?? "unknown IP"}
                               {s.location ? ` · ${s.location}` : ""}
                               {s.mfa_verified ? " · MFA verified" : ""}
                             </span>
                           </span>
-                          <span className="shrink-0 text-right text-[10px] text-muted-foreground">
+                          <span className="shrink-0 text-right text-2xs text-muted-foreground">
                             {s.is_active && !s.ended_at ? "Active" : "Ended"}
                             <br />
                             {fmt(s.last_active_at, "MMM dd, HH:mm")}
@@ -650,7 +650,7 @@ export default function ProfileModal({
                 >
                   <LogOut className="size-4" /> End other sessions
                 </Button>
-                <p className="mb-4 mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
+                <p className="mb-4 mt-1.5 text-2xs leading-relaxed text-muted-foreground">
                   Retires recorded session telemetry for this account. Active
                   JWT tokens remain valid until expiry — Supabase cannot revoke
                   them early.
@@ -658,8 +658,8 @@ export default function ProfileModal({
 
                 <h4 className={sectionCls}>Recent activity</h4>
                 <div className="overflow-hidden rounded-lg border border-border">
-                  <table className="w-full text-[11px]">
-                    <thead className="bg-muted/50 text-[9px] uppercase tracking-wider text-muted-foreground">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/50 text-3xs uppercase tracking-wider text-muted-foreground">
                       <tr>
                         <th className="px-2 py-1.5 text-left">Action</th>
                         <th className="px-2 py-1.5 text-left">Module</th>
@@ -769,7 +769,7 @@ function Pill({
   return (
     <span
       className={cn(
-        "rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+        "rounded-full px-2 py-0.5 text-3xs font-bold uppercase tracking-wider",
         tone === "ok" &&
           "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
         tone === "warn" && "bg-amber-500/10 text-amber-700 dark:text-amber-400",

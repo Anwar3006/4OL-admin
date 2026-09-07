@@ -135,12 +135,12 @@ export default function MedEnquiryPage() {
 
       {/* Business logic banner */}
       <div className="rounded-2xl p-4 text-white bg-gradient-to-br from-[#1e3a5f] to-blue-600">
-        <div className="text-[13px] font-black mb-3">📋 Medication Enquiry — Business Logic</div>
+        <div className="text-sm font-black mb-3">📋 Medication Enquiry — Business Logic</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {BUSINESS_LOGIC.map((panel) => (
             <div key={panel.title} className="rounded-xl bg-white/10 px-3 py-2.5">
-              <div className="text-[11px] font-black mb-1">{panel.title}</div>
-              <div className="text-[10px] font-medium text-white/85 leading-relaxed">{panel.body}</div>
+              <div className="text-xs font-black mb-1">{panel.title}</div>
+              <div className="text-2xs font-medium text-white/85 leading-relaxed">{panel.body}</div>
             </div>
           ))}
         </div>
@@ -148,14 +148,14 @@ export default function MedEnquiryPage() {
 
       {/* Connected menus */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+        <span className="text-2xs font-black uppercase tracking-widest text-emerald-700">
           Connected Menus:
         </span>
         {CONNECTED_MENUS.map((chip) => (
           <button
             key={chip.href}
             onClick={() => router.push(chip.href)}
-            className="h-7 px-3 rounded-full border border-emerald-200 bg-white text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-100 transition-all"
+            className="h-7 px-3 rounded-full border border-emerald-200 bg-white text-2xs font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-100 transition-all"
           >
             {chip.label}
           </button>
@@ -215,7 +215,7 @@ export default function MedEnquiryPage() {
               key={tab.id}
               value={tab.id}
               className={cn(
-                "px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
+                "px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none",
                 "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-ek-green-dark data-[state=active]:border-ek-green-dark",
               )}
             >

@@ -166,7 +166,7 @@ export default function AllSubmissionsTab({ data, loading }: FacilityScoutTabPro
                       <div className="font-bold text-xs">
                         {submission.user_profiles?.masked_name ?? "Unknown user"}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="text-2xs text-slate-400 font-mono">
                         {submission.user_profiles?.user_id?.slice(0, 8) ?? "—"}
                       </div>
                     </TableCell>

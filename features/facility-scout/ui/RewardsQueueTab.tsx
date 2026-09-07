@@ -77,7 +77,7 @@ export default function RewardsQueueTab({ data, loading }: FacilityScoutTabProps
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="section-heading">
               🎁 Reward Tiers
             </CardTitle>
           </CardHeader>
@@ -93,7 +93,7 @@ export default function RewardsQueueTab({ data, loading }: FacilityScoutTabProps
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="section-heading">
               📈 Rewards Summary
             </CardTitle>
           </CardHeader>

@@ -530,7 +530,10 @@
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    font-size: clamp(0.625rem, 0.4vw + 0.5rem, 0.75rem);
+    /* On the type scale — `xs`. Was clamp(9.375px .. 11.25px), which put every
+       button a fraction off the grid at every viewport. Buttons are page
+       content, so they are fixed; the shell chrome above stays fluid. */
+    font-size: 11px;
     padding: clamp(5px, 0.5vw + 3px, 8px) clamp(10px, 1vw + 5px, 14px);
     border-radius: var(--r-btn);
     border: none;
@@ -565,7 +568,8 @@
   }
 
   .btn-sm {
-    font-size: clamp(0.575rem, 0.3vw + 0.45rem, 0.6875rem);
+    /* On the type scale — `2xs`. */
+    font-size: 10px;
     padding: 4px 10px;
   }
 
@@ -585,8 +589,24 @@
     margin-bottom: clamp(10px, 1vw + 4px, 16px);
   }
 
+  /* One section heading for the whole app. Fifty-three headings were already
+     doing this job — `font-black uppercase tracking-widest` — but across five
+     spellings: text-sm vs text-xs, tracking-widest vs tracking-[0.2em] vs
+     [0.15em], text-slate-700 vs text-slate-900 vs text-black. Same role, five
+     results. On the type scale this is `xs` (11px). */
+  .section-heading {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--clr-slate-700);
+  }
+
   .card-title {
-    font-size: clamp(0.7rem, 0.5vw + 0.5rem, 0.875rem);
+    /* On the type scale — this is `sm`. Was clamp(10.5px .. 13.125px), which
+       drifted off the grid at every viewport but the widest. Page content, so
+       it is fixed. */
+    font-size: 13px;
     font-weight: 700;
     color: var(--clr-slate-800);
   }
@@ -752,7 +772,12 @@
     font-weight: 700;
     padding: 2px clamp(6px, 0.6vw + 3px, 8px);
     border-radius: var(--r-pill);
-    font-size: clamp(0.4rem, 0.25vw + 0.3rem, 0.525rem);
+    /* On the type scale (tailwind.config.js fontSize) — this is `3xs`. It was
+       clamp(6px .. 7.875px), below the scale's floor, so badges rendered
+       smaller on the pages that use this class than on the pages that use
+       Tailwind sizes. It is page content, not shell, so it has to sit on the
+       grid. */
+    font-size: 9px;
   }
 
   .badge-green {

@@ -203,7 +203,7 @@ export default function DiscountDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                 Eligible Plans (none selected = all plans)
               </Label>
               <div className="flex flex-wrap gap-2">
@@ -214,7 +214,7 @@ export default function DiscountDialog({
                       key={plan.id}
                       type="button"
                       onClick={() => togglePlan(plan.id)}
-                      className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-2xs font-black uppercase tracking-widest border transition-all ${
                         selected
                           ? "bg-emerald-600 text-white border-emerald-600"
                           : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
@@ -245,7 +245,7 @@ export default function DiscountDialog({
                 readOnly={false}
               />
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                   Start Date
                 </Label>
                 <input
@@ -256,7 +256,7 @@ export default function DiscountDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                   Expiry Date
                 </Label>
                 <input

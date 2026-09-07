@@ -56,7 +56,7 @@ const TopRatedTab = () => {
   return (
     <div className="space-y-4">
       {!canFeature && (
-        <div className="bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-purple-800">
+        <div className="bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-bold text-purple-800">
           🛡️ Super Admin only — Top Rated curation is gated behind the
           facilities.feature permission. You can view the leaderboard but not
           edit it.
@@ -86,16 +86,16 @@ const TopRatedTab = () => {
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
         <div className="px-5 py-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
             ⭐ Top Rated Leaderboard
           </p>
         </div>
         {boardLoading ? (
-          <p className="px-5 py-8 text-center text-[11px] font-bold text-slate-400">
+          <p className="px-5 py-8 text-center text-xs font-bold text-slate-400">
             Loading leaderboard...
           </p>
         ) : board.length === 0 ? (
-          <p className="px-5 py-8 text-center text-[11px] font-bold text-slate-400">
+          <p className="px-5 py-8 text-center text-xs font-bold text-slate-400">
             No facilities are top-rated yet.
           </p>
         ) : (
@@ -104,20 +104,20 @@ const TopRatedTab = () => {
               key={row.id}
               className="flex items-center gap-4 px-5 py-3"
             >
-              <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-[11px] font-black">
+              <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-xs font-black">
                 #{row.top_rated_rank ?? index + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-black text-slate-800 truncate">
+                <p className="text-sm font-black text-slate-800 truncate">
                   {row.facility_name}
                 </p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">
                   {row.facility_type?.replace(/_/g, " ")} · {row.region} · ⭐{" "}
                   {row.rating_average ?? "—"} · {row.view_count ?? 0} views
                 </p>
               </div>
               {row.top_rated_set_at && (
-                <span className="hidden lg:inline text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <span className="hidden lg:inline text-3xs font-black uppercase tracking-widest text-slate-400">
                   SA set{" "}
                   {new Date(row.top_rated_set_at).toLocaleDateString("en-GB")}
                 </span>
@@ -160,18 +160,18 @@ const TopRatedTab = () => {
       {canFeature && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Add to Top Rated
             </p>
             {isFull && (
-              <span className="text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1">
+              <span className="text-3xs font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1">
                 Leaderboard full — remove a slot first
               </span>
             )}
           </div>
           <div className="divide-y divide-slate-100">
             {candidates.length === 0 ? (
-              <p className="px-5 py-6 text-center text-[11px] font-bold text-slate-400">
+              <p className="px-5 py-6 text-center text-xs font-bold text-slate-400">
                 Every active facility is already on the board.
               </p>
             ) : (
@@ -181,10 +181,10 @@ const TopRatedTab = () => {
                   className="flex items-center gap-4 px-5 py-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-black text-slate-800 truncate">
+                    <p className="text-sm font-black text-slate-800 truncate">
                       {row.facility_name}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                    <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">
                       {row.facility_type?.replace(/_/g, " ")} · ⭐{" "}
                       {row.rating_average ?? "—"} ({row.rating_count ?? 0}{" "}
                       reviews)

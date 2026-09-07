@@ -45,7 +45,7 @@ export default function PendingEnquiriesTab() {
         id: "enquiry_id",
         header: "Enquiry ID",
         cell: ({ row }) => (
-          <span className="font-mono text-[10px] font-black text-slate-500 tracking-tighter">
+          <span className="font-mono text-2xs font-black text-slate-500 tracking-tighter">
             {formatEnqId(row.original.id)}
           </span>
         ),
@@ -55,10 +55,10 @@ export default function PendingEnquiriesTab() {
         header: "Medication",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+            <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
               {row.original.medication_name}
             </div>
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+            <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
               {[row.original.dosage, row.original.quantity ? `${row.original.quantity} ${row.original.unit ?? "units"}` : null]
                 .filter(Boolean)
                 .join(" · ") || "—"}
@@ -70,7 +70,7 @@ export default function PendingEnquiriesTab() {
         id: "user",
         header: "User",
         cell: ({ row }) => (
-          <span className="text-[11px] font-bold text-slate-700">
+          <span className="text-xs font-bold text-slate-700">
             {row.original.submitter_name}
             {row.original.identity_masked && <span className="ml-1 text-slate-300">🔒</span>}
           </span>
@@ -85,7 +85,7 @@ export default function PendingEnquiriesTab() {
         id: "responses",
         header: "Responses",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-amber-500">
+          <span className="text-xs font-black text-amber-500">
             {row.original.response_count} response{row.original.response_count === 1 ? "" : "s"}
           </span>
         ),
@@ -94,7 +94,7 @@ export default function PendingEnquiriesTab() {
         accessorKey: "created_at",
         header: "Submitted",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+          <span className="text-2xs font-bold text-slate-400 uppercase tracking-tight">
             {formatSubmittedAt(row.original.created_at)}
           </span>
         ),
@@ -106,7 +106,7 @@ export default function PendingEnquiriesTab() {
           const hours = (Date.now() - new Date(row.original.created_at).getTime()) / 3_600_000;
           return (
             <span
-              className={`text-[11px] font-black ${hours >= 24 ? "text-red-500" : hours >= 6 ? "text-amber-500" : "text-slate-500"}`}
+              className={`text-xs font-black ${hours >= 24 ? "text-red-500" : hours >= 6 ? "text-amber-500" : "text-slate-500"}`}
             >
               {elapsedHours(row.original.created_at)}
             </span>
@@ -122,7 +122,7 @@ export default function PendingEnquiriesTab() {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(enq);
@@ -132,7 +132,7 @@ export default function PendingEnquiriesTab() {
               </button>
               <button
                 disabled={busy}
-                className="h-7 px-2 rounded-lg border border-amber-200 text-[9px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   broadcast.mutate({ id: enq.id });
@@ -142,7 +142,7 @@ export default function PendingEnquiriesTab() {
               </button>
               <button
                 disabled={busy}
-                className="h-7 px-2 rounded-lg border border-blue-200 text-[9px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-blue-200 text-3xs font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   action.mutate({ id: enq.id, action: "notify_user" });
@@ -163,7 +163,7 @@ export default function PendingEnquiriesTab() {
       title: (row) => row.medication_name,
       subtitle: (row) => `${formatEnqId(row.id)} · ${row.submitter_name}`,
       badge: (row) => (
-        <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-100">
           {elapsedHours(row.created_at)}
         </span>
       ),
@@ -183,7 +183,7 @@ export default function PendingEnquiriesTab() {
       {total > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
           <span className="text-base leading-none mt-0.5">🔗</span>
-          <p className="text-[11px] font-bold text-amber-700">
+          <p className="text-xs font-bold text-amber-700">
             <b>{total} enquiry{total === 1 ? "" : "ies"}</b> have not been matched to a pharmacy yet.
             Consider broadcasting to more pharmacies or alerting the user.
           </p>

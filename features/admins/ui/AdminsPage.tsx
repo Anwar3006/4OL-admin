@@ -69,7 +69,7 @@ const AdminsPage = () => {
         <button className="btn btn-primary text-white" onClick={() => addAdmin.open()}>✉️ Invite Admin</button>
       </PageHeader>
 
-      <div className="alert bg-red-50 border border-red-200 text-[11px] font-medium p-3 rounded-xl flex items-start gap-2.5">
+      <div className="alert bg-red-50 border border-red-200 text-xs font-medium p-3 rounded-xl flex items-start gap-2.5">
         <span className="text-base leading-none mt-0.5">⚠️</span>
         <div className="flex-1">
           <strong className="text-red-700">Security Alert:</strong> Some admin accounts have MFA disabled. See the "MFA Not Set" stat below and the Security Center tab for details.
@@ -92,7 +92,7 @@ const AdminsPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",

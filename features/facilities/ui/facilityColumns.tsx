@@ -25,10 +25,10 @@ export const facilityColumns: ColumnDef<any>[] = [
           <Building2 className="h-4 w-4" />
         </div>
         <div>
-          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.facility_name}
           </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+          <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
             {row.original.facility_type?.replace(/_/g, " ")}
           </div>
         </div>
@@ -40,11 +40,11 @@ export const facilityColumns: ColumnDef<any>[] = [
     header: "Contact",
     cell: ({ row }) => (
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-600 tracking-tight leading-none mb-1">
+        <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 tracking-tight leading-none mb-1">
           <Mail className="w-3 h-3 text-slate-400" />
           {row.original.email}
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+        <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-400 uppercase tracking-widest leading-none">
           <Phone className="w-3 h-3 text-slate-400" />
           {row.original.contact_number || "N/A"}
         </div>
@@ -55,7 +55,7 @@ export const facilityColumns: ColumnDef<any>[] = [
     accessorKey: "location",
     header: "Location",
     cell: ({ row }) => (
-      <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-600 uppercase tracking-tight">
+      <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 uppercase tracking-tight">
         <MapPin className="w-3 h-3 text-slate-400" />
         {row.original.region?.split(" ").map(toUppercaseFirstLetter).join(" ")}
       </div>
@@ -69,7 +69,7 @@ export const facilityColumns: ColumnDef<any>[] = [
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             status === "active"
               ? "bg-emerald-50 text-emerald-700 border-emerald-100"
               : status === "pending"

@@ -16,7 +16,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "userId",
       label: "User ID",
-      render: (value) => <code className="text-[11px]">{shortId(value)}</code>,
+      render: (value) => <code className="text-xs">{shortId(value)}</code>,
     },
     { key: "region", label: "Region" },
     { key: "lastPeriod", label: "Last Period", render: date },
@@ -106,7 +106,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "userId",
       label: "User ID",
-      render: (value) => <code className="text-[11px]">{shortId(value)}</code>,
+      render: (value) => <code className="text-xs">{shortId(value)}</code>,
     },
     { key: "region", label: "Region" },
     { key: "tracking", label: "Tracking", render: bool },
@@ -246,7 +246,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "user_id",
       label: "User ID",
-      render: (value) => <code className="text-[11px]">{shortId(value)}</code>,
+      render: (value) => <code className="text-xs">{shortId(value)}</code>,
     },
     {
       key: "tier",
@@ -301,7 +301,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "user_id",
       label: "User",
-      render: (value) => <code className="text-[11px]">{shortId(value)}</code>,
+      render: (value) => <code className="text-xs">{shortId(value)}</code>,
     },
     {
       key: "purpose",

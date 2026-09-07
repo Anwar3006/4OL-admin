@@ -117,7 +117,7 @@ export function ModerationTable({
                       <div className="font-semibold text-slate-800 dark:text-slate-100">
                         {item.content_type.replaceAll("_", " ")}
                       </div>
-                      <div className="mt-1 truncate font-mono text-[11px] text-slate-400">
+                      <div className="mt-1 truncate font-mono text-xs text-slate-400">
                         {item.content_id}
                       </div>
                     </TableCell>

@@ -75,21 +75,21 @@ const PremiumLayersTab = () => {
 
   return (
     <div className="space-y-5">
-      <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-sky-800">
+      <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-xs font-bold text-sky-800">
         💎 What is gated here is enforced on mobile by the user&apos;s 4OurLife
         Premium entitlement. Switch a layer OFF to make it free for everyone;
         ON to keep it premium. Changes apply on the next app load.
       </div>
 
       {!data?.applied && !isLoading && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-amber-800">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
           ⏳ Migration <code>20260824_anatomy_premium_am.sql</code> has not been
           applied yet — showing defaults. Saving will fail until it is applied.
         </div>
       )}
 
       {isLoading ? (
-        <p className="text-[11px] font-bold text-slate-400 py-6 text-center">
+        <p className="text-xs font-bold text-slate-400 py-6 text-center">
           Loading premium configuration…
         </p>
       ) : (
@@ -104,10 +104,10 @@ const PremiumLayersTab = () => {
                 >
                   <p className="text-2xl">{layer.icon}</p>
                   <div className="flex-1">
-                    <p className="text-[13px] font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800">
                       {layer.name}
                     </p>
-                    <p className="text-[11px] font-bold text-slate-500 mt-0.5">
+                    <p className="text-xs font-bold text-slate-500 mt-0.5">
                       {layer.description}
                     </p>
                   </div>
@@ -138,7 +138,7 @@ const PremiumLayersTab = () => {
               <h3 className="text-sm font-black text-slate-900">
                 🗺️ Deep-dive region packs (P2)
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest mt-1">
                 Checked regions zoom behind the premium paywall; free users see
                 an upsell card instead.
               </p>
@@ -152,7 +152,7 @@ const PremiumLayersTab = () => {
                     type="button"
                     onClick={() => toggleRegion(region.key)}
                     className={cn(
-                      "rounded-full px-4 py-2 text-[11px] font-black border transition-colors",
+                      "rounded-full px-4 py-2 text-xs font-black border transition-colors",
                       on
                         ? "bg-emerald-600 text-white border-emerald-600"
                         : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
@@ -164,7 +164,7 @@ const PremiumLayersTab = () => {
                 );
               })}
               {(data?.regions ?? []).length === 0 && (
-                <p className="text-[11px] font-bold text-slate-400">
+                <p className="text-xs font-bold text-slate-400">
                   No regions found — apply the Part AL migration first.
                 </p>
               )}
@@ -173,7 +173,7 @@ const PremiumLayersTab = () => {
 
           <div className="flex justify-end">
             <button
-              className="btn btn-primary text-white font-black uppercase tracking-widest text-[10px]"
+              className="btn btn-primary text-white font-black uppercase tracking-widest text-2xs"
               disabled={save.isPending || !data?.applied}
               onClick={() =>
                 save.mutate({ layers, premium_regions: premiumRegions })

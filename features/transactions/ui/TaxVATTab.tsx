@@ -50,12 +50,12 @@ export default function TaxVATTab() {
           {hidden ? (
             <div className="py-8 text-center">
               <div className="text-2xl mb-2">🔒</div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 Hidden by Super Admin
               </p>
             </div>
           ) : isLoading || !summary ? (
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-8 text-center">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest py-8 text-center">
               Loading tax summary…
             </p>
           ) : (
@@ -86,7 +86,7 @@ export default function TaxVATTab() {
               </div>
               <button
                 onClick={handleDownloadReport}
-                className="btn btn-primary w-full mt-6 text-white font-black uppercase text-[10px] tracking-widest"
+                className="btn btn-primary w-full mt-6 text-white font-black uppercase text-2xs tracking-widest"
               >
                 Generate GRA Report
               </button>
@@ -107,7 +107,7 @@ export default function TaxVATTab() {
               >
                 <div>
                   <div className="text-xs font-black text-slate-800">{filing.period}</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  <div className="text-3xs font-bold text-slate-400 uppercase tracking-widest">
                     Due {filing.due_date ?? "—"} · Remitted {money(filing.remitted_amount)}
                   </div>
                 </div>
@@ -121,7 +121,7 @@ export default function TaxVATTab() {
                       onClick={() =>
                         updateFiling.mutate({ filing_id: filing.id, status: "filed" })
                       }
-                      className="h-7 px-2 rounded-lg border border-emerald-200 text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                      className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
                     >
                       Mark Filed
                     </button>
@@ -130,12 +130,12 @@ export default function TaxVATTab() {
               </div>
             ))}
             {(data?.filings ?? []).length === 0 && !isLoading && (
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-6 text-center">
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest py-6 text-center">
                 No filings scheduled yet.
               </p>
             )}
           </div>
-          <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest mt-4">
+          <p className="text-3xs text-slate-300 font-bold uppercase tracking-widest mt-4">
             VAT 12.5% + NHIL 2.5% + GETFund 2.5% = 17.5% consumption tax · Corporate income tax 25%
           </p>
         </div>

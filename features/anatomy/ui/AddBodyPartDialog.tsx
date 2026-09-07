@@ -16,7 +16,7 @@ import { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
 const inputCls =
   "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 
 export default function AddBodyPartDialog({

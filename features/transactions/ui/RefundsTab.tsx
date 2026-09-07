@@ -68,7 +68,7 @@ export default function RefundsTab() {
         accessorKey: "id",
         header: "REF ID",
         cell: ({ row }) => (
-          <span className="font-mono text-[10px] text-slate-500 font-bold">
+          <span className="font-mono text-2xs text-slate-500 font-bold">
             REF-{row.original.id.slice(0, 8).toUpperCase()}
           </span>
         ),
@@ -77,7 +77,7 @@ export default function RefundsTab() {
         accessorKey: "created_at",
         header: "Date",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400">
+          <span className="text-2xs font-bold text-slate-400">
             {formatProcessedAt(row.original.created_at)}
           </span>
         ),
@@ -90,7 +90,7 @@ export default function RefundsTab() {
             <span className="font-black text-slate-800">
               {row.original.transactions?.payer_name || "—"}
             </span>
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+            <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest">
               {row.original.transactions?.reference ?? "no linked charge"}
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function RefundsTab() {
         accessorKey: "reason",
         header: "Reason",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+          <span className="text-2xs font-bold text-slate-500 uppercase tracking-tight">
             {REASON_LABELS[row.original.reason] ?? row.original.reason}
           </span>
         ),
@@ -135,7 +135,7 @@ export default function RefundsTab() {
                   e.stopPropagation();
                   decide.mutate({ id: row.original.id, decision: "approve" });
                 }}
-                className="h-7 px-2 rounded-lg border border-emerald-200 text-[9px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
               >
                 Approve
               </button>
@@ -145,7 +145,7 @@ export default function RefundsTab() {
                   e.stopPropagation();
                   decide.mutate({ id: row.original.id, decision: "reject" });
                 }}
-                className="h-7 px-2 rounded-lg border border-red-200 text-[9px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-red-200 text-3xs font-black uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
               >
                 Reject
               </button>
@@ -162,7 +162,7 @@ export default function RefundsTab() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           <option value="">All Refunds</option>
           <option value="pending_approval">Pending Approval</option>
@@ -171,11 +171,11 @@ export default function RefundsTab() {
         </select>
         <button
           onClick={() => setDialogOpen(true)}
-          className="h-9 px-4 rounded-xl bg-ek-green text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all"
+          className="h-9 px-4 rounded-xl bg-ek-green text-white text-2xs font-black uppercase tracking-widest hover:opacity-90 transition-all"
         >
           + New Refund
         </button>
-        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+        <span className="text-3xs font-bold text-slate-300 uppercase tracking-widest">
           Approvals are restricted to super admins
         </span>
       </div>
@@ -183,7 +183,7 @@ export default function RefundsTab() {
       <div className="card p-0 overflow-hidden">
         <DataTable columns={columns} data={refunds} isLoading={isLoading} isError={isError} error={error} />
         {refunds.length === 0 && !isLoading && (
-          <div className="p-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="p-6 text-center text-2xs font-bold text-slate-400 uppercase tracking-widest">
             No refunds filed yet.
           </div>
         )}
@@ -198,7 +198,7 @@ export default function RefundsTab() {
           </DialogHeader>
           <div className="space-y-3 text-xs font-bold">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Charge Reference (Payment ID)
               </label>
               <input
@@ -209,7 +209,7 @@ export default function RefundsTab() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Amount (leave blank for full refund)
               </label>
               <input
@@ -223,7 +223,7 @@ export default function RefundsTab() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Reason
               </label>
               <select
@@ -237,7 +237,7 @@ export default function RefundsTab() {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
                 Notes (optional)
               </label>
               <textarea
@@ -250,7 +250,7 @@ export default function RefundsTab() {
             <button
               onClick={handleSubmit}
               disabled={fileRefund.isPending || !reference.trim()}
-              className="btn btn-primary w-full text-white font-black uppercase text-[10px] tracking-widest disabled:opacity-50"
+              className="btn btn-primary w-full text-white font-black uppercase text-2xs tracking-widest disabled:opacity-50"
             >
               {fileRefund.isPending ? "Filing…" : "File Refund for Approval"}
             </button>

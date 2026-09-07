@@ -89,8 +89,8 @@ export default function KanbanBoard() {
               <div className="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className={cn("w-2 h-2 rounded-full", col.color)} />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-700">{col.title}</span>
-                  <span className="badge badge-secondary text-[9px] font-black">{isLoading ? "…" : tasks.length}</span>
+                  <span className="section-heading">{col.title}</span>
+                  <span className="badge badge-secondary text-3xs font-black">{isLoading ? "…" : tasks.length}</span>
                 </div>
                 {canEdit && (
                   <button
@@ -120,10 +120,10 @@ export default function KanbanBoard() {
                     )}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full", PRIORITY_STYLE[t.priority])}>
+                      <span className={cn("text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full", PRIORITY_STYLE[t.priority])}>
                         {t.priority}
                       </span>
-                      <span className="text-[9px] font-mono font-bold text-slate-300 group-hover:text-slate-500">
+                      <span className="text-3xs font-mono font-bold text-slate-300 group-hover:text-slate-500">
                         {seqLabel(t)}
                       </span>
                     </div>
@@ -131,7 +131,7 @@ export default function KanbanBoard() {
                       {t.title}
                     </h4>
                     {t.description && (
-                      <p className="text-[10px] text-slate-400 font-medium leading-relaxed mb-3">{t.description}</p>
+                      <p className="text-2xs text-slate-400 font-medium leading-relaxed mb-3">{t.description}</p>
                     )}
                     {t.status === "in_progress" && (
                       <div className="mb-2">
@@ -141,24 +141,24 @@ export default function KanbanBoard() {
                             style={{ width: `${t.progressPercent ?? 0}%` }}
                           />
                         </div>
-                        <span className="text-[8px] font-black text-slate-400">{t.progressPercent ?? 0}% complete</span>
+                        <span className="text-3xs font-black text-slate-400">{t.progressPercent ?? 0}% complete</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 border-t border-slate-50 pt-2.5">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-ek-green to-ek-teal flex items-center justify-center text-[8px] font-black text-white">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-ek-green to-ek-teal flex items-center justify-center text-3xs font-black text-white">
                         {initials(t.assigneeName)}
                       </div>
                       {t.category && (
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t.category}</span>
+                        <span className="text-3xs font-bold text-slate-400 uppercase tracking-tighter">{t.category}</span>
                       )}
                       {t.completedAt ? (
-                        <span className="ml-auto text-[8px] font-black text-ek-green-dark">
+                        <span className="ml-auto text-3xs font-black text-ek-green-dark">
                           ✅ {format(new Date(t.completedAt), "MMM yyyy")}
                         </span>
                       ) : t.dueDate ? (
                         <span
                           className={cn(
-                            "ml-auto text-[9px] font-black",
+                            "ml-auto text-3xs font-black",
                             isDueUrgent(t)
                               ? "text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md"
                               : "text-slate-400",

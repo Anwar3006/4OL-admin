@@ -274,7 +274,7 @@ const SubscriptionsTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                   <th className="py-2 pr-4">User</th>
                   <th className="py-2 pr-4">Tier</th>
                   <th className="py-2 pr-4">Status</th>
@@ -288,27 +288,27 @@ const SubscriptionsTab = () => {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td className="py-3 pr-4 text-[12px] font-bold text-slate-800">{row.user_name}</td>
+                    <td className="py-3 pr-4 text-sm font-bold text-slate-800">{row.user_name}</td>
                     <td className="py-3 pr-4">
-                      <span className="badge badge-blue h-5 text-[9px] uppercase font-black">
+                      <span className="badge badge-blue h-5 text-3xs uppercase font-black">
                         {row.subscription_tiers?.name ?? "—"}
                       </span>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className={`badge h-5 text-[9px] uppercase font-black ${statusBadge[row.status] ?? "badge-slate"}`}>
+                      <span className={`badge h-5 text-3xs uppercase font-black ${statusBadge[row.status] ?? "badge-slate"}`}>
                         {row.status}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-[11px] font-semibold text-slate-600">{row.source}</td>
-                    <td className="py-3 pr-4 text-[11px] text-slate-600">{fmtDate(row.starts_at)}</td>
-                    <td className="py-3 pr-4 text-[11px] text-slate-600">{fmtDate(row.expires_at)}</td>
-                    <td className="py-3 pr-4 text-[11px] text-slate-600">{row.granted_by_name ?? "—"}</td>
+                    <td className="py-3 pr-4 text-xs font-semibold text-slate-600">{row.source}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600">{fmtDate(row.starts_at)}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600">{fmtDate(row.expires_at)}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600">{row.granted_by_name ?? "—"}</td>
                     {isSuperAdmin && (
                       <td className="py-3 text-right">
                         {row.status === "active" && (
                           <button
                             onClick={() => handleRevoke(row)}
-                            className="text-[10px] font-black uppercase text-red-500 hover:text-red-700"
+                            className="text-2xs font-black uppercase text-red-500 hover:text-red-700"
                           >
                             Revoke
                           </button>
@@ -368,7 +368,7 @@ const SubscriptionsTab = () => {
               {alertTargets.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {alertTargets.map((id) => (
-                    <span key={id} className="badge badge-slate text-[9px] font-bold">
+                    <span key={id} className="badge badge-slate text-3xs font-bold">
                       {id.slice(0, 8)}…
                       <button
                         className="ml-1 text-red-500 font-black"

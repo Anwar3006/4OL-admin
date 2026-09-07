@@ -102,7 +102,7 @@ const AddTicketDialog = () => {
               <span className="block text-slate-800 font-black">
                 Support Ticket
               </span>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="block text-2xs font-bold text-slate-400 uppercase tracking-widest">
                 #{addTicket.data?.id}
               </span>
             </span>
@@ -113,26 +113,26 @@ const AddTicketDialog = () => {
           <div className="px-6 pt-5 space-y-4">
             <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
               <div className="flex flex-col">
-                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">
+                <span className="text-3xs text-slate-400 uppercase font-black tracking-widest">
                   Requested By
                 </span>
                 <span className="font-bold text-sm text-slate-800">
                   {addTicket.data.user_profiles?.first_name}{" "}
                   {addTicket.data.user_profiles?.last_name}
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-400">
                   {addTicket.data.user_profiles?.phone_number ||
                     "no phone on file"}
                 </span>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span
-                  className={`badge ${PRIORITY_META[currentPriority]?.badge} text-[9px]`}
+                  className={`badge ${PRIORITY_META[currentPriority]?.badge} text-3xs`}
                 >
                   {PRIORITY_META[currentPriority]?.emoji} {currentPriority}
                 </span>
                 <span
-                  className={`badge ${STATUS_META[currentStatus]?.badge} text-[9px]`}
+                  className={`badge ${STATUS_META[currentStatus]?.badge} text-3xs`}
                 >
                   {STATUS_META[currentStatus]?.emoji} {currentStatus}
                 </span>
@@ -140,7 +140,7 @@ const AddTicketDialog = () => {
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">
+              <span className="text-2xs text-slate-400 uppercase font-black tracking-widest">
                 Subject
               </span>
               <p className="font-bold text-sm text-slate-800 leading-snug">
@@ -149,10 +149,10 @@ const AddTicketDialog = () => {
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">
+              <span className="text-2xs text-slate-400 uppercase font-black tracking-widest">
                 Message
               </span>
-              <div className="bg-slate-50 p-3.5 rounded-xl text-[13px] leading-relaxed border border-slate-100 text-slate-600">
+              <div className="bg-slate-50 p-3.5 rounded-xl text-sm leading-relaxed border border-slate-100 text-slate-600">
                 {addTicket.data.message}
               </div>
             </div>
@@ -171,7 +171,7 @@ const AddTicketDialog = () => {
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    <FormLabel className="text-2xs font-black uppercase tracking-wider text-slate-400">
                       Priority
                     </FormLabel>
                     <Select
@@ -201,7 +201,7 @@ const AddTicketDialog = () => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    <FormLabel className="text-2xs font-black uppercase tracking-wider text-slate-400">
                       Status
                     </FormLabel>
                     <Select
@@ -234,14 +234,14 @@ const AddTicketDialog = () => {
                 variant="outline"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                className="text-[11px] font-black uppercase tracking-widest"
+                className="text-xs font-black uppercase tracking-widest"
               >
                 Cancel
               </Button>
 
               <Button
                 type="submit"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black uppercase tracking-widest"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

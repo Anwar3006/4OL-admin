@@ -117,14 +117,14 @@ const ReviewFacilityDialog = ({
         </VisuallyHidden.Root>
 
         {isLoading || !facility ? (
-          <p className="py-12 text-center text-[11px] font-bold text-slate-400">
+          <p className="py-12 text-center text-xs font-bold text-slate-400">
             Loading submission...
           </p>
         ) : (
           <div className="space-y-5">
             {daysWaiting !== null && (
               <div
-                className={`rounded-2xl px-4 py-3 text-[11px] font-bold border ${
+                className={`rounded-2xl px-4 py-3 text-xs font-bold border ${
                   daysWaiting > SLA_DAYS
                     ? "bg-red-50 border-red-200 text-red-700"
                     : "bg-emerald-50 border-emerald-200 text-emerald-700"
@@ -142,22 +142,22 @@ const ReviewFacilityDialog = ({
                 <h2 className="text-lg font-black text-slate-900">
                   {(facility as any).facility_name}
                 </h2>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <p className="text-2xs font-bold uppercase tracking-widest text-slate-400">
                   {(facility as any).facility_type?.replace(/_/g, " ")} ·{" "}
                   {(facility as any).region} · {(facility as any).district}
                 </p>
               </div>
-              <span className="shrink-0 text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-3 py-1.5">
+              <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-3 py-1.5">
                 ⏳ Pending Review
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                   📋 Registration Evidence
                 </p>
-                <div className="text-[11px] font-bold text-slate-700 space-y-1">
+                <div className="text-xs font-bold text-slate-700 space-y-1">
                   <p>
                     HEFRA No.:{" "}
                     <span className="font-mono">
@@ -174,13 +174,13 @@ const ReviewFacilityDialog = ({
               </div>
 
               <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                   📍 Location Evidence
                 </p>
-                <div className="text-[11px] font-bold text-slate-700 space-y-1">
+                <div className="text-xs font-bold text-slate-700 space-y-1">
                   <p>GPS: {(facility as any).gps_address ?? "—"}</p>
                   {typeof (facility as any).latitude === "number" && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-1">
                       ✓ GPS-verified coordinates
                     </span>
                   )}
@@ -192,17 +192,17 @@ const ReviewFacilityDialog = ({
             </div>
 
             <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                 📎 Verification Documents ({documents.length})
               </p>
               {documents.length === 0 ? (
-                <p className="text-[11px] font-bold text-slate-400">
+                <p className="text-xs font-bold text-slate-400">
                   No documents uploaded.
                 </p>
               ) : (
                 <ul className="space-y-1">
                   {documents.map((doc: any, index: number) => (
-                    <li key={index} className="text-[11px] font-bold text-slate-700">
+                    <li key={index} className="text-xs font-bold text-slate-700">
                       📄 {doc?.name ?? doc?.url ?? `Document ${index + 1}`}
                     </li>
                   ))}
@@ -211,16 +211,16 @@ const ReviewFacilityDialog = ({
             </div>
 
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+              <p className="text-3xs font-black uppercase tracking-widest text-slate-400 mb-2">
                 🛡️ Admin Audit Note
               </p>
               <textarea
-                className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 text-[12px] font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                 placeholder="Decision rationale — stored with the status change..."
                 value={auditNote}
                 onChange={(e) => setAuditNote(e.target.value)}
               />
-              <p className="text-[9px] font-bold text-slate-400 mt-1">
+              <p className="text-3xs font-bold text-slate-400 mt-1">
                 🔒 Anonymous app review composer deferred (H-D6) — pending
                 compliance sign-off.
               </p>

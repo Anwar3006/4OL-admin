@@ -166,7 +166,7 @@ export default function ViewNotificationPage() {
               </div>
 
               <div className="border-t border-slate-100 pt-4">
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Segment Reach</div>
+                <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-2">Segment Reach</div>
                 <div className="text-sm font-bold">
                   {segmentPreview?.targetable ?? 0} users targetable, {segmentPreview?.with_push_token ?? 0} with a push token
                 </div>
@@ -175,13 +175,13 @@ export default function ViewNotificationPage() {
               {receiptSummary && receiptSummary.total > 0 && (
                 <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Send Status</div>
+                    <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-2">Send Status</div>
                     {Object.entries(receiptSummary.bySendStatus).map(([k, v]) => (
                       <div key={k} className="flex justify-between text-xs py-0.5"><span className="capitalize">{k.replaceAll("_", " ")}</span><b>{v}</b></div>
                     ))}
                   </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Receipt Status</div>
+                    <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-2">Receipt Status</div>
                     {Object.entries(receiptSummary.byReceiptStatus).map(([k, v]) => (
                       <div key={k} className="flex justify-between text-xs py-0.5"><span className="capitalize">{k.replaceAll("_", " ")}</span><b>{v}</b></div>
                     ))}

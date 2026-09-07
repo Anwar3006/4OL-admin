@@ -54,7 +54,7 @@ export default function SubscriptionsTab() {
         {hidden ? (
           <div className="col-span-full card py-8 text-center">
             <div className="text-2xl mb-2">🔒</div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Subscription KPIs hidden by Super Admin
             </p>
           </div>
@@ -75,7 +75,7 @@ export default function SubscriptionsTab() {
             setPlan(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           {PLANS.map((p) => (
             <option key={p.value} value={p.value}>{p.label}</option>
@@ -87,13 +87,13 @@ export default function SubscriptionsTab() {
             setType(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
-        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+        <span className="text-3xs font-bold text-slate-300 uppercase tracking-widest">
           Consumer subscription payments from the unified ledger
         </span>
       </div>
@@ -118,7 +118,7 @@ export default function SubscriptionsTab() {
           }}
         />
         {rows.length === 0 && !isLoading && (
-          <div className="p-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="p-6 text-center text-2xs font-bold text-slate-400 uppercase tracking-widest">
             No subscription payments match these filters.
           </div>
         )}

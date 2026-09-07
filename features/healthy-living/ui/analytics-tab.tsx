@@ -26,7 +26,7 @@ const Leaderboard = ({
 }) => (
   <div className="card p-0 overflow-hidden border-slate-200">
     <div className="px-5 py-4 border-b border-slate-100">
-      <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+      <h4 className="section-heading">
         {icon} {title}
       </h4>
     </div>
@@ -38,13 +38,13 @@ const Leaderboard = ({
       <ul className="divide-y divide-slate-100">
         {rows.slice(0, 10).map((row, i) => (
           <li key={`${row.id}-${i}`} className="flex items-center gap-3 px-5 py-2.5">
-            <span className="text-[10px] font-black text-slate-400 w-5 text-right shrink-0">
+            <span className="text-2xs font-black text-slate-400 w-5 text-right shrink-0">
               {i + 1}.
             </span>
             <span className="text-xs font-bold text-slate-800 truncate flex-1">
               {row.name}
             </span>
-            <span className="text-[11px] font-black text-slate-600 shrink-0">
+            <span className="text-xs font-black text-slate-600 shrink-0">
               {row.value.toLocaleString()} {unit}
             </span>
           </li>
@@ -71,7 +71,7 @@ const HealthyLivingAnalyticsTab = () => {
         <p className="text-xs font-bold text-red-500">
           Failed to load analytics{error ? `: ${error.message}` : "."}
         </p>
-        <p className="mt-2 text-[11px] font-semibold text-slate-400">
+        <p className="mt-2 text-xs font-semibold text-slate-400">
           Apply migration 20260822_content_analytics_carousel_extension.sql to
           enable the get_healthy_living_analytics RPC.
         </p>
@@ -88,7 +88,7 @@ const HealthyLivingAnalyticsTab = () => {
   return (
     <div className="space-y-6">
       {!pipelineLive && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-bold text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
           ℹ️ Likes/Saves read 0 until the content_engagement migration
           (Mapping Audit Part 4 / Epic 30.1) is applied. Views and coverage
           metrics below are live.
@@ -149,7 +149,7 @@ const HealthyLivingAnalyticsTab = () => {
 
       {/* 30-day unique-viewer trend */}
       <div className="card p-5 border-slate-200">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h4 className="section-heading mb-4">
           📊 Unique Views — Last 30 Days
         </h4>
         {data.view_trend_30d.length === 0 ? (
@@ -173,7 +173,7 @@ const HealthyLivingAnalyticsTab = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-slate-500">
+            <div className="mt-3 flex items-center justify-between text-2xs font-bold text-slate-500">
               <span>{data.view_trend_30d[0]?.date}</span>
               <span>{data.view_trend_30d[data.view_trend_30d.length - 1]?.date}</span>
             </div>
@@ -200,7 +200,7 @@ const HealthyLivingAnalyticsTab = () => {
 
       {/* Category breakdown */}
       <div className="card p-5 border-slate-200">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h4 className="section-heading mb-4">
           📂 Articles by Category
         </h4>
         {data.categories.length === 0 ? (
@@ -212,7 +212,7 @@ const HealthyLivingAnalyticsTab = () => {
           <div className="space-y-2.5">
             {data.categories.map((cat) => (
               <div key={cat.category_id} className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-slate-600 w-40 truncate shrink-0">
+                <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
                   {cat.category_name}
                 </span>
                 <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -221,7 +221,7 @@ const HealthyLivingAnalyticsTab = () => {
                     style={{ width: `${(cat.article_count / maxCategory) * 100}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-black text-slate-700 w-8 text-right shrink-0">
+                <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
                   {cat.article_count}
                 </span>
               </div>

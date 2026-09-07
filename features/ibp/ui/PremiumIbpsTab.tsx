@@ -41,10 +41,10 @@ export default function PremiumIbpsTab() {
         header: "Business",
         cell: ({ row }: { row: { original: IbpRow } }) => (
           <div className="flex flex-col">
-            <span className="text-[12px] font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800">
               ⭐ {row.original.business_name}
             </span>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-xs text-slate-400">
               {row.original.business_category ?? "—"}
             </span>
           </div>
@@ -54,7 +54,7 @@ export default function PremiumIbpsTab() {
         id: "location",
         header: "Location",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-[11px] text-slate-600">
+          <span className="text-xs text-slate-600">
             {[row.original.city, row.original.region].filter(Boolean).join(", ") || "—"}
           </span>
         ),
@@ -63,7 +63,7 @@ export default function PremiumIbpsTab() {
         id: "budget",
         header: "Campaign Budget",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-[11px] font-semibold text-slate-600">
+          <span className="text-xs font-semibold text-slate-600">
             {formatMoney(row.original.campaign_budget)}
           </span>
         ),
@@ -72,14 +72,14 @@ export default function PremiumIbpsTab() {
         id: "spend",
         header: "Total Spend",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-[11px] text-slate-600">{formatMoney(row.original.total_spend)}</span>
+          <span className="text-xs text-slate-600">{formatMoney(row.original.total_spend)}</span>
         ),
       },
       {
         id: "verified",
         header: "Verified",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-[11px] text-slate-500">{formatDate(row.original.verified_at)}</span>
+          <span className="text-xs text-slate-500">{formatDate(row.original.verified_at)}</span>
         ),
       },
       {
@@ -125,7 +125,7 @@ export default function PremiumIbpsTab() {
 
       <div className="alert al-ic flex items-start gap-3">
         <span>📣</span>
-        <div className="text-[11px] leading-relaxed">
+        <div className="text-xs leading-relaxed">
           <strong>Ad management.</strong> Campaign budgets and ad placements for
           premium IBPs are managed from the Marketing module — use Manage Ads on
           any row to jump straight in.

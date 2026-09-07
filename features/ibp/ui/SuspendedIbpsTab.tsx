@@ -13,7 +13,7 @@ export default function SuspendedIbpsTab() {
       banner={
         <div className="alert al-ic flex items-start gap-3">
           <span>⏸️</span>
-          <div className="text-[11px] leading-relaxed">
+          <div className="text-xs leading-relaxed">
             <strong>Suspended businesses</strong> are hidden from the mobile app.
             Reinstate to republish, or remove permanently via the row menu.
           </div>

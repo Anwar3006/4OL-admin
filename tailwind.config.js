@@ -136,6 +136,41 @@ module.exports = {
         },
       },
 
+      /* ─── Type scale — ONE system ──────────────────────────────────────
+       *  This codebase grew two competing scales: 1,592 arbitrary
+       *  `text-[Npx]` and 1,050 Tailwind steps. They overlapped without
+       *  matching — `text-xs` rendered 11.25px next to `text-[11px]`,
+       *  `text-sm` 13.125px next to `text-[13px]` — which is why one page
+       *  could look subtly unlike another while every file passed review.
+       *
+       *  Redefining the steps snaps Tailwind onto the px grid the feature
+       *  code already used, so the two become one. The shift is sub-pixel:
+       *  11.25→11, 13.125→13, 16.875→17, 18.75→19, 22.5→22, 28.125→28.
+       *  `base` was already exactly 15px.
+       *
+       *  `2xs`/`3xs` have no Tailwind equivalent and are the two densest
+       *  label sizes this UI needs — 10px alone carried 710 usages, more
+       *  than any other size in the repo.
+       *
+       *  It lives here, not in globals.css's @theme block: this project
+       *  loads a v3-style config via `@config`, and a `--text-*` @theme
+       *  namespace is inert when that is present. Verified by measurement.
+       *
+       *  Nine steps, and that is the whole scale. Reach for a name, never a
+       *  `text-[Npx]` — an arbitrary value is how the second scale started.
+       * ───────────────────────────────────────────────────────────────── */
+      fontSize: {
+        "3xs": "9px",   // micro badges, densest meta
+        "2xs": "10px",  // uppercase column headers, KPI labels
+        xs: "11px",     // secondary and meta text
+        sm: "13px",     // table cells, body copy
+        base: "15px",   // emphasised body
+        lg: "17px",     // card and panel headings
+        xl: "19px",     // page headings
+        "2xl": "22px",  // hero figures
+        "3xl": "28px",  // display
+      },
+
       fontFamily: {
         // Part Q: Inter is now actually loaded via next/font (root layout).
         // The CSS variable comes first; "Inter" stays as a local fallback.

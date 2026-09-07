@@ -118,7 +118,7 @@ const DiseasesPage = () => {
             <div className="font-bold text-slate-800 truncate">
               {row.original.name}
             </div>
-            <div className="text-[10px] text-slate-400 max-w-[200px] truncate leading-tight mt-0.5">
+            <div className="text-2xs text-slate-400 max-w-[200px] truncate leading-tight mt-0.5">
               {row.original.description || "No description provided"}
             </div>
           </div>
@@ -139,7 +139,7 @@ const DiseasesPage = () => {
             {row.original.severity}
           </span>
         ) : (
-          <span className="text-[10px] text-slate-300 italic">—</span>
+          <span className="text-2xs text-slate-300 italic">—</span>
         ),
     },
     {
@@ -166,13 +166,13 @@ const DiseasesPage = () => {
             row.original.bodyParts.map((bp: string, i: number) => (
               <span
                 key={i}
-                className="text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
+                className="text-2xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
               >
                 {bp}
               </span>
             ))
           ) : (
-            <span className="text-[10px] text-slate-300 italic">—</span>
+            <span className="text-2xs text-slate-300 italic">—</span>
           )}
         </div>
       ),
@@ -181,7 +181,7 @@ const DiseasesPage = () => {
       accessorKey: "view_count",
       header: "👁️ Views",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-[11px]">
+        <span className="font-black text-slate-700 text-xs">
           {row.original.view_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -190,7 +190,7 @@ const DiseasesPage = () => {
       accessorKey: "like_count",
       header: "❤️ Likes",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-[11px]">
+        <span className="font-black text-slate-700 text-xs">
           {row.original.like_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -199,7 +199,7 @@ const DiseasesPage = () => {
       accessorKey: "save_count",
       header: "🔖 Saves",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-[11px]">
+        <span className="font-black text-slate-700 text-xs">
           {row.original.save_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -214,7 +214,7 @@ const DiseasesPage = () => {
               ⭐ #{row.original.featured_order ?? "–"}
             </span>
           ) : (
-            <span className="text-[10px] text-slate-300 font-bold tracking-widest uppercase">
+            <span className="text-2xs text-slate-300 font-bold tracking-widest uppercase">
               Off
             </span>
           )}
@@ -371,7 +371,7 @@ const DiseasesPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",
@@ -416,7 +416,7 @@ const DiseasesPage = () => {
                 </div>
               </div>
               <select
-                className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -427,7 +427,7 @@ const DiseasesPage = () => {
                 <option value="archived">Archived</option>
               </select>
               <select
-                className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
                 value={featuredFilter}
                 onChange={(e) => setFeaturedFilter(e.target.value)}
               >
@@ -436,7 +436,7 @@ const DiseasesPage = () => {
                 <option value="no">Not Featured</option>
               </select>
               <button
-                className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-[10px]"
+                className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-2xs"
                 onClick={handleExport}
                 disabled={isExporting}
               >

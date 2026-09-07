@@ -130,13 +130,13 @@ const HealthyLivingPage = () => {
               {cats.slice(0, 2).map((name) => (
                 <span
                   key={name}
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700"
+                  className="text-2xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700"
                 >
                   {name}
                 </span>
               ))}
               {cats.length > 2 && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
                   +{cats.length - 2}
                 </span>
               )}
@@ -218,7 +218,7 @@ const HealthyLivingPage = () => {
           📥 Export CSV
         </button> */}
         <button
-          className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs"
           onClick={() => addHealthLiving.open()}
         >
           + Add Article
@@ -249,7 +249,7 @@ const HealthyLivingPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",
@@ -277,7 +277,7 @@ const HealthyLivingPage = () => {
 
             <div className="flex w-full sm:w-auto gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[140px] h-9 text-[11px] font-bold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
+                <SelectTrigger className="w-full sm:w-[140px] h-9 text-xs font-bold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -309,10 +309,10 @@ const HealthyLivingPage = () => {
           </div>
 
           {/* <div className="flex gap-2 mt-4">
-    <button className="btn btn-secondary btn-sm font-bold text-[10px]">
+    <button className="btn btn-secondary btn-sm font-bold text-2xs">
       ✅ Publish Selected
     </button>
-    <button className="btn btn-danger btn-sm font-bold text-[10px]">
+    <button className="btn btn-danger btn-sm font-bold text-2xs">
       🗑️ Delete Selected
     </button>
   </div> */}

@@ -14,7 +14,7 @@ export default function PendingIbpsTab() {
       banner={
         <div className="alert al-ic flex items-start gap-3">
           <span>🕵️</span>
-          <div className="text-[11px] leading-relaxed">
+          <div className="text-xs leading-relaxed">
             <strong>Verification queue.</strong> Check RGD/TIN documents before
             publishing — verified IBPs become searchable in the mobile app
             immediately.

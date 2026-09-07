@@ -16,7 +16,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
           🏋️
         </div>
         <div>
-          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.exercise_name}
           </div>
         </div>
@@ -27,7 +27,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => (
-      <Badge variant="blue" className="text-[8px]">
+      <Badge variant="blue" className="text-3xs">
         {row.original.category}
       </Badge>
     ),
@@ -37,11 +37,11 @@ export const exerciseColumns: ColumnDef<any>[] = [
     header: "Muscle Groups",
     cell: ({ row }) => (
       <div className="flex flex-wrap gap-1">
-        <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+        <span className="text-2xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
           {row.original.primary_muscle_group}
         </span>
         {row.original.secondary_muscles && (
-          <span className="text-[10px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+          <span className="text-2xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
             {row.original.secondary_muscles}
           </span>
         )}
@@ -52,7 +52,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "equipment",
     header: "Equipment",
     cell: ({ row }) => (
-      <span className="text-[11px] font-medium text-slate-600">
+      <span className="text-xs font-medium text-slate-600">
         {row.original.equipment_required}
       </span>
     ),
@@ -63,7 +63,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <span
         className={cn(
-          "inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
+          "inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-widest border",
           row.original.difficulty_level === "beginner"
             ? "bg-emerald-50 text-emerald-700 border-emerald-100"
             : row.original.difficulty_level === "intermediate"
@@ -79,11 +79,11 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "steps_reps",
     header: "Steps / Reps",
     cell: ({ row }) => (
-      <div className="text-[11px] font-medium text-slate-600">
+      <div className="text-xs font-medium text-slate-600">
         <div className="font-bold text-slate-800">
           {row.original.default_sets || "—"} sets
         </div>
-        <div className="text-[10px] text-slate-500">
+        <div className="text-2xs text-slate-500">
           {row.original.default_reps_duration || "—"}
         </div>
       </div>
@@ -93,7 +93,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "rest_time",
     header: "Rest Time",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-slate-700">
+      <span className="text-xs font-bold text-slate-700">
         {row.original.rest_time_seconds
           ? `${row.original.rest_time_seconds}s`
           : "—"}
@@ -106,7 +106,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <span
         className={cn(
-          "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+          "text-2xs font-black uppercase tracking-widest px-2 py-0.5 rounded border",
           row.original.tier === "premium"
             ? "bg-purple-50 text-purple-700 border-purple-200"
             : "bg-slate-100 text-slate-600 border-slate-200",
@@ -135,7 +135,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     cell: ({ row }) => (
       <span
         className={cn(
-          "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+          "text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded border",
           row.original.status === "published"
             ? "bg-emerald-50 text-emerald-700 border-emerald-100"
             : row.original.status === "archived"

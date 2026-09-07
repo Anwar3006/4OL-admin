@@ -178,7 +178,7 @@ export function TopRatedToggle({
                 setFormError(null);
               }}
             />
-            <p className="text-[10px] text-slate-400">
+            <p className="text-2xs text-slate-400">
               Empty = live immediately
             </p>
           </div>
@@ -194,12 +194,12 @@ export function TopRatedToggle({
                 setFormError(null);
               }}
             />
-            <p className="text-[10px] text-slate-400">Empty = never expires</p>
+            <p className="text-2xs text-slate-400">Empty = never expires</p>
           </div>
         </div>
 
         {formError && (
-          <p className="text-[11px] font-bold text-red-500">{formError}</p>
+          <p className="text-xs font-bold text-red-500">{formError}</p>
         )}
 
         <DialogFooter className="gap-2 sm:gap-2">
@@ -248,7 +248,7 @@ export function TopRatedToggle({
           disabled={isBusy || !itemId}
           onClick={() => handleToggle(!isTopRated)}
           className={cn(
-            "inline-flex items-center gap-1.5 h-10 px-3 rounded-none border text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-60 disabled:cursor-not-allowed",
+            "inline-flex items-center gap-1.5 h-10 px-3 rounded-none border text-2xs font-black uppercase tracking-widest transition-all disabled:opacity-60 disabled:cursor-not-allowed",
             isTopRated
               ? "bg-amber-500 border-amber-500 text-white hover:bg-amber-600"
               : "bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600",

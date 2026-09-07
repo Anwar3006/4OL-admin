@@ -235,7 +235,7 @@ function NotFoundState({ onClose }: { onClose: () => void }) {
       </div>
       <Button
         onClick={onClose}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-[11px] mt-2"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-none px-8 h-12 font-bold uppercase tracking-widest text-xs mt-2"
       >
         Close Panel
       </Button>
@@ -303,7 +303,7 @@ function DetailView({
             <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
               {facility.facility_name}
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
               {facility.facility_type?.replace(/_/g, " ")}
             </p>
           </div>
@@ -312,7 +312,7 @@ function DetailView({
         <div className="flex items-center gap-2 shrink-0">
           {facility.status && (
             <Badge
-              className={`hidden sm:inline-flex rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 ${
+              className={`hidden sm:inline-flex rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 ${
                 facility.status === "active"
                   ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   : facility.status === "pending"
@@ -339,7 +339,7 @@ function DetailView({
             <Button
               variant="outline"
               onClick={onMedEnquiries}
-              className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all"
+              className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-2xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all"
             >
               🔬 Med Enquiries
             </Button>
@@ -347,7 +347,7 @@ function DetailView({
 
           <Button
             onClick={onEdit}
-            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
+            className="rounded-none h-10 px-4 font-bold uppercase tracking-widest text-2xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all active:scale-95 shadow-sm"
           >
             <Pencil className="w-3.5 h-3.5 mr-2" /> Edit
           </Button>
@@ -379,14 +379,14 @@ function DetailView({
             <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-between gap-8">
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-black uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-none">
+                  <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-none">
                     <MapPin className="h-3 w-3 mr-1.5" />
                     {facility.region}, {facility.district}
                   </Badge>
                   {facility.gps_address && (
                     <Badge
                       variant="outline"
-                      className="rounded-none text-[10px] font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
                     >
                       {facility.gps_address}
                     </Badge>
@@ -398,7 +398,7 @@ function DetailView({
                 </DialogTitle>
 
                 {facility.facility_type && (
-                  <p className="text-[15px] text-slate-600 leading-relaxed font-medium capitalize">
+                  <p className="text-base text-slate-600 leading-relaxed font-medium capitalize">
                     {facility.facility_type.replace(/_/g, " ")}
                   </p>
                 )}
@@ -459,7 +459,7 @@ function DetailView({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
                     {images.length > 1 && (
-                      <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-[10px] font-black text-white tracking-widest rounded-none">
+                      <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm px-3 py-1.5 text-2xs font-black text-white tracking-widest rounded-none">
                         {activeImage + 1} / {images.length}
                       </div>
                     )}
@@ -469,7 +469,7 @@ function DetailView({
                       onClick={() => onOpenGallery(images)}
                       className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20"
                     >
-                      <span className="bg-white/90 text-slate-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-none">
+                      <span className="bg-white/90 text-slate-900 text-2xs font-black uppercase tracking-widest px-4 py-2 rounded-none">
                         View Gallery
                       </span>
                     </button>
@@ -512,7 +512,7 @@ function DetailView({
               ) : (
                 <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
                   <Building2 className="h-10 w-10 text-slate-300 mb-3" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
                     No Images
                   </span>
                 </div>
@@ -544,11 +544,11 @@ function DetailView({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <HeartPulse className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+              <span className="text-2xs font-bold uppercase tracking-[0.2em]">
                 Ghana Health Tech Facility Directory
               </span>
             </div>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest">
               ID: {facility.id.slice(0, 8)}…
             </p>
           </div>
@@ -560,13 +560,13 @@ function DetailView({
         <div className="shrink-0 bg-white border-t border-slate-200 px-6 py-4 md:px-10 md:py-5 flex gap-3">
           <Button
             variant="outline"
-            className="flex-1 h-11 font-black uppercase tracking-widest text-[10px] rounded-none border-slate-200 hover:bg-slate-50"
+            className="flex-1 h-11 font-black uppercase tracking-widest text-2xs rounded-none border-slate-200 hover:bg-slate-50"
             onClick={onEdit}
           >
             <Pencil className="h-4 w-4 mr-2" /> Edit
           </Button>
           <Button
-            className="flex-1 h-11 font-black uppercase tracking-widest text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-none transition-all active:scale-95"
+            className="flex-1 h-11 font-black uppercase tracking-widest text-2xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-none transition-all active:scale-95"
             onClick={onApprove}
             disabled={isApproving}
           >
@@ -580,7 +580,7 @@ function DetailView({
           </Button>
           <Button
             variant="destructive"
-            className="flex-1 h-11 font-black uppercase tracking-widest text-[10px] rounded-none"
+            className="flex-1 h-11 font-black uppercase tracking-widest text-2xs rounded-none"
             onClick={onReject}
             disabled={isRejecting}
           >
@@ -614,7 +614,7 @@ function SectionHeader({
       <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">
+      <h3 className="section-heading">
         {title}
       </h3>
     </div>
@@ -634,7 +634,7 @@ function MetaPill({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
         <Icon className="h-3.5 w-3.5 text-emerald-600" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>

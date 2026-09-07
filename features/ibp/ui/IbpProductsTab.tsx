@@ -61,8 +61,8 @@ export default function IbpProductsTab() {
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-[12px] font-bold text-slate-800">{row.original.name}</span>
-              <span className="text-[11px] text-slate-400">{row.original.category ?? "Uncategorised"}</span>
+              <span className="text-sm font-bold text-slate-800">{row.original.name}</span>
+              <span className="text-xs text-slate-400">{row.original.category ?? "Uncategorised"}</span>
             </div>
           </div>
         ),
@@ -71,14 +71,14 @@ export default function IbpProductsTab() {
         id: "business",
         header: "Business",
         cell: ({ row }: { row: { original: IbpProduct } }) => (
-          <span className="text-[11px] text-slate-600">{row.original.business_name ?? "—"}</span>
+          <span className="text-xs text-slate-600">{row.original.business_name ?? "—"}</span>
         ),
       },
       {
         id: "submitted",
         header: "Submitted",
         cell: ({ row }: { row: { original: IbpProduct } }) => (
-          <span className="text-[11px] text-slate-500">{formatDate(row.original.created_at)}</span>
+          <span className="text-xs text-slate-500">{formatDate(row.original.created_at)}</span>
         ),
       },
       {

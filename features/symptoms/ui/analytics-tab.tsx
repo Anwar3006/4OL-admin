@@ -27,7 +27,7 @@ const Leaderboard = ({
 }) => (
   <div className="card p-0 overflow-hidden border-slate-200">
     <div className="px-5 py-4 border-b border-slate-100">
-      <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+      <h4 className="section-heading">
         {icon} {title}
       </h4>
     </div>
@@ -39,7 +39,7 @@ const Leaderboard = ({
       <ul className="divide-y divide-slate-100">
         {rows.slice(0, 10).map((row, i) => (
           <li key={`${row.id}-${i}`} className="flex items-center gap-3 px-5 py-2.5">
-            <span className="text-[10px] font-black text-slate-400 w-5 text-right shrink-0">
+            <span className="text-2xs font-black text-slate-400 w-5 text-right shrink-0">
               {i + 1}.
             </span>
             <Link
@@ -48,7 +48,7 @@ const Leaderboard = ({
             >
               {row.name}
             </Link>
-            <span className="text-[11px] font-black text-slate-600 shrink-0">
+            <span className="text-xs font-black text-slate-600 shrink-0">
               {row.value.toLocaleString()} {unit}
             </span>
           </li>
@@ -75,7 +75,7 @@ const SymptomAnalyticsTab = () => {
         <p className="text-xs font-bold text-red-500">
           Failed to load analytics{error ? `: ${error.message}` : "."}
         </p>
-        <p className="mt-2 text-[11px] font-semibold text-slate-400">
+        <p className="mt-2 text-xs font-semibold text-slate-400">
           Apply migration 20260822_content_analytics_carousel_extension.sql to
           enable the get_symptom_analytics RPC.
         </p>
@@ -93,7 +93,7 @@ const SymptomAnalyticsTab = () => {
   return (
     <div className="space-y-6">
       {!pipelineLive && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-bold text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
           ℹ️ Likes/Saves read 0 until the content_engagement migration
           (Mapping Audit Part 4 / Epic 30.1) is applied. Views, verification
           and coverage metrics below are live.
@@ -170,7 +170,7 @@ const SymptomAnalyticsTab = () => {
 
       {/* 30-day unique-viewer trend */}
       <div className="card p-5 border-slate-200">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h4 className="section-heading mb-4">
           📊 Unique Views — Last 30 Days
         </h4>
         {data.view_trend_30d.length === 0 ? (
@@ -194,7 +194,7 @@ const SymptomAnalyticsTab = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-slate-500">
+            <div className="mt-3 flex items-center justify-between text-2xs font-bold text-slate-500">
               <span>{data.view_trend_30d[0]?.date}</span>
               <span>{data.view_trend_30d[data.view_trend_30d.length - 1]?.date}</span>
             </div>
@@ -206,12 +206,12 @@ const SymptomAnalyticsTab = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card p-5 border-slate-200">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+            <h4 className="section-heading">
               🧍 Symptoms by Body Part
             </h4>
             <Link
               href="/anatomy?tab=symptoms"
-              className="text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:underline"
+              className="text-2xs font-black uppercase tracking-widest text-emerald-700 hover:underline"
             >
               Open Anatomy →
             </Link>
@@ -224,7 +224,7 @@ const SymptomAnalyticsTab = () => {
             <div className="space-y-2.5">
               {data.body_parts.map((part) => (
                 <div key={part.body_part_id} className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold text-slate-600 w-40 truncate shrink-0">
+                  <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
                     {part.body_part_name}
                   </span>
                   <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -233,7 +233,7 @@ const SymptomAnalyticsTab = () => {
                       style={{ width: `${(part.symptom_count / maxBodyPart) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[11px] font-black text-slate-700 w-8 text-right shrink-0">
+                  <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
                     {part.symptom_count}
                   </span>
                 </div>
@@ -244,12 +244,12 @@ const SymptomAnalyticsTab = () => {
 
         <div className="card p-5 border-slate-200">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+            <h4 className="section-heading">
               📂 Symptoms by Category
             </h4>
             <Link
               href="/symptoms?tab=categories"
-              className="text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:underline"
+              className="text-2xs font-black uppercase tracking-widest text-emerald-700 hover:underline"
             >
               Open Categories →
             </Link>
@@ -262,7 +262,7 @@ const SymptomAnalyticsTab = () => {
             <div className="space-y-2.5">
               {data.categories.map((cat) => (
                 <div key={cat.category_id} className="flex items-center gap-3">
-                  <span className="text-[11px] font-bold text-slate-600 w-40 truncate shrink-0">
+                  <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
                     {cat.category_name}
                   </span>
                   <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -271,7 +271,7 @@ const SymptomAnalyticsTab = () => {
                       style={{ width: `${(cat.symptom_count / maxCategory) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[11px] font-black text-slate-700 w-8 text-right shrink-0">
+                  <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
                     {cat.symptom_count}
                   </span>
                 </div>
@@ -300,10 +300,10 @@ const SymptomAnalyticsTab = () => {
 
       {/* Content health */}
       <div className="card p-5 border-slate-200">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-700 mb-4">
+        <h4 className="section-heading mb-4">
           🧾 Content Health — Section Completeness
         </h4>
-        <p className="text-[11px] font-bold text-slate-500 mb-3">
+        <p className="text-xs font-bold text-slate-500 mb-3">
           Published symptoms average{" "}
           <span className="text-emerald-700">
             {Number(data.completeness.avg_sections ?? 0).toFixed(1)} / 8

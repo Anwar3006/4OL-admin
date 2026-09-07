@@ -195,7 +195,7 @@ export default function NotificationsTab() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {(rule.channel ?? []).map((channel) => (
-                          <Badge key={channel} variant="outline" className="text-[10px]">
+                          <Badge key={channel} variant="outline" className="text-2xs">
                             {channel}
                           </Badge>
                         ))}

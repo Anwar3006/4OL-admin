@@ -112,7 +112,7 @@ export default function SupportMessagesButton() {
         >
           <NavGlyph char={NAV_GLYPH.messages} />
           {total > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground">
               {badge}
             </span>
           )}
@@ -142,7 +142,7 @@ export default function SupportMessagesButton() {
                 <span className="text-xl font-bold">
                   {summary?.openTickets ?? 0}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   {summary?.unassignedTickets ?? 0} unassigned
                 </span>
               </button>
@@ -166,7 +166,7 @@ export default function SupportMessagesButton() {
                 <span className="text-xl font-bold">
                   {summary?.pendingFlags ?? 0}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   awaiting review
                 </span>
               </button>
@@ -187,7 +187,7 @@ export default function SupportMessagesButton() {
                         </span>
                         <span
                           className={cn(
-                            "shrink-0 text-[10px] font-bold uppercase",
+                            "shrink-0 text-2xs font-bold uppercase",
                             priorityTone[t.priority ?? ""] ??
                               "text-muted-foreground",
                           )}
@@ -195,7 +195,7 @@ export default function SupportMessagesButton() {
                           {t.priority ?? "—"}
                         </span>
                       </span>
-                      <span className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                      <span className="flex items-center justify-between gap-2 text-2xs text-muted-foreground">
                         <span className="line-clamp-1">
                           {t.user_name ?? "Unknown user"}
                         </span>

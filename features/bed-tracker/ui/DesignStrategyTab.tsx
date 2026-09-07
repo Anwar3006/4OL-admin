@@ -71,7 +71,7 @@ export default function DesignStrategyTab() {
       {CARDS.map((card) => (
         <Card key={card.title}>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="section-heading">
               {card.icon} {card.title}
             </CardTitle>
           </CardHeader>

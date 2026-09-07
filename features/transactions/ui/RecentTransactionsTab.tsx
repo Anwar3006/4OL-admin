@@ -105,7 +105,7 @@ export default function RecentTransactionsTab() {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(txn);
@@ -116,7 +116,7 @@ export default function RecentTransactionsTab() {
               {txn.status === "failed" && (
                 <button
                   disabled={busy}
-                  className="h-7 px-2 rounded-lg border border-amber-200 text-[9px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+                  className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     action.mutate({ id: txn.id, action: "retry" });
@@ -128,7 +128,7 @@ export default function RecentTransactionsTab() {
               {txn.direction === "in" && txn.status !== "refunded" && txn.status !== "failed" && (
                 <button
                   disabled={busy}
-                  className="h-7 px-2 rounded-lg border border-purple-200 text-[9px] font-black uppercase tracking-widest text-purple-600 hover:bg-purple-50 disabled:opacity-50"
+                  className="h-7 px-2 rounded-lg border border-purple-200 text-3xs font-black uppercase tracking-widest text-purple-600 hover:bg-purple-50 disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     refund.mutate({ transactionId: txn.id, reason: "other" });
@@ -140,7 +140,7 @@ export default function RecentTransactionsTab() {
               {txn.status !== "disputed" && txn.status !== "cancelled" && txn.status !== "failed" && (
                 <button
                   disabled={busy}
-                  className="h-7 px-2 rounded-lg border border-orange-200 text-[9px] font-black uppercase tracking-widest text-orange-600 hover:bg-orange-50 disabled:opacity-50"
+                  className="h-7 px-2 rounded-lg border border-orange-200 text-3xs font-black uppercase tracking-widest text-orange-600 hover:bg-orange-50 disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     action.mutate({ id: txn.id, action: "dispute" });
@@ -168,7 +168,7 @@ export default function RecentTransactionsTab() {
       subtitle: (row) => row.reference,
       badge: (row) => (
         <span
-          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+          className={`text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
             row.status === "failed"
               ? "bg-red-50 text-red-700 border-red-100"
               : row.status === "pending"
@@ -193,7 +193,7 @@ export default function RecentTransactionsTab() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search transactions..."
         />
         <select
@@ -202,7 +202,7 @@ export default function RecentTransactionsTab() {
             setSegment(e.target.value as "all" | "user" | "business");
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           {SEGMENTS.map((s) => (
             <option key={s.value} value={s.value}>{s.label}</option>
@@ -214,7 +214,7 @@ export default function RecentTransactionsTab() {
             setCategory(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -226,7 +226,7 @@ export default function RecentTransactionsTab() {
             setMoreFilter(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
         >
           {MORE_FILTERS.map((m) => (
             <option key={m.value} value={m.value}>{m.label}</option>
@@ -235,7 +235,7 @@ export default function RecentTransactionsTab() {
         <button
           onClick={handleExport}
           disabled={rows.length === 0}
-          className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-50"
+          className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-50"
         >
           📥 Export Data
         </button>

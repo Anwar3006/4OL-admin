@@ -39,7 +39,7 @@ const PASS_TYPE_LABEL: Record<string, string> = {
 };
 
 const FILTER_SELECT_CLASS =
-  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: "", label: "All payment methods" },
@@ -89,16 +89,16 @@ function PlanCard({
   return (
     <div className="relative bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col gap-3">
       {popular && (
-        <span className="absolute -top-2 right-4 inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-600 text-white shadow">
+        <span className="absolute -top-2 right-4 inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-widest bg-emerald-600 text-white shadow">
           ★ Popular
         </span>
       )}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[13px] font-black uppercase tracking-tight text-slate-800 truncate">
+          <div className="text-sm font-black uppercase tracking-tight text-slate-800 truncate">
             {plan.name}
           </div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+          <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
             {plan.billingCycle}
             {!plan.isActive && " · hidden"}
           </div>
@@ -117,7 +117,7 @@ function PlanCard({
 
       <div className="text-2xl font-black text-slate-900">
         {formatCurrency(plan.price, { decimals: 0 })}
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           {cycleSuffix(plan)}
         </span>
       </div>
@@ -126,18 +126,18 @@ function PlanCard({
         {plan.privileges.slice(0, 6).map((feature, i) => (
           <li
             key={i}
-            className="text-[11px] font-bold text-slate-600 flex items-start gap-1.5"
+            className="text-xs font-bold text-slate-600 flex items-start gap-1.5"
           >
             <span className="text-emerald-500">✓</span>
             <span>{feature}</span>
           </li>
         ))}
         {plan.privileges.length === 0 && (
-          <li className="text-[11px] font-bold text-slate-400">No features listed</li>
+          <li className="text-xs font-bold text-slate-400">No features listed</li>
         )}
       </ul>
 
-      <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 border-t border-slate-100 pt-2">
+      <div className="text-2xs font-black uppercase tracking-widest text-slate-400 border-t border-slate-100 pt-2">
         {plan.active_subscribers ?? 0} active subscriber
         {(plan.active_subscribers ?? 0) === 1 ? "" : "s"}
       </div>
@@ -247,7 +247,7 @@ export default function SubscriptionsTab() {
 
       {/* ── Plan catalog ── */}
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-[12px] font-black uppercase tracking-widest text-slate-500">
+        <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">
           Plans ({planList.length})
         </h3>
         <div className="flex items-center gap-2">
@@ -255,14 +255,14 @@ export default function SubscriptionsTab() {
             variant="outline"
             size="sm"
             onClick={handleExport}
-            className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest"
+            className="h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest"
           >
             📥 Export List
           </Button>
           <Button
             size="sm"
             onClick={() => setPlanDialog({ open: true, plan: null })}
-            className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             + Create Plan
           </Button>
@@ -299,7 +299,7 @@ export default function SubscriptionsTab() {
             key={tab.id}
             onClick={() => setSubTab(tab.id)}
             className={cn(
-              "px-4 py-2.5 text-[11px] font-black uppercase tracking-widest border-b-2 transition-all -mb-px",
+              "px-4 py-2.5 text-xs font-black uppercase tracking-widest border-b-2 transition-all -mb-px",
               subTab === tab.id
                 ? "border-emerald-600 text-emerald-700"
                 : "border-transparent text-slate-400 hover:text-slate-600",
@@ -386,7 +386,7 @@ export default function SubscriptionsTab() {
       {subTab === "at_risk" && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50/60 px-4 py-3">
-            <div className="text-[11px] font-bold text-red-700">
+            <div className="text-xs font-bold text-red-700">
               {atRiskSubscribers.data?.meta?.total ?? 0} subscriber(s) flagged
               at risk — payment failures or lapsing renewals. Send renewal
               reminders to win them back.
@@ -395,7 +395,7 @@ export default function SubscriptionsTab() {
               size="sm"
               disabled={remindAll.isPending}
               onClick={() => remindAll.mutate({ at_risk: true })}
-              className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white"
+              className="h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white"
             >
               {remindAll.isPending ? "Sending…" : "📨 Send All Reminders"}
             </Button>
@@ -429,17 +429,17 @@ export default function SubscriptionsTab() {
       {/* ── Pass Requests (three scoped passes gap-closure) ── */}
       {subTab === "requests" && (
         <div className="space-y-3">
-          <p className="text-[11px] font-bold text-slate-400">
+          <p className="text-xs font-bold text-slate-400">
             Mobile's "Choose your pass" screen has no self-serve payment yet — a request lands
             here, and fulfilling it performs the real grant (All-Access / Fitness-only via
             user_subscriptions, Plasence-only via period_premium_grants).
           </p>
           {upgradeRequests.isLoading ? (
-            <div className="py-10 text-center text-[11px] font-bold text-slate-400">Loading…</div>
+            <div className="py-10 text-center text-xs font-bold text-slate-400">Loading…</div>
           ) : (upgradeRequests.data?.requests ?? []).length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-10 text-center">
               <div className="text-3xl mb-3">🎫</div>
-              <div className="text-[13px] font-black uppercase tracking-widest text-slate-700">
+              <div className="section-heading">
                 No pending requests
               </div>
             </div>
@@ -448,21 +448,21 @@ export default function SubscriptionsTab() {
               {(upgradeRequests.data?.requests ?? []).map((r) => (
                 <div key={r.id} className="flex items-center justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <div className="text-[13px] font-black text-slate-800">{r.user_name}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="text-sm font-black text-slate-800">{r.user_name}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">
                       {r.user_email} · requested {new Date(r.requested_at).toLocaleDateString()}
                     </div>
                     {r.note && (
-                      <div className="text-[11px] text-slate-400 mt-1 italic truncate max-w-md">
+                      <div className="text-xs text-slate-400 mt-1 italic truncate max-w-md">
                         "{r.note}"
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="badge badge-blue h-5 text-[9px] uppercase font-black">
+                    <span className="badge badge-blue h-5 text-3xs uppercase font-black">
                       {PASS_TYPE_LABEL[r.pass_type] ?? r.pass_type}
                     </span>
-                    <span className="badge badge-slate h-5 text-[9px] uppercase font-black font-mono">
+                    <span className="badge badge-slate h-5 text-3xs uppercase font-black font-mono">
                       {r.tier_key}
                     </span>
                     <Button
@@ -497,10 +497,10 @@ export default function SubscriptionsTab() {
       {subTab === "billing" && (
         <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-10 text-center">
           <div className="text-3xl mb-3">💳</div>
-          <div className="text-[13px] font-black uppercase tracking-widest text-slate-700">
+          <div className="section-heading">
             Billing history coming soon
           </div>
-          <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-md mx-auto">
+          <p className="text-xs font-bold text-slate-400 mt-2 max-w-md mx-auto">
             The transaction ledger (Paid / Failed payments, month picker,
             transaction IDs) lands with the Paystack payments integration
             (M-D5 / K-D7). Subscription rows currently track status and

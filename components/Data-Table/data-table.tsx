@@ -263,7 +263,7 @@ const DataTableComponent = <TData, TValue>({
               variant="ghost"
               size="sm"
               onClick={() => handleBulkAction(action)}
-              className="text-slate-200 hover:text-white hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-[10px]"
+              className="text-slate-200 hover:text-white hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-2xs"
             >
               {action.label}
             </Button>
@@ -273,7 +273,7 @@ const DataTableComponent = <TData, TValue>({
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-[10px]"
+              className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-2xs"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {deleteLabel}
@@ -365,7 +365,7 @@ const DataTableComponent = <TData, TValue>({
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500"
+                        className="px-6 py-4 text-2xs font-black uppercase tracking-widest text-slate-500"
                       >
                         {header.isPlaceholder
                           ? null
@@ -456,7 +456,7 @@ const DataTableComponent = <TData, TValue>({
 
             return (
               <>
-                <div className="hidden sm:block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                <div className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Showing {(pag.currentPage - 1) * pag.pageSize + 1} to{" "}
                   {Math.min(pag.currentPage * pag.pageSize, pag.totalItems)} of{" "}
                   {pag.totalItems} results
@@ -477,20 +477,20 @@ const DataTableComponent = <TData, TValue>({
                     size="sm"
                     onClick={pag.onPreviousPage}
                     disabled={!pag.canPreviousPage || isLoading}
-                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
+                    className="h-8 px-3 text-2xs font-bold uppercase tracking-widest"
                   >
                     <ChevronLeft className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Previous</span>
                   </Button>
 
                   <div className="flex items-center gap-2 px-2">
-                    <span className="text-[11px] font-black text-slate-700">
+                    <span className="text-xs font-black text-slate-700">
                       {pag.currentPage}
                     </span>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       of
                     </span>
-                    <span className="text-[11px] font-black text-slate-700">
+                    <span className="text-xs font-black text-slate-700">
                       {pag.totalPages}
                     </span>
                   </div>
@@ -500,7 +500,7 @@ const DataTableComponent = <TData, TValue>({
                     size="sm"
                     onClick={pag.onNextPage}
                     disabled={!pag.canNextPage || isLoading}
-                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest"
+                    className="h-8 px-3 text-2xs font-bold uppercase tracking-widest"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="h-4 w-4 sm:ml-2" />

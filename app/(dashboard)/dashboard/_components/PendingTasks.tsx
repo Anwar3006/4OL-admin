@@ -70,8 +70,8 @@ export default function PendingTasks({
   return (
     <div className="card">
       <div className="card-header border-b border-slate-100 mb-3">
-        <h2 className="card-title text-[13px]">Admin Pending Tasks</h2>
-        <span className="badge badge-blue text-[9px]">
+        <h2 className="card-title text-sm">Admin Pending Tasks</h2>
+        <span className="badge badge-blue text-3xs">
           {loading ? "Loading" : `${total} items`}
         </span>
       </div>
@@ -85,10 +85,10 @@ export default function PendingTasks({
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs bg-slate-50 text-slate-600">
               {loading ? "..." : task.count}
             </div>
-            <div className="flex-1 text-[11px] font-bold text-slate-700">
+            <div className="flex-1 text-xs font-bold text-slate-700">
               {loading ? "Loading queue..." : task.label}
             </div>
-            <span className={`badge badge-${task.variant} text-[8px] uppercase tracking-widest`}>
+            <span className={`badge badge-${task.variant} text-3xs uppercase tracking-widest`}>
               Review
             </span>
           </a>

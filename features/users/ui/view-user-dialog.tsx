@@ -56,7 +56,7 @@ export default function ViewUserDialog() {
               <div className="flex items-center gap-2 mt-1">
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-black uppercase tracking-widest bg-white"
+                  className="text-2xs font-black uppercase tracking-widest bg-white"
                 >
                   {user?.user_type?.replace(/_/g, " ") || "User"}
                 </Badge>
@@ -69,7 +69,7 @@ export default function ViewUserDialog() {
             {user?.status && (
               <Badge
                 className={cn(
-                  "px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                  "px-3 py-1 text-2xs font-black uppercase tracking-widest",
                   user.status === "active"
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : "bg-red-50 text-red-700 border-red-200",
@@ -165,14 +165,14 @@ export default function ViewUserDialog() {
           <div className="p-6 border-t bg-slate-50/50 flex gap-3">
             <Button
               variant="outline"
-              className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+              className="flex-1 h-11 font-black uppercase tracking-widest text-2xs"
               onClick={close}
             >
               Close
             </Button>
             <Button
               variant="destructive"
-              className="flex-1 h-11 font-black uppercase tracking-widest text-[10px]"
+              className="flex-1 h-11 font-black uppercase tracking-widest text-2xs"
               onClick={handleFlagUser}
             >
               <Flag className="h-4 w-4 mr-2" />
@@ -189,7 +189,7 @@ function InfoRow({ label, value, icon: Icon }: any) {
   if (!value) return null;
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+      <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
         {label}
       </p>
       <div className="flex items-center gap-2">

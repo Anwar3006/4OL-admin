@@ -66,9 +66,9 @@ const OnboardHcpDialog = ({
   };
 
   const inputClass =
-    "w-full h-9 px-3 rounded-xl border border-slate-200 text-[12px] font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
+    "w-full h-9 px-3 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
   const labelClass =
-    "text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 block";
+    "text-3xs font-black uppercase tracking-widest text-slate-400 mb-1 block";
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -82,12 +82,12 @@ const OnboardHcpDialog = ({
             <h2 className="text-lg font-black text-slate-900">
               👩‍⚕️ Onboard Healthcare Professional
             </h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
               Submits as pending verification — manual licence check required
             </p>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-amber-800">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
             ⚠️ Manual verification: confirm the licence against the issuing
             body portal (MDC / PCG / NMC / AHPC / GPC) before approving.
           </div>
@@ -202,7 +202,7 @@ const OnboardHcpDialog = ({
               />
               <label
                 htmlFor="can-respond-enquiries"
-                className="text-[11px] font-bold text-slate-700"
+                className="text-xs font-bold text-slate-700"
               >
                 💊 Can respond to Medication Enquiries
               </label>

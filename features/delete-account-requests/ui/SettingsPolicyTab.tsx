@@ -73,8 +73,8 @@ export default function SettingsPolicyTab() {
   ) => (
     <div className="flex justify-between items-center py-2 border-b border-slate-50 gap-4">
       <div>
-        <div className="text-[11px] font-bold text-slate-600">{label}</div>
-        <div className="text-[9px] text-slate-400 font-medium">{hint}</div>
+        <div className="text-xs font-bold text-slate-600">{label}</div>
+        <div className="text-3xs text-slate-400 font-medium">{hint}</div>
       </div>
       <div className="flex items-center gap-1.5">
         <input
@@ -84,7 +84,7 @@ export default function SettingsPolicyTab() {
           value={form?.[key] ?? 0}
           onChange={(e) => setForm(form ? { ...form, [key]: Number(e.target.value) } : form)}
         />
-        <span className="text-[10px] font-black text-slate-400 uppercase">{suffix}</span>
+        <span className="text-2xs font-black text-slate-400 uppercase">{suffix}</span>
       </div>
     </div>
   );
@@ -99,7 +99,7 @@ export default function SettingsPolicyTab() {
           <div className="space-y-4">
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
               <h3 className="font-bold text-slate-800 text-xs mb-1">GH-DPA 2012 Compliance</h3>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Section 34 of the Ghana Data Protection Act 2012 requires that personal data be erased upon request within 30 days,
                 unless legal or regulatory obligations require retention. Login email erasure in Supabase auth is a separate,
                 explicitly-reviewed step (Epic 21 scope note).
@@ -112,13 +112,13 @@ export default function SettingsPolicyTab() {
 
             <div className="flex justify-between items-center py-2 border-b border-slate-50">
               <div>
-                <div className="text-[11px] font-bold text-slate-600">Auto-Processing (pg_cron)</div>
-                <div className="text-[9px] text-slate-400 font-medium">
+                <div className="text-xs font-bold text-slate-600">Auto-Processing (pg_cron)</div>
+                <div className="text-3xs text-slate-400 font-medium">
                   expire_delete_account_grace_periods() runs daily and reads the grace window above
                 </div>
               </div>
               <button
-                className={`text-[10px] font-black px-3 py-1 rounded-full border ${
+                className={`text-2xs font-black px-3 py-1 rounded-full border ${
                   form.auto_process
                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                     : "bg-slate-50 text-slate-500 border-slate-200"

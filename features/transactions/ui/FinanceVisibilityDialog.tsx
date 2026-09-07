@@ -50,7 +50,7 @@ export default function FinanceVisibilityDialog({ open, onOpenChange }: FinanceV
             🔐 Finance Metric Visibility
           </DialogTitle>
         </DialogHeader>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           Metrics switched off are hidden from finance admins and other non-super-admin roles.
         </p>
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
@@ -72,7 +72,7 @@ export default function FinanceVisibilityDialog({ open, onOpenChange }: FinanceV
         <button
           onClick={handleSave}
           disabled={save.isPending}
-          className="btn btn-primary w-full text-white font-black uppercase text-[10px] tracking-widest disabled:opacity-50"
+          className="btn btn-primary w-full text-white font-black uppercase text-2xs tracking-widest disabled:opacity-50"
         >
           {save.isPending ? "Saving…" : "Save Visibility Rules"}
         </button>

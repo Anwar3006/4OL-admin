@@ -15,20 +15,20 @@ export default function RevenueAnalytics() {
       <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
         <div>
           <h2 className="card-title text-sm">Revenue Analytics</h2>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Subscriptions · IBP Service Fees · Marketing · Payouts</p>
+          <p className="text-2xs text-slate-400 font-bold uppercase tracking-tight">Subscriptions · IBP Service Fees · Marketing · Payouts</p>
         </div>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last 6 months</span>
+        <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">Last 6 months</span>
       </div>
       {hidden ? (
         <div className="h-48 flex items-center justify-center">
           <div className="text-center">
             <div className="text-2xl mb-2">🔒</div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hidden by Super Admin</p>
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">Hidden by Super Admin</p>
           </div>
         </div>
       ) : monthly.length === 0 ? (
         <div className="h-48 flex items-center justify-center">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">No revenue recorded yet</p>
+          <p className="text-2xs font-bold uppercase tracking-widest text-slate-300">No revenue recorded yet</p>
         </div>
       ) : (
         <div className="h-48 w-full">

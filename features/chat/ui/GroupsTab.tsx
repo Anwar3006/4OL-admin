@@ -182,7 +182,7 @@ export default function GroupsTab() {
         cell: ({ row }) => (
           <div>
             <div className="font-bold text-slate-800">{row.original.name}</div>
-            <div className="text-[10px] text-slate-400 line-clamp-1">
+            <div className="text-2xs text-slate-400 line-clamp-1">
               {row.original.description || "No description"}
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function GroupsTab() {
         accessorKey: "group_category",
         header: "Category",
         cell: ({ row }) => (
-          <span className="badge badge-blue text-[9px]">
+          <span className="badge badge-blue text-3xs">
             {groupCategoryLabel(row.original.group_category)}
           </span>
         ),
@@ -206,9 +206,9 @@ export default function GroupsTab() {
         accessorKey: "user_profiles",
         header: "Group Admin / Permissions",
         cell: ({ row }) => (
-          <div className="text-[11px]">
+          <div className="text-xs">
             <div className="font-bold text-slate-700">{creatorName(row.original)}</div>
-            <div className="text-[9px] text-slate-400">
+            <div className="text-3xs text-slate-400">
               {groupPermissionSummary(row.original.group_permissions, row.original.group_type)}
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function GroupsTab() {
         accessorKey: "msgs_per_member",
         header: "Msgs/Member",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-500">
+          <span className="text-2xs font-bold text-slate-500">
             {row.original.msgs_per_member ?? 0}
           </span>
         ),
@@ -236,7 +236,7 @@ export default function GroupsTab() {
         cell: ({ row }) => {
           const status = row.original.status ?? "active";
           return (
-            <span className={`badge ${STATUS_BADGE[status] || "badge-green"} text-[9px] capitalize`}>
+            <span className={`badge ${STATUS_BADGE[status] || "badge-green"} text-3xs capitalize`}>
               {status}
             </span>
           );
@@ -246,7 +246,7 @@ export default function GroupsTab() {
         accessorKey: "created_at",
         header: "Created",
         cell: ({ row }) => (
-          <span className="text-[10px] text-slate-400">
+          <span className="text-2xs text-slate-400">
             {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : "—"}
           </span>
         ),
@@ -262,14 +262,14 @@ export default function GroupsTab() {
         <div className="alert bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <span className="text-base">🔍</span>
-            <div className="flex-1 text-[11px] font-medium">
+            <div className="flex-1 text-xs font-medium">
               <strong className="font-black">Super Admin:</strong> Global Message
               Search — search across all {data?.meta?.total || 0} group histories
               (audit/compliance). Every search is audit-logged.
             </div>
             <div className="flex gap-2">
               <input
-                className="h-7 px-2 rounded-lg border border-blue-200 text-[11px] w-48 outline-none"
+                className="h-7 px-2 rounded-lg border border-blue-200 text-xs w-48 outline-none"
                 placeholder="Search all messages..."
                 value={globalQuery}
                 onChange={(e) => setGlobalQuery(e.target.value)}
@@ -280,7 +280,7 @@ export default function GroupsTab() {
                 }}
               />
               <button
-                className="btn btn-primary btn-sm h-7 text-white text-[10px]"
+                className="btn btn-primary btn-sm h-7 text-white text-2xs"
                 disabled={globalSearch.isPending || globalQuery.trim().length < 2}
                 onClick={() => globalSearch.mutate(globalQuery.trim())}
               >
@@ -289,7 +289,7 @@ export default function GroupsTab() {
             </div>
           </div>
           {globalSearch.data && (
-            <div className="text-[10px] space-y-1 max-h-40 overflow-y-auto border-t border-blue-100 pt-2">
+            <div className="text-2xs space-y-1 max-h-40 overflow-y-auto border-t border-blue-100 pt-2">
               <div className="font-black">{globalSearch.data.total} result(s)</div>
               {globalSearch.data.results.map((r) => (
                 <div key={r.id} className="bg-white/60 rounded-md px-2 py-1">
@@ -312,7 +312,7 @@ export default function GroupsTab() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
@@ -325,7 +325,7 @@ export default function GroupsTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -338,7 +338,7 @@ export default function GroupsTab() {
           <option>Archived</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={sortMode}
           onChange={(e) => setSortMode(e.target.value as SortMode)}
         >

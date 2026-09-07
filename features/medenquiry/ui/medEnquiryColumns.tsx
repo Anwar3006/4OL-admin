@@ -53,7 +53,7 @@ export const elapsedHours = (iso: string) => {
 export const StatusBadge = ({ status }: { status: string }) => (
   <span
     className={cn(
-      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+      "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
       STATUS_STYLES[status] ?? STATUS_STYLES.cancelled,
     )}
   >
@@ -66,7 +66,7 @@ export const TypeBadge = ({ type }: { type: string | null }) => {
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border",
+        "inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest border",
         TYPE_STYLES[key] ?? TYPE_STYLES.otc,
       )}
     >
@@ -80,7 +80,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     id: "enquiry_id",
     header: "Enquiry ID",
     cell: ({ row }) => (
-      <span className="font-mono text-[10px] font-black text-slate-500 tracking-tighter">
+      <span className="font-mono text-2xs font-black text-slate-500 tracking-tighter">
         {formatEnqId(row.original.id)}
       </span>
     ),
@@ -90,10 +90,10 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Medication Requested",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+        <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
           {row.original.medication_name}
         </div>
-        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+        <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
           {[row.original.dosage, row.original.quantity ? `${row.original.quantity} ${row.original.unit ?? "units"}` : null]
             .filter(Boolean)
             .join(" · ") || "—"}
@@ -111,11 +111,11 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Submitted By",
     cell: ({ row }) => (
       <div>
-        <div className="font-bold text-slate-700 text-[11px] leading-none mb-1">
+        <div className="font-bold text-slate-700 text-xs leading-none mb-1">
           {row.original.submitter_name}
           {row.original.identity_masked && <span className="ml-1 text-slate-300">🔒</span>}
         </div>
-        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+        <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
           {row.original.submitter_region ?? "—"}
         </div>
       </div>
@@ -126,11 +126,11 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Rx",
     cell: ({ row }) =>
       row.original.prescription_url ? (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
           📋 Attached
         </span>
       ) : (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
           None
         </span>
       ),
@@ -142,14 +142,14 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
       <div>
         <div
           className={cn(
-            "text-[11px] font-black leading-none mb-1",
+            "text-xs font-black leading-none mb-1",
             row.original.response_count > 0 ? "text-emerald-600" : "text-amber-500",
           )}
         >
           {row.original.response_count} response{row.original.response_count === 1 ? "" : "s"}
         </div>
         {row.original.best_price !== null && (
-          <div className="text-[9px] text-slate-400 font-bold leading-none">
+          <div className="text-3xs text-slate-400 font-bold leading-none">
             Best {formatMoney(row.original.best_price)}
             {row.original.best_pharmacy ? ` · ${row.original.best_pharmacy}` : ""}
           </div>
@@ -164,7 +164,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
       <div className="flex items-center gap-1">
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest border",
             row.original.fulfilment_mode === "delivery"
               ? "bg-blue-50 text-blue-600 border-blue-100"
               : "bg-teal-50 text-teal-600 border-teal-100",
@@ -173,7 +173,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
           {row.original.fulfilment_mode === "delivery" ? "🚚 Delivery" : "🏪 Pickup"}
         </span>
         {row.original.escrow_status && (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
             🔒 Escrow
           </span>
         )}
@@ -189,7 +189,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     accessorKey: "created_at",
     header: "Submitted",
     cell: ({ row }) => (
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+      <span className="text-2xs font-bold text-slate-400 uppercase tracking-tight">
         {formatSubmittedAt(row.original.created_at)}
       </span>
     ),

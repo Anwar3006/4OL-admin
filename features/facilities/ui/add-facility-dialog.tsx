@@ -947,7 +947,7 @@ const AddFacilityDialog = () => {
                               </button>
                             </div>
                             {isFeatured && (
-                              <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
+                              <div className="absolute top-2 left-2 bg-emerald-500 text-white text-3xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
                                 Featured
                               </div>
                             )}

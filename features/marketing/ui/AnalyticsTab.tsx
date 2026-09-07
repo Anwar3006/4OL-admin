@@ -82,7 +82,7 @@ export default function AnalyticsTab() {
 
       {/* ROI Summary */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">ROI Summary</h3>
+        <h3 className="section-heading mb-4">ROI Summary</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Revenue", value: dash(performance.revenue) },
@@ -92,11 +92,11 @@ export default function AnalyticsTab() {
           ].map((item) => (
             <div key={item.label} className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
               <div className="text-xl font-black text-slate-800">{item.value}</div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">{item.label}</div>
+              <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">{item.label}</div>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 font-medium mt-3">
+        <p className="text-2xs text-slate-400 font-medium mt-3">
           Revenue/ROAS/CPA require event tracking (analytics_events — Epic 30.1) and show "—" until available.
         </p>
       </div>
@@ -104,14 +104,14 @@ export default function AnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Channel Breakdown */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">Channel Breakdown</h3>
+          <h3 className="section-heading mb-4">Channel Breakdown</h3>
           {channels.length === 0 ? (
             <p className="text-xs text-slate-400 font-medium">No channel data yet — assign channels when creating campaigns.</p>
           ) : (
             <div className="space-y-3">
               {channels.map((channel) => (
                 <div key={channel.channel}>
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">
+                  <div className="flex justify-between text-2xs font-bold uppercase tracking-widest text-slate-500 mb-1">
                     <span>{CHANNEL_LABELS[channel.channel] ?? channel.channel}</span>
                     <span>{channel.impressions.toLocaleString()} imp · {channel.clicks.toLocaleString()} clicks</span>
                   </div>
@@ -129,7 +129,7 @@ export default function AnalyticsTab() {
 
         {/* Top Campaigns by CTR */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">Top Campaigns by CTR</h3>
+          <h3 className="section-heading mb-4">Top Campaigns by CTR</h3>
           {top_campaigns_by_ctr.length === 0 ? (
             <p className="text-xs text-slate-400 font-medium">No impression data recorded yet.</p>
           ) : (
@@ -137,10 +137,10 @@ export default function AnalyticsTab() {
               {top_campaigns_by_ctr.map((campaign, index) => (
                 <div key={campaign.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-2.5">
                   <div className="min-w-0">
-                    <div className="text-[11px] font-black text-slate-700 truncate">{index + 1}. {campaign.headline}</div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{campaign.status}</div>
+                    <div className="text-xs font-black text-slate-700 truncate">{index + 1}. {campaign.headline}</div>
+                    <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">{campaign.status}</div>
                   </div>
-                  <span className="text-[11px] font-black text-emerald-600 shrink-0 ml-3">{campaign.ctr}%</span>
+                  <span className="text-xs font-black text-emerald-600 shrink-0 ml-3">{campaign.ctr}%</span>
                 </div>
               ))}
             </div>
@@ -150,12 +150,12 @@ export default function AnalyticsTab() {
 
       {/* User Acquisition Funnel */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-700 mb-4">User Acquisition Funnel</h3>
+        <h3 className="section-heading mb-4">User Acquisition Funnel</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {funnelStages.map((stage) => (
             <div key={stage.label} className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
               <div className="text-lg font-black text-slate-800">{dash(stage.value)}</div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">{stage.label}</div>
+              <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">{stage.label}</div>
             </div>
           ))}
         </div>

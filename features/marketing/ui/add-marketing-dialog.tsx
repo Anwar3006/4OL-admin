@@ -340,7 +340,7 @@ const AddMarketingDialog = () => {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-black uppercase tracking-widest text-slate-500">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
                   Delivery Channels
                 </Label>
                 <div className="flex flex-wrap gap-2">
@@ -362,7 +362,7 @@ const AddMarketingDialog = () => {
                           );
                         }}
                         className={cn(
-                          "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                          "px-3 py-1.5 rounded-full text-2xs font-black uppercase tracking-widest border transition-all",
                           selected
                             ? "bg-emerald-600 text-white border-emerald-600"
                             : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300",
@@ -528,7 +528,7 @@ const AddMarketingDialog = () => {
                     
                     {formValues.organization && (
                       <div className="pt-2 border-t border-white/20">
-                        <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">
+                        <span className="text-2xs uppercase tracking-widest font-bold opacity-80">
                           {formValues.organization} • {formValues.marketingType}
                         </span>
                       </div>
@@ -575,7 +575,7 @@ const AddMarketingDialog = () => {
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-white/20">
                           <ImageIcon className="w-10 h-10 opacity-30 mb-2" />
-                          <p className="text-[10px] opacity-40 font-medium uppercase tracking-tighter">No Media</p>
+                          <p className="text-2xs opacity-40 font-medium uppercase tracking-tighter">No Media</p>
                         </div>
                       )}
                     </div>

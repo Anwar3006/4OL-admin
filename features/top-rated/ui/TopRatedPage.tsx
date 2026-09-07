@@ -129,7 +129,7 @@ const TopRatedPage = () => {
           {isExporting ? "⏳ Exporting..." : "📋 Export List"}
         </button>
         <button
-          className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-primary text-white font-black uppercase tracking-widest text-3xs"
           onClick={openAddDialog}
         >
           + Add Item
@@ -140,7 +140,7 @@ const TopRatedPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
           <div className="text-2xl font-bold text-slate-800">{totalItems}</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Total Items
           </div>
         </div>
@@ -148,7 +148,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.facility || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Facilities
           </div>
         </div>
@@ -156,7 +156,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.fitness_plan || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Fitness Plans
           </div>
         </div>
@@ -164,7 +164,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.outdoor_route || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Outdoor Routes
           </div>
         </div>
@@ -172,7 +172,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.outdoor_event || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Outdoor Events
           </div>
         </div>
@@ -180,7 +180,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.challenge || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Challenges
           </div>
         </div>
@@ -188,7 +188,7 @@ const TopRatedPage = () => {
           <div className="text-2xl font-bold text-slate-800">
             {moduleCounts?.exercise || 0}
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Exercises
           </div>
         </div>
@@ -215,7 +215,7 @@ const TopRatedPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",

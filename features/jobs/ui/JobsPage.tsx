@@ -170,13 +170,13 @@ const JobsPage = () => {
     );
 
   const selectClass =
-    "h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none";
+    "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none";
 
   const listingsTable = (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search job title..."
           value={search}
           onChange={(e) => updateParams({ search: e.target.value })}
@@ -221,11 +221,11 @@ const JobsPage = () => {
 
       {selected.length > 0 && (
         <div className="flex items-center gap-3 bg-slate-900 text-white rounded-2xl px-5 py-3">
-          <span className="text-[10px] font-black uppercase tracking-widest">
+          <span className="text-2xs font-black uppercase tracking-widest">
             {selected.length} selected
           </span>
           <button
-            className="text-[10px] font-black uppercase tracking-widest bg-red-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="text-2xs font-black uppercase tracking-widest bg-red-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
             disabled={bulkAction.isPending || !canManage}
             onClick={() => {
               bulkAction.mutate({ ids: selected, action: "close" });
@@ -235,7 +235,7 @@ const JobsPage = () => {
             🔒 Close Selected
           </button>
           <button
-            className="text-[10px] font-black uppercase tracking-widest bg-emerald-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="text-2xs font-black uppercase tracking-widest bg-emerald-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
             disabled={bulkAction.isPending || !canManage}
             onClick={() => {
               bulkAction.mutate({ ids: selected, action: "repost" });
@@ -250,7 +250,7 @@ const JobsPage = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left min-w-[900px]">
           <thead>
-            <tr className="text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
               <th className="px-4 py-3 w-8" />
               <th className="px-3 py-3">Posting</th>
               <th className="px-3 py-3">Facility</th>
@@ -265,13 +265,13 @@ const JobsPage = () => {
           <tbody className="divide-y divide-slate-100">
             {isLoading || isFetching ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                   Loading postings...
                 </td>
               </tr>
             ) : postings.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                <td colSpan={9} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                   No job postings match the current filters.
                 </td>
               </tr>
@@ -286,33 +286,33 @@ const JobsPage = () => {
                     />
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-[12px] font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800">
                       {row.is_featured && "⭐ "}
                       {row.title}
                     </p>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
                       {postingDisplayId(row)}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-[11px] font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-bold text-slate-600">
                     {row.facility_profile?.facility_name ?? "—"}
                   </td>
-                  <td className="px-3 py-3 text-[10px] font-bold uppercase text-slate-500">
+                  <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
                     {row.job_type.replace(/_/g, " ")}
                   </td>
-                  <td className="px-3 py-3 text-[10px] font-bold uppercase text-slate-500">
+                  <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
                     {row.region ?? "—"}
                   </td>
-                  <td className="px-3 py-3 text-[11px] font-black text-slate-700">
+                  <td className="px-3 py-3 text-xs font-black text-slate-700">
                     {row.application_count ?? 0}
                   </td>
-                  <td className="px-3 py-3 text-[11px] font-bold text-slate-500">
+                  <td className="px-3 py-3 text-xs font-bold text-slate-500">
                     {row.view_count ?? 0}
                   </td>
                   <td className="px-3 py-3">
                     <span
                       className={cn(
-                        "text-[9px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
+                        "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                         POSTING_BADGE[row.status] ?? POSTING_BADGE.expired,
                       )}
                     >
@@ -362,7 +362,7 @@ const JobsPage = () => {
                       </button>
                     )}
                     {row.status === "draft" && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                      <span className="text-3xs font-black uppercase tracking-widest text-slate-400">
                         Edit via repost flow
                       </span>
                     )}
@@ -382,12 +382,12 @@ const JobsPage = () => {
         <h3 className="text-sm font-black text-slate-900">
           ⏳ Pending Requests ({pendingQueue?.postings.length ?? 0})
         </h3>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           Approve publishes immediately · Reject returns to draft with reason
         </p>
       </div>
       {(pendingQueue?.postings ?? []).length === 0 ? (
-        <p className="text-[11px] font-bold text-slate-400 py-4 text-center">
+        <p className="text-xs font-bold text-slate-400 py-4 text-center">
           Review queue is clear. 🎉
         </p>
       ) : (
@@ -397,8 +397,8 @@ const JobsPage = () => {
             className="flex flex-wrap items-center gap-3 border border-slate-100 rounded-xl px-4 py-3"
           >
             <div className="flex-1 min-w-[200px]">
-              <p className="text-[12px] font-black text-slate-800">{row.title}</p>
-              <p className="text-[10px] font-bold text-slate-400">
+              <p className="text-sm font-black text-slate-800">{row.title}</p>
+              <p className="text-2xs font-bold text-slate-400">
                 {row.facility_profile?.facility_name ?? "—"} ·{" "}
                 {row.job_type.replace(/_/g, " ")} · {row.region ?? "—"}
               </p>
@@ -443,7 +443,7 @@ const JobsPage = () => {
           📥 Export
         </button>
         <button
-          className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-primary text-white font-black uppercase tracking-widest text-3xs"
           disabled={!canManage}
           onClick={() => updateParams({ tab: "post" })}
         >
@@ -452,7 +452,7 @@ const JobsPage = () => {
       </PageHeader>
 
       {!canManage && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-amber-800">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
           🔒 Read-only: your role lacks the jobs.manage permission. Posting,
           review and applicant decisions are disabled.
         </div>
@@ -487,7 +487,7 @@ const JobsPage = () => {
                 key={tab.id}
                 value={tab.id}
                 className={cn(
-                  "shrink-0 whitespace-nowrap px-4 py-3 text-[10px] font-black uppercase tracking-widest",
+                  "shrink-0 whitespace-nowrap px-4 py-3 text-2xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
@@ -509,7 +509,7 @@ const JobsPage = () => {
         </TabsContent>
 
         <TabsContent value="applicants" className="mt-5 space-y-4">
-          <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-sky-800">
+          <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-xs font-bold text-sky-800">
             🔐 K-D7 privacy: applicant names are masked (first name + last
             initial). Full identities unlock at the shortlist step in the
             mobile flow; licence badges come from HCP verification records.
@@ -531,7 +531,7 @@ const JobsPage = () => {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
             <table className="w-full text-left min-w-[900px]">
               <thead>
-                <tr className="text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                   <th className="px-4 py-3">Applicant</th>
                   <th className="px-3 py-3">Applied For</th>
                   <th className="px-3 py-3">Licence</th>
@@ -544,13 +544,13 @@ const JobsPage = () => {
               <tbody className="divide-y divide-slate-100">
                 {applicantsLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                    <td colSpan={7} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                       Loading applicants...
                     </td>
                   </tr>
                 ) : (applicantData?.applications ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                    <td colSpan={7} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                       No applications match the current filters.
                     </td>
                   </tr>
@@ -559,15 +559,15 @@ const JobsPage = () => {
                     (app: JobApplicationRow) => (
                       <tr key={app.id} className="hover:bg-slate-50/60">
                         <td className="px-4 py-3">
-                          <p className="text-[12px] font-black text-slate-800">
+                          <p className="text-sm font-black text-slate-800">
                             {app.is_boosted && "⭐ "}
                             {maskApplicantName(app.user_profiles)}
                           </p>
-                          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                          <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
                             {applicationDisplayId(app)}
                           </span>
                           {/* Part AM: wizard applicant profile summary */}
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                          <p className="text-3xs font-bold uppercase tracking-widest text-slate-400 mt-1">
                             {app.applicant_type === "non_hcp"
                               ? "Non-HCP"
                               : "HCP"}
@@ -578,10 +578,10 @@ const JobsPage = () => {
                           </p>
                         </td>
                         <td className="px-3 py-3">
-                          <p className="text-[11px] font-bold text-slate-700">
+                          <p className="text-xs font-bold text-slate-700">
                             {app.job_postings?.title ?? "—"}
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400">
+                          <p className="text-2xs font-bold text-slate-400">
                             {app.job_postings?.facility_profile?.facility_name ?? "—"}
                           </p>
                         </td>
@@ -589,7 +589,7 @@ const JobsPage = () => {
                           {app.licence ? (
                             <span
                               className={cn(
-                                "text-[9px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
+                                "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                                 app.licence.verification_status === "verified"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                   : "bg-slate-100 text-slate-500 border-slate-200",
@@ -599,15 +599,15 @@ const JobsPage = () => {
                               {app.licence.verification_status}
                             </span>
                           ) : (
-                            <span className="text-[10px] font-bold text-slate-400">—</span>
+                            <span className="text-2xs font-bold text-slate-400">—</span>
                           )}
                         </td>
-                        <td className="px-3 py-3 text-[10px] font-bold text-slate-500">
+                        <td className="px-3 py-3 text-2xs font-bold text-slate-500">
                           {app.resume_url ? "📄 CV" : ""}{" "}
                           {app.cover_letter ? "✉️ Letter" : ""}{" "}
                           {!app.resume_url && !app.cover_letter ? "—" : ""}
                         </td>
-                        <td className="px-3 py-3 text-[10px] font-bold text-slate-500">
+                        <td className="px-3 py-3 text-2xs font-bold text-slate-500">
                           {app.created_at
                             ? new Date(app.created_at).toLocaleDateString("en-GB")
                             : "—"}
@@ -615,7 +615,7 @@ const JobsPage = () => {
                         <td className="px-3 py-3">
                           <span
                             className={cn(
-                              "text-[9px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
+                              "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                               APPLICATION_BADGE[app.status] ?? APPLICATION_BADGE.pending,
                             )}
                           >
@@ -624,7 +624,7 @@ const JobsPage = () => {
                         </td>
                         <td className="px-4 py-3 text-right whitespace-nowrap">
                           <select
-                            className="h-8 px-2 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest bg-white outline-none disabled:opacity-40"
+                            className="h-8 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest bg-white outline-none disabled:opacity-40"
                             disabled={updateApplication.isPending || !canManage}
                             value={app.status}
                             onChange={(e) =>
@@ -651,18 +651,18 @@ const JobsPage = () => {
         </TabsContent>
 
         <TabsContent value="cvs" className="mt-5 space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-amber-800">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
             🔐 K-D3: the Digital CV vault is metadata-only today. AES
             encryption-at-rest, consent gates and HSM key management ship with
             the platform-security epic.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {cvsLoading ? (
-              <p className="md:col-span-2 xl:col-span-3 text-center text-[11px] font-bold text-slate-400 py-8">
+              <p className="md:col-span-2 xl:col-span-3 text-center text-xs font-bold text-slate-400 py-8">
                 Loading digital CVs...
               </p>
             ) : (cvData?.cvs ?? []).length === 0 ? (
-              <p className="md:col-span-2 xl:col-span-3 text-center text-[11px] font-bold text-slate-400 py-8">
+              <p className="md:col-span-2 xl:col-span-3 text-center text-xs font-bold text-slate-400 py-8">
                 No digital CVs submitted yet — the mobile flow collects them
                 from job-seeking professionals.
               </p>
@@ -673,22 +673,22 @@ const JobsPage = () => {
                   className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[13px] font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800">
                       {cv.user_profiles?.first_name ?? "Unknown"}{" "}
                       {cv.user_profiles?.last_name?.[0] ?? ""}****
                     </p>
                     {cv.open_to_offers && (
-                      <span className="shrink-0 text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
+                      <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
                         Open to offers
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                  <p className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">
                     {EMPLOYMENT_STATUS_LABEL[cv.employment_status ?? ""] ??
                       cv.employment_status ??
                       "—"}
                   </p>
-                  <div className="mt-3 space-y-1 text-[11px] font-bold text-slate-600">
+                  <div className="mt-3 space-y-1 text-xs font-bold text-slate-600">
                     <p>🎓 {cv.qualification ?? "—"}</p>
                     <p>🩺 {cv.specialty ?? "—"}</p>
                     <p>🏛️ {cv.licence_body ?? "—"}</p>
@@ -701,7 +701,7 @@ const JobsPage = () => {
         </TabsContent>
 
         <TabsContent value="premium" className="mt-5 space-y-4">
-          <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-sky-800">
+          <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-xs font-bold text-sky-800">
             💎 K-D2: product catalogue is live for planning; billing wiring and
             revenue figures land with the payments epic — revenue shows &quot;—&quot;
             until then.
@@ -713,14 +713,14 @@ const JobsPage = () => {
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2"
               >
                 <p className="text-2xl">{service.icon}</p>
-                <p className="text-[13px] font-black text-slate-800">{service.name}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                <p className="text-sm font-black text-slate-800">{service.name}</p>
+                <p className="text-2xs font-black uppercase tracking-widest text-emerald-700">
                   {service.price}
                 </p>
-                <p className="text-[11px] font-bold text-slate-500">
+                <p className="text-xs font-bold text-slate-500">
                   {service.description}
                 </p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 pt-2 border-t border-slate-100">
+                <p className="text-2xs font-black uppercase tracking-widest text-slate-400 pt-2 border-t border-slate-100">
                   Revenue: —
                 </p>
               </div>
@@ -735,10 +735,10 @@ const JobsPage = () => {
                 key={card.title}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2"
               >
-                <p className="text-[13px] font-black text-slate-800">
+                <p className="text-sm font-black text-slate-800">
                   {card.icon} {card.title}
                 </p>
-                <p className="text-[11px] font-bold text-slate-500">{card.body}</p>
+                <p className="text-xs font-bold text-slate-500">{card.body}</p>
               </div>
             ))}
           </div>

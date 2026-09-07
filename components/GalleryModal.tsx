@@ -72,7 +72,7 @@ export function GalleryModal() {
             {/* Right Side: Scrollable Sidebar - FIXED STRUCTURE */}
             <div className="w-full md:w-[260px] bg-zinc-900/30 border-l border-white/5 flex flex-col overflow-hidden">
               <div className="p-4 flex-shrink-0">
-                <h2 className="text-[10px] uppercase font-black text-zinc-500 tracking-[0.2em]">
+                <h2 className="text-2xs uppercase font-black text-zinc-500 tracking-[0.2em]">
                   Media Assets ({data?.media_urls?.length || 0})
                 </h2>
               </div>

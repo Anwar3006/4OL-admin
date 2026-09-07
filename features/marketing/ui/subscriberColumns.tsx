@@ -127,10 +127,10 @@ export const createSubscriberColumns = (options?: {
       header: "User",
       cell: ({ row }) => (
         <div>
-          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight">
+          <div className="font-black text-slate-800 text-xs uppercase tracking-tight">
             {displayName(row.original)}
           </div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+          <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
             {row.original.user_profiles?.email ?? "—"}
           </div>
         </div>
@@ -140,7 +140,7 @@ export const createSubscriberColumns = (options?: {
       id: "plan",
       header: "Plan",
       cell: ({ row }) => (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
           {row.original.subscription_tiers?.name ?? "—"}
         </span>
       ),
@@ -153,7 +153,7 @@ export const createSubscriberColumns = (options?: {
         accessorKey: "risk_reason",
         header: "Risk Reason",
         cell: ({ row }) => (
-          <span className="text-[11px] font-bold text-red-600">
+          <span className="text-xs font-bold text-red-600">
             {row.original.risk_reason ?? "Payment failed"}
           </span>
         ),
@@ -162,7 +162,7 @@ export const createSubscriberColumns = (options?: {
         id: "last_contact",
         header: "Last Contact",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
             {fmtDate(row.original.last_reminded_at)}
           </span>
         ),
@@ -174,7 +174,7 @@ export const createSubscriberColumns = (options?: {
         id: "value",
         header: "Monthly Value",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700">
             {formatCurrency(row.original.subscription_tiers?.price_ghs ?? 0, { decimals: 2 })}
           </span>
         ),
@@ -183,7 +183,7 @@ export const createSubscriberColumns = (options?: {
         id: "subscribed",
         header: "Subscribed Since",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
             {fmtDate(row.original.subscribed_at)}
           </span>
         ),
@@ -192,7 +192,7 @@ export const createSubscriberColumns = (options?: {
         id: "renewal",
         header: "Next Renewal",
         cell: ({ row }) => (
-          <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
             {fmtDate(row.original.next_renewal_at ?? row.original.expires_at)}
           </span>
         ),
@@ -201,7 +201,7 @@ export const createSubscriberColumns = (options?: {
         accessorKey: "payment_method",
         header: "Payment Method",
         cell: ({ row }) => (
-          <span className="text-[11px] font-bold text-slate-600">
+          <span className="text-xs font-bold text-slate-600">
             {PAYMENT_METHOD_LABELS[row.original.payment_method ?? ""] ??
               row.original.payment_method ??
               "—"}
@@ -221,14 +221,14 @@ export const createSubscriberColumns = (options?: {
           <div className="space-y-1">
             <span
               className={cn(
-                "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
                 STATUS_STYLES[status] ?? STATUS_STYLES.cancelled,
               )}
             >
               {status.replace("_", " ")}
             </span>
             {!atRisk && (
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+              <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest">
                 {row.original.auto_renew ? "Auto-renew on" : "Auto-renew off"}
               </div>
             )}

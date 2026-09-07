@@ -34,7 +34,7 @@ export default function PremiumOperations({
       >
         <div>
           <div className="card-title">Premium settings (Super Admin)</div>
-          <p className="mt-1 text-[10px] text-slate-500">
+          <p className="mt-1 text-2xs text-slate-500">
             Free Cycle Pro for every new user after Plasence onboarding. On
             expiry premium features auto-lock until the user subscribes.
           </p>
@@ -45,7 +45,7 @@ export default function PremiumOperations({
             <select
               name="onboardingTrialDays"
               defaultValue={String(settings?.onboarding_trial_days ?? 14)}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             >
               <option value="7">7 days</option>
               <option value="14">14 days</option>
@@ -61,7 +61,7 @@ export default function PremiumOperations({
               min="0"
               max="14"
               defaultValue={settings?.expiry_reminder_days ?? 3}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             />
           </label>
         </div>
@@ -110,7 +110,7 @@ export default function PremiumOperations({
       >
         <div>
           <div className="card-title">Grant premium access</div>
-          <p className="mt-1 text-[10px] text-slate-500">
+          <p className="mt-1 text-2xs text-slate-500">
             Super Admin only · duration-capped (max 90 days) · reason is
             mandatory and audit-logged · no indefinite access.
           </p>
@@ -123,7 +123,7 @@ export default function PremiumOperations({
               required
               pattern="[0-9a-fA-F-]{36}"
               placeholder="uuid"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             />
           </label>
           <label className="form-label">
@@ -131,7 +131,7 @@ export default function PremiumOperations({
             <select
               name="tier"
               defaultValue="cycle_pro"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             >
               <option value="cycle_pro">Cycle Pro (full)</option>
               <option value="cycle_pro_ttc">Cycle Pro — TTC tools</option>
@@ -143,7 +143,7 @@ export default function PremiumOperations({
             <select
               name="durationDays"
               defaultValue="30"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             >
               <option value="7">7 days</option>
               <option value="14">14 days</option>
@@ -157,7 +157,7 @@ export default function PremiumOperations({
             <select
               name="source"
               defaultValue="manual"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             >
               <option value="manual">Manual</option>
               <option value="trivia_prize">Trivia prize fulfillment</option>
@@ -175,7 +175,7 @@ export default function PremiumOperations({
             required
             minLength={2}
             maxLength={500}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
             placeholder="e.g. Trivia Aug 22 — Cycle Pro 1 month prize"
           />
         </label>
@@ -184,7 +184,7 @@ export default function PremiumOperations({
           <input
             name="notes"
             maxLength={1000}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px]"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
           />
         </label>
         <div className="flex justify-end">

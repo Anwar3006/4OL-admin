@@ -153,7 +153,7 @@ export default function RolesPermissionsTab() {
     return (
       <div className="card p-6 flex items-start gap-3 border-amber-200 bg-amber-50">
         <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div className="text-[12px] text-amber-800 font-medium leading-relaxed">
+        <div className="text-sm text-amber-800 font-medium leading-relaxed">
           <p className="font-black mb-1">RBAC matrix unavailable</p>
           <p>{loadError}</p>
           <p className="mt-2 text-amber-700/80">
@@ -166,7 +166,7 @@ export default function RolesPermissionsTab() {
   }
 
   if (!payload) {
-    return <div className="card p-6 text-[11px] text-slate-400 font-bold">Loading RBAC matrix…</div>;
+    return <div className="card p-6 text-xs text-slate-400 font-bold">Loading RBAC matrix…</div>;
   }
 
   return (
@@ -179,7 +179,7 @@ export default function RolesPermissionsTab() {
             type="button"
             onClick={() => setSelectedRole(role.role)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[11px] font-black border transition-colors",
+              "px-3 py-1.5 rounded-lg text-xs font-black border transition-colors",
               selectedRole === role.role
                 ? "bg-slate-900 text-white border-slate-900"
                 : "bg-white text-slate-600 border-slate-200 hover:border-slate-400",
@@ -189,7 +189,7 @@ export default function RolesPermissionsTab() {
             {role.label}
           </button>
         ))}
-        <span className="ml-auto text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+        <span className="ml-auto text-2xs text-slate-400 font-bold uppercase tracking-widest">
           {canEdit ? "Editing enabled" : "Read-only (requires roles.edit)"}
         </span>
       </div>
@@ -197,18 +197,18 @@ export default function RolesPermissionsTab() {
       {/* Permission matrix for the selected role */}
       <div className="card overflow-hidden p-0">
         <div className="card-header border-b border-slate-100 flex justify-between items-center gap-3 flex-wrap">
-          <h2 className="card-title text-[13px]">
+          <h2 className="card-title text-sm">
             🛡️ Default permissions — {roles.find((r) => r.role === selectedRole)?.label ?? selectedRole}
           </h2>
           <div className="flex items-center gap-2">
-            {message && <span className="text-[11px] font-bold text-slate-500">{message}</span>}
+            {message && <span className="text-xs font-bold text-slate-500">{message}</span>}
             {canEdit && (
               <button
                 type="button"
                 onClick={save}
                 disabled={!dirty || saving}
                 className={cn(
-                  "btn btn-primary text-white text-[11px] flex items-center gap-1.5",
+                  "btn btn-primary text-white text-xs flex items-center gap-1.5",
                   (!dirty || saving) && "opacity-40 cursor-not-allowed",
                 )}
               >
@@ -218,7 +218,7 @@ export default function RolesPermissionsTab() {
             )}
           </div>
         </div>
-        <p className="px-4 pt-3 text-[10px] text-slate-400 font-bold leading-relaxed">
+        <p className="px-4 pt-3 text-2xs text-slate-400 font-bold leading-relaxed">
           Super Admin bypasses the catalog entirely and is not editable. Per-user grants and
           revokes (below) layer on top of these defaults; revokes always win.
         </p>
@@ -227,7 +227,7 @@ export default function RolesPermissionsTab() {
             const defs = PERMISSION_CATALOG.filter((p) => p.resource === resource);
             return (
               <div key={resource} className="border border-slate-100 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 px-3 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <div className="bg-slate-50 px-3 py-2 text-3xs font-black uppercase tracking-widest text-slate-400">
                   {resource}
                 </div>
                 <div className="divide-y divide-slate-50">
@@ -250,7 +250,7 @@ export default function RolesPermissionsTab() {
                         ) : (
                           <Minus className="w-3.5 h-3.5 text-slate-200 shrink-0" />
                         )}
-                        <span className="text-[11px] font-bold text-slate-700">{def.key}</span>
+                        <span className="text-xs font-bold text-slate-700">{def.key}</span>
                       </button>
                     );
                   })}
@@ -264,26 +264,26 @@ export default function RolesPermissionsTab() {
       {/* Per-user overrides */}
       <div className="card overflow-hidden p-0">
         <div className="card-header border-b border-slate-100">
-          <h2 className="card-title text-[13px]">🎯 Per-user overrides</h2>
+          <h2 className="card-title text-sm">🎯 Per-user overrides</h2>
         </div>
         <div className="p-4 space-y-4">
           {canEdit && (
             <div className="flex flex-wrap items-end gap-2">
-              <label className="flex flex-col gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <label className="flex flex-col gap-1 text-3xs font-black uppercase tracking-widest text-slate-400">
                 User ID (uuid)
                 <input
                   value={ovUserId}
                   onChange={(e) => setOvUserId(e.target.value)}
                   placeholder="00000000-0000-…"
-                  className="input text-[11px] font-medium normal-case tracking-normal w-64"
+                  className="input text-xs font-medium normal-case tracking-normal w-64"
                 />
               </label>
-              <label className="flex flex-col gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <label className="flex flex-col gap-1 text-3xs font-black uppercase tracking-widest text-slate-400">
                 Permission
                 <select
                   value={ovKey}
                   onChange={(e) => setOvKey(e.target.value)}
-                  className="input text-[11px] font-medium normal-case tracking-normal w-56"
+                  className="input text-xs font-medium normal-case tracking-normal w-56"
                 >
                   {PERMISSION_CATALOG.map((p) => (
                     <option key={p.key} value={p.key}>
@@ -292,37 +292,37 @@ export default function RolesPermissionsTab() {
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <label className="flex flex-col gap-1 text-3xs font-black uppercase tracking-widest text-slate-400">
                 Effect
                 <select
                   value={ovEffect}
                   onChange={(e) => setOvEffect(e.target.value as "grant" | "revoke")}
-                  className="input text-[11px] font-medium normal-case tracking-normal w-28"
+                  className="input text-xs font-medium normal-case tracking-normal w-28"
                 >
                   <option value="grant">grant</option>
                   <option value="revoke">revoke</option>
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <label className="flex flex-col gap-1 text-3xs font-black uppercase tracking-widest text-slate-400">
                 Reason (optional)
                 <input
                   value={ovReason}
                   onChange={(e) => setOvReason(e.target.value)}
-                  className="input text-[11px] font-medium normal-case tracking-normal w-56"
+                  className="input text-xs font-medium normal-case tracking-normal w-56"
                 />
               </label>
-              <button type="button" onClick={addOverride} className="btn btn-secondary text-[11px]">
+              <button type="button" onClick={addOverride} className="btn btn-secondary text-xs">
                 Add override
               </button>
             </div>
           )}
 
           {payload.overrides.length === 0 ? (
-            <p className="text-[11px] text-slate-400 font-bold">No per-user overrides configured.</p>
+            <p className="text-xs text-slate-400 font-bold">No per-user overrides configured.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px] font-bold text-slate-600 border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-widest text-[9px]">
+              <table className="w-full text-xs font-bold text-slate-600 border-collapse">
+                <thead className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-widest text-3xs">
                   <tr>
                     <th className="p-3 font-black text-left">User</th>
                     <th className="p-3 font-black text-left">Permission</th>
@@ -334,12 +334,12 @@ export default function RolesPermissionsTab() {
                 <tbody className="divide-y divide-slate-100">
                   {payload.overrides.map((ov) => (
                     <tr key={`${ov.user_id}:${ov.permission_key}`}>
-                      <td className="p-3 font-mono text-[10px]">{ov.user_id.slice(0, 8)}…</td>
+                      <td className="p-3 font-mono text-2xs">{ov.user_id.slice(0, 8)}…</td>
                       <td className="p-3">{ov.permission_key}</td>
                       <td className="p-3">
                         <span
                           className={cn(
-                            "badge text-[9px] font-black",
+                            "badge text-3xs font-black",
                             ov.effect === "grant"
                               ? "bg-emerald-50 text-emerald-700"
                               : "bg-red-50 text-red-700",

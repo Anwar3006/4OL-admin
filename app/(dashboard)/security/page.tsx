@@ -274,7 +274,7 @@ export default function SecurityPage() {
               <TabsTrigger
                 key={id}
                 value={id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
               >
                 {label}
               </TabsTrigger>
@@ -354,7 +354,7 @@ function ThreatsTable({
                     <div className="text-xs font-bold text-slate-700">
                       {threat.source_module || "Unknown"}
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-400">
+                    <div className="mt-1 text-xs text-slate-400">
                       {threat.source_ip || "No IP"}
                     </div>
                   </TableCell>
@@ -451,7 +451,7 @@ function AuditLogTable({
                     <div className="text-xs font-bold text-slate-700">
                       {log.target_table || "Platform"}
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-400">
+                    <div className="mt-1 text-xs text-slate-400">
                       {log.record_id || "No record"}
                     </div>
                   </TableCell>

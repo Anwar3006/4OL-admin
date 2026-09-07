@@ -27,14 +27,14 @@ export default function FailedTransactionsTab() {
         accessorKey: "reference",
         header: "TXN ID",
         cell: ({ row }) => (
-          <span className="font-mono text-[10px] text-slate-500 font-bold">{row.original.reference}</span>
+          <span className="font-mono text-2xs text-slate-500 font-bold">{row.original.reference}</span>
         ),
       },
       {
         accessorKey: "processed_at",
         header: "Date",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400">{formatProcessedAt(row.original.processed_at)}</span>
+          <span className="text-2xs font-bold text-slate-400">{formatProcessedAt(row.original.processed_at)}</span>
         ),
       },
       {
@@ -43,7 +43,7 @@ export default function FailedTransactionsTab() {
         cell: ({ row }) => (
           <div>
             <span className="font-black text-slate-800">{row.original.payer_name || "—"}</span>
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+            <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest">
               {row.original.payer_code}
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function FailedTransactionsTab() {
         accessorKey: "failure_reason",
         header: "Failure Reason",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-red-400 uppercase tracking-tighter italic">
+          <span className="text-2xs font-bold text-red-400 uppercase tracking-tighter italic">
             {row.original.failure_reason ?? "Unknown"}
           </span>
         ),
@@ -76,7 +76,7 @@ export default function FailedTransactionsTab() {
         id: "retry",
         header: "Next Retry",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400">
+          <span className="text-2xs font-bold text-slate-400">
             {row.original.next_retry_at
               ? formatProcessedAt(row.original.next_retry_at)
               : "Manual"}
@@ -94,7 +94,7 @@ export default function FailedTransactionsTab() {
                 e.stopPropagation();
                 toast.info(`Payment reminder queued for ${row.original.payer_name || "customer"}`);
               }}
-              className="h-7 px-2 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+              className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 disabled:opacity-50"
             >
               Notify
             </button>
@@ -104,7 +104,7 @@ export default function FailedTransactionsTab() {
                 e.stopPropagation();
                 action.mutate({ id: row.original.id, action: "retry" });
               }}
-              className="h-7 px-2 rounded-lg border border-amber-200 text-[9px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+              className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
             >
               Retry
             </button>
@@ -127,7 +127,7 @@ export default function FailedTransactionsTab() {
       <div className="card p-0 overflow-hidden">
         <DataTable columns={columns} data={rows} isLoading={isLoading} isError={isError} error={error} />
         {rows.length === 0 && !isLoading && (
-          <div className="p-6 text-center text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+          <div className="p-6 text-center text-2xs font-bold text-emerald-500 uppercase tracking-widest">
             ✅ No failed payments — everything is healthy.
           </div>
         )}

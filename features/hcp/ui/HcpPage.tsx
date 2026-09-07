@@ -119,19 +119,19 @@ const HCPPage = () => {
     );
 
   const selectClass =
-    "h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none";
+    "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none";
 
   const registryTable = (
     <div className="space-y-4">
       {TAB_ALERTS[activeTab] && (
-        <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-sky-800">
+        <div className="bg-sky-50 border border-sky-200 rounded-2xl px-4 py-3 text-xs font-bold text-sky-800">
           {TAB_ALERTS[activeTab]}
         </div>
       )}
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search name, licence no, specialty..."
           value={search}
           onChange={(e) => updateParams({ search: e.target.value })}
@@ -180,11 +180,11 @@ const HCPPage = () => {
 
       {selected.length > 0 && (
         <div className="flex items-center gap-3 bg-slate-900 text-white rounded-2xl px-5 py-3">
-          <span className="text-[10px] font-black uppercase tracking-widest">
+          <span className="text-2xs font-black uppercase tracking-widest">
             {selected.length} selected
           </span>
           <button
-            className="text-[10px] font-black uppercase tracking-widest bg-emerald-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="text-2xs font-black uppercase tracking-widest bg-emerald-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
             disabled={bulkAction.isPending}
             onClick={() => {
               bulkAction.mutate({ ids: selected, action: "approve" });
@@ -194,7 +194,7 @@ const HCPPage = () => {
             ✅ Approve Selected
           </button>
           <button
-            className="text-[10px] font-black uppercase tracking-widest bg-red-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
+            className="text-2xs font-black uppercase tracking-widest bg-red-500 rounded-lg px-3 py-1.5 disabled:opacity-40"
             disabled={bulkAction.isPending}
             onClick={() => {
               bulkAction.mutate({ ids: selected, action: "suspend" });
@@ -209,7 +209,7 @@ const HCPPage = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left min-w-[900px]">
           <thead>
-            <tr className="text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
               <th className="px-4 py-3 w-8" />
               <th className="px-3 py-3">Professional</th>
               <th className="px-3 py-3">Profession / Specialty</th>
@@ -225,13 +225,13 @@ const HCPPage = () => {
           <tbody className="divide-y divide-slate-100">
             {isLoading || isFetching ? (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                <td colSpan={10} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                   Loading registry...
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-[11px] font-bold text-slate-400">
+                <td colSpan={10} className="px-4 py-10 text-center text-xs font-bold text-slate-400">
                   No healthcare professionals match the current filters.
                 </td>
               </tr>
@@ -246,41 +246,41 @@ const HCPPage = () => {
                     />
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-[12px] font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800">
                       {row.user_profiles?.first_name} {row.user_profiles?.last_name}
                     </p>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
                       {hcpDisplayId(row.user_id)}
                     </span>
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-[11px] font-bold text-slate-700 capitalize">
+                    <p className="text-xs font-bold text-slate-700 capitalize">
                       {(row.profession_type ?? row.license_type)?.replace(/_/g, " ")}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400">
+                    <p className="text-2xs font-bold text-slate-400">
                       {row.specialty ?? "—"}
                     </p>
                   </td>
                   <td className="px-3 py-3">
-                    <span className="text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full px-2.5 py-1">
+                    <span className="text-3xs font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full px-2.5 py-1">
                       {row.issuing_body}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-[11px] font-mono font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-mono font-bold text-slate-600">
                     {row.license_number}
                   </td>
-                  <td className="px-3 py-3 text-[11px] font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-bold text-slate-600">
                     {row.facility_profile?.facility_name ??
                       row.affiliated_facility_name ??
                       "—"}
                   </td>
-                  <td className="px-3 py-3 text-[10px] font-bold uppercase text-slate-500">
+                  <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
                     {row.region ?? "—"}
                   </td>
                   <td className="px-3 py-3">
                     <span
                       className={cn(
-                        "text-[9px] font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
+                        "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                         STATUS_BADGE[row.verification_status] ??
                           STATUS_BADGE.expired,
                       )}
@@ -288,7 +288,7 @@ const HCPPage = () => {
                       {row.verification_status.replace(/_/g, " ")}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-[10px] font-bold text-slate-500">
+                  <td className="px-3 py-3 text-2xs font-bold text-slate-500">
                     {row.created_at
                       ? new Date(row.created_at).toLocaleDateString("en-GB")
                       : "—"}
@@ -368,14 +368,14 @@ const HCPPage = () => {
           📥 Export
         </button>
         <button
-          className="btn btn-primary text-white font-black uppercase tracking-widest text-[9px]"
+          className="btn btn-primary text-white font-black uppercase tracking-widest text-3xs"
           onClick={() => setOnboardOpen(true)}
         >
           + Add Professional
         </button>
       </PageHeader>
 
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-[11px] font-bold text-emerald-800">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs font-bold text-emerald-800">
         🔗 SA Module Connections: HCP records link to Facilities (affiliation),
         Medication (enquiry opt-in), Group Chats (profession assignment) and
         Reviews. Per-HCP Med Enquiry counters show &quot;—&quot; until a responder
@@ -414,7 +414,7 @@ const HCPPage = () => {
                 key={tab.id}
                 value={tab.id}
                 className={cn(
-                  "shrink-0 whitespace-nowrap px-4 py-3 text-[10px] font-black uppercase tracking-widest",
+                  "shrink-0 whitespace-nowrap px-4 py-3 text-2xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
@@ -436,7 +436,7 @@ const HCPPage = () => {
 
         <TabsContent value="chats" className="mt-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Professional Group Chats
             </p>
             <Link href="/chats" className="btn btn-primary btn-sm text-white">
@@ -451,19 +451,19 @@ const HCPPage = () => {
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:border-emerald-300 transition-all"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[13px] font-black text-slate-800 truncate">
+                  <p className="text-sm font-black text-slate-800 truncate">
                     💬 {chat.group_name ?? chat.name ?? "Group Chat"}
                   </p>
                   {chat.is_verified_only && (
-                    <span className="shrink-0 text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
+                    <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
                       Verified only
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                <p className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">
                   {chat.group_category ?? "General"}
                 </p>
-                <p className="text-[11px] font-bold text-slate-500 mt-3">
+                <p className="text-xs font-bold text-slate-500 mt-3">
                   👥 {chat.member_count} member
                   {chat.member_count === 1 ? "" : "s"}
                   {chat.max_members ? ` / ${chat.max_members} cap` : ""}
@@ -471,7 +471,7 @@ const HCPPage = () => {
               </Link>
             ))}
             {(data?.groupChats ?? []).length === 0 && !isLoading && (
-              <p className="md:col-span-2 xl:col-span-3 text-center text-[11px] font-bold text-slate-400 py-8">
+              <p className="md:col-span-2 xl:col-span-3 text-center text-xs font-bold text-slate-400 py-8">
                 No HCP group chats found — create one from the Chats module.
               </p>
             )}

@@ -72,7 +72,7 @@ export default function Overview({ payload }: { payload: any }) {
           <div className="card-header">
             <div>
               <div className="card-title">Regional operations</div>
-              <div className="mt-1 text-[10px] text-slate-500">
+              <div className="mt-1 text-2xs text-slate-500">
                 Unique users; cycle variation is a review signal, not a
                 diagnosis.
               </div>
@@ -94,14 +94,14 @@ export default function Overview({ payload }: { payload: any }) {
             {(payload.symptoms ?? []).map((item: Row) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between border-b border-slate-100 pb-2 text-[11px]"
+                className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs"
               >
                 <span>{item.name}</span>
                 <strong>{item.count}</strong>
               </div>
             ))}
             {!(payload.symptoms ?? []).length && (
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-slate-500">
                 No normalized daily symptom data is available.
               </p>
             )}
@@ -109,16 +109,16 @@ export default function Overview({ payload }: { payload: any }) {
         </div>
       </div>
       <div className="card p-4">
-        <h2 className="text-[11px] font-semibold text-slate-900">
+        <h2 className="text-xs font-semibold text-slate-900">
           Metric definitions
         </h2>
         <dl className="mt-3 grid gap-3 md:grid-cols-2">
           {Object.entries(payload.definitions ?? {}).map(([key, value]) => (
             <div key={key}>
-              <dt className="text-[10px] font-semibold capitalize text-slate-700">
+              <dt className="text-2xs font-semibold capitalize text-slate-700">
                 {key.replace(/([A-Z])/g, " $1")}
               </dt>
-              <dd className="text-[10px] text-slate-500">{String(value)}</dd>
+              <dd className="text-2xs text-slate-500">{String(value)}</dd>
             </div>
           ))}
         </dl>

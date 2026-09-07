@@ -42,7 +42,7 @@ function Field({
 
   return (
     <div className="mb-4">
-      <label className="block text-[11px] font-bold text-slate-400 mb-1.5 tracking-widest uppercase">
+      <label className="block text-xs font-bold text-slate-400 mb-1.5 tracking-widest uppercase">
         {label}
       </label>
       {multiline ? (
@@ -217,15 +217,15 @@ export default function DeleteAccountPage() {
           <>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
+              <span className="text-2xs font-bold text-red-500 uppercase tracking-widest">
                 Danger Zone
               </span>
             </div>
 
-            <h1 className="text-[22px] font-bold text-slate-100 leading-tight mb-2 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-100 leading-tight mb-2 tracking-tight">
               Delete your account
             </h1>
-            <p className="text-[13px] text-slate-500 leading-relaxed mb-7">
+            <p className="text-sm text-slate-500 leading-relaxed mb-7">
               This action is permanent and cannot be undone. All your data —
               including health records and personal information — will be
               permanently removed.
@@ -273,15 +273,15 @@ export default function DeleteAccountPage() {
           <>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">
+              <span className="text-2xs font-bold text-red-500 uppercase tracking-widest">
                 Final Step
               </span>
             </div>
 
-            <h1 className="text-[22px] font-bold text-slate-100 leading-tight mb-2">
+            <h1 className="text-2xl font-bold text-slate-100 leading-tight mb-2">
               Confirm deletion
             </h1>
-            <p className="text-[13px] text-slate-500 leading-relaxed mb-7">
+            <p className="text-sm text-slate-500 leading-relaxed mb-7">
               Your identity has been verified. Tell us why you're leaving to
               finish the request.
             </p>
@@ -309,7 +309,7 @@ export default function DeleteAccountPage() {
                   onChange={() => setConfirmed(!confirmed)}
                   onClick={(e) => e.stopPropagation()}
                 />
-                <p className="text-[13px] text-slate-400 leading-normal">
+                <p className="text-sm text-slate-400 leading-normal">
                   I understand this action is{" "}
                   <strong className="text-red-400">irreversible</strong>.
                 </p>
@@ -348,10 +348,10 @@ export default function DeleteAccountPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-[22px] font-bold text-slate-100 mb-2">
+            <h1 className="text-2xl font-bold text-slate-100 mb-2">
               Request received
             </h1>
-            <p className="text-[13px] text-slate-500 mb-7">
+            <p className="text-sm text-slate-500 mb-7">
               Your request is pending. Our team will process it within 30 days.
               You have been signed out.
             </p>
@@ -384,10 +384,10 @@ export default function DeleteAccountPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-[22px] font-bold text-slate-100 mb-2">
+            <h1 className="text-2xl font-bold text-slate-100 mb-2">
               Request already pending
             </h1>
-            <p className="text-[13px] text-slate-500 mb-2">
+            <p className="text-sm text-slate-500 mb-2">
               A deletion request for this account is already pending review.
             </p>
             <p className="text-xs text-slate-600">
@@ -401,7 +401,7 @@ export default function DeleteAccountPage() {
 
         {/* Footer */}
         <div className="mt-7 pt-5 border-t border-[#1e2433] text-center">
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} 4 Our Life · All rights reserved
           </p>
         </div>

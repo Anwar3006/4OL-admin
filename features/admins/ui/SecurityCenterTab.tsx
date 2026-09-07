@@ -41,16 +41,16 @@ export default function SecurityCenterTab() {
         <h2 className="card-title mb-6">🔐 MFA Compliance</h2>
         <div className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border border-slate-100 mb-6">
           <div className="text-3xl font-black text-ek-gold">{isLoading ? "…" : `${mfaCompliance}%`}</div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <div className="text-2xs font-bold text-slate-400 uppercase tracking-widest mt-1">
             {mfaOnCount} of {admins.length} admins have MFA enabled
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 font-bold text-center">
+          <p className="text-2xs text-slate-400 mt-2 font-bold text-center">
             No admin MFA enrollment flow exists yet in this app — this reflects the
             real (currently unused) <code>mfa_enabled</code> column, not a computed score.
           </p>
         </div>
         <div>
-          <div className="flex justify-between text-[11px] font-black text-slate-500 mb-1 uppercase tracking-tighter">
+          <div className="flex justify-between text-xs font-black text-slate-500 mb-1 uppercase tracking-tighter">
             <span>MFA Compliance</span><b>{mfaCompliance}%</b>
           </div>
           <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -75,7 +75,7 @@ export default function SecurityCenterTab() {
                   <div className={cn("w-1.5 h-1.5 rounded-full", admin.mfa_enabled ? "bg-ek-green-dark" : "bg-red-500")} />
                   {admin.name}
                 </span>
-                <span className="uppercase text-[9px] tracking-widest">{admin.mfa_enabled ? "✅ Active" : "❌ Off"}</span>
+                <span className="uppercase text-3xs tracking-widest">{admin.mfa_enabled ? "✅ Active" : "❌ Off"}</span>
               </div>
             ))}
           </div>
@@ -90,7 +90,7 @@ export default function SecurityCenterTab() {
             {allIps.map((ip) => (
               <div key={ip} className="p-2 bg-slate-50 border border-slate-100 rounded-lg flex justify-between items-center text-xs">
                 <span className="font-mono font-bold text-slate-700">{ip}</span>
-                <span className="badge badge-green text-[9px]">Active</span>
+                <span className="badge badge-green text-3xs">Active</span>
               </div>
             ))}
           </div>
@@ -107,7 +107,7 @@ export default function SecurityCenterTab() {
                 <div className="w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-lg">🖥️</div>
                 <div className="flex-1">
                   <div className="font-bold text-slate-800">{session.admin_name}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                  <div className="text-2xs text-slate-400 font-bold uppercase tracking-tighter">
                     {session.ip_address || "Unknown IP"} · since {new Date(session.started_at).toLocaleTimeString()}
                   </div>
                 </div>

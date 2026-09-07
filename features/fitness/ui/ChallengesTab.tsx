@@ -100,12 +100,12 @@ const ChallengesTab = () => {
             <div className="flex items-center gap-1.5">
               <Badge
                 variant="outline"
-                className="text-[9px] h-5 px-1.5 font-bold uppercase tracking-wider border-slate-200 text-slate-500"
+                className="text-3xs h-5 px-1.5 font-bold uppercase tracking-wider border-slate-200 text-slate-500"
               >
                 {challenge.challenge_type}
               </Badge>
               {challenge.tags?.length > 0 && (
-                <span className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
+                <span className="text-2xs text-slate-400 font-medium truncate max-w-[120px]">
                   {challenge.tags.slice(0, 2).join(", ")}
                   {challenge.tags.length > 2 && "..."}
                 </span>
@@ -122,7 +122,7 @@ const ChallengesTab = () => {
         const { goal_metric, goal_value } = row.original;
         if (!goal_metric || !goal_value)
           return (
-            <span className="text-[11px] text-slate-400 italic">
+            <span className="text-xs text-slate-400 italic">
               No goal set
             </span>
           );
@@ -132,10 +132,10 @@ const ChallengesTab = () => {
               <Target className="w-3.5 h-3.5 text-indigo-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-slate-800">
+              <span className="text-xs font-bold text-slate-800">
                 {Number(goal_value).toLocaleString()}
               </span>
-              <span className="text-[10px] font-semibold text-slate-500 capitalize">
+              <span className="text-2xs font-semibold text-slate-500 capitalize">
                 {goal_metric}
               </span>
             </div>
@@ -153,7 +153,7 @@ const ChallengesTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[10px]",
+            "badge uppercase tracking-wider text-2xs",
             row.original.created_by
               ? "badge-blue"
               : "bg-slate-100 text-slate-600",
@@ -171,7 +171,7 @@ const ChallengesTab = () => {
         return (
           <Badge
             className={cn(
-              "h-5 px-2 text-[10px] font-black uppercase tracking-wider border-0",
+              "h-5 px-2 text-2xs font-black uppercase tracking-wider border-0",
               status === "active" &&
                 "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
               status === "draft" &&
@@ -202,7 +202,7 @@ const ChallengesTab = () => {
             <div className="flex flex-col">
               <span
                 className={cn(
-                  "text-[11px] font-bold",
+                  "text-xs font-bold",
                   isFull ? "text-amber-600" : "text-slate-800",
                 )}
               >
@@ -210,7 +210,7 @@ const ChallengesTab = () => {
                 {max ? ` / ${max}` : ""}
               </span>
               {max && (
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider">
                   {isFull ? "Full" : `${max - current} left`}
                 </span>
               )}
@@ -225,7 +225,7 @@ const ChallengesTab = () => {
       cell: ({ row }: any) => {
         const { start_date, end_date } = row.original;
         if (!start_date || !end_date)
-          return <span className="text-[11px] text-slate-400">—</span>;
+          return <span className="text-xs text-slate-400">—</span>;
         const start = new Date(start_date).toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
@@ -238,7 +238,7 @@ const ChallengesTab = () => {
         return (
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-[11px] font-semibold text-slate-600">
+            <span className="text-xs font-semibold text-slate-600">
               {start} – {end}
             </span>
           </div>
@@ -251,9 +251,9 @@ const ChallengesTab = () => {
       cell: ({ row }: any) => {
         const reward = row.original.reward_description;
         if (!reward)
-          return <span className="text-[11px] text-slate-400">—</span>;
+          return <span className="text-xs text-slate-400">—</span>;
         return (
-          <Badge className="h-6 px-2.5 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50 gap-1">
+          <Badge className="h-6 px-2.5 text-2xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50 gap-1">
             <Trophy className="w-3 h-3 text-amber-600" />
             <span className="truncate max-w-[140px]">{reward}</span>
           </Badge>

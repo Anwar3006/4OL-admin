@@ -90,7 +90,7 @@ const SymptomCategoriesTab = () => {
           can also carry body-part links — manage those in the Human Anatomy
           menu&apos;s <strong>Linked Symptoms</strong> tab.
         </div>
-        <Link href="/anatomy?tab=symptoms" className="btn btn-secondary h-8 px-3 text-[10px] font-black uppercase tracking-widest shrink-0">
+        <Link href="/anatomy?tab=symptoms" className="btn btn-secondary h-8 px-3 text-2xs font-black uppercase tracking-widest shrink-0">
           Open Anatomy →
         </Link>
       </div>
@@ -98,7 +98,7 @@ const SymptomCategoriesTab = () => {
       {/* Category table */}
       <div className="card p-0 overflow-hidden border-slate-200">
         <div className="px-5 py-4 border-b border-slate-100">
-          <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+          <h4 className="section-heading">
             Categories (type = symptom)
           </h4>
         </div>
@@ -111,7 +111,7 @@ const SymptomCategoriesTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
                   <th className="px-5 py-3">Category</th>
                   <th className="px-5 py-3">Symptoms</th>
                   <th className="px-5 py-3">Published</th>
@@ -152,7 +152,7 @@ const SymptomCategoriesTab = () => {
       {/* Uncategorised queue */}
       <div className="card p-0 overflow-hidden border-slate-200">
         <div className="px-5 py-4 border-b border-slate-100">
-          <h4 className="text-xs font-black uppercase tracking-widest text-slate-700">
+          <h4 className="section-heading">
             ⚠️ Uncategorised Symptoms — assign categories to improve discovery
           </h4>
         </div>
@@ -180,7 +180,7 @@ const SymptomCategoriesTab = () => {
                 >
                   {row.status?.replace("_", " ") ?? "draft"}
                 </span>
-                <span className="text-[11px] font-black text-slate-600">
+                <span className="text-xs font-black text-slate-600">
                   👁️ {(row.view_count ?? 0).toLocaleString()}
                 </span>
               </li>

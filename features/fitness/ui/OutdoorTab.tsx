@@ -207,7 +207,7 @@ const OutdoorTab = () => {
   // Render Star Utility
   const renderStars = useCallback((rating: number) => {
     return (
-      <div className="text-ek-gold text-[10px] flex gap-0.5">
+      <div className="text-ek-gold text-2xs flex gap-0.5">
         {"⭐".repeat(rating || 5)}
         <span className="text-slate-200">{"⭐".repeat(5 - (rating || 5))}</span>
       </div>
@@ -230,7 +230,7 @@ const OutdoorTab = () => {
           >
             {row.original.name}
           </span>
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+          <span className="text-2xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
             {row.original.category || "General Trail"}
           </span>
         </div>
@@ -250,7 +250,7 @@ const OutdoorTab = () => {
         return (
           <span
             className={cn(
-              "badge uppercase tracking-wider text-[9px] font-black",
+              "badge uppercase tracking-wider text-3xs font-black",
               colors[row.original.difficulty] || "badge-blue",
             )}
           >
@@ -263,7 +263,7 @@ const OutdoorTab = () => {
       accessorKey: "distance_duration",
       header: "Distance / Est. Time",
       cell: ({ row }: any) => (
-        <div className="space-y-0.5 text-[11px] font-semibold text-slate-600">
+        <div className="space-y-0.5 text-xs font-semibold text-slate-600">
           <div className="flex items-center gap-1">
             <Navigation className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             {row.original.distance_km ? `${row.original.distance_km} km` : "—"}
@@ -281,7 +281,7 @@ const OutdoorTab = () => {
       accessorKey: "surface_type",
       header: "Surface",
       cell: ({ row }: any) => (
-        <span className="text-[11px] font-medium text-slate-600">
+        <span className="text-xs font-medium text-slate-600">
           {row.original.surface_type || "Natural"}
         </span>
       ),
@@ -292,7 +292,7 @@ const OutdoorTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[9px] font-black",
+            "badge uppercase tracking-wider text-3xs font-black",
             row.original.verification_status === "approved"
               ? "badge-green"
               : row.original.verification_status === "rejected"
@@ -380,7 +380,7 @@ const OutdoorTab = () => {
           >
             {row.original.title}
           </span>
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+          <span className="text-2xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
             {row.original.category || "Fitness Event"}
           </span>
         </div>
@@ -403,7 +403,7 @@ const OutdoorTab = () => {
       accessorKey: "start_at",
       header: "Starts At",
       cell: ({ row }: any) => (
-        <span className="text-[11px] font-semibold text-slate-600">
+        <span className="text-xs font-semibold text-slate-600">
           {row.original.start_at
             ? new Date(row.original.start_at).toLocaleString("en-US", {
                 month: "short",
@@ -440,7 +440,7 @@ const OutdoorTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[9px] font-black",
+            "badge uppercase tracking-wider text-3xs font-black",
             row.original.status === "active"
               ? "badge-green"
               : row.original.status === "upcoming"
@@ -558,7 +558,7 @@ const OutdoorTab = () => {
         <div className="flex items-center gap-1.5">
           <span
             className={cn(
-              "badge uppercase tracking-wider text-[9px] font-black",
+              "badge uppercase tracking-wider text-3xs font-black",
               row.original.moderation_status === "approved"
                 ? "badge-green"
                 : row.original.moderation_status === "pending_review"
@@ -569,7 +569,7 @@ const OutdoorTab = () => {
             {row.original.moderation_status.replace("_", " ")}
           </span>
           {row.original.is_flagged && (
-            <span className="badge badge-red uppercase text-[8px] tracking-wide font-black px-1.5 h-4 flex items-center justify-center gap-0.5">
+            <span className="badge badge-red uppercase text-3xs tracking-wide font-black px-1.5 h-4 flex items-center justify-center gap-0.5">
               <ShieldAlert className="w-2.5 h-2.5 text-white shrink-0" />{" "}
               FLAGGED
             </span>
@@ -750,7 +750,7 @@ const OutdoorTab = () => {
                   </h3>
                   <span className="badge badge-amber">{pendingRoutes.length}</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-medium">
+                <p className="text-2xs text-slate-500 font-medium">
                   Community-submitted routes waiting for GPS review
                 </p>
               </div>
@@ -768,7 +768,7 @@ const OutdoorTab = () => {
                         <div className="text-xs font-bold text-slate-800 truncate">
                           {pr.name}
                         </div>
-                        <div className="text-[10px] text-slate-500 capitalize truncate">
+                        <div className="text-2xs text-slate-500 capitalize truncate">
                           {pr.area}
                           {pr.region ? `, ${pr.region}` : ""} · {pr.difficulty}
                         </div>
@@ -776,7 +776,7 @@ const OutdoorTab = () => {
                       <div className="flex items-center gap-2 shrink-0">
                         <span
                           className={cn(
-                            "badge text-[8px] font-black uppercase",
+                            "badge text-3xs font-black uppercase",
                             hasGps ? "badge-green" : "badge-amber",
                           )}
                         >
@@ -971,7 +971,7 @@ const OutdoorTab = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {INCENTIVE_FIELDS.map((field) => (
                 <div key={field.key} className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
                     {field.label}
                   </label>
                   <input

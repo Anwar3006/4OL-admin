@@ -72,10 +72,10 @@ export default function ActiveUsersTab() {
         header: "User",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-[12px] font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800">
               {displayName(row.original)}
             </span>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-xs text-slate-400">
               {row.original.public_id ?? row.original.email ?? "—"}
             </span>
           </div>
@@ -94,7 +94,7 @@ export default function ActiveUsersTab() {
         id: "sessions",
         header: "Sessions (7d)",
         cell: () => (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400">
             Awaiting instrumentation
           </span>
         ),
@@ -103,7 +103,7 @@ export default function ActiveUsersTab() {
         id: "avg_session",
         header: "Avg Session",
         cell: () => (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400">
             Awaiting instrumentation
           </span>
         ),
@@ -121,7 +121,7 @@ export default function ActiveUsersTab() {
                   style={{ width: `${score}%` }}
                 />
               </div>
-              <span className="text-[10px] font-bold text-slate-500">{score}%</span>
+              <span className="text-2xs font-bold text-slate-500">{score}%</span>
             </div>
           );
         },
@@ -130,7 +130,7 @@ export default function ActiveUsersTab() {
         id: "features",
         header: "Features Used",
         cell: () => (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400">
             Awaiting instrumentation
           </span>
         ),
@@ -139,7 +139,7 @@ export default function ActiveUsersTab() {
         id: "last_active",
         header: "Last Active",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] text-slate-500">
+          <span className="text-xs text-slate-500">
             {relativeTime(row.original.last_active)}
           </span>
         ),
@@ -152,7 +152,7 @@ export default function ActiveUsersTab() {
     <div className="w-full min-w-0 space-y-4">
       <div className="alert al-ic flex items-start gap-3">
         <span>📈</span>
-        <div className="text-[11px] leading-relaxed">
+        <div className="text-xs leading-relaxed">
           <strong>Retention view.</strong> Sessions, average session length and
           feature usage require the mobile-app analytics event pipeline — columns
           are shown now and populate automatically once events start flowing.
@@ -160,7 +160,7 @@ export default function ActiveUsersTab() {
       </div>
 
       <input
-        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
         placeholder="🔍 Search active users…"
         value={search}
         onChange={(event) => setSearch(event.target.value)}

@@ -170,7 +170,7 @@ export default function BedRegistryTab({ data, loading }: BedTrackerTabProps) {
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500">{pct}%</span>
+                        <span className="text-2xs font-bold text-slate-500">{pct}%</span>
                       </TableCell>
                       <TableCell>
                         <Badge variant={critical ? "destructive" : pct <= 10 ? "amber" : "emerald"}>

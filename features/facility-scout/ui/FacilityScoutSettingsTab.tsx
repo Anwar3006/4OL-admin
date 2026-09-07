@@ -64,7 +64,7 @@ export default function FacilityScoutSettingsTab({ data, loading }: FacilityScou
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             🎁 Reward Tier Configuration
           </CardTitle>
         </CardHeader>
@@ -100,7 +100,7 @@ export default function FacilityScoutSettingsTab({ data, loading }: FacilityScou
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             ⚙️ FacilityScout Rules
           </CardTitle>
         </CardHeader>

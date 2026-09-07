@@ -69,7 +69,7 @@ export function UserSearchSelect({
             <div className="flex items-center gap-2">
               <Avatar className="h-5 w-5">
                 <AvatarImage src={selectedUser.image || ""} />
-                <AvatarFallback className="text-[8px] font-bold">
+                <AvatarFallback className="text-3xs font-bold">
                   {selectedUser.first_name?.[0]}
                   {selectedUser.last_name?.[0]}
                 </AvatarFallback>

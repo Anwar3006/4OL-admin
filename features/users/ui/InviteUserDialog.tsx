@@ -30,9 +30,9 @@ const GH_REGIONS = [
 ];
 
 const inputClass =
-  "w-full h-10 px-4 rounded-xl border border-slate-200 text-[12px] font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+  "w-full h-10 px-4 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
 const labelClass =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 interface InviteUserDialogProps {
   open: boolean;

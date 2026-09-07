@@ -44,12 +44,12 @@ export default function PaymentMethods() {
         <div className="h-48 flex items-center justify-center">
           <div className="text-center">
             <div className="text-2xl mb-2">🔒</div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hidden by Super Admin</p>
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400">Hidden by Super Admin</p>
           </div>
         </div>
       ) : chartData.length === 0 ? (
         <div className="h-48 flex items-center justify-center">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">No payments recorded yet</p>
+          <p className="text-2xs font-bold uppercase tracking-widest text-slate-300">No payments recorded yet</p>
         </div>
       ) : (
         <>
@@ -67,7 +67,7 @@ export default function PaymentMethods() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
             {chartData.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+              <div key={i} className="flex items-center gap-2 text-2xs font-bold text-slate-500">
                 <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
                 <span>{item.name} ({item.value}%)</span>
               </div>

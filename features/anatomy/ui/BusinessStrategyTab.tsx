@@ -62,7 +62,7 @@ export default function BusinessStrategyTab() {
               <div className="text-2xl">{card.icon}</div>
               <span className="badge badge-purple">{card.tag}</span>
             </div>
-            <h4 className="mt-3 text-sm font-black uppercase tracking-widest text-slate-700">
+            <h4 className="mt-3 section-heading">
               {card.title}
             </h4>
             <p className="mt-2 text-xs leading-relaxed text-slate-500">{card.body}</p>

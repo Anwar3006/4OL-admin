@@ -65,12 +65,12 @@ export default function ComplianceGRA({ loading: dashboardLoading }: { loading: 
   return (
     <div className="card">
       <div className="card-header border-b border-slate-100 mb-3 flex items-center justify-between">
-        <h2 className="card-title text-[13px]">Compliance & GRA</h2>
+        <h2 className="card-title text-sm">Compliance & GRA</h2>
         <div className="flex items-center gap-2">
-          <span className={`badge text-[9px] ${isConfigured ? "badge-green" : "badge-amber"}`}>
+          <span className={`badge text-3xs ${isConfigured ? "badge-green" : "badge-amber"}`}>
             {isConfigured ? "Configured" : "Awaiting data"}
           </span>
-          <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" variant="outline" className="h-6 px-2 text-2xs" onClick={() => setDialogOpen(true)}>
             Configure
           </Button>
         </div>

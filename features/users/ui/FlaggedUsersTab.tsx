@@ -59,7 +59,7 @@ export default function FlaggedUsersTab() {
         cell: ({ row }) => (
           <div>
             <div className="font-bold text-slate-800">{row.original.name}</div>
-            <div className="text-[10px] text-slate-400 uppercase">{row.original.userStatus}</div>
+            <div className="text-2xs text-slate-400 uppercase">{row.original.userStatus}</div>
           </div>
         ),
       },

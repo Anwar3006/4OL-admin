@@ -30,7 +30,7 @@ export default function QuickActions() {
       <h2 className="card-title mb-4">⚡ Quick Actions</h2>
       <div className="space-y-2">
         {actions.length === 0 && (
-          <div className="text-[11px] text-slate-400">No actions available for your role.</div>
+          <div className="text-xs text-slate-400">No actions available for your role.</div>
         )}
         {actions.map((action) => (
           <button

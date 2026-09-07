@@ -154,7 +154,7 @@ export function ModelsTab({
                             )}`}
                           >
                             {model.accuracy_latest}%
-                            <span className="ml-1 text-[11px] font-normal text-slate-400">
+                            <span className="ml-1 text-xs font-normal text-slate-400">
                               / {model.accuracy_target}%
                             </span>
                           </span>

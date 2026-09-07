@@ -46,7 +46,7 @@ const CoverageTab = () => {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400"
+                    className="px-4 py-3 text-3xs font-black uppercase tracking-widest text-slate-400"
                   >
                     {h}
                   </th>
@@ -105,13 +105,13 @@ const CoverageTab = () => {
                             style={{ width: `${row.coverage_percent}%` }}
                           />
                         </div>
-                        <span className="text-[10px] font-black text-slate-600 w-8">
+                        <span className="text-2xs font-black text-slate-600 w-8">
                           {row.coverage_percent}%
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={cn("badge uppercase text-[8px] font-black", STATUS_BADGES[row.status])}>
+                      <span className={cn("badge uppercase text-3xs font-black", STATUS_BADGES[row.status])}>
                         {row.status}
                       </span>
                     </td>
@@ -120,13 +120,13 @@ const CoverageTab = () => {
                         {canManage && (
                           <>
                             <button
-                              className="btn btn-secondary btn-sm text-[10px]"
+                              className="btn btn-secondary btn-sm text-2xs"
                               onClick={() => router.push("/map?tab=collectors")}
                             >
                               + Assign Collector
                             </button>
                             <button
-                              className="btn btn-secondary btn-sm text-[10px]"
+                              className="btn btn-secondary btn-sm text-2xs"
                               disabled={prioritizeRegion.isPending}
                               onClick={() =>
                                 prioritizeRegion.mutate({

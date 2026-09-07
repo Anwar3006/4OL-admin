@@ -93,7 +93,7 @@ export default function AlertsButton() {
         >
           <NavGlyph char={NAV_GLYPH.alerts} />
           {count > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-bold leading-none text-white">
               {count > 99 ? "99+" : count}
             </span>
           )}
@@ -112,7 +112,7 @@ export default function AlertsButton() {
         ) : count === 0 ? (
           <div className="px-3 py-8 text-center text-sm text-muted-foreground">
             No open security alerts.
-            <span className="mt-1 block text-[10px]">
+            <span className="mt-1 block text-2xs">
               {activeSessions} active admin session
               {activeSessions === 1 ? "" : "s"}.
             </span>
@@ -129,14 +129,14 @@ export default function AlertsButton() {
                   <span className="block truncate font-medium">
                     MFA disabled — {a.name}
                   </span>
-                  <span className="block text-[10px] text-muted-foreground">
+                  <span className="block text-2xs text-muted-foreground">
                     Admin account without multi-factor authentication
                   </span>
                 </span>
               </li>
             ))}
             {count > 6 && (
-              <li className="px-3 py-1.5 text-[10px] text-muted-foreground">
+              <li className="px-3 py-1.5 text-2xs text-muted-foreground">
                 +{count - 6} more
               </li>
             )}

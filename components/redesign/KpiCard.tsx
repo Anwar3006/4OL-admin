@@ -147,7 +147,7 @@ export default function KpiCard({
                 // Part S/S-D5: fixed 22px semibold (no responsive jump),
                 // tabular figures + break-words so values never escape the
                 // card boundary (S-D4).
-                "text-[22px] font-semibold leading-tight tracking-tight tabular-nums break-words",
+                "text-2xl font-semibold leading-tight tracking-tight tabular-nums break-words",
                 isError
                   ? "text-red-700"
                   : isEmpty
@@ -172,8 +172,8 @@ export default function KpiCard({
                 }
                 className="font-medium"
               >
-                {deltaType === "up" && <span className="text-[12px]">↑</span>}
-                {deltaType === "down" && <span className="text-[12px]">↓</span>}
+                {deltaType === "up" && <span className="text-sm">↑</span>}
+                {deltaType === "down" && <span className="text-sm">↓</span>}
                 {delta}
               </Badge>
             </div>

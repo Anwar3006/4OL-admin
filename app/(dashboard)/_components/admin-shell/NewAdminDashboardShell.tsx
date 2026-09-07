@@ -275,7 +275,7 @@ export default function NewAdminDashboardShell({
           <SidebarContent className="pt-2 px-2">
             {navSections.map((section) => (
               <SidebarGroup key={section.title} className="py-2">
-                <SidebarGroupLabel className="text-[11px] font-bold text-white/35 uppercase tracking-widest">
+                <SidebarGroupLabel className="text-xs font-bold text-white/35 uppercase tracking-widest">
                   {section.title}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -295,7 +295,7 @@ export default function NewAdminDashboardShell({
                             <SidebarMenuButton
                               onClick={handleLogout}
                               tooltip="Logout"
-                              className="text-white/55 hover:bg-white/10 hover:text-white transition-colors font-medium text-[11px]"
+                              className="text-white/55 hover:bg-white/10 hover:text-white transition-colors font-medium text-xs"
                             >
                               <span className="flex items-center justify-center">
                                 {item.icon}
@@ -314,7 +314,7 @@ export default function NewAdminDashboardShell({
                               isActive={active}
                               tooltip={item.title}
                               className={cn(
-                                "transition-colors font-medium text-[11px]",
+                                "transition-colors font-medium text-xs",
                                 active
                                   ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
                                   : "text-white hover:bg-white/10 hover:text-white",
@@ -341,7 +341,7 @@ export default function NewAdminDashboardShell({
                                       asChild
                                       isActive={isLinkActive(child.href)}
                                       className={cn(
-                                        "font-medium text-[11px]",
+                                        "font-medium text-xs",
                                         isLinkActive(child.href)
                                           ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
                                           : "text-white/50 hover:bg-white/10 hover:text-white",
@@ -366,7 +366,7 @@ export default function NewAdminDashboardShell({
                             isActive={active}
                             tooltip={item.title}
                             className={cn(
-                              "transition-colors font-medium text-[11px]",
+                              "transition-colors font-medium text-xs",
                               active
                                 ? "bg-white! text-black! shadow-sm hover:bg-white hover:text-slate-900"
                                 : "text-white hover:bg-white/10 hover:text-white",
@@ -382,7 +382,7 @@ export default function NewAdminDashboardShell({
                           {item.badge && (
                             <SidebarMenuBadge
                               className={cn(
-                                "rounded-full px-2 text-[10px] font-bold uppercase tracking-wider",
+                                "rounded-full px-2 text-2xs font-bold uppercase tracking-wider",
                                 badgeToneClass[item.badge] ??
                                   "bg-white/15 text-white",
                               )}
@@ -511,7 +511,7 @@ export default function NewAdminDashboardShell({
                 <span className="pl-9 pr-12 text-sm text-muted-foreground truncate">
                   Search...
                 </span>
-                <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden select-none items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+                <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden select-none items-center gap-1 rounded border border-border bg-background px-1.5 font-mono text-2xs font-medium text-muted-foreground sm:flex">
                   {isMac ? "⌘K" : "Ctrl K"}
                 </kbd>
               </button>
@@ -561,7 +561,7 @@ export default function NewAdminDashboardShell({
                   <span className="max-w-[140px] truncate text-xs font-semibold">
                     {profile?.name || "Admin"}
                   </span>
-                  <span className="max-w-[140px] truncate text-[10px] capitalize text-muted-foreground">
+                  <span className="max-w-[140px] truncate text-2xs capitalize text-muted-foreground">
                     {(profile?.role ?? "administrator").replace(/_/g, " ")}
                     {profile?.public_id ? ` · ${profile.public_id}` : ""}
                   </span>

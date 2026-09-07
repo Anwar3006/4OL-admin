@@ -159,7 +159,7 @@ function DefinitionForm({
         </label>
       </div>
       {!aiConfigured ? (
-        <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
           OPENAI_API_KEY is not configured on this deployment — runs ship as metrics-only reports until it is set.
         </p>
       ) : null}

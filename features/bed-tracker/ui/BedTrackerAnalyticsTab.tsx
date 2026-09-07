@@ -55,7 +55,7 @@ export default function BedTrackerAnalyticsTab({ data, loading }: BedTrackerTabP
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             Ward Occupancy by Type
           </CardTitle>
         </CardHeader>
@@ -85,7 +85,7 @@ export default function BedTrackerAnalyticsTab({ data, loading }: BedTrackerTabP
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             Operational Metrics
           </CardTitle>
         </CardHeader>
@@ -104,7 +104,7 @@ export default function BedTrackerAnalyticsTab({ data, loading }: BedTrackerTabP
 
       <Card className="xl:col-span-2">
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="section-heading">
             Queries by User Type
           </CardTitle>
         </CardHeader>

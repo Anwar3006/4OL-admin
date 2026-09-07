@@ -82,7 +82,7 @@ const TrainersTab = () => {
       header: "Trainer Profile",
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden">
             {row.original.user_profiles?.avatar_url ? (
               <Image
                 src={row.original.user_profiles.avatar_url}
@@ -106,7 +106,7 @@ const TrainersTab = () => {
                 <ShieldCheck className="w-3 h-3 text-emerald-500 fill-emerald-50" />
               )}
             </div>
-            <span className="text-[10px] text-slate-400">
+            <span className="text-2xs text-slate-400">
               {row.original.user_profiles?.email}
             </span>
           </div>
@@ -119,12 +119,12 @@ const TrainersTab = () => {
       cell: ({ row }: any) => (
         <div className="flex flex-wrap gap-1">
           {row.original.specialties?.slice(0, 2).map((s: string, i: number) => (
-            <span key={i} className="badge badge-purple uppercase text-[9px]">
+            <span key={i} className="badge badge-purple uppercase text-3xs">
               {s}
             </span>
           ))}
           {row.original.specialties?.length > 2 && (
-            <span className="text-[9px] text-slate-400">
+            <span className="text-3xs text-slate-400">
               +{row.original.specialties.length - 2}
             </span>
           )}
@@ -135,7 +135,7 @@ const TrainersTab = () => {
       accessorKey: "experience",
       header: "Experience",
       cell: ({ row }: any) => (
-        <span className="text-[11px] font-bold text-slate-800">
+        <span className="text-xs font-bold text-slate-800">
           {row.original.years_experience || 0} years
         </span>
       ),
@@ -148,18 +148,18 @@ const TrainersTab = () => {
           {row.original.certifications?.length ? (
             <>
               {row.original.certifications.slice(0, 2).map((c: string, i: number) => (
-                <span key={i} className="badge badge-blue uppercase text-[9px]">
+                <span key={i} className="badge badge-blue uppercase text-3xs">
                   📄 {c}
                 </span>
               ))}
               {row.original.certifications.length > 2 && (
-                <span className="text-[9px] text-slate-400">
+                <span className="text-3xs text-slate-400">
                   +{row.original.certifications.length - 2}
                 </span>
               )}
             </>
           ) : (
-            <span className="text-[10px] text-slate-400">None on file</span>
+            <span className="text-2xs text-slate-400">None on file</span>
           )}
         </div>
       ),
@@ -168,7 +168,7 @@ const TrainersTab = () => {
       accessorKey: "rating",
       header: "Rating",
       cell: ({ row }: any) => (
-        <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800">
+        <div className="flex items-center gap-1 text-xs font-bold text-slate-800">
           <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
           {row.original.average_rating?.toFixed(1) || "5.0"}
         </div>
@@ -180,7 +180,7 @@ const TrainersTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[10px]",
+            "badge uppercase tracking-wider text-2xs",
             row.original.status === "active" ? "badge-green" : "badge-amber",
           )}
         >

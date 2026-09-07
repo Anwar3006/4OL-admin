@@ -25,7 +25,7 @@ import {
 import { TDiscountRow } from "@/features/marketing/schema/discount";
 
 const FILTER_SELECT_CLASS =
-  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
 
 const TYPE_FILTER_OPTIONS = [
   { value: "", label: "All types" },
@@ -145,7 +145,7 @@ export default function DiscountsTab() {
       {/* ── Filter bar ── */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search promo codes..."
           value={search}
           onChange={(e) => {
@@ -185,14 +185,14 @@ export default function DiscountsTab() {
           variant="outline"
           size="sm"
           onClick={handleExport}
-          className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest"
+          className="h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest"
         >
           📥 Export
         </Button>
         <Button
           size="sm"
           onClick={() => setDialog({ open: true, discount: null })}
-          className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="h-9 px-4 rounded-xl text-2xs font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           + Create Code
         </Button>

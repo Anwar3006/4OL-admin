@@ -141,7 +141,7 @@ export default function SecurityTab() {
                 onChange={(event) => setWhitelistText(event.target.value)}
                 placeholder={"196.32.10.0/24\n41.215.176.0/20"}
               />
-              <div className="mt-2 text-[11px] text-slate-400">
+              <div className="mt-2 text-xs text-slate-400">
                 Saving is rejected if your own IP falls outside the list, so you
                 can never lock yourself out.
               </div>

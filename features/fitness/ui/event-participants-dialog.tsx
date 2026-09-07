@@ -35,7 +35,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
           <div className="card bg-slate-50/60 flex items-center justify-between">
             <div>
               <div className="font-black text-sm text-slate-800">{event.title}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 {event.start_at
                   ? new Date(event.start_at).toLocaleString()
                   : "No start time"}
@@ -65,7 +65,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
                     {["Participant", "Contact", "Registered", "Status"].map((h) => (
                       <th
                         key={h}
-                        className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400"
+                        className="px-3 py-2 text-3xs font-black uppercase tracking-widest text-slate-400"
                       >
                         {h}
                       </th>
@@ -88,7 +88,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
                       <td className="px-3 py-2">
                         <span
                           className={cn(
-                            "badge uppercase text-[8px] font-black",
+                            "badge uppercase text-3xs font-black",
                             STATUS_BADGES[reg.status] ?? "badge-slate",
                           )}
                         >

@@ -184,7 +184,7 @@ export default function TaskDetailDialog({
                   className="flex-1 accent-emerald-600"
                   aria-label="Progress percent"
                 />
-                <span className="text-[10px] font-black text-slate-500 w-9 text-right">{progressPercent}%</span>
+                <span className="text-2xs font-black text-slate-500 w-9 text-right">{progressPercent}%</span>
               </div>
             </div>
             <div className="flex items-center justify-between pt-2">

@@ -21,13 +21,13 @@ export default function HealthFeaturesStatus({
   return (
     <div className="card">
       <div className="card-header border-b border-slate-100 mb-3">
-        <h2 className="card-title text-[13px]">Health Features Status</h2>
+        <h2 className="card-title text-sm">Health Features Status</h2>
       </div>
       <div className="space-y-0.5">
         {features.map((feature) => (
           <div key={feature.label} className="flex justify-between items-center py-1.5 border-b border-slate-50 last:border-0 text-xs font-bold">
             <span className="text-slate-500">{feature.label}</span>
-            <span className={`badge badge-${feature.variant} text-[9px]`}>
+            <span className={`badge badge-${feature.variant} text-3xs`}>
               {loading ? "Loading" : feature.status}
             </span>
           </div>

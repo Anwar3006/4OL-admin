@@ -61,10 +61,10 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
           {getModuleIcon(row.original.module)}
         </div>
         <div>
-          <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.title}
           </div>
-          <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+          <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
             {row.original.subtitle || row.original.module}
           </div>
         </div>
@@ -75,7 +75,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "module",
     header: "Module",
     cell: ({ row }) => (
-      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
+      <span className="text-2xs font-bold uppercase tracking-widest text-slate-600">
         {row.original.module.replace(/_/g, " ")}
       </span>
     ),
@@ -84,7 +84,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "rating",
     header: "Rating",
     cell: ({ row }) => (
-      <div className="text-[11px] font-black text-slate-600">
+      <div className="text-xs font-black text-slate-600">
         {row.original.rating
           ? `⭐ ${row.original.rating.toFixed(1)} (${row.original.rating_count || 0})`
           : "—"}
@@ -99,7 +99,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             source === "subscription"
               ? "bg-purple-50 text-purple-700 border-purple-100"
               : "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -114,7 +114,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "rank",
     header: "Rank",
     cell: ({ row }) => (
-      <div className="text-[11px] font-black text-slate-600">
+      <div className="text-xs font-black text-slate-600">
         {row.original.rank ? `#${row.original.rank}` : "—"}
       </div>
     ),
@@ -128,7 +128,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             windowStatusStyles[status],
           )}
         >

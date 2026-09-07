@@ -25,7 +25,7 @@ const TasksPage = () => {
         </button>
         {canEdit && (
           <button
-            className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-[9px]"
+            className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs"
             onClick={() => setNewTaskOpen(true)}
           >
             + New Task

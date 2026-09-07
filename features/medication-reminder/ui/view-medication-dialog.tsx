@@ -92,7 +92,7 @@ const ViewMedicationReminderDialog = () => {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="secondary"
-                        className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${
+                        className={`rounded-md px-2.5 py-0.5 text-2xs font-bold uppercase tracking-widest border ${
                           data.is_enabled
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : "bg-slate-50 text-slate-500 border-slate-200"
@@ -103,13 +103,13 @@ const ViewMedicationReminderDialog = () => {
                       {data.drug_type && (
                         <Badge
                           variant="secondary"
-                          className="rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-200 capitalize"
+                          className="rounded-md px-2.5 py-0.5 text-2xs font-bold uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-200 capitalize"
                         >
                           {data.drug_type}
                         </Badge>
                       )}
                       {data.rxcui && (
-                        <span className="text-[10px] font-medium text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                        <span className="text-2xs font-medium text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
                           RXCUI: {data.rxcui}
                         </span>
                       )}
@@ -153,7 +153,7 @@ const ViewMedicationReminderDialog = () => {
                 <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm space-y-2">
                   <div className="flex items-center gap-2 text-emerald-600">
                     <Activity className="h-4 w-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-2xs font-bold uppercase tracking-wider">
                       Dosage
                     </span>
                   </div>
@@ -165,7 +165,7 @@ const ViewMedicationReminderDialog = () => {
                 <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm space-y-2">
                   <div className="flex items-center gap-2 text-emerald-600">
                     <Timer className="h-4 w-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-2xs font-bold uppercase tracking-wider">
                       Interval
                     </span>
                   </div>
@@ -177,7 +177,7 @@ const ViewMedicationReminderDialog = () => {
                 <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm space-y-2 col-span-2 sm:col-span-1">
                   <div className="flex items-center gap-2 text-emerald-600">
                     <Repeat className="h-4 w-4" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-2xs font-bold uppercase tracking-wider">
                       Daily Intakes
                     </span>
                   </div>
@@ -194,7 +194,7 @@ const ViewMedicationReminderDialog = () => {
                     <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-100/50">
                       <Bell className="h-4 w-4" />
                     </div>
-                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-emerald-900">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-900">
                       Schedule
                     </h3>
                   </div>
@@ -202,14 +202,14 @@ const ViewMedicationReminderDialog = () => {
                   <div className="grid grid-cols-2 gap-4">
                     {data.notification_schedule && (
                       <div className="space-y-1">
-                        <p className="text-[9px] font-bold uppercase text-slate-400">Frequency</p>
+                        <p className="text-3xs font-bold uppercase text-slate-400">Frequency</p>
                         <p className="text-sm font-semibold text-slate-700">{data.notification_schedule}</p>
                       </div>
                     )}
 
                     {(data.gap_days || data.schedule_gap) && (
                       <div className="space-y-1">
-                        <p className="text-[9px] font-bold uppercase text-slate-400">Gap Between Doses</p>
+                        <p className="text-3xs font-bold uppercase text-slate-400">Gap Between Doses</p>
                         <p className="text-sm font-semibold text-slate-700">
                           {data.gap_days ?? data.schedule_gap} day{(data.gap_days ?? data.schedule_gap) === 1 ? "" : "s"}
                         </p>
@@ -218,7 +218,7 @@ const ViewMedicationReminderDialog = () => {
 
                     {data.last_sent_at && (
                       <div className="space-y-1">
-                        <p className="text-[9px] font-bold uppercase text-slate-400">Last Sent</p>
+                        <p className="text-3xs font-bold uppercase text-slate-400">Last Sent</p>
                         <p className="text-sm font-semibold text-slate-700">
                           {new Date(data.last_sent_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
                         </p>
@@ -228,12 +228,12 @@ const ViewMedicationReminderDialog = () => {
 
                   {activeDays.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[9px] font-bold uppercase text-slate-400">Active Days</p>
+                      <p className="text-3xs font-bold uppercase text-slate-400">Active Days</p>
                       <div className="flex flex-wrap gap-1.5">
                         {activeDays.map((day: string, idx: number) => (
                           <span
                             key={idx}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase border border-emerald-100"
+                            className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-2xs font-bold uppercase border border-emerald-100"
                           >
                             {day}
                           </span>
@@ -247,7 +247,7 @@ const ViewMedicationReminderDialog = () => {
               {/* Purpose Rendering */}
               {purposeList.length > 0 && (
                 <div className="space-y-3 px-1">
-                  <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  <h4 className="text-2xs font-bold uppercase tracking-[0.2em] text-slate-400">
                     Medical Purpose
                   </h4>
                   <ul className="space-y-2.5">
@@ -291,7 +291,7 @@ const ViewMedicationReminderDialog = () => {
                       <Calendar className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-slate-400">
+                      <p className="text-3xs font-bold uppercase text-slate-400">
                         Started
                       </p>
                       <p className="text-xs font-semibold text-slate-700 mt-0.5">
@@ -306,7 +306,7 @@ const ViewMedicationReminderDialog = () => {
                       <History className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-slate-400">
+                      <p className="text-3xs font-bold uppercase text-slate-400">
                         Duration
                       </p>
                       <p className="text-xs font-semibold text-slate-700 mt-0.5">
@@ -368,7 +368,7 @@ const MedicationSection = ({
       <div className="p-1.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-100/50">
         <Icon className="h-4 w-4" />
       </div>
-      <h3 className="text-[11px] font-bold uppercase tracking-widest text-emerald-900">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-900">
         {title}
       </h3>
     </div>

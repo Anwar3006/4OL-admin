@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 const inputCls =
   "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
 const labelCls =
-  "text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1 block";
+  "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
 const AVAILABILITY_BADGE: Record<string, { cls: string; label: string }> = {
   otc: { cls: "badge-green", label: "OTC" },
@@ -39,7 +39,7 @@ function DrugOption({ drug }: { drug: DrugRow }) {
   return (
     <div>
       <div className="font-bold text-slate-800">{drug.name}</div>
-      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-2xs text-slate-400">
         {drug.generic_name && <span>{drug.generic_name}</span>}
         {drug.category && <span className="badge badge-blue">{drug.category}</span>}
         <span className={cn("badge", availability.cls)}>{availability.label}</span>
@@ -101,7 +101,7 @@ export default function DrugsLinkedTab() {
       <div className="card p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <h3 className="section-heading">
               💊 Linked Drugs
             </h3>
             <p className="mt-1 max-w-2xl text-xs text-slate-400">
@@ -198,7 +198,7 @@ export default function DrugsLinkedTab() {
 
       <div className="card">
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-5 py-4">
-          <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <h3 className="section-heading">
             Published Drug Links
           </h3>
           <span className="badge badge-green">{links.length} links</span>
@@ -215,7 +215,7 @@ export default function DrugsLinkedTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
                 <th className="px-5 py-3">Body Part</th>
                 <th className="px-5 py-3">Drug</th>
                 <th className="px-5 py-3">Category</th>
@@ -252,14 +252,14 @@ export default function DrugsLinkedTab() {
                       <td className="px-5 py-3 font-bold text-slate-800">
                         {row.body_part_name}
                         {row.body_system && (
-                          <div className="text-[10px] font-medium text-slate-400">
+                          <div className="text-2xs font-medium text-slate-400">
                             {row.body_system}
                           </div>
                         )}
                       </td>
                       <td className="px-5 py-3">
                         <div className="font-semibold text-slate-800">{row.drug_name}</div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-2xs text-slate-400">
                           {[
                             row.generic_name,
                             row.strength
@@ -313,7 +313,7 @@ export default function DrugsLinkedTab() {
       <div className="card p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <h3 className="section-heading">
               AI Drug Mapping Review
             </h3>
             <p className="mt-1 text-xs text-slate-400">
@@ -372,7 +372,7 @@ export default function DrugsLinkedTab() {
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
                   <th className="py-2 pr-3">Drug</th>
                   <th className="py-2 pr-3">Body Part</th>
                   <th className="py-2 pr-3">Confidence</th>

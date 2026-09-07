@@ -94,7 +94,7 @@ export default function LoggedRemindersTab() {
                 {isSuperAdmin ? name : maskName(name)}
               </div>
               {userId && (
-                <span className="badge badge-slate text-[9px]">
+                <span className="badge badge-slate text-3xs">
                   4OL-{isSuperAdmin ? userId.slice(0, 6) : "••••••"}
                 </span>
               )}
@@ -116,7 +116,7 @@ export default function LoggedRemindersTab() {
             <div>
               <div className="font-bold text-slate-800">{row.original.drug_name}</div>
               {row.original.generic_name && (
-                <div className="text-[10px] text-slate-400">
+                <div className="text-2xs text-slate-400">
                   {row.original.generic_name}
                 </div>
               )}
@@ -128,7 +128,7 @@ export default function LoggedRemindersTab() {
         accessorKey: "drug_type",
         header: "Type / Form",
         cell: ({ row }) => (
-          <span className="text-[11px] font-medium text-slate-600 capitalize">
+          <span className="text-xs font-medium text-slate-600 capitalize">
             {row.original.drug_type || "—"}
           </span>
         ),
@@ -147,7 +147,7 @@ export default function LoggedRemindersTab() {
               {formatReminderInterval(row.original.interval, row.original.interval_unit)}
             </div>
             {row.original.notification_schedule && (
-              <div className="text-[10px] text-slate-400">
+              <div className="text-2xs text-slate-400">
                 {row.original.notification_schedule}
               </div>
             )}
@@ -163,7 +163,7 @@ export default function LoggedRemindersTab() {
           const fmt = (d?: string | null) =>
             d ? new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "…";
           return (
-            <span className="text-[10px] font-bold text-slate-500">
+            <span className="text-2xs font-bold text-slate-500">
               {fmt(start_date)} → {fmt(end_date)}
             </span>
           );
@@ -189,7 +189,7 @@ export default function LoggedRemindersTab() {
         accessorKey: "created_at",
         header: "Logged",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400">
+          <span className="text-2xs font-bold text-slate-400">
             {new Date(row.original.created_at).toLocaleDateString()}
           </span>
         ),
@@ -223,7 +223,7 @@ export default function LoggedRemindersTab() {
   return (
     <div className="space-y-4 mt-4">
       {/* Privacy notice (mockup) */}
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] text-slate-500 font-medium">
+      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 font-medium">
         <span>🔒</span>
         <span>
           User identifiers are <strong>partially masked</strong>. Full IDs are visible to
@@ -293,7 +293,7 @@ export default function LoggedRemindersTab() {
 
       {/* Bulk action bar (mockup footer) */}
       <div className="flex flex-wrap gap-2 items-center rounded-xl border border-slate-200 bg-white px-4 py-3">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-auto">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-400 mr-auto">
           Bulk Actions
         </span>
         <button

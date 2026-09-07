@@ -33,7 +33,7 @@ const LinkagesTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-[11px] font-bold text-slate-500">
+      <div className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-500">
         🔗 Read-only linkage overview — {data.registry.conditions ?? 0} conditions
         and {data.registry.symptoms ?? 0} symptoms in the registry. Editing
         linkages happens on each condition form; a dedicated linkage editor
@@ -67,18 +67,18 @@ const LinkagesTab = () => {
 
             <div className="text-2xl font-black text-slate-900">
               {linkage.count === null ? "—" : linkage.count.toLocaleString()}
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">
+              <span className="text-2xs font-black uppercase tracking-widest text-slate-400 ml-2">
                 linkages
               </span>
             </div>
 
-            <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
+            <p className="text-xs text-slate-500 font-bold leading-relaxed">
               {linkage.note}
             </p>
 
             <Link
               href={linkage.href}
-              className="mt-auto inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-emerald-700 hover:text-emerald-800"
+              className="mt-auto inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-emerald-700 hover:text-emerald-800"
             >
               Open module →
             </Link>

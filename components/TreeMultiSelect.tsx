@@ -231,14 +231,14 @@ export function TreeMultiSelect({
               className="pl-2 pr-1 py-1 gap-1 bg-white border-slate-200 text-slate-700 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-all cursor-pointer group"
               onClick={() => toggleValue(item.id)}
             >
-              <span className="text-[11px] font-medium">{item.name}</span>
+              <span className="text-xs font-medium">{item.name}</span>
               <X className="h-3 w-3 opacity-50 group-hover:opacity-100" />
             </Badge>
           ))}
           <button
             type="button"
             onClick={() => onChange([])}
-            className="text-[10px] text-muted-foreground underline hover:text-red-500 ml-auto px-2"
+            className="text-2xs text-muted-foreground underline hover:text-red-500 ml-auto px-2"
           >
             Clear All
           </button>

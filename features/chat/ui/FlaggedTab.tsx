@@ -146,7 +146,7 @@ export default function FlaggedTab() {
         accessorKey: "conversation_name",
         header: "Group",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-600 max-w-[120px] truncate block">
+          <span className="text-2xs font-bold text-slate-600 max-w-[120px] truncate block">
             {row.original.conversation_name || "—"}
           </span>
         ),
@@ -156,7 +156,7 @@ export default function FlaggedTab() {
         header: "Flagged Message",
         cell: ({ row }) => (
           <div className="max-w-[220px]">
-            <div className="text-[11px] font-bold text-slate-800 line-clamp-2">
+            <div className="text-xs font-bold text-slate-800 line-clamp-2">
               {row.original.content_preview || "—"}
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function FlaggedTab() {
         accessorKey: "sender_first_name",
         header: "User",
         cell: ({ row }) => (
-          <div className="text-[11px] font-bold text-slate-700">
+          <div className="text-xs font-bold text-slate-700">
             {[row.original.sender_first_name, row.original.sender_last_name]
               .filter(Boolean)
               .join(" ") || "—"}
@@ -178,11 +178,11 @@ export default function FlaggedTab() {
         header: "Reason",
         cell: ({ row }) => (
           <div>
-            <span className="text-[10px] font-bold text-slate-700">
+            <span className="text-2xs font-bold text-slate-700">
               {row.original.report_reason}
             </span>
             {row.original.ai_detected && (
-              <span className="ml-1.5 px-1 py-0.5 rounded bg-purple-100 text-purple-700 text-[8px] font-black">
+              <span className="ml-1.5 px-1 py-0.5 rounded bg-purple-100 text-purple-700 text-3xs font-black">
                 AI
               </span>
             )}
@@ -195,12 +195,12 @@ export default function FlaggedTab() {
         cell: ({ row }) => {
           const confidence = row.original.ai_confidence;
           if (confidence === null || confidence === undefined) {
-            return <span className="text-[10px] text-slate-300">—</span>;
+            return <span className="text-2xs text-slate-300">—</span>;
           }
           const pct = Math.round(confidence <= 1 ? confidence * 100 : confidence);
           return (
             <span
-              className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+              className={`text-2xs font-black px-1.5 py-0.5 rounded-md ${
                 pct >= 80
                   ? "text-red-600 bg-red-50"
                   : pct >= 50
@@ -220,7 +220,7 @@ export default function FlaggedTab() {
           const val = row.original.moderation_status;
           return (
             <span
-              className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+              className={`inline-block px-2 py-0.5 rounded text-3xs font-black uppercase ${
                 STATUS_BADGE[val] || "bg-slate-100 text-slate-600"
               }`}
             >
@@ -233,7 +233,7 @@ export default function FlaggedTab() {
         accessorKey: "flagged_at",
         header: "Flagged",
         cell: ({ row }) => (
-          <span className="text-[10px] text-slate-400">
+          <span className="text-2xs text-slate-400">
             {row.original.flagged_at
               ? new Date(row.original.flagged_at).toLocaleDateString()
               : "—"}
@@ -303,10 +303,10 @@ export default function FlaggedTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       {/* Alert banner — pending counts by reason */}
       {reasonCounts.size > 0 && (
-        <div className="alert al-ic flex flex-wrap items-center gap-2 text-[11px]">
+        <div className="alert al-ic flex flex-wrap items-center gap-2 text-xs">
           <strong className="font-black">🚩 Moderation queue:</strong>
           {Array.from(reasonCounts.entries()).map(([reason, count]) => (
-            <span key={reason} className="badge badge-red text-[9px]">
+            <span key={reason} className="badge badge-red text-3xs">
               {reason}: {count}
             </span>
           ))}
@@ -322,7 +322,7 @@ export default function FlaggedTab() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={filterReason}
           onChange={(e) => setFilterReason(e.target.value)}
         >
@@ -332,7 +332,7 @@ export default function FlaggedTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={filterGroup}
           onChange={(e) => setFilterGroup(e.target.value)}
         >
@@ -342,7 +342,7 @@ export default function FlaggedTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={filterSource}
           onChange={(e) => setFilterSource(e.target.value)}
         >
@@ -351,7 +351,7 @@ export default function FlaggedTab() {
           <option value="manual">👤 Manual reports</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
@@ -360,7 +360,7 @@ export default function FlaggedTab() {
           <option value="conversation">Conversations</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-[11px] font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
@@ -372,7 +372,7 @@ export default function FlaggedTab() {
         <button className="btn btn-secondary btn-sm font-bold" onClick={handleExport}>
           📥 Export
         </button>
-        <span className="text-[10px] text-slate-400 font-medium ml-auto">
+        <span className="text-2xs text-slate-400 font-medium ml-auto">
           {filtered.length} flagged item{filtered.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -408,12 +408,12 @@ export default function FlaggedTab() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6 space-y-4">
             <h3 className="text-sm font-black text-slate-800">🔍 Flag Context</h3>
-            <div className="bg-slate-50 rounded-xl p-3 text-[11px] text-slate-600 space-y-2">
+            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 space-y-2">
               <div>
                 <span className="font-black text-slate-800">Flagged content:</span>
                 <p className="mt-1 whitespace-pre-wrap">{contextItem.content_preview || "—"}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="grid grid-cols-2 gap-2 text-2xs">
                 <div><span className="font-black">Group:</span> {contextItem.conversation_name || "—"}</div>
                 <div>
                   <span className="font-black">Sender:</span>{" "}
@@ -442,12 +442,12 @@ export default function FlaggedTab() {
                 </div>
               </div>
               {contextItem.report_detail && (
-                <div className="text-[10px]">
+                <div className="text-2xs">
                   <span className="font-black">Report detail:</span> {contextItem.report_detail}
                 </div>
               )}
               {contextItem.ai_reason && (
-                <div className="text-[10px]">
+                <div className="text-2xs">
                   <span className="font-black">AI reasoning:</span> {contextItem.ai_reason}
                 </div>
               )}
@@ -476,7 +476,7 @@ export default function FlaggedTab() {
                 <h3 className="text-sm font-black text-slate-800 capitalize">
                   {actionModal.action} Content
                 </h3>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   {actionModal.action === "warn"
                     ? "Issue a warning to the sender"
                     : actionModal.action === "remove"
@@ -486,13 +486,13 @@ export default function FlaggedTab() {
               </div>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-3 text-[11px] text-slate-600">
+            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600">
               <div className="font-bold text-slate-800 mb-1">Content Preview:</div>
               <div className="line-clamp-3">{actionModal.item.content_preview}</div>
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+              <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
                 Moderator Notes
               </label>
               <textarea
@@ -506,14 +506,14 @@ export default function FlaggedTab() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setActionModal(null)}
-                className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer border-0 bg-transparent"
+                className="px-4 py-2 rounded-lg text-2xs font-black uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer border-0 bg-transparent"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmModeration}
                 disabled={moderateMutation.isPending}
-                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-white transition-colors cursor-pointer border-0 ${
+                className={`px-4 py-2 rounded-lg text-2xs font-black uppercase tracking-wider text-white transition-colors cursor-pointer border-0 ${
                   actionModal.action === "warn"
                     ? "bg-amber-500 hover:bg-amber-600"
                     : actionModal.action === "remove"

@@ -89,7 +89,7 @@ const PlansTab = () => {
               {row.original.title}
             </span>
             {row.original.is_featured && (
-              <span className="badge badge-indigo h-4 text-[9px] uppercase font-black gap-0.5">
+              <span className="badge badge-indigo h-4 text-3xs uppercase font-black gap-0.5">
                 <Star className="w-2.5 h-2.5 fill-current" /> FEATURED
               </span>
             )}
@@ -98,7 +98,7 @@ const PlansTab = () => {
             {row.original.target_body_parts?.slice(0, 2).map((part: string) => (
               <span
                 key={part}
-                className="text-[10px] text-slate-400 uppercase font-bold tracking-wider"
+                className="text-2xs text-slate-400 uppercase font-bold tracking-wider"
               >
                 {part}
               </span>
@@ -113,7 +113,7 @@ const PlansTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[10px]",
+            "badge uppercase tracking-wider text-2xs",
             row.original.status === "published"
               ? "badge-green"
               : row.original.status === "draft"
@@ -130,11 +130,11 @@ const PlansTab = () => {
       header: "Structure",
       cell: ({ row }: any) => (
         <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             {row.original.duration_weeks} weeks
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <ListChecks className="w-3.5 h-3.5 text-slate-400" />
             {row.original.workouts_per_week} sessions / wk
           </div>
@@ -147,7 +147,7 @@ const PlansTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[10px]",
+            "badge uppercase tracking-wider text-2xs",
             row.original.difficulty_level === "beginner"
               ? "badge-blue"
               : row.original.difficulty_level === "intermediate"
@@ -164,10 +164,10 @@ const PlansTab = () => {
       header: "Popularity",
       cell: ({ row }: any) => (
         <div className="space-y-1">
-          <div className="text-[11px] font-bold text-slate-800">
+          <div className="text-xs font-bold text-slate-800">
             {row.original.total_completions || 0} completions
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-slate-400">
+          <div className="flex items-center gap-1 text-2xs text-slate-400">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
             {(row.original.average_rating || 0).toFixed(1)} (
             {row.original.rating_count || 0})
@@ -185,7 +185,7 @@ const PlansTab = () => {
       cell: ({ row }: any) => (
         <span
           className={cn(
-            "badge uppercase tracking-wider text-[10px]",
+            "badge uppercase tracking-wider text-2xs",
             row.original.author_type === "ai"
               ? "badge-purple"
               : row.original.author_type === "admin"
@@ -204,7 +204,7 @@ const PlansTab = () => {
       header: "Profile Hash",
       cell: ({ row }: any) => (
         <span
-          className="text-[10px] font-mono text-slate-500"
+          className="text-2xs font-mono text-slate-500"
           title={row.original.selection_hash ?? undefined}
         >
           {row.original.selection_hash

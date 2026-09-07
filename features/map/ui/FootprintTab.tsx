@@ -120,17 +120,17 @@ const FootprintTab = () => {
                     />
                     <span className="text-xs font-black text-slate-800">{name}</span>
                   </span>
-                  <span className={cn("badge text-[8px] uppercase", GPS_BADGES[collector.gps_status])}>
+                  <span className={cn("badge text-3xs uppercase", GPS_BADGES[collector.gps_status])}>
                     GPS {collector.gps_status}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500">
+                <div className="flex items-center justify-between text-2xs font-semibold text-slate-500">
                   <span>
                     {collectorDisplayId(collector.id)} · {collector.assigned_region || "No region"}
                   </span>
                   <span>{todayPointsByCollector.get(collector.user_id) ?? 0} pts today</span>
                 </div>
-                <div className="text-[9px] text-slate-400 mt-1">
+                <div className="text-3xs text-slate-400 mt-1">
                   Last seen:{" "}
                   {collector.last_active
                     ? new Date(collector.last_active).toLocaleString()
@@ -146,7 +146,7 @@ const FootprintTab = () => {
       <div className="card">
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Activity
             </label>
             <select
@@ -164,7 +164,7 @@ const FootprintTab = () => {
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Region
             </label>
             <input
@@ -178,7 +178,7 @@ const FootprintTab = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               From
             </label>
             <input
@@ -192,7 +192,7 @@ const FootprintTab = () => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
               To
             </label>
             <input
@@ -226,7 +226,7 @@ const FootprintTab = () => {
                   (h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400"
+                      className="px-4 py-3 text-3xs font-black uppercase tracking-widest text-slate-400"
                     >
                       {h}
                     </th>
@@ -267,7 +267,7 @@ const FootprintTab = () => {
                     <td className="px-4 py-3 text-slate-600">
                       {[fp.area, fp.district].filter(Boolean).join(" · ") || "—"}
                     </td>
-                    <td className="px-4 py-3 font-mono text-[10px] text-slate-500">
+                    <td className="px-4 py-3 font-mono text-2xs text-slate-500">
                       {fp.latitude.toFixed(5)}, {fp.longitude.toFixed(5)}
                     </td>
                     <td className="px-4 py-3 text-slate-600">
@@ -289,7 +289,7 @@ const FootprintTab = () => {
         {/* Pagination */}
         {meta && meta.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
-            <span className="text-[10px] font-semibold text-slate-400">
+            <span className="text-2xs font-semibold text-slate-400">
               {meta.total.toLocaleString()} points · page {meta.page}/{meta.totalPages}
             </span>
             <div className="flex gap-2">

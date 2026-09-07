@@ -52,7 +52,7 @@ const relativeTime = (value: string | null) => {
 };
 
 const selectClass =
-  "h-9 px-3 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20";
+  "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20";
 
 export default function AllUsersTab() {
   const router = useRouter();
@@ -100,16 +100,16 @@ export default function AllUsersTab() {
           return (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold text-slate-800">
+                <span className="text-sm font-bold text-slate-800">
                   {displayName(user)}
                 </span>
                 {user.public_id && (
-                  <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="text-3xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
                     {user.public_id}
                   </span>
                 )}
               </div>
-              <span className="text-[11px] text-slate-400">{user.email ?? "—"}</span>
+              <span className="text-xs text-slate-400">{user.email ?? "—"}</span>
             </div>
           );
         },
@@ -118,7 +118,7 @@ export default function AllUsersTab() {
         id: "phone",
         header: "Phone",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] font-semibold text-slate-600">
+          <span className="text-xs font-semibold text-slate-600">
             {row.original.phone_number ?? "—"}
           </span>
         ),
@@ -139,14 +139,14 @@ export default function AllUsersTab() {
           row.original.nhis_linked ? (
             <span className="badge badge-green">✓ {row.original.nhis_number}</span>
           ) : (
-            <span className="text-[11px] text-slate-400">Not linked</span>
+            <span className="text-xs text-slate-400">Not linked</span>
           ),
       },
       {
         id: "region",
         header: "Region",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] text-slate-600">{row.original.region ?? "—"}</span>
+          <span className="text-xs text-slate-600">{row.original.region ?? "—"}</span>
         ),
       },
       {
@@ -160,7 +160,7 @@ export default function AllUsersTab() {
                 style={{ width: `${row.original.engagement_score}%` }}
               />
             </div>
-            <span className="text-[10px] font-bold text-slate-500">
+            <span className="text-2xs font-bold text-slate-500">
               {row.original.engagement_score}%
             </span>
           </div>
@@ -170,14 +170,14 @@ export default function AllUsersTab() {
         id: "joined",
         header: "Joined",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] text-slate-500">{formatDate(row.original.created_at)}</span>
+          <span className="text-xs text-slate-500">{formatDate(row.original.created_at)}</span>
         ),
       },
       {
         id: "last_active",
         header: "Last Active",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-[11px] text-slate-500">{relativeTime(row.original.last_active)}</span>
+          <span className="text-xs text-slate-500">{relativeTime(row.original.last_active)}</span>
         ),
       },
       {
@@ -238,7 +238,7 @@ export default function AllUsersTab() {
     <div className="w-full min-w-0 space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search name, email, phone, NHIS…"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}

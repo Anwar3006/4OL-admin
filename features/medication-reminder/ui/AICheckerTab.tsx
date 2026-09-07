@@ -24,7 +24,7 @@ export default function AICheckerTab() {
             <div className="text-sm font-black tracking-tight">
               Drug Interaction Checker AI v1.8 — Active
             </div>
-            <div className="text-[11px] text-emerald-100 font-medium mt-0.5">
+            <div className="text-xs text-emerald-100 font-medium mt-0.5">
               Real-time interaction screening on every reminder ·{" "}
               {stats ? `${stats.interaction_pairs.toLocaleString()} interaction pairs indexed` : "indexing catalog…"}
             </div>

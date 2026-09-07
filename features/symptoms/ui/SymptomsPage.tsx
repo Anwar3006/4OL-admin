@@ -114,16 +114,16 @@ const SymptomsPage = () => {
             row.original.bodyParts.slice(0, 3).map((bp: string, i: number) => (
               <span
                 key={i}
-                className="text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
+                className="text-2xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
               >
                 {bp}
               </span>
             ))
           ) : (
-            <span className="text-[10px] text-slate-300 italic">—</span>
+            <span className="text-2xs text-slate-300 italic">—</span>
           )}
           {row.original.bodyParts?.length > 3 && (
-            <span className="text-[9px] text-slate-400 font-bold">
+            <span className="text-3xs text-slate-400 font-bold">
               +{row.original.bodyParts.length - 3} more
             </span>
           )}
@@ -158,7 +158,7 @@ const SymptomsPage = () => {
       accessorKey: "updated_at",
       header: "Last Edited",
       cell: ({ row }: any) => (
-        <div className="text-[10px] text-slate-500 font-medium">
+        <div className="text-2xs text-slate-500 font-medium">
           {row.original.updated_at
             ? format(new Date(row.original.updated_at), "MMM dd, yyyy")
             : "—"}
@@ -178,7 +178,7 @@ const SymptomsPage = () => {
       accessorKey: "views",
       header: "Views",
       cell: ({ row }: any) => (
-        <div className="text-[11px] font-bold text-slate-600">
+        <div className="text-xs font-bold text-slate-600">
           {row.original.views?.toLocaleString() || "0"}
         </div>
       ),
@@ -301,7 +301,7 @@ const SymptomsPage = () => {
                 value={tab.id}
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
-                  "text-[10px] sm:text-[11px] font-black uppercase tracking-widest",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
                   "hover:text-emerald-700 hover:bg-emerald-50/40",
@@ -345,13 +345,13 @@ const SymptomsPage = () => {
                   </svg>
                 </div>
               </div>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
+              <select className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
                 <option>All Categories</option>
               </select>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-[11px] font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
+              <select className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
                 <option>All Status</option>
               </select>
-              <button className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-[10px]">
+              <button className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-2xs">
                 📥 Export
               </button>
             </div>
@@ -374,10 +374,10 @@ const SymptomsPage = () => {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button className="btn btn-secondary text-[10px] font-black uppercase tracking-widest">
+              <button className="btn btn-secondary text-2xs font-black uppercase tracking-widest">
                 ⭐ Verify Selected
               </button>
-              <button className="btn btn-danger text-[10px] font-black uppercase tracking-widest">
+              <button className="btn btn-danger text-2xs font-black uppercase tracking-widest">
                 🗑️ Delete Selected
               </button>
             </div>

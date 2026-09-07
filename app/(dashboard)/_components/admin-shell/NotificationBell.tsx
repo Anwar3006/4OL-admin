@@ -174,7 +174,7 @@ export default function NotificationBell() {
             <span
               className={cn(
                 "absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center",
-                "rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white",
+                "rounded-full bg-destructive px-1 text-2xs font-bold leading-none text-white",
               )}
             >
               {badge}
@@ -262,7 +262,7 @@ export default function NotificationBell() {
                           >
                             {row.title ?? "Notification"}
                           </span>
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <span className="shrink-0 text-2xs text-muted-foreground">
                             {formatDistanceToNow(new Date(row.created_at), {
                               addSuffix: true,
                             })}
@@ -274,7 +274,7 @@ export default function NotificationBell() {
                           </span>
                         )}
                         {href && (
-                          <span className="mt-1 block text-[10px] font-medium text-primary">
+                          <span className="mt-1 block text-2xs font-medium text-primary">
                             Open →
                           </span>
                         )}

@@ -63,12 +63,12 @@ const CollectorsTab = () => {
             <span className="font-black text-slate-800 text-xs">
               {collectorDisplayId(row.original.id)}
             </span>
-            <span className="text-[10px] text-slate-500 font-semibold mt-0.5">
+            <span className="text-2xs text-slate-500 font-semibold mt-0.5">
               {`${row.original.user?.first_name ?? ""} ${row.original.user?.last_name ?? ""}`.trim() ||
                 row.original.user_id.slice(0, 8)}
             </span>
             {row.original.user?.email && (
-              <span className="text-[9px] text-slate-400">{row.original.user.email}</span>
+              <span className="text-3xs text-slate-400">{row.original.user.email}</span>
             )}
           </div>
         ),
@@ -86,7 +86,7 @@ const CollectorsTab = () => {
         accessorKey: "gps_status",
         header: "GPS Status",
         cell: ({ row }: any) => (
-          <span className={cn("badge uppercase text-[8px] font-black", GPS_BADGES[row.original.gps_status])}>
+          <span className={cn("badge uppercase text-3xs font-black", GPS_BADGES[row.original.gps_status])}>
             {row.original.gps_status}
           </span>
         ),
@@ -104,7 +104,7 @@ const CollectorsTab = () => {
         accessorKey: "last_active",
         header: "Last Active",
         cell: ({ row }: any) => (
-          <span className="text-[11px] text-slate-500 font-medium">
+          <span className="text-xs text-slate-500 font-medium">
             {row.original.last_active
               ? new Date(row.original.last_active).toLocaleString()
               : "Never"}
@@ -186,13 +186,13 @@ const CollectorsTab = () => {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 User
               </label>
               <UserSearchSelect value={newUserId || undefined} onValueChange={setNewUserId} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 Assigned Region
               </label>
               <select
@@ -209,7 +209,7 @@ const CollectorsTab = () => {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <label className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 Notes
               </label>
               <textarea

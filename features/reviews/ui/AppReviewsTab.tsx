@@ -95,10 +95,10 @@ export default function AppReviewsTab() {
         header: "Reviewer",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 text-[11px] uppercase tracking-tight leading-none mb-1">
+            <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
               {row.original.user_profiles?.name || "Anonymous"}
             </div>
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+            <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
               {row.original.prompt_source === "settings_manual"
                 ? "Settings menu"
                 : "Periodic popup"}
@@ -116,7 +116,7 @@ export default function AppReviewsTab() {
         header: "Feedback",
         cell: ({ row }) => (
           <div className="max-w-[240px]">
-            <p className="text-[11px] font-medium text-slate-500 line-clamp-2 leading-tight italic">
+            <p className="text-xs font-medium text-slate-500 line-clamp-2 leading-tight italic">
               {row.original.comment_text || "— no comment —"}
             </p>
           </div>
@@ -127,10 +127,10 @@ export default function AppReviewsTab() {
         header: "App Info",
         cell: ({ row }) => (
           <div>
-            <div className="text-[10px] font-black text-slate-600 leading-none mb-1">
+            <div className="text-2xs font-black text-slate-600 leading-none mb-1">
               {PLATFORM_BADGES[row.original.platform] || "📱 App"}
             </div>
-            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+            <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
               {row.original.app_version ? `v${row.original.app_version}` : "—"}
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function AppReviewsTab() {
         cell: ({ row }) => (
           <span
             className={cn(
-              "px-2 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest",
+              "px-2 py-1 rounded-lg border text-3xs font-black uppercase tracking-widest",
               STATUS_STYLES[row.original.status] || STATUS_STYLES.pending,
             )}
           >
@@ -154,7 +154,7 @@ export default function AppReviewsTab() {
         accessorKey: "created_at",
         header: "Date",
         cell: ({ row }) => (
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
             {row.original.created_at
               ? format(new Date(row.original.created_at), "dd MMM yyyy")
               : "—"}
@@ -233,7 +233,7 @@ export default function AppReviewsTab() {
       subtitle: (data) =>
         `${PLATFORM_BADGES[data.platform] || "App"}${data.app_version ? ` · v${data.app_version}` : ""}`,
       badge: (data) => (
-        <span className="flex items-center gap-1 text-[10px] font-black text-amber-500">
+        <span className="flex items-center gap-1 text-2xs font-black text-amber-500">
           {data.rating} <Star className="h-3 w-3 fill-amber-500" />
         </span>
       ),
@@ -242,7 +242,7 @@ export default function AppReviewsTab() {
       {
         id: "comment",
         render: (data) => data.comment_text || "— no comment —",
-        className: "italic text-[11px]",
+        className: "italic text-xs",
       },
     ],
     actions: [
@@ -309,7 +309,7 @@ export default function AppReviewsTab() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-[11px] font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search feedback..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -323,7 +323,7 @@ export default function AppReviewsTab() {
                 onPageChange(1);
               }}
               className={cn(
-                "h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                "h-7 px-3 rounded-lg text-3xs font-black uppercase tracking-widest transition-all",
                 statusFilter === f.id
                   ? "bg-white shadow-sm text-emerald-700 border border-slate-200"
                   : "text-slate-400 hover:text-slate-600",
@@ -339,16 +339,16 @@ export default function AppReviewsTab() {
         {isError ? (
           <div className="p-10 text-center">
             <div className="text-3xl mb-3">📱</div>
-            <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest mb-2">
+            <p className="text-xs font-black text-slate-700 uppercase tracking-widest mb-2">
               App reviews unavailable
             </p>
-            <p className="text-[11px] font-medium text-slate-400 max-w-md mx-auto">
+            <p className="text-xs font-medium text-slate-400 max-w-md mx-auto">
               The <code className="font-mono">app_reviews</code> migration has
               not been applied yet (or the RPC is missing). Apply{" "}
               <code className="font-mono">20260822_app_reviews.sql</code> to
               the live database to activate this tab.
             </p>
-            <p className="text-[10px] font-bold text-rose-400 mt-3">
+            <p className="text-2xs font-bold text-rose-400 mt-3">
               {(error as Error)?.message}
             </p>
           </div>
