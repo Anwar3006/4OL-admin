@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerClient } from "@/lib/db/server";
+import { getPeriodRequestClient } from "@/features/period/data/request-auth";
 
 const AnalyticsQuerySchema = z.object({
   period: z.enum(["7d", "30d", "90d"]).optional(),
@@ -8,8 +8,7 @@ const AnalyticsQuerySchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await getServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { supabase, user } = await getPeriodRequestClient(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -25,31 +24,40 @@ export async function GET(req: NextRequest) {
 
     const daysMap = { "7d": 7, "30d": 30, "90d": 90 };
     const days = daysMap[query.data.period || "30d"];
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
 
-    const { data: cycles, error: cyclesError } = await supabase
-      .from("period_cycles")
-      .select("symptoms, mood, created_at")
+    const { data: logs, error: logsError } = await supabase
+      .from("period_daily_logs")
+      .select("symptoms, moods, logged_on")
       .eq("user_id", user.id)
-      .gte("created_at", since);
+      .gte("logged_on", sinceDate);
 
-    if (cyclesError) {
-      console.error("[period/analytics] Supabase error:", cyclesError.message);
+    if (logsError) {
+      console.error("[period/analytics] Supabase error:", logsError.message);
       return NextResponse.json({ error: "Failed to fetch period analytics" }, { status: 500 });
     }
 
-    const totalLogs = (cycles || []).length;
+    const totalLogs = (logs || []).length;
 
-    const bySymptom = (cycles || []).reduce((acc: Record<string, number>, c) => {
-      (c.symptoms || []).forEach((s: string) => {
-        acc[s] = (acc[s] || 0) + 1;
+    const bySymptom = (logs || []).reduce((acc: Record<string, number>, log) => {
+      (log.symptoms || []).forEach((item: unknown) => {
+        const symptom =
+          typeof item === "string"
+            ? item
+            : item && typeof item === "object" && "name" in item
+              ? String((item as { name?: unknown }).name || "")
+              : "";
+        if (symptom) acc[symptom] = (acc[symptom] || 0) + 1;
       });
       return acc;
     }, {});
 
-    const byMood = (cycles || []).reduce((acc: Record<string, number>, c) => {
-      const mood = c.mood || "unknown";
-      acc[mood] = (acc[mood] || 0) + 1;
+    const byMood = (logs || []).reduce((acc: Record<string, number>, log) => {
+      (log.moods || []).forEach((mood: string) => {
+        acc[mood || "unknown"] = (acc[mood || "unknown"] || 0) + 1;
+      });
       return acc;
     }, {});
 
