@@ -204,6 +204,10 @@ and looks green — the skipped test is the live RPC signature check, and
 in `docs/cleanup-handoff.md` before picking up work in that state; it lists
 which epics are still fully verifiable and which are not.
 
+**CI needs three repository secrets** — `NEXT_PUBLIC_SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Without them CI
+still passes; it just stops checking the RPC signatures. See `docs/ci.md`.
+
 `pnpm build` is not optional after a structural change. Typecheck does not
 catch a broken route-group layout, a client component importing server-only
 code, or a bad dynamic import.

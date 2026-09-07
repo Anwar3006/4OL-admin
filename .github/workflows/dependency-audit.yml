@@ -1,6 +1,15 @@
 # Dependency scanning — security audit follow-up.
-# Runs `npm audit` on pushes/PRs and weekly, so high/critical known
-# vulnerabilities in the dependency tree surface automatically.
+# Surfaces high/critical known vulnerabilities in the dependency tree.
+#
+# This is the second of two workflows and it is deliberately separate from
+# ci.yml: that one gates every push and PR on typecheck/lint/test/build, while
+# this one also runs weekly on a schedule so a CVE published against a pinned
+# dependency surfaces without anyone pushing.
+#
+# It uses pnpm. It previously ran `npm ci`, which cannot work here — there is
+# no package-lock.json and never has been; the lockfile is pnpm-lock.yaml and
+# package.json pins pnpm via `packageManager`. `npm ci` exits EUSAGE before
+# installing anything, so every run of this workflow failed.
 name: Dependency Security Scan
 
 on:
@@ -13,18 +22,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  npm-audit:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        # version comes from the packageManager field in package.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22 # matches ci.yml
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
+      # No secrets needed: this reads the lockfile, it does not build or run
+      # the app.
       - name: Audit for high/critical vulnerabilities
-        run: npm audit --audit-level=high
+        run: pnpm audit --audit-level=high
