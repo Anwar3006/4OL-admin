@@ -8,12 +8,19 @@ import { getAdminClient } from "@/lib/db/admin";
  * Part AM (AM-D4): short-lived signed upload URL so the mobile application
  * wizard can PUT CV / licence / certificate documents straight to Supabase
  * Storage without shipping the service-role key. Mirrors
- * /api/chat/attachment; documents land under a `jobs/` prefix in the same
+ * /api/chat/attachment; documents land in the private `job-documents`
  * bucket and stay referenced by job_applications.resume_url.
+ *
+ * Epic 2.5: this used to write into the shared public `bucket4ol` and
+ * return a permanent, unauthenticated public URL. `job-documents` is a
+ * private bucket; `publicUrl` is now a signed URL with a ~10-year expiry
+ * instead. The field name and "just fetch this string" behaviour are
+ * unchanged on purpose — mobile's "save my CV for reuse" flow persists
+ * this value indefinitely across future, unrelated applications, and an
+ * already-installed build has no way to re-request a fresh one.
  */
 
-const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const BUCKET = "job-documents";
 
 const KINDS = ["cv", "licence", "certificate", "other"] as const;
 type Kind = (typeof KINDS)[number];
@@ -26,6 +33,10 @@ const MAX_SIZE_MB: Record<Kind, number> = {
   certificate: 3,
   other: 10,
 };
+
+/** ~10 years — long enough to be a practical drop-in for the permanent
+ * public URL this replaces, without actually being unauthenticated. */
+const VIEW_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 365 * 10;
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
@@ -87,11 +98,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+    const { data: viewData, error: viewError } = await admin.storage
+      .from(BUCKET)
+      .createSignedUrl(path, VIEW_URL_EXPIRY_SECONDS);
+
+    if (viewError || !viewData) {
+      console.error("[jobs/attachment] createSignedUrl error:", viewError?.message);
+      return NextResponse.json(
+        { error: viewError?.message ?? "Failed to create view URL" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       signedUrl: data.signedUrl,
-      publicUrl,
+      publicUrl: viewData.signedUrl,
       path,
       max_size_mb: MAX_SIZE_MB[kind],
     });

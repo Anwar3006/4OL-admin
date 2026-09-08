@@ -1,0 +1,23 @@
+-- Epic 2.4 (TASKS.md): "explicitly grant future tables only when intended."
+-- Same root cause as the 2.6/2.2 function fix: Supabase's public schema has
+-- default privileges that auto-grant full CRUD on every newly created
+-- TABLE to anon/authenticated/service_role, which is very likely why the
+-- original audit found 217 tables granted to anon and 236 to authenticated
+-- (now 169/190 after the Epic 2.3 service-only revokes) -- most were never
+-- granted deliberately, RLS was just doing the real gatekeeping.
+--
+-- This does not touch any existing table's grants (no risk to live
+-- functionality). It only changes what happens for a table created from
+-- here on: it gets zero client grants by default, so a migration has to
+-- grant access on purpose. That's also the posture Supabase's 30 Oct 2026
+-- opt-in Data API exposure enforcement is moving toward -- this gets ahead
+-- of it for anything built going forward. Verified: a freshly created
+-- table gets zero anon/authenticated grants after this change.
+--
+-- Retroactively reducing the ~169/190 EXISTING tables' grants down to the
+-- real mobile/admin contract is a separate, much larger and riskier pass
+-- (most of them have live RLS policies actively serving the browser/
+-- server/mobile clients, unlike the dormant Epic 2.3 set) -- tracked as a
+-- follow-up, not attempted here.
+
+alter default privileges in schema public revoke all on tables from anon, authenticated;

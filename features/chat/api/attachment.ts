@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { getAdminClient } from "@/lib/db/admin";
 
-const BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME!;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const BUCKET = "chat-attachments";
+
+/** ~10 years — long enough to be a practical drop-in for the permanent
+ * public URL this replaces, without actually being unauthenticated. */
+const VIEW_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 365 * 10;
 
 async function getRequestUser(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
@@ -34,6 +37,13 @@ function sanitizeFilename(input: string) {
  * to Supabase Storage without shipping the service-role key.
  *
  * Response: { signedUrl: string, publicUrl: string, path: string }
+ *
+ * Epic 2.5: this used to write into the shared public `bucket4ol` and
+ * return a permanent, unauthenticated public URL. `chat-attachments` is a
+ * private bucket; `publicUrl` is now a signed URL with a ~10-year expiry
+ * instead. Same field name, same "just fetch this string" behaviour —
+ * mobile persists this value on the message row and an already-installed
+ * build has no way to re-request a fresh one.
  */
 export async function GET(req: NextRequest) {
   const user = await getRequestUser(req);
@@ -79,9 +89,26 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+    const { data: viewData, error: viewError } = await admin.storage
+      .from(BUCKET)
+      .createSignedUrl(path, VIEW_URL_EXPIRY_SECONDS);
 
-    return NextResponse.json({ signedUrl: data.signedUrl, publicUrl, path });
+    if (viewError || !viewData) {
+      console.error(
+        "[chat/attachment] createSignedUrl error:",
+        viewError?.message,
+      );
+      return NextResponse.json(
+        { error: viewError?.message ?? "Failed to create view URL" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({
+      signedUrl: data.signedUrl,
+      publicUrl: viewData.signedUrl,
+      path,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
