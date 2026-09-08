@@ -243,6 +243,46 @@ export function deriveDayCategory(
   return "strength_upper_push"; // reasonable default rather than leaving null
 }
 
+const WEEKDAY_NAME_TO_NUMBER: Record<string, number> = {
+  monday: 1,
+  mon: 1,
+  tuesday: 2,
+  tue: 2,
+  tues: 2,
+  wednesday: 3,
+  wed: 3,
+  thursday: 4,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  friday: 5,
+  fri: 5,
+  saturday: 6,
+  sat: 6,
+  sunday: 7,
+  sun: 7,
+};
+
+/**
+ * Resolves a plan day's 1-7 week position (Monday=1 ... Sunday=7) from the
+ * AI's `day_name` field ("Monday", "Tue", ...) rather than trusting the
+ * day's position in the `days` array. The prompt asks the model for exactly
+ * 7 entries per week including rest placeholders, but that isn't enforced
+ * by the JSON schema (OpenAI's structured-outputs strict mode doesn't
+ * support minItems/maxItems on arrays) — when the model omits rest days
+ * from the array instead of including them as "Rest" entries, array index
+ * silently stops corresponding to the real weekday. Falls back to the
+ * array index (matching the previous behavior) when day_name doesn't
+ * parse as a real weekday, e.g. the schema's own "Day 1" fallback format.
+ */
+export function resolveDayNumber(
+  dayName: string | undefined,
+  fallbackIndex: number,
+): number {
+  const key = (dayName ?? "").trim().toLowerCase();
+  return WEEKDAY_NAME_TO_NUMBER[key] ?? fallbackIndex + 1;
+}
+
 /**
  * Builds a short (2-3 word) style tag for the plan card.
  * Heuristic from onboarding inputs; admin/trainer plans set this manually instead.
@@ -586,14 +626,25 @@ ${JSON.stringify(availableExercisesWithHistory)}
   `.trim();
 
   // ── Retry Logic (Exponential Backoff) ──
-  let completion: OpenAI.Chat.Completions.ChatCompletion | undefined;
+  // Retries now cover three failure modes, not just the API call itself: an
+  // unparseable response, and a *parseable but incomplete* one (fewer weeks
+  // than requested), are treated as failed attempts too. Previously a
+  // successful-but-truncated response (e.g. 3 weeks back for an 8-week
+  // request) skipped the retry loop entirely and got silently persisted as
+  // a "published" plan with entire weeks missing — see resolveDayNumber's
+  // comment for the related day-of-week bug this was compounding.
   const MAX_RETRIES = 3;
   const BASE_DELAY_MS = 1500;
   const callStartedAt = Date.now();
 
+  let completion: OpenAI.Chat.Completions.ChatCompletion | undefined;
+  let fitnessPlan: any;
+  let lastErrorMessage = "AI Generation failed unexpectedly.";
+
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    let attemptCompletion: OpenAI.Chat.Completions.ChatCompletion;
     try {
-      completion = await openai.chat.completions.create({
+      attemptCompletion = await openai.chat.completions.create({
         model: modelName,
         messages: [{ role: "user", content: userPrompt }],
         response_format: {
@@ -605,81 +656,81 @@ ${JSON.stringify(availableExercisesWithHistory)}
           },
         },
       });
-      break; // Success!
     } catch (error: any) {
       console.warn(
         `[fitness-generate] OpenAI attempt ${attempt} failed:`,
         error.message,
       );
-
-      if (attempt === MAX_RETRIES) {
-        console.error(
-          "[fitness-generate] All OpenAI retry attempts exhausted.",
-        );
-        await logAiCall(admin, {
-          userId,
-          modelName,
-          prompt: userPrompt,
-          responseTimeMs: Date.now() - callStartedAt,
-          status: "error",
-          errorMessage: error.message,
-        });
-        return {
-          planId: null,
-          selection_hash,
-          cached: false,
-          error:
-            "AI Generation is currently experiencing high demand. Please try again in a moment.",
-        };
+      lastErrorMessage = error.message;
+      if (attempt < MAX_RETRIES) {
+        const delay = BASE_DELAY_MS * attempt;
+        console.log(`[fitness-generate] Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-
-      const delay = BASE_DELAY_MS * attempt;
-      console.log(`[fitness-generate] Retrying in ${delay}ms...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      continue;
     }
+
+    completion = attemptCompletion; // kept even on a later failure so usage/cost still logs
+
+    let attemptPlan: any;
+    try {
+      attemptPlan = JSON.parse(attemptCompletion.choices[0].message.content ?? "");
+    } catch (error: any) {
+      console.warn(
+        `[fitness-generate] Attempt ${attempt} JSON parsing failed:`,
+        error.message,
+      );
+      lastErrorMessage = "Failed to process the AI response.";
+      if (attempt < MAX_RETRIES) {
+        const delay = BASE_DELAY_MS * attempt;
+        console.log(`[fitness-generate] Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      continue;
+    }
+
+    const weeksReturned = attemptPlan?.weekly_schedule?.length ?? 0;
+    if (weeksReturned < workoutWeeks) {
+      console.warn(
+        `[fitness-generate] Attempt ${attempt} returned an incomplete plan: ${weeksReturned}/${workoutWeeks} weeks`,
+      );
+      lastErrorMessage = `AI returned an incomplete plan (${weeksReturned}/${workoutWeeks} weeks).`;
+      if (attempt < MAX_RETRIES) {
+        const delay = BASE_DELAY_MS * attempt;
+        console.log(`[fitness-generate] Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+      continue;
+    }
+
+    fitnessPlan = attemptPlan;
+    break; // Success!
   }
 
   const responseTimeMs = Date.now() - callStartedAt;
 
-  if (!completion) {
+  if (!fitnessPlan) {
+    console.error(
+      "[fitness-generate] All retry attempts exhausted:",
+      lastErrorMessage,
+    );
     await logAiCall(admin, {
       userId,
       modelName,
       prompt: userPrompt,
       responseTimeMs,
+      promptTokens: completion?.usage?.prompt_tokens,
+      completionTokens: completion?.usage?.completion_tokens,
+      totalTokens: completion?.usage?.total_tokens,
       status: "error",
-      errorMessage: "AI Generation failed unexpectedly.",
+      errorMessage: lastErrorMessage,
     });
     return {
       planId: null,
       selection_hash,
       cached: false,
-      error: "AI Generation failed unexpectedly.",
-    };
-  }
-
-  // ── Parse AI Response ──
-  let fitnessPlan: any;
-  try {
-    fitnessPlan = JSON.parse(completion.choices[0].message.content ?? "");
-  } catch (error: any) {
-    console.error("[fitness-generate] JSON Parsing error:", error);
-    await logAiCall(admin, {
-      userId,
-      modelName,
-      prompt: userPrompt,
-      responseTimeMs,
-      promptTokens: completion.usage?.prompt_tokens,
-      completionTokens: completion.usage?.completion_tokens,
-      totalTokens: completion.usage?.total_tokens,
-      status: "error",
-      errorMessage: "Failed to process the AI response.",
-    });
-    return {
-      planId: null,
-      selection_hash,
-      cached: false,
-      error: "Failed to process the AI response.",
+      error:
+        "AI Generation is currently experiencing high demand. Please try again in a moment.",
     };
   }
 
@@ -688,9 +739,9 @@ ${JSON.stringify(availableExercisesWithHistory)}
     modelName,
     prompt: userPrompt,
     responseTimeMs,
-    promptTokens: completion.usage?.prompt_tokens,
-    completionTokens: completion.usage?.completion_tokens,
-    totalTokens: completion.usage?.total_tokens,
+    promptTokens: completion?.usage?.prompt_tokens,
+    completionTokens: completion?.usage?.completion_tokens,
+    totalTokens: completion?.usage?.total_tokens,
     status: "success",
   });
 
@@ -735,16 +786,15 @@ ${JSON.stringify(availableExercisesWithHistory)}
   // ── Insert plan days and exercises ──
   // Only ACTIVE (non-rest) days get a fitness_plan_days row — a plan with
   // workouts_per_week = 3 must produce exactly 3 rows per week, not 7 with
-  // 4 marked is_rest. day_number is kept as the AI's true weekday-in-week
-  // position (1-7, gaps allowed) rather than renumbered sequentially, so
-  // the mobile plan screen's calendar-date math (offset = (week-1)*7 +
-  // (day_number-1) from the assignment's started_at) still lines up with
-  // real calendar days even though rest slots have no row at all.
+  // 4 marked is_rest. day_number is the AI's true weekday-in-week position
+  // (1-7, gaps allowed), resolved from day_name via resolveDayNumber rather
+  // than the day's position in the array — see that function's comment for
+  // why array index alone silently breaks the calendar mapping.
   const planExerciseRows: any[] = [];
 
   for (const week of fitnessPlan.weekly_schedule as any[]) {
     for (const [dayIdx, day] of (week.days as any[]).entries()) {
-      const dayNumber = dayIdx + 1;
+      const dayNumber = resolveDayNumber(day.day_name, dayIdx);
       const isRest =
         day.session_type === "Rest" ||
         !day.exercises ||
