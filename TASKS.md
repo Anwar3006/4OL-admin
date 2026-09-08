@@ -355,10 +355,19 @@ Goal: an authorized person changes a token once and both products consume it.
 
 ## Epic 5 — P1 finish honest feature depth
 
-- [ ] **5.1 Remove fake or static operational metrics.** Replace medication AI
-      checker `98.1%`/`0.04s`, admin failed-login placeholders, BedTracker “queries
-      today,” HCP med-enquiry count and settings billing placeholders with live metrics
-      or a consistent “not instrumented/insufficient data” component.
+- [x] **5.1 Remove fake or static operational metrics.** Audited all four named
+      items. Three were already at the target end-state — BedTracker "queries
+      today" (`features/bed-tracker/ui/BedTrackerAnalyticsTab.tsx`), HCP
+      med-enquiry count (`features/hcp/ui/HcpPage.tsx`), and settings billing
+      (`app/(dashboard)/settings/_components/BillingTab.tsx`) already render
+      `"—"` with an explanatory `delta` badge, not a fake number. Only the
+      medication AI checker's `98.1%`/`0.04s` were still literal hardcoded
+      values (`features/medication-reminder/ui/AICheckerTab.tsx`) — nothing
+      logs verdict accuracy against ground truth or per-request latency, so
+      both now render `"—"` via `KpiCard`'s existing `isEmpty`/`delta` props,
+      matching the other three. Also removed a dead commented-out banner in
+      `MedicationReminderPage.tsx` repeating the same `98.1%` claim.
+      `pnpm type-check`/`lint`/`test` all clean.
 - [ ] **5.2 Activate BedTracker.** Onboard approved facilities/wards/ambulances,
       define update freshness and incident ownership, add Realtime subscriptions with
       polling fallback, audit every availability change and run emergency tabletop

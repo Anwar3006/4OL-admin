@@ -5,9 +5,10 @@ import KpiCard from "@/components/redesign/KpiCard";
 import { useDrugKpiStats } from "@/features/medication-reminder/data/useDrugs";
 
 /**
- * AI Checker tab (Gap Analysis B.1 tab 5). Version/accuracy/response-time
- * are platform config (static until a settings row exists); pair counts and
- * flags come from the drug catalog KPI RPC.
+ * AI Checker tab (Gap Analysis B.1 tab 5). Accuracy and response time are
+ * not instrumented — nothing logs verdict correctness against ground truth
+ * or per-request latency — so they render "—" until that pipeline exists
+ * (Epic 5.1). Pair counts and flags come from the drug catalog KPI RPC.
  */
 export default function AICheckerTab() {
   const { data: stats, isLoading } = useDrugKpiStats();
@@ -29,7 +30,6 @@ export default function AICheckerTab() {
               {stats ? `${stats.interaction_pairs.toLocaleString()} interaction pairs indexed` : "indexing catalog…"}
             </div>
           </div>
-          <span className="badge bg-white/20 dark:bg-slate-800/20 text-white border-0 uppercase">98.1% Accuracy</span>
         </div>
       </div>
 
@@ -38,7 +38,10 @@ export default function AICheckerTab() {
         <KpiCard
           icon="🎯"
           label="AI Accuracy"
-          value="98.1%"
+          value="—"
+          isEmpty
+          emptyLabel="—"
+          delta="Not instrumented — no ground-truth verdict log yet"
           variant="green"
           isLoading={isLoading}
         />
@@ -59,7 +62,10 @@ export default function AICheckerTab() {
         <KpiCard
           icon="⚡"
           label="Avg Response Time"
-          value="0.04s"
+          value="—"
+          isEmpty
+          emptyLabel="—"
+          delta="Not instrumented — no request latency log yet"
           variant="purple"
           isLoading={isLoading}
         />
