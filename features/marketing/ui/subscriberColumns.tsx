@@ -38,9 +38,9 @@ const fmtDate = (value: string | null | undefined) =>
 
 const displayName = (row: TUserSubscriptionRow) => {
   const profile = row.user_profiles;
-  const name = [profile?.first_name, profile?.last_name]
-    .filter(Boolean)
-    .join(" ");
+  const name =
+    profile?.full_name ||
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
   return name || profile?.email || "Unknown user";
 };
 

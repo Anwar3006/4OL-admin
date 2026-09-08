@@ -6,8 +6,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { applyUserMasking } from "@/lib/masking";
+import { auditAdminRead } from "@/lib/security-audit";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdminApiUser("jobs.view");
@@ -52,9 +55,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const isSuperAdmin = auth.role === SUPER_ADMIN_ROLE;
+  const rows = (data ?? []) as unknown as Array<{
+    user_profiles: { first_name: string | null; last_name: string | null } | null;
+  }>;
+  const cvs = rows.map((row) => ({
+    ...row,
+    user_profiles: row.user_profiles
+      ? applyUserMasking(row.user_profiles, isSuperAdmin)
+      : null,
+  }));
+
+  void auditAdminRead(auth.user.id, "admin/jobs/cvs", cvs.length);
+
   const total = count ?? data?.length ?? 0;
   return NextResponse.json({
-    cvs: data ?? [],
+    cvs,
     meta: {
       total,
       totalPages: Math.max(1, Math.ceil(total / limit)),

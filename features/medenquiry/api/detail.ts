@@ -13,7 +13,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
+import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { getAdminClient } from "@/lib/db/admin";
+import { auditAdminRead } from "@/lib/security-audit";
 
 const PATCH_SCHEMA = z.object({
   action: z.enum(["notify_user", "mark_pickup_ready", "confirm_delivery", "cancel"]),
@@ -48,7 +50,20 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!data) return NextResponse.json({ error: "Enquiry not found" }, { status: 404 });
-    return NextResponse.json({ ok: true, enquiry: data });
+
+    const isSa = auth.role === SUPER_ADMIN_ROLE;
+    const row = data as { user?: { first_name?: string | null; last_name?: string | null } | null };
+    const enquiry = {
+      ...data,
+      // Same identity-masking policy as the list route — a detail view
+      // shouldn't leak more than the list already withholds.
+      user: row.user && !isSa ? { ...row.user, first_name: null, last_name: null } : row.user,
+      identity_masked: !isSa,
+    };
+
+    void auditAdminRead(auth.user.id, "admin/medenquiry/detail", 1, { enquiry_id: id });
+
+    return NextResponse.json({ ok: true, enquiry });
   } catch {
     return NextResponse.json({ error: "Failed to load enquiry" }, { status: 500 });
   }

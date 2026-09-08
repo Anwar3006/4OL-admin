@@ -63,6 +63,12 @@ export function applyUserMasking<
     null;
   return {
     ...row,
+    // Clear the raw fields, not just add a masked full_name alongside them —
+    // otherwise the unmasked name still ships in the response for anyone
+    // reading the payload directly (devtools, logs) instead of the UI that
+    // happens to render full_name.
+    ...(row.first_name !== undefined ? { first_name: null } : {}),
+    ...(row.last_name !== undefined ? { last_name: null } : {}),
     ...(row.full_name !== undefined || row.first_name !== undefined
       ? { full_name: maskName(name) }
       : {}),

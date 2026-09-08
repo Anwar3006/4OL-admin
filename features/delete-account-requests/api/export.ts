@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import { maskPhone } from "@/lib/masking";
+import { auditAdminRead } from "@/lib/security-audit";
 
 function csvEscape(value: unknown) {
   const str = value === null || value === undefined ? "" : String(value);
@@ -60,6 +61,10 @@ export async function GET() {
       .join(",");
   });
   const csv = [headers.join(","), ...csvRows].join("\n");
+
+  // Part AK (AK-D9): bulk export is THE mass-exfiltration vector — same
+  // reasoning as users/export.ts, the one route that already had this.
+  void auditAdminRead(auth.user.id, "admin/delete-account-requests/export", rows.length);
 
   return new NextResponse(csv, {
     headers: {

@@ -93,7 +93,11 @@ export async function GET(request: Request) {
     // Email is folded in before masking so it goes through maskEmail() like
     // every other identifier, rather than leaking unmasked to non-super-admins.
     const masked = applyUserMasking(
-      { ...(profile ?? {}), email: emailById.get((row as { user_id: string }).user_id) ?? null },
+      {
+        ...(profile ?? {}),
+        full_name: null as string | null,
+        email: emailById.get((row as { user_id: string }).user_id) ?? null,
+      },
       isSuperAdmin,
     );
     return {
@@ -102,6 +106,7 @@ export async function GET(request: Request) {
         user_id: masked.user_id,
         first_name: masked.first_name ?? null,
         last_name: masked.last_name ?? null,
+        full_name: masked.full_name ?? null,
         email: masked.email ?? null,
         phone_number: masked.phone_number ?? null,
       },

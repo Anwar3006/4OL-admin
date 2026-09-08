@@ -15,6 +15,7 @@ import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { getAdminClient } from "@/lib/db/admin";
+import { auditAdminRead } from "@/lib/security-audit";
 
 const STATUSES = [
   "pending_match", "matched", "in_escrow", "pickup_ready",
@@ -105,6 +106,12 @@ export async function GET(request: Request) {
         : null;
       return {
         ...row,
+        // The raw embed still carries first_name/last_name — clear them so
+        // an unmasked name doesn't ship in the payload alongside the masked
+        // submitter_name (the field the UI actually renders).
+        user: row?.user
+          ? { ...row.user, first_name: isSa ? row.user.first_name : null, last_name: isSa ? row.user.last_name : null }
+          : row?.user,
         submitter_name: maskName(row, isSa),
         submitter_region: row?.user?.region ?? null,
         identity_masked: !isSa,
@@ -115,6 +122,12 @@ export async function GET(request: Request) {
         best_price: best ? Number(best.price) : null,
         best_pharmacy: best?.facility?.facility_name ?? null,
       };
+    });
+
+    void auditAdminRead(auth.user.id, "admin/medenquiry", rows.length, {
+      q: q ?? null,
+      status: status ?? null,
+      pharmacy: pharmacy ?? null,
     });
 
     return NextResponse.json({ ok: true, rows, total: count ?? rows.length, page, limit });

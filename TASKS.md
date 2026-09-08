@@ -316,20 +316,81 @@ Goal: an authorized person changes a token once and both products consume it.
 
 ## Epic 3 — P0 authentication, authorization and privacy
 
-- [ ] **3.1 Enforce MFA for admin roles.** Add enrolment/recovery UI, a grace
-      period, `aal2` checks on privileged routes and break-glass recovery. Do not use
-      the prototype’s named “MFA disabled” alerts. Acceptance: every admin role is
-      blocked from privileged work until a verified factor is present.
-- [ ] **3.2 Test RBAC end to end.** For every sidebar item and write action, verify
-      hidden/disabled UI, API permission, database authorization and audit log for
-      super admin, admin, content manager, moderator, support, finance, registrar,
-      AI manager and developer roles.
-- [ ] **3.3 Complete sensitive-read controls.** Extend read audit/quotas beyond
-      users/export to CVs, prescriptions, period/TTC, support/chat and deletion data.
-      Verify masking at serialization boundaries and prevent bulk enumeration.
-- [ ] **3.4 Complete retention and deletion policy.** Map every user-owned table,
-      storage object, audit exception, legal hold and backup retention. Prove delete,
-      cancel, grace-period expiry and export on a test identity.
+- [~] **3.1 Enforce MFA for admin roles.** In progress on `codex/epic-3-security`
+      (separate worktree, another session) — not touched by the work below.
+- [~] **3.2 Test RBAC end to end.** This story's own role list is stale: the
+      real catalog is 10 roles (`lib/admin-roles.ts`) — `compliance_officer`
+      and `analyst` are missing from the list above and `developer` doesn't
+      exist. Compared `lib/permissions.ts`'s `ROLE_DEFAULTS` (static mirror)
+      against the live `admin_role_permissions` table key-by-key for all 10
+      roles: 9 matched exactly; **`analyst` was missing 4 of its own
+      documented permissions** (`medenquiry.view`, `engagement.view`,
+      `subscriptions.view`, `fitcoins.view` — present in the code's "every
+      `.view` permission except admin/security/settings/devops/whatsapp/
+      schematic" definition, absent from the DB). Fixed via migration
+      `20260908_epic3_2_analyst_permission_drift.sql`, verified live (29/29
+      now match). Added `tests/contract/rbac-permissions.test.ts` (same
+      skip-without-credentials pattern as `rpc-signatures.test.ts`) so this
+      class of drift is caught automatically going forward. **Not done:**
+      several pre-RBAC-migration RLS policies still hardcode role lists
+      (e.g. `20260314_create_marketing_discounts.sql`,
+      `20260813_epic28_security_compliance.sql`) instead of calling
+      `has_4ol_permission()`, so they can't reflect per-user overrides or
+      `ai_manager`/`compliance_officer` — auditing all of these is a
+      separate, larger pass. Also not done: full sidebar-hide/API/DB/audit
+      verification for every role × every write action (the story's literal
+      ask) — the drift-detection test above verifies DB authorization for
+      all 10 roles, which is the layer most likely to silently diverge, but
+      it doesn't cover UI hide-state or a full write-action matrix.
+- [~] **3.3 Complete sensitive-read controls.** `auditAdminRead()`
+      (`lib/security-audit.ts`) already existed and worked, wired into
+      exactly `users/list.ts`/`users/export.ts`. Wired it into the real
+      gaps: `features/jobs/api/cvs.ts` (CVs), `features/medenquiry/api/
+      {list,detail}.ts` (prescriptions/enquiry data), `features/period/api/
+      data-get.ts` (period/TTC — one call per tab, since the file is one
+      function with 13 early-return branches sharing a query prelude),
+      `features/delete-account-requests/api/{list,export}.ts` (deletion
+      data). **Chat/support turned out not to need it**: `support.ts` and
+      `conversations.ts` are mobile self-service routes (a user reading
+      their own tickets/conversations via bearer token, not an admin read);
+      `support-detail.ts`/`moderation.ts` are write-only; the one real
+      admin sensitive-read (`global-search.ts`, cross-group message search)
+      already audits via `log_admin_activity`. The admin dashboard's main
+      ticket/conversation browsing reads directly from the browser via
+      Supabase RLS (per `support.ts`'s own comment) — there's no server
+      route to add a call to without a bigger refactor; flagging this
+      rather than forcing a superficial edit. Also fixed a real masking
+      bypass in the canonical `applyUserMasking()` (`lib/masking.ts`): it
+      added a masked `full_name` but never cleared the raw `first_name`/
+      `last_name`, so both shipped in the response. This was a live bug in
+      `features/marketing/api/subscribers.ts` too — it read
+      `masked.first_name`/`masked.last_name` back out and forwarded them,
+      completely unmasked, despite calling the masking function; fixed
+      alongside (now sends `full_name`, UI updated to prefer it). "Prevent
+      bulk enumeration" is covered by the existing >200-reads/hour
+      `admin_read_audit` → `bot_signals` anomaly flag now that it's wired
+      into these routes — no new rate-limiter added (`checkRateLimit()`
+      exists but is a blocking quota used only for AI-generation; matches
+      the existing detect-not-block precedent). **Not done:** two other
+      `maskName` reimplementations exist (`features/medenquiry/api/
+      list.ts`, `features/period/api/data-helpers.ts`) with genuinely
+      different masking rules, not copies of one function — consolidating
+      them is a real behavior decision, not touched here.
+- [~] **3.4 Complete retention and deletion policy.** Documentation only
+      (by design — this needs legal/compliance sign-off, not an engineering
+      default). Full map at `docs/epic3-4-retention-map.md`. Headline
+      finding: "deleting an account" today is a single `UPDATE
+      user_profiles` (blank name, null PII, ~100-year auth ban) — identical
+      code path whether triggered by an admin or the grace-period-expiry
+      cron. None of the ~80 other tables with a live FK to `user_profiles`,
+      `auth.users` itself, or any storage object (prescriptions/CVs/chat
+      attachments) are ever touched. No legal-hold concept exists anywhere.
+      No real per-user data export exists (`data_export_url` is never
+      written by anything). Backup/PITR retention is a Supabase-dashboard
+      setting with zero in-repo documentation. The doc proposes (not
+      decides) a disposition per user-owned table and flags financial
+      records and HCP credentials as needing an actual legal answer rather
+      than a default.
 
 ## Epic 4 — P1 activate provider-backed capabilities
 
@@ -387,9 +448,27 @@ Goal: an authorized person changes a token once and both products consume it.
       — fixed to match its sibling routes. No mobile change (BedTracker is
       confirmed absent from mobile and the contract manifest). Migration:
       `20260908_epic5_2_bed_tracker_wards_realtime_read.sql`.
-- [ ] **5.3 Complete FacilityScout mobile capture.** Build consented GPS/photo
-      submission, duplicate detection, offline queue, status tracking and manual reward
-      fulfilment. Do not expose collector footprints to general admins.
+- [ ] **5.3 Complete FacilityScout mobile capture.** Paused mid-investigation
+      to redirect onto Epic 3 — findings kept so the next pass doesn't
+      re-derive them. Nothing creates a `facility_scout_submissions` row
+      anywhere today (admin or mobile) — this is a from-scratch build. The
+      closest mobile template is `Medication/index.tsx`'s prescription flow:
+      `expo-image-picker`/`expo-location` → a signed-upload admin route →
+      an RPC (`submit_medication_enquiry`-style, not a raw table insert, so
+      server-side validation runs atomically) — a new `submit_facility_scout_
+      submission` RPC plus `/api/facilityscout/attachment` route should
+      mirror this exactly. No offline-queue primitive exists anywhere in
+      mobile; the closest precedent is `features/plasence/storage.ts`'s
+      `pendingLogs`/`syncPending`, but it has no connectivity-driven
+      auto-retry — `expo-network` is already an installed, unused dependency
+      that could drive one. Also found: nothing ever creates a
+      `facility_scout_referrals` row, so `rewards-disburse.ts` has no real
+      submissions to act on today — the natural fix is creating one at
+      `submissions-register.ts` approval time, reward amount from
+      `facility_scout_config`'s per-type field. The footprints-permission
+      question (`users.view` vs `facilityscout.view` on
+      `features/map/api/{footprints,collectors}.ts`) was raised and
+      explicitly deferred by request — a separate session was mid-RBAC-work.
 - [~] **5.4 Complete job matching.** Saved-job limits were already
       server-side enforced (`toggle_job_saved` calls `get_my_entitlement()`,
       caps non-premium at 3 — an earlier scoping pass had this wrong from a
@@ -417,12 +496,45 @@ Goal: an authorized person changes a token once and both products consume it.
       (additive follow-up mobile release, not a blocker — alerts without
       coordinates keep matching on region/specialty/job_type exactly as
       before). Migration: `20260908_epic5_4_job_alert_matching.sql`.
-- [ ] **5.5 Complete Medication Enquiry operations.** Build pharmacy/IBP response
-      onboarding, SLA/expiry, delivery-provider boundary and dispute evidence. Keep
-      monetary state informational until Epic 4.1 is live.
-- [ ] **5.6 Complete content linkage and analytics.** Add diseases/symptoms/
-      healthy-living carousel-to-mobile tests, anatomy deep links, engagement events
-      and link management with orphan prevention. No synthetic historical counts.
+- [ ] **5.5 Complete Medication Enquiry operations.** Paused mid-investigation
+      (same redirect as 5.3). This one turned out bigger than the task text
+      suggests: **no pharmacy/IBP account can log in and respond to an
+      enquiry anywhere in either app today.** `enquiry_responses` has an RLS
+      policy anticipating a `facility_profile.owner_id`/`ibp.user_id` caller
+      writing directly to it, but nothing ever calls it — no UI, no RPC.
+      Mobile's `(ibpTabs)` business-dashboard shell is registered but its own
+      layout comment says it "must never be what \[navigation\] falls back
+      to," and has zero medication-enquiry screens even if reachable.
+      `features/medenquiry/api/pharmacies.ts` is a read-only performance
+      leaderboard, not onboarding. `enquiry_responses.responder_kind` also
+      only allows `'pharmacy'`/`'wholesaler'`, not `'ibp'`, despite the RLS
+      policy treating `ibp_id` as a valid responder path — a vocabulary
+      mismatch. Asked whether to (a) build admin-recorded responses
+      (phone/WhatsApp intake, no pharmacy login), (b) wire up the dormant
+      IBP shell (multi-day mobile build), or (c) schema-only for now —
+      answer was to skip entirely and flag it here for a later pass, so
+      nothing was built, not even the SLA/expiry/dispute-evidence schema
+      additions. `enquiry_responses` still has no `expires_at`; the delivery
+      lifecycle (`in_escrow`/`delivery_in_progress` transitions) is
+      partially unimplemented in `detail.ts`/`escrow.ts` too.
+- [ ] **5.6 Complete content linkage and analytics.** Paused mid-investigation
+      (same redirect). Findings: carousel curation already exists (`is_
+      featured`/`featured_order` columns on `conditions`/`symptoms`/
+      `healthy_living_info`, served via the frozen `get_home_carousel` RPC)
+      but has zero test coverage anywhere — that's the concrete gap for
+      "carousel-to-mobile tests." Anatomy deep-linking exists one direction
+      only: `condition_body_parts`/`symptom_body_parts`/
+      `healthy_living_body_parts` junctions plus `get_anatomy_*` RPCs let the
+      3D viewer show linked content, but nothing lets a disease/symptom/
+      healthy-living mobile screen jump *to* the body map. Engagement has two
+      separate mechanisms already (frozen `increment_*_view_count` RPCs, and
+      a generic `content_engagement` like/save table) — the latter's
+      `content_type` check constraint doesn't include `'anatomy'`, an
+      additive gap. Link management has no admin UI and no orphan-detection
+      code anywhere (grepped "orphan" — nothing but migration comments); the
+      disease↔symptom relationship isn't even a junction table yet (still
+      free-text JSONB, explicitly deferred in code comments to a separate
+      "Epic 30.1").
 - [ ] **5.7 Complete medication safety data.** Establish a licensed interaction
       source, provenance/versioning, pharmacist review and high-severity escalation.
       An empty interaction table must never imply “no interaction.”

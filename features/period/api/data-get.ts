@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { auditAdminRead } from "@/lib/security-audit";
 import { decryptLead, maskMobile } from "@/features/period/data/trivia-security";
 import {
   PERIOD_METRIC_DEFINITIONS,
@@ -53,6 +54,12 @@ export async function GET(request: NextRequest) {
   const query = (request.nextUrl.searchParams.get("q") ?? "").trim().toLowerCase();
   const status = StatusSchema.parse(request.nextUrl.searchParams.get("status") ?? undefined);
   const admin = getAdminClient();
+
+  // Highly sensitive health data (period/TTC) — one audit row per request,
+  // regardless of which tab it resolves to; row count isn't known yet at
+  // this point (every branch below queries independently), but the
+  // presence + tab is what the >200/hr anomaly flag actually needs.
+  void auditAdminRead(user.id, `admin/period/${tab}`, 0, { tab, status, hasQuery: Boolean(query) });
 
   if (tab === "engagement") {
     const [{ data: campaigns, error }, { data: events }] = await Promise.all([

@@ -11,6 +11,7 @@ import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-aut
 import { getAdminClient } from "@/lib/db/admin";
 import { isRbacMigrationMissing } from "@/lib/permissions";
 import { maskPhone } from "@/lib/masking";
+import { auditAdminRead } from "@/lib/security-audit";
 
 const STATUSES = new Set([
   "pending_review",
@@ -66,6 +67,8 @@ export async function GET(request: Request) {
   } else if (statsError && !isRbacMigrationMissing(statsError)) {
     return NextResponse.json({ error: statsError.message }, { status: 500 });
   }
+
+  void auditAdminRead(auth.user.id, "admin/delete-account-requests", list.length, { status });
 
   return NextResponse.json({
     rows: list.map((r) => {
