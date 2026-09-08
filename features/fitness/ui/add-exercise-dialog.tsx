@@ -64,7 +64,7 @@ const AddExerciseDialog = () => {
   const defaultValues: TExerciseInput = {
     exercise_name: "",
     category: "strength",
-    primary_muscle_group: "Arm",
+    primary_muscle_group: "Back",
     secondary_muscles: "",
     equipment_required: "No Equipment",
     difficulty_level: "beginner",
@@ -106,8 +106,8 @@ const AddExerciseDialog = () => {
       if (isEditMode && data) {
         form.reset({
           exercise_name: data.exercise_name ?? "",
-          category: data.category ?? "Arm",
-          primary_muscle_group: data.primary_muscle_group ?? "Arm",
+          category: data.category ?? "strength",
+          primary_muscle_group: data.primary_muscle_group ?? "Back",
           secondary_muscles: data.secondary_muscles ?? "",
           equipment_required: data.equipment_required ?? "No Equipment",
           difficulty_level: data.difficulty_level ?? "beginner",

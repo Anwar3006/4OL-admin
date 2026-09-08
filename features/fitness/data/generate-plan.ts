@@ -176,23 +176,35 @@ async function logAiCall(
 // `equipment_required` strings stored on fitness_exercises. Mobile users never
 // set a granular `equipment` array; they only pick one of these three access
 // levels, so exercise filtering must derive allowed gear from that value.
+//
+// These strings previously didn't match any real fitness_exercises.equipment_required
+// value ("No Equipment" had 2 rows, "Yoga/ Exercise Mat" had 0 — the real values
+// are "Bodyweight"/"Yoga Mat"/etc.), so no_equipment and basic users were
+// generating plans from a nearly-empty pool. Corrected to the live values
+// (confirmed via a distribution query against fitness_exercises on 2026-09-08).
 export const equipmentAccessMap: Record<string, string[]> = {
-  no_equipment: ["No Equipment", "Yoga/ Exercise Mat"],
-  basic: ["No Equipment", "Yoga/ Exercise Mat", "Dumbbell", "Resistance Band"],
+  no_equipment: ["Bodyweight", "Yoga Mat", "No Equipment"],
+  basic: ["Bodyweight", "Yoga Mat", "No Equipment", "Dumbbell", "Resistance Band"],
   full_gym: [
+    "Bodyweight",
+    "Yoga Mat",
     "No Equipment",
-    "Yoga/ Exercise Mat",
     "Dumbbell",
     "Resistance Band",
     "Barbell",
     "Kettlebell",
-    "Gym Machine Workout",
-    "Treadmill",
-    "Exercise Bike",
-    "Skipping Ropes",
-    "Exercise Balls",
-    "Weight Bench",
-    "Pull up bar",
+    "TRX/Suspension Trainer",
+    "Cable Machine",
+    "Box/Jump Box",
+    "Smith Machine",
+    "Pull-up Bar",
+    "Foam Roller",
+    "Stability Ball",
+    "Medicine Ball",
+    "Battle Ropes",
+    "Sled/Prowler",
+    "Ab Wheel",
+    "Rowing Machine",
   ],
 };
 
@@ -200,8 +212,8 @@ export const equipmentAccessMap: Record<string, string[]> = {
 // `equipment` array. Prefer `equipmentAccessMap` for new code.
 export const equipmentMap: Record<string, string[]> = {
   bodyweight_only: equipmentAccessMap.no_equipment,
-  dumbbells: ["Dumbbell", "No Equipment", "Yoga/ Exercise Mat"],
-  resistance_bands: ["Resistance Band", "No Equipment", "Yoga/ Exercise Mat"],
+  dumbbells: ["Dumbbell", "Bodyweight", "Yoga Mat", "No Equipment"],
+  resistance_bands: ["Resistance Band", "Bodyweight", "Yoga Mat", "No Equipment"],
   full_gym: equipmentAccessMap.full_gym,
 };
 

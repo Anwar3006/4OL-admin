@@ -1,38 +1,55 @@
 import { z } from "zod";
 
+// Kept in sync with the live distribution of fitness_exercises.primary_muscle_group
+// (confirmed 2026-09-08) — the previous list ("Arm", "Hamstring", "Quadriceps",
+// "Rectus Abdominus Muscle", "Shoulder", ...) didn't match a single real row,
+// so this dropdown could never select what most existing exercises actually
+// have, and "Shoulders"/"Forearms"/"Flexibility"/"Full Body"/"Cardiovascular"
+// (which real rows do use) weren't offered at all.
 export const CATEGORIES = [
-  "Arm",
   "Back",
-  "Biceps",
-  "Chest",
-  "Chest and Triceps",
-  "Core",
-  "Hips",
   "Glutes",
-  "Hamstring",
+  "Chest",
+  "Core",
   "Legs",
-  "Quadriceps",
-  "Rectus Abdominus Muscle",
-  "Shoulder",
+  "Shoulders",
+  "Biceps",
   "Triceps",
+  "Forearms",
+  "Hips",
+  "Flexibility",
+  "Full Body",
+  "Cardiovascular",
 ] as const;
 
 export const EXERCISE_TYPES = ["cardio", "strength", "stretching"] as const;
 
+// Kept in sync with the live distribution of fitness_exercises.equipment_required
+// (confirmed 2026-09-08) — the previous list ("Gym Machine Workout", "Treadmill",
+// "Exercise Bike", "Yoga/ Exercise Mat", "Skipping Ropes", "Exercise Balls",
+// "Weight Bench", "Pull up bar") matched zero real rows between them, while
+// real equipment types like "Bodyweight" (the single largest group, 1000+
+// rows), "TRX/Suspension Trainer", and "Cable Machine" weren't selectable.
 export const EQUIPMENT_TYPES = [
-  "No Equipment",
-  "Barbell",
+  "Bodyweight",
   "Dumbbell",
-  "Kettlebell",
-  "Gym Machine Workout",
+  "TRX/Suspension Trainer",
+  "Barbell",
   "Resistance Band",
-  "Treadmill",
-  "Exercise Bike",
-  "Yoga/ Exercise Mat",
-  "Skipping Ropes",
-  "Exercise Balls",
-  "Weight Bench",
-  "Pull up bar",
+  "Cable Machine",
+  "Box/Jump Box",
+  "Kettlebell",
+  "Smith Machine",
+  "Pull-up Bar",
+  "Foam Roller",
+  "Yoga Mat",
+  "Stability Ball",
+  "Medicine Ball",
+  "Battle Ropes",
+  "Sled/Prowler",
+  "Ab Wheel",
+  "Rowing Machine",
+  "No Equipment",
 ] as const;
 
 export const EXERCISE_STATUS = ["draft", "published", "archived"] as const;

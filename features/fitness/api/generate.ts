@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { getAdminClient } from "@/lib/db/admin";
 import { generateFitnessPlan } from "@/features/fitness/data/generate-plan";
 import { checkRateLimit } from "@/lib/rate-limit";
+
+// Free tier: 2 weeks on the first AI-generated plan, 1 week on the single
+// allowed regeneration, then generation is locked entirely. Bump
+// FREE_TIER_FIRST_GEN_MAX_WEEKS here if the cap changes later — the mobile
+// UI (FitnessOnboarding.tsx, FitnessOptionsModal.tsx) mirrors these numbers
+// for UX only; this route is the actual enforcement boundary.
+const FREE_TIER_FIRST_GEN_MAX_WEEKS = 2;
+const FREE_TIER_REGEN_MAX_WEEKS = 1;
+const FREE_TIER_MAX_AI_GENERATIONS = 2; // 1 initial + 1 regen, then locked
 
 function calculateAge(birthday: string | null): number | null {
   if (!birthday) return null;
@@ -91,6 +101,73 @@ export async function POST(req: NextRequest) {
   }
 
   const { selections, selection_hash } = body;
+
+  // Token-scoped client (not `admin`, which is service-role and can't
+  // resolve auth.uid()) so get_my_entitlement() sees this user's identity —
+  // same pattern as app/api/user/entitlement/route.ts.
+  const scopedClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY!,
+    {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    },
+  );
+  const { data: entitlementData, error: entitlementError } =
+    await scopedClient.rpc("get_my_entitlement");
+  if (entitlementError) {
+    console.warn(
+      "[fitness-generate] Entitlement lookup failed:",
+      entitlementError.message,
+    );
+  }
+  const isPremium = Boolean(entitlementData?.is_premium);
+
+  if (!isPremium) {
+    // How many AI-generated plans has this free user already been assigned
+    // (active or not)? Enrolling in an admin-authored "Generated for you"
+    // plan writes a fitness_user_assignments row too, so this must join to
+    // fitness_plans and scope to author_type='ai' — otherwise browsing that
+    // library would wrongly burn a free user's AI-generation quota.
+    const { count: priorAiGenerations, error: priorAiGenerationsError } =
+      await admin
+        .from("fitness_user_assignments")
+        .select("id, fitness_plans!inner(author_type)", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", userId)
+        .eq("fitness_plans.author_type", "ai");
+
+    if (priorAiGenerationsError) {
+      console.warn(
+        "[fitness-generate] Prior AI generation count failed:",
+        priorAiGenerationsError.message,
+      );
+    }
+
+    const generationsUsed = priorAiGenerations ?? 0;
+
+    if (generationsUsed >= FREE_TIER_MAX_AI_GENERATIONS) {
+      return NextResponse.json(
+        {
+          error:
+            "You've used your free plan generations. Upgrade to Premium for unlimited AI-generated plans.",
+          code: "FREE_TIER_GENERATION_LIMIT",
+        },
+        { status: 403 },
+      );
+    }
+
+    const weeksCap =
+      generationsUsed === 0
+        ? FREE_TIER_FIRST_GEN_MAX_WEEKS
+        : FREE_TIER_REGEN_MAX_WEEKS;
+    selections.workout_weeks = Math.min(
+      selections.workout_weeks || 2,
+      weeksCap,
+    );
+  }
 
   const { data: profile } = await admin
     .from("user_profiles")
