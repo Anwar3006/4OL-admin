@@ -1,0 +1,2235 @@
+{
+  "generated_at": "2026-09-08T16:28:09.161Z",
+  "source_file": "PILLS LIST_FINAL_MEDICATIONS.json",
+  "total_in_file": 3530,
+  "normalized": 3159,
+  "rejected": 371,
+  "rows": [
+    {
+      "original_name": "DENTIPLUS FRESH BREATH SPRAY 25ML",
+      "generic_name": "mouth freshener",
+      "category": "Oral Care",
+      "reason": "non-drug generic: mouth freshener"
+    },
+    {
+      "original_name": "CADBURY DAIRY MILK CARAMEL 120G",
+      "generic_name": "arame",
+      "category": "Supplement",
+      "reason": "food"
+    },
+    {
+      "original_name": "CADBURY DAIRY MILK CARAMEL 45G",
+      "generic_name": "arame",
+      "category": "Supplement",
+      "reason": "food"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - COTTON DRY ALGODON",
+      "generic_name": "rexona deo spray 200ml - cotton dry algodon",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - COBALT DRY",
+      "generic_name": "rexona deo spray 200ml - cobalt dry",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DV-6237 DR DAVEY VIT C HYALURONIC ACID FACIAL SERUM 60ML",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - INVISIBLE PURE",
+      "generic_name": "rexona deo spray 200ml - invisible pure",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - BIORYTHM",
+      "generic_name": "rexona deo spray 200ml - biorythm",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR RASHEL VIT C BRIGHTENING & ANTI-AGING FACE CREAM (1432)",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - STRESS CONTROL",
+      "generic_name": "rexona deo spray 200ml - stress control",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - SHOWER FRESH",
+      "generic_name": "rexona deo spray 200ml - shower fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR RASHEL VIT C BRIGHTENING & ANTI-AGING ESSENCE TONER (1512)",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DR RASHEL VIT C BRIGHTENING & ANTI-AGING SOOTHING GEL (1516)",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DR RASHEL VIT C EYE SERUM(1430)",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML-ALOE VERA",
+      "generic_name": "rexona deo spray 200ml-aloe vera",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DRL1509 DR RASHEL VIT C DAY CREAM",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML- COCOA BUTTER",
+      "generic_name": "jergens lotion 621ml- cocoa butter",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "AVEENO BABY DAILY MOISTURISING LOT 150ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - LOVE HEARTS",
+      "generic_name": "carex shower gel 500ml - love hearts",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DRL1429 DR RASHEL VIT C FACIAL CLEANSER",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "FOX'S FAVOURITES CRUNCH CREAMS GOLDEN BISCIUT 200G",
+      "generic_name": "fox's favourites crunch creams golden bisciut 200g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - FAIRNESS",
+      "generic_name": "jergens lotion 621ml - fairness",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-SKIN WHITENING CARE",
+      "generic_name": "jergens lotion 621ml-skin whitening care",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA DEO MEN SPRAY 250ML-BLACK&WHITE INVISIBLE",
+      "generic_name": "nivea deo men spray 250ml-black&white invisible",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PALMOLIVE BATH FOAM 750ML",
+      "generic_name": "palmolive bath foam 750ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PAMPRO KIDS T/B SINGLES",
+      "generic_name": "pampro kids t/b singles",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - PINK BLUSH",
+      "generic_name": "rexona deo spray 200ml - pink blush",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - SPORT COOL",
+      "generic_name": "rexona deo spray 200ml - sport cool",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "4WD DORAE MON CAR - NO.906",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "AQUAFRESH T/B 3 IN1 FLEX",
+      "generic_name": "toothpaste",
+      "category": "Unknown",
+      "reason": "non-drug generic: toothpaste"
+    },
+    {
+      "original_name": "AVEENO BABY DAILY CARE 400ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY LOTION 227ML - DAILY",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY WIPES 72'S",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "DOVE  CREAM BATH 450ML - SHEA BUTTER",
+      "generic_name": "dove cream bath 450ml - shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE BATH 750ML - PURELY PAMPERING-SHEA BUTTER",
+      "generic_name": "dove bath 750ml - purely pampering-shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE ROLL ON - GO FRESH POMEGRANATE & LEMON SCENT",
+      "generic_name": "pomegranate",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DRL-1545 DR. RASHEL VITAMIN C WHITENING SOAP 100G",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6031 DR DAVEY COLLAGEN BODY LOTION 438ML",
+      "generic_name": "dv6031 dr davey collagen body lotion 438ml",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "NIVEA DEO SPRAY 150ML- DEEP",
+      "generic_name": "nivea deo spray 150ml- deep",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA DEO SPRAY 150ML-SILVER PROTECT",
+      "generic_name": "nivea deo spray 150ml-silver protect",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML- ANTIBACTERIAL DEFENSE",
+      "generic_name": "rexona deo spray 200ml- antibacterial defense",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 200ML -ZERO % SENSITIVE",
+      "generic_name": "sanex deo spray 200ml -zero % sensitive",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX MEN DEO SPRAY 200ML - STRESS RESPONSE",
+      "generic_name": "sanex men deo spray 200ml - stress response",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "4WD VEHICLE ROLL - NO.831",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "BEAUTY FORMULAR ACTIVE ORAL CARE T/B 2IN1'S SMOKERS",
+      "generic_name": "beauty formular active oral care t/b 2in1's smokers",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML- RELAXES & REBALANCES",
+      "generic_name": "dove cream bath 500ml- relaxes & rebalances",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DRL1431 DR RACHEL VIT C FACE SERUM",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1511 DR RASHEL VIT C NIGHT CREAM",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - FAIR NATURAL FAIRNESS",
+      "generic_name": "jergens lotion 621ml - fair natural fairness",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA SUN KIDS SENSITIVE LOTION 200ML - PROTECT & PLAY",
+      "generic_name": "nivea kids sensitive lotion 200ml - protect & play",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PALMOLIVE BRILLIANT COLOR SHAMPOO 350ML",
+      "generic_name": "palmolive brilliant color shampoo 350ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML- RENEWING COLLAGEN & ELASTIN",
+      "generic_name": "st ives body lotion 621ml- renewing collagen & elastin",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML-HYDRATING VIT E & AVOCADO",
+      "generic_name": "st ives body lotion 621ml-hydrating vit e & avocado",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "AVEENO BABY CALMING BATH WASH 250ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "BROWN SUGAR 750G-POWDERED/CUBE",
+      "generic_name": "brown sugar 750g-powdered/cube",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "DOVE BATH 450ML - PURIFYING DETOX",
+      "generic_name": "detox",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE CALMING BATH 750ML- PISTACHIO CREAM &MAGNOLIA",
+      "generic_name": "dove calming bath 750ml- pistachio cream &magnolia",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR RASHEL ALOE VERA SOOTHING & MOISTURISING GEL DRL1529",
+      "generic_name": "dr rashel aloe vera soothing & moisturising gel drl1529",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DR RASHEL WHITENING DAY CREAM (1436)",
+      "generic_name": "dr rashel whitening day cream (1436)",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL 1671- DR.RASHEL VITAMIN C LIP BLAM ( BRIGHTEN & MOISTURIZE)",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "EUCRYL TOOTH POWDER FRESHMINT 50G",
+      "generic_name": "eucryl tooth powder freshmint 50g",
+      "category": "Unknown - Review",
+      "reason": "oral care product"
+    },
+    {
+      "original_name": "EUCRYL TOOTH POWDER ORIG 50G",
+      "generic_name": "eucryl tooth powder orig 50g",
+      "category": "Unknown - Review",
+      "reason": "oral care product"
+    },
+    {
+      "original_name": "GILLETTE SHAVE FOAM 200ML- ORIG. SCENT",
+      "generic_name": "gillette shave foam 200ml- orig. scent",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - FREESIA & TANGERINE",
+      "generic_name": "impulse deo spray 75ml - freesia & tangerine",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - TEASE",
+      "generic_name": "impulse deo spray 75ml - tease",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML- AGE DEFYING",
+      "generic_name": "jergens lotion 621ml- age defying",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-SHEA BUTTER",
+      "generic_name": "jergens lotion 621ml-shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "L2033-2 LOVE JOJO CLEANSING BUBBLE FOAM 150ML - ALEO",
+      "generic_name": "l2033-2 love jojo cleansing bubble foam 150ml - aleo",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "NEOCELL SUPER COLLAGEN  PEPTIDES 200G (POWDERED)",
+      "generic_name": "neocell super collagen peptides 200g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "NIVEA DEO SPRAY 150ML-ENERGY FRESH",
+      "generic_name": "nivea deo spray 150ml-energy fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA DEO SPRAY 250ML-BLACK&WHITE INVISIBLE",
+      "generic_name": "nivea deo spray 250ml-black&white invisible",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER GEL 250ML - CREAMY VANILLA & RASPBERRY",
+      "generic_name": "original source shower gel 250ml - creamy vanilla & raspberry",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER GEL 250ML - ZINGY LIME",
+      "generic_name": "original source shower gel 250ml - zingy lime",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "PAMPRO ADULT T/B WHITE FLAT",
+      "generic_name": "pampro adult t/b white flat",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - INVISIBLE AQUA",
+      "generic_name": "rexona deo spray 200ml - invisible aqua",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - TROPICAL",
+      "generic_name": "rexona deo spray 200ml - tropical",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 250ML - SENSITIVE",
+      "generic_name": "sanex deo spray 250ml - sensitive",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX DERMO SENSITIVE FOAM BATH-650ML",
+      "generic_name": "sanex dermo sensitive foam bath-650ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "SB MOISTURISING BODY LOTION 200ML",
+      "generic_name": "sb moisturising body lotion 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "5051 POLICE CAR",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "CADBURY DAIRY MILK CARAMEL 180G",
+      "generic_name": "arame",
+      "category": "Supplement",
+      "reason": "food"
+    },
+    {
+      "original_name": "CAPRI SUN ORANGE JUICE 330ML",
+      "generic_name": "capri orange juice 330ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - SENSITIVE",
+      "generic_name": "carex shower gel 500ml - sensitive",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DOVE BATH WASH INDULG CREAM 450ML",
+      "generic_name": "dove bath wash indulg cream 450ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE HAND CREAM 75ML -INDULGING RITUAL",
+      "generic_name": "dove hand cream 75ml -indulging ritual",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE ROLL ON GO FRESH-GRAPEFRUIT AND LEMONGRASS",
+      "generic_name": "grapefruit",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DRL1513 DR RACHEL VIT C CLEANSING MILK",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV-6133 DR. DAVEY Q7 WHITENING BODY LOTION 500G",
+      "generic_name": "dv-6133 dr. davey q7 whitening body lotion 500g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "FASHION PLUS NAIL FILE FOAM 4SIDED",
+      "generic_name": "fashion plus nail file foam 4sided",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - VERY PINK",
+      "generic_name": "impulse deo spray 75ml - very pink",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - DAILY MOISTURE(USA)NEW IMPROVED",
+      "generic_name": "jergens lotion 621ml - daily moisture(usa)new improved",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - SHEA BUTTER",
+      "generic_name": "jergens lotion 621ml - shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML- SOOTHING ALOE (USA)NEW IMPROVED",
+      "generic_name": "jergens lotion 621ml- soothing aloe (usa)new improved",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-ORIGINAL SCENT",
+      "generic_name": "jergens lotion 621ml-original scent",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "LOVE JOJO BUBBLE CLEANSING FOAM 150ML-ROSE",
+      "generic_name": "love jojo bubble cleansing foam 150ml-rose",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "NIVEA CREAM 250ML-COCONUT & JOJOBA",
+      "generic_name": "nivea cream 250ml-coconut & jojoba",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA CREAM 400ML -RICH NOURISHING",
+      "generic_name": "nivea cream 400ml -rich nourishing",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA DEO SPRAY 150ML- AMAZONIA",
+      "generic_name": "nivea deo spray 150ml- amazonia",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE BODY SPRAY 150ML - ORIGINAL",
+      "generic_name": "old spice body spray 150ml - original",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "ORAL B TB POWERED STAR WARS",
+      "generic_name": "oral b tb powered star wars",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "PALMOLIVE PURE 500ML - POMEGRANATE",
+      "generic_name": "pomegranate",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - INVISIBLE ON BLACK + WHITE CLOTHES",
+      "generic_name": "rexona deo spray 200ml - invisible on black + white clothes",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - SPORT DEFENCE",
+      "generic_name": "rexona deo spray 200ml - sport defence",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX  MEN DEO SPRAY 200ML - ACTIVE CONTROL",
+      "generic_name": "sanex men deo spray 200ml - active control",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 250ML -ACTIVE CONTROL",
+      "generic_name": "sanex deo spray 250ml -active control",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "UMBRO DEO SPRAY 150ML- ENERGY",
+      "generic_name": "umbro deo spray 150ml- energy",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "AIR WICK REFRESHNER 240ML SPRAY - PINK SWEET PEA",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "ANGEL HERBAL MIXTURE 500ML",
+      "generic_name": "angel herbal mixture 500ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "AVEENO BABY DAILY CARE SHAMPOO 300ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - DRUMSTCK SQUASHIES",
+      "generic_name": "carex shower gel 500ml - drumstck squashies",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - ORIGINAL",
+      "generic_name": "carex shower gel 500ml - original",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CERAVE FOAMING CLEANSER 473ML",
+      "generic_name": "cerave foaming cleanser 473ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CERAVE FOAMING CLEANSER BAR 128G",
+      "generic_name": "cerave foaming cleanser bar 128g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CUSSONS PURE SHOWER GEL 500ML- SOOTHING ALOE VERA",
+      "generic_name": "cussons pure shower gel 500ml- soothing aloe vera",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CUSSONS PURE SHOWER GEL 500ML-CAMOMILE & VIT E",
+      "generic_name": "cussons pure shower gel 500ml-camomile & vit e",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DOVE BATH BODY WASH 225ML - PAMPERING",
+      "generic_name": "dove bath body wash 225ml - pampering",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE BODY WASH 500ML - PAMPERING",
+      "generic_name": "dove body wash 500ml - pampering",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML - CARING SHEA BUTTER & VANILLA",
+      "generic_name": "dove cream bath 500ml - caring shea butter & vanilla",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE NOURISHING HAND CREAM 200ML",
+      "generic_name": "dove nourishing hand cream 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR RASHEL FADE SPORTS NIGHT CREAM (1435)",
+      "generic_name": "dr rashel fade sports night cream (1435)",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DR.RASHEL FACIAL WASH GEL FOAM DRL-1173",
+      "generic_name": "dr.rashel facial wash gel foam drl-1173",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6232 DR DAVEY COLLAGEN FACIAL ESSENCE CAPS 90'S",
+      "generic_name": "dv6232 dr davey collagen facial essence caps",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "GARNIER SKIN ACTIVE GENTLE CLEANING FOAM 100ML",
+      "generic_name": "garnier skin active gentle cleaning foam 100ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "GHANDOUR BABY BOY & GIRL HEAD TO TOE SHAMPOO & WASH 500ML",
+      "generic_name": "ghandour baby boy & girl head to toe shampoo & wash 500ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - INSTANT CRUSH",
+      "generic_name": "impulse deo spray 75ml - instant crush",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "JERGENS BODY LOTION 621 ML - EGG YOLK",
+      "generic_name": "jergens body lotion 621 ml - egg yolk",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - SKIN LIGHTENING",
+      "generic_name": "jergens lotion 621ml - skin lightening",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - ULTRA HEALING- BROWN",
+      "generic_name": "jergens lotion 621ml - ultra healing- brown",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - ULTRA HEALING- WHITE",
+      "generic_name": "jergens lotion 621ml - ultra healing- white",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-SKIN FIRMING",
+      "generic_name": "jergens lotion 621ml-skin firming",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA CREAM 250ML-ROSE & ALMOND OIL",
+      "generic_name": "nivea cream 250ml-rose & almond oil",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "ORAL B TB POWERED FROZEN II",
+      "generic_name": "oral b tb powered frozen ii",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER GEL 250ML - TROPICAL COCONUT & SHEA BUTTER",
+      "generic_name": "original source shower gel 250ml - tropical coconut & shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "PALMOLIVE SILKY SHINE EFFECT SHAMPOO 350ML",
+      "generic_name": "palmolive silky shine effect shampoo 350ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PAMPRO ADULT T/B CHARCOAL",
+      "generic_name": "pampro adult t/b charcoal",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - ALOE VERA",
+      "generic_name": "rexona deo spray 200ml - aloe vera",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - ANTIBACTERIAL PROTECTION",
+      "generic_name": "rexona deo spray 200ml - antibacterial protection",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - COTTON DRY",
+      "generic_name": "rexona deo spray 200ml - cotton dry",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - INVISIBLE ICE FRESH",
+      "generic_name": "rexona deo spray 200ml - invisible ice fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - SEXY BOUQUET",
+      "generic_name": "rexona deo spray 200ml - sexy bouquet",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML- ACTIVE PROTECTION + INVISIBLE",
+      "generic_name": "rexona deo spray 200ml- active protection + invisible",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML- MUSC NATURAL FRESHNESS",
+      "generic_name": "rexona deo spray 200ml- musc natural freshness",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML-PROTECTION ACTIVE + ORIG",
+      "generic_name": "rexona deo spray 200ml-protection active + orig",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML-XTRA COOL",
+      "generic_name": "rexona deo spray 200ml-xtra cool",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "RS29813 ROUSHUN NATURAL COLLAGEN CREAM75G",
+      "generic_name": "rs29813 roushun natural collagen cream75g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "SANEX MEN DEO SPRAY 200ML - CLEAN & FRESH",
+      "generic_name": "sanex men deo spray 200ml - clean & fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML-SOOTHING OATMEAL & SHEA BUTTER",
+      "generic_name": "st ives body lotion 621ml-soothing oatmeal & shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "TOY - SUPERIOR RACING CARS",
+      "generic_name": "sacubitril/valsartan",
+      "category": "Antihypertensive",
+      "reason": "toy"
+    },
+    {
+      "original_name": "UMBRO DEO SPRAY 150ML- POWER",
+      "generic_name": "umbro deo spray 150ml- power",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "UMBRO DEO SPRAY 150ML- ACTION",
+      "generic_name": "umbro deo spray 150ml- action",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "XHC TEA TREE MOISTURIZING SHAMPOO 400ML",
+      "generic_name": "xhc tea tree moisturizing shampoo 400ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "AIR WICK REFRESHNER 240ML SPRAY - CRISP LINEN & LILAC",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AIR WICK REFRESHNER 240ML SPRAY - FRESH WATERS",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AIR WICK SET - SPRING DELIGHT",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AVEENO BABY CALMING COMFORT - 150ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY SOOTING RELIEF 200ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AXE DEO SPRAY 150ML - CLEAN FRESH YOU",
+      "generic_name": "axe deo spray 150ml - clean fresh you",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "BEAUTY FORMULAS VIT E FOAMING FACIAL WASH 150ML",
+      "generic_name": "beauty formulas vit e foaming facial wash 150ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "BISTO GRAVY GRANULES 190G",
+      "generic_name": "bisto gravy granules 190g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CANTU SHEA BUTTER MOISTURISING RINSE OUT CONDITIONER 13.5FLOZ (400ML)",
+      "generic_name": "cantu shea butter moisturising rinse out conditioner 13.5floz (400ml)",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - MOISTURE PLUS",
+      "generic_name": "carex shower gel 500ml - moisture plus",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - OVER THE RAINBOW",
+      "generic_name": "carex shower gel 500ml - over the rainbow",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CERAVE FOAMING  FACIAL CLEANSER 355ML",
+      "generic_name": "cerave foaming facial cleanser 355ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "COMPLAN SACHETS STRAWBERRY 4X55G",
+      "generic_name": "complan sachets strawberry 4x55g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CUSSONS PURE SHOWER GEL 500ML-NOURISHING SHEA BUTTER & HONEY",
+      "generic_name": "cussons pure shower gel 500ml-nourishing shea butter & honey",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DOVE BODY WASH 1000ML LAVNDER & CHAMOMILE",
+      "generic_name": "chamomile",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML- NOURISHING SILK",
+      "generic_name": "dove cream bath 500ml- nourishing silk",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE DEO STICK 50ML- MUSHROOM",
+      "generic_name": "mushroom",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE HAND CREAM 75ML -INVIGORATING RITUAL",
+      "generic_name": "dove hand cream 75ml -invigorating ritual",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR RASHEL STRETCH MARKS CREAM (1146)",
+      "generic_name": "dr rashel stretch marks cream (1146)",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1514 DR RACHEL VIT C MAKEUP FIXER",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1518 DR RASHEL GREEN TEA GEL 300G",
+      "generic_name": "drl1518 dr rashel green tea gel 300g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1522 DR RASHEL SHEA BUTTER GEL 300G",
+      "generic_name": "drl1522 dr rashel shea butter gel 300g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1523 DR RASHEL HYALURONIC ACID SOOTHING GEL 300G",
+      "generic_name": "drl1523 dr rashel hyaluronic acid soothing gel 300g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1557 DR RASHEL VIT C &ANTI-AGING SKIN CARE SET",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV-6238 DR DAVEY VIT C SERUM 60ML",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6066 DR DAVEY JAMAICAN COCONUT OIL 120ML",
+      "generic_name": "coconut oil",
+      "category": "Supplement",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6159 DR. DARVEY VIT C WHITENING SOAP",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6233 DR DAVEY SNAIL WHITE FACIAL ESSENCE CAPS 90'S",
+      "generic_name": "dv6233 dr davey snail white facial essence caps",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "GLUTATHIONE SKIN WHITENING SOAP",
+      "generic_name": "glutathione",
+      "category": "Supplement",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "HEAD & SHOULDERS ANTI-DANDRUFF SHAMPOO 400ML CLASSIC CLEAN",
+      "generic_name": "head & shoulders anti-dandruff shampoo 400ml classic clean",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - INTO GLAMOUR",
+      "generic_name": "impulse deo spray 75ml - into glamour",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - MUSK",
+      "generic_name": "impulse deo spray 75ml - musk",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - SWEET SMILE",
+      "generic_name": "impulse deo spray 75ml - sweet smile",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - TRUE LOVE",
+      "generic_name": "impulse deo spray 75ml - true love",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "KLB-004 KING LOVE BEAUTY ALOE ESSENCE FOAM CLEANSER 150ML",
+      "generic_name": "klb-004 king love beauty aloe essence foam cleanser 150ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "L2037-8 LOVE JOJO VIT E CLEANSING FOAM 160ML",
+      "generic_name": "l2037-8 love jojo vit e cleansing foam 160ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "L2040-8 LOVE JOJO CLEANSING FOAM 160ML",
+      "generic_name": "l2040-8 love jojo cleansing foam 160ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "LYNX SHOWER GEL 225ML- DARK TEMPT.",
+      "generic_name": "lynx shower gel 225ml- dark tempt.",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "MENOFORCE 30`S (A.VOGEL)",
+      "generic_name": "menoforce 30`s (a.vogel)",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "NIVEA BODY OIL LOTION 400ML - VANILLA",
+      "generic_name": "nivea body oil lotion 400ml - vanilla",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA CREAM 300ML",
+      "generic_name": "nivea cream 300ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA SHOWER GEL 250ML - LOVE SPLAH OCEAN",
+      "generic_name": "nivea shower gel 250ml - love splah ocean",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA SUN PROTECT& MOISTURE LOTION 200ML",
+      "generic_name": "nivea protect& moisture lotion 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE BODY SPRAY 150ML -WHITEWATER",
+      "generic_name": "old spice body spray 150ml -whitewater",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE DEO STICK 50ML - CAPTAIN",
+      "generic_name": "old spice deo stick 50ml - captain",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - COOLING",
+      "generic_name": "old spice shower gel 400ml - cooling",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - WHITE WATER",
+      "generic_name": "old spice shower gel 400ml - white water",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OMBK 1511 OLSENMARK INSECT KILLER WITH TWO LAMPS",
+      "generic_name": "ombk 1511 olsenmark insect killer with two lamps",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER GEL 250ML - ORANGE",
+      "generic_name": "original source shower gel 250ml - orange",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER GEL 250ML - ZESTY LEMON & TEA TREE",
+      "generic_name": "original source shower gel 250ml - zesty lemon & tea tree",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ORIGINAL SOURCE SHOWER MILK 250ML- FRESH SEA SALT & SAMPHIRE",
+      "generic_name": "original source shower milk 250ml- fresh sea salt & samphire",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "PALMOLIVE HAND WASH 300ML - POMEGRANATE",
+      "generic_name": "pomegranate",
+      "category": "Supplement",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REGAINE FOR MEN FOAM 5% 60ML MA 100",
+      "generic_name": "regaine for men foam 5% 60ml ma 100",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - CHELSEA",
+      "generic_name": "rexona deo spray 200ml - chelsea",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML - V8",
+      "generic_name": "rexona deo spray 200ml - v8",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML- ACTIVE PROTECTION + FRESH",
+      "generic_name": "rexona deo spray 200ml- active protection + fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 200ML -NATUR PROTECT WITH BAMBOO",
+      "generic_name": "sanex deo spray 200ml -natur protect with bamboo",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 250ML - EXTRA CONTROL",
+      "generic_name": "sanex deo spray 250ml - extra control",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML-SOFT & SILKY COCONUT ORCHID",
+      "generic_name": "st ives body lotion 621ml-soft & silky coconut orchid",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "2055Y FROVEN FEVER 2 MONOPOLY",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "215 FASHION GIRL SET 3+",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "501 POLICE HERO ACTION",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "589B POLICE CAR",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "88799- INFLATABLE POOL",
+      "generic_name": "88799- inflatable pool",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "ADIDAS ROLL- PURE GAME 50ML",
+      "generic_name": "adidas",
+      "category": "Unknown",
+      "reason": "non-drug generic: adidas"
+    },
+    {
+      "original_name": "AIR WICK REFRESHNER 240ML SPRAY - IVORY FREESIA BLOOM",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AIR WICK SCENTED CANDLE 105G",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AIR WICK SCENTED CANDLES 2'S",
+      "generic_name": "air freshener",
+      "category": "Unknown",
+      "reason": "non-drug generic: air freshener"
+    },
+    {
+      "original_name": "AVEENO ALMOND OIL BLEND (DEEP HYDRATION) SHAMPOO 354ML",
+      "generic_name": "aveeno almond oil blend (deep hydration) shampoo 354ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "AVEENO BABY DAILY CARE 2IN1 SHAMP & COND'NER 300ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY DAILY CARE 2IN1 SHAMPOO & CONDITIONER 300ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY SOOTHING RELEIF CREAM 223ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY SOOTHING RELIEF MOISTURE CRM 139ML",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BODY LOTION 354ML - CREAMY MOISTURIZING",
+      "generic_name": "aveeno body lotion 354ml - creamy moisturizing",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "AVEENO BODY LOTION 354ML - POSITIVELY RADIANT",
+      "generic_name": "aveeno body lotion 354ml - positively radiant",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "AVEENO DAILY MOIST. BODY LOTION 300ML - CREAMY OIL",
+      "generic_name": "aveeno daily moist. body lotion 300ml - creamy oil",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "AXE DEO SPRAY 150ML -FRESH",
+      "generic_name": "axe deo spray 150ml -fresh",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "BATISTE DRY SHAMPOO 200ML",
+      "generic_name": "batiste dry shampoo 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "BEST ONE TABLE SALT 750G",
+      "generic_name": "best one table salt 750g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "BRISTOWS CONDITIONING HOLD HAIRSPRAY 300ML",
+      "generic_name": "bristows conditioning hold hairspray 300ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "BRISTOWS ULTRA HOLD HAIRSPRAY 300ML",
+      "generic_name": "bristows ultra hold hairspray 300ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CANTU HYDRATING CREAM CONDITIONER 400ML",
+      "generic_name": "cantu hydrating cream conditioner 400ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CANTU LEAVE-IN CONDITIONING REPAIR CREAM 16OZ (453G)",
+      "generic_name": "cantu leave-in conditioning repair cream 16oz (453g)",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CANTU MOIST TWIST &LOCK GEL 13OZ/370G",
+      "generic_name": "cantu moist twist &lock gel 13oz/370g",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CANTU SHEA BUTTER 3 IN 1 SHAMPOO/CONDITIONER/ BODY WASH 400ML",
+      "generic_name": "cantu shea butter 3 in 1 shampoo/conditioner/ body wash 400ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - LITTLE MISS PRINCESS",
+      "generic_name": "carex shower gel 500ml - little miss princess",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - LITTLE MISS SUNSHINE (SHERBET LEMON)",
+      "generic_name": "carex shower gel 500ml - little miss sunshine",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - TUTTI FRUITY",
+      "generic_name": "carex shower gel 500ml - tutti fruity",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CAREX SHOWER GEL 500ML - UNICORN MAGIC",
+      "generic_name": "carex shower gel 500ml - unicorn magic",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CHARGING FAN FOR CARTOON LAMP",
+      "generic_name": "charging fan for cartoon lamp",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CHARLIE DEO SPRAY 75ML - PINK",
+      "generic_name": "charlie deo spray 75ml - pink",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CHARLIE DEO SPRAY 75ML - RED",
+      "generic_name": "charlie deo spray 75ml - red",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "COMPLAN SACHETS BANANA 4X55G",
+      "generic_name": "complan sachets banana 4x55g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "COMPLAN SACHETS VANILLA 4X55G",
+      "generic_name": "complan sachets vanilla 4x55g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "DELON BODY LOTION 725ML - ALOE VERA",
+      "generic_name": "delon body lotion 725ml - aloe vera",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DELON BODY LOTION 725ML - OLIVE",
+      "generic_name": "delon body lotion 725ml - olive",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DOVE CARING BATH 750ML-ALMOND CREAM WITH HIBISCUS",
+      "generic_name": "dove caring bath 750ml-almond cream with hibiscus",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE NOURISHING BODY CARE PAMPERING-400ML",
+      "generic_name": "dove nourishing body care pampering-400ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE NOURISHING CARE SHOWER GEL 250ML",
+      "generic_name": "dove nourishing care shower gel 250ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE NOURISHING SECRET-GLOWING RITUAL SHOWER GEL 250ML",
+      "generic_name": "dove nourishing secret-glowing ritual shower gel 250ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE NOURISHING SILK SHOWER GEL 250ML",
+      "generic_name": "dove nourishing silk shower gel 250ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE SHAMPOO 400ML - INTENSIVE REPAIR",
+      "generic_name": "dove shampoo 400ml - intensive repair",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE SHAMPOO 400ML - PRO AGE",
+      "generic_name": "dove shampoo 400ml - pro age",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DR DAVEY GLUTATHIONE + PAPAYA ANTI-WRINKLE",
+      "generic_name": "glutathione",
+      "category": "Supplement",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL-1631 DR RASHEL VITAMIN E HYDRATING & RESTORING SKIN SET 10S",
+      "generic_name": "vitamin e",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6231 DR DAVEY VIT E FACIAL ESSENCE CAPS 90'S",
+      "generic_name": "dv6231 dr davey vit e facial essence caps",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "FRUISER SHOWER CREAM  1LTRS (1000ML) -  GOAT MILK",
+      "generic_name": "fruiser shower cream 1ltrs (1000ml) - goat milk",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "GILLETTE FUSION PROGLIDE SHAVE FOAM -SPORT ACTIVE",
+      "generic_name": "gillette fusion proglide shave foam -sport active",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "HEAD & SHOULDERS ANTI-DANDRUFF SHAMPOO 400ML DEEP CLEANSING",
+      "generic_name": "head & shoulders anti-dandruff shampoo 400ml deep cleansing",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "HEDRIN SHAMPOO 200ML (KILLS HEADLICE)",
+      "generic_name": "hedrin shampoo 200ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "IMPULSE DEO SPRAY 75ML - BE SUPRISED",
+      "generic_name": "impulse deo spray 75ml - be suprised",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "JERGENS  LOTION 496ML - DEEP RESTORING ARGAN(USA) NEW IMPROVED",
+      "generic_name": "jergens lotion 496ml - deep restoring argan(usa) new improved",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JOHNSON BABY SHAMPOO BAMBINI 500ML",
+      "generic_name": "johnson baby shampoo bambini 500ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "JOHNSON'S SOFT & PAMPER BODY WASH 400ML",
+      "generic_name": "johnson's soft & pamper body wash 400ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "L2042-1 LOVE JOJO CLEANSING FOAM 160ML",
+      "generic_name": "l2042-1 love jojo cleansing foam 160ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "LIFESTYLE TABLE SALT 750G",
+      "generic_name": "lifestyle table salt 750g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "LOVE JOJO BUBBLE CLEANSING FOAM 150ML",
+      "generic_name": "love jojo bubble cleansing foam 150ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "LUX SHOWER CREAM 950ML - VELVET TOUCH",
+      "generic_name": "lux shower cream 950ml - velvet touch",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "MAYBELLINE DREAM NUDE AIRFOAM FOUNDATION 46G",
+      "generic_name": "maybelline dream nude airfoam foundation 46g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "NIVEA ANTI - WRINKLE + MOISTURE DAY CREAM 35+ 50ML",
+      "generic_name": "nivea anti - wrinkle + moisture day cream 35+ 50ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA CELLULAR ANTI - AGE DAY CREAM 50ML",
+      "generic_name": "nivea cellular anti - age day cream 50ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA CELLULAR ANTI - AGE NIGHT CREAM 50ML",
+      "generic_name": "nivea cellular anti - age night cream 50ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA DAILY ESSEN. + EXP. PRIMER GEL CREAM 50ML- DRY SKIN",
+      "generic_name": "nivea daily essen. + exp. primer gel cream 50ml- dry skin",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA HAND CREAM 100ML-ANTI-AGECARE",
+      "generic_name": "nivea hand cream 100ml-anti-agecare",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA Q10 POWER ANTI WRINKLE + FIRMING DAY CREAM 50ML",
+      "generic_name": "nivea q10 power anti wrinkle + firming day cream 50ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA REFRESH SOFT CREAM 500ML",
+      "generic_name": "nivea refresh soft cream 500ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA SUN PROTECT & MOISTURE LOTION 200ML",
+      "generic_name": "nivea protect & moisture lotion 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA SUN PROTECT& REFRESH SPRAY 200ML",
+      "generic_name": "nivea protect& refresh spray 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLAY BODY WASH 650ML B3- AVOCADO OIL",
+      "generic_name": "avocado oil",
+      "category": "Supplement",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "OLAY BODY WASH 700ML- ORCHID & BLACK CURRANT",
+      "generic_name": "black currant oil",
+      "category": "Supplement",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "OLAY CLEANSING INFUSION BODY WASH 400ML-CRUSHED GINGER",
+      "generic_name": "ginger",
+      "category": "Supplement",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - DEEP SEA",
+      "generic_name": "old spice shower gel 400ml - deep sea",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - ORIGINAL",
+      "generic_name": "old spice shower gel 400ml - original",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - ROCK",
+      "generic_name": "old spice shower gel 400ml - rock",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - TIMBER",
+      "generic_name": "old spice shower gel 400ml - timber",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OLD SPICE SHOWER GEL 400ML - WOLFTHORN",
+      "generic_name": "old spice shower gel 400ml - wolfthorn",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "OME2750 OLSENMARK RECHARGEABLE LED DESK LAMP",
+      "generic_name": "ome2750 olsenmark rechargeable led desk lamp",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "OMMS1217 - OLSENMARK PORTABLE SPEAKER",
+      "generic_name": "omms1217 - olsenmark portable speaker",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "PALMER'S NATURAL FUSIONS BODY LOTION 236ML - ROSE & COCONUT",
+      "generic_name": "palmer's natural fusions body lotion 236ml - rose & coconut",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "PALMOLIVE HYDRA SHAMPOO 350ML - HYDRA BALANCE",
+      "generic_name": "palmolive hydra shampoo 350ml - hydra balance",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "QUERAY  BEAUTY FRESH OCEAN SHOWER  GEL 1LTR",
+      "generic_name": "queray beauty fresh ocean shower gel 1ltr",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY MEN 200ML - XTRA COOL",
+      "generic_name": "rexona deo spray men 200ml - xtra cool",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX BIOME DERMO BATH FOAM 415ML",
+      "generic_name": "sanex biome dermo bath foam 415ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 200ML -MOISTURIZING",
+      "generic_name": "sanex deo spray 200ml -moisturizing",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SIMPLE REFRESHING SHOWER GEL 225ML - KID TO SKIN",
+      "generic_name": "simple refreshing shower gel 225ml - kid to skin",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML-REPAIRING CRANBERYY & GRAPESEED OIL",
+      "generic_name": "st ives body lotion 621ml-repairing cranberyy & grapeseed oil",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SUAVE BODY LOTION 532ML",
+      "generic_name": "suave body lotion 532ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SUAVE MEN 2IN1 SHAMPOO + CONDITIONER 828ML- OCEAN CHARGE",
+      "generic_name": "suave men 2in1 shampoo + conditioner 828ml- ocean charge",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TEETHA TEETHING GRANULES",
+      "generic_name": "teetha teething granules",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TEX CHUNKS DOG FOOD 1.2KG - WITH LAMP & VEGETABLES",
+      "generic_name": "tex chunks dog food 1.2kg - with lamp & vegetables",
+      "category": "Unknown - Review",
+      "reason": "pet food"
+    },
+    {
+      "original_name": "TOUCH ME FACE WASH FOAM 100ML-WITH CUCUMBER",
+      "generic_name": "touch me face wash foam 100ml-with cucumber",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TOYS - 607 UN- SUPERIOR FORCE CAR",
+      "generic_name": "sacubitril/valsartan",
+      "category": "Antihypertensive",
+      "reason": "toy"
+    },
+    {
+      "original_name": "TOYS-8801-4FAMILY SMALL TOYS-IRON",
+      "generic_name": "iron",
+      "category": "Mineral Supplement",
+      "reason": "toy"
+    },
+    {
+      "original_name": "TUSK DEO BODY SPRAY 150ML - BLUE",
+      "generic_name": "tusk deo body spray 150ml - blue",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "TUSK DEO BODY SPRAY 150ML - ORANGE",
+      "generic_name": "tusk deo body spray 150ml - orange",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "UMBRO DEO SPRAY 150ML- ICE",
+      "generic_name": "umbro deo spray 150ml- ice",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "VAGID-CL SUPP",
+      "generic_name": "vagid-cl supp",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "XHC COCONUT WATER HYDRATING SHAMPOO 400ML",
+      "generic_name": "xhc coconut water hydrating shampoo 400ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "XHC SHIMMER OF SILVER SHAMPOO 400ML",
+      "generic_name": "xhc shimmer of silver shampoo 400ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "XHC X-PEL MEDICATED SHAMPOO 300ML",
+      "generic_name": "xhc x-pel medicated shampoo 300ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "2009 RACING 2 POWERFUL CAR",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "300223-1 LAMBOGHINI R/C CAR",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "365P75 DESPICABLE ME HAPPY TIME",
+      "generic_name": "toy",
+      "category": "Unknown",
+      "reason": "non-drug generic: toy"
+    },
+    {
+      "original_name": "AIRWICK FRESHMATIC AUTOSPRAY- VANILLA BEAN",
+      "generic_name": "airwick freshmatic autospray- vanilla bean",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "AQUAFRESH KIDS TB X3 PACK (0-7YRS)",
+      "generic_name": "toothpaste",
+      "category": "Unknown",
+      "reason": "non-drug generic: toothpaste"
+    },
+    {
+      "original_name": "AVEENO BABY LOTION 227ML - CALMING COMFORT",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "AVEENO BABY LOTION 532ML - DAILY MOISTURE",
+      "generic_name": "baby lotion",
+      "category": "Unknown",
+      "reason": "non-drug generic: baby lotion"
+    },
+    {
+      "original_name": "BRISTOWS NATURAL HOLD HAIRSPRAY 300ML",
+      "generic_name": "bristows natural hold hairspray 300ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "BROWN SUGAR 850G-POWDERED",
+      "generic_name": "brown sugar 850g-powdered",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CANTU SHEA BUTTER COIL CALM DETANGLER 237ML(8FLOZ)",
+      "generic_name": "cantu shea butter coil calm detangler 237ml(8floz)",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "CETAPHIL PRO ACNE- PRONE SKIN FOAM WASH 235ML",
+      "generic_name": "cetaphil pro acne- prone skin foam wash 235ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "CHARLIE DEO SPRAY 75ML - CHIC",
+      "generic_name": "charlie deo spray 75ml - chic",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CHARLIE DEO SPRAY 75ML - TOUCH",
+      "generic_name": "charlie deo spray 75ml - touch",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CHARLIE DEO SPRAY 75ML- BLACK",
+      "generic_name": "charlie deo spray 75ml- black",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "CUSSONS PURE SHOWER GEL 500ML-PAMPERING SUGAR CANDY",
+      "generic_name": "cussons pure shower gel 500ml-pampering sugar candy",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML - CARING BATH FINE SILK",
+      "generic_name": "dove cream bath 500ml - caring bath fine silk",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML - CARING BATH INDULGING CREAM",
+      "generic_name": "dove cream bath 500ml - caring bath indulging cream",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DOVE CREAM BATH 500ML - RESTORING RITUAL",
+      "generic_name": "dove cream bath 500ml - restoring ritual",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "DRL-1624 DR RASHEL VITAMIN A RETINOL SKIN SET 12",
+      "generic_name": "vitamin a",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DRL1519 DR RASHEL VIT E SOOTHING GEL 300G",
+      "generic_name": "drl1519 dr rashel vit e soothing gel 300g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6032 DR DAVEY COCONUT OIL BEAUTY LOTION 438G",
+      "generic_name": "coconut oil",
+      "category": "Supplement",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6033 DR DAVEY VIT E BODY LOTION 438ML",
+      "generic_name": "dv6033 dr davey vit e body lotion 438ml",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6095 DR DAVEY VIT C CLEANSER 120ML",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6122 DR DAVEY SOOTHING GEL MASK SHEET 30G 10'S",
+      "generic_name": "dv6122 dr davey soothing gel mask sheet 30g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6228 DR DAVEY VITAMIN E STARTER KIT",
+      "generic_name": "vitamin e",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "DV6230 DR DAVEY VIT C FACIAL ESSENCE CAPS 90'S",
+      "generic_name": "vitamin c",
+      "category": "Vitamin",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "EZYDOSE PILL PLANNER WEEKLY & PORTABLE",
+      "generic_name": "ezydose pill planner weekly & portable",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "FEMFRESH 2 IN 1 SHOWER&SHAVE CREAM 200ML",
+      "generic_name": "femfresh 2 in 1 shower&shave cream 200ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "FEMFRESH DEO SPRAY 125ML",
+      "generic_name": "femfresh deo spray 125ml",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "GIFT HAMPER",
+      "generic_name": "gift hamper",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "GILLETTE BLUE 3 RAZOR 6'S + SHAVING FOAM 200ML",
+      "generic_name": "gillette blue 3 razor + shaving foam 200ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "HEAD & SHOULDERS ANTI-DANDRUFF SHAMPOO 400ML SMOOTH&SILKY",
+      "generic_name": "head & shoulders anti-dandruff shampoo 400ml smooth&silky",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "HEINZ BOXED 120G-CREAMED PORRIDGE",
+      "generic_name": "heinz boxed 120g-creamed porridge",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "INTERDENTAL ORAL CARE SOFT BRUSHES 20`S",
+      "generic_name": "interdental oral care soft brushes 20`s",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML - SKIN SMOOTHING",
+      "generic_name": "jergens lotion 621ml - skin smoothing",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-NATURAL FAIRNESS",
+      "generic_name": "jergens lotion 621ml-natural fairness",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "JERGENS LOTION 621ML-SKIN WHITENING",
+      "generic_name": "jergens lotion 621ml-skin whitening",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "L2055 WATERMELON GLUTA FACIAL FOAM 190G",
+      "generic_name": "l2055 watermelon gluta facial foam 190g",
+      "category": "Unknown - Review",
+      "reason": "cosmetic skincare"
+    },
+    {
+      "original_name": "LA BELLE NATURAL COCOA POWDERS",
+      "generic_name": "la belle natural cocoa powders",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "LUX SHOWER CREAM 950ML - M AGICAL SPELL",
+      "generic_name": "lux shower cream 950ml - m agical spell",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "NIVEA DAILY ESSEN. + PRIMER GEL - CREAM 50ML - NORMAL SKIN",
+      "generic_name": "nivea daily essen. + primer gel - cream 50ml - normal skin",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA PERFECT & RADIANT 100ML-EVENTONE CLEANSING FOAM",
+      "generic_name": "nivea perfect & radiant 100ml-eventone cleansing foam",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "NIVEA VISAGE DNAGE FIRMING DAY CREAM 50ML",
+      "generic_name": "nivea visage dnage firming day cream 50ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PALMOLIVE MEN CLASSIC SHAVE CREAM 100ML",
+      "generic_name": "palmolive men classic shave cream 100ml",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PALMOLIVE SHAMPOO 350ML - ANTI-DANDRUFF",
+      "generic_name": "palmolive shampoo 350ml - anti-dandruff",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "PANOXYL ACNE FOAMING WASH 10% 156G",
+      "generic_name": "panoxyl acne foaming wash 10% 156g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "REXONA DEO SPRAY 200ML-QUANTUM DRY",
+      "generic_name": "rexona deo spray 200ml-quantum dry",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "REXONA MEN DEO SPRAY 200ML - ACTIVE PROTECTION+",
+      "generic_name": "rexona men deo spray 200ml - active protection+",
+      "category": "Unknown - Review",
+      "reason": "personal care brand"
+    },
+    {
+      "original_name": "SANEX 3 IN 1 SHOWER GEL 250ML DERMO HYDRATING",
+      "generic_name": "sanex 3 in 1 shower gel 250ml dermo hydrating",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SANEX DEO SPRAY 250ML -INVISIBLE",
+      "generic_name": "sanex deo spray 250ml -invisible",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SB ANTI HAIR LOSS SHAMPOO 200ML",
+      "generic_name": "sb anti hair loss shampoo 200ml",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML - DEEP RESTORING",
+      "generic_name": "st ives body lotion 621ml - deep restoring",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "ST IVES BODY LOTION 621ML - INTENSIVE HEALING",
+      "generic_name": "st ives body lotion 621ml - intensive healing",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SUAVE BODY LOTION 946ML - ALMOND +SHEA BUTTER",
+      "generic_name": "suave body lotion 946ml - almond +shea butter",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "SUNGIFT OMEGA 369 3000G 90`S SUPPLEMENT",
+      "generic_name": "sungift omega 369 3000g 90`s supplement",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TOUCH ME FACE WASH FOAM 100ML-COFFEE",
+      "generic_name": "touch me face wash foam 100ml-coffee",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TOUCH ME FACE WASH FOAM 100ML-WITH GREEN TEA",
+      "generic_name": "touch me face wash foam 100ml-with green tea",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TOUCH ME FACE WASH FOAM 100ML-WITH MINT",
+      "generic_name": "touch me face wash foam 100ml-with mint",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    },
+    {
+      "original_name": "TUSK DEO BODY SPRAY 150ML - GREEN",
+      "generic_name": "tusk deo body spray 150ml - green",
+      "category": "Unknown - Review",
+      "reason": "personal care product"
+    },
+    {
+      "original_name": "WEETABIX 180G",
+      "generic_name": "weetabix 180g",
+      "category": "Unknown - Review",
+      "reason": "unknown category without medicine signal"
+    }
+  ]
+}

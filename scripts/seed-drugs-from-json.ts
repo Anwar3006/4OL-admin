@@ -2,6 +2,7 @@ import * as crypto from "crypto";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 
@@ -16,7 +17,7 @@ import {
   type DrugStatus,
   type NormalizedDrugRow,
 } from "../features/medication-reminder/data/drug-import-mapping";
-import { getAdminClient } from "../lib/db/admin";
+import { supabaseServiceKey, supabaseUrl } from "../lib/db/env";
 
 type PillsJsonRow = {
   original_name?: unknown;
@@ -29,12 +30,72 @@ type SeedRow = NormalizedDrugRow & {
   original_name: string;
 };
 
+type RejectedSeedRow = {
+  original_name: string;
+  generic_name: string | null;
+  category: string | null;
+  reason: string;
+};
+
+type NormalizeResult = {
+  rows: SeedRow[];
+  rejected: RejectedSeedRow[];
+  skippedInvalid: number;
+  totalInFile: number;
+};
+
 const DEFAULT_SOURCE_FILE = path.join(
   process.cwd(),
   "scripts/seed-data/PILLS LIST_FINAL_MEDICATIONS.json",
 );
 const BATCH_SIZE = 500;
 const READ_PAGE_SIZE = 1000;
+
+const NON_DRUG_GENERIC_EXACT = new Set([
+  "adidas",
+  "air freshener",
+  "baby lotion",
+  "body spray",
+  "dog food",
+  "mouth freshener",
+  "old spice",
+  "toothpaste",
+  "toy",
+  "toys",
+]);
+
+const HARD_NON_DRUG_NAME_PATTERNS: [RegExp, string][] = [
+  [/\b(toy|toys)\b/i, "toy"],
+  [/\b(police\s+(car|hero)|fashion\s+girl|racing\s+\d|superior\s+(racing|force)|despicable\s+me)\b/i, "toy"],
+  [/\b(lamborghini|dorae\s+mon|vehicle\s+roll)\b/i, "toy"],
+  [/\b(cadbury|dairy\s+milk)\b/i, "food"],
+  [/\bdog\s+food\b/i, "pet food"],
+  [/\bair\s+wick\b|\brefreshner\b|\brefresher\b|\bscented\s+candles?\b/i, "air freshener"],
+];
+
+const PERSONAL_CARE_NAME_PATTERNS: [RegExp, string][] = [
+  [/\b(adidas|old\s+spice|palmolive|rexona|lynx|nivea|jergens|cantu|dove|batiste)\b/i, "personal care brand"],
+  [/\bdr\.?\s*(rashel|rachel|darvey|davey)\b/i, "cosmetic skincare"],
+  [/\b(shower\s+(gel|cream|milk)|bath\s+foam|body\s+(spray|wash|lotion)|deo\s+(spray|stick)|deodorant|hand\s+wash|shave\s+cream)\b/i, "personal care product"],
+  [/\b(whitening\s+soap|cleansing\s+milk|facial\s+foam|skin\s+whitening|fairness)\b/i, "cosmetic skincare"],
+  [/\b(aquafresh|tooth\s+powder|toothpaste)\b/i, "oral care product"],
+];
+
+const THERAPEUTIC_NAME_OR_GENERIC_PATTERNS = [
+  /\b(ketoconazole|clotrimazole|miconazole|hydrocortisone|benzoyl\s+peroxide|antiseptic|chlorhexidine|calamine)\b/i,
+  /\b(anti-?lice|anti-?acne|tooth\s*ache|toothache|nasal|saline|inhaler|nebul|wound|burn|fungal)\b/i,
+];
+
+const PRODUCT_DESCRIPTION_PATTERNS = [
+  /\b(shampoo|conditioner|body\s+wash|shower|deodorant|freshener|candle|dog\s+food|toy|toys|car|cream\s+soap)\b/i,
+  /\b\d+\s*(ml|g|kg)\b/i,
+];
+
+const MEDICINE_SIGNAL_PATTERNS = [
+  /\b(tabs?|tablets?|caps?|capsules?|syr|syrup|susp|suspension|inj|injection|amp|amps|vial|drops?|inhaler|nebules?)\b/i,
+  /\b(cream|oint|ointment|gel|lotion|spray|powder|sachet|solution|suppository|pessary|patch)\b/i,
+  /\b\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)?\s*(mcg|mg|iu|%)\b/i,
+];
 
 function getArgValue(name: string): string | null {
   const prefix = `${name}=`;
@@ -83,17 +144,91 @@ function chunkRows<T>(rows: T[], size: number): T[][] {
   return chunks;
 }
 
-function normalizeRows(records: PillsJsonRow[], sourceFileName: string): SeedRow[] {
+function createAdminClient() {
+  return createClient(supabaseUrl(), supabaseServiceKey(), {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+function isUnknownCategory(rawCategory: string): boolean {
+  const key = rawCategory.trim().toLowerCase();
+  return !key || key === "unknown" || key === "unknown - review" || key.startsWith("unknown");
+}
+
+function isProductDescription(raw: string): boolean {
+  return PRODUCT_DESCRIPTION_PATTERNS.some((pattern) => pattern.test(raw));
+}
+
+function hasTherapeuticSignal(raw: string): boolean {
+  return THERAPEUTIC_NAME_OR_GENERIC_PATTERNS.some((pattern) => pattern.test(raw));
+}
+
+function hasMedicineSignal(raw: string): boolean {
+  return MEDICINE_SIGNAL_PATTERNS.some((pattern) => pattern.test(raw));
+}
+
+function classifyRejectedRow(originalName: string, genericName: string | null, rawCategory: string): string | null {
+  const genericKey = (genericName ?? "").trim().toLowerCase();
+  const combined = `${originalName} ${genericName ?? ""} ${rawCategory}`;
+
+  if (NON_DRUG_GENERIC_EXACT.has(genericKey)) {
+    return `non-drug generic: ${genericKey}`;
+  }
+
+  for (const [pattern, reason] of HARD_NON_DRUG_NAME_PATTERNS) {
+    if (pattern.test(combined)) return reason;
+  }
+
+  const therapeuticSignal = hasTherapeuticSignal(combined);
+  for (const [pattern, reason] of PERSONAL_CARE_NAME_PATTERNS) {
+    if (pattern.test(combined) && !therapeuticSignal) return reason;
+  }
+
+  const categoryUnknown = isUnknownCategory(rawCategory);
+  const genericLooksLikeProduct =
+    !genericKey ||
+    genericKey === "unknown" ||
+    genericKey === originalName.trim().toLowerCase() ||
+    isProductDescription(genericKey);
+
+  if (categoryUnknown && genericLooksLikeProduct && !hasMedicineSignal(combined) && !therapeuticSignal) {
+    return "unknown category without medicine signal";
+  }
+
+  return null;
+}
+
+function normalizeRows(records: PillsJsonRow[], sourceFileName: string): NormalizeResult {
   const rows: SeedRow[] = [];
+  const rejected: RejectedSeedRow[] = [];
+  let skippedInvalid = 0;
 
   for (const record of records) {
     const originalName = String(record.original_name ?? "").trim();
-    if (originalName.length < 2) continue;
+    if (originalName.length < 2) {
+      skippedInvalid += 1;
+      continue;
+    }
 
     const rawCategory = String(record.category ?? "");
     const { category, needsReview } = collapseCategory(rawCategory);
     const genericRaw = String(record.generic_name ?? "").trim();
     const genericName = genericRaw || null;
+    const rejectionReason = classifyRejectedRow(originalName, genericName, rawCategory);
+    if (rejectionReason) {
+      rejected.push({
+        original_name: originalName,
+        generic_name: genericName,
+        category: rawCategory || null,
+        reason: rejectionReason,
+      });
+      continue;
+    }
+
     const dosageForm = extractDosageForm(originalName);
     const { strength, strength_unit } = extractStrength(originalName);
     const status: DrugStatus =
@@ -118,6 +253,7 @@ function normalizeRows(records: PillsJsonRow[], sourceFileName: string): SeedRow
       metadata: {
         source_file: sourceFileName,
         source_format: "json",
+        cleansed: true,
         original_name: originalName,
         original_category: rawCategory || null,
         original_availability: String(record.availability ?? "").trim() || null,
@@ -127,14 +263,21 @@ function normalizeRows(records: PillsJsonRow[], sourceFileName: string): SeedRow
     });
   }
 
-  return rows;
+  return {
+    rows,
+    rejected,
+    skippedInvalid,
+    totalInFile: records.length,
+  };
 }
 
-function summarize(rows: SeedRow[]) {
+function summarize(result: NormalizeResult) {
+  const { rows, rejected } = result;
   const byAvailability = new Map<string, number>();
   const byStatus = new Map<string, number>();
   const byCategory = new Map<string, number>();
   const slugCounts = new Map<string, number>();
+  const rejectReasons = new Map<string, number>();
 
   for (const row of rows) {
     byAvailability.set(row.availability, (byAvailability.get(row.availability) ?? 0) + 1);
@@ -143,20 +286,65 @@ function summarize(rows: SeedRow[]) {
     slugCounts.set(row.slug, (slugCounts.get(row.slug) ?? 0) + 1);
   }
 
+  for (const row of rejected) {
+    rejectReasons.set(row.reason, (rejectReasons.get(row.reason) ?? 0) + 1);
+  }
+
   return {
-    total: rows.length,
+    totalInFile: result.totalInFile,
+    normalized: rows.length,
+    rejected: rejected.length,
+    skippedInvalid: result.skippedInvalid,
     active: rows.filter((row) => row.status === "active").length,
     underReview: rows.filter((row) => row.status === "under_review").length,
     availability: Object.fromEntries([...byAvailability.entries()].sort()),
     status: Object.fromEntries([...byStatus.entries()].sort()),
     categories: Object.fromEntries([...byCategory.entries()].sort()),
+    rejectReasons: Object.fromEntries([...rejectReasons.entries()].sort((a, b) => b[1] - a[1])),
+    rejectExamples: rejected.slice(0, 25),
     duplicateSlugCount: [...slugCounts.values()].filter((count) => count > 1).length,
   };
+}
+
+async function detachDrugReferences(client: ReturnType<typeof createAdminClient>) {
+  const detachments = [
+    { table: "medication_enquiries", column: "drug_id" },
+    { table: "medication_reminders", column: "drug_id" },
+    { table: "drug_verification_requests", column: "matched_drug_id" },
+  ];
+
+  for (const item of detachments) {
+    const { error } = await client
+      .from(item.table)
+      .update({ [item.column]: null })
+      .not(item.column, "is", null);
+    if (error) throw error;
+  }
+
+  const { error: interactionError } = await client
+    .from("drug_interactions")
+    .delete()
+    .not("id", "is", null);
+  if (interactionError) throw interactionError;
+}
+
+async function clearDrugs(client: ReturnType<typeof createAdminClient>) {
+  await detachDrugReferences(client);
+
+  const { count, error } = await client
+    .from("drugs")
+    .delete({ count: "exact" })
+    .not("id", "is", null);
+  if (error) throw error;
+
+  return count ?? 0;
 }
 
 async function seed() {
   const sourcePath = getArgValue("--file") ?? DEFAULT_SOURCE_FILE;
   const shouldWrite = process.argv.includes("--write");
+  const shouldReplace = process.argv.includes("--replace");
+  const rejectsPath = getArgValue("--rejects");
   const resolvedPath = path.resolve(sourcePath);
   const fileName = path.basename(resolvedPath);
 
@@ -166,9 +354,28 @@ async function seed() {
     throw new Error("Expected the source JSON to contain an array of drug rows.");
   }
 
-  const rows = normalizeRows(parsed, fileName);
-  const summary = summarize(rows);
+  const result = normalizeRows(parsed, fileName);
+  const rows = result.rows;
+  const summary = summarize(result);
   console.log(JSON.stringify(summary, null, 2));
+
+  if (rejectsPath) {
+    const resolvedRejectsPath = path.resolve(rejectsPath);
+    fs.mkdirSync(path.dirname(resolvedRejectsPath), { recursive: true });
+    fs.writeFileSync(
+      resolvedRejectsPath,
+      `${JSON.stringify({
+        generated_at: new Date().toISOString(),
+        source_file: fileName,
+        total_in_file: result.totalInFile,
+        normalized: rows.length,
+        rejected: result.rejected.length,
+        rows: result.rejected,
+      }, null, 2)}\n`,
+      "utf8",
+    );
+    console.log(`Reject report written to ${resolvedRejectsPath}`);
+  }
 
   if (summary.duplicateSlugCount > 0) {
     throw new Error(`Refusing to continue: ${summary.duplicateSlugCount} duplicate slug groups found.`);
@@ -179,17 +386,25 @@ async function seed() {
     return;
   }
 
-  const client = getAdminClient();
+  const client = createAdminClient();
+  let deleted = 0;
+  if (shouldReplace) {
+    deleted = await clearDrugs(client);
+    console.log(`Replace mode: deleted ${deleted} existing drug row(s).`);
+  }
+
   const existingSlugs = new Set<string>();
-  for (let offset = 0; ; offset += READ_PAGE_SIZE) {
-    const { data, error } = await client
-      .from("drugs")
-      .select("slug")
-      .order("slug", { ascending: true })
-      .range(offset, offset + READ_PAGE_SIZE - 1);
-    if (error) throw error;
-    for (const row of data ?? []) existingSlugs.add(row.slug);
-    if (!data || data.length < READ_PAGE_SIZE) break;
+  if (!shouldReplace) {
+    for (let offset = 0; ; offset += READ_PAGE_SIZE) {
+      const { data, error } = await client
+        .from("drugs")
+        .select("slug")
+        .order("slug", { ascending: true })
+        .range(offset, offset + READ_PAGE_SIZE - 1);
+      if (error) throw error;
+      for (const row of data ?? []) existingSlugs.add(row.slug);
+      if (!data || data.length < READ_PAGE_SIZE) break;
+    }
   }
 
   const { data: batch, error: batchError } = await client
@@ -199,10 +414,13 @@ async function seed() {
       total_rows: parsed.length,
       inserted: 0,
       updated: 0,
-      skipped_duplicates: parsed.length - rows.length,
+      skipped_duplicates: result.rejected.length + result.skippedInvalid,
       failed: 0,
       status: "processing",
-      error_log: [],
+      error_log: result.rejected.slice(0, 100).map((row) => ({
+        row: row.original_name,
+        error: row.reason,
+      })),
     })
     .select("id")
     .single();
@@ -266,7 +484,9 @@ async function seed() {
     throw new Error(`Seed finished with ${failed} failed chunk(s). See drug_import_batches ${batch.id}.`);
   }
 
-  console.log(`Seed complete. Batch ${batch.id}: ${inserted} inserted, ${updated} updated.`);
+  console.log(
+    `Seed complete. Batch ${batch.id}: ${inserted} inserted, ${updated} updated, ${result.rejected.length} rejected, ${deleted} deleted.`,
+  );
 }
 
 seed().catch((error) => {
