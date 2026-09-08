@@ -23,8 +23,11 @@ const UPDATE_SCHEMA = z.object({
 });
 
 /** AM-D8: applicant status-change notification — lands in the same inbox
- * the mobile bell reads (type 'system', metadata routes to Jobs). Fail-open:
- * a notification failure must never break the pipeline transition. */
+ * the mobile bell reads (type 'system', metadata routes to Jobs), and now
+ * also sends a real push via the shared dispatch_notification primitive
+ * (same one chat/messages.ts uses) instead of only inserting an in-app row.
+ * Fail-open: a notification failure must never break the pipeline
+ * transition. */
 async function notifyApplicant(
   supabase: ReturnType<typeof getAdminClient>,
   applicationId: string,
@@ -61,13 +64,21 @@ async function notifyApplicant(
     const jobTitle =
       ((app as { job_postings?: { title?: string } | null })?.job_postings
         ?.title ?? "the position");
-    await supabase.from("notifications").insert({
-      user_id: applicantId,
-      title: copy.title,
-      body: `${copy.body} (${jobTitle})`,
-      type: "system",
-      metadata: { module: "jobs", application_id: applicationId, status },
+    const { error: dispatchError } = await supabase.rpc("dispatch_notification", {
+      p_recipients: [
+        {
+          user_id: applicantId,
+          title: copy.title,
+          body: `${copy.body} (${jobTitle})`,
+          type: "system",
+          metadata: { module: "jobs", application_id: applicationId, status },
+          channel_id: "jobs-applications",
+        },
+      ],
     });
+    if (dispatchError) {
+      console.error("[jobs/application-detail] dispatch_notification error:", dispatchError.message);
+    }
   } catch {
     // Fail-open by design.
   }

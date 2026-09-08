@@ -56,6 +56,17 @@ export async function PATCH(
   }
 
   const admin = getAdminClient();
+  const { data: existing, error: fetchError } = await admin
+    .from("bed_tracker_facilities")
+    .select(Object.keys(parsed.data).join(", ") || "id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  if (!existing) {
+    return NextResponse.json({ error: "Tracked facility not found" }, { status: 404 });
+  }
+
   const { data: updated, error: updateError } = await admin
     .from("bed_tracker_facilities")
     .update(patch)
@@ -69,6 +80,17 @@ export async function PATCH(
   if (!updated) {
     return NextResponse.json({ error: "Tracked facility not found" }, { status: 404 });
   }
+
+  await admin.rpc("log_admin_activity", {
+    p_admin_id: auth.user.id,
+    p_action_type: "bedtracker_facility_update",
+    p_target_table: "bed_tracker_facilities",
+    p_record_id: id,
+    p_description: "BedTracker facility metadata updated",
+    p_severity: "info",
+    p_old_data: existing,
+    p_new_data: parsed.data,
+  });
 
   return NextResponse.json({ ok: true, facility: updated });
 }

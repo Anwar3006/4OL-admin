@@ -368,16 +368,55 @@ Goal: an authorized person changes a token once and both products consume it.
       matching the other three. Also removed a dead commented-out banner in
       `MedicationReminderPage.tsx` repeating the same `98.1%` claim.
       `pnpm type-check`/`lint`/`test` all clean.
-- [ ] **5.2 Activate BedTracker.** Onboard approved facilities/wards/ambulances,
-      define update freshness and incident ownership, add Realtime subscriptions with
-      polling fallback, audit every availability change and run emergency tabletop
-      tests. Decide whether a patient-facing mobile lookup is in scope before adding it.
+- [~] **5.2 Activate BedTracker.** Realtime + polling fallback and the audit
+      gap are done; facility/ward/ambulance onboarding, incident-ownership
+      policy and emergency tabletop tests are ops work, not code, and the
+      patient-facing mobile lookup still needs a product decision.
+      `bed_tracker_wards` had RLS enabled with zero policies and zero
+      `authenticated` grants (its siblings `bed_tracker_facilities`/
+      `bed_tracker_alerts` both already had a `SELECT true` policy) — since
+      Supabase Realtime enforces RLS on the subscribing client, this would
+      have made a browser-side Realtime subscription silently receive
+      nothing (the CLAUDE.md rule-1 failure shape). Fixed with a `SELECT`-
+      only grant + policy (writes stay admin-API-only). `useBedTrackerOverview`
+      (`features/bed-tracker/data/useBedTracker.ts`) now subscribes to
+      `postgres_changes` on all three tables (same pattern as
+      `LoginAlertGuard.tsx`) and polls every 30s as a fallback. Also closed
+      an audit gap: `features/bed-tracker/api/facilities-detail.ts` (PATCH)
+      was the one BedTracker write route not calling `log_admin_activity`
+      — fixed to match its sibling routes. No mobile change (BedTracker is
+      confirmed absent from mobile and the contract manifest). Migration:
+      `20260908_epic5_2_bed_tracker_wards_realtime_read.sql`.
 - [ ] **5.3 Complete FacilityScout mobile capture.** Build consented GPS/photo
       submission, duplicate detection, offline queue, status tracking and manual reward
       fulfilment. Do not expose collector footprints to general admins.
-- [ ] **5.4 Complete job matching.** Implement radius matching from validated
-      coordinates, alert scheduling/deduplication, saved-job limits and application
-      status push notifications. Keep automated licence checks manual per the limit above.
+- [~] **5.4 Complete job matching.** Saved-job limits were already
+      server-side enforced (`toggle_job_saved` calls `get_my_entitlement()`,
+      caps non-premium at 3 — an earlier scoping pass had this wrong from a
+      stale code comment). Built the rest: `application-detail.ts`'s
+      `notifyApplicant` only inserted an in-app row and never actually
+      pushed — switched it to the shared `dispatch_notification` RPC (same
+      primitive chat uses). Radius matching didn't exist at all
+      (`job_alerts` had no coordinates; `job_postings.distance_radius_km`
+      was a dormant column nobody read) — added optional
+      `latitude`/`longitude`/`radius_km` to `job_alerts`, read from the same
+      `p_prefs` jsonb `upsert_job_alert` already takes (signature unchanged,
+      old mobile builds omitting these keys are unaffected), plus a trigger
+      on `job_postings` firing on the `pending_review → published` approval
+      transition (`features/jobs/api/review.ts`) that matches active alerts
+      on region/specialty/job_type and, when present, radius — verified live
+      that `facility_profile.location`'s SRID is `0` (unprojected,
+      unreliable for real distance), so matching uses a plain haversine
+      formula against `facility_profile.latitude/longitude` instead,
+      matching this codebase's existing precedent (`haversineKm` in the
+      mobile app) rather than introducing PostGIS geography. Dedup via a new
+      `job_alert_notifications` ledger (`unique(job_id, user_id)`) — verified
+      live in a rolled-back transaction that publish → close → republish
+      notifies exactly once. **Not done:** automated licence checks (kept
+      manual, per the limit); mobile capturing lat/lng/radius for an alert
+      (additive follow-up mobile release, not a blocker — alerts without
+      coordinates keep matching on region/specialty/job_type exactly as
+      before). Migration: `20260908_epic5_4_job_alert_matching.sql`.
 - [ ] **5.5 Complete Medication Enquiry operations.** Build pharmacy/IBP response
       onboarding, SLA/expiry, delivery-provider boundary and dispute evidence. Keep
       monetary state informational until Epic 4.1 is live.

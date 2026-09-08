@@ -4,9 +4,11 @@
  * (bedtracker.view / bedtracker.manage). No client-side Supabase.
  */
 
+import { useEffect } from "react";
 import { apiFetch, jsonBody } from "@/lib/api-fetch";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getBrowserClient } from "@/lib/db/browser";
 
 import type {
   BedTrackerOverview,
@@ -28,11 +30,49 @@ export const BEDTRACKER_QUERY_KEYS = {
     [...BEDTRACKER_QUERY_KEYS.all, "route-suggestions", params] as const,
 };
 
-export const useBedTrackerOverview = () =>
-  useQuery<BedTrackerOverview, Error>({
+export const useBedTrackerOverview = () => {
+  const queryClient = useQueryClient();
+
+  // Polling fallback (works even if Realtime below is disconnected).
+  const query = useQuery<BedTrackerOverview, Error>({
     queryKey: BEDTRACKER_QUERY_KEYS.overview(),
     queryFn: () => apiFetch<BedTrackerOverview>("/api/bedtracker"),
+    refetchInterval: 30_000,
   });
+
+  // Realtime: other admins' bed/ward/alert changes show up without a
+  // manual refresh. Same pattern as LoginAlertGuard's channel subscription.
+  useEffect(() => {
+    const supabase = getBrowserClient();
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: BEDTRACKER_QUERY_KEYS.all });
+
+    const channel = supabase
+      .channel("bed-tracker-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bed_tracker_wards" },
+        invalidate,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bed_tracker_facilities" },
+        invalidate,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "bed_tracker_alerts" },
+        invalidate,
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
+};
 
 export const useUpdateBedTrackerWard = () => {
   const queryClient = useQueryClient();
