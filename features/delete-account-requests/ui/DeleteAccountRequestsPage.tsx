@@ -112,9 +112,9 @@ const DeleteAccountRequestPage = () => {
         </button>
       </PageHeader>
 
-      <div className="alert bg-blue-50 border border-blue-200 text-xs font-medium p-4 rounded-xl flex items-start gap-3">
-        <span className="text-base leading-none mt-0.5 text-blue-700">⚠️</span>
-        <div className="flex-1 text-blue-700 leading-relaxed">
+      <div className="alert bg-blue-50 dark:bg-blue-500/15 border border-blue-200 text-xs font-medium p-4 rounded-xl flex items-start gap-3">
+        <span className="text-base leading-none mt-0.5 text-blue-700 dark:text-blue-400">⚠️</span>
+        <div className="flex-1 text-blue-700 dark:text-blue-400 leading-relaxed">
           <strong className="font-black">Google Play & App Store Policy Compliance.</strong> Account deletion requests are processed within 30 days per Ghana Data Protection Act (GH-DPA) guidelines.
           The public form URL is: <b className="font-mono ml-1">https://4ourlife.com.gh/delete-account</b>
         </div>
@@ -123,7 +123,7 @@ const DeleteAccountRequestPage = () => {
       <DeleteRequestStats />
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+        <TabsList className="bg-transparent border-b border-slate-200 dark:border-slate-700 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
           {tabsConfig.map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -164,27 +164,27 @@ const DeleteAccountRequestPage = () => {
           onClick={() => setManualOpen(false)}
         >
           <div
-            className="bg-white rounded-[13px] w-[440px] max-w-full shadow-2xl p-5"
+            className="bg-white dark:bg-slate-800 rounded-[13px] w-[440px] max-w-full shadow-2xl p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-sm font-black text-slate-900 mb-1">🗑️ Manual Deletion Entry</h3>
+            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 mb-1">🗑️ Manual Deletion Entry</h3>
             <p className="text-2xs text-slate-400 font-bold mb-4">
               Record a request received out-of-band (support call, letter). Requires an existing account email.
             </p>
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600">User Email *</label>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-300">User Email *</label>
                 <input
-                  className="w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   value={manualEmail}
                   onChange={(e) => setManualEmail(e.target.value)}
                   placeholder="user@example.com"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600">Reason</label>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-300">Reason</label>
                 <textarea
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   rows={3}
                   value={manualReason}
                   onChange={(e) => setManualReason(e.target.value)}

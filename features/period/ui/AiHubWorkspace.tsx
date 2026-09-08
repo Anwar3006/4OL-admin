@@ -218,14 +218,14 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
         <KpiCard icon="🔗" label="Indexed source links" value={String(sourceLinks)} variant="teal" />
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900" role="alert">{error}</div>}
-      {message && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900" role="status">{message}</div>}
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-500/15 p-3 text-xs text-red-900 dark:text-red-400" role="alert">{error}</div>}
+      {message && <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 p-3 text-xs text-emerald-900" role="status">{message}</div>}
 
       <form className="card space-y-3 p-4" onSubmit={generate} aria-label="Generate an AI draft">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <label className="form-label">
             Draft type
-            <select className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" value={jobType} onChange={(event) => setJobType(event.target.value)}>
+            <select className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" value={jobType} onChange={(event) => setJobType(event.target.value)}>
               {jobTypes.map((type) => (
                 <option key={type} value={type}>{type.replaceAll("_", " ")}</option>
               ))}
@@ -236,7 +236,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           ) : (
             <label className="form-label">
               Topic (optional)
-              <input name="topic" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" placeholder="e.g. luteal phase nutrition" />
+              <input name="topic" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" placeholder="e.g. luteal phase nutrition" />
             </label>
           )}
         </div>
@@ -244,7 +244,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
         <fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <legend className="form-label mb-1">Approved source menus</legend>
           {SOURCE_MENUS.map((menu) => (
-            <label key={menu.value} className="flex items-center gap-2 text-xs text-slate-700">
+            <label key={menu.value} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
               <input type="checkbox" checked={sourceMenus.includes(menu.value)} onChange={() => toggleSourceMenu(menu.value)} />
               {menu.label}
             </label>
@@ -255,7 +255,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <label className="form-label">
               Difficulty
-              <select name="difficulty" defaultValue="intermediate" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="difficulty" defaultValue="intermediate" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
@@ -263,11 +263,11 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Answers per question
-              <input name="answerCount" type="number" min={2} max={6} defaultValue={4} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+              <input name="answerCount" type="number" min={2} max={6} defaultValue={4} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
             </label>
             <label className="form-label">
               Attach to event (optional)
-              <select name="eventId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="eventId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="">Unattached draft</option>
                 {events.filter((item) => item.status === "draft").map((item) => (
                   <option key={item.id} value={item.id}>{item.title}</option>
@@ -276,7 +276,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Reward for that event (optional)
-              <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="">No reward set</option>
                 {rewards.map((item) => (
                   <option key={item.id} value={item.id}>{item.icon} {item.name}</option>
@@ -290,7 +290,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <label className="form-label">
               Format
-              <select name="contentFormat" defaultValue="quick_read" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="contentFormat" defaultValue="quick_read" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="article">Article</option>
                 <option value="quick_read">Quick read</option>
                 <option value="video">Video</option>
@@ -300,7 +300,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Audience
-              <select name="audience" defaultValue="general" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="audience" defaultValue="general" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="general">General</option>
                 <option value="teens">Teens</option>
                 <option value="adults">Adults</option>
@@ -309,7 +309,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Tone
-              <select name="tone" defaultValue="supportive" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="tone" defaultValue="supportive" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="supportive">Supportive</option>
                 <option value="educational">Educational</option>
                 <option value="concise">Concise</option>
@@ -317,7 +317,7 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Reading length
-              <select name="readingLength" defaultValue="medium" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+              <select name="readingLength" defaultValue="medium" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                 <option value="short">Short</option>
                 <option value="medium">Medium</option>
                 <option value="long">Long</option>
@@ -325,11 +325,11 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             </label>
             <label className="form-label">
               Locale
-              <input name="locale" defaultValue="en" maxLength={12} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+              <input name="locale" defaultValue="en" maxLength={12} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
             </label>
             <label className="form-label">
               Draft count
-              <input name="suggestionCount" type="number" min={1} max={12} defaultValue={8} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+              <input name="suggestionCount" type="number" min={1} max={12} defaultValue={8} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
             </label>
           </div>
         )}
@@ -355,23 +355,23 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             <form className="mt-3 grid gap-3 sm:grid-cols-2" onSubmit={scheduleEvent} aria-label="Schedule a Friday Trivia event">
               <label className="form-label sm:col-span-2">
                 Title
-                <input name="title" required minLength={3} maxLength={160} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <input name="title" required minLength={3} maxLength={160} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label">
                 Starts (Friday)
-                <input name="startsAt" type="datetime-local" required className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <input name="startsAt" type="datetime-local" required className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label">
                 Ends
-                <input name="endsAt" type="datetime-local" required className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <input name="endsAt" type="datetime-local" required className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label sm:col-span-2">
                 Timezone
-                <input name="timezone" defaultValue="Africa/Accra" maxLength={80} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <input name="timezone" defaultValue="Africa/Accra" maxLength={80} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label sm:col-span-2">
                 Reward (optional)
-                <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+                <select name="rewardId" defaultValue="" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                   <option value="">No reward set</option>
                   {rewards.map((item) => (
                     <option key={item.id} value={item.id}>{item.icon} {item.name}</option>
@@ -390,19 +390,19 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
             <form className="mt-3 grid gap-3 sm:grid-cols-2" onSubmit={createReward} aria-label="Add a reward">
               <label className="form-label">
                 Name
-                <input name="name" required minLength={2} maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" placeholder="e.g. Top scorer voucher" />
+                <input name="name" required minLength={2} maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" placeholder="e.g. Top scorer voucher" />
               </label>
               <label className="form-label">
                 Icon
-                <input name="icon" defaultValue="🏆" maxLength={8} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <input name="icon" defaultValue="🏆" maxLength={8} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label sm:col-span-2">
                 Description
-                <textarea name="description" required minLength={2} maxLength={500} className="mt-1 min-h-16 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" />
+                <textarea name="description" required minLength={2} maxLength={500} className="mt-1 min-h-16 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" />
               </label>
               <label className="form-label">
                 Type
-                <select name="rewardType" defaultValue="points" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs">
+                <select name="rewardType" defaultValue="points" className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs">
                   <option value="points">Points</option>
                   <option value="badge">Badge</option>
                   <option value="discount">Discount</option>
@@ -413,16 +413,16 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
               </label>
               <label className="form-label">
                 Value (optional)
-                <input name="value" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs" placeholder="e.g. 500 pts, 10% off" />
+                <input name="value" maxLength={120} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs" placeholder="e.g. 500 pts, 10% off" />
               </label>
               <button type="submit" className="btn btn-primary btn-sm sm:col-span-2" disabled={creatingReward}>
                 {creatingReward ? "Adding…" : "Add reward"}
               </button>
             </form>
             {rewards.length > 0 && (
-              <ul className="mt-4 space-y-1 text-xs text-slate-600">
+              <ul className="mt-4 space-y-1 text-xs text-slate-600 dark:text-slate-300">
                 {rewards.map((item) => (
-                  <li key={item.id}>{item.icon} <span className="font-medium text-slate-800">{item.name}</span> — {item.description}</li>
+                  <li key={item.id}>{item.icon} <span className="font-medium text-slate-800 dark:text-slate-200">{item.name}</span> — {item.description}</li>
                 ))}
               </ul>
             )}
@@ -436,9 +436,9 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
               </div>
               <span className="badge badge-blue">{leads.length} records</span>
             </div>
-            <div className="max-h-64 overflow-y-auto p-4 text-xs text-slate-600">
+            <div className="max-h-64 overflow-y-auto p-4 text-xs text-slate-600 dark:text-slate-300">
               {leads.slice(0, 10).map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between border-b border-slate-100 py-2 last:border-0">
+                <div key={lead.id} className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 py-2 last:border-0">
                   <span>{lead.acquisition_source?.replaceAll("_", " ")}</span>
                   {statusBadge(lead.status)}
                 </div>

@@ -82,7 +82,7 @@ const PremiumLayersTab = () => {
       </div>
 
       {!data?.applied && !isLoading && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
+        <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
           ⏳ Migration <code>20260824_anatomy_premium_am.sql</code> has not been
           applied yet — showing defaults. Saving will fail until it is applied.
         </div>
@@ -100,11 +100,11 @@ const PremiumLayersTab = () => {
               return (
                 <div
                   key={layer.key}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-start gap-4"
+                  className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 flex items-start gap-4"
                 >
                   <p className="text-2xl">{layer.icon}</p>
                   <div className="flex-1">
-                    <p className="text-sm font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                       {layer.name}
                     </p>
                     <p className="text-xs font-bold text-slate-500 mt-0.5">
@@ -123,7 +123,7 @@ const PremiumLayersTab = () => {
                   >
                     <span
                       className={cn(
-                        "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+                        "absolute top-0.5 h-5 w-5 rounded-full bg-white dark:bg-slate-800 shadow transition-all",
                         on ? "left-[22px]" : "left-0.5",
                       )}
                     />
@@ -133,9 +133,9 @@ const PremiumLayersTab = () => {
             })}
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 space-y-3">
             <div>
-              <h3 className="text-sm font-black text-slate-900">
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
                 🗺️ Deep-dive region packs (P2)
               </h3>
               <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest mt-1">
@@ -155,7 +155,7 @@ const PremiumLayersTab = () => {
                       "rounded-full px-4 py-2 text-xs font-black border transition-colors",
                       on
                         ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50",
+                        : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900",
                     )}
                   >
                     {on ? "🔒 " : ""}

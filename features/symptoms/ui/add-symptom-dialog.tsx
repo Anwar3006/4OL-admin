@@ -183,16 +183,16 @@ const AddSymptomDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="font-black text-xl tracking-tight text-slate-900">
+          <DialogTitle className="font-black text-xl tracking-tight text-slate-900 dark:text-slate-100">
             {isEditMode ? "Edit Symptom" : "Register New Symptom"}
           </DialogTitle>
         </DialogHeader>
 
         {isLoadingForm ? (
-          <div className="flex items-center justify-center py-20 bg-white">
-            <Loader2 className="animate-spin mr-2 text-emerald-600" />
+          <div className="flex items-center justify-center py-20 bg-white dark:bg-slate-800">
+            <Loader2 className="animate-spin mr-2 text-emerald-600 dark:text-emerald-400" />
             <span className="font-black uppercase tracking-widest text-2xs text-slate-400">
               Loading form...
             </span>
@@ -226,7 +226,7 @@ const AddSymptomDialog = () => {
                     label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
-                  <div className="bg-white">
+                  <div className="bg-white dark:bg-slate-800">
                     <TreeMultiSelectForm
                       label="Associated Body Part/s"
                       name="bodyParts"
@@ -234,7 +234,7 @@ const AddSymptomDialog = () => {
                       rawParts={bodyParts}
                     />
                   </div>
-                  <div className="bg-white">
+                  <div className="bg-white dark:bg-slate-800">
                     <TreeMultiSelectForm
                       label="Associated Category/s"
                       name="categories"
@@ -253,7 +253,7 @@ const AddSymptomDialog = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="bg-green-50"
+                    className="bg-green-50 dark:bg-green-500/15"
                     onClick={() =>
                       append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })
                     }
@@ -301,7 +301,7 @@ const AddSymptomDialog = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="bg-green-50"
+                    className="bg-green-50 dark:bg-green-500/15"
                     onClick={() =>
                       causesAppend({
                         cause_name: "",
@@ -433,7 +433,7 @@ const AddSymptomDialog = () => {
               </section>
 
               {/* ── Actions ── */}
-              <div className="flex gap-3 pt-6 border-t border-slate-100">
+              <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   className="btn btn-secondary flex-1 font-black uppercase tracking-widest text-2xs"

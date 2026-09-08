@@ -71,9 +71,9 @@ export default function LeaderboardTab({ data, loading }: FacilityScoutTabProps)
                     </TableCell>
                     <TableCell>{entry.region ?? "—"}</TableCell>
                     <TableCell>{entry.submissions}</TableCell>
-                    <TableCell className="font-black text-emerald-700">{entry.registered}</TableCell>
+                    <TableCell className="font-black text-emerald-700 dark:text-emerald-400">{entry.registered}</TableCell>
                     <TableCell>{entry.duplicates}</TableCell>
-                    <TableCell className="font-black text-emerald-700">
+                    <TableCell className="font-black text-emerald-700 dark:text-emerald-400">
                       {entry.data_earned_mb} MB
                     </TableCell>
                     <TableCell>

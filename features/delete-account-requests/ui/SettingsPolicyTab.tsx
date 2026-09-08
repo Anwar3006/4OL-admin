@@ -73,14 +73,14 @@ export default function SettingsPolicyTab() {
   ) => (
     <div className="flex justify-between items-center py-2 border-b border-slate-50 gap-4">
       <div>
-        <div className="text-xs font-bold text-slate-600">{label}</div>
+        <div className="text-xs font-bold text-slate-600 dark:text-slate-300">{label}</div>
         <div className="text-3xs text-slate-400 font-medium">{hint}</div>
       </div>
       <div className="flex items-center gap-1.5">
         <input
           type="number"
           min={1}
-          className="w-20 h-8 px-2 rounded-lg border border-slate-200 text-xs text-right font-black"
+          className="w-20 h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-right font-black"
           value={form?.[key] ?? 0}
           onChange={(e) => setForm(form ? { ...form, [key]: Number(e.target.value) } : form)}
         />
@@ -97,8 +97,8 @@ export default function SettingsPolicyTab() {
           <div className="py-8 text-center text-slate-400 text-xs font-bold">Loading policy settings…</div>
         ) : (
           <div className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <h3 className="font-bold text-slate-800 text-xs mb-1">GH-DPA 2012 Compliance</h3>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs mb-1">GH-DPA 2012 Compliance</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
                 Section 34 of the Ghana Data Protection Act 2012 requires that personal data be erased upon request within 30 days,
                 unless legal or regulatory obligations require retention. Login email erasure in Supabase auth is a separate,
@@ -112,7 +112,7 @@ export default function SettingsPolicyTab() {
 
             <div className="flex justify-between items-center py-2 border-b border-slate-50">
               <div>
-                <div className="text-xs font-bold text-slate-600">Auto-Processing (pg_cron)</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-300">Auto-Processing (pg_cron)</div>
                 <div className="text-3xs text-slate-400 font-medium">
                   expire_delete_account_grace_periods() runs daily and reads the grace window above
                 </div>
@@ -120,8 +120,8 @@ export default function SettingsPolicyTab() {
               <button
                 className={`text-2xs font-black px-3 py-1 rounded-full border ${
                   form.auto_process
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                    : "bg-slate-50 text-slate-500 border-slate-200"
+                    ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+                    : "bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700"
                 }`}
                 onClick={() => setForm({ ...form, auto_process: !form.auto_process })}
               >

@@ -5,7 +5,7 @@ import { GitMerge } from "lucide-react";
 
 const ReferralsPage = () => {
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
+    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white dark:bg-slate-800 shadow-sm mt-2 rounded-lg">
       <SectionHeader
         title="Referrals"
         Icon={GitMerge}

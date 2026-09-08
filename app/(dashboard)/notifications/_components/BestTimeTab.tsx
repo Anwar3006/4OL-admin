@@ -111,8 +111,8 @@ export default function BestTimeTab() {
                 {segment} opens by hour
               </CardTitle>
               <div className="text-xs text-slate-500 dark:text-slate-400">
-                Best window: <span className="font-semibold text-emerald-600">{formatHour(best.hour_bucket)}</span>{" "}
-                · Peak period: <span className="font-semibold text-emerald-600">{bestPeriod.label.split(" (")[0]}</span>
+                Best window: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatHour(best.hour_bucket)}</span>{" "}
+                · Peak period: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{bestPeriod.label.split(" (")[0]}</span>
               </div>
             </CardHeader>
             <CardContent>

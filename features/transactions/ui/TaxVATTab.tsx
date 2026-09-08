@@ -63,25 +63,25 @@ export default function TaxVATTab() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold border-b border-slate-50 pb-2">
                   <span className="text-slate-500 font-medium">VAT ({summary.vat_pct}%)</span>
-                  <span className="text-slate-900 font-black">{money(summary.vat)}</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{money(summary.vat)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold border-b border-slate-50 pb-2">
                   <span className="text-slate-500 font-medium">NHIL ({summary.nhil_pct}%)</span>
-                  <span className="text-slate-900 font-black">{money(summary.nhil)}</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{money(summary.nhil)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold border-b border-slate-50 pb-2">
                   <span className="text-slate-500 font-medium">GETFund ({summary.getfund_pct}%)</span>
-                  <span className="text-slate-900 font-black">{money(summary.getfund)}</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{money(summary.getfund)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold border-b border-slate-50 pb-2">
                   <span className="text-slate-500 font-medium">
                     Income Tax ({summary.income_tax_pct}% of service fees)
                   </span>
-                  <span className="text-slate-900 font-black">{money(summary.income_tax)}</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{money(summary.income_tax)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-black pt-2">
-                  <span className="text-slate-800">Total Consumption Tax Payable</span>
-                  <span className="text-red-600">{money(summary.total_consumption_tax)}</span>
+                  <span className="text-slate-800 dark:text-slate-200">Total Consumption Tax Payable</span>
+                  <span className="text-red-600 dark:text-red-400">{money(summary.total_consumption_tax)}</span>
                 </div>
               </div>
               <button
@@ -103,10 +103,10 @@ export default function TaxVATTab() {
             {(data?.filings ?? []).map((filing) => (
               <div
                 key={filing.id}
-                className="flex flex-wrap items-center justify-between gap-2 border border-slate-100 rounded-xl p-3"
+                className="flex flex-wrap items-center justify-between gap-2 border border-slate-100 dark:border-slate-800 rounded-xl p-3"
               >
                 <div>
-                  <div className="text-xs font-black text-slate-800">{filing.period}</div>
+                  <div className="text-xs font-black text-slate-800 dark:text-slate-200">{filing.period}</div>
                   <div className="text-3xs font-bold text-slate-400 uppercase tracking-widest">
                     Due {filing.due_date ?? "—"} · Remitted {money(filing.remitted_amount)}
                   </div>
@@ -121,7 +121,7 @@ export default function TaxVATTab() {
                       onClick={() =>
                         updateFiling.mutate({ filing_id: filing.id, status: "filed" })
                       }
-                      className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                      className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 disabled:opacity-50"
                     >
                       Mark Filed
                     </button>

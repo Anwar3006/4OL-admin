@@ -16,12 +16,12 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="font-inter custom-tippy dashcode-app">
-        <main className="min-h-screen bg-slate-50 px-4 py-16 flex items-center justify-center">
-          <section className="w-full max-w-lg rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-900 px-4 py-16 flex items-center justify-center">
+          <section className="w-full max-w-lg rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center shadow-sm">
+            <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400">
               !
             </div>
-            <h1 className="text-xl font-black text-slate-900">
+            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">
               Something went wrong
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-500">

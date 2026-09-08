@@ -126,8 +126,8 @@ const ReviewFacilityDialog = ({
               <div
                 className={`rounded-2xl px-4 py-3 text-xs font-bold border ${
                   daysWaiting > SLA_DAYS
-                    ? "bg-red-50 border-red-200 text-red-700"
-                    : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                    ? "bg-red-50 dark:bg-red-500/15 border-red-200 text-red-700 dark:text-red-400"
+                    : "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 text-emerald-700 dark:text-emerald-400"
                 }`}
               >
                 ⏱️ Approval SLA: {SLA_DAYS}-day target — this submission has
@@ -139,7 +139,7 @@ const ReviewFacilityDialog = ({
 
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-black text-slate-900">
+                <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">
                   {(facility as any).facility_name}
                 </h2>
                 <p className="text-2xs font-bold uppercase tracking-widest text-slate-400">
@@ -147,17 +147,17 @@ const ReviewFacilityDialog = ({
                   {(facility as any).region} · {(facility as any).district}
                 </p>
               </div>
-              <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-3 py-1.5">
+              <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/30 rounded-full px-3 py-1.5">
                 ⏳ Pending Review
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 space-y-2">
                 <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                   📋 Registration Evidence
                 </p>
-                <div className="text-xs font-bold text-slate-700 space-y-1">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 space-y-1">
                   <p>
                     HEFRA No.:{" "}
                     <span className="font-mono">
@@ -173,14 +173,14 @@ const ReviewFacilityDialog = ({
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 space-y-2">
                 <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                   📍 Location Evidence
                 </p>
-                <div className="text-xs font-bold text-slate-700 space-y-1">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 space-y-1">
                   <p>GPS: {(facility as any).gps_address ?? "—"}</p>
                   {typeof (facility as any).latitude === "number" && (
-                    <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30 rounded-full px-2.5 py-1">
                       ✓ GPS-verified coordinates
                     </span>
                   )}
@@ -191,7 +191,7 @@ const ReviewFacilityDialog = ({
               </div>
             </div>
 
-            <div className="bg-slate-50 rounded-2xl p-4 space-y-2">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 space-y-2">
               <p className="text-3xs font-black uppercase tracking-widest text-slate-400">
                 📎 Verification Documents ({documents.length})
               </p>
@@ -202,7 +202,7 @@ const ReviewFacilityDialog = ({
               ) : (
                 <ul className="space-y-1">
                   {documents.map((doc: any, index: number) => (
-                    <li key={index} className="text-xs font-bold text-slate-700">
+                    <li key={index} className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       📄 {doc?.name ?? doc?.url ?? `Document ${index + 1}`}
                     </li>
                   ))}
@@ -215,7 +215,7 @@ const ReviewFacilityDialog = ({
                 🛡️ Admin Audit Note
               </p>
               <textarea
-                className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                className="w-full h-24 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
                 placeholder="Decision rationale — stored with the status change..."
                 value={auditNote}
                 onChange={(e) => setAuditNote(e.target.value)}
@@ -226,7 +226,7 @@ const ReviewFacilityDialog = ({
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 className="btn btn-secondary btn-sm"
                 onClick={onClose}

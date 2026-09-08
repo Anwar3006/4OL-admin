@@ -180,7 +180,7 @@ const AddHealthyLivingDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 dark:border-slate-700 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode
@@ -204,13 +204,13 @@ const AddHealthyLivingDialog = () => {
                 onChange={(e) => set("name")(e.target.value)}
               />
             </div>
-            <div className="space-y-1 bg-white">
+            <div className="space-y-1 bg-white dark:bg-slate-800">
               <Label className="text-xs">Status</Label>
               <Select value={form.status} onValueChange={set("status")}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white dark:bg-slate-800">
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>

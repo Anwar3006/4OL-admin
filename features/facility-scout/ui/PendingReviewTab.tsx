@@ -95,7 +95,7 @@ export default function PendingReviewTab({ data, loading }: FacilityScoutTabProp
 
       <div className="flex flex-wrap gap-2 items-center">
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-widest"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold uppercase tracking-widest"
           value={regionFilter}
           onChange={(event) => setRegionFilter(event.target.value)}
         >
@@ -114,7 +114,7 @@ export default function PendingReviewTab({ data, loading }: FacilityScoutTabProp
         </Button>
         <Button
           variant="outline"
-          className="text-red-600 border-red-200"
+          className="text-red-600 dark:text-red-400 border-red-200"
           disabled={selected.length === 0 || reject.isPending}
           onClick={rejectSelected}
         >

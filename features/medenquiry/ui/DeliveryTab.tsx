@@ -13,11 +13,11 @@ import {
 import EnquiryDetailDialog from "./EnquiryDetailDialog";
 
 const DELIVERY_STATUS_STYLES: Record<string, string> = {
-  preparing: "bg-slate-100 text-slate-500 border-slate-200",
-  picked_up: "bg-blue-50 text-blue-700 border-blue-100",
-  en_route: "bg-blue-50 text-blue-700 border-blue-100",
-  out_for_delivery: "bg-blue-50 text-blue-700 border-blue-100",
-  delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  preparing: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
+  picked_up: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
+  en_route: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
+  out_for_delivery: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
+  delivered: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
 };
 
 /**
@@ -55,7 +55,7 @@ export default function DeliveryTab() {
         id: "medication",
         header: "Medication",
         cell: ({ row }) => (
-          <span className="font-black text-slate-800 text-xs uppercase tracking-tight">
+          <span className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight">
             {row.original.medication_name}
           </span>
         ),
@@ -64,7 +64,7 @@ export default function DeliveryTab() {
         id: "pharmacy",
         header: "Pharmacy",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-slate-700">{row.original.pharmacy_name ?? "—"}</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{row.original.pharmacy_name ?? "—"}</span>
         ),
       },
       {
@@ -118,7 +118,7 @@ export default function DeliveryTab() {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(enq);
@@ -128,7 +128,7 @@ export default function DeliveryTab() {
               </button>
               <button
                 disabled={action.isPending}
-                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (window.confirm(`Confirm delivery of ${formatEnqId(enq.id)}? This completes the order.`)) {
@@ -151,7 +151,7 @@ export default function DeliveryTab() {
       title: (row) => row.medication_name,
       subtitle: (row) => `${formatEnqId(row.id)} · ${row.pharmacy_name ?? "Unassigned"}`,
       badge: (row) => (
-        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30">
           🚚 {row.delivery_status?.replace(/_/g, " ") ?? "En Route"}
         </span>
       ),
@@ -171,15 +171,15 @@ export default function DeliveryTab() {
 
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
-      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-500/15 px-4 py-3">
         <span className="text-base leading-none mt-0.5">⚠️</span>
-        <p className="text-xs font-bold text-blue-700">
+        <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
           Active deliveries — pharmacies deliver to user GPS locations. Track delivery status and
           confirm completion. {total > 0 && <b>{total} deliver{total === 1 ? "y" : "ies"} in progress.</b>}
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={rows}

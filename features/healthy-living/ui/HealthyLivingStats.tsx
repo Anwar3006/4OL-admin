@@ -50,12 +50,12 @@ export default function HealthyLivingStats() {
   });
 
   if (isLoading) {
-    return <div className="h-24 animate-pulse bg-slate-100 rounded-xl mb-6 w-full"></div>;
+    return <div className="h-24 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-xl mb-6 w-full"></div>;
   }
 
   if (isError || !stats) {
     return (
-      <div className="h-24 flex items-center justify-center rounded-xl mb-6 w-full bg-red-50 text-red-600 text-sm">
+      <div className="h-24 flex items-center justify-center rounded-xl mb-6 w-full bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 text-sm">
         Failed to load Healthy Living stats.
       </div>
     );

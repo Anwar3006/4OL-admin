@@ -20,7 +20,7 @@ export default function HealthFeaturesStatus({
 
   return (
     <div className="card">
-      <div className="card-header border-b border-slate-100 mb-3">
+      <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-3">
         <h2 className="card-title text-sm">Health Features Status</h2>
       </div>
       <div className="space-y-0.5">

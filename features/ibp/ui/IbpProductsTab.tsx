@@ -53,15 +53,15 @@ export default function IbpProductsTab() {
               <img
                 src={row.original.image_url}
                 alt=""
-                className="h-9 w-9 rounded-lg object-cover border border-slate-100"
+                className="h-9 w-9 rounded-lg object-cover border border-slate-100 dark:border-slate-800"
               />
             ) : (
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
+              <div className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-sm">
                 📦
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-slate-800">{row.original.name}</span>
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{row.original.name}</span>
               <span className="text-xs text-slate-400">{row.original.category ?? "Uncategorised"}</span>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function IbpProductsTab() {
         id: "business",
         header: "Business",
         cell: ({ row }: { row: { original: IbpProduct } }) => (
-          <span className="text-xs text-slate-600">{row.original.business_name ?? "—"}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{row.original.business_name ?? "—"}</span>
         ),
       },
       {
@@ -163,7 +163,7 @@ export default function IbpProductsTab() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={products}

@@ -88,7 +88,7 @@ const ViewHealthyLivingDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
+      <DialogContent className="p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
         <VisuallyHidden.Root>
           <DialogTitle>
             {data?.name ? `Details for ${data.name}` : "Healthy Living Details"}
@@ -130,11 +130,11 @@ const ViewHealthyLivingDialog = () => {
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white">
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white dark:bg-slate-800">
       <div className="relative">
-        <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
-        <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-          <HeartPulse className="h-8 w-8 text-emerald-600 animate-pulse" />
+        <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-500/20 rounded-full animate-ping opacity-50" />
+        <div className="relative w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+          <HeartPulse className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
         </div>
       </div>
       <span className="mt-6 text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -146,12 +146,12 @@ function LoadingState() {
 
 function NotFoundState({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white">
-      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white dark:bg-slate-800">
+      <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center border border-slate-100 dark:border-slate-800">
         <Ban className="h-10 w-10 text-slate-300" />
       </div>
       <div className="space-y-2">
-        <p className="text-slate-900 font-black text-xl tracking-tight">
+        <p className="text-slate-900 dark:text-slate-100 font-black text-xl tracking-tight">
           Article Not Found
         </p>
         <p className="text-slate-500 font-medium max-w-sm leading-relaxed">
@@ -216,15 +216,15 @@ function DetailView({
   const sections = getSections(data.content);
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-50">
+    <div className="flex flex-col h-full min-h-0 bg-slate-50 dark:bg-slate-900">
       {/* ── Sticky Top Bar ── */}
-      <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
+      <div className="shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-none border border-emerald-100">
-            <Leaf className="w-5 h-5 text-emerald-600" />
+          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 dark:bg-emerald-500/15 rounded-none border border-emerald-100 dark:border-emerald-500/30">
+            <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
+            <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
               {data.name}
             </h2>
             <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
@@ -252,7 +252,7 @@ function DetailView({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="rounded-none text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-10 w-10 p-0 transition-all md:hidden"
+            className="rounded-none text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 w-10 p-0 transition-all md:hidden"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -262,7 +262,7 @@ function DetailView({
       {/* ── Scrollable Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {/* Hero Section */}
-        <div className="bg-white border-b border-slate-200">
+        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Left: Meta & Classification */}
             <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-between gap-8">
@@ -271,35 +271,35 @@ function DetailView({
                   <Badge
                     className={`font-black uppercase text-2xs tracking-widest px-3 py-1.5 rounded-none border ${
                       data.status === "published"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
                         : data.status === "archived"
                           ? "bg-rose-50 text-rose-700 border-rose-200"
-                          : "bg-slate-50 text-slate-600 border-slate-200"
+                          : "bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                     }`}
                   >
                     {data.status}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                    className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 dark:border-slate-700 text-slate-500"
                   >
                     <Eye className="h-3 w-3 mr-1.5" />
                     {data.view_count ?? 0} views
                   </Badge>
                 </div>
 
-                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
                   {data.name}
                 </DialogTitle>
 
                 {data.description && (
-                  <p className="text-base text-slate-600 leading-relaxed font-medium">
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     {data.description}
                   </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <MetaPill
                   icon={Leaf}
                   label="Categories"
@@ -329,7 +329,7 @@ function DetailView({
             </div>
 
             {/* Right: Image Gallery */}
-            <div className="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 md:p-10">
+            <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-700 p-6 md:p-10">
               <ImageGallery
                 images={images}
                 name={data.name}
@@ -375,7 +375,7 @@ function DetailView({
         </div>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-slate-200 px-6 py-6 md:px-10 md:py-8">
+        <footer className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-6 md:px-10 md:py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <Leaf className="w-4 h-4 text-emerald-500" />
@@ -406,7 +406,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
+      <div className="p-2 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
       <h3 className="section-heading">
@@ -436,7 +436,7 @@ function ContentBlock({
 
   return (
     <div
-      className={`${isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"} 
+      className={`${isDark ? "bg-slate-900 text-white" : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"} 
         ${compact ? "p-6" : "p-6 md:p-8"} 
         border border-slate-200 rounded-none shadow-sm relative overflow-hidden`}
     >
@@ -447,25 +447,25 @@ function ContentBlock({
       <div className="relative space-y-4">
         <div className="flex items-center gap-3">
           <div
-            className={`p-2 rounded-none ${isDark ? "bg-white/10 text-emerald-400" : "bg-emerald-50 text-emerald-600 border border-emerald-100"}`}
+            className={`p-2 rounded-none ${isDark ? "bg-white/10 dark:bg-slate-800/10 text-emerald-400" : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30"}`}
           >
             <Icon className="h-4 w-4" />
           </div>
           <h3
-            className={`font-black uppercase tracking-[0.15em] ${compact ? "text-xs" : "text-sm"} ${isDark ? "text-white" : "text-slate-900"}`}
+            className={`font-black uppercase tracking-[0.15em] ${compact ? "text-xs" : "text-sm"} ${isDark ? "text-white" : "text-slate-900 dark:text-slate-100"}`}
           >
             {title}
           </h3>
         </div>
 
         <div
-          className={`${isDark ? "text-slate-300" : "text-slate-600"} text-base leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
+          className={`${isDark ? "text-slate-300" : "text-slate-600 dark:text-slate-300"} text-base leading-[1.7] ${compact ? "" : "md:pl-[3.25rem]"}`}
         >
           {!isEmpty ? (
             <LexicalRenderer initialState={parseMaybeString(content)} />
           ) : (
             <div
-              className={`flex items-center gap-3 p-4 rounded-none border italic text-sm font-medium ${isDark ? "bg-white/5 border-white/10 text-slate-500" : "bg-slate-50 border-slate-100 text-slate-400"}`}
+              className={`flex items-center gap-3 p-4 rounded-none border italic text-sm font-medium ${isDark ? "bg-white/5 dark:bg-slate-800/5 border-white/10 text-slate-500" : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400"}`}
             >
               <Ban className="h-4 w-4 opacity-50 shrink-0" />
               No content provided for this section.
@@ -489,12 +489,12 @@ function MetaPill({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
-        <Icon className="h-3.5 w-3.5 text-emerald-600" />
+        <Icon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
         <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
-      <p className="text-sm font-bold text-slate-900">{value}</p>
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }
@@ -512,7 +512,7 @@ function ImageGallery({
 }) {
   if (!images || images.length === 0) {
     return (
-      <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
+      <div className="h-[280px] w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 rounded-none">
         <FolderOpen className="h-10 w-10 text-slate-300 mb-3" />
         <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           No Visual Reference
@@ -525,7 +525,7 @@ function ImageGallery({
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-[4/3] w-full bg-slate-100 border border-slate-200 rounded-none overflow-hidden group">
+      <div className="relative aspect-[4/3] w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden group">
         {currentSrc ? (
           <AnimatePresence mode="wait">
             <motion.div
@@ -572,7 +572,7 @@ function ImageGallery({
               <button
                 key={i}
                 onClick={() => onSelect(i)}
-                className={`relative w-16 h-16 shrink-0 border-2 overflow-hidden rounded-none transition-all ${activeIndex === i ? "border-emerald-500 ring-1 ring-emerald-500" : "border-slate-200 hover:border-slate-300"}`}
+                className={`relative w-16 h-16 shrink-0 border-2 overflow-hidden rounded-none transition-all ${activeIndex === i ? "border-emerald-500 ring-1 ring-emerald-500" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
               >
                 <Image
                   src={thumbSrc}

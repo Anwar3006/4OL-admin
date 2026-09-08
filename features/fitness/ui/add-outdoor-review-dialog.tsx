@@ -96,17 +96,17 @@ const AddOutdoorReviewDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-              <MessageSquare className="h-6 w-6 text-emerald-600" />
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
+              <MessageSquare className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               {isEditMode ? "Edit Review Details" : "Create Review Submission"}
             </DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6 bg-white">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6 bg-white dark:bg-slate-800">
               
               {/* Linked Route & Rating */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -115,14 +115,14 @@ const AddOutdoorReviewDialog = () => {
                   name="route_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Reviewed Route *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Reviewed Route *</FormLabel>
                       <Select onValueChange={(val) => field.onChange(val === "none" ? null : val)} value={field.value ?? "none"}>
                         <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
+                          <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl">
                             <SelectValue placeholder="Select Route" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                           <SelectItem value="none" className="italic cursor-pointer text-slate-400">None (No route)</SelectItem>
                           {routes.map((route) => (
                             <SelectItem key={route.id} value={route.id} className="cursor-pointer">
@@ -141,17 +141,17 @@ const AddOutdoorReviewDialog = () => {
                   name="rating"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Rating (1 to 5 Stars) *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Rating (1 to 5 Stars) *</FormLabel>
                       <Select 
                         onValueChange={(val) => field.onChange(parseInt(val))} 
                         value={field.value?.toString()}
                       >
                         <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
+                          <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl">
                             <SelectValue placeholder="Select rating stars" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                           {["5", "4", "3", "2", "1"].map((stars) => (
                             <SelectItem key={stars} value={stars} className="cursor-pointer">
                               {"⭐".repeat(parseInt(stars))} ({stars} Stars)
@@ -171,7 +171,7 @@ const AddOutdoorReviewDialog = () => {
                 name="user_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Review Author (User) *</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Review Author (User) *</FormLabel>
                     <FormControl>
                       <UserSearchSelect 
                         value={field.value ?? ""} 
@@ -191,14 +191,14 @@ const AddOutdoorReviewDialog = () => {
                   name="moderation_status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Moderation Status *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Moderation Status *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
+                          <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl">
                             <SelectValue placeholder="Select moderation status" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                           {MODERATION_STATUS.map((status) => (
                             <SelectItem key={status} value={status} className="capitalize cursor-pointer">
                               {status.replace("_", " ")}
@@ -215,9 +215,9 @@ const AddOutdoorReviewDialog = () => {
                   control={form.control}
                   name="is_flagged"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-slate-200 p-3 bg-white shadow-sm mt-1">
+                    <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-800 shadow-sm mt-1">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-slate-700 font-semibold">Flagged / Reported</FormLabel>
+                        <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Flagged / Reported</FormLabel>
                         <FormDescription>Flagged as inappropriate</FormDescription>
                       </div>
                       <FormControl>
@@ -227,7 +227,7 @@ const AddOutdoorReviewDialog = () => {
                           size="sm"
                           className={cn(
                             "w-24 rounded-xl font-bold",
-                            !field.value ? "border-slate-200" : ""
+                            !field.value ? "border-slate-200 dark:border-slate-700" : ""
                           )}
                           onClick={() => field.onChange(!field.value)}
                         >
@@ -245,12 +245,12 @@ const AddOutdoorReviewDialog = () => {
                 name="comment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Comment / Review Text</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Comment / Review Text</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Write details of the trail conditions, difficulty, obstacles, or scenery..." 
                         readOnly={false} 
-                        className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl resize-y min-h-[120px]"
+                        className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl resize-y min-h-[120px]"
                         {...field} 
                         value={field.value ?? ""}
                       />
@@ -261,7 +261,7 @@ const AddOutdoorReviewDialog = () => {
               />
 
               <DialogFooter className="pt-4 border-t gap-2 md:gap-0">
-                <Button type="button" variant="outline" onClick={close} className="rounded-xl border-slate-200">
+                <Button type="button" variant="outline" onClick={close} className="rounded-xl border-slate-200 dark:border-slate-700">
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isPending} className="min-w-[140px] rounded-xl bg-slate-900 text-white hover:bg-slate-800">

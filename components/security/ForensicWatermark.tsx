@@ -111,7 +111,13 @@ export default function ForensicWatermark() {
                   fontWeight: 700,
                   letterSpacing: 1.5,
                   whiteSpace: "nowrap",
-                  color: "#0f172a",
+                  // Themed, not hardcoded — see the --wm-ink comment in
+                  // globals.css. A fixed ink color becomes indistinguishable
+                  // from the page background the moment that background
+                  // matches it, which defeats the watermark's actual job
+                  // (recoverable from a zoomed/contrast-enhanced screenshot)
+                  // for every admin using dark mode.
+                  color: "var(--wm-ink)",
                 }}
               >
                 {stamp}

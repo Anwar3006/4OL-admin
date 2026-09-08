@@ -45,7 +45,7 @@ export default function AmbulanceDispatchTab({
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-widest"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold uppercase tracking-widest"
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
         >

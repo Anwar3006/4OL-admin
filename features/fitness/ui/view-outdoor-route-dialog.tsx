@@ -37,7 +37,7 @@ import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
 const RouteMapPreview = dynamic(() => import("@/components/RouteMapPreview"), {
   ssr: false,
   loading: () => (
-    <div className="h-72 w-full bg-slate-100 animate-pulse rounded-none border border-slate-200" />
+    <div className="h-72 w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-none border border-slate-200 dark:border-slate-700" />
   ),
 });
 
@@ -70,7 +70,7 @@ const ViewOutdoorRouteDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
+      <DialogContent className="p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
         <VisuallyHidden.Root>
           <DialogTitle>
             {data?.name ? `Details for ${data.name}` : "Route Details"}
@@ -115,11 +115,11 @@ const ViewOutdoorRouteDialog = () => {
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white">
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white dark:bg-slate-800">
       <div className="relative">
-        <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
-        <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-          <Route className="h-8 w-8 text-emerald-600 animate-pulse" />
+        <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-500/20 rounded-full animate-ping opacity-50" />
+        <div className="relative w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+          <Route className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
         </div>
       </div>
       <span className="mt-6 text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -131,12 +131,12 @@ function LoadingState() {
 
 function NotFoundState({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white">
-      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white dark:bg-slate-800">
+      <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center border border-slate-100 dark:border-slate-800">
         <Ban className="h-10 w-10 text-slate-300" />
       </div>
       <div className="space-y-2">
-        <p className="text-slate-900 font-black text-xl tracking-tight">
+        <p className="text-slate-900 dark:text-slate-100 font-black text-xl tracking-tight">
           Route Not Found
         </p>
         <p className="text-slate-500 font-medium max-w-sm leading-relaxed">
@@ -180,24 +180,24 @@ function DetailView({
     : "";
 
   const statusColor = data.is_active
-    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : "bg-slate-50 text-slate-600 border-slate-200";
+    ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
+    : "bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700";
 
   const verificationColor =
     data.verification_status === "approved"
-      ? "bg-blue-50 text-blue-700 border-blue-200"
-      : "bg-amber-50 text-amber-700 border-amber-200";
+      ? "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200"
+      : "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200";
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-50">
+    <div className="flex flex-col h-full min-h-0 bg-slate-50 dark:bg-slate-900">
       {/* ── Sticky Top Bar ── */}
-      <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
+      <div className="shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-none border border-emerald-100">
-            <Route className="w-5 h-5 text-emerald-600" />
+          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 dark:bg-emerald-500/15 rounded-none border border-emerald-100 dark:border-emerald-500/30">
+            <Route className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
+            <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
               {data.name}
             </h2>
             <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
@@ -250,7 +250,7 @@ function DetailView({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="rounded-none text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-10 w-10 p-0 transition-all md:hidden"
+            className="rounded-none text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 w-10 p-0 transition-all md:hidden"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -260,7 +260,7 @@ function DetailView({
       {/* ── Scrollable Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {/* Hero Section */}
-        <div className="bg-white border-b border-slate-200">
+        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Left: Meta & Stats */}
             <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-between gap-8">
@@ -275,25 +275,25 @@ function DetailView({
                   {data.surface_type && (
                     <Badge
                       variant="outline"
-                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 dark:border-slate-700 text-slate-500"
                     >
                       {data.surface_type}
                     </Badge>
                   )}
                 </div>
 
-                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
                   {data.name}
                 </DialogTitle>
 
                 {data.description && (
-                  <p className="text-base text-slate-600 leading-relaxed font-medium">
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     {data.description}
                   </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-100">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <MetaPill
                   icon={Navigation}
                   label="Distance"
@@ -322,10 +322,10 @@ function DetailView({
             </div>
 
             {/* Right: Image Gallery */}
-            <div className="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 md:p-10">
+            <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-700 p-6 md:p-10">
               {images.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="relative aspect-[4/3] w-full bg-slate-100 border border-slate-200 rounded-none overflow-hidden group">
+                  <div className="relative aspect-[4/3] w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden group">
                     {currentImageSrc ? (
                       <AnimatePresence mode="wait">
                         <motion.div
@@ -381,7 +381,7 @@ function DetailView({
                             className={`relative w-16 h-16 shrink-0 border-2 overflow-hidden rounded-none transition-all ${
                               activeImage === i
                                 ? "border-emerald-500 ring-1 ring-emerald-500"
-                                : "border-slate-200 hover:border-slate-300"
+                                : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                             }`}
                           >
                             <Image
@@ -398,7 +398,7 @@ function DetailView({
                   )}
                 </div>
               ) : (
-                <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
+                <div className="h-[280px] w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 rounded-none">
                   <MapPin className="h-10 w-10 text-slate-300 mb-3" />
                   <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
                     No Route Images
@@ -415,8 +415,8 @@ function DetailView({
           {(data.area || data.region) && (
             <section className="space-y-5">
               <SectionHeader icon={MapPin} title="Location" />
-              <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm">
-                <p className="text-base text-slate-600 leading-relaxed font-medium">
+              <div className="bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm">
+                <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                   {[data.area, data.region].filter(Boolean).join(", ")}
                 </p>
               </div>
@@ -446,14 +446,14 @@ function DetailView({
             data.registered_by) && (
             <section className="space-y-5">
               <SectionHeader icon={ShieldCheck} title="Features & Rewards" />
-              <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm space-y-4">
+              <div className="bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm space-y-4">
                 {data.features?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {data.features.map((f: string) => (
                       <Badge
                         key={f}
                         variant="outline"
-                        className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-emerald-200 text-emerald-700 bg-emerald-50"
+                        className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-emerald-200 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15"
                       >
                         {f}
                       </Badge>
@@ -462,17 +462,17 @@ function DetailView({
                 )}
                 <div className="flex items-center gap-6 text-sm">
                   {data.fitcoins_reward != null && (
-                    <p className="text-slate-600 font-medium">
-                      <span className="font-black text-slate-900">
+                    <p className="text-slate-600 dark:text-slate-300 font-medium">
+                      <span className="font-black text-slate-900 dark:text-slate-100">
                         {data.fitcoins_reward}
                       </span>{" "}
                       FitCoins per completion
                     </p>
                   )}
                   {data.registered_by && (
-                    <p className="text-slate-600 font-medium">
+                    <p className="text-slate-600 dark:text-slate-300 font-medium">
                       Registered by{" "}
-                      <span className="font-black text-slate-900">
+                      <span className="font-black text-slate-900 dark:text-slate-100">
                         {data.registered_by}
                       </span>
                     </p>
@@ -486,12 +486,12 @@ function DetailView({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <section className="space-y-5">
               <SectionHeader icon={User} title="Created By" />
-              <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm flex items-center gap-4">
-                <div className="w-10 h-10 bg-slate-50 border border-slate-200 flex items-center justify-center rounded-none">
+              <div className="bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm flex items-center gap-4">
+                <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center rounded-none">
                   <User className="h-5 w-5 text-slate-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-slate-900">
+                  <p className="text-sm font-black text-slate-900 dark:text-slate-100">
                     {data.creator
                       ? `${data.creator.first_name || ""} ${data.creator.last_name || ""}`.trim()
                       : "System"}
@@ -506,12 +506,12 @@ function DetailView({
             {data.verified_by && (
               <section className="space-y-5">
                 <SectionHeader icon={ShieldCheck} title="Verified By" />
-                <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-none">
-                    <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                <div className="bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm flex items-center gap-4">
+                  <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 flex items-center justify-center rounded-none">
+                    <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-sm font-black text-slate-900 dark:text-slate-100">
                       {data.verifier
                         ? `${data.verifier.first_name || ""} ${data.verifier.last_name || ""}`.trim()
                         : "Admin"}
@@ -537,7 +537,7 @@ function DetailView({
                     <button
                       key={i}
                       onClick={() => onSelectImage(i)}
-                      className="relative aspect-video w-full bg-slate-100 border border-slate-200 rounded-none overflow-hidden group"
+                      className="relative aspect-video w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden group"
                     >
                       <Image
                         src={src}
@@ -556,7 +556,7 @@ function DetailView({
         </div>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-slate-200 px-6 py-6 md:px-10 md:py-8">
+        <footer className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-6 md:px-10 md:py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <HeartPulse className="w-4 h-4 text-emerald-500" />
@@ -587,7 +587,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
+      <div className="p-2 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
       <h3 className="section-heading">
@@ -609,12 +609,12 @@ function MetaPill({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
-        <Icon className="h-3.5 w-3.5 text-emerald-600" />
+        <Icon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
         <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
-      <p className="text-sm font-bold text-slate-900">{value}</p>
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

@@ -113,7 +113,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(enq);
@@ -124,7 +124,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
               {OPEN_STATUSES.includes(enq.status) && (
                 <button
                   disabled={busy}
-                  className="h-7 px-2 rounded-lg border border-blue-200 text-3xs font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                  className="h-7 px-2 rounded-lg border border-blue-200 text-3xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     action.mutate({ id: enq.id, action: "notify_user" });
@@ -136,7 +136,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
               {OPEN_STATUSES.includes(enq.status) && (
                 <button
                   disabled={busy}
-                  className="h-7 px-2 rounded-lg border border-orange-200 text-3xs font-black uppercase tracking-widest text-orange-600 hover:bg-orange-50 disabled:opacity-50"
+                  className="h-7 px-2 rounded-lg border border-orange-200 text-3xs font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/15 disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (window.confirm(`Cancel enquiry ${formatEnqId(enq.id)}? The user will be notified.`)) {
@@ -165,10 +165,10 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
         <span
           className={`text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
             row.status === "pending_match"
-              ? "bg-amber-50 text-amber-700 border-amber-100"
+              ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
               : row.status === "completed" || row.status === "cancelled"
-                ? "bg-slate-100 text-slate-500 border-slate-200"
-                : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
+                : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
           }`}
         >
           {STATUS_LABELS[row.status] ?? row.status}
@@ -192,15 +192,15 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
       {pharmacyId && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5">
-          <span className="text-2xs font-black uppercase tracking-widest text-emerald-700">
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 px-4 py-2.5">
+          <span className="text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
             🏥 Linked from Facilities — filtering enquiries for:
           </span>
-          <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white border border-emerald-200 text-2xs font-black uppercase tracking-widest text-emerald-700">
+          <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white dark:bg-slate-800 border border-emerald-200 text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
             {pharmacyFilterName}
             <button
               onClick={() => viewFacility.open(pharmacyId)}
-              className="text-emerald-500 hover:text-emerald-800 font-black"
+              className="text-emerald-500 hover:text-emerald-800 dark:hover:text-emerald-400 font-black"
               aria-label="View pharmacy profile"
               title="Open pharmacy profile (Facilities)"
             >
@@ -208,7 +208,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
             </button>
             <button
               onClick={clearPharmacyFilter}
-              className="text-emerald-400 hover:text-emerald-700 font-black"
+              className="text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 font-black"
               aria-label="Clear pharmacy filter"
             >
               ✕
@@ -221,7 +221,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search by medication, user, pharmacy..."
         />
         <select
@@ -230,7 +230,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
             setType(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -242,7 +242,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           <option value="">All Status</option>
           {MED_ENQUIRY_STATUSES.map((s) => (
@@ -255,7 +255,7 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
             setTier(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           {TIERS.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -264,13 +264,13 @@ export default function AllEnquiriesTab({ pharmacyId }: { pharmacyId?: string | 
         <button
           onClick={handleExport}
           disabled={rows.length === 0}
-          className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all disabled:opacity-50"
+          className="h-9 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all disabled:opacity-50"
         >
           📥 Export Data
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={rows}

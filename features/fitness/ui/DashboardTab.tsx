@@ -20,10 +20,10 @@ const DashboardTab = () => {
   );
 
   const rankColor = (rank: number | null) => {
-    if (rank === 1) return "text-yellow-600";
+    if (rank === 1) return "text-yellow-600 dark:text-yellow-400";
     if (rank === 2) return "text-slate-400";
     if (rank === 3) return "text-orange-500";
-    return "text-slate-700";
+    return "text-slate-700 dark:text-slate-300";
   };
 
   const rankLabel = (rank: number | null, index: number) => {
@@ -39,7 +39,7 @@ const DashboardTab = () => {
       {/* Mini KPI row */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         <div className="card flex items-center gap-3 p-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-lg shrink-0">📊</div>
+          <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center text-lg shrink-0">📊</div>
           <div className="min-w-0">
             <div className="text-xl font-black text-orange-500 leading-tight">
               {isLoading ? "..." : (metrics?.active_workouts ?? 0).toLocaleString()}
@@ -48,27 +48,27 @@ const DashboardTab = () => {
           </div>
         </div>
         <div className="card flex items-center gap-3 p-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-lg shrink-0">✅</div>
+          <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center text-lg shrink-0">✅</div>
           <div className="min-w-0">
-            <div className="text-xl font-black text-emerald-700 leading-tight">
+            <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 leading-tight">
               {isLoading ? "..." : `${metrics?.avg_streak ?? 0} days`}
             </div>
             <div className="text-2xs text-slate-400 font-bold uppercase tracking-wider">Avg Streak</div>
           </div>
         </div>
         <div className="card flex items-center gap-3 p-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center text-lg shrink-0">🏆</div>
+          <div className="w-10 h-10 rounded-lg bg-yellow-50 dark:bg-yellow-500/15 flex items-center justify-center text-lg shrink-0">🏆</div>
           <div className="min-w-0">
-            <div className="text-xl font-black text-yellow-600 leading-tight">
+            <div className="text-xl font-black text-yellow-600 dark:text-yellow-400 leading-tight">
               {isLoading ? "..." : `${metrics?.avg_completion ?? 0}%`}
             </div>
             <div className="text-2xs text-slate-400 font-bold uppercase tracking-wider">Avg Completion</div>
           </div>
         </div>
         <div className="card flex items-center gap-3 p-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-lg shrink-0">🤖</div>
+          <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-500/15 flex items-center justify-center text-lg shrink-0">🤖</div>
           <div className="min-w-0">
-            <div className="text-xl font-black text-purple-600 leading-tight">
+            <div className="text-xl font-black text-purple-600 dark:text-purple-400 leading-tight">
               {isLoading ? "..." : (metrics?.ai_generated_plans ?? 0).toLocaleString()}
             </div>
             <div className="text-2xs text-slate-400 font-bold uppercase tracking-wider">AI Plans Active</div>
@@ -92,9 +92,9 @@ const DashboardTab = () => {
               <div className="text-xs text-slate-400 font-semibold py-2">No active challenges yet.</div>
             )}
             {topChallenges.map((item) => (
-              <div key={item.id} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 gap-2">
-                <span className="min-w-0 text-xs font-semibold text-slate-700 truncate">{item.title}</span>
-                <span className="text-xs font-black shrink-0 text-emerald-700">
+              <div key={item.id} className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 last:border-0 gap-2">
+                <span className="min-w-0 text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{item.title}</span>
+                <span className="text-xs font-black shrink-0 text-emerald-700 dark:text-emerald-400">
                   {item.participants_count.toLocaleString()} joined
                 </span>
               </div>
@@ -115,9 +115,9 @@ const DashboardTab = () => {
               <div className="text-xs text-slate-400 font-semibold py-2">No plan usage yet.</div>
             )}
             {mostUsedPlans.map((item) => (
-              <div key={item.plan_id} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 gap-2">
-                <span className="min-w-0 text-xs font-semibold text-slate-700 truncate">{item.title}</span>
-                <span className="text-xs font-black shrink-0 text-blue-600">
+              <div key={item.plan_id} className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 last:border-0 gap-2">
+                <span className="min-w-0 text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{item.title}</span>
+                <span className="text-xs font-black shrink-0 text-blue-600 dark:text-blue-400">
                   {item.usage_count.toLocaleString()} sessions
                 </span>
               </div>
@@ -138,7 +138,7 @@ const DashboardTab = () => {
               <div className="text-xs text-slate-400 font-semibold py-2">No ranked users yet.</div>
             )}
             {leaderboard.map((item, i) => (
-              <div key={item.user_id} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 gap-2">
+              <div key={item.user_id} className="flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-800 last:border-0 gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs font-black w-7 shrink-0">
                     {rankLabel(item.rank_position, i)}
@@ -147,7 +147,7 @@ const DashboardTab = () => {
                       in KPIs.sql) — no join to fitness_users/user_profiles for a
                       display name, so we show a truncated id. Update the RPC's
                       `leaderboard` CTE to join in a name if that's needed here. */}
-                  <span className="min-w-0 text-xs font-semibold text-slate-700 truncate">
+                  <span className="min-w-0 text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
                     User {item.user_id.slice(0, 8)}
                   </span>
                 </div>
@@ -180,11 +180,11 @@ const DashboardTab = () => {
               const bars = ["bg-blue-500", "bg-teal-500", "bg-orange-500", "bg-purple-500", "bg-emerald-500"];
               return (
                 <div key={item.exercise_id}>
-                  <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-600 mb-1.5">
+                  <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
                     <span className="min-w-0 truncate">{item.name}</span>
-                    <span className="text-blue-600 shrink-0">{item.completion_count.toLocaleString()} sets logged</span>
+                    <span className="text-blue-600 dark:text-blue-400 shrink-0">{item.completion_count.toLocaleString()} sets logged</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${bars[i % bars.length]}`}
                       style={{ width: `${pct}%` }}

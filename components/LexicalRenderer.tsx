@@ -49,7 +49,7 @@ export function LexicalRenderer({
       theme: {
         paragraph: "mb-3 last:mb-0",
         text: {
-          bold: "font-bold text-slate-900",
+          bold: "font-bold text-slate-900 dark:text-slate-100",
           italic: "italic",
           underline: "underline",
         },
@@ -58,7 +58,7 @@ export function LexicalRenderer({
           ul: "list-disc ml-6 space-y-1",
           listitem: "pl-1",
         },
-        link: "text-blue-600 hover:underline cursor-pointer",
+        link: "text-blue-600 dark:text-blue-400 hover:underline cursor-pointer",
       },
       nodes: nodes,
       onError: (error: Error) => {

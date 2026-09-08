@@ -390,7 +390,7 @@ export default function DeleteAccountPage() {
             <p className="text-sm text-slate-500 mb-2">
               A deletion request for this account is already pending review.
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Questions?{" "}
               <a href="mailto:support@4ourlife.com" className="text-[#4ade80]">
                 Contact support

@@ -160,6 +160,17 @@
   --clr-slate-800: #1e293b;
   --clr-slate-900: #0f172a;
 
+  /* Forensic watermark ink (components/security/ForensicWatermark.tsx,
+     Part AK-D6). Read at ~4.5% opacity so it is invisible in normal use and
+     only legible when a screenshot is contrast-enhanced. That only works if
+     the ink differs from the surface it sits on — a fixed color composited
+     with an identical background at 4.5% opacity is mathematically that
+     background, at any zoom. Themed here rather than hardcoded so it always
+     has something to contrast against. The dark value lives in its OWN rule
+     below :root, not inside the early `.dark { --color-*: ... }` block above
+     — see the comment there for why that placement silently loses. */
+  --wm-ink: #0f172a;
+
   /* Shadows */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -185,6 +196,22 @@
   --kpi-p: clamp(10px, 1.2vw + 4px, 18px);
   --control-h: 2.25rem;
   --grid-gap: 1rem;
+}
+
+/* --wm-ink's dark value has to live in its own rule textually AFTER :root,
+   not inside the early `.dark { --color-*: ... }` token block above (where
+   it was first written and silently lost). `:root` and `.dark` are both
+   single-class-equivalent selectors — specificity 0,1,0, a tie — and
+   <html class="dark"> matches BOTH simultaneously, so the tie breaks on
+   source order: whichever rule is LATER in the file wins, regardless of
+   which one reads as "more specific" to a human. The early `.dark{}` block
+   sits before `:root`, so `:root`'s #0f172a was overriding the intended
+   dark #f1f5f9 on every page, and the watermark stayed invisible-on-dark —
+   confirmed by rescanning after the first attempt: still 612 hits at
+   rgb(15, 23, 42)-on-rgb(15, 23, 42), unchanged. Keep any future `.dark`
+   override of a :root-defined variable down here, after :root. */
+.dark {
+  --wm-ink: #f1f5f9;
 }
 
 /* Part X: compact density (mockup body.ts-compact, L793–807) — set via the
@@ -1103,6 +1130,208 @@
   .space-xy-6 > * {
     margin-right: 16px;
     margin-bottom: 8px;
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   *  Dark mode for the legacy component layer
+   *
+   *  Every class above was written before dark mode was reachable (nothing
+   *  called next-themes' setTheme until ThemeMenu shipped) — `.dark body`
+   *  correctly flips inherited text to near-white, but ~75 classes hardcode
+   *  `background: #fff` / literal slate text colors with no `.dark` sibling.
+   *  The result: page background goes dark, but every `.card` (413 call
+   *  sites), `.badge`, `.btn-secondary`, `.tab`, `.pag`/`.pb`, `.data-table`,
+   *  `.alert` and `.modal-content` stays pure light — so inherited near-white
+   *  text lands on a surface that never moved, and disappears.
+   *
+   *  Only classes with real usage get an override — measured with
+   *  `grep -rho '\bCLASSNAME\b' app components features` before writing this,
+   *  not assumed. `.topbar`, `.tb-*`, `.sidebar-shell`/`.sidebar-item`,
+   *  `.page-header*`, `.kpi-card`, `.data-table-dark`, `.form-input`,
+   *  `.form-select`, `.fi`/`.fi-s`, `.tab-btn*`, `.td-*`, `.pag-b`,
+   *  `.ek-skeleton`, `.dot-on`, and the `.b`/`.bg`/`.br` shorthand badges are
+   *  ALL zero-usage — superseded by the shadcn shell or never wired up — and
+   *  are left untouched rather than guessed at.
+   *
+   *  Reuses the `--color-*` tokens the shadcn layer already defines correct
+   *  dark values for (Part Q, top of this file) instead of inventing a
+   *  second palette. Badge/alert hues reuse the six `--color-chart-*`
+   *  lightened tones for the same reason the chart config does: one set of
+   *  dark-safe hues, not two — and match the SAME wash-background-plus-
+   *  lightened-text shape now used by the shadcn <Badge> hue variants in
+   *  components/ui/badge.tsx, so all three badge systems in this app (this
+   *  one, shadcn's, and the mechanically-paired text-emerald-700-family call
+   *  sites elsewhere) read the same way.
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  /* Cards — the single highest-leverage fix here. 413 call sites; every
+     "text is there but invisible" report traces back to this one rule. */
+  .dark .card {
+    background: var(--color-card);
+    border-color: var(--color-border);
+  }
+  .dark .card-title {
+    color: var(--color-card-foreground);
+  }
+
+  /* Section headings and form labels both read var(--clr-slate-700) — a
+     light-mode-only dark gray that is nearly unreadable on a dark surface. */
+  .dark .section-heading,
+  .dark .form-label {
+    color: var(--color-muted-foreground);
+  }
+
+  /* Buttons. .btn-primary and .btn-danger are solid saturated fills with
+     white text (green/red bg, white ink) — that contrast doesn't depend on
+     the surrounding page theme, so neither needs a dark override. */
+  .dark .btn-secondary {
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+    border-color: var(--color-border);
+  }
+  .dark .btn-secondary:hover {
+    background: var(--color-secondary);
+  }
+
+  /* Badges. Light-mode pairs a pastel-muted background with a saturated
+     text color; dark mode keeps the same hue but inverts the weighting —
+     a low-alpha wash of the hue as background, the lightened chart tone
+     (already dark-tuned, see the .dark token block at the top of this file)
+     as text. Verified against the actual composited background, not
+     assumed: see the contrast scan referenced in the commit. */
+  .dark .badge-green {
+    background: rgba(16, 185, 129, 0.16);
+    color: var(--color-chart-1);
+  }
+  .dark .badge-blue {
+    background: rgba(59, 130, 246, 0.18);
+    color: var(--color-chart-2);
+  }
+  .dark .badge-amber {
+    background: rgba(245, 158, 11, 0.18);
+    color: var(--color-chart-3);
+  }
+  .dark .badge-purple {
+    background: rgba(139, 92, 246, 0.18);
+    color: var(--color-chart-4);
+  }
+  .dark .badge-teal {
+    background: rgba(20, 184, 166, 0.18);
+    color: var(--color-chart-5);
+  }
+  .dark .badge-pink {
+    background: rgba(236, 72, 153, 0.18);
+    color: var(--color-chart-6);
+  }
+  .dark .badge-red {
+    background: rgba(239, 68, 68, 0.18);
+    color: var(--color-destructive);
+  }
+  .dark .badge-indigo {
+    background: rgba(99, 102, 241, 0.18);
+    color: #a5b4fc;
+  }
+  .dark .badge-orange {
+    background: rgba(249, 115, 22, 0.18);
+    color: #fdba74;
+  }
+  .dark .badge-gold {
+    background: rgba(217, 119, 6, 0.18);
+    color: #fcd34d;
+  }
+  .dark .badge-slate {
+    background: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+  }
+
+  /* Tabs */
+  .dark .tabs {
+    border-bottom-color: var(--color-border);
+  }
+  .dark .tab {
+    color: var(--color-muted-foreground);
+  }
+  .dark .tab:hover {
+    color: var(--color-foreground);
+  }
+  .dark .tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+
+  /* Pagination. .pb.active is a solid green fill with white text, same
+     reasoning as the primary button — no override needed. */
+  .dark .pag {
+    background: rgba(30, 41, 59, 0.5);
+    border-top-color: var(--color-border);
+    color: var(--color-muted-foreground);
+  }
+  .dark .pb {
+    background: var(--color-card);
+    border-color: var(--color-border);
+    color: var(--color-card-foreground);
+  }
+  .dark .pb:hover {
+    background: var(--color-secondary);
+  }
+
+  /* Data table */
+  .dark .data-table thead tr {
+    background: var(--color-secondary);
+  }
+  .dark .data-table thead th {
+    color: var(--color-muted-foreground);
+    border-bottom-color: var(--color-border);
+  }
+  .dark .data-table tbody tr {
+    border-bottom-color: var(--color-border);
+  }
+  .dark .data-table tbody tr:hover {
+    background: var(--color-secondary);
+  }
+  .dark .data-table tbody td {
+    color: var(--color-card-foreground);
+  }
+
+  /* Alerts. Same wash-background-plus-lightened-ink treatment as badges. */
+  .dark .al-in {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--color-chart-2);
+  }
+  .dark .al-wa {
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--color-chart-3);
+  }
+  .dark .al-er {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--color-destructive);
+  }
+  .dark .al-ok {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--color-chart-1);
+  }
+
+  /* Modal */
+  .dark .modal-content {
+    background: var(--color-card);
+  }
+  .dark .modal-header {
+    border-bottom-color: var(--color-border);
+  }
+  .dark .modal-title {
+    color: var(--color-card-foreground);
+  }
+
+  /* Empty state */
+  .dark .empty-st-t {
+    color: var(--color-card-foreground);
+  }
+  .dark .empty-st-m {
+    color: var(--color-muted-foreground);
   }
 }
 

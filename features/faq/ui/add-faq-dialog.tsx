@@ -119,7 +119,7 @@ const AddFAQDialog = () => {
                         <Button
                           type="button"
                           variant="ghost"
-                          className="h-auto p-0 text-emerald-600 hover:text-emerald-700 text-xs gap-1"
+                          className="h-auto p-0 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 text-xs gap-1"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation(); // Stops event from bubbling to FormItem
@@ -135,7 +135,7 @@ const AddFAQDialog = () => {
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                          <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                             <SelectValue
                               placeholder={
                                 isLoadingCategories

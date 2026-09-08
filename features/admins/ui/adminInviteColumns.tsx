@@ -10,15 +10,15 @@ function inviteStatus(invite: AdminInvite): {
   className: string;
 } {
   if (invite.is_revoked) {
-    return { label: "Revoked", className: "bg-slate-100 text-slate-500 border-slate-200" };
+    return { label: "Revoked", className: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" };
   }
   if (invite.used_at) {
-    return { label: "Accepted", className: "bg-emerald-50 text-emerald-700 border-emerald-100" };
+    return { label: "Accepted", className: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30" };
   }
   if (new Date(invite.expires_at).getTime() <= Date.now()) {
-    return { label: "Expired", className: "bg-red-50 text-red-700 border-red-100" };
+    return { label: "Expired", className: "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30" };
   }
-  return { label: "Pending", className: "bg-amber-50 text-amber-700 border-amber-100" };
+  return { label: "Pending", className: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30" };
 }
 
 export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
@@ -28,7 +28,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Mail className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-xs font-black text-slate-800 tracking-tight">
+        <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tight">
           {row.original.email}
         </span>
       </div>
@@ -40,7 +40,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-1.5">
         <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-2xs font-black uppercase tracking-widest text-slate-600">
+        <span className="text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
           {row.original.role.replace(/_/g, " ")}
         </span>
       </div>
@@ -68,7 +68,7 @@ export const adminInviteColumns: ColumnDef<AdminInvite>[] = [
     header: "Sent / Expires",
     cell: ({ row }) => (
       <div>
-        <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 tracking-tight leading-none mb-1">
+        <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 dark:text-slate-300 tracking-tight leading-none mb-1">
           <Calendar className="w-3 h-3 text-slate-400" />
           {format(new Date(row.original.created_at), "MMM dd, yyyy")}
         </div>

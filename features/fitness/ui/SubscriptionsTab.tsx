@@ -178,8 +178,8 @@ const SubscriptionsTab = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* ── Grant panel (super admin only) ── */}
       {isSuperAdmin ? (
-        <div className="card bg-white">
-          <h3 className="text-xl font-black text-slate-800 mb-1">💳 Assign Premium Access</h3>
+        <div className="card bg-white dark:bg-slate-800">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-1">💳 Assign Premium Access</h3>
           <p className="text-sm text-slate-500 font-medium mb-4">
             Super-admin only. Grants are recorded with your admin id and the user is
             notified in-app. Paystack purchases will appear here automatically once
@@ -193,7 +193,7 @@ const SubscriptionsTab = () => {
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Tier</label>
               <select
-                className="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-white"
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
                 value={grantTier}
                 onChange={(e) => setGrantTier(e.target.value as "premium" | "lifetime")}
               >
@@ -210,7 +210,7 @@ const SubscriptionsTab = () => {
                 min={1}
                 disabled={grantTier === "lifetime"}
                 placeholder="30"
-                className="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl disabled:bg-slate-50 disabled:text-slate-300"
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl disabled:bg-slate-50 disabled:text-slate-300"
                 value={grantDays}
                 onChange={(e) => setGrantDays(e.target.value)}
               />
@@ -226,29 +226,29 @@ const SubscriptionsTab = () => {
           </div>
           <input
             placeholder="Note (optional, stored with the grant for audit)"
-            className="w-full mt-3 px-3 py-2 text-sm border border-slate-200 rounded-xl"
+            className="w-full mt-3 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
             value={grantNote}
             onChange={(e) => setGrantNote(e.target.value)}
           />
         </div>
       ) : (
-        <div className="alert bg-slate-50 border border-slate-200 text-slate-600 p-3 rounded-lg text-sm font-medium">
+        <div className="alert bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 p-3 rounded-lg text-sm font-medium">
           Assigning or revoking premium access is restricted to the super admin. You can
           still review entitlements below.
         </div>
       )}
 
       {/* ── Subscriptions table ── */}
-      <div className="card bg-white">
+      <div className="card bg-white dark:bg-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-xl font-black text-slate-800">🧾 Entitlements</h3>
+            <h3 className="text-xl font-black text-slate-800 dark:text-slate-200">🧾 Entitlements</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">
               {total.toLocaleString()} subscription record(s)
             </p>
           </div>
           <select
-            className="h-9 px-3 text-sm border border-slate-200 rounded-xl bg-white"
+            className="h-9 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -264,7 +264,7 @@ const SubscriptionsTab = () => {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-600 dark:text-emerald-400" />
           </div>
         ) : rows.length === 0 ? (
           <p className="text-sm text-slate-400 font-medium py-8 text-center">
@@ -274,7 +274,7 @@ const SubscriptionsTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="py-2 pr-4">User</th>
                   <th className="py-2 pr-4">Tier</th>
                   <th className="py-2 pr-4">Status</th>
@@ -287,8 +287,8 @@ const SubscriptionsTab = () => {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td className="py-3 pr-4 text-sm font-bold text-slate-800">{row.user_name}</td>
+                  <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <td className="py-3 pr-4 text-sm font-bold text-slate-800 dark:text-slate-200">{row.user_name}</td>
                     <td className="py-3 pr-4">
                       <span className="badge badge-blue h-5 text-3xs uppercase font-black">
                         {row.subscription_tiers?.name ?? "—"}
@@ -299,16 +299,16 @@ const SubscriptionsTab = () => {
                         {row.status}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-xs font-semibold text-slate-600">{row.source}</td>
-                    <td className="py-3 pr-4 text-xs text-slate-600">{fmtDate(row.starts_at)}</td>
-                    <td className="py-3 pr-4 text-xs text-slate-600">{fmtDate(row.expires_at)}</td>
-                    <td className="py-3 pr-4 text-xs text-slate-600">{row.granted_by_name ?? "—"}</td>
+                    <td className="py-3 pr-4 text-xs font-semibold text-slate-600 dark:text-slate-300">{row.source}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600 dark:text-slate-300">{fmtDate(row.starts_at)}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600 dark:text-slate-300">{fmtDate(row.expires_at)}</td>
+                    <td className="py-3 pr-4 text-xs text-slate-600 dark:text-slate-300">{row.granted_by_name ?? "—"}</td>
                     {isSuperAdmin && (
                       <td className="py-3 text-right">
                         {row.status === "active" && (
                           <button
                             onClick={() => handleRevoke(row)}
-                            className="text-2xs font-black uppercase text-red-500 hover:text-red-700"
+                            className="text-2xs font-black uppercase text-red-500 hover:text-red-700 dark:hover:text-red-400"
                           >
                             Revoke
                           </button>
@@ -341,8 +341,8 @@ const SubscriptionsTab = () => {
 
       {/* ── Fitness alert composer (shared inbox, decision D1) ── */}
       {canSendAlerts && (
-        <div className="card bg-white">
-          <h3 className="text-xl font-black text-slate-800 mb-1">🔔 Send Fitness Alert</h3>
+        <div className="card bg-white dark:bg-slate-800">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-1">🔔 Send Fitness Alert</h3>
           <p className="text-sm text-slate-500 font-medium mb-4">
             Delivered into the user&apos;s main notification inbox (the same bell the whole
             app uses). Automated streak / challenge / billing alerts run daily via pg_cron.
@@ -381,7 +381,7 @@ const SubscriptionsTab = () => {
                 </div>
               )}
               <select
-                className="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-white"
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
                 value={alertType}
                 onChange={(e) => setAlertType(e.target.value)}
               >
@@ -394,14 +394,14 @@ const SubscriptionsTab = () => {
               <input
                 placeholder="Title"
                 maxLength={120}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
                 value={alertTitle}
                 onChange={(e) => setAlertTitle(e.target.value)}
               />
               <textarea
                 placeholder="Message"
                 maxLength={500}
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl resize-none h-24"
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl resize-none h-24"
                 value={alertBody}
                 onChange={(e) => setAlertBody(e.target.value)}
               />

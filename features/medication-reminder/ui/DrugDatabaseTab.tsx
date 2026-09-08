@@ -37,7 +37,7 @@ const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
 };
 
 const selectCls =
-  "h-8 px-3 rounded-lg border border-slate-200 text-xs bg-white outline-none";
+  "h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 outline-none";
 
 export default function DrugDatabaseTab() {
   const [pageIndex, setPageIndex] = useState(1);
@@ -112,7 +112,7 @@ export default function DrugDatabaseTab() {
         header: "Drug Name",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-slate-800">{row.original.name}</div>
+            <div className="font-bold text-slate-800 dark:text-slate-200">{row.original.name}</div>
             <div className="text-2xs text-slate-400">
               {[row.original.dosage_form, row.original.manufacturer]
                 .filter(Boolean)
@@ -125,7 +125,7 @@ export default function DrugDatabaseTab() {
         accessorKey: "generic_name",
         header: "Generic Name",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600">{row.original.generic_name || "—"}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{row.original.generic_name || "—"}</span>
         ),
       },
       {
@@ -147,7 +147,7 @@ export default function DrugDatabaseTab() {
         id: "strength",
         header: "Strength",
         cell: ({ row }) => (
-          <span className="text-xs font-medium text-slate-600">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
             {row.original.strength
               ? `${row.original.strength}${row.original.strength_unit ?? ""}`
               : "—"}
@@ -169,7 +169,7 @@ export default function DrugDatabaseTab() {
         cell: ({ row }) => (
           <div className="flex gap-2">
             <button
-              className="hover:bg-emerald-100 rounded p-1 cursor-pointer"
+              className="hover:bg-emerald-100 dark:hover:bg-emerald-500/20 rounded p-1 cursor-pointer"
               aria-label="Edit drug"
               onClick={() => {
                 setEditTarget(row.original);
@@ -179,7 +179,7 @@ export default function DrugDatabaseTab() {
               ✏️
             </button>
             <button
-              className="hover:bg-red-100 rounded p-1 cursor-pointer"
+              className="hover:bg-red-100 dark:hover:bg-red-500/20 rounded p-1 cursor-pointer"
               aria-label="Delete drug"
               onClick={() => {
                 if (confirm(`Delete "${row.original.name}" from the catalog?`)) {
@@ -201,7 +201,7 @@ export default function DrugDatabaseTab() {
       {/* Filter bar */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search drug, generic name, manufacturer…"
           value={search}
           onChange={(e) => {
@@ -268,7 +268,7 @@ export default function DrugDatabaseTab() {
       </div>
 
       {/* Catalog table */}
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+      <div className="card p-0 overflow-x-auto border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <DataTable
           columns={columns}
           data={rows}
@@ -289,7 +289,7 @@ export default function DrugDatabaseTab() {
       </div>
 
       {/* Unknown-drug verification queue (B.6) */}
-      <div className="card border border-slate-200 shadow-sm rounded-xl">
+      <div className="card border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <VerificationQueue />
       </div>
 

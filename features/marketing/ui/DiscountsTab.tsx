@@ -25,7 +25,7 @@ import {
 import { TDiscountRow } from "@/features/marketing/schema/discount";
 
 const FILTER_SELECT_CLASS =
-  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+  "h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
 
 const TYPE_FILTER_OPTIONS = [
   { value: "", label: "All types" },
@@ -145,7 +145,7 @@ export default function DiscountsTab() {
       {/* ── Filter bar ── */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search promo codes..."
           value={search}
           onChange={(e) => {
@@ -199,7 +199,7 @@ export default function DiscountsTab() {
       </div>
 
       {/* ── Table ── */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={discounts}

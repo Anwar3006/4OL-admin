@@ -46,19 +46,19 @@ const FeaturedTab = () => {
   return (
     <div className="space-y-4">
       {!canFeature && (
-        <div className="bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-bold text-purple-800">
+        <div className="bg-purple-50 dark:bg-purple-500/15 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-bold text-purple-800">
           🛡️ Editing featured placements requires the facilities.feature
           permission (Super Admin). Read-only view below.
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
           <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
             🌟 Featured Placements ({featured.length})
           </p>
           {expiringSoon > 0 && (
-            <span className="text-3xs font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-3 py-1">
+            <span className="text-3xs font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/30 rounded-full px-3 py-1">
               ⚠️ {expiringSoon} expiring within 7 days
             </span>
           )}
@@ -76,7 +76,7 @@ const FeaturedTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="px-5 py-3">Facility</th>
                   <th className="px-3 py-3">Source</th>
                   <th className="px-3 py-3">Window</th>
@@ -88,9 +88,9 @@ const FeaturedTab = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {featured.map((row) => (
-                  <tr key={row.id} className="hover:bg-slate-50/60">
+                  <tr key={row.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
                     <td className="px-5 py-3">
-                      <p className="text-sm font-black text-slate-800">
+                      <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                         {row.facility_name}
                       </p>
                       <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
@@ -102,7 +102,7 @@ const FeaturedTab = () => {
                         className={cn(
                           "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                           row.feature_type === "paid"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
                             : "bg-sky-50 text-sky-700 border-sky-100",
                         )}
                       >
@@ -118,7 +118,7 @@ const FeaturedTab = () => {
                         ? new Date(row.feature_end).toLocaleDateString("en-GB")
                         : "Open-ended"}
                     </td>
-                    <td className="px-3 py-3 text-xs font-black text-slate-700">
+                    <td className="px-3 py-3 text-xs font-black text-slate-700 dark:text-slate-300">
                       {(row.view_count ?? 0).toLocaleString()}
                     </td>
                     <td className="px-3 py-3 text-xs font-bold text-slate-400">
@@ -129,16 +129,16 @@ const FeaturedTab = () => {
                     </td>
                     <td className="px-3 py-3">
                       {row.is_featured_paused ? (
-                        <span className="text-3xs font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2.5 py-1">
+                        <span className="text-3xs font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/30 rounded-full px-2.5 py-1">
                           ⏸ Paused
                         </span>
                       ) : row.feature_end &&
                         new Date(row.feature_end).getTime() < Date.now() ? (
-                        <span className="text-3xs font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 rounded-full px-2.5 py-1">
+                        <span className="text-3xs font-black uppercase tracking-widest bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/30 rounded-full px-2.5 py-1">
                           Expired
                         </span>
                       ) : (
-                        <span className="text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-1">
+                        <span className="text-3xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30 rounded-full px-2.5 py-1">
                           ● Live
                         </span>
                       )}
@@ -177,8 +177,8 @@ const FeaturedTab = () => {
       </div>
 
       {canFeature && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Feature an Active Facility
             </p>
@@ -192,7 +192,7 @@ const FeaturedTab = () => {
               candidates.map((row) => (
                 <div key={row.id} className="flex items-center gap-4 px-5 py-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-slate-800 truncate">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">
                       {row.facility_name}
                     </p>
                     <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">

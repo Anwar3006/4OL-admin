@@ -64,7 +64,7 @@ export default function Page() {
   };
 
   return (
-    <Card className="min-h-[70vh] bg-white mt-5">
+    <Card className="min-h-[70vh] bg-white dark:bg-slate-800 mt-5">
       <CardHeader className="flex flex-row justify-between items-center mb-4">
         <CardTitle>Facility Details</CardTitle>
         <div>
@@ -80,11 +80,11 @@ export default function Page() {
       </CardHeader>
       <CardContent>
       {facility && (
-        <div className="sm:text-sm text-xs text-gray-600 lg:w-[80%] w-full">
+        <div className="sm:text-sm text-xs text-gray-600 dark:text-gray-300 lg:w-[80%] w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 capitalize">
             {facilityFields.map(({ label, key, format }) => (
               <div className="flex" key={key}>
-                <div className="w-1/3 text-gray-900">{label}</div>
+                <div className="w-1/3 text-gray-900 dark:text-gray-100">{label}</div>
                 <div className={`w-2/3 ${key === "email" ? "lowercase" : ""}`}>
                   {facility[key]
                     ? format
@@ -97,11 +97,11 @@ export default function Page() {
 
             {/* Status */}
             <div className="flex">
-              <div className="w-1/3 text-gray-900">Status</div>
+              <div className="w-1/3 text-gray-900 dark:text-gray-100">Status</div>
               <div className="w-2/3">
                 {facility.status === "Approved" ? (
                   <div className="flex items-center">
-                    <p className="bg-green-100 text-green-500 px-4 py-1 rounded-full flex items-center text-sm">
+                    <p className="bg-green-100 dark:bg-green-500/20 text-green-500 px-4 py-1 rounded-full flex items-center text-sm">
                       <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>{" "}
                       Approved
                     </p>
@@ -125,7 +125,7 @@ export default function Page() {
                 Business Hours
               </div>
               <div className="grid grid-cols-1 gap-4 text-sm">
-                <div className="flex justify-between items-center text-gray-900 xl:w-[30%] sm:w-[50%]">
+                <div className="flex justify-between items-center text-gray-900 dark:text-gray-100 xl:w-[30%] sm:w-[50%]">
                   <div className="flex-1">Days</div>
                   <div className="flex-1 text-center">Opening Hours</div>
                   <div className="flex-1 text-right">Closing Hours</div>

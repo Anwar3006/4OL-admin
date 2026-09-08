@@ -21,9 +21,9 @@ const COLUMNS: { status: AdminTask["status"]; title: string; color: string }[] =
 
 const PRIORITY_STYLE: Record<AdminTask["priority"], string> = {
   critical: "bg-slate-900 text-white",
-  high: "bg-red-100 text-red-700",
-  medium: "bg-yellow-100 text-yellow-700",
-  low: "bg-green-100 text-green-700",
+  high: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+  medium: "bg-yellow-100 text-yellow-700 dark:text-yellow-400",
+  low: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
 };
 
 function initials(name: string | null) {
@@ -82,11 +82,11 @@ export default function KanbanBoard() {
           return (
             <div
               key={col.status}
-              className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex flex-col min-h-[400px]"
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden flex flex-col min-h-[400px]"
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(col.status)}
             >
-              <div className="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center">
+              <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className={cn("w-2 h-2 rounded-full", col.color)} />
                   <span className="section-heading">{col.title}</span>
@@ -94,7 +94,7 @@ export default function KanbanBoard() {
                 </div>
                 {canEdit && (
                   <button
-                    className="w-6 h-6 rounded-lg bg-slate-50 text-slate-400 hover:text-slate-600 transition-all font-bold"
+                    className="w-6 h-6 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all font-bold"
                     onClick={() => setDialogStatus(col.status)}
                     aria-label={`Add task to ${col.title}`}
                   >
@@ -114,7 +114,7 @@ export default function KanbanBoard() {
                     onDragStart={() => setDraggingId(t.id)}
                     onClick={() => setSelectedTask(t)}
                     className={cn(
-                      "bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-pointer group",
+                      "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-pointer group",
                       canEdit && "cursor-grab active:cursor-grabbing",
                       t.status === "completed" && "opacity-60",
                     )}
@@ -127,7 +127,7 @@ export default function KanbanBoard() {
                         {seqLabel(t)}
                       </span>
                     </div>
-                    <h4 className={cn("text-xs font-bold text-slate-800 leading-snug mb-1", t.status === "completed" && "line-through text-slate-400")}>
+                    <h4 className={cn("text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug mb-1", t.status === "completed" && "line-through text-slate-400")}>
                       {t.title}
                     </h4>
                     {t.description && (
@@ -135,7 +135,7 @@ export default function KanbanBoard() {
                     )}
                     {t.status === "in_progress" && (
                       <div className="mb-2">
-                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-ek-gold to-amber-500 transition-all"
                             style={{ width: `${t.progressPercent ?? 0}%` }}
@@ -160,7 +160,7 @@ export default function KanbanBoard() {
                           className={cn(
                             "ml-auto text-3xs font-black",
                             isDueUrgent(t)
-                              ? "text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md"
+                              ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/15 px-1.5 py-0.5 rounded-md"
                               : "text-slate-400",
                           )}
                         >

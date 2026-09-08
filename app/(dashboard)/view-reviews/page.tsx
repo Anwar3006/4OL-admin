@@ -69,7 +69,7 @@ const ViewReviews = () => {
     );
   }
   return (
-    <Card className="min-h-[70vh] bg-white mt-5">
+    <Card className="min-h-[70vh] bg-white dark:bg-slate-800 mt-5">
       <CardHeader className="flex flex-row justify-between items-center mb-4">
         <CardTitle>Reviews Details</CardTitle>
         <div>
@@ -85,10 +85,10 @@ const ViewReviews = () => {
       </CardHeader>
       <CardContent className="p-0">
       {reviewData && (
-        <div className="sm:text-sm text-xs text-gray-600 lg:w-[50%] w-full">
+        <div className="sm:text-sm text-xs text-gray-600 dark:text-gray-300 lg:w-[50%] w-full">
           <div className="grid grid-cols-1 gap-2 capitalize  lg:p-6 p-4">
             <div className="flex">
-              <p className="w-1/3 text-gray-900">Full Name</p>
+              <p className="w-1/3 text-gray-900 dark:text-gray-100">Full Name</p>
               <p className="w-2/3">
                 {reviewData.user_profiles?.first_name || "N/A"}{" "}
                 {reviewData?.user_profiles?.last_name || "N/A"}
@@ -96,19 +96,19 @@ const ViewReviews = () => {
             </div>
 
             <div className="flex">
-              <p className="w-1/3 text-gray-900">Facility Name</p>
+              <p className="w-1/3 text-gray-900 dark:text-gray-100">Facility Name</p>
               <p className="w-2/3">
                 {reviewData.facility_profile?.facility_name || "N/A"}
               </p>
             </div>
 
             <div className="flex">
-              <p className="w-1/3 text-gray-900">Comment</p>
+              <p className="w-1/3 text-gray-900 dark:text-gray-100">Comment</p>
               <p className="w-2/3">{reviewData.comment || "N/A"}</p>
             </div>
 
             <div className="flex">
-              <p className="w-1/3 text-gray-900">Rating</p>
+              <p className="w-1/3 text-gray-900 dark:text-gray-100">Rating</p>
               <p className="w-2/3">{reviewData.rating || "N/A"}</p>
             </div>
           </div>

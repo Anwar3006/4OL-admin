@@ -220,13 +220,13 @@ const DataTableComponent = <TData, TValue>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer bg-transparent border-0"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer bg-transparent border-0"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40 bg-white z-[100]">
+        <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-800 z-[100]">
           {rowActions.map((action, i) => (
             <DropdownMenuItem
               key={i}
@@ -234,8 +234,8 @@ const DataTableComponent = <TData, TValue>({
               className={cn(
                 "flex items-center gap-2 cursor-pointer",
                 action.danger
-                  ? "text-red-600 focus:text-red-600 focus:bg-red-50"
-                  : "text-slate-700",
+                  ? "text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50"
+                  : "text-slate-700 dark:text-slate-300",
               )}
             >
               {action.icon && <span className="text-sm">{action.icon}</span>}
@@ -251,7 +251,16 @@ const DataTableComponent = <TData, TValue>({
     <div className="space-y-4 relative">
       {/* Floating Bulk Actions Bar */}
       {hasSelection && (onDeleteSelected || bulkActions?.length) && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate/50 text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        // bg-slate-900, not the previous bg-slate/50 — "slate" alone with no
+        // shade number is not a real Tailwind color, so it generated no CSS
+        // and this bar had no background from either color name it tried
+        // (this one, or the stale text-black paired with it). Its own
+        // children already assume a dark pill (text-slate-200,
+        // hover:text-white, text-red-400), so it is themed once, here, and
+        // deliberately does not get a dark: pairing — a floating toast like
+        // this stays the same dark chip regardless of page theme, same as
+        // the sidebar.
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <span className="text-sm font-medium">
             {selectedRows.length} item{selectedRows.length > 1 ? "s" : ""}{" "}
             selected
@@ -263,7 +272,7 @@ const DataTableComponent = <TData, TValue>({
               variant="ghost"
               size="sm"
               onClick={() => handleBulkAction(action)}
-              className="text-slate-200 hover:text-white hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-2xs"
+              className="text-slate-200 hover:text-white hover:bg-white/10 dark:hover:bg-slate-800/10 h-8 font-bold uppercase tracking-widest text-2xs"
             >
               {action.label}
             </Button>
@@ -273,7 +282,7 @@ const DataTableComponent = <TData, TValue>({
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 font-bold uppercase tracking-widest text-2xs"
+              className="text-red-400 hover:text-red-300 hover:bg-white/10 dark:hover:bg-slate-800/10 h-8 font-bold uppercase tracking-widest text-2xs"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {deleteLabel}
@@ -341,7 +350,7 @@ const DataTableComponent = <TData, TValue>({
           />
 
           {isError && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-20 flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm z-20 flex items-center justify-center">
               <div className="flex items-center gap-2 text-sm text-red-500">
                 <AlertCircle className="h-5 w-5" />
                 <span>
@@ -353,10 +362,10 @@ const DataTableComponent = <TData, TValue>({
 
           <div
             ref={scrollRef}
-            className="rounded-lg border border-slate-200 overflow-x-auto scroll-smooth shadow-sm"
+            className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto scroll-smooth shadow-sm"
           >
             <Table className="min-w-full">
-              <TableHeader className="bg-slate-100">
+              <TableHeader className="bg-slate-100 dark:bg-slate-800">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
@@ -381,7 +390,7 @@ const DataTableComponent = <TData, TValue>({
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody className="bg-slate-100">
+              <TableBody className="bg-slate-100 dark:bg-slate-800">
                 {isLoading && (!data || data.length === 0) ? (
                   Array.from({ length: 5 }).map((_, idx) => (
                     <TableRow key={`skeleton-${idx}`} className="hover:bg-transparent">
@@ -484,13 +493,13 @@ const DataTableComponent = <TData, TValue>({
                   </Button>
 
                   <div className="flex items-center gap-2 px-2">
-                    <span className="text-xs font-black text-slate-700">
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">
                       {pag.currentPage}
                     </span>
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       of
                     </span>
-                    <span className="text-xs font-black text-slate-700">
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">
                       {pag.totalPages}
                     </span>
                   </div>

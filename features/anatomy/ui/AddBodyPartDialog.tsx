@@ -14,7 +14,7 @@ export { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
 import { BODY_SYSTEMS } from "@/features/anatomy/schema/body-systems";
 
 const inputCls =
-  "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 const labelCls =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
@@ -113,7 +113,7 @@ export default function AddBodyPartDialog({
           <div>
             <label className={labelCls}>Description</label>
             <textarea
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}

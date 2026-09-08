@@ -65,8 +65,8 @@ export default function ExpensesTab() {
     return (
       <div className="w-full min-w-0 card mt-4 py-20 text-center">
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center mx-auto text-2xl">🔒</div>
-          <h2 className="text-lg font-black text-slate-800 tracking-tight">Expenses (SA Only)</h2>
+          <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-center mx-auto text-2xl">🔒</div>
+          <h2 className="text-lg font-black text-slate-800 dark:text-slate-200 tracking-tight">Expenses (SA Only)</h2>
           <p className="text-xs text-slate-500 font-medium">
             Internal platform expenses, hosting costs, P&L and net profit are only visible to Super Admins.
           </p>
@@ -85,7 +85,7 @@ export default function ExpensesTab() {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         />
         <button
           onClick={() => setDialogOpen(true)}
@@ -103,7 +103,7 @@ export default function ExpensesTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <div className="card-header border-b border-slate-100 mb-4">
+          <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4">
             <h2 className="card-title text-xs">💸 Expense Breakdown — {month}</h2>
           </div>
           {isLoading ? (
@@ -119,10 +119,10 @@ export default function ExpensesTab() {
                 return (
                   <div key={row.id}>
                     <div className="flex justify-between text-2xs font-bold mb-1">
-                      <span className="text-slate-600">{CATEGORY_LABELS[row.category] ?? row.category}</span>
-                      <span className="text-slate-900 font-black">{formatCurrency(row.amount)} ({pct}%)</span>
+                      <span className="text-slate-600 dark:text-slate-300">{CATEGORY_LABELS[row.category] ?? row.category}</span>
+                      <span className="text-slate-900 dark:text-slate-100 font-black">{formatCurrency(row.amount)} ({pct}%)</span>
                     </div>
-                    <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
+                    <div className="h-2 bg-slate-50 dark:bg-slate-900 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{ width: `${pct}%`, background: BAR_COLORS[i % BAR_COLORS.length] }}
@@ -136,13 +136,13 @@ export default function ExpensesTab() {
         </div>
 
         <div className="card">
-          <div className="card-header border-b border-slate-100 mb-4">
+          <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4">
             <h2 className="card-title text-xs">📊 P&L Summary</h2>
           </div>
           <div className="space-y-2 text-xs font-bold">
             <div className="flex justify-between border-b border-slate-50 pb-2">
               <span className="text-slate-500 font-medium">Total Revenue</span>
-              <span className="text-emerald-600 font-black">{formatCurrency(revenue)}</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">{formatCurrency(revenue)}</span>
             </div>
             <div className="flex justify-between border-b border-slate-50 pb-2">
               <span className="text-slate-500 font-medium">Total Expenses (all months)</span>
@@ -153,8 +153,8 @@ export default function ExpensesTab() {
               <span className="text-red-400 font-black">{formatCurrency(monthTotal)}</span>
             </div>
             <div className="flex justify-between pt-2 text-sm font-black">
-              <span className="text-slate-800">Net Profit</span>
-              <span className={netProfit >= 0 ? "text-emerald-600" : "text-red-600"}>
+              <span className="text-slate-800 dark:text-slate-200">Net Profit</span>
+              <span className={netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
                 {formatCurrency(netProfit)}
               </span>
             </div>
@@ -175,7 +175,7 @@ export default function ExpensesTab() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-white outline-none"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
               >
                 {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -190,7 +190,7 @@ export default function ExpensesTab() {
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
             <div>
@@ -198,7 +198,7 @@ export default function ExpensesTab() {
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
             <button

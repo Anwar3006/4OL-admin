@@ -66,7 +66,7 @@ export default function AdherenceTab() {
       accessorKey: "medication_reminders",
       header: "Drug",
       cell: ({ row }) => (
-        <span className="font-bold text-slate-800">
+        <span className="font-bold text-slate-800 dark:text-slate-200">
           {row.original.medication_reminders?.drug_name || "Unknown Drug"}
         </span>
       ),
@@ -75,7 +75,7 @@ export default function AdherenceTab() {
       accessorKey: "user_profiles",
       header: "User",
       cell: ({ row }) => (
-        <span className="font-medium text-slate-700">
+        <span className="font-medium text-slate-700 dark:text-slate-300">
           {row.original.user_profiles?.name || "Unknown User"}
         </span>
       ),
@@ -118,14 +118,14 @@ export default function AdherenceTab() {
         accessorKey: "drug_name",
         header: "Drug Name",
         cell: ({ row }) => (
-          <span className="font-bold text-slate-800">{row.original.drug_name}</span>
+          <span className="font-bold text-slate-800 dark:text-slate-200">{row.original.drug_name}</span>
         ),
       },
       {
         accessorKey: "active_reminders",
         header: "Active Reminders",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">
             {Number(row.original.active_reminders || 0).toLocaleString()}
           </span>
         ),
@@ -137,7 +137,7 @@ export default function AdherenceTab() {
           const rate = Number(row.original.adherence_rate || 0);
           return (
             <div className="flex items-center gap-2 min-w-[120px]">
-              <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full",
@@ -146,7 +146,7 @@ export default function AdherenceTab() {
                   style={{ width: `${Math.min(100, rate)}%` }}
                 />
               </div>
-              <span className="text-xs font-black text-slate-700 w-10 text-right">{rate}%</span>
+              <span className="text-xs font-black text-slate-700 dark:text-slate-300 w-10 text-right">{rate}%</span>
             </div>
           );
         },
@@ -155,7 +155,7 @@ export default function AdherenceTab() {
         accessorKey: "missed_30d",
         header: "Missed (30d)",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-red-600">
+          <span className="text-xs font-bold text-red-600 dark:text-red-400">
             {Number(row.original.missed_30d || 0).toLocaleString()}
           </span>
         ),
@@ -164,7 +164,7 @@ export default function AdherenceTab() {
         accessorKey: "avg_doses_per_day",
         header: "Avg Doses/Day",
         cell: ({ row }) => (
-          <span className="text-xs font-medium text-slate-600">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
             {Number(row.original.avg_doses_per_day || 0).toFixed(1)}
           </span>
         ),
@@ -176,7 +176,7 @@ export default function AdherenceTab() {
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
       {/* Privacy notice — aggregate-only view (mockup) */}
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 font-medium">
+      <div className="flex items-start gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-xs text-slate-500 font-medium">
         <span>🔒</span>
         <span>
           Adherence data is shown as <strong>aggregate per-drug statistics</strong> only.
@@ -218,7 +218,7 @@ export default function AdherenceTab() {
       </div>
 
       {/* Per-drug aggregate table */}
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+      <div className="card p-0 overflow-x-auto border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <DataTable
           columns={drugColumns}
           data={aggregateRows}
@@ -249,7 +249,7 @@ export default function AdherenceTab() {
                 "h-8 px-3 rounded-lg border text-xs font-bold transition-colors cursor-pointer",
                 statusFilter === f.id
                   ? "bg-ek-green-dark text-white border-ek-green-dark"
-                  : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
+                  : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900",
               )}
             >
               {f.label}
@@ -258,7 +258,7 @@ export default function AdherenceTab() {
         </div>
         <button className="btn btn-secondary btn-sm ml-auto">📥 Export</button>
       </div>
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+      <div className="card p-0 overflow-x-auto border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <DataTable
           columns={columns}
           data={rows}

@@ -64,7 +64,7 @@ export default function TriviaOperations({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b bg-slate-50">
+              <tr className="border-b bg-slate-50 dark:bg-slate-900">
                 <th className="p-3">Event</th>
                 <th className="p-3">Window</th>
                 <th className="p-3">Status</th>
@@ -134,7 +134,7 @@ export default function TriviaOperations({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b bg-slate-50">
+              <tr className="border-b bg-slate-50 dark:bg-slate-900">
                 <th className="p-3">Lead</th>
                 <th className="p-3">Mobile</th>
                 <th className="p-3">Social</th>
@@ -149,7 +149,7 @@ export default function TriviaOperations({
                   <td className="p-3">{lead.name}</td>
                   <td className="p-3">{lead.mobile}</td>
                   <td className="p-3">
-                    <span className="font-medium text-slate-700">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
                       {lead.socialPlatform ?? "Social"}
                     </span>
                     <br />
@@ -211,7 +211,7 @@ export default function TriviaOperations({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b bg-slate-50">
+              <tr className="border-b bg-slate-50 dark:bg-slate-900">
                 <th className="p-3">Tier</th>
                 <th className="p-3">Prize</th>
                 <th className="p-3">Winner</th>
@@ -348,7 +348,7 @@ export default function TriviaOperations({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b bg-slate-50">
+                <tr className="border-b bg-slate-50 dark:bg-slate-900">
                   <th className="p-3">Device hash</th>
                   <th className="p-3">Mobile hash</th>
                   <th className="p-3">Violation</th>
@@ -424,7 +424,7 @@ export default function TriviaOperations({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b bg-slate-50">
+                <tr className="border-b bg-slate-50 dark:bg-slate-900">
                   <th className="p-3">Rule</th>
                   <th className="p-3">Value</th>
                   <th className="p-3">Enforced by</th>
@@ -595,7 +595,7 @@ export function TriviaBatchModal({
         {questions.map((question) => (
           <div
             key={question.id}
-            className="rounded-lg border border-slate-200 p-3"
+            className="rounded-lg border border-slate-200 dark:border-slate-700 p-3"
           >
             <div className="flex items-start gap-3">
               <input
@@ -618,14 +618,14 @@ export function TriviaBatchModal({
                   )}
                 </div>
                 <p className="text-xs font-medium">{question.question}</p>
-                <ul className="mt-1 space-y-0.5 text-2xs text-slate-600">
+                <ul className="mt-1 space-y-0.5 text-2xs text-slate-600 dark:text-slate-300">
                   {(question.options ?? []).map(
                     (option: string, index: number) => (
                       <li
                         key={index}
                         className={cn(
                           index === question.correct_option &&
-                            "font-semibold text-emerald-700",
+                            "font-semibold text-emerald-700 dark:text-emerald-400",
                         )}
                       >
                         {String.fromCharCode(65 + index)}. {option}

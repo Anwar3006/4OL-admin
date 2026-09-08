@@ -96,7 +96,7 @@ const SymptomsPage = () => {
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
           <div className="min-w-0">
-            <div className="font-bold text-slate-800 truncate">
+            <div className="font-bold text-slate-800 dark:text-slate-200 truncate">
               {row.original.name.length > 20
                 ? `${row.original.name.slice(0, 20)}...`
                 : row.original.name}
@@ -114,7 +114,7 @@ const SymptomsPage = () => {
             row.original.bodyParts.slice(0, 3).map((bp: string, i: number) => (
               <span
                 key={i}
-                className="text-2xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
+                className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded font-bold border border-slate-100 dark:border-slate-800"
               >
                 {bp}
               </span>
@@ -178,7 +178,7 @@ const SymptomsPage = () => {
       accessorKey: "views",
       header: "Views",
       cell: ({ row }: any) => (
-        <div className="text-xs font-bold text-slate-600">
+        <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
           {row.original.views?.toLocaleString() || "0"}
         </div>
       ),
@@ -191,7 +191,7 @@ const SymptomsPage = () => {
         return (
           <div className="flex items-center justify-end gap-2">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 openViewDialog(symptom.id);
@@ -200,7 +200,7 @@ const SymptomsPage = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 addSymptom.open(symptom);
@@ -209,7 +209,7 @@ const SymptomsPage = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteClick(symptom);
@@ -280,7 +280,7 @@ const SymptomsPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={
@@ -304,9 +304,9 @@ const SymptomsPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 <span className="mr-1.5">{tab.icon}</span>
@@ -324,7 +324,7 @@ const SymptomsPage = () => {
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[300px]">
                 <input
-                  className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 text-xs focus:ring-4 focus:ring-ek-green/10 focus:border-ek-green outline-none transition-all"
+                  className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-4 focus:ring-ek-green/10 focus:border-ek-green outline-none transition-all"
                   placeholder="🔍 Search symptoms by name, category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -345,10 +345,10 @@ const SymptomsPage = () => {
                   </svg>
                 </div>
               </div>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
+              <select className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-800 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                 <option>All Categories</option>
               </select>
-              <select className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors">
+              <select className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-800 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                 <option>All Status</option>
               </select>
               <button className="btn btn-secondary h-10 px-4 font-black uppercase tracking-widest text-2xs">
@@ -356,7 +356,7 @@ const SymptomsPage = () => {
               </button>
             </div>
 
-            <div className="card p-0 overflow-hidden min-h-[400px] border-slate-200 shadow-xl shadow-slate-100">
+            <div className="card p-0 overflow-hidden min-h-[400px] border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-100">
               <DataTable
                 columns={columns}
                 data={data?.symptoms || []}

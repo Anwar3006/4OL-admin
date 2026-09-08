@@ -126,7 +126,7 @@ export function RegisterFacilityDialog({
           <div className="grid gap-2">
             <Label>Facility</Label>
             <select
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={facilityId}
               onChange={(event) => setFacilityId(event.target.value)}
             >
@@ -182,7 +182,7 @@ export function RegisterFacilityDialog({
             <div className="grid gap-2">
               <Label>Hardware option</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                 value={hardware}
                 onChange={(event) => setHardware(event.target.value)}
               >
@@ -194,7 +194,7 @@ export function RegisterFacilityDialog({
             <div className="grid gap-2">
               <Label>Subscription tier</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                 value={tier}
                 onChange={(event) => setTier(event.target.value)}
               >

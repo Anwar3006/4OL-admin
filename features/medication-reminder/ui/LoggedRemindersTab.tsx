@@ -90,7 +90,7 @@ export default function LoggedRemindersTab() {
           const userId = row.original.user_profiles?.user_id;
           return (
             <div>
-              <div className="font-medium text-slate-700">
+              <div className="font-medium text-slate-700 dark:text-slate-300">
                 {isSuperAdmin ? name : maskName(name)}
               </div>
               {userId && (
@@ -114,7 +114,7 @@ export default function LoggedRemindersTab() {
               />
             )}
             <div>
-              <div className="font-bold text-slate-800">{row.original.drug_name}</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200">{row.original.drug_name}</div>
               {row.original.generic_name && (
                 <div className="text-2xs text-slate-400">
                   {row.original.generic_name}
@@ -128,7 +128,7 @@ export default function LoggedRemindersTab() {
         accessorKey: "drug_type",
         header: "Type / Form",
         cell: ({ row }) => (
-          <span className="text-xs font-medium text-slate-600 capitalize">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 capitalize">
             {row.original.drug_type || "—"}
           </span>
         ),
@@ -143,7 +143,7 @@ export default function LoggedRemindersTab() {
         header: "Schedule",
         cell: ({ row }) => (
           <div>
-            <div className="text-xs font-medium text-slate-700">
+            <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
               {formatReminderInterval(row.original.interval, row.original.interval_unit)}
             </div>
             {row.original.notification_schedule && (
@@ -207,7 +207,7 @@ export default function LoggedRemindersTab() {
               👁️
             </button>
             <button
-              className="hover:bg-amber-100 rounded p-0.5 cursor-pointer"
+              className="hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded p-0.5 cursor-pointer"
               onClick={() => toast.info("Nudge queued via Notifications campaign builder.")}
               aria-label="Nudge user"
             >
@@ -223,7 +223,7 @@ export default function LoggedRemindersTab() {
   return (
     <div className="space-y-4 mt-4">
       {/* Privacy notice (mockup) */}
-      <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 font-medium">
+      <div className="flex items-start gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3 text-xs text-slate-500 font-medium">
         <span>🔒</span>
         <span>
           User identifiers are <strong>partially masked</strong>. Full IDs are visible to
@@ -235,13 +235,13 @@ export default function LoggedRemindersTab() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search by drug name..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
         />
         <select
-          className="h-8 px-3 rounded-lg border border-slate-200 text-xs bg-white outline-none"
+          className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 outline-none"
           value={formFilter}
           onChange={(e) => {
             setFormFilter(e.target.value);
@@ -254,7 +254,7 @@ export default function LoggedRemindersTab() {
           ))}
         </select>
         <select
-          className="h-8 px-3 rounded-lg border border-slate-200 text-xs bg-white outline-none"
+          className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 outline-none"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -271,7 +271,7 @@ export default function LoggedRemindersTab() {
         </button>
       </div>
 
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+      <div className="card p-0 overflow-x-auto border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <DataTable
           columns={columns}
           data={rows}
@@ -292,7 +292,7 @@ export default function LoggedRemindersTab() {
       </div>
 
       {/* Bulk action bar (mockup footer) */}
-      <div className="flex flex-wrap gap-2 items-center rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <div className="flex flex-wrap gap-2 items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3">
         <span className="text-2xs font-black uppercase tracking-widest text-slate-400 mr-auto">
           Bulk Actions
         </span>

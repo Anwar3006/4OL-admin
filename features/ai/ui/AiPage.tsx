@@ -190,7 +190,7 @@ export default function AIPage() {
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-none"
               >
                 <tab.icon className="mr-2 h-4 w-4" />
                 {tab.label}

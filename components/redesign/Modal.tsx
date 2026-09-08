@@ -37,11 +37,11 @@ export default function Modal({
         className="modal-content" 
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-slate-100">
-          <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">{title}</h3>
           <button 
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -52,7 +52,7 @@ export default function Modal({
         </div>
         
         {footer && (
-          <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-xl">
+          <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 rounded-b-xl">
             {footer}
           </div>
         )}

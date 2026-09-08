@@ -52,14 +52,14 @@ export default function InteractionsTab() {
         id: "drug_a",
         header: "Drug A",
         cell: ({ row }) => (
-          <span className="font-bold text-slate-800">{row.original.drug_a?.name || "—"}</span>
+          <span className="font-bold text-slate-800 dark:text-slate-200">{row.original.drug_a?.name || "—"}</span>
         ),
       },
       {
         id: "drug_b",
         header: "Drug B",
         cell: ({ row }) => (
-          <span className="font-bold text-slate-800">{row.original.drug_b?.name || "—"}</span>
+          <span className="font-bold text-slate-800 dark:text-slate-200">{row.original.drug_b?.name || "—"}</span>
         ),
       },
       {
@@ -80,7 +80,7 @@ export default function InteractionsTab() {
         accessorKey: "effect",
         header: "Effect",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 max-w-[220px] inline-block truncate">
+          <span className="text-xs text-slate-600 dark:text-slate-300 max-w-[220px] inline-block truncate">
             {row.original.effect || "—"}
           </span>
         ),
@@ -89,7 +89,7 @@ export default function InteractionsTab() {
         accessorKey: "recommended_action",
         header: "Recommended Action",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 max-w-[220px] inline-block truncate">
+          <span className="text-xs text-slate-600 dark:text-slate-300 max-w-[220px] inline-block truncate">
             {row.original.recommended_action || "—"}
           </span>
         ),
@@ -98,7 +98,7 @@ export default function InteractionsTab() {
         id: "flags_30d",
         header: "Flags (30d)",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">
             {(row.original as InteractionRow & { flags_30d?: number }).flags_30d ?? 0}
           </span>
         ),
@@ -111,7 +111,7 @@ export default function InteractionsTab() {
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search by drug name or effect…"
           value={search}
           onChange={(e) => {
@@ -120,7 +120,7 @@ export default function InteractionsTab() {
           }}
         />
         <select
-          className="h-8 px-3 rounded-lg border border-slate-200 text-xs bg-white outline-none"
+          className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 outline-none"
           value={severity}
           onChange={(e) => {
             setSeverity(e.target.value);
@@ -137,7 +137,7 @@ export default function InteractionsTab() {
         </button>
       </div>
 
-      <div className="card p-0 overflow-x-auto border border-slate-200 shadow-sm rounded-xl">
+      <div className="card p-0 overflow-x-auto border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
         <DataTable
           columns={columns}
           data={rows}
@@ -163,7 +163,7 @@ export default function InteractionsTab() {
 }
 
 const inputCls =
-  "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 const labelCls =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
@@ -247,7 +247,7 @@ function AddInteractionDialog({
           <div>
             <label className={labelCls}>Effect</label>
             <textarea
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
               rows={2}
               value={effect}
               onChange={(e) => setEffect(e.target.value)}
@@ -257,7 +257,7 @@ function AddInteractionDialog({
           <div>
             <label className={labelCls}>Recommended Action</label>
             <textarea
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
               rows={2}
               value={recommendedAction}
               onChange={(e) => setRecommendedAction(e.target.value)}
@@ -303,8 +303,8 @@ function DrugPicker({
     <div>
       <label className={labelCls}>{label}</label>
       {selected ? (
-        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
-          <span className="text-xs font-bold text-emerald-800">{selected.name}</span>
+        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-500/15/50 px-3 py-2">
+          <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">{selected.name}</span>
           <button
             className="text-2xs font-bold text-slate-400 hover:text-red-500 cursor-pointer"
             onClick={() => onSelect("")}
@@ -321,14 +321,14 @@ function DrugPicker({
             onChange={(e) => onSearch(e.target.value)}
           />
           {search && (
-            <div className="mt-1 max-h-32 overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100">
+            <div className="mt-1 max-h-32 overflow-y-auto rounded-lg border border-slate-100 dark:border-slate-800 divide-y divide-slate-100">
               {options.map((drug) => (
                 <button
                   key={drug.id}
-                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50/50 cursor-pointer"
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50/50 dark:hover:bg-emerald-500/15/50 cursor-pointer"
                   onClick={() => onSelect(drug.id)}
                 >
-                  <span className="font-bold text-slate-700">{drug.name}</span>
+                  <span className="font-bold text-slate-700 dark:text-slate-300">{drug.name}</span>
                   <span className="text-slate-400"> · {drug.generic_name || ""}</span>
                 </button>
               ))}

@@ -33,7 +33,7 @@ const CoverageTab = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 {[
                   "Region",
                   "Facilities",
@@ -65,32 +65,32 @@ const CoverageTab = () => {
                   <tr
                     key={row.region_key}
                     className={cn(
-                      "border-b border-slate-50 hover:bg-slate-50/50",
-                      row.prioritized && "bg-amber-50/40",
+                      "border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50",
+                      row.prioritized && "bg-amber-50/40 dark:bg-amber-500/15/40",
                     )}
                   >
-                    <td className="px-4 py-3 font-black text-slate-700">
+                    <td className="px-4 py-3 font-black text-slate-700 dark:text-slate-300">
                       {row.prioritized && <span title="Prioritized">🔺 </span>}
                       {row.region}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {row.facilities_registered.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {row.footprint_points.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {row.collectors_assigned}
                       {row.collectors_active > 0 && (
-                        <span className="text-emerald-600"> ({row.collectors_active} active)</span>
+                        <span className="text-emerald-600 dark:text-emerald-400"> ({row.collectors_active} active)</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {row.districts_covered}/{row.districts_total}
                     </td>
                     <td className="px-4 py-3 min-w-[140px]">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                           <div
                             className={cn(
                               "h-full rounded-full",
@@ -105,7 +105,7 @@ const CoverageTab = () => {
                             style={{ width: `${row.coverage_percent}%` }}
                           />
                         </div>
-                        <span className="text-2xs font-black text-slate-600 w-8">
+                        <span className="text-2xs font-black text-slate-600 dark:text-slate-300 w-8">
                           {row.coverage_percent}%
                         </span>
                       </div>

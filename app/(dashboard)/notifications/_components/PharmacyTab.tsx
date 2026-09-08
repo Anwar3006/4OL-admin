@@ -156,7 +156,7 @@ export default function PharmacyTab() {
       </Card>
 
       <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
         <div>
           <span className="font-medium text-slate-700 dark:text-slate-200">Send rules enforced server-side: </span>
           (1) radius limited to 0.5 / 2 / 5 km; (2) every campaign names its message and audience size;
@@ -277,8 +277,8 @@ function NewPharmacyCampaignDialog({
                   className={cn(
                     "flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                     radius === value
-                      ? "border-emerald-600 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40"
-                      : "border-slate-200 text-slate-500 hover:border-slate-300 dark:border-slate-700",
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-950/40"
+                      : "border-slate-200 text-slate-500 hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700",
                   )}
                 >
                   <MapPin className="h-3.5 w-3.5" />

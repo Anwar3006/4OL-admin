@@ -30,7 +30,7 @@ const BUSINESS_CATEGORIES = [
 ];
 
 const inputClass =
-  "w-full h-10 px-4 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
+  "w-full h-10 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all";
 const labelClass =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
@@ -146,7 +146,7 @@ export default function RegisterIbpDialog({ open, onOpenChange }: RegisterIbpDia
           </div>
 
           {restricted && (
-            <div className="sm:col-span-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 leading-relaxed">
+            <div className="sm:col-span-2 rounded-xl border border-red-200 bg-red-50 dark:bg-red-500/15 p-3 text-xs text-red-700 dark:text-red-400 leading-relaxed">
               ⛔ {RESTRICTED_TYPE_WARNING} Use the Facilities module instead.
             </div>
           )}
@@ -250,7 +250,7 @@ export default function RegisterIbpDialog({ open, onOpenChange }: RegisterIbpDia
             </select>
           </div>
 
-          <label className="sm:col-span-2 flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer">
+          <label className="sm:col-span-2 flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
             <input
               type="checkbox"
               className="h-4 w-4 accent-emerald-600"
@@ -261,7 +261,7 @@ export default function RegisterIbpDialog({ open, onOpenChange }: RegisterIbpDia
           </label>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 mt-2">
+        <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 mt-2">
           <button className="btn btn-secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </button>

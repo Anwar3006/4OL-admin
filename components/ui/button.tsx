@@ -12,9 +12,9 @@ const buttonVariants = cva(
           "bg-slate-900 text-white shadow-sm hover:bg-slate-800 hover:shadow-md",
         destructive: "bg-red-500 text-white shadow-xs hover:bg-red-600",
         outline:
-          "border border-slate-200 bg-white shadow-xs hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900",
-        secondary: "bg-slate-100 text-slate-900 shadow-xs hover:bg-slate-200",
-        ghost: "hover:bg-slate-100 hover:text-slate-900",
+          "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-100",
+        secondary: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs hover:bg-slate-200",
+        ghost: "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100",
         link: "text-primary underline-offset-4 hover:underline",
         emerald:
           "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100",

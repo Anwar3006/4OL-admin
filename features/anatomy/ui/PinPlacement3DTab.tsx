@@ -201,11 +201,11 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
           </select>
 
           {captured ? (
-            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-              <p className="text-xs font-bold text-emerald-800">
+            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 p-3">
+              <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
                 Captured: x={captured.x}, y={captured.y}, z={captured.z}
               </p>
-              <p className="mt-1 text-xs text-emerald-700">
+              <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">
                 Detected region: {captured.region ?? "—"}
               </p>
               <div className="mt-2 flex gap-2">
@@ -224,7 +224,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
                 </button>
               </div>
               {!bodyPartId && (
-                <p className="mt-2 text-xs text-amber-600">
+                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
                   Select a body part above to enable saving.
                 </p>
               )}
@@ -247,10 +247,10 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
             {hotspots.map((h) => (
               <li
                 key={h.id}
-                className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                className="flex items-center justify-between rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-700">
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     {h.body_parts?.name ?? h.body_part_id}
                   </p>
                   <p className="text-2xs text-slate-400">

@@ -100,7 +100,7 @@ export function MultiSelect({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-white"
+          className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-white dark:bg-slate-800"
           align="start"
           side="bottom"
           sideOffset={4}

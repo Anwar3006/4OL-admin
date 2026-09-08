@@ -87,7 +87,7 @@ export default function RefundsTab() {
         header: "Payer",
         cell: ({ row }) => (
           <div>
-            <span className="font-black text-slate-800">
+            <span className="font-black text-slate-800 dark:text-slate-200">
               {row.original.transactions?.payer_name || "—"}
             </span>
             <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest">
@@ -109,7 +109,7 @@ export default function RefundsTab() {
         accessorKey: "amount",
         header: "Amount",
         cell: ({ row }) => (
-          <span className="font-black text-amber-600">
+          <span className="font-black text-amber-600 dark:text-amber-400">
             {formatCurrency(row.original.amount)}
           </span>
         ),
@@ -135,7 +135,7 @@ export default function RefundsTab() {
                   e.stopPropagation();
                   decide.mutate({ id: row.original.id, decision: "approve" });
                 }}
-                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 disabled:opacity-50"
               >
                 Approve
               </button>
@@ -145,7 +145,7 @@ export default function RefundsTab() {
                   e.stopPropagation();
                   decide.mutate({ id: row.original.id, decision: "reject" });
                 }}
-                className="h-7 px-2 rounded-lg border border-red-200 text-3xs font-black uppercase tracking-widest text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-red-200 text-3xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 disabled:opacity-50"
               >
                 Reject
               </button>
@@ -162,7 +162,7 @@ export default function RefundsTab() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           <option value="">All Refunds</option>
           <option value="pending_approval">Pending Approval</option>
@@ -204,7 +204,7 @@ export default function RefundsTab() {
               <input
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="TXN-… / BACKFILL-SUB-…"
               />
             </div>
@@ -218,7 +218,7 @@ export default function RefundsTab() {
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="₵"
               />
             </div>
@@ -229,7 +229,7 @@ export default function RefundsTab() {
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-white outline-none"
+                className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
               >
                 {Object.entries(REASON_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -244,7 +244,7 @@ export default function RefundsTab() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
             <button

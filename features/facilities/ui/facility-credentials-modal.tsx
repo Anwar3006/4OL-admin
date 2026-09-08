@@ -54,7 +54,7 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md border-t-4 border-t-emerald-500">
         <DialogHeader>
-          <div className="flex items-center gap-2 text-emerald-600 mb-2">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
             <ShieldCheck className="h-5 w-5" />
             <span className="text-xs font-bold uppercase tracking-wider">
               Registration Success
@@ -81,7 +81,7 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
                 id="email"
                 value={data.email}
                 readOnly
-                className="pr-10 bg-slate-50 font-medium"
+                className="pr-10 bg-slate-50 dark:bg-slate-900 font-medium"
               />
               <Button
                 size="icon"
@@ -107,7 +107,7 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
                 type={showPassword ? "text" : "password"}
                 value={data.password}
                 readOnly
-                className="pr-20 bg-slate-50 font-mono"
+                className="pr-20 bg-slate-50 dark:bg-slate-900 font-mono"
               />
               <div className="absolute right-0 top-0 h-full flex items-center pr-1">
                 <Button
@@ -139,7 +139,7 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
           </div>
 
           {/* Warning Message */}
-          <div className="flex gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100 text-amber-800">
+          <div className="flex gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-100 dark:border-amber-500/30 text-amber-800">
             <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed">
               <span className="font-bold">Security Warning:</span> This is a

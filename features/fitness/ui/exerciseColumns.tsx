@@ -12,11 +12,11 @@ export const exerciseColumns: ColumnDef<any>[] = [
     header: "Exercise Name",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200 text-sm">
+        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-200 dark:border-slate-700 text-sm">
           🏋️
         </div>
         <div>
-          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.exercise_name}
           </div>
         </div>
@@ -37,11 +37,11 @@ export const exerciseColumns: ColumnDef<any>[] = [
     header: "Muscle Groups",
     cell: ({ row }) => (
       <div className="flex flex-wrap gap-1">
-        <span className="text-2xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+        <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
           {row.original.primary_muscle_group}
         </span>
         {row.original.secondary_muscles && (
-          <span className="text-2xs font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+          <span className="text-2xs font-medium text-slate-500 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-800">
             {row.original.secondary_muscles}
           </span>
         )}
@@ -52,7 +52,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "equipment",
     header: "Equipment",
     cell: ({ row }) => (
-      <span className="text-xs font-medium text-slate-600">
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
         {row.original.equipment_required}
       </span>
     ),
@@ -65,10 +65,10 @@ export const exerciseColumns: ColumnDef<any>[] = [
         className={cn(
           "inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-widest border",
           row.original.difficulty_level === "beginner"
-            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
             : row.original.difficulty_level === "intermediate"
-              ? "bg-amber-50 text-amber-700 border-amber-100"
-              : "bg-red-50 text-red-700 border-red-100",
+              ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
+              : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30",
         )}
       >
         {row.original.difficulty_level || "Medium"}
@@ -79,8 +79,8 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "steps_reps",
     header: "Steps / Reps",
     cell: ({ row }) => (
-      <div className="text-xs font-medium text-slate-600">
-        <div className="font-bold text-slate-800">
+      <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+        <div className="font-bold text-slate-800 dark:text-slate-200">
           {row.original.default_sets || "—"} sets
         </div>
         <div className="text-2xs text-slate-500">
@@ -93,7 +93,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
     accessorKey: "rest_time",
     header: "Rest Time",
     cell: ({ row }) => (
-      <span className="text-xs font-bold text-slate-700">
+      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
         {row.original.rest_time_seconds
           ? `${row.original.rest_time_seconds}s`
           : "—"}
@@ -108,8 +108,8 @@ export const exerciseColumns: ColumnDef<any>[] = [
         className={cn(
           "text-2xs font-black uppercase tracking-widest px-2 py-0.5 rounded border",
           row.original.tier === "premium"
-            ? "bg-purple-50 text-purple-700 border-purple-200"
-            : "bg-slate-100 text-slate-600 border-slate-200",
+            ? "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-200"
+            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
         )}
       >
         {row.original.tier || "Pro"}
@@ -137,10 +137,10 @@ export const exerciseColumns: ColumnDef<any>[] = [
         className={cn(
           "text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded border",
           row.original.status === "published"
-            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+            ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
             : row.original.status === "archived"
-              ? "bg-slate-100 text-slate-500 border-slate-200"
-              : "bg-amber-50 text-amber-700 border-amber-100",
+              ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
+              : "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
         )}
       >
         {row.original.status || "published"}
@@ -171,7 +171,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
       return (
         <div className="flex items-center justify-end gap-2">
           <button aria-label="View Details"
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               openView(exercise.id);
@@ -180,7 +180,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
             👁️
           </button>
           <button aria-label="Edit"
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               openEdit(exercise);
@@ -189,7 +189,7 @@ export const exerciseColumns: ColumnDef<any>[] = [
             ✏️
           </button>
           <button aria-label="Delete"
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
             disabled={isDeleting}
             onClick={handleDelete}
           >

@@ -26,11 +26,11 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  at_risk: "bg-red-50 text-red-700 border-red-100",
-  cancelled: "bg-slate-100 text-slate-600 border-slate-200",
-  expired: "bg-amber-50 text-amber-700 border-amber-100",
-  revoked: "bg-red-50 text-red-700 border-red-100",
+  active: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  at_risk: "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30",
+  cancelled: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+  expired: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
+  revoked: "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30",
 };
 
 const fmtDate = (value: string | null | undefined) =>
@@ -62,7 +62,7 @@ function SubscriberRowActions({
         variant="ghost"
         size="icon"
         disabled={remindMutation.isPending}
-        className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           remindMutation.mutate({ ids: [subscription.id] });
@@ -76,7 +76,7 @@ function SubscriberRowActions({
         variant="ghost"
         size="icon"
         disabled={updateMutation.isPending}
-        className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           updateMutation.mutate({
@@ -94,7 +94,7 @@ function SubscriberRowActions({
           variant="ghost"
           size="icon"
           disabled={updateMutation.isPending}
-          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+          className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             if (
@@ -127,7 +127,7 @@ export const createSubscriberColumns = (options?: {
       header: "User",
       cell: ({ row }) => (
         <div>
-          <div className="font-black text-slate-800 text-xs uppercase tracking-tight">
+          <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight">
             {displayName(row.original)}
           </div>
           <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
@@ -140,7 +140,7 @@ export const createSubscriberColumns = (options?: {
       id: "plan",
       header: "Plan",
       cell: ({ row }) => (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30">
           {row.original.subscription_tiers?.name ?? "—"}
         </span>
       ),
@@ -153,7 +153,7 @@ export const createSubscriberColumns = (options?: {
         accessorKey: "risk_reason",
         header: "Risk Reason",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-red-600">
+          <span className="text-xs font-bold text-red-600 dark:text-red-400">
             {row.original.risk_reason ?? "Payment failed"}
           </span>
         ),
@@ -162,7 +162,7 @@ export const createSubscriberColumns = (options?: {
         id: "last_contact",
         header: "Last Contact",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
             {fmtDate(row.original.last_reminded_at)}
           </span>
         ),
@@ -174,7 +174,7 @@ export const createSubscriberColumns = (options?: {
         id: "value",
         header: "Monthly Value",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">
             {formatCurrency(row.original.subscription_tiers?.price_ghs ?? 0, { decimals: 2 })}
           </span>
         ),
@@ -183,7 +183,7 @@ export const createSubscriberColumns = (options?: {
         id: "subscribed",
         header: "Subscribed Since",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
             {fmtDate(row.original.subscribed_at)}
           </span>
         ),
@@ -192,7 +192,7 @@ export const createSubscriberColumns = (options?: {
         id: "renewal",
         header: "Next Renewal",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+          <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
             {fmtDate(row.original.next_renewal_at ?? row.original.expires_at)}
           </span>
         ),
@@ -201,7 +201,7 @@ export const createSubscriberColumns = (options?: {
         accessorKey: "payment_method",
         header: "Payment Method",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-slate-600">
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
             {PAYMENT_METHOD_LABELS[row.original.payment_method ?? ""] ??
               row.original.payment_method ??
               "—"}

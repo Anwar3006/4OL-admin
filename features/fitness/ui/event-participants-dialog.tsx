@@ -32,9 +32,9 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
         </DialogHeader>
 
         <div className="space-y-3 pt-2">
-          <div className="card bg-slate-50/60 flex items-center justify-between">
+          <div className="card bg-slate-50/60 dark:bg-slate-900/60 flex items-center justify-between">
             <div>
-              <div className="font-black text-sm text-slate-800">{event.title}</div>
+              <div className="font-black text-sm text-slate-800 dark:text-slate-200">{event.title}</div>
               <div className="text-xs text-slate-500 mt-0.5">
                 {event.start_at
                   ? new Date(event.start_at).toLocaleString()
@@ -48,7 +48,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
             </span>
           </div>
 
-          <div className="max-h-[320px] overflow-y-auto rounded-xl border border-slate-100">
+          <div className="max-h-[320px] overflow-y-auto rounded-xl border border-slate-100 dark:border-slate-800">
             {isLoading ? (
               <div className="p-6 text-center text-xs text-slate-400">
                 Loading participants…
@@ -61,7 +61,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
             ) : (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50 sticky top-0">
+                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 sticky top-0">
                     {["Participant", "Contact", "Registered", "Status"].map((h) => (
                       <th
                         key={h}
@@ -75,7 +75,7 @@ const EventParticipantsDialog = ({ event, onClose }: EventParticipantsDialogProp
                 <tbody>
                   {registrations.map((reg: any) => (
                     <tr key={reg.id} className="border-b border-slate-50">
-                      <td className="px-3 py-2 font-bold text-slate-700">
+                      <td className="px-3 py-2 font-bold text-slate-700 dark:text-slate-300">
                         {`${reg.user?.first_name ?? ""} ${reg.user?.last_name ?? ""}`.trim() ||
                           "Unknown user"}
                       </td>

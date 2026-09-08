@@ -605,7 +605,7 @@ function PeriodWorkspace() {
       </PageHeader>
 
       <div
-        className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-950"
+        className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-500/15 p-3 text-xs text-blue-950 dark:text-blue-400"
         role="note"
       >
         <strong>Restricted health operations.</strong> Identity and free-text
@@ -662,7 +662,7 @@ function PeriodWorkspace() {
 
       {error && (
         <div
-          className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900"
+          className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-500/15 p-3 text-xs text-red-900 dark:text-red-400"
           role="alert"
         >
           {error}
@@ -670,7 +670,7 @@ function PeriodWorkspace() {
       )}
       {message && (
         <div
-          className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900"
+          className="rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 p-3 text-xs text-emerald-900"
           role="status"
         >
           {message}
@@ -695,7 +695,7 @@ function PeriodWorkspace() {
               required
               minLength={5}
               maxLength={300}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
               placeholder="Why is this aggregate export needed?"
             />
           </label>
@@ -832,7 +832,7 @@ function PeriodWorkspace() {
                 <input
                   id="period-search"
                   type="search"
-                  className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                  className="w-full max-w-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                   value={query}
                   onChange={(event) => {
                     setQuery(event.target.value);

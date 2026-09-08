@@ -225,7 +225,7 @@ const OutdoorTab = () => {
       cell: ({ row }: any) => (
         <div className="flex flex-col min-w-[200px]">
           <span
-            className="font-bold text-slate-800 text-sm hover:underline cursor-pointer"
+            className="font-bold text-slate-800 dark:text-slate-200 text-sm hover:underline cursor-pointer"
             onClick={() => viewRouteDialog.open(row.original.id)}
           >
             {row.original.name}
@@ -245,7 +245,7 @@ const OutdoorTab = () => {
           medium: "badge-blue",
           high: "badge-amber",
           critical: "badge-red",
-          info: "bg-slate-100 text-slate-600",
+          info: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",
         };
         return (
           <span
@@ -263,7 +263,7 @@ const OutdoorTab = () => {
       accessorKey: "distance_duration",
       header: "Distance / Est. Time",
       cell: ({ row }: any) => (
-        <div className="space-y-0.5 text-xs font-semibold text-slate-600">
+        <div className="space-y-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-1">
             <Navigation className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             {row.original.distance_km ? `${row.original.distance_km} km` : "—"}
@@ -281,7 +281,7 @@ const OutdoorTab = () => {
       accessorKey: "surface_type",
       header: "Surface",
       cell: ({ row }: any) => (
-        <span className="text-xs font-medium text-slate-600">
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
           {row.original.surface_type || "Natural"}
         </span>
       ),
@@ -308,7 +308,7 @@ const OutdoorTab = () => {
       accessorKey: "creator",
       header: "Creator",
       cell: ({ row }: any) => (
-        <span className="text-xs font-semibold text-slate-600">
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
           {row.original.creator
             ? `${row.original.creator.first_name || ""} ${row.original.creator.last_name || ""}`.trim()
             : "System"}
@@ -323,7 +323,7 @@ const OutdoorTab = () => {
         return (
           <div className="flex items-center justify-end gap-2">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 viewRouteDialog.open(route.id);
@@ -332,7 +332,7 @@ const OutdoorTab = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               title="View on Map"
               onClick={(e) => {
                 e.stopPropagation();
@@ -342,7 +342,7 @@ const OutdoorTab = () => {
               🗺️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 addRouteDialog.open(route);
@@ -351,7 +351,7 @@ const OutdoorTab = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteRoute(route.id);
@@ -375,7 +375,7 @@ const OutdoorTab = () => {
       cell: ({ row }: any) => (
         <div className="flex flex-col min-w-[200px]">
           <span
-            className="font-bold text-slate-800 text-sm hover:underline cursor-pointer"
+            className="font-bold text-slate-800 dark:text-slate-200 text-sm hover:underline cursor-pointer"
             onClick={() => viewEventDialog.open(row.original.id)}
           >
             {row.original.title}
@@ -390,7 +390,7 @@ const OutdoorTab = () => {
       accessorKey: "route",
       header: "Linked Route",
       cell: ({ row }: any) => (
-        <span className="text-xs font-bold text-slate-700">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
           {row.original.route ? (
             row.original.route.name
           ) : (
@@ -403,7 +403,7 @@ const OutdoorTab = () => {
       accessorKey: "start_at",
       header: "Starts At",
       cell: ({ row }: any) => (
-        <span className="text-xs font-semibold text-slate-600">
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
           {row.original.start_at
             ? new Date(row.original.start_at).toLocaleString("en-US", {
                 month: "short",
@@ -419,7 +419,7 @@ const OutdoorTab = () => {
       accessorKey: "participants",
       header: "Participants",
       cell: ({ row }: any) => (
-        <span className="text-xs font-bold text-slate-700">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
           {row.original.current_participants} /{" "}
           {row.original.max_participants || "∞"}
         </span>
@@ -429,7 +429,7 @@ const OutdoorTab = () => {
       accessorKey: "area",
       header: "Area",
       cell: ({ row }: any) => (
-        <span className="text-xs text-slate-600 font-medium capitalize">
+        <span className="text-xs text-slate-600 dark:text-slate-300 font-medium capitalize">
           {row.original.area || "—"}
         </span>
       ),
@@ -462,7 +462,7 @@ const OutdoorTab = () => {
         return (
           <div className="flex items-center justify-end gap-2">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 viewEventDialog.open(event.id);
@@ -471,7 +471,7 @@ const OutdoorTab = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
               title="View Participants"
               onClick={(e) => {
                 e.stopPropagation();
@@ -481,7 +481,7 @@ const OutdoorTab = () => {
               👥
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 addEventDialog.open(event);
@@ -490,7 +490,7 @@ const OutdoorTab = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteEvent(event.id);
@@ -512,7 +512,7 @@ const OutdoorTab = () => {
       accessorKey: "route",
       header: "Route Details",
       cell: ({ row }: any) => (
-        <span className="text-xs font-bold text-slate-700">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
           {row.original.route ? (
             row.original.route.name
           ) : (
@@ -525,7 +525,7 @@ const OutdoorTab = () => {
       accessorKey: "user",
       header: "User",
       cell: ({ row }: any) => (
-        <span className="text-xs font-semibold text-slate-600">
+        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
           {row.original.user
             ? `${row.original.user.first_name || ""} ${row.original.user.last_name || ""}`.trim()
             : "Anonymous"}
@@ -585,7 +585,7 @@ const OutdoorTab = () => {
         return (
           <div className="flex items-center justify-end gap-2">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 viewReviewDialog.open(review.id);
@@ -594,7 +594,7 @@ const OutdoorTab = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 addReviewDialog.open(review);
@@ -603,7 +603,7 @@ const OutdoorTab = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteReview(review.id);
@@ -652,13 +652,13 @@ const OutdoorTab = () => {
         onValueChange={setActiveSubTab}
       >
         {/* Sub-tabs header navigation */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-6 flex-wrap gap-4">
-          <TabsList className="bg-slate-100/50 p-1 flex gap-1 rounded-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3 mb-6 flex-wrap gap-4">
+          <TabsList className="bg-slate-100/50 dark:bg-slate-800/50 p-1 flex gap-1 rounded-xl">
             <TabsTrigger
               value="routes"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+                "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
               <MapPin className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
@@ -668,7 +668,7 @@ const OutdoorTab = () => {
               value="events"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+                "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
               <Calendar className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
@@ -678,7 +678,7 @@ const OutdoorTab = () => {
               value="reviews"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+                "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
               <MessageSquare className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
@@ -688,7 +688,7 @@ const OutdoorTab = () => {
               value="challenges"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+                "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
               <Trophy className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
@@ -698,7 +698,7 @@ const OutdoorTab = () => {
               value="incentives"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
-                "data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:border-slate-200/60 data-[state=active]:shadow-sm",
+                "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
               <Coins className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
@@ -741,11 +741,11 @@ const OutdoorTab = () => {
         <TabsContent value="routes" className="outline-none space-y-4 w-full min-w-0">
           {/* Pending Verification Queue (Gap Analysis Part F, m-verify-route) */}
           {pendingRoutes && pendingRoutes.length > 0 && (
-            <div className="card border-amber-200/70 bg-amber-50/40">
+            <div className="card border-amber-200/70 bg-amber-50/40 dark:bg-amber-500/15/40">
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-500" />
-                  <h3 className="text-sm font-black text-slate-800">
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">
                     Pending Verification Queue
                   </h3>
                   <span className="badge badge-amber">{pendingRoutes.length}</span>
@@ -762,10 +762,10 @@ const OutdoorTab = () => {
                   return (
                     <div
                       key={pr.id}
-                      className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-xl px-3 py-2.5"
+                      className="flex items-center justify-between gap-3 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2.5"
                     >
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-800 truncate">
+                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                           {pr.name}
                         </div>
                         <div className="text-2xs text-slate-500 capitalize truncate">
@@ -804,14 +804,14 @@ const OutdoorTab = () => {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   placeholder="Search routes by name..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                   value={routeSearch}
                   onChange={(e) => setRouteSearch(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
                 <select
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50 text-slate-600 font-medium"
+                  className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium"
                   value={routeDifficulty}
                   onChange={(e) => setRouteDifficulty(e.target.value)}
                 >
@@ -855,14 +855,14 @@ const OutdoorTab = () => {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   placeholder="Search events by title..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                   value={eventSearch}
                   onChange={(e) => setEventSearch(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
                 <select
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50 text-slate-600 font-medium"
+                  className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium"
                   value={eventStatus}
                   onChange={(e) => setEventStatus(e.target.value)}
                 >
@@ -906,14 +906,14 @@ const OutdoorTab = () => {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   placeholder="Search reviews by comment snippet..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                   value={reviewSearch}
                   onChange={(e) => setReviewSearch(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
                 <select
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white cursor-pointer hover:bg-slate-50 text-slate-600 font-medium"
+                  className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium"
                   value={reviewRating}
                   onChange={(e) => setReviewRating(e.target.value)}
                 >
@@ -960,7 +960,7 @@ const OutdoorTab = () => {
             ------------------------------------------------------------- */}
         <TabsContent value="incentives" className="outline-none space-y-4 w-full min-w-0">
           <div className="card max-w-2xl">
-            <h3 className="text-sm font-black text-slate-800 mb-1">
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
               🪙 FitCoins Route Incentives
             </h3>
             <p className="text-xs text-slate-500 mb-4">
@@ -977,7 +977,7 @@ const OutdoorTab = () => {
                   <input
                     type="number"
                     min={0}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg"
                     value={incentiveForm[field.key]}
                     disabled={!canEditFitness}
                     onChange={(e) =>

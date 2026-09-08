@@ -55,7 +55,7 @@ export default function ServiceChargeTab() {
     <div className="w-full min-w-0 space-y-6 mt-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-0 overflow-hidden">
-          <div className="card-header bg-ek-green/5 border-b border-slate-100 flex justify-between items-center px-4 py-3">
+          <div className="card-header bg-ek-green/5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center px-4 py-3">
             <h2 className="card-title text-xs">📊 Service Charge Rates</h2>
             {canEdit ? (
               <button
@@ -69,7 +69,7 @@ export default function ServiceChargeTab() {
               <span className="badge badge-secondary text-3xs">SA edits rates</span>
             )}
           </div>
-          <div className="bg-amber-50 p-2 text-2xs font-bold text-amber-700 border-b border-amber-100 px-4">
+          <div className="bg-amber-50 dark:bg-amber-500/15 p-2 text-2xs font-bold text-amber-700 dark:text-amber-400 border-b border-amber-100 dark:border-amber-500/30 px-4">
             💡 Rate changes apply to all new transactions immediately.
           </div>
           <div className="divide-y divide-slate-50">
@@ -82,7 +82,7 @@ export default function ServiceChargeTab() {
             ) : (
               rates.map((r) => (
                 <div key={r.key} className="flex justify-between items-center p-3 px-4 text-xs font-bold">
-                  <span className="text-slate-600 font-medium">
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">
                     {RATE_ICONS[r.key] ?? "💹"} {r.label}
                   </span>
                   <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function ServiceChargeTab() {
                           [r.key]: e.target.value,
                         }))
                       }
-                      className="w-14 h-7 rounded-lg border border-slate-200 text-center font-black text-slate-800 outline-none focus:ring-2 focus:ring-ek-green/20 disabled:bg-slate-50 disabled:text-slate-400"
+                      className="w-14 h-7 rounded-lg border border-slate-200 dark:border-slate-700 text-center font-black text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-ek-green/20 disabled:bg-slate-50 disabled:text-slate-400"
                     />
                     <span className="text-slate-400">%</span>
                   </div>
@@ -107,7 +107,7 @@ export default function ServiceChargeTab() {
         </div>
 
         <div className="card">
-          <div className="card-header border-b border-slate-100 mb-4">
+          <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4">
             <h2 className="card-title text-xs">📊 Service Fee Revenue (MTD)</h2>
           </div>
           {overview?.overview?.service_fees_hidden ? (
@@ -131,8 +131,8 @@ export default function ServiceChargeTab() {
                   {formatCurrency(serviceFees?.ytd ?? 0)}
                 </span>
               </div>
-              <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-slate-100 text-xs font-black">
-                <span className="text-slate-800">Fee Transactions</span>
+              <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-slate-100 dark:border-slate-800 text-xs font-black">
+                <span className="text-slate-800 dark:text-slate-200">Fee Transactions</span>
                 <span className="text-ek-green-dark">{feeTxns?.total ?? 0}</span>
               </div>
             </div>

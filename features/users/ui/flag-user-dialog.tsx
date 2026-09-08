@@ -65,7 +65,7 @@ export default function FlagUserDialog() {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+            <div className="h-10 w-10 rounded-lg bg-red-50 dark:bg-red-500/15 flex items-center justify-center text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/30">
               <Flag className="h-5 w-5" />
             </div>
             <div>
@@ -78,8 +78,8 @@ export default function FlagUserDialog() {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-lg p-4 flex gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-xs text-amber-800">
               <p className="font-bold mb-1">Warning</p>
               <p>
@@ -90,7 +90,7 @@ export default function FlagUserDialog() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-slate-600">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
               Reason for Flagging
             </label>
             <Textarea

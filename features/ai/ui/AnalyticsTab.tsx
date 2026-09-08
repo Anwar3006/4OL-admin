@@ -40,7 +40,7 @@ export function AnalyticsPanel({
   return (
     <div className="space-y-4">
       {underTarget.length > 0 && (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-500/15 text-amber-900">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Retrain recommended</AlertTitle>
           <AlertDescription>

@@ -29,18 +29,18 @@ const FilterDropdown = ({
 }: FilterDropdownProps) => {
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-sm font-semibold text-gray-700">{label}</Label>
+      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</Label>
       <Select
         value={value || "all"}
         onValueChange={(val) => onChange(val === "all" ? null : val)}
       >
-        <SelectTrigger className="w-full md:w-[150px] bg-white border-2 border-gray-300 hover:border-emerald-400 transition-colors">
+        <SelectTrigger className="w-full md:w-[150px] bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-400 transition-colors">
           <SelectValue
             placeholder={placeholder}
             className="text-sm 2xl:text-base"
           />
         </SelectTrigger>
-        <SelectContent className="bg-white">
+        <SelectContent className="bg-white dark:bg-slate-800">
           <SelectItem value="all">All {label}</SelectItem>
           {options.map((option) => (
             <SelectItem key={option} value={option}>

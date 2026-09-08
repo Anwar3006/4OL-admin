@@ -80,8 +80,8 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
         <span
           className={`text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
             row.source === "subscription"
-              ? "bg-purple-50 text-purple-700 border-purple-100"
-              : "bg-emerald-50 text-emerald-700 border-emerald-100"
+              ? "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-500/30"
+              : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
           }`}
         >
           {row.source === "subscription" ? "💎 Subscription" : "📝 Manual"}
@@ -115,7 +115,7 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
     <div className="space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search top-rated items..."
           value={search}
           onChange={(e) => {
@@ -125,7 +125,7 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
         />
         {/* Gap Analysis T-D2 — placement-window filter */}
         <select
-          className="h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all bg-white"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all bg-white dark:bg-slate-800"
           value={windowStatus}
           onChange={(e) => {
             setWindowStatus(e.target.value as WindowFilter);
@@ -139,7 +139,7 @@ const TopRatedItemsTable: React.FC<TopRatedItemsTableProps> = ({ module }) => {
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={topRatedItemColumns}
           data={items}

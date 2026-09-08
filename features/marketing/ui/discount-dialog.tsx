@@ -217,7 +217,7 @@ export default function DiscountDialog({
                       className={`px-3 py-1.5 rounded-full text-2xs font-black uppercase tracking-widest border transition-all ${
                         selected
                           ? "bg-emerald-600 text-white border-emerald-600"
-                          : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
+                          : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-emerald-300"
                       }`}
                     >
                       {plan.name}
@@ -250,7 +250,7 @@ export default function DiscountDialog({
                 </Label>
                 <input
                   type="date"
-                  className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm bg-white"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800"
                   value={form.watch("validFrom") ?? ""}
                   onChange={(e) => form.setValue("validFrom", e.target.value)}
                 />
@@ -261,7 +261,7 @@ export default function DiscountDialog({
                 </Label>
                 <input
                   type="date"
-                  className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm bg-white"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800"
                   value={form.watch("validUntil") ?? ""}
                   onChange={(e) => form.setValue("validUntil", e.target.value || null)}
                 />

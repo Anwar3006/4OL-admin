@@ -53,14 +53,14 @@ const ViewOutdoorReviewDialog = () => {
 
   const moderationColor =
     data?.moderation_status === "approved"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
       : data?.moderation_status === "pending_review"
-        ? "bg-amber-50 text-amber-700 border-amber-200"
-        : "bg-red-50 text-red-700 border-red-200";
+        ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200"
+        : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
+      <DialogContent className="p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-0 shadow-2xl rounded-none max-h-[95vh] overflow-hidden max-w-5xl">
         <VisuallyHidden.Root>
           <DialogTitle>
             {data?.route?.name
@@ -106,11 +106,11 @@ const ViewOutdoorReviewDialog = () => {
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white">
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px] bg-white dark:bg-slate-800">
       <div className="relative">
-        <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
-        <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-          <MessageSquare className="h-8 w-8 text-emerald-600 animate-pulse" />
+        <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-500/20 rounded-full animate-ping opacity-50" />
+        <div className="relative w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+          <MessageSquare className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
         </div>
       </div>
       <span className="mt-6 text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -122,12 +122,12 @@ function LoadingState() {
 
 function NotFoundState({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white">
-      <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+    <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-6 bg-white dark:bg-slate-800">
+      <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center border border-slate-100 dark:border-slate-800">
         <Ban className="h-10 w-10 text-slate-300" />
       </div>
       <div className="space-y-2">
-        <p className="text-slate-900 font-black text-xl tracking-tight">
+        <p className="text-slate-900 dark:text-slate-100 font-black text-xl tracking-tight">
           Review Not Found
         </p>
         <p className="text-slate-500 font-medium max-w-sm leading-relaxed">
@@ -168,15 +168,15 @@ function DetailView({
   const emptyStars = 5 - fullStars;
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-50">
+    <div className="flex flex-col h-full min-h-0 bg-slate-50 dark:bg-slate-900">
       {/* ── Sticky Top Bar ── */}
-      <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
+      <div className="shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 md:px-10 md:py-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 rounded-none border border-emerald-100">
-            <MessageSquare className="w-5 h-5 text-emerald-600" />
+          <div className="hidden md:flex items-center justify-center w-10 h-10 bg-emerald-50 dark:bg-emerald-500/15 rounded-none border border-emerald-100 dark:border-emerald-500/30">
+            <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">
+            <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
               Route Review
             </h2>
             <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
@@ -195,7 +195,7 @@ function DetailView({
           )}
 
           {data.is_flagged && (
-            <Badge className="hidden sm:inline-flex rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
+            <Badge className="hidden sm:inline-flex rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border border-red-200">
               <Flag className="h-3 w-3 mr-1" />
               Flagged
             </Badge>
@@ -219,7 +219,7 @@ function DetailView({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="rounded-none text-slate-400 hover:text-slate-900 hover:bg-slate-100 h-10 w-10 p-0 transition-all md:hidden"
+            className="rounded-none text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 h-10 w-10 p-0 transition-all md:hidden"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -229,7 +229,7 @@ function DetailView({
       {/* ── Scrollable Body ── */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {/* Hero Section */}
-        <div className="bg-white border-b border-slate-200">
+        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Left: Rating & Meta */}
             <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-between gap-8">
@@ -242,7 +242,7 @@ function DetailView({
                     {data.moderation_status?.replace("_", " ") || "Pending"}
                   </Badge>
                   {data.is_flagged && (
-                    <Badge className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 text-red-700 border border-red-200">
+                    <Badge className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border border-red-200">
                       <Flag className="h-3 w-3 mr-1" />
                       Flagged
                     </Badge>
@@ -263,7 +263,7 @@ function DetailView({
                         className="h-6 w-6 text-slate-200"
                       />
                     ))}
-                    <span className="ml-2 text-2xl font-black text-slate-900">
+                    <span className="ml-2 text-2xl font-black text-slate-900 dark:text-slate-100">
                       {data.rating || 0}
                     </span>
                     <span className="text-sm text-slate-400 font-bold">
@@ -276,7 +276,7 @@ function DetailView({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <MetaPill
                   icon={Compass}
                   label="Reviewed Route"
@@ -295,15 +295,15 @@ function DetailView({
             </div>
 
             {/* Right: Route Info */}
-            <div className="lg:col-span-5 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-6 md:p-10">
+            <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-700 p-6 md:p-10">
               {data.route ? (
-                <div className="bg-white p-6 border border-slate-200 rounded-none shadow-sm">
+                <div className="bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
+                    <div className="p-2 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-none">
                       <Compass className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900">
+                      <p className="text-sm font-black text-slate-900 dark:text-slate-100">
                         {data.route.name}
                       </p>
                       <p className="text-2xs font-bold uppercase tracking-widest text-slate-400">
@@ -314,14 +314,14 @@ function DetailView({
                   {data.route.category && (
                     <Badge
                       variant="outline"
-                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 text-slate-500"
+                      className="rounded-none text-2xs font-black uppercase tracking-widest px-3 py-1.5 border-slate-200 dark:border-slate-700 text-slate-500"
                     >
                       {data.route.category}
                     </Badge>
                   )}
                 </div>
               ) : (
-                <div className="h-[280px] w-full bg-slate-100 flex flex-col items-center justify-center border border-slate-200 rounded-none">
+                <div className="h-[280px] w-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 rounded-none">
                   <Compass className="h-10 w-10 text-slate-300 mb-3" />
                   <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
                     No Route Linked
@@ -336,14 +336,14 @@ function DetailView({
         <div className="p-6 md:p-10 space-y-10">
           {/* Moderation Warning */}
           {data.is_flagged && (
-            <div className="bg-red-50 border border-red-200 p-6 rounded-none">
+            <div className="bg-red-50 dark:bg-red-500/15 border border-red-200 p-6 rounded-none">
               <div className="flex items-start gap-3">
-                <ShieldAlert className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                <ShieldAlert className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-black uppercase tracking-widest text-red-800 mb-1">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-red-800 dark:text-red-400 mb-1">
                     Moderation Warning
                   </h4>
-                  <p className="text-base text-red-600 leading-relaxed font-medium">
+                  <p className="text-base text-red-600 dark:text-red-400 leading-relaxed font-medium">
                     This review has been flagged by users or system filters.
                     Review the comment content for violations.
                   </p>
@@ -355,13 +355,13 @@ function DetailView({
           {/* Comment */}
           <section className="space-y-5">
             <SectionHeader icon={MessageSquare} title="Comment" />
-            <div className="bg-white p-6 md:p-8 border border-slate-200 rounded-none shadow-sm">
+            <div className="bg-white dark:bg-slate-800 p-6 md:p-8 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm">
               {data.comment ? (
-                <p className="text-base text-slate-600 leading-[1.7] whitespace-pre-wrap">
+                <p className="text-base text-slate-600 dark:text-slate-300 leading-[1.7] whitespace-pre-wrap">
                   {data.comment}
                 </p>
               ) : (
-                <div className="flex items-center gap-3 p-4 rounded-none border italic text-sm font-medium bg-slate-50 border-slate-100 text-slate-400">
+                <div className="flex items-center gap-3 p-4 rounded-none border italic text-sm font-medium bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400">
                   <Ban className="h-4 w-4 opacity-50 shrink-0" />
                   No comment text provided with this rating.
                 </div>
@@ -371,7 +371,7 @@ function DetailView({
         </div>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-slate-200 px-6 py-6 md:px-10 md:py-8">
+        <footer className="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-6 md:px-10 md:py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400">
               <HeartPulse className="w-4 h-4 text-emerald-500" />
@@ -402,7 +402,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="p-2 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-none">
+      <div className="p-2 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-none">
         <Icon className="h-4 w-4" />
       </div>
       <h3 className="section-heading">
@@ -424,12 +424,12 @@ function MetaPill({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 text-slate-400">
-        <Icon className="h-3.5 w-3.5 text-emerald-600" />
+        <Icon className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
         <span className="text-2xs font-black uppercase tracking-widest text-slate-500">
           {label}
         </span>
       </div>
-      <p className="text-sm font-bold text-slate-900">{value}</p>
+      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

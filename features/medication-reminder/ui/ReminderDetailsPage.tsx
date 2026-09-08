@@ -82,7 +82,7 @@ const viewPilldetails = () => {
     );
   }
   return (
-    <Card className="min-h-[70vh] bg-white mt-5">
+    <Card className="min-h-[70vh] bg-white dark:bg-slate-800 mt-5">
       <CardHeader className="flex flex-row justify-between items-center mb-4">
         <CardTitle>Medication Reminder</CardTitle>
         <div>
@@ -98,34 +98,34 @@ const viewPilldetails = () => {
       </CardHeader>
       <CardContent>
       {data && (
-        <div className=" bg-white flex justify-between lg:w-[50%] md:w-[80%] w-full">
+        <div className="bg-white dark:bg-slate-800 flex justify-between lg:w-[50%] md:w-[80%] w-full">
           <div className="grid grid-cols-2 gap-x-2 md:grid-cols-[minmax(100px,max-content)_1fr] md:gap-x-3 gap-y-2 text-sm">
             {/* Key-Value Pairs */}
             <div className=" text-black-500 whitespace-nowrap">Full Name</div>
-            <div className=" text-gray-700">
+            <div className="text-gray-700 dark:text-gray-300">
               {data.user_profiles?.first_name} {data.user_profiles?.last_name}
             </div>
 
             <div className=" text-black-500 break-words min-w-[120px]">
               Medication Name
             </div>
-            <div className=" text-gray-700 break-words">
+            <div className="text-gray-700 dark:text-gray-300 break-words">
               {data.medication_name}
             </div>
 
             <div className=" text-black-500 whitespace-nowrap">Condition</div>
-            <div className=" text-gray-700">{data.condition}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.condition}</div>
 
             <div className=" text-black-500 break-words min-w-[120px]">
               Medication Type
             </div>
-            <div className=" text-gray-700 break-words">
+            <div className="text-gray-700 dark:text-gray-300 break-words">
               {data.medication_type}
             </div>
 
             <div className=" text-black-500 whitespace-nowrap">Color</div>
             <div
-              className="w-10 h-10 rounded border border-gray-200"
+              className="w-10 h-10 rounded border border-gray-200 dark:border-gray-700"
               style={{ backgroundColor: data.color ?? undefined }}
             />
 
@@ -146,28 +146,28 @@ const viewPilldetails = () => {
             </div>
 
             <div className=" text-black-500 whitespace-nowrap">Start Date</div>
-            <div className="text-gray-700">{data.start_date?.slice(0, 10) ?? "—"}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.start_date?.slice(0, 10) ?? "—"}</div>
 
             <div className=" text-black-500 whitespace-nowrap">End Date</div>
-            <div className="text-gray-700">{data.end_date?.slice(0, 10) ?? "—"}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.end_date?.slice(0, 10) ?? "—"}</div>
 
             <div className=" text-black-500 whitespace-nowrap">Amount</div>
-            <div className="text-gray-700">{data.medication_amount}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.medication_amount}</div>
 
             <div className=" text-black-500 whitespace-nowrap">Dose</div>
-            <div className="text-gray-700">{data.medication_dose}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.medication_dose}</div>
 
             <div className=" text-black-500 whitespace-nowrap">
               No. of times
             </div>
-            <div className="text-gray-700">{data.intake_amount}</div>
+            <div className="text-gray-700 dark:text-gray-300">{data.intake_amount}</div>
           </div>
 
           <div className=" md:gap-x-3 gap-y-2 text-sm">
             <div className=" text-black-500 font-bold font-base mb-2 whitespace-nowrap">
               Notification Schedule
             </div>
-            <div className=" flex gap-x-2 text-gray-700">
+            <div className="flex gap-x-2 text-gray-700 dark:text-gray-300">
               {Array.isArray(data.reminder_timestamps) ? (
                 // Create 3 columns from the timestamps
                 [0, 1].map((colIndex) => (
@@ -203,7 +203,7 @@ const viewPilldetails = () => {
             </div>
           </div>
           {/* Notification Schedule Grid */}
-          {/* <div className="mt-4 flex gap-x-2 text-gray-700">
+          {/* <div className="mt-4 flex gap-x-2 text-gray-700 dark:text-gray-300">
             {Array.isArray(data.reminder_timestamps) ? (
               // Create 3 columns from the timestamps
               [0, 1].map((colIndex) => (

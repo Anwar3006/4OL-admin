@@ -33,7 +33,7 @@ const LinkagesTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-xs font-bold text-slate-500">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 px-4 py-3 text-xs font-bold text-slate-500">
         🔗 Read-only linkage overview — {data.registry.conditions ?? 0} conditions
         and {data.registry.symptoms ?? 0} symptoms in the registry. Editing
         linkages happens on each condition form; a dedicated linkage editor
@@ -44,14 +44,14 @@ const LinkagesTab = () => {
         {data.linkages.map((linkage) => (
           <div
             key={linkage.key}
-            className="card p-5 border-slate-200 flex flex-col gap-3"
+            className="card p-5 border-slate-200 dark:border-slate-700 flex flex-col gap-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <span className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-base">
+                <span className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 flex items-center justify-center text-base">
                   {LINKAGE_ICONS[linkage.key] ?? "🔗"}
                 </span>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 leading-tight">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 leading-tight">
                   {linkage.label}
                 </h4>
               </div>
@@ -65,7 +65,7 @@ const LinkagesTab = () => {
               </span>
             </div>
 
-            <div className="text-2xl font-black text-slate-900">
+            <div className="text-2xl font-black text-slate-900 dark:text-slate-100">
               {linkage.count === null ? "—" : linkage.count.toLocaleString()}
               <span className="text-2xs font-black uppercase tracking-widest text-slate-400 ml-2">
                 linkages
@@ -78,7 +78,7 @@ const LinkagesTab = () => {
 
             <Link
               href={linkage.href}
-              className="mt-auto inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-emerald-700 hover:text-emerald-800"
+              className="mt-auto inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-400"
             >
               Open module →
             </Link>

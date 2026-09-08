@@ -149,7 +149,7 @@ export default function BedTrackerFacilitiesTab({
                         <Badge variant="secondary">{trackedWards.length}/8</Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="font-black text-emerald-700">{facility.available_beds ?? 0}</span>
+                        <span className="font-black text-emerald-700 dark:text-emerald-400">{facility.available_beds ?? 0}</span>
                         <span className="text-xs text-slate-500">/{facility.total_beds ?? 0}</span>
                       </TableCell>
                       <TableCell>
@@ -218,7 +218,7 @@ export default function BedTrackerFacilitiesTab({
               <div className="grid gap-2">
                 <Label>Hardware</Label>
                 <select
-                  className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                  className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                   value={form.hardware_option ?? "lease"}
                   onChange={(event) => setForm({ ...form, hardware_option: event.target.value })}
                 >
@@ -230,7 +230,7 @@ export default function BedTrackerFacilitiesTab({
               <div className="grid gap-2">
                 <Label>Tier</Label>
                 <select
-                  className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                  className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                   value={form.subscription_tier ?? "starter"}
                   onChange={(event) => setForm({ ...form, subscription_tier: event.target.value })}
                 >

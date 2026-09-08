@@ -15,7 +15,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { toast } from "sonner";
 
 const inputCls =
-  "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 const labelCls =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
@@ -212,22 +212,22 @@ export default function PharmacyCampaignModal({
                   onChange={(e) => setDrugSearch(e.target.value)}
                 />
                 {drugSearch && (
-                  <div className="mt-1 max-h-28 overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100">
+                  <div className="mt-1 max-h-28 overflow-y-auto rounded-lg border border-slate-100 dark:border-slate-800 divide-y divide-slate-100">
                     {(drugResults?.drugs || []).map((d) => (
                       <button
                         key={d.id}
-                        className="w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50/50 cursor-pointer"
+                        className="w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50/50 dark:hover:bg-emerald-500/15/50 cursor-pointer"
                         onClick={() => setDrugName(d.name)}
                       >
-                        <span className="font-bold text-slate-700">{d.name}</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">{d.name}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </>
             ) : (
-              <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
-                <span className="text-xs font-bold text-emerald-800">{drugName}</span>
+              <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-500/15/50 px-3 py-2">
+                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">{drugName}</span>
                 <button
                   className="text-2xs font-bold text-slate-400 hover:text-red-500 cursor-pointer"
                   onClick={() => setDrugName("")}
@@ -271,19 +271,19 @@ export default function PharmacyCampaignModal({
           <div>
             <label className={labelCls}>Message</label>
             <textarea
-              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
               rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
           </div>
 
-          <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-medium text-slate-600">
+          <div className="rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-3 text-xs font-medium text-slate-600 dark:text-slate-300">
             📡 Estimated reach:{" "}
             {reachLoading ? (
               <span className="text-slate-400">calculating…</span>
             ) : reach !== null ? (
-              <strong className="text-emerald-700">
+              <strong className="text-emerald-700 dark:text-emerald-400">
                 {reach.toLocaleString()} user{reach === 1 ? "" : "s"}
               </strong>
             ) : (

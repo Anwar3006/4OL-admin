@@ -139,7 +139,7 @@ export default function FacilityScoutSettingsTab({ data, loading }: FacilityScou
           <div className="flex items-center justify-between gap-4">
             <Label className="text-sm">Duplicate detection</Label>
             <select
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={form.duplicate_detection}
               onChange={(event) =>
                 setForm({ ...form, duplicate_detection: event.target.value as FormState["duplicate_detection"] })
@@ -153,7 +153,7 @@ export default function FacilityScoutSettingsTab({ data, loading }: FacilityScou
           <div className="flex items-center justify-between gap-4">
             <Label className="text-sm">Reward disbursement</Label>
             <select
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={form.reward_disbursement}
               onChange={(event) =>
                 setForm({ ...form, reward_disbursement: event.target.value as FormState["reward_disbursement"] })

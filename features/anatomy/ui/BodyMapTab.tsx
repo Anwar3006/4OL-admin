@@ -77,14 +77,14 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
       {/* System sub-tabs + toggles */}
       <div className="card p-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap gap-1 rounded-full bg-slate-100 p-1">
+          <div className="flex flex-wrap gap-1 rounded-full bg-slate-100 dark:bg-slate-800 p-1">
             {BODY_SYSTEMS.map((s) => (
               <button
                 key={s}
                 className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                   system === s
                     ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-white"
+                    : "text-slate-500 hover:bg-white dark:hover:bg-slate-800"
                 }`}
                 onClick={() => setSystem(s)}
               >
@@ -93,12 +93,12 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
             ))}
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <div className="flex rounded-full bg-slate-100 p-1">
+            <div className="flex rounded-full bg-slate-100 dark:bg-slate-800 p-1">
               <button
                 className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                   view === "front"
                     ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-white"
+                    : "text-slate-500 hover:bg-white dark:hover:bg-slate-800"
                 }`}
                 onClick={() => setView("front")}
               >
@@ -108,7 +108,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                 className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                   view === "back"
                     ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-white"
+                    : "text-slate-500 hover:bg-white dark:hover:bg-slate-800"
                 }`}
                 onClick={() => setView("back")}
               >
@@ -119,7 +119,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
               className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
                 showOrgans
                   ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200"
               }`}
               onClick={() => setShowOrgans((v) => !v)}
             >
@@ -216,12 +216,12 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                         onClick={() => setSelectedId(part.id)}
                         className={`rounded-xl border p-3 text-left transition ${
                           selectedId === part.id
-                            ? "border-emerald-600 bg-emerald-50"
-                            : "border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/40"
+                            ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-500/15"
+                            : "border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40"
                         }`}
                       >
                         <div className="text-lg">{part.icon || "🧍"}</div>
-                        <div className="mt-1 text-xs font-bold text-slate-700">{part.name}</div>
+                        <div className="mt-1 text-xs font-bold text-slate-700 dark:text-slate-300">{part.name}</div>
                         <div className="mt-1 flex gap-1">
                           <span className="badge badge-blue">{part.condition_count} cond.</span>
                           <span className="badge badge-purple">{part.symptom_count} symp.</span>
@@ -236,7 +236,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
 
           {/* Quick-select tags */}
           {quickTags.length > 0 && (
-            <div className="mt-4 border-t border-slate-100 pt-3">
+            <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
               <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
                 Quick select
               </p>
@@ -248,7 +248,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                     className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
                       selectedId === part.id
                         ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-slate-200 text-slate-600 hover:border-emerald-400"
+                        : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-400"
                     }`}
                   >
                     {part.name}
@@ -270,7 +270,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
               <div className="flex items-start gap-3">
                 <div className="text-3xl">{selected.icon || "🧍"}</div>
                 <div>
-                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-800">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">
                     {selected.name}
                   </h4>
                   <div className="mt-1 flex flex-wrap gap-1">
@@ -299,7 +299,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                     <li key={c.condition_id}>
                       <Link
                         href={`/diseases?id=${c.condition_id}`}
-                        className="text-emerald-700 hover:underline"
+                        className="text-emerald-700 dark:text-emerald-400 hover:underline"
                       >
                         {c.condition_name}
                       </Link>
@@ -320,7 +320,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                     <li key={s.symptom_id}>
                       <Link
                         href={`/symptoms?id=${s.symptom_id}`}
-                        className="text-emerald-700 hover:underline"
+                        className="text-emerald-700 dark:text-emerald-400 hover:underline"
                       >
                         {s.symptom_name}
                       </Link>
@@ -341,7 +341,7 @@ export default function BodyMapTab({ gender }: { gender: "female" | "male" }) {
                     <li key={t.tip_id}>
                       <Link
                         href={`/healthy-living?id=${t.tip_id}`}
-                        className="text-emerald-700 hover:underline"
+                        className="text-emerald-700 dark:text-emerald-400 hover:underline"
                       >
                         {t.tip_name}
                       </Link>

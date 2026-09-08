@@ -32,8 +32,8 @@ import { cn } from "@/lib/utils";
 // are REAL mutations — admin_moderate_app_review RPC.
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  approved: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  pending: "bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-200",
+  approved: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-200",
   rejected: "bg-rose-50 text-rose-600 border-rose-200",
 };
 
@@ -95,7 +95,7 @@ export default function AppReviewsTab() {
         header: "Reviewer",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
+            <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight leading-none mb-1">
               {row.original.user_profiles?.name || "Anonymous"}
             </div>
             <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
@@ -127,7 +127,7 @@ export default function AppReviewsTab() {
         header: "App Info",
         cell: ({ row }) => (
           <div>
-            <div className="text-2xs font-black text-slate-600 leading-none mb-1">
+            <div className="text-2xs font-black text-slate-600 dark:text-slate-300 leading-none mb-1">
               {PLATFORM_BADGES[row.original.platform] || "📱 App"}
             </div>
             <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
@@ -170,7 +170,7 @@ export default function AppReviewsTab() {
             <div className="flex items-center justify-end gap-2">
               {review.status !== "approved" && (
                 <button
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
                   title="Approve"
                   disabled={moderate.isPending}
                   onClick={(e) => {
@@ -309,12 +309,12 @@ export default function AppReviewsTab() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search feedback..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1">
+        <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -325,8 +325,8 @@ export default function AppReviewsTab() {
               className={cn(
                 "h-7 px-3 rounded-lg text-3xs font-black uppercase tracking-widest transition-all",
                 statusFilter === f.id
-                  ? "bg-white shadow-sm text-emerald-700 border border-slate-200"
-                  : "text-slate-400 hover:text-slate-600",
+                  ? "bg-white dark:bg-slate-800 shadow-sm text-emerald-700 dark:text-emerald-400 border border-slate-200 dark:border-slate-700"
+                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
               )}
             >
               {f.label}
@@ -335,11 +335,11 @@ export default function AppReviewsTab() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         {isError ? (
           <div className="p-10 text-center">
             <div className="text-3xl mb-3">📱</div>
-            <p className="text-xs font-black text-slate-700 uppercase tracking-widest mb-2">
+            <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-2">
               App reviews unavailable
             </p>
             <p className="text-xs font-medium text-slate-400 max-w-md mx-auto">

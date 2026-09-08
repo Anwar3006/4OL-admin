@@ -80,17 +80,17 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search reviews..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="h-9 px-4 rounded-xl bg-slate-50 border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all">
+        <button className="h-9 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
           📥 Export Data
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={reviewColumns.map((col) => {
             if (col.id === "actions") {
@@ -101,7 +101,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
                   return (
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewReview(review);
@@ -110,7 +110,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
                         👁️
                       </button>
                       <button
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditReview(review);
@@ -121,7 +121,7 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <button
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
                             }}

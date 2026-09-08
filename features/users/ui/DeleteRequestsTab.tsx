@@ -57,7 +57,7 @@ export default function DeleteRequestsTab() {
         header: "User",
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {row.original.first_name} {row.original.last_name}
             </span>
             <span className="text-xs text-slate-400">{row.original.email}</span>
@@ -68,7 +68,7 @@ export default function DeleteRequestsTab() {
         id: "reason",
         header: "Reason",
         cell: ({ row }: { row: { original: DeleteAccountRequest } }) => (
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-slate-600 dark:text-slate-300">
             {row.original.reason || "Privacy concerns"}
           </span>
         ),
@@ -161,26 +161,26 @@ export default function DeleteRequestsTab() {
 
   return (
     <div className="w-full min-w-0 space-y-4">
-      <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
-        <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 text-xl">
+      <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
+        <div className="h-10 w-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 text-xl">
           ⚠️
         </div>
         <div>
           <h4 className="text-xs font-black uppercase tracking-widest text-amber-900 mb-1">
             Attention Required
           </h4>
-          <p className="text-xs text-amber-700 leading-relaxed font-medium">
+          <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">
             <strong>{totalItems} deletion request{totalItems === 1 ? "" : "s"}</strong> –
             must be processed within 30 days per Ghana Data Protection Act 2012
             (Section 34).
             {urgentCount > 0 && (
-              <strong className="text-red-600"> {urgentCount} due within 7 days.</strong>
+              <strong className="text-red-600 dark:text-red-400"> {urgentCount} due within 7 days.</strong>
             )}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={requests}

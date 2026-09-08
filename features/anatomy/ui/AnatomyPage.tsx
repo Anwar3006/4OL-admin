@@ -64,13 +64,13 @@ export default function AnatomyPage() {
         subtitle="Interactive body map · symptom & condition mapping · gender-aware content"
       >
         {/* Header actions: gender toggle · Export · + Add Body Part */}
-        <div className="flex rounded-full bg-slate-100 p-1">
+        <div className="flex rounded-full bg-slate-100 dark:bg-slate-800 p-1">
           <button
             className={cn(
               "rounded-full px-3 py-1.5 text-xs font-bold transition",
               gender === "female"
                 ? "bg-emerald-600 text-white shadow-sm"
-                : "text-slate-500 hover:bg-white",
+                : "text-slate-500 hover:bg-white dark:hover:bg-slate-800",
             )}
             onClick={() => setGender("female")}
           >
@@ -81,7 +81,7 @@ export default function AnatomyPage() {
               "rounded-full px-3 py-1.5 text-xs font-bold transition",
               gender === "male"
                 ? "bg-emerald-600 text-white shadow-sm"
-                : "text-slate-500 hover:bg-white",
+                : "text-slate-500 hover:bg-white dark:hover:bg-slate-800",
             )}
             onClick={() => setGender("male")}
           >
@@ -101,10 +101,10 @@ export default function AnatomyPage() {
         <div className="al-ic">📱</div>
         <div className="flex-1 text-xs">
           <strong>Mobile integration:</strong> body-part taps are tracked via
-          <code className="mx-1 rounded bg-slate-100 px-1 font-mono">anatomy_interactions</code>
+          <code className="mx-1 rounded bg-slate-100 dark:bg-slate-800 px-1 font-mono">anatomy_interactions</code>
           and feed the <strong>Map Interactions 30d</strong> KPI. Hotspot geometry is seeded in
-          <code className="mx-1 rounded bg-slate-100 px-1 font-mono">anatomy_hotspots</code>
-          (see migration <code className="rounded bg-slate-100 px-1 font-mono">anatomy_extension</code>).
+          <code className="mx-1 rounded bg-slate-100 dark:bg-slate-800 px-1 font-mono">anatomy_hotspots</code>
+          (see migration <code className="rounded bg-slate-100 dark:bg-slate-800 px-1 font-mono">anatomy_extension</code>).
         </div>
       </div>
 
@@ -151,7 +151,7 @@ export default function AnatomyPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
@@ -165,9 +165,9 @@ export default function AnatomyPage() {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}

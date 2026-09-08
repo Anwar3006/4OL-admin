@@ -201,7 +201,7 @@ function CheckboxGroup({
               "px-2.5 py-1 rounded-full text-2xs font-bold uppercase tracking-wide border transition-colors",
               selected.includes(opt)
                 ? "bg-ek-green-dark text-white border-ek-green-dark"
-                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300",
+                : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600",
             )}
           >
             {labelize(opt)}
@@ -398,7 +398,7 @@ export default function NotificationsPage() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               Campaign Draft
             </CardTitle>
           </CardHeader>
@@ -454,7 +454,7 @@ export default function NotificationsPage() {
                 </SelectContent>
               </Select>
 
-              <div className="border-t border-slate-100 pt-3 space-y-3">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-3">
                 <Select value={audience} onValueChange={(v) => setAudience(v as typeof audience)}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -466,7 +466,7 @@ export default function NotificationsPage() {
                 </Select>
 
                 {audience === "targeted" && (
-                  <div className="space-y-3 bg-slate-50 rounded-lg p-3">
+                  <div className="space-y-3 bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
                     <CheckboxGroup label="User Type" options={USER_TYPES} selected={userTypes} onChange={setUserTypes} />
                     <CheckboxGroup label="Role" options={ROLES} selected={roles} onChange={setRoles} />
                     <CheckboxGroup label="Sex" options={SEXES} selected={sexes} onChange={setSexes} />
@@ -474,11 +474,11 @@ export default function NotificationsPage() {
                   </div>
                 )}
 
-                <div className="text-xs font-bold text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+                <div className="text-xs font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 rounded-lg px-3 py-2">
                   {previewLoading ? "Calculating reach…" : (
                     <>
-                      Reaches <span className="text-slate-900">{segmentPreview?.targetable ?? 0}</span> users,{" "}
-                      <span className="text-slate-900">{segmentPreview?.with_push_token ?? 0}</span> with a push token
+                      Reaches <span className="text-slate-900 dark:text-slate-100">{segmentPreview?.targetable ?? 0}</span> users,{" "}
+                      <span className="text-slate-900 dark:text-slate-100">{segmentPreview?.with_push_token ?? 0}</span> with a push token
                     </>
                   )}
                 </div>
@@ -591,9 +591,9 @@ function CampaignsTable({
             {loading && <EmptyRow colSpan={5} label="Loading campaigns..." />}
             {!loading && campaigns.length === 0 && <EmptyRow colSpan={5} label="No campaigns found." />}
             {!loading && campaigns.map((campaign) => (
-              <TableRow key={campaign.id} className="cursor-pointer hover:bg-slate-50" onClick={() => onRowClick(campaign.id)}>
+              <TableRow key={campaign.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900" onClick={() => onRowClick(campaign.id)}>
                 <TableCell className="min-w-[240px] whitespace-normal">
-                  <div className="font-bold text-slate-800">{campaign.title}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200">{campaign.title}</div>
                   <div className="mt-1 line-clamp-2 text-xs text-slate-500">{campaign.body}</div>
                 </TableCell>
                 <TableCell className="capitalize">{labelize(campaign.type)}</TableCell>
@@ -679,7 +679,7 @@ function TemplatesTable({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">Templates</CardTitle>
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">Templates</CardTitle>
         <Button size="sm" onClick={onCreate}>+ New Template</Button>
       </CardHeader>
       <CardContent className="overflow-x-auto p-0">
@@ -699,7 +699,7 @@ function TemplatesTable({
             {!loading && templates.map((template) => (
               <TableRow key={template.id}>
                 <TableCell className="min-w-[240px] whitespace-normal">
-                  <div className="font-bold text-slate-800">{template.name}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200">{template.name}</div>
                   <div className="mt-1 line-clamp-2 text-xs text-slate-500">{template.subject || template.body}</div>
                 </TableCell>
                 <TableCell className="capitalize">{labelize(template.template_type)}</TableCell>
@@ -731,7 +731,7 @@ function RulesTable({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">Automation Rules</CardTitle>
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">Automation Rules</CardTitle>
         <Button size="sm" onClick={onCreate}>+ New Rule</Button>
       </CardHeader>
       <CardContent className="p-0">
@@ -760,7 +760,7 @@ function RulesTable({
             {!loading && rules.map((rule) => (
               <TableRow key={rule.id}>
                 <TableCell className="min-w-[220px] whitespace-normal">
-                  <div className="font-bold text-slate-800">{rule.name}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200">{rule.name}</div>
                   <div className="mt-1 text-xs text-slate-500">{labelize(rule.source_module)}</div>
                 </TableCell>
                 <TableCell>{labelize(rule.trigger_event)}</TableCell>

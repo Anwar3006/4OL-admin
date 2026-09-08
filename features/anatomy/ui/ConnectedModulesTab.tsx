@@ -126,7 +126,7 @@ function GenderRulesEditor() {
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <select
-          className="h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white"
+          className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800"
           value={bodyPartId}
           onChange={(e) => setBodyPartId(e.target.value)}
         >
@@ -205,7 +205,7 @@ export default function ConnectedModulesTab() {
                 {card.title}
               </h4>
               <p className="mt-1 text-xs text-slate-500">{card.detail}</p>
-              <span className="mt-2 inline-block text-xs font-bold text-emerald-700">
+              <span className="mt-2 inline-block text-xs font-bold text-emerald-700 dark:text-emerald-400">
                 Open module →
               </span>
             </Link>
@@ -225,7 +225,7 @@ export default function ConnectedModulesTab() {
             {SUGGESTED.map((item) => (
               <li key={item.label} className="flex items-center gap-2 text-xs">
                 <span className="text-base">{item.icon}</span>
-                <span className="font-bold text-slate-700">{item.label}</span>
+                <span className="font-bold text-slate-700 dark:text-slate-300">{item.label}</span>
                 <span className="text-slate-400">— {item.note}</span>
               </li>
             ))}

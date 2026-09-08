@@ -181,7 +181,7 @@ export default function GroupsTab() {
         header: "Group Name",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-slate-800">{row.original.name}</div>
+            <div className="font-bold text-slate-800 dark:text-slate-200">{row.original.name}</div>
             <div className="text-2xs text-slate-400 line-clamp-1">
               {row.original.description || "No description"}
             </div>
@@ -207,7 +207,7 @@ export default function GroupsTab() {
         header: "Group Admin / Permissions",
         cell: ({ row }) => (
           <div className="text-xs">
-            <div className="font-bold text-slate-700">{creatorName(row.original)}</div>
+            <div className="font-bold text-slate-700 dark:text-slate-300">{creatorName(row.original)}</div>
             <div className="text-3xs text-slate-400">
               {groupPermissionSummary(row.original.group_permissions, row.original.group_type)}
             </div>
@@ -218,7 +218,7 @@ export default function GroupsTab() {
         accessorKey: "messages_7d",
         header: "Msgs (7d)",
         cell: ({ row }) => (
-          <span className="font-black text-slate-600">{row.original.messages_7d ?? 0}</span>
+          <span className="font-black text-slate-600 dark:text-slate-300">{row.original.messages_7d ?? 0}</span>
         ),
       },
       {
@@ -259,7 +259,7 @@ export default function GroupsTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       {/* SA-only Global Message Search (Gap Analysis E-D5 — PHI) */}
       {isSuperAdmin && (
-        <div className="alert bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg flex flex-col gap-2">
+        <div className="alert bg-blue-50 dark:bg-blue-500/15 border border-blue-200 text-blue-700 dark:text-blue-400 p-3 rounded-lg flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <span className="text-base">🔍</span>
             <div className="flex-1 text-xs font-medium">
@@ -289,10 +289,10 @@ export default function GroupsTab() {
             </div>
           </div>
           {globalSearch.data && (
-            <div className="text-2xs space-y-1 max-h-40 overflow-y-auto border-t border-blue-100 pt-2">
+            <div className="text-2xs space-y-1 max-h-40 overflow-y-auto border-t border-blue-100 dark:border-blue-500/30 pt-2">
               <div className="font-black">{globalSearch.data.total} result(s)</div>
               {globalSearch.data.results.map((r) => (
-                <div key={r.id} className="bg-white/60 rounded-md px-2 py-1">
+                <div key={r.id} className="bg-white/60 dark:bg-slate-800/60 rounded-md px-2 py-1">
                   <span className="font-bold">{r.conversationName}</span> ·{" "}
                   {r.senderName} ·{" "}
                   <span className="text-blue-500">{new Date(r.createdAt).toLocaleString()}</span>
@@ -306,13 +306,13 @@ export default function GroupsTab() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
+          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
           placeholder="🔍 Search groups by name, category, admin..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
@@ -325,7 +325,7 @@ export default function GroupsTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -338,7 +338,7 @@ export default function GroupsTab() {
           <option>Archived</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={sortMode}
           onChange={(e) => setSortMode(e.target.value as SortMode)}
         >

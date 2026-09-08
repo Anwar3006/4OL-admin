@@ -64,7 +64,7 @@ export default function DataTable<T extends Record<string, any>>({
       <table className="w-full text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b bg-slate-50">
+          <tr className="border-b bg-slate-50 dark:bg-slate-900">
             {columns.map((column) => (
               <th
                 key={column.key}
@@ -92,7 +92,7 @@ export default function DataTable<T extends Record<string, any>>({
                 key={getRowId(row, index)}
                 className={cn(
                   "border-b last:border-0",
-                  isClickable && "cursor-pointer hover:bg-slate-50",
+                  isClickable && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900",
                 )}
                 role={isClickable ? "button" : undefined}
                 tabIndex={isClickable ? 0 : undefined}
@@ -121,7 +121,7 @@ export default function DataTable<T extends Record<string, any>>({
                       <DropdownMenuTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300"
                           aria-label="Row actions"
                         >
                           <MoreHorizontal className="size-4" />
@@ -134,7 +134,7 @@ export default function DataTable<T extends Record<string, any>>({
                             onClick={() => action.onClick(row)}
                             className={cn(
                               action.danger &&
-                                "text-red-600 focus:text-red-600",
+                                "text-red-600 dark:text-red-400 focus:text-red-600",
                             )}
                           >
                             {action.label}
@@ -157,7 +157,7 @@ export default function DataTable<T extends Record<string, any>>({
         </tbody>
       </table>
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-100 p-3 text-xs text-slate-500">
+        <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 p-3 text-xs text-slate-500">
           <span>Page {page} of {totalPages}</span>
           <div className="flex gap-2">
             <button

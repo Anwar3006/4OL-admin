@@ -57,7 +57,7 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
   return (
     <div className="space-y-4">
       {/* Filters + layer toggles */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
         <div className="flex flex-wrap gap-4 items-end">
           <FilterDropdown
             label="Region"
@@ -85,7 +85,7 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
+        <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
           <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
             Layers
           </span>
@@ -98,8 +98,8 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
                 layers[layer.key]
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600",
+                  ? "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 text-emerald-800 dark:text-emerald-400"
+                  : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
               )}
             >
               <span className={cn("h-2 w-2 rounded-full", layer.color)} />
@@ -110,7 +110,7 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
 
           {canViewFootprints && layers.footprints && (
             <select
-              className="px-3 py-1.5 text-xs font-bold border border-slate-200 rounded-full bg-white text-slate-600 cursor-pointer"
+              className="px-3 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer"
               value={collectorFilter}
               onChange={(e) => setCollectorFilter(e.target.value)}
             >
@@ -129,7 +129,7 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
       {/* Map + legend */}
       <div
         className={cn(
-          "rounded-2xl border border-slate-200 overflow-hidden shadow-xl bg-white relative",
+          "rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xl bg-white dark:bg-slate-800 relative",
           fullScreen ? "h-[calc(100vh-260px)]" : "h-[calc(100vh-380px)] min-h-[420px]",
         )}
       >
@@ -141,20 +141,20 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
         />
 
         {/* Legend overlay */}
-        <div className="absolute bottom-4 left-4 z-40 bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-lg p-3 space-y-1.5">
+        <div className="absolute bottom-4 left-4 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg p-3 space-y-1.5">
           <div className="text-3xs font-black uppercase tracking-widest text-slate-400">
             Legend
           </div>
-          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600">
+          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600 dark:text-slate-300">
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Facility (by status)
           </div>
-          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600">
+          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600 dark:text-slate-300">
             <span className="h-2.5 w-2.5 rounded-full bg-violet-500" /> IBP Business
           </div>
-          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600">
+          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600 dark:text-slate-300">
             <span className="h-2.5 w-2.5 rounded-full bg-green-500" /> Outdoor Route
           </div>
-          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600">
+          <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600 dark:text-slate-300">
             <span className="h-1 w-4 rounded bg-orange-400" /> Collector Trail
           </div>
         </div>

@@ -252,7 +252,7 @@ export default function SecurityPage() {
       </div>
 
       {criticalAuditLogs.length > 0 && (
-        <Alert className="border-red-200 bg-red-50 text-red-900">
+        <Alert className="border-red-200 bg-red-50 dark:bg-red-500/15 text-red-900 dark:text-red-400">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Critical audit activity detected</AlertTitle>
           <AlertDescription>
@@ -264,7 +264,7 @@ export default function SecurityPage() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="border-b border-slate-200">
+        <div className="border-b border-slate-200 dark:border-slate-700">
           <TabsList className="h-auto w-full justify-start gap-0 overflow-x-auto rounded-none bg-transparent p-0">
             {[
               ["threats", "Threats"],
@@ -274,7 +274,7 @@ export default function SecurityPage() {
               <TabsTrigger
                 key={id}
                 value={id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-none"
               >
                 {label}
               </TabsTrigger>
@@ -315,7 +315,7 @@ function ThreatsTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Security Threats
         </CardTitle>
       </CardHeader>
@@ -345,13 +345,13 @@ function ThreatsTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="min-w-[260px] whitespace-normal">
-                    <div className="font-bold text-slate-800">{threat.title}</div>
+                    <div className="font-bold text-slate-800 dark:text-slate-200">{threat.title}</div>
                     <div className="mt-1 text-xs text-slate-500">
                       {threat.description || threat.threat_type}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-xs font-bold text-slate-700">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       {threat.source_module || "Unknown"}
                     </div>
                     <div className="mt-1 text-xs text-slate-400">
@@ -414,7 +414,7 @@ function AuditLogTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Admin Audit Logs
         </CardTitle>
       </CardHeader>
@@ -443,12 +443,12 @@ function AuditLogTable({
                       {log.severity}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-bold text-slate-800">
+                  <TableCell className="font-bold text-slate-800 dark:text-slate-200">
                     {log.action_type.replace(/_/g, " ")}
                   </TableCell>
                   <TableCell>{log.admin_email || "Unknown admin"}</TableCell>
                   <TableCell>
-                    <div className="text-xs font-bold text-slate-700">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       {log.target_table || "Platform"}
                     </div>
                     <div className="mt-1 text-xs text-slate-400">
@@ -504,7 +504,7 @@ function SecuritySettingsPanel({
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
             Password Policy
           </CardTitle>
         </CardHeader>
@@ -518,7 +518,7 @@ function SecuritySettingsPanel({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
             Session Controls
           </CardTitle>
         </CardHeader>
@@ -532,7 +532,7 @@ function SecuritySettingsPanel({
 
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
             Access Restrictions
           </CardTitle>
         </CardHeader>
@@ -561,18 +561,18 @@ function SecuritySettingsPanel({
 
 function PolicyRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 p-3">
       <span className="text-xs font-black uppercase tracking-widest text-slate-400">
         {label}
       </span>
-      <span className="text-right text-sm font-bold text-slate-700">{value}</span>
+      <span className="text-right text-sm font-bold text-slate-700 dark:text-slate-300">{value}</span>
     </div>
   );
 }
 
 function PolicyToggle({ label, checked }: { label: string; checked: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 p-3">
       <span className="text-xs font-black uppercase tracking-widest text-slate-400">
         {label}
       </span>

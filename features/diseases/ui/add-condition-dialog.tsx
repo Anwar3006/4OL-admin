@@ -224,7 +224,7 @@ const AddConditionDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 !bg-white border-slate-200 dark:border-slate-700 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Edit Condition" : "Register New Condition"}
@@ -265,7 +265,7 @@ const AddConditionDialog = () => {
                     label="Specialists To Contact (Comma-Separated)"
                     readOnly={false}
                   />
-                  <div className="bg-white">
+                  <div className="bg-white dark:bg-slate-800">
                     <TreeMultiSelectForm
                       label="Associated Body Part/s"
                       name="bodyParts"
@@ -273,7 +273,7 @@ const AddConditionDialog = () => {
                       rawParts={bodyParts}
                     />
                   </div>
-                  <div className="bg-white">
+                  <div className="bg-white dark:bg-slate-800">
                     <TreeMultiSelectForm
                       label="Associated Category/s"
                       name="categories"
@@ -286,12 +286,12 @@ const AddConditionDialog = () => {
                 {/* Classification (Gap Analysis Part I, I-D1 / m-add-condition) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Severity
                     </label>
                     <select
                       {...form.register("severity")}
-                      className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+                      className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm outline-none focus:border-emerald-500"
                     >
                       <option value="">Not set</option>
                       <option value="low">Low</option>
@@ -301,12 +301,12 @@ const AddConditionDialog = () => {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       NHIS Coverage
                     </label>
                     <select
                       {...form.register("nhis_coverage")}
-                      className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+                      className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm outline-none focus:border-emerald-500"
                     >
                       <option value="">Not set</option>
                       <option value="covered">Covered</option>
@@ -335,7 +335,7 @@ const AddConditionDialog = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="bg-green-50"
+                    className="bg-green-50 dark:bg-green-500/15"
                     onClick={() =>
                       append({ type_name: "", about_type: EMPTY_LEXICAL_STATE })
                     }
@@ -412,7 +412,7 @@ const AddConditionDialog = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="bg-green-50"
+                    className="bg-green-50 dark:bg-green-500/15"
                     onClick={() =>
                       causesAppend({
                         cause_name: "",

@@ -32,7 +32,7 @@ function MarkdownLite({ text }: { text: string }) {
   const flushList = (key: string) => {
     if (!listBuffer.length) return;
     nodes.push(
-      <ul key={key} className="list-disc pl-5 space-y-1 my-2 text-sm text-slate-700">
+      <ul key={key} className="list-disc pl-5 space-y-1 my-2 text-sm text-slate-700 dark:text-slate-300">
         {listBuffer.map((item, i) => (
           <li key={i}>{renderInline(item)}</li>
         ))}
@@ -47,7 +47,7 @@ function MarkdownLite({ text }: { text: string }) {
       <>
         {parts.map((part, i) =>
           i % 2 === 1 ? (
-            <strong key={i} className="font-bold text-slate-900">
+            <strong key={i} className="font-bold text-slate-900 dark:text-slate-100">
               {part}
             </strong>
           ) : (
@@ -68,25 +68,25 @@ function MarkdownLite({ text }: { text: string }) {
     if (!line.trim()) return;
     if (line.startsWith("### ")) {
       nodes.push(
-        <h4 key={idx} className="text-sm font-black uppercase tracking-widest text-slate-600 mt-4 mb-1">
+        <h4 key={idx} className="text-sm font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 mt-4 mb-1">
           {line.slice(4)}
         </h4>,
       );
     } else if (line.startsWith("## ")) {
       nodes.push(
-        <h3 key={idx} className="text-base font-black text-slate-900 mt-4 mb-1 first:mt-0">
+        <h3 key={idx} className="text-base font-black text-slate-900 dark:text-slate-100 mt-4 mb-1 first:mt-0">
           {line.slice(3)}
         </h3>,
       );
     } else if (line.startsWith("# ")) {
       nodes.push(
-        <h3 key={idx} className="text-base font-black text-slate-900 mt-2 mb-1">
+        <h3 key={idx} className="text-base font-black text-slate-900 dark:text-slate-100 mt-2 mb-1">
           {line.slice(2)}
         </h3>,
       );
     } else {
       nodes.push(
-        <p key={idx} className="text-sm leading-6 text-slate-700 my-1">
+        <p key={idx} className="text-sm leading-6 text-slate-700 dark:text-slate-300 my-1">
           {renderInline(line)}
         </p>,
       );
@@ -100,7 +100,7 @@ function MetricsGrid({ metrics }: { metrics: Record<string, SectionResult> }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
       {Object.entries(metrics).map(([key, section]) => (
-        <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5">
+        <div key={key} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 p-3.5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-black uppercase tracking-widest text-slate-500">
               {SECTION_LABELS[key] ?? key}
@@ -123,10 +123,10 @@ function MetricsGrid({ metrics }: { metrics: Record<string, SectionResult> }) {
                 return (
                   <div key={metric} className="flex items-center justify-between text-xs">
                     <span className="text-slate-500 capitalize">{metric.replace(/_/g, " ")}</span>
-                    <span className="font-bold text-slate-900">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
                       {value.current ?? "n/a"}
                       {movement != null && movement !== 0 ? (
-                        <span className={`ml-1.5 font-semibold ${movement > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        <span className={`ml-1.5 font-semibold ${movement > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
                           {movement > 0 ? "+" : ""}
                           {movement}%
                         </span>
@@ -153,7 +153,7 @@ function RunCard({ run }: { run: ReportRun }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <CardTitle className="text-sm flex items-center gap-2">
-              <FileBarChart2 className="h-4 w-4 text-emerald-600" />
+              <FileBarChart2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               {run.definitionName ?? "Platform Report"}
               <Badge variant="outline" className="capitalize">{run.cadence}</Badge>
               {failed ? <Badge variant="destructive">Failed</Badge> : null}
@@ -177,7 +177,7 @@ function RunCard({ run }: { run: ReportRun }) {
       </CardHeader>
       <CardContent>
         {failed ? (
-          <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/15 border border-red-100 dark:border-red-500/30 rounded-lg p-3">
             {run.error ?? "Run failed without an error message."}
           </p>
         ) : run.narrative_md ? (
@@ -213,7 +213,7 @@ export default function InboxTab() {
     return (
       <Card>
         <CardContent className="py-10 text-center">
-          <p className="text-sm font-bold text-slate-700 mb-1">Could not load reports</p>
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Could not load reports</p>
           <p className="text-xs text-slate-500 mb-4">
             {(error as Error).message.includes("does not exist") || (error as Error).message.includes("could not find")
               ? "The reports migration has not been applied to the database yet."
@@ -231,7 +231,7 @@ export default function InboxTab() {
       <Card>
         <CardContent className="py-16 text-center">
           <FileBarChart2 className="h-8 w-8 mx-auto text-slate-300 mb-3" />
-          <p className="text-sm font-bold text-slate-700">No reports delivered yet</p>
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No reports delivered yet</p>
           <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
             Once the super admin subscribes you to a report schedule, generated reports land here on their delivery
             day. Nothing to configure on your side.

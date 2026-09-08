@@ -392,7 +392,7 @@ export default function ImageComponent({
         </div>
 
         {showCaption && (
-          <div className="image-caption-container absolute right-0 bottom-1 left-0 m-0 block min-w-[100px] overflow-hidden border-t bg-white/90 p-0">
+          <div className="image-caption-container absolute right-0 bottom-1 left-0 m-0 block min-w-[100px] overflow-hidden border-t bg-white/90 dark:bg-slate-800/90 p-0">
             <LexicalNestedComposer
               initialEditor={caption}
               initialNodes={[RootNode, TextNode, ParagraphNode]}

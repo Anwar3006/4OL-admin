@@ -13,9 +13,9 @@ import { FLAG_REASONS } from "@/features/chat/schema/constants";
 import { downloadCsv } from "@/lib/csv";
 
 const STATUS_BADGE: Record<string, string> = {
-  pending_review: "bg-amber-100 text-amber-800",
-  dismissed: "bg-slate-100 text-slate-600",
-  actioned: "bg-red-100 text-red-800",
+  pending_review: "bg-amber-100 dark:bg-amber-500/20 text-amber-800",
+  dismissed: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",
+  actioned: "bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400",
 };
 
 // Flagged tab completion (Gap Analysis Part E, phase 4): Ban action,
@@ -146,7 +146,7 @@ export default function FlaggedTab() {
         accessorKey: "conversation_name",
         header: "Group",
         cell: ({ row }) => (
-          <span className="text-2xs font-bold text-slate-600 max-w-[120px] truncate block">
+          <span className="text-2xs font-bold text-slate-600 dark:text-slate-300 max-w-[120px] truncate block">
             {row.original.conversation_name || "—"}
           </span>
         ),
@@ -156,7 +156,7 @@ export default function FlaggedTab() {
         header: "Flagged Message",
         cell: ({ row }) => (
           <div className="max-w-[220px]">
-            <div className="text-xs font-bold text-slate-800 line-clamp-2">
+            <div className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-2">
               {row.original.content_preview || "—"}
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function FlaggedTab() {
         accessorKey: "sender_first_name",
         header: "User",
         cell: ({ row }) => (
-          <div className="text-xs font-bold text-slate-700">
+          <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
             {[row.original.sender_first_name, row.original.sender_last_name]
               .filter(Boolean)
               .join(" ") || "—"}
@@ -178,11 +178,11 @@ export default function FlaggedTab() {
         header: "Reason",
         cell: ({ row }) => (
           <div>
-            <span className="text-2xs font-bold text-slate-700">
+            <span className="text-2xs font-bold text-slate-700 dark:text-slate-300">
               {row.original.report_reason}
             </span>
             {row.original.ai_detected && (
-              <span className="ml-1.5 px-1 py-0.5 rounded bg-purple-100 text-purple-700 text-3xs font-black">
+              <span className="ml-1.5 px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 text-3xs font-black">
                 AI
               </span>
             )}
@@ -202,10 +202,10 @@ export default function FlaggedTab() {
             <span
               className={`text-2xs font-black px-1.5 py-0.5 rounded-md ${
                 pct >= 80
-                  ? "text-red-600 bg-red-50"
+                  ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/15"
                   : pct >= 50
-                    ? "text-amber-600 bg-amber-50"
-                    : "text-slate-500 bg-slate-50"
+                    ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15"
+                    : "text-slate-500 bg-slate-50 dark:bg-slate-900"
               }`}
             >
               {pct}%
@@ -221,7 +221,7 @@ export default function FlaggedTab() {
           return (
             <span
               className={`inline-block px-2 py-0.5 rounded text-3xs font-black uppercase ${
-                STATUS_BADGE[val] || "bg-slate-100 text-slate-600"
+                STATUS_BADGE[val] || "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
               }`}
             >
               {val === "pending_review" ? "Pending" : val}
@@ -250,7 +250,7 @@ export default function FlaggedTab() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setContextItem(item)}
-                className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer bg-transparent border-0 text-sm"
+                className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-transparent border-0 text-sm"
                 title="Context"
               >
                 🔍
@@ -260,7 +260,7 @@ export default function FlaggedTab() {
                   <button
                     onClick={() => handleModerate(item, "dismiss")}
                     disabled={!pending}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Dismiss"
                   >
                     ✅
@@ -268,7 +268,7 @@ export default function FlaggedTab() {
                   <button
                     onClick={() => handleModerate(item, "warn")}
                     disabled={!pending}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Warn"
                   >
                     ⚠️
@@ -276,7 +276,7 @@ export default function FlaggedTab() {
                   <button
                     onClick={() => handleModerate(item, "remove")}
                     disabled={!pending}
-                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer bg-transparent border-0 text-sm disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Remove"
                   >
                     🗑️
@@ -316,13 +316,13 @@ export default function FlaggedTab() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[200px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
+          className="flex-1 min-w-[200px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
           placeholder="🔍 Search content, group, user..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={filterReason}
           onChange={(e) => setFilterReason(e.target.value)}
         >
@@ -332,7 +332,7 @@ export default function FlaggedTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={filterGroup}
           onChange={(e) => setFilterGroup(e.target.value)}
         >
@@ -342,7 +342,7 @@ export default function FlaggedTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={filterSource}
           onChange={(e) => setFilterSource(e.target.value)}
         >
@@ -351,7 +351,7 @@ export default function FlaggedTab() {
           <option value="manual">👤 Manual reports</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
@@ -360,7 +360,7 @@ export default function FlaggedTab() {
           <option value="conversation">Conversations</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
@@ -392,10 +392,10 @@ export default function FlaggedTab() {
       {!isLoading && filtered.length === 0 && (
         <div className="card py-20 text-center">
           <div className="max-w-md mx-auto space-y-4">
-            <div className="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-center mx-auto text-2xl">
+            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-2xl border border-emerald-100 dark:border-emerald-500/30 flex items-center justify-center mx-auto text-2xl">
               🎉
             </div>
-            <h3 className="text-lg font-black text-slate-800">All Clear</h3>
+            <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">All Clear</h3>
             <p className="text-xs text-slate-500 font-medium">
               No flagged content requiring moderation at this time.
             </p>
@@ -406,11 +406,11 @@ export default function FlaggedTab() {
       {/* Context dialog */}
       {contextItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6 space-y-4">
-            <h3 className="text-sm font-black text-slate-800">🔍 Flag Context</h3>
-            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 space-y-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6 space-y-4">
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">🔍 Flag Context</h3>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-xs text-slate-600 dark:text-slate-300 space-y-2">
               <div>
-                <span className="font-black text-slate-800">Flagged content:</span>
+                <span className="font-black text-slate-800 dark:text-slate-200">Flagged content:</span>
                 <p className="mt-1 whitespace-pre-wrap">{contextItem.content_preview || "—"}</p>
               </div>
               <div className="grid grid-cols-2 gap-2 text-2xs">
@@ -467,13 +467,13 @@ export default function FlaggedTab() {
       {/* Moderation Confirmation Modal */}
       {actionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-lg">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center text-lg">
                 ⚠️
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-800 capitalize">
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 capitalize">
                   {actionModal.action} Content
                 </h3>
                 <p className="text-2xs text-slate-400">
@@ -486,8 +486,8 @@ export default function FlaggedTab() {
               </div>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600">
-              <div className="font-bold text-slate-800 mb-1">Content Preview:</div>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-xs text-slate-600 dark:text-slate-300">
+              <div className="font-bold text-slate-800 dark:text-slate-200 mb-1">Content Preview:</div>
               <div className="line-clamp-3">{actionModal.item.content_preview}</div>
             </div>
 
@@ -496,7 +496,7 @@ export default function FlaggedTab() {
                 Moderator Notes
               </label>
               <textarea
-                className="w-full h-20 px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none resize-none"
+                className="w-full h-20 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none resize-none"
                 placeholder="Optional notes about this moderation action..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -506,7 +506,7 @@ export default function FlaggedTab() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setActionModal(null)}
-                className="px-4 py-2 rounded-lg text-2xs font-black uppercase tracking-wider text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer border-0 bg-transparent"
+                className="px-4 py-2 rounded-lg text-2xs font-black uppercase tracking-wider text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-0 bg-transparent"
               >
                 Cancel
               </button>

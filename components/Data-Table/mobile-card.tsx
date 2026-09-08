@@ -32,8 +32,8 @@ export const MobileCard = <TData,>({
   return (
     <div
       className={cn(
-        "bg-white w-full border rounded-lg p-4 transition-colors",
-        onClick && "hover:bg-gray-50 cursor-pointer active:bg-gray-100",
+        "bg-white dark:bg-slate-800 w-full border rounded-lg p-4 transition-colors",
+        onClick && "hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer active:bg-gray-100",
       )}
       onClick={onClick}
     >
@@ -77,7 +77,7 @@ export const MobileCard = <TData,>({
                         action.onClick(data, e);
                       }}
                       className={cn(
-                        action.destructive && "text-red-600 focus:text-red-600",
+                        action.destructive && "text-red-600 dark:text-red-400 focus:text-red-600",
                       )}
                     >
                       {action.label}

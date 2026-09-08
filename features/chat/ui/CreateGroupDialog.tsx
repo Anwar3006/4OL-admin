@@ -136,7 +136,7 @@ export default function CreateGroupDialog() {
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
   const selectClass =
-    "h-10 w-full px-3 rounded-md border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none";
+    "h-10 w-full px-3 rounded-md border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 outline-none";
 
   return (
     <Dialog
@@ -149,7 +149,7 @@ export default function CreateGroupDialog() {
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 bg-gradient-to-br from-emerald-500 to-emerald-600">
           <DialogTitle className="flex items-center gap-3 text-white">
-            <span className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center text-xl shrink-0">
+            <span className="w-10 h-10 rounded-2xl bg-white/15 dark:bg-slate-800/15 flex items-center justify-center text-xl shrink-0">
               👥
             </span>
             <span className="flex-1 text-left">
@@ -284,13 +284,13 @@ export default function CreateGroupDialog() {
               {GROUP_PERMISSION_OPTIONS.map((opt) => (
                 <label
                   key={opt.key}
-                  className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer rounded-lg px-3 py-2 border border-slate-100"
+                  className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer rounded-lg px-3 py-2 border border-slate-100 dark:border-slate-800"
                 >
                   <Checkbox
                     checked={permissions[opt.key]}
                     onCheckedChange={() => togglePermission(opt.key)}
                   />
-                  <span className="text-xs font-bold text-slate-600">{opt.label}</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -311,7 +311,7 @@ export default function CreateGroupDialog() {
           </div>
 
           {error && (
-            <p className="text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            <p className="text-xs font-medium text-red-500 bg-red-50 dark:bg-red-500/15 border border-red-100 dark:border-red-500/30 rounded-lg px-3 py-2">
               {error}
             </p>
           )}

@@ -115,7 +115,7 @@ const DiseasesPage = () => {
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
           <div className="min-w-0">
-            <div className="font-bold text-slate-800 truncate">
+            <div className="font-bold text-slate-800 dark:text-slate-200 truncate">
               {row.original.name}
             </div>
             <div className="text-2xs text-slate-400 max-w-[200px] truncate leading-tight mt-0.5">
@@ -166,7 +166,7 @@ const DiseasesPage = () => {
             row.original.bodyParts.map((bp: string, i: number) => (
               <span
                 key={i}
-                className="text-2xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded font-bold border border-slate-100"
+                className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded font-bold border border-slate-100 dark:border-slate-800"
               >
                 {bp}
               </span>
@@ -181,7 +181,7 @@ const DiseasesPage = () => {
       accessorKey: "view_count",
       header: "👁️ Views",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-xs">
+        <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
           {row.original.view_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -190,7 +190,7 @@ const DiseasesPage = () => {
       accessorKey: "like_count",
       header: "❤️ Likes",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-xs">
+        <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
           {row.original.like_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -199,7 +199,7 @@ const DiseasesPage = () => {
       accessorKey: "save_count",
       header: "🔖 Saves",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 text-xs">
+        <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
           {row.original.save_count?.toLocaleString() || "0"}
         </span>
       ),
@@ -243,7 +243,7 @@ const DiseasesPage = () => {
       cell: ({ row }: any) => (
         <div className="flex items-center justify-end gap-2">
           <button
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               openViewDialog(row.original.id);
@@ -252,7 +252,7 @@ const DiseasesPage = () => {
             👁️
           </button>
           <button
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               addCondition.open(row.original);
@@ -261,7 +261,7 @@ const DiseasesPage = () => {
             ✏️
           </button>
           <button
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleDeleteClick(row.original);
@@ -350,7 +350,7 @@ const DiseasesPage = () => {
       </div>
 
       <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={
@@ -374,9 +374,9 @@ const DiseasesPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 <span className="mr-1.5">{tab.icon}</span>
@@ -394,7 +394,7 @@ const DiseasesPage = () => {
             <div className="flex flex-wrap gap-2 items-center">
               <div className="relative flex-1 min-w-[300px]">
                 <input
-                  className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 text-xs focus:ring-4 focus:ring-ek-green/10 focus:border-ek-green outline-none transition-all"
+                  className="w-full h-10 pl-10 pr-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-4 focus:ring-ek-green/10 focus:border-ek-green outline-none transition-all"
                   placeholder="🔍 Search by name, category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -416,7 +416,7 @@ const DiseasesPage = () => {
                 </div>
               </div>
               <select
-                className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-800 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -427,7 +427,7 @@ const DiseasesPage = () => {
                 <option value="archived">Archived</option>
               </select>
               <select
-                className="h-10 px-3 rounded-xl border border-slate-200 text-xs font-black uppercase tracking-wider bg-white outline-none cursor-pointer hover:border-slate-300 transition-colors"
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-800 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                 value={featuredFilter}
                 onChange={(e) => setFeaturedFilter(e.target.value)}
               >
@@ -444,7 +444,7 @@ const DiseasesPage = () => {
               </button>
             </div>
 
-            <div className="card p-0 overflow-hidden min-h-[400px] border-slate-200 shadow-xl shadow-slate-100">
+            <div className="card p-0 overflow-hidden min-h-[400px] border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-100">
               <DataTable
                 columns={columns}
                 data={data?.conditions || []}

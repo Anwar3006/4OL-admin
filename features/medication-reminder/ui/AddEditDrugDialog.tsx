@@ -15,7 +15,7 @@ import {
 import { useCreateDrug, useUpdateDrug, type DrugRow } from "@/features/medication-reminder/data/useDrugs";
 
 const inputCls =
-  "w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 const labelCls =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 

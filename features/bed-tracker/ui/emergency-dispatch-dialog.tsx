@@ -125,7 +125,7 @@ export function EmergencyDispatchDialog({
             <div className="grid gap-2">
               <Label>Case type</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
                 value={emergencyType}
                 onChange={(event) => setEmergencyType(event.target.value)}
               >
@@ -137,7 +137,7 @@ export function EmergencyDispatchDialog({
             <div className="grid gap-2">
               <Label>Required ward</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                 value={requiredWard}
                 onChange={(event) => setRequiredWard(event.target.value)}
               >
@@ -163,7 +163,7 @@ export function EmergencyDispatchDialog({
             <div className="grid gap-2">
               <Label>Patient gender</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
                 value={patientGender}
                 onChange={(event) => setPatientGender(event.target.value)}
               >
@@ -194,7 +194,7 @@ export function EmergencyDispatchDialog({
             <div className="grid gap-2">
               <Label>Dispatching ambulance *</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
                 value={ambulanceId}
                 onChange={(event) => setAmbulanceId(event.target.value)}
               >
@@ -206,13 +206,13 @@ export function EmergencyDispatchDialog({
                 ))}
               </select>
               {fleet.length > 0 && availableUnits.length === 0 && (
-                <p className="text-xs text-amber-600">No available units — all ambulances are on runs.</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400">No available units — all ambulances are on runs.</p>
               )}
             </div>
             <div className="grid gap-2">
               <Label>Priority</Label>
               <select
-                className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm capitalize"
+                className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm capitalize"
                 value={priority}
                 onChange={(event) => setPriority(event.target.value)}
               >
@@ -225,7 +225,7 @@ export function EmergencyDispatchDialog({
 
           <div className="grid gap-2">
             <Label>AI routing suggestion (nearest {requiredWard} capacity)</Label>
-            <div className="rounded-xl border border-slate-200 p-3 space-y-2">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-2">
               {!gpsValid && (
                 <p className="text-xs text-slate-500">Enter valid pickup GPS to get routing suggestions.</p>
               )}
@@ -233,7 +233,7 @@ export function EmergencyDispatchDialog({
                 <p className="text-xs text-slate-500">Computing nearest facilities...</p>
               )}
               {gpsValid && !suggestions.isLoading && (suggestions.data?.suggestions?.length ?? 0) === 0 && (
-                <p className="text-xs text-amber-600">
+                <p className="text-xs text-amber-600 dark:text-amber-400">
                   No tracked facility has {requiredWard} capacity near this GPS — pick a destination manually.
                 </p>
               )}
@@ -244,8 +244,8 @@ export function EmergencyDispatchDialog({
                   onClick={() => setDestinationId(suggestion.facility_id)}
                   className={`w-full flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs transition-all ${
                     destinationId === suggestion.facility_id
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-slate-200 hover:border-emerald-300"
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15"
+                      : "border-slate-200 dark:border-slate-700 hover:border-emerald-300"
                   }`}
                 >
                   <span className="font-bold">{suggestion.facility_name}</span>

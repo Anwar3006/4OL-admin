@@ -15,13 +15,13 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  pending_match: "bg-amber-50 text-amber-700 border-amber-100",
-  matched: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  in_escrow: "bg-indigo-50 text-indigo-700 border-indigo-100",
-  pickup_ready: "bg-teal-50 text-teal-700 border-teal-100",
-  delivery_in_progress: "bg-blue-50 text-blue-700 border-blue-100",
+  pending_match: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
+  matched: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  in_escrow: "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-100",
+  pickup_ready: "bg-teal-50 dark:bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-100",
+  delivery_in_progress: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
   completed: "bg-sky-50 text-sky-700 border-sky-100",
-  cancelled: "bg-slate-100 text-slate-500 border-slate-200",
+  cancelled: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
 };
 
 export const TYPE_LABELS: Record<string, string> = {
@@ -31,9 +31,9 @@ export const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_STYLES: Record<string, string> = {
-  with_rx: "bg-blue-50 text-blue-700 border-blue-100",
-  otc: "bg-indigo-50 text-indigo-700 border-indigo-100",
-  hcp_request: "bg-purple-50 text-purple-700 border-purple-100",
+  with_rx: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
+  otc: "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-100",
+  hcp_request: "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-500/30",
 };
 
 export const formatEnqId = (id: string) => `ENQ-${String(id).slice(0, 6).toUpperCase()}`;
@@ -90,7 +90,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Medication Requested",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
+        <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight leading-none mb-1">
           {row.original.medication_name}
         </div>
         <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
@@ -111,7 +111,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Submitted By",
     cell: ({ row }) => (
       <div>
-        <div className="font-bold text-slate-700 text-xs leading-none mb-1">
+        <div className="font-bold text-slate-700 dark:text-slate-300 text-xs leading-none mb-1">
           {row.original.submitter_name}
           {row.original.identity_masked && <span className="ml-1 text-slate-300">🔒</span>}
         </div>
@@ -126,11 +126,11 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
     header: "Rx",
     cell: ({ row }) =>
       row.original.prescription_url ? (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30">
           📋 Attached
         </span>
       ) : (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-slate-100 text-slate-400 border border-slate-200">
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">
           None
         </span>
       ),
@@ -143,7 +143,7 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
         <div
           className={cn(
             "text-xs font-black leading-none mb-1",
-            row.original.response_count > 0 ? "text-emerald-600" : "text-amber-500",
+            row.original.response_count > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500",
           )}
         >
           {row.original.response_count} response{row.original.response_count === 1 ? "" : "s"}
@@ -166,14 +166,14 @@ export const medEnquiryColumns: ColumnDef<MedEnquiryRow>[] = [
           className={cn(
             "inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest border",
             row.original.fulfilment_mode === "delivery"
-              ? "bg-blue-50 text-blue-600 border-blue-100"
-              : "bg-teal-50 text-teal-600 border-teal-100",
+              ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/30"
+              : "bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-100",
           )}
         >
           {row.original.fulfilment_mode === "delivery" ? "🚚 Delivery" : "🏪 Pickup"}
         </span>
         {row.original.escrow_status && (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-100">
             🔒 Escrow
           </span>
         )}

@@ -124,17 +124,17 @@ const AddOutdoorEventDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-800">
-              <Calendar className="h-6 w-6 text-emerald-600" />
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
+              <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               {isEditMode ? "Edit Outdoor Event" : "Create Outdoor Event"}
             </DialogTitle>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6 bg-white">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6 bg-white dark:bg-slate-800">
               
               {/* Event Title & Status */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -143,12 +143,12 @@ const AddOutdoorEventDialog = () => {
                   name="title"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel className="text-slate-700 font-semibold">Event Title *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Event Title *</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="e.g. Saturday Morning Community Hike" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                         />
                       </FormControl>
@@ -162,14 +162,14 @@ const AddOutdoorEventDialog = () => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Event Status *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Event Status *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
+                          <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl">
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                           {CHALLENGE_STATUS.map((status) => (
                             <SelectItem key={status} value={status} className="capitalize cursor-pointer">
                               {status}
@@ -190,14 +190,14 @@ const AddOutdoorEventDialog = () => {
                   name="route_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Connected Route</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Connected Route</FormLabel>
                       <Select onValueChange={(val) => field.onChange(val === "none" ? null : val)} value={field.value ?? "none"}>
                         <FormControl>
-                          <SelectTrigger className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl">
+                          <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl">
                             <SelectValue placeholder="Select Route (Optional)" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100] shadow-md border">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                           <SelectItem value="none" className="italic cursor-pointer text-slate-400">None (No route)</SelectItem>
                           {routes.map((route) => (
                             <SelectItem key={route.id} value={route.id} className="cursor-pointer">
@@ -216,14 +216,14 @@ const AddOutdoorEventDialog = () => {
                   name="start_at"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Start Time *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Start Time *</FormLabel>
                       <FormControl>
                         <Input
                           type="datetime-local"
                           value={formatDatetimeLocal(field.value)}
                           onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : new Date())}
                           readOnly={false}
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl text-slate-700"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl text-slate-700 dark:text-slate-300"
                         />
                       </FormControl>
                       <FormMessage />
@@ -239,13 +239,13 @@ const AddOutdoorEventDialog = () => {
                   name="max_participants"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Max Participants</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Max Participants</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           placeholder="e.g. 25 (Blank for unlimited)" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value === "" ? null : parseInt(e.target.value))}
@@ -261,13 +261,13 @@ const AddOutdoorEventDialog = () => {
                   name="current_participants"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Current Participants</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Current Participants</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           placeholder="e.g. 5" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                         />
@@ -282,12 +282,12 @@ const AddOutdoorEventDialog = () => {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Event Category</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Event Category</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="e.g. Hiking, Running, Meetup" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           value={field.value ?? ""}
                         />
@@ -305,12 +305,12 @@ const AddOutdoorEventDialog = () => {
                   name="area"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Area / Neighborhood</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Area / Neighborhood</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="e.g. Aburi Hills, Legon" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           value={field.value ?? ""}
                         />
@@ -325,14 +325,14 @@ const AddOutdoorEventDialog = () => {
                   name="latitude"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Latitude</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Latitude</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           step="0.000001" 
                           placeholder="e.g. 5.75924" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value === "" ? null : parseFloat(e.target.value))}
@@ -348,14 +348,14 @@ const AddOutdoorEventDialog = () => {
                   name="longitude"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-semibold">Longitude</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Longitude</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           step="0.000001" 
                           placeholder="e.g. -0.21984" 
                           readOnly={false} 
-                          className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl"
                           {...field} 
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value === "" ? null : parseFloat(e.target.value))}
@@ -373,7 +373,7 @@ const AddOutdoorEventDialog = () => {
                 name="created_by"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Organizer (Created By)</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Organizer (Created By)</FormLabel>
                     <FormControl>
                       <UserSearchSelect 
                         value={field.value ?? ""} 
@@ -392,12 +392,12 @@ const AddOutdoorEventDialog = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-700 font-semibold">Event Description</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 font-semibold">Event Description</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Provide details about meeting points, schedules, gear requirements, water stations..." 
                         readOnly={false} 
-                        className="bg-white border-slate-200 focus:border-emerald-500 rounded-xl resize-y min-h-[120px]"
+                        className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-emerald-500 rounded-xl resize-y min-h-[120px]"
                         {...field} 
                         value={field.value ?? ""}
                       />
@@ -409,7 +409,7 @@ const AddOutdoorEventDialog = () => {
 
               <DialogFooter className="pt-4 border-t gap-2 md:gap-0">
                 <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" onClick={close} className="rounded-xl border-slate-200 min-w-[140px]">
+                <Button type="button" variant="outline" onClick={close} className="rounded-xl border-slate-200 dark:border-slate-700 min-w-[140px]">
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isPending} className="min-w-[240px] rounded-xl bg-slate-900 text-white hover:bg-slate-800">

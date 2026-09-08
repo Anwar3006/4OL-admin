@@ -66,7 +66,7 @@ const OnboardHcpDialog = ({
   };
 
   const inputClass =
-    "w-full h-9 px-3 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
+    "w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
   const labelClass =
     "text-3xs font-black uppercase tracking-widest text-slate-400 mb-1 block";
 
@@ -79,7 +79,7 @@ const OnboardHcpDialog = ({
 
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-black text-slate-900">
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">
               👩‍⚕️ Onboard Healthcare Professional
             </h2>
             <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
@@ -87,7 +87,7 @@ const OnboardHcpDialog = ({
             </p>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
+          <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
             ⚠️ Manual verification: confirm the licence against the issuing
             body portal (MDC / PCG / NMC / AHPC / GPC) before approving.
           </div>
@@ -193,7 +193,7 @@ const OnboardHcpDialog = ({
                 ))}
               </select>
             </div>
-            <div className="md:col-span-2 flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3">
+            <div className="md:col-span-2 flex items-center gap-3 bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3">
               <input
                 id="can-respond-enquiries"
                 type="checkbox"
@@ -202,14 +202,14 @@ const OnboardHcpDialog = ({
               />
               <label
                 htmlFor="can-respond-enquiries"
-                className="text-xs font-bold text-slate-700"
+                className="text-xs font-bold text-slate-700 dark:text-slate-300"
               >
                 💊 Can respond to Medication Enquiries
               </label>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             <button className="btn btn-secondary btn-sm" onClick={onClose}>
               Cancel
             </button>

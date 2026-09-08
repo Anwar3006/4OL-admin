@@ -43,10 +43,10 @@ function StatusBadge({ status }: { status: OnboardingRequestStatus }) {
       variant={cfg.variant}
       className={
         status === "pending"
-          ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800"
+          ? "text-amber-600 dark:text-amber-400 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800"
           : status === "approved"
           ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400"
-          : "text-slate-500 border-slate-200 bg-slate-50"
+          : "text-slate-500 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
       }
     >
       <Icon className="mr-1" />
@@ -60,7 +60,7 @@ function StatusBadge({ status }: { status: OnboardingRequestStatus }) {
 function TypeBadge({ type }: { type: string }) {
   const isFacility = type === 'facility_owner';
   return (
-    <Badge variant="outline" className="flex items-center gap-1.5 font-medium border-slate-200 bg-slate-50/50">
+    <Badge variant="outline" className="flex items-center gap-1.5 font-medium border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
       {isFacility ? (
         <>
           <Building2 className="h-3 w-3 text-blue-500" />
@@ -153,7 +153,7 @@ export const createOnboardingColumns = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem
-                  className="text-green-600 focus:text-green-600 focus:bg-green-50 gap-2"
+                  className="text-green-600 dark:text-green-400 focus:text-green-600 focus:bg-green-50 gap-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     onUpdateStatus(req.id, "approved");
@@ -163,7 +163,7 @@ export const createOnboardingColumns = ({
                   Approve
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 gap-2"
+                  className="text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 gap-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     onUpdateStatus(req.id, "rejected");
@@ -179,7 +179,7 @@ export const createOnboardingColumns = ({
           <Button aria-label="Delete"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+            className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15"
             onClick={(e) => {
               e.stopPropagation();
               if (confirm("Are you sure you want to delete this request?")) {

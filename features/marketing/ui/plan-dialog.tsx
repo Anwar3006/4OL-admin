@@ -136,7 +136,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
                   Visibility
                 </Label>
                 <select
-                  className="w-full h-10 px-3 rounded-lg border border-slate-200 text-sm bg-white"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm bg-white dark:bg-slate-800"
                   value={form.watch("isActive") ? "active" : "inactive"}
                   onChange={(e) =>
                     form.setValue("isActive", e.target.value === "active")

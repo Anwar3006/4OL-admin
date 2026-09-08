@@ -39,11 +39,11 @@ export default function VerificationQueue() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-600 mr-auto">
+        <h4 className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 mr-auto">
           🔎 Unknown-Drug Verification Queue
         </h4>
         <select
-          className="h-8 px-3 rounded-lg border border-slate-200 text-xs bg-white outline-none"
+          className="h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 outline-none"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -56,26 +56,26 @@ export default function VerificationQueue() {
       </div>
 
       {isLoading ? (
-        <div className="h-20 animate-pulse bg-slate-100 rounded-xl" />
+        <div className="h-20 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-xl" />
       ) : requests.length === 0 ? (
         <div className="text-center py-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
           No verification requests in this queue
         </div>
       ) : (
-        <div className="rounded-lg border border-slate-200 overflow-hidden divide-y divide-slate-100">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden divide-y divide-slate-100">
           {requests.map((req) => (
             <div
               key={req.id}
-              className="flex flex-wrap items-center gap-3 px-4 py-3 bg-white hover:bg-slate-50 transition-colors"
+              className="flex flex-wrap items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
             >
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-slate-800 truncate">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                   “{req.entered_name}”
                 </div>
                 <div className="text-2xs text-slate-400">
                   {new Date(req.created_at).toLocaleString()}
                   {req.matched_drug && (
-                    <> → matched: <span className="font-bold text-slate-600">{req.matched_drug.name}</span></>
+                    <> → matched: <span className="font-bold text-slate-600 dark:text-slate-300">{req.matched_drug.name}</span></>
                   )}
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function VerificationQueue() {
                     🔗 Map to Existing
                   </button>
                   <button
-                    className="btn btn-secondary btn-sm text-red-600"
+                    className="btn btn-secondary btn-sm text-red-600 dark:text-red-400"
                     disabled={action.isPending}
                     onClick={() => action.mutate({ action: "reject", requestId: req.id })}
                   >
@@ -139,17 +139,17 @@ function MapToExistingDialog({
         </DialogHeader>
 
         <input
-          className="w-full h-9 px-3 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
           placeholder="🔍 Search the drug catalog…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-100 divide-y divide-slate-100">
+        <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-100 dark:border-slate-800 divide-y divide-slate-100">
           {(data?.drugs || []).map((drug) => (
             <button
               key={drug.id}
-              className="w-full text-left px-3 py-2 hover:bg-emerald-50/50 transition-colors cursor-pointer"
+              className="w-full text-left px-3 py-2 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/15/50 transition-colors cursor-pointer"
               disabled={action.isPending}
               onClick={() =>
                 request &&
@@ -159,7 +159,7 @@ function MapToExistingDialog({
                 )
               }
             >
-              <div className="text-xs font-bold text-slate-800">{drug.name}</div>
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-200">{drug.name}</div>
               <div className="text-2xs text-slate-400">
                 {drug.generic_name || "—"} · {drug.category || "Uncategorised"}
               </div>

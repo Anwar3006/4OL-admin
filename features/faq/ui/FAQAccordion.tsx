@@ -49,7 +49,7 @@ export default function FAQAccordion({
 
   if (categories.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 p-10 text-center text-xs font-semibold text-slate-400">
+      <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-10 text-center text-xs font-semibold text-slate-400">
         No FAQs yet. Use “+ Add Article” to create the first one.
       </div>
     );
@@ -70,8 +70,8 @@ export default function FAQAccordion({
                 <div
                   key={item.id}
                   className={cn(
-                    "bg-white border rounded-xl overflow-hidden transition-all duration-200",
-                    isOpen ? "border-ek-green-dark shadow-sm" : "border-slate-200 hover:border-slate-300"
+                    "bg-white dark:bg-slate-800 border rounded-xl overflow-hidden transition-all duration-200",
+                    isOpen ? "border-ek-green-dark shadow-sm" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                   )}
                 >
                   <div className="w-full flex items-center justify-between p-4 text-left group">
@@ -79,7 +79,7 @@ export default function FAQAccordion({
                       onClick={() => toggleItem(id)}
                       className="flex-1 flex items-center justify-between text-left"
                     >
-                      <span className={cn("text-xs font-bold transition-colors", isOpen ? "text-ek-green-dark" : "text-slate-700 group-hover:text-slate-900")}>
+                      <span className={cn("text-xs font-bold transition-colors", isOpen ? "text-ek-green-dark" : "text-slate-700 dark:text-slate-300 group-hover:text-slate-900")}>
                         {item.question}
                       </span>
                       <ChevronRight className={cn("w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200", isOpen ? "rotate-90 text-ek-green-dark" : "")} />
@@ -89,7 +89,7 @@ export default function FAQAccordion({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            className="p-1.5 rounded-md text-slate-400 hover:bg-slate-50 hover:text-ek-green-dark"
+                            className="p-1.5 rounded-md text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-ek-green-dark"
                             title="Edit FAQ"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -98,7 +98,7 @@ export default function FAQAccordion({
                         {onDelete && (
                           <button
                             onClick={() => onDelete(item)}
-                            className="p-1.5 rounded-md text-slate-400 hover:bg-red-50 hover:text-red-500"
+                            className="p-1.5 rounded-md text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-500"
                             title="Delete FAQ"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -113,7 +113,7 @@ export default function FAQAccordion({
                       isOpen ? "max-h-[500px] border-t border-slate-50" : "max-h-0"
                     )}
                   >
-                    <div className="p-4 text-sm text-slate-500 leading-relaxed font-medium bg-slate-50/30 whitespace-pre-wrap">
+                    <div className="p-4 text-sm text-slate-500 leading-relaxed font-medium bg-slate-50/30 dark:bg-slate-900/30 whitespace-pre-wrap">
                       {item.answer}
                     </div>
                   </div>

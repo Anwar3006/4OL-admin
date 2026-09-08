@@ -136,9 +136,9 @@ export default function ViewGroupDialog() {
           {/* Mini KPIs */}
           <div className="grid grid-cols-4 gap-2">
             {miniKpis.map((kpi) => (
-              <div key={kpi.label} className="bg-slate-50 rounded-xl border border-slate-100 p-2 text-center">
+              <div key={kpi.label} className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-2 text-center">
                 <div className="text-sm">{kpi.icon}</div>
-                <div className="text-sm font-black text-slate-800">{kpi.value}</div>
+                <div className="text-sm font-black text-slate-800 dark:text-slate-200">{kpi.value}</div>
                 <div className="text-3xs font-black uppercase tracking-wider text-slate-400">
                   {kpi.label}
                 </div>
@@ -150,34 +150,34 @@ export default function ViewGroupDialog() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Description</span>
-              <p className="font-bold text-slate-800 mt-0.5">{group.description || "—"}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{group.description || "—"}</p>
             </div>
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Created By</span>
-              <p className="font-bold text-slate-800 mt-0.5">{creatorName}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{creatorName}</p>
             </div>
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Category</span>
-              <p className="font-bold text-slate-800 mt-0.5">{groupCategoryLabel(group.group_category)}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{groupCategoryLabel(group.group_category)}</p>
             </div>
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Group Type</span>
-              <p className="font-bold text-slate-800 mt-0.5">{groupTypeLabel(group.group_type)}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{groupTypeLabel(group.group_type)}</p>
             </div>
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Max Members</span>
-              <p className="font-bold text-slate-800 mt-0.5">{group.max_members ?? "—"}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{group.max_members ?? "—"}</p>
             </div>
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Region</span>
-              <p className="font-bold text-slate-800 mt-0.5 capitalize">{group.region_restriction || "Nationwide"}</p>
+              <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 capitalize">{group.region_restriction || "Nationwide"}</p>
             </div>
           </div>
 
           {group.group_rules && (
             <div>
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Group Rules</span>
-              <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{group.group_rules}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 whitespace-pre-wrap">{group.group_rules}</p>
             </div>
           )}
 
@@ -189,8 +189,8 @@ export default function ViewGroupDialog() {
             </span>
             <div className="mt-1.5 space-y-1.5">
               {admins.map((admin) => (
-                <div key={admin.user_id} className="flex items-center justify-between bg-slate-50 rounded-lg px-2.5 py-1.5 border border-slate-100">
-                  <div className="text-xs font-bold text-slate-700">
+                <div key={admin.user_id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 rounded-lg px-2.5 py-1.5 border border-slate-100 dark:border-slate-800">
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     {[admin.user_profiles?.first_name, admin.user_profiles?.last_name]
                       .filter(Boolean)
                       .join(" ") || admin.user_id.slice(0, 8)}
@@ -212,7 +212,7 @@ export default function ViewGroupDialog() {
               {canModerate && (
                 <div className="flex gap-2 items-center">
                   <select
-                    className="flex-1 h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+                    className="flex-1 h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
                     value={addAdminId}
                     onChange={(e) => setAddAdminId(e.target.value)}
                   >
@@ -241,8 +241,8 @@ export default function ViewGroupDialog() {
           <div>
             <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Last Message</span>
             {lastMsg ? (
-              <div className="mt-1 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <p className="text-slate-700 text-xs line-clamp-3">{lastMsg.content || "—"}</p>
+              <div className="mt-1 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                <p className="text-slate-700 dark:text-slate-300 text-xs line-clamp-3">{lastMsg.content || "—"}</p>
                 <div className="flex items-center justify-between mt-1.5">
                   <span className="text-2xs font-bold text-slate-500">
                     {lastMsg.sender
@@ -267,7 +267,7 @@ export default function ViewGroupDialog() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="text-amber-600 border-amber-200 hover:bg-amber-50 text-xs font-black uppercase tracking-widest"
+                  className="text-amber-600 dark:text-amber-400 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-500/15 text-xs font-black uppercase tracking-widest"
                   onClick={() => setStatus("inactive")}
                 >
                   ⏸ Suspend Group
@@ -276,7 +276,7 @@ export default function ViewGroupDialog() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 text-xs font-black uppercase tracking-widest"
+                  className="text-emerald-600 dark:text-emerald-400 border-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 text-xs font-black uppercase tracking-widest"
                   onClick={() => setStatus("active")}
                 >
                   ▶ Reactivate

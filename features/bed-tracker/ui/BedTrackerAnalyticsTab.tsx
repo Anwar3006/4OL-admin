@@ -12,9 +12,9 @@ import type { BedTrackerTabProps } from "@/features/bed-tracker/schema/types";
 
 function MetricLine({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0 text-sm text-slate-600">
+    <div className="flex items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-3 last:border-0 last:pb-0 text-sm text-slate-600 dark:text-slate-300">
       <span>{label}</span>
-      <span className="font-black text-slate-800">{value}</span>
+      <span className="font-black text-slate-800 dark:text-slate-200">{value}</span>
     </div>
   );
 }
@@ -71,7 +71,7 @@ export default function BedTrackerAnalyticsTab({ data, loading }: BedTrackerTabP
                   <span className="capitalize">{type}</span>
                   <span>{pct}% ({bucket.occupied}/{bucket.total})</span>
                 </div>
-                <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
                     className={`h-full rounded-full ${pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-400" : "bg-emerald-500"}`}
                     style={{ width: `${pct}%` }}

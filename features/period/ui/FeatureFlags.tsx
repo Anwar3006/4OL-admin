@@ -24,11 +24,11 @@ export default function FeatureFlags({
         {flags.map((flag) => (
           <div
             key={flag.key}
-            className="rounded-lg border border-slate-200 p-3"
+            className="rounded-lg border border-slate-200 dark:border-slate-700 p-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-xs font-semibold text-slate-900">
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                   {flag.key.replaceAll("_", " ")}
                 </div>
                 <div className="mt-1 text-2xs text-slate-500">
@@ -38,7 +38,7 @@ export default function FeatureFlags({
               {status(flag.enabled ? "active" : "paused")}
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <label className="text-2xs text-slate-600">
+              <label className="text-2xs text-slate-600 dark:text-slate-300">
                 Rollout{" "}
                 <input
                   id={`rollout-${flag.key}`}
@@ -46,7 +46,7 @@ export default function FeatureFlags({
                   min="0"
                   max="100"
                   defaultValue={flag.rollout_percent}
-                  className="ml-1 w-16 rounded border border-slate-300 px-2 py-1"
+                  className="ml-1 w-16 rounded border border-slate-300 dark:border-slate-600 px-2 py-1"
                 />
                 %
               </label>

@@ -94,13 +94,13 @@ const ChallengesTab = () => {
         const challenge = row.original;
         return (
           <div className="flex flex-col gap-0.5 min-w-[220px]">
-            <span className="font-bold text-slate-900 text-sm leading-tight">
+            <span className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-tight">
               {challenge.title}
             </span>
             <div className="flex items-center gap-1.5">
               <Badge
                 variant="outline"
-                className="text-3xs h-5 px-1.5 font-bold uppercase tracking-wider border-slate-200 text-slate-500"
+                className="text-3xs h-5 px-1.5 font-bold uppercase tracking-wider border-slate-200 dark:border-slate-700 text-slate-500"
               >
                 {challenge.challenge_type}
               </Badge>
@@ -128,11 +128,11 @@ const ChallengesTab = () => {
           );
         return (
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-              <Target className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 flex items-center justify-center">
+              <Target className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-slate-800">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 {Number(goal_value).toLocaleString()}
               </span>
               <span className="text-2xs font-semibold text-slate-500 capitalize">
@@ -156,7 +156,7 @@ const ChallengesTab = () => {
             "badge uppercase tracking-wider text-2xs",
             row.original.created_by
               ? "badge-blue"
-              : "bg-slate-100 text-slate-600",
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",
           )}
         >
           {row.original.created_by ? "Admin" : "System"}
@@ -173,13 +173,13 @@ const ChallengesTab = () => {
             className={cn(
               "h-5 px-2 text-2xs font-black uppercase tracking-wider border-0",
               status === "active" &&
-                "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+                "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20",
               status === "draft" &&
-                "bg-slate-100 text-slate-600 hover:bg-slate-100",
+                "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
               status === "upcoming" &&
-                "bg-blue-100 text-blue-700 hover:bg-blue-100",
+                "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20",
               status === "completed" &&
-                "bg-amber-100 text-amber-700 hover:bg-amber-100",
+                "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20",
             )}
           >
             {status}
@@ -196,14 +196,14 @@ const ChallengesTab = () => {
         const isFull = max && current >= max;
         return (
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-slate-50 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
               <Users className="w-3.5 h-3.5 text-slate-500" />
             </div>
             <div className="flex flex-col">
               <span
                 className={cn(
                   "text-xs font-bold",
-                  isFull ? "text-amber-600" : "text-slate-800",
+                  isFull ? "text-amber-600 dark:text-amber-400" : "text-slate-800 dark:text-slate-200",
                 )}
               >
                 {current.toLocaleString()}
@@ -238,7 +238,7 @@ const ChallengesTab = () => {
         return (
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-xs font-semibold text-slate-600">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               {start} – {end}
             </span>
           </div>
@@ -253,8 +253,8 @@ const ChallengesTab = () => {
         if (!reward)
           return <span className="text-xs text-slate-400">—</span>;
         return (
-          <Badge className="h-6 px-2.5 text-2xs font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50 gap-1">
-            <Trophy className="w-3 h-3 text-amber-600" />
+          <Badge className="h-6 px-2.5 text-2xs font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-500/15 gap-1">
+            <Trophy className="w-3 h-3 text-amber-600 dark:text-amber-400" />
             <span className="truncate max-w-[140px]">{reward}</span>
           </Badge>
         );
@@ -268,7 +268,7 @@ const ChallengesTab = () => {
         return (
           <div className="flex items-center justify-end gap-1">
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleView(challenge.id);
@@ -277,7 +277,7 @@ const ChallengesTab = () => {
               👁️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit(challenge);
@@ -286,7 +286,7 @@ const ChallengesTab = () => {
               ✏️
             </button>
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(challenge.id);
@@ -305,10 +305,10 @@ const ChallengesTab = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 gap-6">
-        <div className="lg:col-span-3 card bg-white">
+        <div className="lg:col-span-3 card bg-white dark:bg-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-2xl font-black text-slate-800">
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-200">
                 🏆 Active Challenges
               </h3>
               <p className="text-slate-500 font-medium mt-1">
@@ -328,7 +328,7 @@ const ChallengesTab = () => {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 placeholder="Search by challenge name..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

@@ -36,7 +36,7 @@ export function ViewFitnessPlanDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="max-w-4xl p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-4xl p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-0 shadow-2xl rounded-none max-h-[90vh] overflow-hidden">
         <VisuallyHidden.Root>
           <DialogTitle>
             {data?.title ? `Details for ${data.title}` : "Fitness Plan Details"}
@@ -44,11 +44,11 @@ export function ViewFitnessPlanDialog() {
         </VisuallyHidden.Root>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-white">
+          <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-white dark:bg-slate-800">
             <div className="relative">
-              <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
-              <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-                <ClipboardList className="h-8 w-8 text-emerald-600 animate-pulse" />
+              <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-500/20 rounded-full animate-ping opacity-50" />
+              <div className="relative w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+                <ClipboardList className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
               </div>
             </div>
             <span className="mt-6 text-xs font-black text-slate-400 uppercase tracking-widest">
@@ -66,11 +66,11 @@ export function ViewFitnessPlanDialog() {
             onClose={close}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-5 bg-white min-h-[400px]">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-5 bg-white dark:bg-slate-800 min-h-[400px]">
+            <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-300">
               <Ban className="h-10 w-10" />
             </div>
-            <p className="text-slate-900 font-bold text-lg">Plan Not Found</p>
+            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Plan Not Found</p>
             <p className="text-slate-500 font-medium max-w-sm">
               This fitness plan may have been removed or updated.
             </p>
@@ -116,9 +116,9 @@ function DetailView({
 }) {
   const statusColors: Record<string, string> = {
     published:
-      "bg-emerald-100 text-emerald-800 border-none hover:bg-emerald-200",
-    draft: "bg-amber-100 text-amber-800 border-none hover:bg-amber-200",
-    archived: "bg-slate-100 text-slate-800 border-none hover:bg-slate-200",
+      "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-none hover:bg-emerald-200",
+    draft: "bg-amber-100 dark:bg-amber-500/20 text-amber-800 border-none hover:bg-amber-200",
+    archived: "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-none hover:bg-slate-200",
   };
 
   const currentStatus = (data.status || "published").toLowerCase();
@@ -126,13 +126,13 @@ function DetailView({
     statusColors[currentStatus] || statusColors.published;
 
   const difficultyColors: Record<string, string> = {
-    beginner: "bg-blue-50 text-blue-700 border-blue-200",
-    intermediate: "bg-purple-50 text-purple-700 border-purple-200",
-    advanced: "bg-red-50 text-red-700 border-red-200",
+    beginner: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200",
+    intermediate: "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-200",
+    advanced: "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200",
   };
   const diffClass =
     difficultyColors[(data.difficulty_level || "").toLowerCase()] ||
-    "bg-slate-50 text-slate-700 border-slate-200";
+    "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
 
   // Array parsing fallbacks for Postgres Arrays
   const targetBodyParts = Array.isArray(data.target_body_parts)
@@ -144,7 +144,7 @@ function DetailView({
   return (
     <>
       {/* ── Sticky Top Bar Header ── */}
-      <div className="bg-white sticky top-0 z-30 px-6 py-6 md:px-10 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 sticky top-0 z-30 px-6 py-6 md:px-10 border-b border-slate-200 dark:border-slate-700">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-3 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -208,7 +208,7 @@ function DetailView({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -217,32 +217,32 @@ function DetailView({
       </div>
 
       {/* ── Scrollable Content Bento ── */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 bg-slate-50">
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 bg-slate-50 dark:bg-slate-900">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Context Panels */}
           <div className="lg:col-span-7 space-y-6">
             {/* Description Section */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                   <ClipboardList className="h-5 w-5" />
                 </div>
                 <h3 className="section-heading">
                   Plan Description
                 </h3>
               </div>
-              <p className="text-base text-slate-600 leading-relaxed font-medium">
+              <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {data.description ||
                   "No description provided for this fitness plan."}
               </p>
             </div>
 
             {/* Targets & Goals Section */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
               {/* Target Body Parts */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                     <Target className="h-5 w-5" />
                   </div>
                   <h3 className="section-heading">
@@ -255,7 +255,7 @@ function DetailView({
                       <Badge
                         key={idx}
                         variant="secondary"
-                        className="bg-slate-100 text-slate-800 hover:bg-slate-200 border-none font-bold rounded-lg px-3 py-1.5 text-xs"
+                        className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 border-none font-bold rounded-lg px-3 py-1.5 text-xs"
                       >
                         {part}
                       </Badge>
@@ -271,7 +271,7 @@ function DetailView({
               {/* Goals */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <h3 className="section-heading">
@@ -284,7 +284,7 @@ function DetailView({
                       <Badge
                         key={idx}
                         variant="secondary"
-                        className="bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-100 font-bold rounded-lg px-3 py-1.5 text-xs"
+                        className="bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 border border-emerald-100 dark:border-emerald-500/30 font-bold rounded-lg px-3 py-1.5 text-xs"
                       >
                         🎯 {goal}
                       </Badge>
@@ -299,9 +299,9 @@ function DetailView({
 
               {/* Tags Section */}
               {tags.length > 0 && (
-                <div className="space-y-3 pt-4 border-t border-slate-100">
+                <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-slate-50 text-slate-500">
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-500">
                       <Tag className="h-5 w-5" />
                     </div>
                     <h3 className="section-heading">
@@ -312,7 +312,7 @@ function DetailView({
                     {tags.map((tag: string, idx: number) => (
                       <span
                         key={idx}
-                        className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md"
+                        className="text-xs font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md"
                       >
                         #{tag}
                       </span>
@@ -326,9 +326,9 @@ function DetailView({
           {/* Sidebar Metrics Bento Row */}
           <div className="lg:col-span-5 space-y-6">
             {/* Timeline Breakdown Widget */}
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
               <div className="flex items-center gap-4">
-                <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
                   <Calendar className="w-6 h-6" />
                 </div>
                 <div>
@@ -342,8 +342,8 @@ function DetailView({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 border-t border-slate-100 pt-4">
-                <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+              <div className="flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
                   <Clock className="w-6 h-6" />
                 </div>
                 <div>
@@ -359,15 +359,15 @@ function DetailView({
               </div>
 
               {data.author_type && (
-                <div className="flex items-center gap-4 border-t border-slate-100 pt-4">
-                  <div className="p-3.5 rounded-2xl bg-slate-50 text-slate-600 shrink-0">
+                <div className="flex items-center gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 shrink-0">
                     <User className="w-6 h-6" />
                   </div>
                   <div>
                     <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-0.5">
                       Author Category
                     </span>
-                    <p className="text-sm font-black text-slate-800 leading-tight capitalize">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 leading-tight capitalize">
                       {data.author_type} Module
                     </p>
                   </div>
@@ -380,7 +380,7 @@ function DetailView({
               <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-900/30 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
               <div className="flex items-center gap-3 relative z-10">
-                <div className="p-2.5 rounded-xl bg-white/10 text-emerald-400">
+                <div className="p-2.5 rounded-xl bg-white/10 dark:bg-slate-800/10 text-emerald-400">
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <h3 className="font-black uppercase tracking-[0.15em] text-sm text-white">
@@ -416,12 +416,12 @@ function DetailView({
             </div>
 
             {/* Timestamps Meta Box */}
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm grid grid-cols-2 gap-4">
               <div className="text-center sm:text-left space-y-1">
                 <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Date Created
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {data.created_at
                     ? new Date(data.created_at).toLocaleDateString(undefined, {
                         dateStyle: "medium",
@@ -429,11 +429,11 @@ function DetailView({
                     : "N/A"}
                 </span>
               </div>
-              <div className="text-center sm:text-left space-y-1 border-l border-slate-100 pl-4">
+              <div className="text-center sm:text-left space-y-1 border-l border-slate-100 dark:border-slate-800 pl-4">
                 <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Last Updated
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {data.updated_at
                     ? new Date(data.updated_at).toLocaleDateString(undefined, {
                         dateStyle: "medium",

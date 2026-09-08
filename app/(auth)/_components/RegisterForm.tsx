@@ -139,7 +139,7 @@ const RegisterForm = ({
             <div className="w-12 h-12 2xl:w-20 2xl:h-20 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-1 2xl:mb-2">
               <Shield className="w-6 h-6 2xl:w-10 2xl:h-10 text-[#57CE83]" />
             </div>
-            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-tight text-slate-900">
+            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               {isInvited ? "Administrative Account Setup" : "Create your account"}
             </h1>
             <p className="text-muted-foreground text-sm 2xl:text-lg text-balance">
@@ -148,7 +148,7 @@ const RegisterForm = ({
           </div>
 
           {form.formState.errors.root && (
-            <div className="flex items-center gap-2 2xl:gap-3 rounded-lg bg-red-50 px-3 py-2 2xl:p-4 text-sm 2xl:text-base text-red-600">
+            <div className="flex items-center gap-2 2xl:gap-3 rounded-lg bg-red-50 dark:bg-red-500/15 px-3 py-2 2xl:p-4 text-sm 2xl:text-base text-red-600 dark:text-red-400">
               <AlertCircle className="h-4 w-4 2xl:w-6 2xl:h-6 shrink-0" />
               <span>{form.formState.errors.root.message}</span>
             </div>

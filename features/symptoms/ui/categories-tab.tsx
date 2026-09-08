@@ -96,8 +96,8 @@ const SymptomCategoriesTab = () => {
       </div>
 
       {/* Category table */}
-      <div className="card p-0 overflow-hidden border-slate-200">
-        <div className="px-5 py-4 border-b border-slate-100">
+      <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="section-heading">
             Categories (type = symptom)
           </h4>
@@ -111,7 +111,7 @@ const SymptomCategoriesTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-2xs font-black uppercase tracking-widest text-slate-400">
                   <th className="px-5 py-3">Category</th>
                   <th className="px-5 py-3">Symptoms</th>
                   <th className="px-5 py-3">Published</th>
@@ -123,11 +123,11 @@ const SymptomCategoriesTab = () => {
                   <tr
                     key={row.category_id}
                     className={cn(
-                      "border-b border-slate-50 hover:bg-slate-50/60 transition-colors",
-                      selectedCategory === row.category_id && "bg-emerald-50/60",
+                      "border-b border-slate-50 hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors",
+                      selectedCategory === row.category_id && "bg-emerald-50/60 dark:bg-emerald-500/15/60",
                     )}
                   >
-                    <td className="px-5 py-3 font-bold text-slate-800">
+                    <td className="px-5 py-3 font-bold text-slate-800 dark:text-slate-200">
                       <span style={{ paddingLeft: `${Math.max(0, row.level) * 12}px` }}>
                         {row.category_name}
                       </span>
@@ -138,7 +138,7 @@ const SymptomCategoriesTab = () => {
                     <td className="px-5 py-3">
                       <span className="badge badge-green">{row.published_count}</span>
                     </td>
-                    <td className="px-5 py-3 font-black text-slate-600">
+                    <td className="px-5 py-3 font-black text-slate-600 dark:text-slate-300">
                       {row.total_views.toLocaleString()}
                     </td>
                   </tr>
@@ -150,8 +150,8 @@ const SymptomCategoriesTab = () => {
       </div>
 
       {/* Uncategorised queue */}
-      <div className="card p-0 overflow-hidden border-slate-200">
-        <div className="px-5 py-4 border-b border-slate-100">
+      <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="section-heading">
             ⚠️ Uncategorised Symptoms — assign categories to improve discovery
           </h4>
@@ -165,11 +165,11 @@ const SymptomCategoriesTab = () => {
             {uncategorised.map((row: any) => (
               <li
                 key={row.id}
-                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 transition-colors"
+                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors"
               >
                 <Link
                   href={`/symptoms?id=${row.id}`}
-                  className="text-xs font-bold text-emerald-700 truncate flex-1 hover:underline"
+                  className="text-xs font-bold text-emerald-700 dark:text-emerald-400 truncate flex-1 hover:underline"
                 >
                   {row.name}
                 </Link>
@@ -180,7 +180,7 @@ const SymptomCategoriesTab = () => {
                 >
                   {row.status?.replace("_", " ") ?? "draft"}
                 </span>
-                <span className="text-xs font-black text-slate-600">
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300">
                   👁️ {(row.view_count ?? 0).toLocaleString()}
                 </span>
               </li>

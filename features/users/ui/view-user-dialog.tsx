@@ -44,7 +44,7 @@ export default function ViewUserDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="p-6 border-b bg-slate-50/50">
+        <DialogHeader className="p-6 border-b bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <User className="h-6 w-6" />
@@ -56,7 +56,7 @@ export default function ViewUserDialog() {
               <div className="flex items-center gap-2 mt-1">
                 <Badge
                   variant="outline"
-                  className="text-2xs font-black uppercase tracking-widest bg-white"
+                  className="text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800"
                 >
                   {user?.user_type?.replace(/_/g, " ") || "User"}
                 </Badge>
@@ -71,8 +71,8 @@ export default function ViewUserDialog() {
                 className={cn(
                   "px-3 py-1 text-2xs font-black uppercase tracking-widest",
                   user.status === "active"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-red-50 text-red-700 border-red-200",
+                    ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
+                    : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200",
                 )}
               >
                 {user.status}
@@ -162,7 +162,7 @@ export default function ViewUserDialog() {
         </ScrollArea>
 
         {user && (
-          <div className="p-6 border-t bg-slate-50/50 flex gap-3">
+          <div className="p-6 border-t bg-slate-50/50 dark:bg-slate-900/50 flex gap-3">
             <Button
               variant="outline"
               className="flex-1 h-11 font-black uppercase tracking-widest text-2xs"
@@ -194,7 +194,7 @@ function InfoRow({ label, value, icon: Icon }: any) {
       </p>
       <div className="flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-        <span className="text-xs font-bold text-slate-700 truncate">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
           {value}
         </span>
       </div>

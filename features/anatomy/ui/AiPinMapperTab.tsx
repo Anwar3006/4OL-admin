@@ -95,7 +95,7 @@ export default function AiPinMapperTab() {
               onChange={(e) =>
                 setBatchSize(Math.max(1, Math.min(25, Number(e.target.value) || 10)))
               }
-              className="w-16 rounded-lg border border-slate-200 px-2 py-1.5 text-xs"
+              className="w-16 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1.5 text-xs"
             />
           </label>
           <label className="flex items-center gap-1.5 text-xs text-slate-500">
@@ -121,7 +121,7 @@ export default function AiPinMapperTab() {
           </button>
         </div>
         {!data?.applied && (
-          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          <p className="mt-3 rounded-lg bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
             Review queue unavailable — apply the Part AL migration
             (20260823_anatomy_mobile_al.sql) first.
           </p>
@@ -168,7 +168,7 @@ export default function AiPinMapperTab() {
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-200 text-2xs uppercase tracking-widest text-slate-400">
+                <tr className="border-b border-slate-200 dark:border-slate-700 text-2xs uppercase tracking-widest text-slate-400">
                   <th className="py-2 pr-3">Content</th>
                   <th className="py-2 pr-3">Type</th>
                   <th className="py-2 pr-3">Body part</th>
@@ -181,8 +181,8 @@ export default function AiPinMapperTab() {
                 {mappings.map((m) => {
                   const conf = confidenceBadge(Number(m.confidence));
                   return (
-                    <tr key={m.id} className="border-b border-slate-100 align-top">
-                      <td className="max-w-[220px] py-2.5 pr-3 font-bold text-slate-700">
+                    <tr key={m.id} className="border-b border-slate-100 dark:border-slate-800 align-top">
+                      <td className="max-w-[220px] py-2.5 pr-3 font-bold text-slate-700 dark:text-slate-300">
                         {m.content_name}
                       </td>
                       <td className="py-2.5 pr-3">
@@ -190,7 +190,7 @@ export default function AiPinMapperTab() {
                           {m.content_type}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-3 font-semibold text-slate-600">
+                      <td className="py-2.5 pr-3 font-semibold text-slate-600 dark:text-slate-300">
                         {m.body_parts?.name ?? "—"}
                       </td>
                       <td className="py-2.5 pr-3">

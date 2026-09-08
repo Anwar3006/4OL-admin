@@ -59,7 +59,7 @@ const CustomSelect = <T extends FieldValues>({
                     role="combobox"
                     disabled={disabled}
                     className={cn(
-                      "w-full justify-between font-normal bg-white hover:bg-slate-50",
+                      "w-full justify-between font-normal bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900",
                       !field.value && "text-muted-foreground",
                       className,
                     )}
@@ -68,7 +68,7 @@ const CustomSelect = <T extends FieldValues>({
                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full min-w-(--radix-dropdown-menu-trigger-width) bg-white z-[350]">
+                <DropdownMenuContent className="w-full min-w-(--radix-dropdown-menu-trigger-width) bg-white dark:bg-slate-800 z-[350]">
                   {options.map((option) => (
                     <DropdownMenuItem
                       key={option.value}

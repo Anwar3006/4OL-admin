@@ -100,7 +100,7 @@ export default function BedRegistryTab({ data, loading }: BedTrackerTabProps) {
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-widest"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold uppercase tracking-widest"
           value={wardFilter}
           onChange={(event) => setWardFilter(event.target.value)}
         >
@@ -162,9 +162,9 @@ export default function BedRegistryTab({ data, loading }: BedTrackerTabProps) {
                       <TableCell>{WARD_LABELS[ward.ward_type] ?? ward.ward_type}</TableCell>
                       <TableCell>{total}</TableCell>
                       <TableCell>{ward.occupied_beds}</TableCell>
-                      <TableCell className="font-black text-emerald-700">{available}</TableCell>
+                      <TableCell className="font-black text-emerald-700 dark:text-emerald-400">{available}</TableCell>
                       <TableCell className="min-w-[110px]">
-                        <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${pct <= 10 ? "bg-red-500" : pct <= 30 ? "bg-amber-400" : "bg-emerald-500"}`}
                             style={{ width: `${pct}%` }}

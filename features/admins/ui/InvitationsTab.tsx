@@ -36,7 +36,7 @@ export default function InvitationsTab() {
 
   return (
     <div className="w-full min-w-0 space-y-4">
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={adminInviteColumns}
           data={invites}

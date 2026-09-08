@@ -90,7 +90,7 @@ export default function NewTaskDialog({
           />
           <div className="grid grid-cols-2 gap-3">
             <select
-              className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
               value={priority}
               onChange={(e) => setPriority(e.target.value as AdminTask["priority"])}
             >
@@ -100,7 +100,7 @@ export default function NewTaskDialog({
               <option value="critical">Critical</option>
             </select>
             <select
-              className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -112,7 +112,7 @@ export default function NewTaskDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <select
-              className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+              className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
             >

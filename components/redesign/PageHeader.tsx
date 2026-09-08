@@ -16,7 +16,7 @@ export default function PageHeader({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 mb-4 sm:mb-5">
       {/* Title block */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-800 truncate">
+        <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-800 dark:text-slate-200 truncate">
           {title}
         </h1>
         {subtitle && (

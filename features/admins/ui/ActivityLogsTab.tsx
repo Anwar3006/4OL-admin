@@ -44,7 +44,7 @@ export default function ActivityLogsTab() {
     <div className="w-full min-w-0 space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[200px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
+          className="flex-1 min-w-[200px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
           placeholder="🔍 Search logs..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -80,7 +80,7 @@ export default function ActivityLogsTab() {
                     {format(new Date(log.created_at), "yyyy-MM-dd HH:mm:ss")}
                   </td>
                   <td><span className="badge badge-secondary">{log.admin_email || "Unknown"}</span></td>
-                  <td className="font-bold text-slate-700">{log.action_type}</td>
+                  <td className="font-bold text-slate-700 dark:text-slate-300">{log.action_type}</td>
                   <td><span className="text-2xs font-bold text-slate-500 uppercase">{log.target_table}</span></td>
                   <td className="font-mono text-2xs">{log.ip_address || "—"}</td>
                   <td><span className={`badge font-extrabold ${SEVERITY_BADGE[log.severity] || "badge-secondary"}`}>{log.severity.toUpperCase()}</span></td>

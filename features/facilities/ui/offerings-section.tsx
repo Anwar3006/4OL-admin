@@ -23,7 +23,7 @@ export function OfferingsSection() {
           type="button"
           variant="outline"
           size="sm"
-          className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+          className="bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
           onClick={() =>
             append({
               name: "",
@@ -43,7 +43,7 @@ export function OfferingsSection() {
 
       <div className="space-y-4">
         {fields.length === 0 && (
-          <div className="text-center py-6 border-2 border-dashed rounded-xl bg-slate-50">
+          <div className="text-center py-6 border-2 border-dashed rounded-xl bg-slate-50 dark:bg-slate-900">
              <p className="text-sm text-slate-400">No offerings added yet. (Optional)</p>
           </div>
         )}
@@ -54,7 +54,7 @@ export function OfferingsSection() {
           return (
             <div
               key={field.id}
-              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border rounded-xl bg-white shadow-sm relative group"
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border rounded-xl bg-white dark:bg-slate-800 shadow-sm relative group"
             >
               <div className="md:col-span-4">
                 <CustomInput
@@ -103,7 +103,7 @@ export function OfferingsSection() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15"
                   onClick={() => remove(index)}
                 >
                   <Trash2 className="h-4 w-4" />

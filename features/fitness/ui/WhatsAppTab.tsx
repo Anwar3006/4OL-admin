@@ -136,7 +136,7 @@ export default function WhatsAppTab() {
 
   if (!configured && !loading) {
     return (
-      <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+      <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-500/15 text-amber-900">
         <MessageSquare className="h-4 w-4" />
         <AlertDescription>
           WhatsApp community data is unavailable — either the migration has not

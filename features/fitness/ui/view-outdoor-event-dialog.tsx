@@ -52,7 +52,7 @@ export function ViewOutdoorEventDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="max-w-4xl p-0 flex flex-col bg-slate-50 border-0 shadow-2xl rounded-none max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-4xl p-0 flex flex-col bg-slate-50 dark:bg-slate-900 border-0 shadow-2xl rounded-none max-h-[90vh] overflow-hidden">
         <VisuallyHidden.Root>
           <DialogTitle>
             {data?.title ? `Details for ${data.title}` : "Event Details"}
@@ -60,11 +60,11 @@ export function ViewOutdoorEventDialog() {
         </VisuallyHidden.Root>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-white">
+          <div className="flex flex-col items-center justify-center h-full min-h-[450px] bg-white dark:bg-slate-800">
             <div className="relative">
-              <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-50" />
-              <div className="relative w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-                <Calendar className="h-8 w-8 text-emerald-600 animate-pulse" />
+              <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-500/20 rounded-full animate-ping opacity-50" />
+              <div className="relative w-16 h-16 bg-emerald-50 dark:bg-emerald-500/15 rounded-full flex items-center justify-center">
+                <Calendar className="h-8 w-8 text-emerald-600 dark:text-emerald-400 animate-pulse" />
               </div>
             </div>
             <span className="mt-6 text-xs font-black text-slate-400 uppercase tracking-widest">
@@ -83,11 +83,11 @@ export function ViewOutdoorEventDialog() {
             formatEventDate={formatEventDate}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-5 bg-white min-h-[400px]">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+          <div className="flex flex-col items-center justify-center h-full p-12 text-center space-y-5 bg-white dark:bg-slate-800 min-h-[400px]">
+            <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-300">
               <Ban className="h-10 w-10" />
             </div>
-            <p className="text-slate-900 font-bold text-lg">Event Not Found</p>
+            <p className="text-slate-900 dark:text-slate-100 font-bold text-lg">Event Not Found</p>
             <p className="text-slate-500 font-medium max-w-sm">
               This event may have been removed or updated. Please return to the
               schedule.
@@ -135,9 +135,9 @@ function DetailView({
   formatEventDate: (dateStr: Date | string | null | undefined) => string;
 }) {
   const statusColors = {
-    active: "bg-emerald-100 text-emerald-800 border-none hover:bg-emerald-200",
-    upcoming: "bg-blue-100 text-blue-800 border-none hover:bg-blue-200",
-    completed: "bg-slate-100 text-slate-800 border-none hover:bg-slate-200",
+    active: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-none hover:bg-emerald-200",
+    upcoming: "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 border-none hover:bg-blue-200",
+    completed: "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-none hover:bg-slate-200",
   };
 
   const currentStatus = (
@@ -157,7 +157,7 @@ function DetailView({
   return (
     <>
       {/* ── Sticky Top Bar Header ── */}
-      <div className="bg-white sticky top-0 z-30 px-6 py-6 md:px-10 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 sticky top-0 z-30 px-6 py-6 md:px-10 border-b border-slate-200 dark:border-slate-700">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-3 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -201,7 +201,7 @@ function DetailView({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -210,29 +210,29 @@ function DetailView({
       </div>
 
       {/* ── Scrollable Content Bento ── */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 bg-slate-50">
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 bg-slate-50 dark:bg-slate-900">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Context Panels */}
           <div className="lg:col-span-7 space-y-6">
             {/* Description Section */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                   <Compass className="h-5 w-5" />
                 </div>
                 <h3 className="section-heading">
                   Event Description
                 </h3>
               </div>
-              <p className="text-base text-slate-600 leading-relaxed font-medium">
+              <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                 {data.description || "No event description provided."}
               </p>
             </div>
 
             {/* Geography & Routing Section */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <h3 className="section-heading">
@@ -241,23 +241,23 @@ function DetailView({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-1">
                     Area Region
                   </span>
                   <span className="text-sm font-bold text-black flex items-center gap-1.5">
-                    <Navigation className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Navigation className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     {data.area || "Unspecified Area"}
                   </span>
                 </div>
 
                 {data.route_id && (
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block mb-1">
                       Assigned Route
                     </span>
                     <span className="text-sm font-bold text-black flex items-center gap-1.5">
-                      <RouteIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <RouteIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       Linked Route Details
                     </span>
                   </div>
@@ -266,14 +266,14 @@ function DetailView({
 
               {/* Coordinates Section */}
               {(data.latitude !== null || data.longitude !== null) && (
-                <div className="p-5 border border-slate-200 rounded-2xl bg-slate-50 flex flex-wrap items-center justify-between gap-4">
+                <div className="p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <Globe className="h-5 w-5 text-slate-400" />
                     <div>
                       <span className="text-2xs font-black uppercase tracking-widest text-slate-400 block">
                         Geo Coordinates
                       </span>
-                      <span className="text-xs font-mono font-bold text-slate-700">
+                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
                         Lat: {data.latitude ?? "N/A"}, Lon:{" "}
                         {data.longitude ?? "N/A"}
                       </span>
@@ -283,7 +283,7 @@ function DetailView({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-xl h-9 text-xs font-bold border-slate-200 bg-white shadow-sm hover:bg-slate-50 text-slate-700"
+                      className="rounded-xl h-9 text-xs font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300"
                       asChild
                     >
                       <a
@@ -303,8 +303,8 @@ function DetailView({
           {/* Sidebar Execution Widgets */}
           <div className="lg:col-span-5 space-y-6">
             {/* Start Time Schedule Card */}
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-              <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
                 <Clock className="w-6 h-6" />
               </div>
               <div>
@@ -322,7 +322,7 @@ function DetailView({
               <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-900/30 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
               <div className="flex items-center gap-3 relative z-10">
-                <div className="p-2.5 rounded-xl bg-white/10 text-emerald-400">
+                <div className="p-2.5 rounded-xl bg-white/10 dark:bg-slate-800/10 text-emerald-400">
                   <Users className="h-5 w-5" />
                 </div>
                 <h3 className="font-black uppercase tracking-[0.15em] text-sm text-white">
@@ -345,7 +345,7 @@ function DetailView({
 
                 {maxParticipants > 0 && (
                   <>
-                    <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden mt-3">
+                    <div className="w-full bg-white/10 dark:bg-slate-800/10 h-2.5 rounded-full overflow-hidden mt-3">
                       <div
                         className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
                         style={{ width: `${fillPercentage}%` }}
@@ -362,22 +362,22 @@ function DetailView({
             </div>
 
             {/* Audit Logs Meta Card */}
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm grid grid-cols-2 gap-4">
               <div className="text-center sm:text-left space-y-1">
                 <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Date Created
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {new Date(data.created_at).toLocaleDateString(undefined, {
                     dateStyle: "medium",
                   })}
                 </span>
               </div>
-              <div className="text-center sm:text-left space-y-1 border-l border-slate-100 pl-4">
+              <div className="text-center sm:text-left space-y-1 border-l border-slate-100 dark:border-slate-800 pl-4">
                 <span className="text-3xs font-black uppercase tracking-widest text-slate-400 block">
                   Last Updated
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {new Date(data.updated_at).toLocaleDateString(undefined, {
                     dateStyle: "medium",
                   })}

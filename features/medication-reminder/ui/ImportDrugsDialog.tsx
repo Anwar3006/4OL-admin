@@ -127,11 +127,11 @@ export default function ImportDrugsDialog({
 
           {!fileName && (
             <button
-              className="w-full border-2 border-dashed border-slate-200 rounded-xl py-10 text-center hover:border-emerald-400 hover:bg-emerald-50/30 transition-colors cursor-pointer"
+              className="w-full border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl py-10 text-center hover:border-emerald-400 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/15/30 transition-colors cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="text-3xl mb-2">📄</div>
-              <div className="text-xs font-black text-slate-600 uppercase tracking-widest">
+              <div className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
                 Click to select a CSV file
               </div>
               <div className="text-2xs text-slate-400 mt-1">
@@ -142,7 +142,7 @@ export default function ImportDrugsDialog({
           )}
 
           {parseError && (
-            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 font-medium">
+            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 dark:bg-red-500/15 px-3 py-2 text-xs text-red-700 dark:text-red-400 font-medium">
               <span>⚠️</span>
               <span>{parseError}</span>
             </div>
@@ -151,20 +151,20 @@ export default function ImportDrugsDialog({
           {preview && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                <div className="bg-slate-50 rounded-lg p-3">
-                  <div className="text-lg font-black text-slate-800">{preview.totalInFile.toLocaleString()}</div>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                  <div className="text-lg font-black text-slate-800 dark:text-slate-200">{preview.totalInFile.toLocaleString()}</div>
                   <div className="text-3xs font-bold uppercase tracking-widest text-slate-400">File Rows</div>
                 </div>
-                <div className="bg-emerald-50 rounded-lg p-3">
-                  <div className="text-lg font-black text-emerald-700">{preview.rows.length.toLocaleString()}</div>
+                <div className="bg-emerald-50 dark:bg-emerald-500/15 rounded-lg p-3">
+                  <div className="text-lg font-black text-emerald-700 dark:text-emerald-400">{preview.rows.length.toLocaleString()}</div>
                   <div className="text-3xs font-bold uppercase tracking-widest text-emerald-500">Importable</div>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-3">
-                  <div className="text-lg font-black text-amber-700">{reviewCount.toLocaleString()}</div>
+                <div className="bg-amber-50 dark:bg-amber-500/15 rounded-lg p-3">
+                  <div className="text-lg font-black text-amber-700 dark:text-amber-400">{reviewCount.toLocaleString()}</div>
                   <div className="text-3xs font-bold uppercase tracking-widest text-amber-500">Under Review</div>
                 </div>
-                <div className="bg-red-50 rounded-lg p-3">
-                  <div className="text-lg font-black text-red-600">
+                <div className="bg-red-50 dark:bg-red-500/15 rounded-lg p-3">
+                  <div className="text-lg font-black text-red-600 dark:text-red-400">
                     {(preview.skippedNotMedication + preview.skippedNonMed).toLocaleString()}
                   </div>
                   <div className="text-3xs font-bold uppercase tracking-widest text-red-400">Skipped</div>

@@ -72,7 +72,7 @@ export default function ActiveUsersTab() {
         header: "User",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {displayName(row.original)}
             </span>
             <span className="text-xs text-slate-400">
@@ -115,7 +115,7 @@ export default function ActiveUsersTab() {
           const score = deriveEngagement(row.original.last_active);
           return (
             <div className="flex items-center gap-2">
-              <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-1.5 w-16 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-emerald-500"
                   style={{ width: `${score}%` }}
@@ -160,13 +160,13 @@ export default function ActiveUsersTab() {
       </div>
 
       <input
-        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
         placeholder="🔍 Search active users…"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
       />
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={users}

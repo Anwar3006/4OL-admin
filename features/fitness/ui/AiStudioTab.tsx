@@ -97,14 +97,14 @@ const AiStudioTab = () => {
                 i === step
                   ? "bg-slate-900 text-white"
                   : i < step
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                    : "bg-white text-slate-400 border border-slate-200"
+                    ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30"
+                    : "bg-white dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
               }`}
               onClick={() => i < step && setStep(i)}
             >
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-2xs ${
-                  i === step ? "bg-white/20" : i < step ? "bg-emerald-100" : "bg-slate-100"
+                  i === step ? "bg-white/20 dark:bg-slate-800/20" : i < step ? "bg-emerald-100 dark:bg-emerald-500/20" : "bg-slate-100 dark:bg-slate-800"
                 }`}
               >
                 {i < step ? "✓" : i + 1}
@@ -121,7 +121,7 @@ const AiStudioTab = () => {
       {/* Step 1 — Context Input */}
       {step === 0 && (
         <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800">① Context Input</h3>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">① Context Input</h3>
           <p className="text-xs text-slate-500 font-medium -mt-2">
             Describe the generation target. These values pre-fill the generation
             context and never touch user data.
@@ -132,7 +132,7 @@ const AiStudioTab = () => {
                 Plan type
               </span>
               <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 value={context.plan_type}
                 onChange={(e) => set("plan_type", e.target.value)}
               >
@@ -146,7 +146,7 @@ const AiStudioTab = () => {
                 Difficulty
               </span>
               <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 value={context.difficulty}
                 onChange={(e) => set("difficulty", e.target.value)}
               >
@@ -160,7 +160,7 @@ const AiStudioTab = () => {
                 Duration (weeks)
               </span>
               <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 value={context.duration_weeks}
                 onChange={(e) => set("duration_weeks", e.target.value)}
               />
@@ -170,7 +170,7 @@ const AiStudioTab = () => {
                 FitCoin reward budget
               </span>
               <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 value={context.fitcoin_budget}
                 onChange={(e) => set("fitcoin_budget", e.target.value)}
               />
@@ -180,7 +180,7 @@ const AiStudioTab = () => {
                 Target tier
               </span>
               <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 value={context.target_tier}
                 onChange={(e) => set("target_tier", e.target.value)}
               >
@@ -194,7 +194,7 @@ const AiStudioTab = () => {
                 Theme (optional)
               </span>
               <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
                 placeholder="e.g. Ramadan fitness push"
                 value={context.theme}
                 onChange={(e) => set("theme", e.target.value)}
@@ -206,7 +206,7 @@ const AiStudioTab = () => {
               Additional instructions
             </span>
             <textarea
-              className="w-full min-h-20 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 outline-none"
+              className="w-full min-h-20 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 outline-none"
               placeholder="Any constraints for the generator..."
               value={context.instructions}
               onChange={(e) => set("instructions", e.target.value)}
@@ -226,7 +226,7 @@ const AiStudioTab = () => {
       {/* Step 2 — Platform Insights (auto-injected, live) */}
       {step === 1 && (
         <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800">② Platform Insights</h3>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">② Platform Insights</h3>
           <p className="text-xs text-slate-500 font-medium -mt-2">
             Auto-injected from live platform aggregates (fitness_ai_calls,
             exercise_sessions, dashboard cache). Use them to align the new
@@ -234,17 +234,17 @@ const AiStudioTab = () => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {insights.map((item) => (
-              <div key={item.label} className="rounded-xl border border-slate-200 p-3">
+              <div key={item.label} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
                 <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   {item.icon} {item.label}
                 </div>
-                <div className="text-xs font-black text-slate-800">{item.value}</div>
+                <div className="text-xs font-black text-slate-800 dark:text-slate-200">{item.value}</div>
               </div>
             ))}
           </div>
           <div className="flex justify-between">
             <button
-              className="h-10 px-5 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+              className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
               onClick={() => setStep(0)}
             >
               ← Back
@@ -262,21 +262,21 @@ const AiStudioTab = () => {
       {/* Step 3 — Generate */}
       {step === 2 && (
         <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800">③ Generate</h3>
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-1 text-xs font-medium text-slate-600">
-            <div><span className="font-black text-slate-800">Type:</span> {context.plan_type} · {context.difficulty} · {context.duration_weeks} weeks</div>
-            <div><span className="font-black text-slate-800">Tier:</span> {context.target_tier} · <span className="font-black text-slate-800">FitCoin budget:</span> {context.fitcoin_budget}</div>
-            {context.theme && <div><span className="font-black text-slate-800">Theme:</span> {context.theme}</div>}
-            {context.instructions && <div><span className="font-black text-slate-800">Instructions:</span> {context.instructions}</div>}
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">③ Generate</h3>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 p-4 space-y-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+            <div><span className="font-black text-slate-800 dark:text-slate-200">Type:</span> {context.plan_type} · {context.difficulty} · {context.duration_weeks} weeks</div>
+            <div><span className="font-black text-slate-800 dark:text-slate-200">Tier:</span> {context.target_tier} · <span className="font-black text-slate-800 dark:text-slate-200">FitCoin budget:</span> {context.fitcoin_budget}</div>
+            {context.theme && <div><span className="font-black text-slate-800 dark:text-slate-200">Theme:</span> {context.theme}</div>}
+            {context.instructions && <div><span className="font-black text-slate-800 dark:text-slate-200">Instructions:</span> {context.instructions}</div>}
           </div>
-          <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+          <div className="rounded-xl border border-amber-100 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 p-3 text-xs font-semibold text-amber-800">
             💡 Each generation costs approximately $0.04–$0.08. Generated plans
             are created as drafts; publishing them to users requires a
             super_admin action in the Plans tab.
           </div>
           <div className="flex justify-between">
             <button
-              className="h-10 px-5 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+              className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
               onClick={() => setStep(1)}
             >
               ← Back

@@ -55,7 +55,7 @@ export default function PendingEnquiriesTab() {
         header: "Medication",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
+            <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight leading-none mb-1">
               {row.original.medication_name}
             </div>
             <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
@@ -70,7 +70,7 @@ export default function PendingEnquiriesTab() {
         id: "user",
         header: "User",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-slate-700">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
             {row.original.submitter_name}
             {row.original.identity_masked && <span className="ml-1 text-slate-300">🔒</span>}
           </span>
@@ -122,7 +122,7 @@ export default function PendingEnquiriesTab() {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50"
+                className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDetail(enq);
@@ -132,7 +132,7 @@ export default function PendingEnquiriesTab() {
               </button>
               <button
                 disabled={busy}
-                className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   broadcast.mutate({ id: enq.id });
@@ -142,7 +142,7 @@ export default function PendingEnquiriesTab() {
               </button>
               <button
                 disabled={busy}
-                className="h-7 px-2 rounded-lg border border-blue-200 text-3xs font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                className="h-7 px-2 rounded-lg border border-blue-200 text-3xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 disabled:opacity-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   action.mutate({ id: enq.id, action: "notify_user" });
@@ -163,7 +163,7 @@ export default function PendingEnquiriesTab() {
       title: (row) => row.medication_name,
       subtitle: (row) => `${formatEnqId(row.id)} · ${row.submitter_name}`,
       badge: (row) => (
-        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30">
           {elapsedHours(row.created_at)}
         </span>
       ),
@@ -181,16 +181,16 @@ export default function PendingEnquiriesTab() {
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
       {total > 0 && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-500/15 px-4 py-3">
           <span className="text-base leading-none mt-0.5">🔗</span>
-          <p className="text-xs font-bold text-amber-700">
+          <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
             <b>{total} enquiry{total === 1 ? "" : "ies"}</b> have not been matched to a pharmacy yet.
             Consider broadcasting to more pharmacies or alerting the user.
           </p>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={rows}

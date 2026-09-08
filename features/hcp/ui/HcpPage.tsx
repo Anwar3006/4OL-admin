@@ -31,11 +31,11 @@ import { GHANA_REGIONS_ENUM } from "@/types/formInput";
 import OnboardHcpDialog from "./onboard-hcp-dialog";
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-100",
+  pending: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
   under_review: "bg-sky-50 text-sky-700 border-sky-100",
-  verified: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  rejected: "bg-red-50 text-red-600 border-red-100",
-  expired: "bg-slate-100 text-slate-500 border-slate-200",
+  verified: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  rejected: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-100 dark:border-red-500/30",
+  expired: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
 };
 
 const TAB_ALERTS: Record<string, string> = {
@@ -119,7 +119,7 @@ const HCPPage = () => {
     );
 
   const selectClass =
-    "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none";
+    "h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none";
 
   const registryTable = (
     <div className="space-y-4">
@@ -131,7 +131,7 @@ const HCPPage = () => {
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search name, licence no, specialty..."
           value={search}
           onChange={(e) => updateParams({ search: e.target.value })}
@@ -206,10 +206,10 @@ const HCPPage = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
         <table className="w-full text-left min-w-[900px]">
           <thead>
-            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
               <th className="px-4 py-3 w-8" />
               <th className="px-3 py-3">Professional</th>
               <th className="px-3 py-3">Profession / Specialty</th>
@@ -237,7 +237,7 @@ const HCPPage = () => {
               </tr>
             ) : (
               rows.map((row: HcpRow) => (
-                <tr key={row.id} className="hover:bg-slate-50/60">
+                <tr key={row.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -246,15 +246,15 @@ const HCPPage = () => {
                     />
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-sm font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                       {row.user_profiles?.first_name} {row.user_profiles?.last_name}
                     </p>
-                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-slate-800 rounded px-1.5 py-0.5 font-mono">
                       {hcpDisplayId(row.user_id)}
                     </span>
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-xs font-bold text-slate-700 capitalize">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300 capitalize">
                       {(row.profession_type ?? row.license_type)?.replace(/_/g, " ")}
                     </p>
                     <p className="text-2xs font-bold text-slate-400">
@@ -262,14 +262,14 @@ const HCPPage = () => {
                     </p>
                   </td>
                   <td className="px-3 py-3">
-                    <span className="text-3xs font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full px-2.5 py-1">
+                    <span className="text-3xs font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border border-indigo-100 rounded-full px-2.5 py-1">
                       {row.issuing_body}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-xs font-mono font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
                     {row.license_number}
                   </td>
-                  <td className="px-3 py-3 text-xs font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                     {row.facility_profile?.facility_name ??
                       row.affiliated_facility_name ??
                       "—"}
@@ -375,7 +375,7 @@ const HCPPage = () => {
         </button>
       </PageHeader>
 
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs font-bold text-emerald-800">
+      <div className="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 rounded-2xl px-4 py-3 text-xs font-bold text-emerald-800 dark:text-emerald-400">
         🔗 SA Module Connections: HCP records link to Facilities (affiliation),
         Medication (enquiry opt-in), Group Chats (profession assignment) and
         Reviews. Per-HCP Med Enquiry counters show &quot;—&quot; until a responder
@@ -399,7 +399,7 @@ const HCPPage = () => {
           updateParams({ tab: tab === "all" ? undefined : tab });
         }}
       >
-        <div className="border-b border-slate-200 w-full overflow-x-auto">
+        <div className="border-b border-slate-200 dark:border-slate-700 w-full overflow-x-auto">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-max">
             {[
               { id: "all", label: "All HCPs" },
@@ -416,8 +416,8 @@ const HCPPage = () => {
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 py-3 text-2xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
-                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}
@@ -448,14 +448,14 @@ const HCPPage = () => {
               <Link
                 key={chat.id}
                 href={`/chats?group=${chat.id}`}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:border-emerald-300 transition-all"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 hover:border-emerald-300 transition-all"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-black text-slate-800 truncate">
+                  <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">
                     💬 {chat.group_name ?? chat.name ?? "Group Chat"}
                   </p>
                   {chat.is_verified_only && (
-                    <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
+                    <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30 rounded-full px-2 py-0.5">
                       Verified only
                     </span>
                   )}

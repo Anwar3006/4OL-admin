@@ -83,7 +83,7 @@ export default function SecurityTab() {
 
   if (denied) {
     return (
-      <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+      <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-500/15 text-amber-900">
         <ShieldCheck className="h-4 w-4" />
         <AlertTitle>Restricted</AlertTitle>
         <AlertDescription>{denied}</AlertDescription>

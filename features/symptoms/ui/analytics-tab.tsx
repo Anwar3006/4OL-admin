@@ -25,8 +25,8 @@ const Leaderboard = ({
   rows: { id: string; name: string; value: number }[];
   unit: string;
 }) => (
-  <div className="card p-0 overflow-hidden border-slate-200">
-    <div className="px-5 py-4 border-b border-slate-100">
+  <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+    <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
       <h4 className="section-heading">
         {icon} {title}
       </h4>
@@ -44,11 +44,11 @@ const Leaderboard = ({
             </span>
             <Link
               href={`/symptoms?id=${row.id}`}
-              className="text-xs font-bold text-slate-800 truncate flex-1 hover:text-emerald-700"
+              className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate flex-1 hover:text-emerald-700 dark:hover:text-emerald-400"
             >
               {row.name}
             </Link>
-            <span className="text-xs font-black text-slate-600 shrink-0">
+            <span className="text-xs font-black text-slate-600 dark:text-slate-300 shrink-0">
               {row.value.toLocaleString()} {unit}
             </span>
           </li>
@@ -93,7 +93,7 @@ const SymptomAnalyticsTab = () => {
   return (
     <div className="space-y-6">
       {!pipelineLive && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 text-xs font-bold text-amber-800">
           ℹ️ Likes/Saves read 0 until the content_engagement migration
           (Mapping Audit Part 4 / Epic 30.1) is applied. Views, verification
           and coverage metrics below are live.
@@ -169,7 +169,7 @@ const SymptomAnalyticsTab = () => {
       </div>
 
       {/* 30-day unique-viewer trend */}
-      <div className="card p-5 border-slate-200">
+      <div className="card p-5 border-slate-200 dark:border-slate-700">
         <h4 className="section-heading mb-4">
           📊 Unique Views — Last 30 Days
         </h4>
@@ -204,14 +204,14 @@ const SymptomAnalyticsTab = () => {
 
       {/* Body-part distribution + category breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="card p-5 border-slate-200">
+        <div className="card p-5 border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <h4 className="section-heading">
               🧍 Symptoms by Body Part
             </h4>
             <Link
               href="/anatomy?tab=symptoms"
-              className="text-2xs font-black uppercase tracking-widest text-emerald-700 hover:underline"
+              className="text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 hover:underline"
             >
               Open Anatomy →
             </Link>
@@ -224,16 +224,16 @@ const SymptomAnalyticsTab = () => {
             <div className="space-y-2.5">
               {data.body_parts.map((part) => (
                 <div key={part.body_part_id} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 w-40 truncate shrink-0">
                     {part.body_part_name}
                   </span>
-                  <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                     <div
                       className="h-full bg-purple-400"
                       style={{ width: `${(part.symptom_count / maxBodyPart) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
+                  <span className="text-xs font-black text-slate-700 dark:text-slate-300 w-8 text-right shrink-0">
                     {part.symptom_count}
                   </span>
                 </div>
@@ -242,14 +242,14 @@ const SymptomAnalyticsTab = () => {
           )}
         </div>
 
-        <div className="card p-5 border-slate-200">
+        <div className="card p-5 border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <h4 className="section-heading">
               📂 Symptoms by Category
             </h4>
             <Link
               href="/symptoms?tab=categories"
-              className="text-2xs font-black uppercase tracking-widest text-emerald-700 hover:underline"
+              className="text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 hover:underline"
             >
               Open Categories →
             </Link>
@@ -262,16 +262,16 @@ const SymptomAnalyticsTab = () => {
             <div className="space-y-2.5">
               {data.categories.map((cat) => (
                 <div key={cat.category_id} className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 w-40 truncate shrink-0">
                     {cat.category_name}
                   </span>
-                  <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                     <div
                       className="h-full bg-emerald-500"
                       style={{ width: `${(cat.symptom_count / maxCategory) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
+                  <span className="text-xs font-black text-slate-700 dark:text-slate-300 w-8 text-right shrink-0">
                     {cat.symptom_count}
                   </span>
                 </div>
@@ -299,13 +299,13 @@ const SymptomAnalyticsTab = () => {
       </div>
 
       {/* Content health */}
-      <div className="card p-5 border-slate-200">
+      <div className="card p-5 border-slate-200 dark:border-slate-700">
         <h4 className="section-heading mb-4">
           🧾 Content Health — Section Completeness
         </h4>
         <p className="text-xs font-bold text-slate-500 mb-3">
           Published symptoms average{" "}
-          <span className="text-emerald-700">
+          <span className="text-emerald-700 dark:text-emerald-400">
             {Number(data.completeness.avg_sections ?? 0).toFixed(1)} / 8
           </span>{" "}
           Lexical sections filled. Items below are missing the most content —
@@ -321,7 +321,7 @@ const SymptomAnalyticsTab = () => {
               <li key={row.id} className="flex items-center gap-3 py-2">
                 <Link
                   href={`/symptoms?id=${row.id}`}
-                  className="text-xs font-bold text-slate-800 truncate flex-1 hover:text-emerald-700"
+                  className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate flex-1 hover:text-emerald-700 dark:hover:text-emerald-400"
                 >
                   {row.name}
                 </Link>

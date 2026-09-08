@@ -49,13 +49,13 @@ export default function PharmacyResponsesTab() {
                 e.stopPropagation();
                 viewFacility.open(perf.pharmacy_id!);
               }}
-              className="font-black text-slate-800 text-xs uppercase tracking-tight text-left hover:text-emerald-700 transition-all"
+              className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight text-left hover:text-emerald-700 dark:hover:text-emerald-400 transition-all"
               title="Open facility profile"
             >
               {perf.pharmacy_name} <span className="text-3xs text-emerald-500">🏥</span>
             </button>
           ) : (
-            <span className="font-black text-slate-800 text-xs uppercase tracking-tight">
+            <span className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight">
               {perf.pharmacy_name}
             </span>
           );
@@ -65,7 +65,7 @@ export default function PharmacyResponsesTab() {
         id: "total_responses",
         header: "Total Responses",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-700">{row.original.total_responses}</span>
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">{row.original.total_responses}</span>
         ),
       },
       {
@@ -77,7 +77,7 @@ export default function PharmacyResponsesTab() {
             <span
               className={cn(
                 "text-xs font-black",
-                minutes !== null && minutes <= 15 ? "text-emerald-600" : "text-amber-500",
+                minutes !== null && minutes <= 15 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500",
               )}
             >
               {formatMinutes(minutes)}
@@ -92,7 +92,7 @@ export default function PharmacyResponsesTab() {
           <span
             className={cn(
               "text-xs font-black",
-              row.original.availability_rate >= 80 ? "text-emerald-600" : "text-amber-500",
+              row.original.availability_rate >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500",
             )}
           >
             {Math.round(row.original.availability_rate)}%
@@ -103,7 +103,7 @@ export default function PharmacyResponsesTab() {
         id: "orders_fulfilled",
         header: "Orders Fulfilled",
         cell: ({ row }) => (
-          <span className="text-xs font-black text-slate-700">{row.original.orders_fulfilled}</span>
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">{row.original.orders_fulfilled}</span>
         ),
       },
       {
@@ -119,8 +119,8 @@ export default function PharmacyResponsesTab() {
             className={cn(
               "inline-flex items-center px-2 py-0.5 rounded text-3xs font-black uppercase tracking-widest border",
               row.original.active === false
-                ? "bg-slate-100 text-slate-500 border-slate-200"
-                : "bg-emerald-50 text-emerald-700 border-emerald-100",
+                ? "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
+                : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
             )}
           >
             {row.original.active === false ? "Inactive" : "✅ Active"}
@@ -137,7 +137,7 @@ export default function PharmacyResponsesTab() {
                 e.stopPropagation();
                 router.push(`/medenquiry?pharmacy=${row.original.pharmacy_id}`, { scroll: false });
               }}
-              className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50"
+              className="h-7 px-2 rounded-lg border border-emerald-200 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15"
               title="Filter the enquiry ledger by this pharmacy"
             >
               🔬 Enquiries
@@ -153,7 +153,7 @@ export default function PharmacyResponsesTab() {
       title: (row) => row.pharmacy_name,
       subtitle: () => "Pharmacy / IBP",
       badge: (row) => (
-        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30">
           {row.total_responses} responses
         </span>
       ),
@@ -177,14 +177,14 @@ export default function PharmacyResponsesTab() {
   return (
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div>
-        <div className="font-black text-slate-800 text-sm">💊 Pharmacy Response Performance</div>
+        <div className="font-black text-slate-800 dark:text-slate-200 text-sm">💊 Pharmacy Response Performance</div>
         <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">
           How fast and accurately pharmacies respond to medication enquiries
         </div>
       </div>
 
       {empty && (
-        <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 py-3">
           <span className="text-base leading-none mt-0.5">📋</span>
           <p className="text-xs font-bold text-slate-500">
             Performance data appears once the Medication Enquiry depth migration
@@ -194,7 +194,7 @@ export default function PharmacyResponsesTab() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={rows}

@@ -46,10 +46,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  draft: "bg-slate-100 text-slate-700",
-  pending_approval: "bg-amber-100 text-amber-700",
-  approved: "bg-emerald-100 text-emerald-700",
-  rejected: "bg-red-100 text-red-700",
+  draft: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+  pending_approval: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
+  approved: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+  rejected: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
 };
 
 export default function ViewNotificationPage() {
@@ -150,13 +150,13 @@ export default function ViewNotificationPage() {
                 {campaign.failed_at && (
                   <>
                     <Label className="text-slate-400">Failed</Label>
-                    <div className="text-red-600">{formatDate(campaign.failed_at)} — {campaign.failure_reason}</div>
+                    <div className="text-red-600 dark:text-red-400">{formatDate(campaign.failed_at)} — {campaign.failure_reason}</div>
                   </>
                 )}
                 {campaign.rejection_reason && (
                   <>
                     <Label className="text-slate-400">Rejection Reason</Label>
-                    <div className="text-red-600">{campaign.rejection_reason}</div>
+                    <div className="text-red-600 dark:text-red-400">{campaign.rejection_reason}</div>
                   </>
                 )}
                 <Label className="text-slate-400">Submitted</Label>
@@ -165,7 +165,7 @@ export default function ViewNotificationPage() {
                 <div>{formatDate(campaign.approved_at)}</div>
               </div>
 
-              <div className="border-t border-slate-100 pt-4">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
                 <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-2">Segment Reach</div>
                 <div className="text-sm font-bold">
                   {segmentPreview?.targetable ?? 0} users targetable, {segmentPreview?.with_push_token ?? 0} with a push token
@@ -173,7 +173,7 @@ export default function ViewNotificationPage() {
               </div>
 
               {receiptSummary && receiptSummary.total > 0 && (
-                <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4">
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-4 grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-2">Send Status</div>
                     {Object.entries(receiptSummary.bySendStatus).map(([k, v]) => (
@@ -189,7 +189,7 @@ export default function ViewNotificationPage() {
                 </div>
               )}
 
-              <div className="border-t border-slate-100 pt-4 flex flex-wrap gap-2">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-wrap gap-2">
                 {campaign.approval_status === "draft" && !campaign.sent_at && (
                   <Button size="sm" disabled={acting} onClick={() => runAction("submit")}>Submit for Approval</Button>
                 )}

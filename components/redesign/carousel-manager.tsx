@@ -46,10 +46,10 @@ const CarouselManager = ({
   return (
     <div className="space-y-6">
       {/* Occupancy header */}
-      <div className="card p-5 border-slate-200">
+      <div className="card p-5 border-slate-200 dark:border-slate-700">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">
               🎠 Carousel Occupancy
             </h3>
             <p className="text-xs text-slate-500 font-bold mt-1">
@@ -65,7 +65,7 @@ const CarouselManager = ({
             {occupancy >= CAROUSEL_CAP ? "Full" : `${CAROUSEL_CAP - occupancy} slots free`}
           </span>
         </div>
-        <div className="mt-4 h-2 rounded-full bg-slate-100 overflow-hidden">
+        <div className="mt-4 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
           <div
             className="h-full bg-emerald-600 transition-all"
             style={{ width: `${Math.min(100, (occupancy / CAROUSEL_CAP) * 100)}%` }}
@@ -74,8 +74,8 @@ const CarouselManager = ({
       </div>
 
       {/* Featured slots */}
-      <div className="card p-0 overflow-hidden border-slate-200">
-        <div className="px-5 py-4 border-b border-slate-100">
+      <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="section-heading">
             Featured (by slot order)
           </h4>
@@ -93,13 +93,13 @@ const CarouselManager = ({
             {featured.map((row) => (
               <li
                 key={row.id}
-                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 transition-colors"
+                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors"
               >
-                <span className="h-8 w-8 shrink-0 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xs font-black text-emerald-700">
+                <span className="h-8 w-8 shrink-0 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 flex items-center justify-center text-xs font-black text-emerald-700 dark:text-emerald-400">
                   {row.featured_order ?? "–"}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-slate-800 truncate">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                     {row.name}
                   </div>
                   <div className="text-2xs text-slate-400 font-semibold">
@@ -108,7 +108,7 @@ const CarouselManager = ({
                       : "No featured date"}
                   </div>
                 </div>
-                <span className="text-xs font-black text-slate-600">
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300">
                   👁️ {(row.view_count ?? 0).toLocaleString()}
                 </span>
                 <button
@@ -125,8 +125,8 @@ const CarouselManager = ({
       </div>
 
       {/* Available to feature */}
-      <div className="card p-0 overflow-hidden border-slate-200">
-        <div className="px-5 py-4 border-b border-slate-100">
+      <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <h4 className="section-heading">
             Not Featured Yet (published, by views)
           </h4>
@@ -144,10 +144,10 @@ const CarouselManager = ({
             {available.map((row) => (
               <li
                 key={row.id}
-                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 transition-colors"
+                className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50/60 dark:hover:bg-slate-900/60 transition-colors"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-slate-800 truncate">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                     {row.name}
                   </div>
                   <div className="text-2xs text-slate-400 font-semibold">

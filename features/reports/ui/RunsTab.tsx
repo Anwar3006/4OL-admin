@@ -28,12 +28,12 @@ import {
 } from "@/features/reports/data/useReports";
 
 const STATUS_TONE: Record<string, string> = {
-  queued: "bg-slate-100 text-slate-600",
-  collecting: "bg-blue-50 text-blue-600",
+  queued: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300",
+  collecting: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400",
   narrating: "bg-violet-50 text-violet-600",
-  delivered: "bg-emerald-50 text-emerald-700",
-  delivered_metrics_only: "bg-amber-50 text-amber-700",
-  failed: "bg-red-50 text-red-600",
+  delivered: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  delivered_metrics_only: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  failed: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400",
 };
 
 export default function RunsTab() {
@@ -51,7 +51,7 @@ export default function RunsTab() {
       <div className="flex items-center gap-3">
         <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Filter</span>
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm min-w-[220px]"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm min-w-[220px]"
           value={definitionId}
           onChange={(e) => setDefinitionId(e.target.value)}>
           <option value="">All schedules</option>
@@ -68,7 +68,7 @@ export default function RunsTab() {
         <Card>
           <CardContent className="py-14 text-center">
             <History className="h-8 w-8 mx-auto text-slate-300 mb-3" />
-            <p className="text-sm font-bold text-slate-700">No runs yet</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No runs yet</p>
             <p className="text-xs text-slate-500 mt-1">
               Runs appear when a schedule fires (hourly worker) or via Generate now.
             </p>
@@ -90,7 +90,7 @@ export default function RunsTab() {
             <TableBody>
               {runs.map((run) => (
                 <TableRow key={run.id}>
-                  <TableCell className="font-bold text-slate-800">
+                  <TableCell className="font-bold text-slate-800 dark:text-slate-200">
                     {names.get(run.definition_id) ?? "—"}
                     <span className="text-2xs text-slate-400 ml-1.5 capitalize">{run.cadence}</span>
                   </TableCell>
@@ -98,7 +98,7 @@ export default function RunsTab() {
                     {run.period_start} → {run.period_end}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${STATUS_TONE[run.status] ?? "bg-slate-100 text-slate-600"}`}>
+                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${STATUS_TONE[run.status] ?? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
                       {run.status.replace(/_/g, " ")}
                     </span>
                   </TableCell>

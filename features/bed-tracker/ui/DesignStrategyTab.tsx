@@ -78,8 +78,8 @@ export default function DesignStrategyTab() {
           <CardContent>
             <ul className="space-y-2">
               {card.points.map((point) => (
-                <li key={point} className="flex gap-2 text-sm text-slate-600">
-                  <span className="text-emerald-600 font-black">•</span>
+                <li key={point} className="flex gap-2 text-sm text-slate-600 dark:text-slate-300">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-black">•</span>
                   {point}
                 </li>
               ))}

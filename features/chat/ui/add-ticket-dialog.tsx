@@ -93,13 +93,13 @@ const AddTicketDialog = () => {
     <Dialog open={addTicket.isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md overflow-y-auto p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <DialogTitle className="flex items-center gap-2.5 text-base">
-            <span className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-lg shrink-0">
+            <span className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center text-lg shrink-0">
               🎟️
             </span>
             <span className="flex-1">
-              <span className="block text-slate-800 font-black">
+              <span className="block text-slate-800 dark:text-slate-200 font-black">
                 Support Ticket
               </span>
               <span className="block text-2xs font-bold text-slate-400 uppercase tracking-widest">
@@ -111,12 +111,12 @@ const AddTicketDialog = () => {
 
         {addTicket.data && (
           <div className="px-6 pt-5 space-y-4">
-            <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3 border border-slate-100 dark:border-slate-800">
               <div className="flex flex-col">
                 <span className="text-3xs text-slate-400 uppercase font-black tracking-widest">
                   Requested By
                 </span>
-                <span className="font-bold text-sm text-slate-800">
+                <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
                   {addTicket.data.user_profiles?.first_name}{" "}
                   {addTicket.data.user_profiles?.last_name}
                 </span>
@@ -143,7 +143,7 @@ const AddTicketDialog = () => {
               <span className="text-2xs text-slate-400 uppercase font-black tracking-widest">
                 Subject
               </span>
-              <p className="font-bold text-sm text-slate-800 leading-snug">
+              <p className="font-bold text-sm text-slate-800 dark:text-slate-200 leading-snug">
                 {addTicket.data.subject}
               </p>
             </div>
@@ -152,7 +152,7 @@ const AddTicketDialog = () => {
               <span className="text-2xs text-slate-400 uppercase font-black tracking-widest">
                 Message
               </span>
-              <div className="bg-slate-50 p-3.5 rounded-xl text-sm leading-relaxed border border-slate-100 text-slate-600">
+              <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-xl text-sm leading-relaxed border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300">
                 {addTicket.data.message}
               </div>
             </div>
@@ -180,11 +180,11 @@ const AddTicketDialog = () => {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-9 text-xs">
+                        <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-9 text-xs">
                           <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         <SelectItem value="Low">🟢 Low</SelectItem>
                         <SelectItem value="Medium">🟡 Medium</SelectItem>
                         <SelectItem value="High">🔴 High</SelectItem>
@@ -210,11 +210,11 @@ const AddTicketDialog = () => {
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-9 text-xs">
+                        <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-9 text-xs">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         <SelectItem value="Open">🟢 Open</SelectItem>
                         <SelectItem value="Unread">🔵 Unread</SelectItem>
                         <SelectItem value="Pending">🟡 Pending</SelectItem>

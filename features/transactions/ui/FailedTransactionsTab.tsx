@@ -42,7 +42,7 @@ export default function FailedTransactionsTab() {
         header: "User",
         cell: ({ row }) => (
           <div>
-            <span className="font-black text-slate-800">{row.original.payer_name || "—"}</span>
+            <span className="font-black text-slate-800 dark:text-slate-200">{row.original.payer_name || "—"}</span>
             <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest">
               {row.original.payer_code}
             </div>
@@ -94,7 +94,7 @@ export default function FailedTransactionsTab() {
                 e.stopPropagation();
                 toast.info(`Payment reminder queued for ${row.original.payer_name || "customer"}`);
               }}
-              className="h-7 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+              className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-3xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50"
             >
               Notify
             </button>
@@ -104,7 +104,7 @@ export default function FailedTransactionsTab() {
                 e.stopPropagation();
                 action.mutate({ id: row.original.id, action: "retry" });
               }}
-              className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+              className="h-7 px-2 rounded-lg border border-amber-200 text-3xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 disabled:opacity-50"
             >
               Retry
             </button>
@@ -117,7 +117,7 @@ export default function FailedTransactionsTab() {
 
   return (
     <div className="space-y-4 mt-4 text-xs">
-      <div className="alert bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg flex items-center gap-2">
+      <div className="alert bg-red-50 dark:bg-red-500/15 border border-red-200 text-red-700 dark:text-red-400 p-3 rounded-lg flex items-center gap-2">
         <span>⚠️</span>
         <strong>{failed?.count ?? rows.length} failed transaction(s)</strong>
         <span>

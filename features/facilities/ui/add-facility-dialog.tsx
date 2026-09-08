@@ -424,7 +424,7 @@ const AddFacilityDialog = () => {
             label="Region"
             options={regionOptions}
             control={form.control}
-            className="bg-white! border-slate-200"
+            className="bg-white! border-slate-200 dark:border-slate-700"
             placeholder="Select Region"
             disabled={regionOptions.length === 0}
           />
@@ -433,7 +433,7 @@ const AddFacilityDialog = () => {
             label="District"
             options={districtOptions}
             control={form.control}
-            className="bg-white! border-slate-200"
+            className="bg-white! border-slate-200 dark:border-slate-700"
             placeholder="Select District"
             disabled={!selectedRegion || districtOptions.length === 0}
           />
@@ -577,7 +577,7 @@ const AddFacilityDialog = () => {
           data={credentials}
         />
       )}
-      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white! border-slate-200 shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto py-5 px-4 md:px-8 bg-white! border-slate-200 dark:border-slate-700 shadow-2xl">
         <div className="flex justify-center gap-2 mb-4 w-full pr-4">
           <div
             className={cn(
@@ -618,7 +618,7 @@ const AddFacilityDialog = () => {
                       toast:
                         "group-[.toaster]:border-destructive group-[.toaster]:bg-red-50/50",
                       title: "font-black text-destructive",
-                      description: "text-slate-900 font-medium leading-relaxed",
+                      description: "text-slate-900 dark:text-slate-100 font-medium leading-relaxed",
                     },
                     duration: 5000,
                   });
@@ -639,7 +639,7 @@ const AddFacilityDialog = () => {
                     options={FACILITY_TYPE_OPTIONS}
                     control={form.control}
                     label="Facility Type"
-                    className="bg-white! border-slate-200"
+                    className="bg-white! border-slate-200 dark:border-slate-700"
                   />
                   {form.watch("facility_type") === "wellness_center" ? (
                     <CustomSelect
@@ -653,7 +653,7 @@ const AddFacilityDialog = () => {
                       ]}
                       control={form.control}
                       label="Wellness Sub-type"
-                      className="bg-white! border-slate-200"
+                      className="bg-white! border-slate-200 dark:border-slate-700"
                     />
                   ) : (
                     <CustomInput
@@ -678,7 +678,7 @@ const AddFacilityDialog = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center justify-between space-x-2">
                     <div className="space-y-0.5">
                       <Label
@@ -709,7 +709,7 @@ const AddFacilityDialog = () => {
                       { label: "Faith-Based", value: "faith" },
                     ]}
                     control={form.control}
-                    className="bg-white! border-slate-200"
+                    className="bg-white! border-slate-200 dark:border-slate-700"
                   />
                 </div>
 
@@ -857,10 +857,10 @@ const AddFacilityDialog = () => {
 
             {step === 2 && (
               <>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="card-title text-slate-900">
+                      <h3 className="card-title text-slate-900 dark:text-slate-100">
                         Facility Gallery
                       </h3>
                       <p className="text-xs text-muted-foreground">
@@ -869,7 +869,7 @@ const AddFacilityDialog = () => {
                     </div>
                     <Badge
                       variant="outline"
-                      className="bg-white border-emerald-200 text-emerald-700"
+                      className="bg-white dark:bg-slate-800 border-emerald-200 text-emerald-700 dark:text-emerald-400"
                     >
                       {isEditMode ? "Manage Mode" : "Initial Upload"}
                     </Badge>
@@ -881,7 +881,7 @@ const AddFacilityDialog = () => {
 
                       if (hasNoImages) {
                         return (
-                          <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-white/50">
+                          <div className="col-span-full py-10 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-white/50 dark:bg-slate-800/50">
                             <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
                             <p className="text-sm text-slate-400">
                               No images yet
@@ -928,7 +928,7 @@ const AddFacilityDialog = () => {
                                   "p-2 rounded-full transition-all hover:scale-110",
                                   isFeatured
                                     ? "bg-emerald-500 text-white"
-                                    : "bg-white text-slate-600",
+                                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300",
                                 )}
                               >
                                 <Star
@@ -959,7 +959,7 @@ const AddFacilityDialog = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-700 font-semibold">
+                  <Label className="text-slate-700 dark:text-slate-300 font-semibold">
                     {isEditMode ? "Add More Photos" : "Upload Photos"}
                   </Label>
                   <ImageDropZone

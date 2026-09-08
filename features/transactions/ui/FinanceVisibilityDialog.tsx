@@ -57,9 +57,9 @@ export default function FinanceVisibilityDialog({ open, onOpenChange }: FinanceV
           {Object.entries(FINANCE_METRIC_LABELS).map(([key, label]) => (
             <label
               key={key}
-              className="flex items-center justify-between border border-slate-100 rounded-xl p-3 cursor-pointer hover:bg-slate-50"
+              className="flex items-center justify-between border border-slate-100 dark:border-slate-800 rounded-xl p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900"
             >
-              <span className="text-xs font-bold text-slate-700">{label}</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{label}</span>
               <input
                 type="checkbox"
                 checked={overrides[key] ?? serverValues[key] ?? true}

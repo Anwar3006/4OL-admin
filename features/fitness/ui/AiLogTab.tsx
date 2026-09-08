@@ -105,11 +105,11 @@ const AiLogTab = () => {
           <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
             Monthly AI Budget
           </div>
-          <div className="text-2xl font-black text-slate-800">
+          <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
             ${budgetUsed.toFixed(2)}
             <span className="text-sm font-bold text-slate-400"> / ${MONTHLY_BUDGET_USD}</span>
           </div>
-          <div className="mt-2 w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${budgetPct > 80 ? "bg-red-500" : "bg-emerald-500"}`}
               style={{ width: `${budgetPct}%` }}
@@ -121,10 +121,10 @@ const AiLogTab = () => {
         </div>
 
         {[
-          { label: "Total Calls", value: totals?.calls, color: "text-blue-600", icon: "📞" },
-          { label: "Successful", value: totals?.success, color: "text-emerald-700", icon: "✅" },
-          { label: "Failed", value: totals?.errors, color: "text-red-600", icon: "⚠️" },
-          { label: "Total Tokens", value: totals?.tokens, color: "text-purple-600", icon: "🧩" },
+          { label: "Total Calls", value: totals?.calls, color: "text-blue-600 dark:text-blue-400", icon: "📞" },
+          { label: "Successful", value: totals?.success, color: "text-emerald-700 dark:text-emerald-400", icon: "✅" },
+          { label: "Failed", value: totals?.errors, color: "text-red-600 dark:text-red-400", icon: "⚠️" },
+          { label: "Total Tokens", value: totals?.tokens, color: "text-purple-600 dark:text-purple-400", icon: "🧩" },
         ].map((kpi) => (
           <div key={kpi.label} className="card">
             <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
@@ -142,13 +142,13 @@ const AiLogTab = () => {
         {models.map((model) => (
           <div
             key={model.model_name}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300"
           >
-            <span className="font-black text-slate-800">{model.model_name}</span>
+            <span className="font-black text-slate-800 dark:text-slate-200">{model.model_name}</span>
             <span className="text-slate-400">·</span>
             <span>{model.calls.toLocaleString()} calls</span>
             <span className="text-slate-400">·</span>
-            <span className="text-emerald-700">${Number(model.estimated_cost).toFixed(2)}</span>
+            <span className="text-emerald-700 dark:text-emerald-400">${Number(model.estimated_cost).toFixed(2)}</span>
           </div>
         ))}
         {!isLoading && models.length === 0 && (
@@ -159,7 +159,7 @@ const AiLogTab = () => {
       {/* Filters + export */}
       <div className="flex flex-wrap gap-2 items-center">
         <select
-          className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-2xs font-bold uppercase tracking-widest text-slate-600 outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none"
           value={periodDays}
           onChange={(e) => setPeriodDays(Number(e.target.value))}
           aria-label="Period"
@@ -169,7 +169,7 @@ const AiLogTab = () => {
           <option value={90}>Last 90 days</option>
         </select>
         <select
-          className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-2xs font-bold uppercase tracking-widest text-slate-600 outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as (typeof STATUS_FILTERS)[number])}
           aria-label="Status filter"
@@ -181,7 +181,7 @@ const AiLogTab = () => {
           ))}
         </select>
         <select
-          className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-2xs font-bold uppercase tracking-widest text-slate-600 outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none"
           value={modelFilter}
           onChange={(e) => setModelFilter(e.target.value)}
           aria-label="Model filter"
@@ -194,7 +194,7 @@ const AiLogTab = () => {
           ))}
         </select>
         <button
-          className="h-9 px-4 rounded-xl border border-slate-200 bg-white text-2xs font-black uppercase tracking-widest text-slate-600 hover:border-emerald-500 hover:text-emerald-700 transition-all"
+          className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all"
           onClick={exportCsv}
         >
           📥 Export
@@ -202,10 +202,10 @@ const AiLogTab = () => {
       </div>
 
       {/* Log table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-x-auto shadow-sm">
         <table className="w-full text-left min-w-[900px]">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-100">
+            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
               {["Date", "User", "Model", "Prompt", "Tokens", "Cost", "Latency", "Status", ""].map(
                 (h) => (
                   <th
@@ -228,7 +228,7 @@ const AiLogTab = () => {
             )}
             {!isLoading && isError && (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-sm text-red-600">
+                <td colSpan={9} className="py-10 text-center text-sm text-red-600 dark:text-red-400">
                   Failed to load the AI log. Try refreshing the page.
                 </td>
               </tr>
@@ -241,21 +241,21 @@ const AiLogTab = () => {
               </tr>
             )}
             {filtered.map((row) => (
-              <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                <td className="px-4 py-3 text-xs font-semibold text-slate-600 whitespace-nowrap">
+              <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                <td className="px-4 py-3 text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                   {formatDate(row.created_at)}
                 </td>
-                <td className="px-4 py-3 text-xs font-bold text-slate-700">
+                <td className="px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-300">
                   {row.user_name || (row.user_id ? `User ${row.user_id.slice(0, 8)}` : "System")}
                 </td>
-                <td className="px-4 py-3 text-xs font-mono text-slate-600">{row.model_name}</td>
+                <td className="px-4 py-3 text-xs font-mono text-slate-600 dark:text-slate-300">{row.model_name}</td>
                 <td className="px-4 py-3 text-xs text-slate-500 max-w-[220px] truncate">
                   {row.prompt_snippet || "—"}
                 </td>
-                <td className="px-4 py-3 text-xs font-bold text-slate-700">
+                <td className="px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-300">
                   {(row.token_usage ?? 0).toLocaleString()}
                 </td>
-                <td className="px-4 py-3 text-xs font-bold text-emerald-700">
+                <td className="px-4 py-3 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   ${Number(row.estimated_cost ?? 0).toFixed(3)}
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-500">
@@ -265,10 +265,10 @@ const AiLogTab = () => {
                   <span
                     className={`text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
                       row.status === "success"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                        ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
                         : row.status === "timeout"
-                          ? "bg-amber-50 text-amber-700 border-amber-100"
-                          : "bg-red-50 text-red-700 border-red-100"
+                          ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
+                          : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-100 dark:border-red-500/30"
                     }`}
                   >
                     {row.status}
@@ -277,7 +277,7 @@ const AiLogTab = () => {
                 <td className="px-4 py-3 text-right">
                   {row.status !== "success" && (
                     <button
-                      className="text-2xs font-black uppercase tracking-widest text-blue-600 hover:underline"
+                      className="text-2xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:underline"
                       onClick={() => handleRetry(row)}
                     >
                       Retry

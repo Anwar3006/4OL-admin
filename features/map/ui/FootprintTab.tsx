@@ -118,7 +118,7 @@ const FootprintTab = () => {
                       className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: getColorForId(collector.user_id) }}
                     />
-                    <span className="text-xs font-black text-slate-800">{name}</span>
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">{name}</span>
                   </span>
                   <span className={cn("badge text-3xs uppercase", GPS_BADGES[collector.gps_status])}>
                     GPS {collector.gps_status}
@@ -150,7 +150,7 @@ const FootprintTab = () => {
               Activity
             </label>
             <select
-              className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-600 font-medium"
+              className="px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium"
               value={activityFilter}
               onChange={(e) => {
                 setActivityFilter(e.target.value);
@@ -168,7 +168,7 @@ const FootprintTab = () => {
               Region
             </label>
             <input
-              className="px-3 py-2 text-xs border border-slate-200 rounded-lg w-40"
+              className="px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg w-40"
               placeholder="Filter by region…"
               value={regionFilter}
               onChange={(e) => {
@@ -183,7 +183,7 @@ const FootprintTab = () => {
             </label>
             <input
               type="date"
-              className="px-3 py-2 text-xs border border-slate-200 rounded-lg"
+              className="px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg"
               value={dateFrom}
               onChange={(e) => {
                 setDateFrom(e.target.value);
@@ -197,7 +197,7 @@ const FootprintTab = () => {
             </label>
             <input
               type="date"
-              className="px-3 py-2 text-xs border border-slate-200 rounded-lg"
+              className="px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg"
               value={dateTo}
               onChange={(e) => {
                 setDateTo(e.target.value);
@@ -221,7 +221,7 @@ const FootprintTab = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
+              <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 {["Point", "Collector", "Region", "Area / District", "GPS Coordinates", "Facility Visited", "Activity", "Timestamp"].map(
                   (h) => (
                     <th
@@ -249,12 +249,12 @@ const FootprintTab = () => {
                 </tr>
               ) : (
                 footprints.map((fp) => (
-                  <tr key={fp.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td className="px-4 py-3 font-black text-slate-700">
+                  <tr key={fp.id} className="border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <td className="px-4 py-3 font-black text-slate-700 dark:text-slate-300">
                       {footprintDisplayId(fp.id)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="flex items-center gap-1.5 font-semibold text-slate-600">
+                      <span className="flex items-center gap-1.5 font-semibold text-slate-600 dark:text-slate-300">
                         <span
                           className="h-2 w-2 rounded-full shrink-0"
                           style={{ backgroundColor: getColorForId(fp.collector_id) }}
@@ -263,14 +263,14 @@ const FootprintTab = () => {
                           fp.collector_id.slice(0, 8)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 capitalize text-slate-600">{fp.region || "—"}</td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 capitalize text-slate-600 dark:text-slate-300">{fp.region || "—"}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {[fp.area, fp.district].filter(Boolean).join(" · ") || "—"}
                     </td>
                     <td className="px-4 py-3 font-mono text-2xs text-slate-500">
                       {fp.latitude.toFixed(5)}, {fp.longitude.toFixed(5)}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {fp.facility?.facility_name || "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -288,7 +288,7 @@ const FootprintTab = () => {
 
         {/* Pagination */}
         {meta && meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 dark:border-slate-800">
             <span className="text-2xs font-semibold text-slate-400">
               {meta.total.toLocaleString()} points · page {meta.page}/{meta.totalPages}
             </span>

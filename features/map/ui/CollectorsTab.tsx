@@ -60,7 +60,7 @@ const CollectorsTab = () => {
         header: "Collector",
         cell: ({ row }: any) => (
           <div className="flex flex-col min-w-[160px]">
-            <span className="font-black text-slate-800 text-xs">
+            <span className="font-black text-slate-800 dark:text-slate-200 text-xs">
               {collectorDisplayId(row.original.id)}
             </span>
             <span className="text-2xs text-slate-500 font-semibold mt-0.5">
@@ -77,7 +77,7 @@ const CollectorsTab = () => {
         accessorKey: "assigned_region",
         header: "Assigned Region",
         cell: ({ row }: any) => (
-          <span className="text-xs font-semibold text-slate-600 capitalize">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 capitalize">
             {row.original.assigned_region || "—"}
           </span>
         ),
@@ -95,7 +95,7 @@ const CollectorsTab = () => {
         accessorKey: "footprint_points",
         header: "Total Footprint Pts",
         cell: ({ row }: any) => (
-          <span className="text-xs font-black text-slate-700">
+          <span className="text-xs font-black text-slate-700 dark:text-slate-300">
             {(row.original.footprint_points ?? 0).toLocaleString()}
           </span>
         ),
@@ -196,7 +196,7 @@ const CollectorsTab = () => {
                 Assigned Region
               </label>
               <select
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
                 value={newRegion}
                 onChange={(e) => setNewRegion(e.target.value)}
               >
@@ -213,7 +213,7 @@ const CollectorsTab = () => {
                 Notes
               </label>
               <textarea
-                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg"
                 rows={2}
                 value={newNotes}
                 onChange={(e) => setNewNotes(e.target.value)}
@@ -238,7 +238,7 @@ const CollectorsTab = () => {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <select
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white"
+              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800"
               value={editRegion}
               onChange={(e) => setEditRegion(e.target.value)}
             >

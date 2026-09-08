@@ -54,8 +54,8 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          <div className="card bg-slate-50/60">
-            <div className="font-black text-sm text-slate-800">{route.name}</div>
+          <div className="card bg-slate-50/60 dark:bg-slate-900/60">
+            <div className="font-black text-sm text-slate-800 dark:text-slate-200">{route.name}</div>
             <div className="text-xs text-slate-500 mt-1 capitalize">
               {route.category} · {route.difficulty} ·{" "}
               {route.distance_km ? `${route.distance_km} km` : "no distance"} ·{" "}
@@ -67,10 +67,10 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
                 <div className="mt-2 badge badge-amber text-3xs font-black uppercase">
                   ⚠️ No GPS track — pin falls back to region center
                 </div>
-                <label className="flex items-center gap-2 mt-2 text-xs font-semibold text-slate-600">
+                <label className="flex items-center gap-2 mt-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <input
                     type="checkbox"
-                    className="rounded border-slate-300"
+                    className="rounded border-slate-300 dark:border-slate-600"
                     checked={gpsAcknowledged}
                     onChange={(e) => setGpsAcknowledged(e.target.checked)}
                   />
@@ -94,8 +94,8 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
                 className={cn(
                   "border rounded-xl px-3 py-2.5 text-xs font-bold transition-all",
                   routeClass === "official"
-                    ? "border-emerald-400 bg-emerald-50 text-emerald-800"
-                    : "border-slate-200 text-slate-500 hover:bg-slate-50",
+                    ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                    : "border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900",
                 )}
                 onClick={() => setRouteClass("official")}
               >
@@ -105,8 +105,8 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
                 className={cn(
                   "border rounded-xl px-3 py-2.5 text-xs font-bold transition-all",
                   routeClass === "community"
-                    ? "border-emerald-400 bg-emerald-50 text-emerald-800"
-                    : "border-slate-200 text-slate-500 hover:bg-slate-50",
+                    ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                    : "border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900",
                 )}
                 onClick={() => setRouteClass("community")}
               >
@@ -122,7 +122,7 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
             <input
               type="number"
               min={0}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg"
               value={fitcoins}
               onChange={(e) => setFitcoins(parseInt(e.target.value || "0", 10))}
             />
@@ -133,7 +133,7 @@ const VerifyOutdoorRouteDialog = ({ route, onClose }: VerifyOutdoorRouteDialogPr
               Verification Note
             </label>
             <textarea
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg"
               rows={3}
               placeholder="Reason for approval/rejection, safety observations…"
               value={note}

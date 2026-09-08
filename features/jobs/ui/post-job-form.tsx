@@ -88,14 +88,14 @@ const PostJobForm = () => {
   };
 
   const inputClass =
-    "w-full h-9 px-3 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
+    "w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none";
   const labelClass =
     "text-3xs font-black uppercase tracking-widest text-slate-400 mb-1 block";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-4">
       <div>
-        <h2 className="text-lg font-black text-slate-900">📝 Post a Job</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">📝 Post a Job</h2>
         <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
           Draft stays private · Submit for Review enters the approval queue
         </p>
@@ -265,7 +265,7 @@ const PostJobForm = () => {
         <div className="md:col-span-2">
           <label className={labelClass}>Description</label>
           <textarea
-            className="w-full min-h-[90px] px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+            className="w-full min-h-[90px] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
             placeholder="Role overview, duties, working hours..."
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
@@ -274,7 +274,7 @@ const PostJobForm = () => {
         <div className="md:col-span-2">
           <label className={labelClass}>Requirements (one per line)</label>
           <textarea
-            className="w-full min-h-[70px] px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
+            className="w-full min-h-[70px] px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:ring-2 focus:ring-emerald-500/20 outline-none"
             placeholder={"Valid NMC licence\n2+ years clinical experience"}
             value={form.requirements}
             onChange={(e) => set("requirements", e.target.value)}
@@ -282,7 +282,7 @@ const PostJobForm = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
         <button
           className="btn btn-secondary btn-sm disabled:opacity-40"
           disabled={postJob.isPending || !form.facility_id || !form.title.trim()}

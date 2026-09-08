@@ -74,8 +74,8 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
             onClick={() => setWardFilter(type)}
             className={`px-3 py-1 rounded-full text-2xs font-black uppercase tracking-widest border transition-all ${
               wardFilter === type
-                ? "bg-emerald-700 text-white border-emerald-700"
-                : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300"
+                ? "bg-emerald-700 text-white border-emerald-700 dark:border-emerald-400"
+                : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-emerald-300"
             }`}
           >
             {type === "all" ? "All" : WARD_LABELS[type]}
@@ -102,10 +102,10 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-baseline justify-between text-sm">
-                    <span className="font-black text-slate-800">{summary.available} free</span>
+                    <span className="font-black text-slate-800 dark:text-slate-200">{summary.available} free</span>
                     <span className="text-xs text-slate-500">{summary.occupied}/{summary.total} occupied</span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                     <div
                       className={`h-full rounded-full ${occupancyPct >= 90 ? "bg-red-500" : occupancyPct >= 70 ? "bg-amber-400" : "bg-emerald-500"}`}
                       style={{ width: `${occupancyPct}%` }}
@@ -137,9 +137,9 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
             ) : (
               <div className="space-y-3">
                 {alerts.slice(0, 6).map((alert: any) => (
-                  <div key={alert.id} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-3">
+                  <div key={alert.id} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
                     <div>
-                      <div className="text-xs font-black uppercase tracking-wide text-slate-800">
+                      <div className="text-xs font-black uppercase tracking-wide text-slate-800 dark:text-slate-200">
                         {alert.bed_tracker_facilities?.facility_profile?.facility_name ?? "Facility"} —{" "}
                         {String(alert.alert_type ?? "capacity").replaceAll("_", " ")}
                       </div>
@@ -183,7 +183,7 @@ export default function LiveOverviewTab({ data, loading }: BedTrackerTabProps) {
                     <TableRow key={ward.id}>
                       <TableCell className="font-bold">{facilityName(ward)}</TableCell>
                       <TableCell>{WARD_LABELS[ward.ward_type] ?? ward.ward_type}</TableCell>
-                      <TableCell className="font-black text-emerald-700">{ward.available_beds}</TableCell>
+                      <TableCell className="font-black text-emerald-700 dark:text-emerald-400">{ward.available_beds}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

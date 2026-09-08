@@ -20,16 +20,16 @@ export default function TtcOperations({
 }) {
   const bars = ovulationBreakdown
     ? [
-        { label: "Positive (LH surge)", value: Number(ovulationBreakdown.positive ?? 0), className: "bg-emerald-500", text: "text-emerald-600" },
-        { label: "Negative", value: Number(ovulationBreakdown.negative ?? 0), className: "bg-blue-500", text: "text-blue-600" },
-        { label: "Invalid / unclear", value: Number(ovulationBreakdown.invalid ?? 0), className: "bg-amber-500", text: "text-amber-600" },
+        { label: "Positive (LH surge)", value: Number(ovulationBreakdown.positive ?? 0), className: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
+        { label: "Negative", value: Number(ovulationBreakdown.negative ?? 0), className: "bg-blue-500", text: "text-blue-600 dark:text-blue-400" },
+        { label: "Invalid / unclear", value: Number(ovulationBreakdown.invalid ?? 0), className: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" },
         { label: "Device / offline sync", value: Number(ovulationBreakdown.deviceOrSync ?? 0), className: "bg-slate-400", text: "text-slate-500" },
       ]
     : [];
   const totalTests = Math.max(1, Number(ovulationBreakdown?.total ?? 0));
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 text-2xs text-purple-900">
+      <div className="rounded-lg border border-purple-200 bg-purple-50 dark:bg-purple-500/15 p-3 text-2xs text-purple-900">
         <strong>Plasence TTC mode — aggregates and masked metadata only.</strong>{" "}
         Intimate per-user details (sexual activity, encrypted notes) are never
         exposed here. Copy stays educational and non-diagnostic: "likely",
@@ -77,16 +77,16 @@ export default function TtcOperations({
           <div className="space-y-3 p-4">
             {checklistReadiness.map((item) => (
               <div key={item.id} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 truncate text-xs text-slate-700">
+                <span className="w-56 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
                   {item.title}
                 </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                   <div
                     className="h-2 rounded-full bg-purple-500"
                     style={{ width: `${Math.min(100, Number(item.donePercent ?? 0))}%` }}
                   />
                 </div>
-                <span className="w-12 text-right text-2xs font-semibold text-purple-700">
+                <span className="w-12 text-right text-2xs font-semibold text-purple-700 dark:text-purple-400">
                   {item.donePercent ?? "0%"}
                 </span>
               </div>
@@ -113,10 +113,10 @@ export default function TtcOperations({
           <div className="space-y-3 p-4">
             {bars.map((bar) => (
               <div key={bar.label} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 truncate text-xs text-slate-700">
+                <span className="w-56 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
                   {bar.label}
                 </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                   <div
                     className={cn("h-2 rounded-full", bar.className)}
                     style={{ width: `${Math.min(100, (bar.value / totalTests) * 100)}%` }}
@@ -152,7 +152,7 @@ export default function TtcOperations({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b bg-slate-50">
+              <tr className="border-b bg-slate-50 dark:bg-slate-900">
                 <th className="p-3">Insight Type</th>
                 <th className="p-3">Generated (7d)</th>
                 <th className="p-3">Avg Confidence</th>

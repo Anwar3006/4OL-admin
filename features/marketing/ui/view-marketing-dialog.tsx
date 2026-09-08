@@ -140,8 +140,8 @@ export function ViewMarketingDialog() {
                     variant="outline"
                     className={`px-3 py-1 text-2xs font-black uppercase tracking-[0.2em] shadow-sm ${
                       campaign.status === "live"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                        : "bg-amber-50 text-amber-700 border-amber-100"
+                        ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+                        : "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
                     }`}
                   >
                     {MarketingStatusMap[campaign.status]}

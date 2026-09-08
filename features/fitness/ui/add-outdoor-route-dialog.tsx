@@ -222,9 +222,9 @@ const AddOutdoorRouteDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
-          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-slate-800">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
+          <DialogTitle className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200">
             🗺️ {isEditMode ? "Edit Outdoor Route" : "Add Outdoor Route"}
           </DialogTitle>
           <p className="text-sm text-slate-500">
@@ -235,7 +235,7 @@ const AddOutdoorRouteDialog = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="p-6 space-y-5 bg-white"
+            className="p-6 space-y-5 bg-white dark:bg-slate-800"
           >
             <FormField
               control={form.control}
@@ -264,7 +264,7 @@ const AddOutdoorRouteDialog = () => {
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         {["Running", "Walking", "Cycling", "Hiking"].map(
                           (t) => (
                             <SelectItem key={t} value={t}>
@@ -289,7 +289,7 @@ const AddOutdoorRouteDialog = () => {
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         <SelectItem value="low">Beginner</SelectItem>
                         <SelectItem value="medium">Intermediate</SelectItem>
                         <SelectItem value="high">Advanced</SelectItem>
@@ -369,7 +369,7 @@ const AddOutdoorRouteDialog = () => {
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         {GHANA_REGIONS_ENUM.map((r) => (
                           <SelectItem key={r} value={r.toUpperCase()}>
                             {r.toUpperCase()}
@@ -394,7 +394,7 @@ const AddOutdoorRouteDialog = () => {
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-white dark:bg-slate-800">
                       {["Paved", "Trail", "Mixed", "Sand"].map((t) => (
                         <SelectItem key={t} value={t}>
                           {t}
@@ -436,7 +436,7 @@ const AddOutdoorRouteDialog = () => {
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-slate-800">
                         <SelectItem value="approved">
                           Official Business Verified
                         </SelectItem>
@@ -467,8 +467,8 @@ const AddOutdoorRouteDialog = () => {
               control={form.control}
               name="features"
               render={() => (
-                <FormItem className="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                  <div className="font-bold text-sm text-slate-800 mb-3">
+                <FormItem className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-900">
+                  <div className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-3">
                     📋 Safety & Features Tags
                   </div>
                   <div className="grid grid-cols-3 gap-3">
@@ -565,20 +565,20 @@ const AddOutdoorRouteDialog = () => {
                 onChange={handleGpxFileChange}
               />
               {gpxResult ? (
-                <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50 flex items-start justify-between gap-3">
+                <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50 dark:bg-emerald-500/15 flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
                     <div>
-                      <div className="text-sm font-bold text-emerald-800">
+                      <div className="text-sm font-bold text-emerald-800 dark:text-emerald-400">
                         {gpxFileName}
                       </div>
-                      <div className="text-xs text-emerald-700 mt-0.5">
+                      <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
                         {gpxResult.pointCount.toLocaleString()} points parsed •{" "}
                         {gpxResult.distanceKm.toFixed(2)} km
                       </div>
                       <button
                         type="button"
-                        className="text-xs font-semibold text-emerald-700 underline mt-1"
+                        className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 underline mt-1"
                         onClick={() => gpxInputRef.current?.click()}
                       >
                         Replace file
@@ -587,7 +587,7 @@ const AddOutdoorRouteDialog = () => {
                   </div>
                   <button
                     type="button"
-                    className="text-slate-400 hover:text-slate-600"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     onClick={() => {
                       setGpxResult(null);
                       setGpxFileName(null);
@@ -597,12 +597,12 @@ const AddOutdoorRouteDialog = () => {
                   </button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center bg-slate-50">
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 text-center bg-slate-50 dark:bg-slate-900">
                   <div className="text-2xl mb-2">🗺️</div>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-8 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                    className="h-8 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
                     onClick={() => gpxInputRef.current?.click()}
                   >
                     <UploadCloud className="w-3 h-3 mr-2" /> Upload GPX Route File
@@ -625,7 +625,7 @@ const AddOutdoorRouteDialog = () => {
                 type="button"
                 variant="outline"
                 onClick={close}
-                className="rounded-xl border-slate-200 min-w-[120px]"
+                className="rounded-xl border-slate-200 dark:border-slate-700 min-w-[120px]"
               >
                 Cancel
               </Button>

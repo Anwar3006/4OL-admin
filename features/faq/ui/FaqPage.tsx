@@ -123,13 +123,13 @@ const FAQPage = () => {
 
       <div className="fbar flex flex-wrap gap-2 items-center mb-6">
         <input
-          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
+          className="flex-1 min-w-[240px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
           placeholder="🔍 Search FAQs by keyword, topic, category..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white outline-none"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800 outline-none"
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
         >

@@ -125,7 +125,7 @@ export default function BulkUserActionsDialog({
 
           <div className="flex items-center gap-2">
             <select
-              className="h-9 flex-1 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+              className="h-9 flex-1 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
               value={plan}
               onChange={(event) => setPlan(event.target.value)}
             >
@@ -145,7 +145,7 @@ export default function BulkUserActionsDialog({
           </div>
 
           <button
-            className="btn btn-secondary w-full justify-center text-red-600"
+            className="btn btn-secondary w-full justify-center text-red-600 dark:text-red-400"
             disabled={busy}
             onClick={runSuspend}
           >

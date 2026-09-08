@@ -56,7 +56,7 @@ const TopRatedTab = () => {
   return (
     <div className="space-y-4">
       {!canFeature && (
-        <div className="bg-purple-50 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-bold text-purple-800">
+        <div className="bg-purple-50 dark:bg-purple-500/15 border border-purple-200 rounded-2xl px-4 py-3 text-xs font-bold text-purple-800">
           🛡️ Super Admin only — Top Rated curation is gated behind the
           facilities.feature permission. You can view the leaderboard but not
           edit it.
@@ -84,7 +84,7 @@ const TopRatedTab = () => {
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm divide-y divide-slate-100">
         <div className="px-5 py-4">
           <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
             ⭐ Top Rated Leaderboard
@@ -104,11 +104,11 @@ const TopRatedTab = () => {
               key={row.id}
               className="flex items-center gap-4 px-5 py-3"
             >
-              <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-xs font-black">
+              <span className="w-8 h-8 shrink-0 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-800 flex items-center justify-center text-xs font-black">
                 #{row.top_rated_rank ?? index + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-slate-800 truncate">
+                <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">
                   {row.facility_name}
                 </p>
                 <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">
@@ -158,13 +158,13 @@ const TopRatedTab = () => {
       </div>
 
       {canFeature && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
               Add to Top Rated
             </p>
             {isFull && (
-              <span className="text-3xs font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1">
+              <span className="text-3xs font-black uppercase tracking-widest bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/30 rounded-full px-3 py-1">
                 Leaderboard full — remove a slot first
               </span>
             )}
@@ -181,7 +181,7 @@ const TopRatedTab = () => {
                   className="flex items-center gap-4 px-5 py-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-slate-800 truncate">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">
                       {row.facility_name}
                     </p>
                     <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest truncate">

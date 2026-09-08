@@ -82,7 +82,7 @@ export function AssignScoutDialog({
           <div className="grid gap-2">
             <Label>Assign to collector</Label>
             <select
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={collectorId}
               onChange={(event) => setCollectorId(event.target.value)}
             >
@@ -107,7 +107,7 @@ export function AssignScoutDialog({
           <div className="grid gap-2">
             <Label>Priority (SLA)</Label>
             <select
-              className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={priority}
               onChange={(event) => setPriority(event.target.value as typeof priority)}
             >

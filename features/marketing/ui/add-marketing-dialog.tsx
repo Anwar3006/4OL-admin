@@ -365,7 +365,7 @@ const AddMarketingDialog = () => {
                           "px-3 py-1.5 rounded-full text-2xs font-black uppercase tracking-widest border transition-all",
                           selected
                             ? "bg-emerald-600 text-white border-emerald-600"
-                            : "bg-white text-slate-500 border-slate-200 hover:border-emerald-300",
+                            : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-emerald-300",
                         )}
                       >
                         {CHANNEL_LABELS[channelValue] ?? channelValue}
@@ -440,7 +440,7 @@ const AddMarketingDialog = () => {
                 />
 
                 {config && (
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg space-y-3">
                     {config.type === "single" ? (
                       <CustomInput
                         type="text"
@@ -518,12 +518,12 @@ const AddMarketingDialog = () => {
 
                     {selectedCta ? (
                       <div>
-                        <span className="inline-block bg-white text-black px-4 py-2 rounded text-sm font-medium shadow-sm">
+                        <span className="inline-block bg-white dark:bg-slate-800 text-black px-4 py-2 rounded text-sm font-medium shadow-sm">
                           {MARKETING_CTA_OPTIONS.find(opt => opt.value === selectedCta)?.label || "Call to Action"}
                         </span>
                       </div>
                     ) : (
-                      <div className="h-10 w-32 bg-white/20 rounded animate-pulse" />
+                      <div className="h-10 w-32 bg-white/20 dark:bg-slate-800/20 rounded animate-pulse" />
                     )}
                     
                     {formValues.organization && (
@@ -537,11 +537,11 @@ const AddMarketingDialog = () => {
 
                   {/* Right side: Media */}
                   <div className="flex items-center justify-center">
-                    <div className="w-full aspect-square rounded shadow-lg overflow-hidden bg-white/10 relative">
+                    <div className="w-full aspect-square rounded shadow-lg overflow-hidden bg-white/10 dark:bg-slate-800/10 relative">
                       {uploadedImagePath ? (
                         <>
                           {isImageLoading && (
-                            <div className="absolute inset-0 z-10 animate-pulse bg-white/5 flex items-center justify-center">
+                            <div className="absolute inset-0 z-10 animate-pulse bg-white/5 dark:bg-slate-800/5 flex items-center justify-center">
                               <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                             </div>
                           )}
@@ -583,7 +583,7 @@ const AddMarketingDialog = () => {
                 </div>
               </Card>
 
-              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm text-emerald-800">
+              <div className="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-100 dark:border-emerald-500/30 rounded-lg p-4 text-sm text-emerald-800 dark:text-emerald-400">
                 <p className="font-semibold mb-1 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
                   Real-time Preview
@@ -594,9 +594,9 @@ const AddMarketingDialog = () => {
               </div>
 
               {(formValues.startDate || formValues.endDate) && (
-                <div className="flex items-center gap-3 text-xs bg-gray-50 p-3 rounded-md border border-gray-100">
-                  <Calendar className="w-4 h-4 text-emerald-600" />
-                  <span className="text-gray-600 font-medium">
+                <div className="flex items-center gap-3 text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded-md border border-gray-100">
+                  <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-gray-600 dark:text-gray-300 font-medium">
                     Schedule: {formValues.startDate ? formatDate(formValues.startDate) : "TBD"} 
                     <span className="mx-2 text-gray-300">|</span>
                     {formValues.endDate ? formatDate(formValues.endDate) : "TBD"}

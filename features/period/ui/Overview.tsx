@@ -94,7 +94,7 @@ export default function Overview({ payload }: { payload: any }) {
             {(payload.symptoms ?? []).map((item: Row) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs"
+                className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 text-xs"
               >
                 <span>{item.name}</span>
                 <strong>{item.count}</strong>
@@ -109,13 +109,13 @@ export default function Overview({ payload }: { payload: any }) {
         </div>
       </div>
       <div className="card p-4">
-        <h2 className="text-xs font-semibold text-slate-900">
+        <h2 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
           Metric definitions
         </h2>
         <dl className="mt-3 grid gap-3 md:grid-cols-2">
           {Object.entries(payload.definitions ?? {}).map(([key, value]) => (
             <div key={key}>
-              <dt className="text-2xs font-semibold capitalize text-slate-700">
+              <dt className="text-2xs font-semibold capitalize text-slate-700 dark:text-slate-300">
                 {key.replace(/([A-Z])/g, " $1")}
               </dt>
               <dd className="text-2xs text-slate-500">{String(value)}</dd>

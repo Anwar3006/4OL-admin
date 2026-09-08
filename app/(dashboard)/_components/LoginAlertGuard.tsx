@@ -203,8 +203,8 @@ export default function LoginAlertGuard() {
         }}
       >
         <DialogHeader>
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-            <ShieldAlert className="h-6 w-6 text-red-600" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/20">
+            <ShieldAlert className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
           <DialogTitle className="text-center">
             {expired ? "Timer elapsed" : "Another device just signed in"}
@@ -218,7 +218,7 @@ export default function LoginAlertGuard() {
 
         {alert && (
           <div className="space-y-3">
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+            <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-500/15 p-3 text-sm text-red-900 dark:text-red-400">
               <div>
                 <strong>Device:</strong> {describeDevice(alert.user_agent)}
               </div>
@@ -235,7 +235,7 @@ export default function LoginAlertGuard() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                   <span>Auto-keeps the other device signed in</span>
-                  <span className="font-mono font-bold text-red-600">
+                  <span className="font-mono font-bold text-red-600 dark:text-red-400">
                     {remaining}s
                   </span>
                 </div>

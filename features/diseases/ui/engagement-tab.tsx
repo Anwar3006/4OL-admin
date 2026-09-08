@@ -34,8 +34,8 @@ const Leaderboard = ({
   rows: { id: string; name: string; value: number; contentType?: string }[];
   unit: string;
 }) => (
-  <div className="card p-0 overflow-hidden border-slate-200">
-    <div className="px-5 py-4 border-b border-slate-100">
+  <div className="card p-0 overflow-hidden border-slate-200 dark:border-slate-700">
+    <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
       <h4 className="section-heading">
         {icon} {title}
       </h4>
@@ -51,15 +51,15 @@ const Leaderboard = ({
             <span className="text-2xs font-black text-slate-400 w-5 text-right shrink-0">
               {i + 1}.
             </span>
-            <span className="text-xs font-bold text-slate-800 truncate flex-1">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate flex-1">
               {row.name}
               {row.contentType && (
-                <span className="ml-2 rounded-full bg-slate-100 px-1.5 py-0.5 text-3xs font-black uppercase tracking-wide text-slate-500">
+                <span className="ml-2 rounded-full bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-3xs font-black uppercase tracking-wide text-slate-500">
                   {CONTENT_TYPE_LABELS[row.contentType] ?? row.contentType}
                 </span>
               )}
             </span>
-            <span className="text-xs font-black text-slate-600 shrink-0">
+            <span className="text-xs font-black text-slate-600 dark:text-slate-300 shrink-0">
               {row.value.toLocaleString()} {unit}
             </span>
           </li>
@@ -98,7 +98,7 @@ const EngagementTab = () => {
   return (
     <div className="space-y-6">
       {!pipelineLive && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-bold text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 text-xs font-bold text-amber-800">
           ℹ️ Likes/Saves counters are wired but read 0 — they populate once the
           content_engagement migration (Mapping Audit Part 4 / Epic 30.1) is
           applied. Views and review metrics below are live.
@@ -158,7 +158,7 @@ const EngagementTab = () => {
       </div>
 
       {/* 30-day trend */}
-      <div className="card p-5 border-slate-200">
+      <div className="card p-5 border-slate-200 dark:border-slate-700">
         <h4 className="section-heading mb-4">
           📊 Likes & Saves — Last 30 Days
         </h4>
@@ -220,17 +220,17 @@ const EngagementTab = () => {
 
       {/* Per-content-type engagement */}
       {pipelineLive && engagement.byType.length > 0 && (
-        <div className="card p-5 border-slate-200">
+        <div className="card p-5 border-slate-200 dark:border-slate-700">
           <h4 className="section-heading mb-4">
             💗 Engagement by Content Type
           </h4>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {engagement.byType.map((entry) => (
-              <div key={entry.type} className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div key={entry.type} className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-3">
                 <p className="text-2xs font-black uppercase tracking-widest text-slate-500">
                   {CONTENT_TYPE_LABELS[entry.type] ?? entry.type}
                 </p>
-                <p className="mt-1 text-sm font-black text-slate-800">
+                <p className="mt-1 text-sm font-black text-slate-800 dark:text-slate-200">
                   ❤️ {entry.likes.toLocaleString()}
                   <span className="mx-1.5 text-slate-300">·</span>
                   🔖 {entry.saves.toLocaleString()}
@@ -242,7 +242,7 @@ const EngagementTab = () => {
       )}
 
       {/* Category breakdown */}
-      <div className="card p-5 border-slate-200">
+      <div className="card p-5 border-slate-200 dark:border-slate-700">
         <h4 className="section-heading mb-4">
           📂 Conditions by Category
         </h4>
@@ -254,16 +254,16 @@ const EngagementTab = () => {
           <div className="space-y-2.5">
             {categoryBreakdown.slice(0, 12).map((c) => (
               <div key={c.name} className="flex items-center gap-3">
-                <span className="text-xs font-bold text-slate-600 w-40 truncate shrink-0">
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 w-40 truncate shrink-0">
                   {c.name}
                 </span>
-                <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-emerald-500"
                     style={{ width: `${(c.count / maxCategory) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs font-black text-slate-700 w-8 text-right shrink-0">
+                <span className="text-xs font-black text-slate-700 dark:text-slate-300 w-8 text-right shrink-0">
                   {c.count}
                 </span>
               </div>

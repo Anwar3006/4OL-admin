@@ -75,7 +75,7 @@ export default function PremiumUsersTab() {
         header: "Subscriber",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {displayName(row.original)}
             </span>
             <span className="text-xs text-slate-400">
@@ -211,7 +211,7 @@ export default function PremiumUsersTab() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={users}

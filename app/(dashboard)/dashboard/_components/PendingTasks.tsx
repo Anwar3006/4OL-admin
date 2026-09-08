@@ -69,7 +69,7 @@ export default function PendingTasks({
 
   return (
     <div className="card">
-      <div className="card-header border-b border-slate-100 mb-3">
+      <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-3">
         <h2 className="card-title text-sm">Admin Pending Tasks</h2>
         <span className="badge badge-blue text-3xs">
           {loading ? "Loading" : `${total} items`}
@@ -80,12 +80,12 @@ export default function PendingTasks({
           <a
             key={task.href}
             href={task.href}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800"
           >
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs bg-slate-50 text-slate-600">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300">
               {loading ? "..." : task.count}
             </div>
-            <div className="flex-1 text-xs font-bold text-slate-700">
+            <div className="flex-1 text-xs font-bold text-slate-700 dark:text-slate-300">
               {loading ? "Loading queue..." : task.label}
             </div>
             <span className={`badge badge-${task.variant} text-3xs uppercase tracking-widest`}>

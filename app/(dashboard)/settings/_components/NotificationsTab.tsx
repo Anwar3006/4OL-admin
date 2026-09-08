@@ -72,7 +72,7 @@ export default function NotificationsTab() {
 
   if (denied) {
     return (
-      <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+      <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-500/15 text-amber-900">
         <Bell className="h-4 w-4" />
         <AlertTitle>Restricted</AlertTitle>
         <AlertDescription>You need the notifications.view permission to see this tab.</AlertDescription>
@@ -83,7 +83,7 @@ export default function NotificationsTab() {
   const manageLink = (
     <Link
       href="/notifications"
-      className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:underline"
+      className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
     >
       Manage in Notifications <ArrowRight className="size-3" />
     </Link>

@@ -18,7 +18,7 @@ export default function UsersByPlan({
           <h2 className="card-title">Users by Plan</h2>
           <span className="text-slate-400 text-xs font-bold">Subscriptions</span>
         </div>
-        <div className="h-48 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center px-6 text-center text-xs text-slate-500">
+        <div className="h-48 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-6 text-center text-xs text-slate-500">
           {loading
             ? "Loading subscription metrics..."
             : "Plan distribution is awaiting real `user_subscriptions` rows."}

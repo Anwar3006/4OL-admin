@@ -138,7 +138,7 @@ export default function MedEnquiryPage() {
         <div className="text-sm font-black mb-3">📋 Medication Enquiry — Business Logic</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {BUSINESS_LOGIC.map((panel) => (
-            <div key={panel.title} className="rounded-xl bg-white/10 px-3 py-2.5">
+            <div key={panel.title} className="rounded-xl bg-white/10 dark:bg-slate-800/10 px-3 py-2.5">
               <div className="text-xs font-black mb-1">{panel.title}</div>
               <div className="text-2xs font-medium text-white/85 leading-relaxed">{panel.body}</div>
             </div>
@@ -147,15 +147,15 @@ export default function MedEnquiryPage() {
       </div>
 
       {/* Connected menus */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-        <span className="text-2xs font-black uppercase tracking-widest text-emerald-700">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-emerald-100 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-4 py-3">
+        <span className="text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
           Connected Menus:
         </span>
         {CONNECTED_MENUS.map((chip) => (
           <button
             key={chip.href}
             onClick={() => router.push(chip.href)}
-            className="h-7 px-3 rounded-full border border-emerald-200 bg-white text-2xs font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-100 transition-all"
+            className="h-7 px-3 rounded-full border border-emerald-200 bg-white dark:bg-slate-800 text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all"
           >
             {chip.label}
           </button>
@@ -209,7 +209,7 @@ export default function MedEnquiryPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
+        <TabsList className="bg-transparent border-b border-slate-200 dark:border-slate-700 h-auto p-0 flex gap-0 mb-4 justify-start overflow-x-auto no-scrollbar">
           {TabsConfig.map((tab) => (
             <TabsTrigger
               key={tab.id}

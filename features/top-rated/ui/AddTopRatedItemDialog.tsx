@@ -154,9 +154,9 @@ const AddTopRatedItemDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
+      <DialogContent className="max-w-xl overflow-y-auto max-h-[90vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Search className="h-6 w-6 text-primary" />
               Add Top Rated Item
@@ -184,7 +184,7 @@ const AddTopRatedItemDialog = () => {
                           <SelectValue placeholder="Select module" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white z-[100] shadow-md border">
+                      <SelectContent className="bg-white dark:bg-slate-800 z-[100] shadow-md border">
                         {TOP_RATED_MODULES.map((m) => (
                           <SelectItem
                             key={m}
@@ -222,7 +222,7 @@ const AddTopRatedItemDialog = () => {
                   Select Item ({searchResults?.length || 0})
                 </FormLabel>
                 {searchResults && searchResults.length > 0 ? (
-                  <div className="border border-slate-200 rounded-lg max-h-60 overflow-y-auto divide-y divide-slate-100">
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg max-h-60 overflow-y-auto divide-y divide-slate-100">
                     {searchResults.map((item) => {
                       const isSelected = selectedItem?.id === item.id;
                       return (
@@ -231,8 +231,8 @@ const AddTopRatedItemDialog = () => {
                           type="button"
                           className={`w-full p-3.5 text-left flex items-center justify-between transition-colors cursor-pointer ${
                             isSelected
-                              ? "bg-emerald-50 text-emerald-900 font-semibold"
-                              : "hover:bg-slate-50 text-slate-800"
+                              ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-900 font-semibold"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-800 dark:text-slate-200"
                           }`}
                           onClick={() => handleSelectResult(item)}
                         >
@@ -247,14 +247,14 @@ const AddTopRatedItemDialog = () => {
                             )}
                           </div>
                           {isSelected && (
-                            <Check className="h-5 w-5 text-emerald-600 flex-shrink-0 ml-2" />
+                            <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 ml-2" />
                           )}
                         </button>
                       );
                     })}
                   </div>
                 ) : !isSearching ? (
-                  <div className="border border-dashed border-slate-200 rounded-lg p-6 text-center text-slate-400 text-sm">
+                  <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-lg p-6 text-center text-slate-400 text-sm">
                     {searchTerm
                       ? "No records found matching search"
                       : "Start typing to search or choose a module"}

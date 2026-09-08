@@ -39,7 +39,7 @@ export default function AiSuggestions({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b bg-slate-50">
+            <tr className="border-b bg-slate-50 dark:bg-slate-900">
               <th className="p-3">Job</th>
               <th className="p-3">Sources</th>
               <th className="p-3">Status</th>
@@ -94,7 +94,7 @@ export default function AiSuggestions({
                   </td>
                 </tr>
                 {schedulingId === item.id && (
-                  <tr className="border-b bg-slate-50">
+                  <tr className="border-b bg-slate-50 dark:bg-slate-900">
                     <td colSpan={7} className="p-3">
                       <form
                         className="grid grid-cols-1 gap-3 md:grid-cols-5"
@@ -124,7 +124,7 @@ export default function AiSuggestions({
                             name="scheduledAt"
                             type="datetime-local"
                             required
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                           />
                         </label>
                         <label className="form-label">
@@ -132,7 +132,7 @@ export default function AiSuggestions({
                           <select
                             name="frequencyCapDays"
                             defaultValue="14"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                           >
                             <option value="7">1 per 7 days</option>
                             <option value="14">1 per 14 days</option>
@@ -144,7 +144,7 @@ export default function AiSuggestions({
                           <select
                             name="surfaceDurationWeeks"
                             defaultValue="2"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                           >
                             <option value="1">1 week</option>
                             <option value="2">2 weeks</option>
@@ -156,7 +156,7 @@ export default function AiSuggestions({
                           <select
                             name="surfaceChannel"
                             defaultValue="plasence_library"
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"
+                            className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                           >
                             <option value="plasence_library">Library — Featured</option>
                             <option value="push_digest">Push digest</option>

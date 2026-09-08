@@ -169,7 +169,7 @@ export default function SupportTab() {
         header: "Ticket",
         cell: ({ row }) => (
           <div>
-            <div className="font-black text-slate-800 font-mono text-xs">
+            <div className="font-black text-slate-800 dark:text-slate-200 font-mono text-xs">
               {ticketDisplayId(row.original.id)}
             </div>
             <div className="text-2xs text-slate-500 line-clamp-1">
@@ -185,7 +185,7 @@ export default function SupportTab() {
           const val = row.original.user_profiles;
           return (
             <div className="text-xs">
-              <div className="font-bold text-slate-700">
+              <div className="font-bold text-slate-700 dark:text-slate-300">
                 {val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown"}
               </div>
               <div className="text-slate-400">{val?.phone_number || "—"}</div>
@@ -206,7 +206,7 @@ export default function SupportTab() {
         accessorKey: "category",
         header: "Type",
         cell: ({ row }) => (
-          <span className="text-xs font-bold text-slate-600">
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
             {row.original.category || "Other"}
           </span>
         ),
@@ -217,13 +217,13 @@ export default function SupportTab() {
         cell: ({ row }) => {
           const minutes = waitMinutes(row.original);
           if (minutes === null) {
-            return <span className="text-2xs text-emerald-600 font-bold">Resolved</span>;
+            return <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold">Resolved</span>;
           }
           const urgent = minutes > WAIT_THRESHOLD_MINUTES;
           return (
             <span
               className={`text-2xs font-black px-1.5 py-0.5 rounded-md ${
-                urgent ? "text-red-600 bg-red-50" : "text-slate-500"
+                urgent ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/15" : "text-slate-500"
               }`}
             >
               {urgent ? "⚠ " : ""}
@@ -236,9 +236,9 @@ export default function SupportTab() {
         accessorKey: "assigned_to",
         header: "Agent",
         cell: ({ row }) => (
-          <span className="text-2xs font-bold text-slate-600">
+          <span className="text-2xs font-bold text-slate-600 dark:text-slate-300">
             {agentName(row.original.assigned_to) ?? (
-              <span className="text-amber-600">Unassigned</span>
+              <span className="text-amber-600 dark:text-amber-400">Unassigned</span>
             )}
           </span>
         ),
@@ -316,13 +316,13 @@ export default function SupportTab() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-8 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
+          className="flex-1 min-w-[220px] h-8 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none"
           placeholder="🔍 Search by TKT id, subject, requester..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
@@ -332,7 +332,7 @@ export default function SupportTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
         >
@@ -342,7 +342,7 @@ export default function SupportTab() {
           <option value="High">High</option>
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={agentFilter}
           onChange={(e) => setAgentFilter(e.target.value)}
         >
@@ -353,7 +353,7 @@ export default function SupportTab() {
           ))}
         </select>
         <select
-          className="h-8 px-2 rounded-lg border border-slate-200 text-xs font-medium bg-white"
+          className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -423,9 +423,9 @@ export default function SupportTab() {
               return (
                 <div
                   key={a.user_id}
-                  className="flex items-center justify-between bg-slate-50 rounded-lg px-2.5 py-1.5 border border-slate-100"
+                  className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 rounded-lg px-2.5 py-1.5 border border-slate-100 dark:border-slate-800"
                 >
-                  <span className="text-xs font-bold text-slate-700 truncate">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
                     {a.name || a.email}
                   </span>
                   <span
@@ -446,13 +446,13 @@ export default function SupportTab() {
       {/* Assign dialog (single + bulk) */}
       {assignTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 space-y-4">
-            <h3 className="text-sm font-black text-slate-800">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6 space-y-4">
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">
               Assign {assignTarget.ids.length} ticket
               {assignTarget.ids.length !== 1 ? "s" : ""}
             </h3>
             <select
-              className="h-9 w-full px-3 rounded-lg border border-slate-200 text-xs font-bold bg-white"
+              className="h-9 w-full px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold bg-white dark:bg-slate-800"
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
             >

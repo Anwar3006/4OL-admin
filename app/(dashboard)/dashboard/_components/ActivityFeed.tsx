@@ -21,11 +21,11 @@ export default function ActivityFeed({
         {!loading &&
           activities.map((activity) => (
             <div key={activity.id} className="flex gap-3 text-xs">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 {activity.action_type?.slice(0, 1).toUpperCase() || "A"}
               </div>
               <div>
-                <div className="font-bold text-slate-800">
+                <div className="font-bold text-slate-800 dark:text-slate-200">
                   {activity.action_type.replaceAll("_", " ")}
                   <span className="badge badge-blue ml-2">{activity.target_table}</span>
                 </div>

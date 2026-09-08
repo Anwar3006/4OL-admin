@@ -70,7 +70,7 @@ const WorkoutHeatmap = () => {
     data?.heatmap.find((c) => c.week === week && c.weekday === weekday)?.sessions ?? 0;
 
   const shade = (count: number) => {
-    if (count === 0) return "bg-slate-100";
+    if (count === 0) return "bg-slate-100 dark:bg-slate-800";
     const ratio = count / maxSessions;
     if (ratio <= 0.25) return "bg-emerald-200";
     if (ratio <= 0.5) return "bg-emerald-400";
@@ -79,14 +79,14 @@ const WorkoutHeatmap = () => {
   };
 
   return (
-    <Card className="border-none shadow-sm rounded-[2rem] bg-white">
+    <Card className="border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800">
       <CardHeader className="p-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <CardTitle className="text-xl font-black">
             🔥 Workout Activity Heatmap
           </CardTitle>
           <div className="flex items-center gap-2 text-3xs font-black uppercase tracking-widest text-slate-400">
-            Low <span className="w-3 h-3 rounded bg-slate-100" />
+            Low <span className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
             <span className="w-3 h-3 rounded bg-emerald-200" />
             <span className="w-3 h-3 rounded bg-emerald-400" />
             <span className="w-3 h-3 rounded bg-emerald-600" />
@@ -137,8 +137,8 @@ const WorkoutHeatmap = () => {
         )}
         {data && (
           <div className="mt-4 flex flex-wrap gap-4 text-2xs font-black uppercase tracking-widest">
-            <span className="text-emerald-700">✅ {data.this_week.completed.toLocaleString()} completed this week</span>
-            <span className="text-blue-600">🔄 {data.this_week.in_progress.toLocaleString()} in progress</span>
+            <span className="text-emerald-700 dark:text-emerald-400">✅ {data.this_week.completed.toLocaleString()} completed this week</span>
+            <span className="text-blue-600 dark:text-blue-400">🔄 {data.this_week.in_progress.toLocaleString()} in progress</span>
             <span className="text-red-500">⛔ {data.this_week.abandoned.toLocaleString()} abandoned</span>
           </div>
         )}
@@ -154,7 +154,7 @@ const ScheduleTab = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Schedule Header & KPIs */}
       <div className="grid grid-cols-1 gap-6">
-        <Card className="lg:col-span-3 border-none shadow-sm rounded-[2rem] bg-white">
+        <Card className="lg:col-span-3 border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800">
           <CardHeader className="p-8 pb-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
@@ -176,12 +176,12 @@ const ScheduleTab = () => {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search scheduled items..."
-                  className="pl-9 h-12 rounded-2xl border-slate-100 bg-slate-50 focus-visible:ring-slate-900"
+                  className="pl-9 h-12 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus-visible:ring-slate-900"
                 />
               </div>
               <Button
                 variant="outline"
-                className="h-12 rounded-2xl font-bold border-slate-200"
+                className="h-12 rounded-2xl font-bold border-slate-200 dark:border-slate-700"
               >
                 <Filter className="h-4 w-4 mr-2" /> Date Range
               </Button>
@@ -213,7 +213,7 @@ const ScheduleTab = () => {
       </div>
 
       {/* Content Calendar Table */}
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800 overflow-hidden">
         <CardHeader className="p-8 border-b border-slate-50">
           <CardTitle className="text-xl font-black">
             📅 Content Calendar
@@ -221,7 +221,7 @@ const ScheduleTab = () => {
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-slate-50">
+            <TableHeader className="bg-slate-50 dark:bg-slate-900">
               <TableRow className="border-none">
                 <TableHead className="font-black text-2xs uppercase tracking-widest px-8">
                   Content
@@ -257,7 +257,7 @@ const ScheduleTab = () => {
 
               {!isLoading && isError && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-sm text-red-600">
+                  <TableCell colSpan={6} className="py-12 text-center text-sm text-red-600 dark:text-red-400">
                     Failed to load the content schedule. Try refreshing the page.
                   </TableCell>
                 </TableRow>
@@ -276,15 +276,15 @@ const ScheduleTab = () => {
                 scheduledContent?.map((row) => (
                   <TableRow
                     key={row.id}
-                    className="hover:bg-slate-50/50 transition-colors border-slate-50"
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors border-slate-50"
                   >
-                    <TableCell className="px-8 font-bold text-slate-700">
+                    <TableCell className="px-8 font-bold text-slate-700 dark:text-slate-300">
                       {contentLabel(row)}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className="rounded-lg bg-slate-100 text-slate-600 font-bold border-none uppercase text-3xs tracking-widest px-2"
+                        className="rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-none uppercase text-3xs tracking-widest px-2"
                       >
                         {CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type}
                       </Badge>
@@ -292,17 +292,17 @@ const ScheduleTab = () => {
                     <TableCell className="text-xs font-medium text-slate-500">
                       {row.target_audience ?? "All Users"}
                     </TableCell>
-                    <TableCell className="text-xs font-bold text-slate-600">
+                    <TableCell className="text-xs font-bold text-slate-600 dark:text-slate-300">
                       {formatScheduledAt(row.scheduled_at)}
                     </TableCell>
                     <TableCell>
                       <Badge
                         className={
                           row.status === "sent" || row.status === "completed"
-                            ? "bg-emerald-100 text-emerald-700 border-none px-3"
+                            ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-none px-3"
                             : row.status === "cancelled" || row.status === "failed"
-                              ? "bg-red-100 text-red-700 border-none px-3"
-                              : "bg-amber-100 text-amber-700 border-none px-3"
+                              ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-none px-3"
+                              : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-none px-3"
                         }
                       >
                         {(row.status ?? "scheduled").toUpperCase()}
@@ -329,31 +329,31 @@ const ScheduleTab = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Button
           variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 flex flex-col gap-2 font-bold hover:bg-slate-50"
+          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <FileEdit className="h-5 w-5 text-blue-500" />
-          <span className="text-xs text-slate-600">Edit Templates</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Edit Templates</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 flex flex-col gap-2 font-bold hover:bg-slate-50"
+          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <Mail className="h-5 w-5 text-emerald-500" />
-          <span className="text-xs text-slate-600">Bulk Reminder</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Bulk Reminder</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 flex flex-col gap-2 font-bold hover:bg-slate-50"
+          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <Clock className="h-5 w-5 text-amber-500" />
-          <span className="text-xs text-slate-600">Review Queue</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Review Queue</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 flex flex-col gap-2 font-bold hover:bg-slate-50"
+          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <CheckCircle2 className="h-5 w-5 text-purple-500" />
-          <span className="text-xs text-slate-600">Auto-Rules</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Auto-Rules</span>
         </Button>
       </div>
     </div>

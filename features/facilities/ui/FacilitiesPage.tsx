@@ -105,8 +105,8 @@ const FacilitiesPage = () => {
         <span
           className={`text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
             data.status === "active"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-              : "bg-amber-50 text-amber-700 border-amber-100"
+              ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+              : "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
           }`}
         >
           {data.status}
@@ -197,7 +197,7 @@ const FacilitiesPage = () => {
       </div>
 
       <Tabs value={activeTab} className="w-full" onValueChange={handleTabChange}>
-        <div className="border-b border-slate-200 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 w-full overflow-hidden">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden">
             {[
               { id: "registry", label: "📋 Registry" },
@@ -210,8 +210,8 @@ const FacilitiesPage = () => {
                 className={cn(
                   "shrink-0 whitespace-nowrap px-5 py-3 text-2xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
-                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}
@@ -228,7 +228,7 @@ const FacilitiesPage = () => {
           >
             <div className="flex flex-wrap gap-2 items-center">
               <input
-                className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                 placeholder="🔍 Search facilities, HEFRA no..."
                 value={search}
                 onChange={(e) => handleSearchChange(e.target.value)}
@@ -241,7 +241,7 @@ const FacilitiesPage = () => {
                   "h-9 px-4 rounded-xl border text-2xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                   selectedType === "all"
                     ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
+                    : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900",
                 )}
                 onClick={() => handleTypeChange("all")}
               >
@@ -254,7 +254,7 @@ const FacilitiesPage = () => {
                     "h-9 px-4 rounded-xl border text-2xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                     selectedType === value
                       ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50",
+                      : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900",
                   )}
                   onClick={() => handleTypeChange(value)}
                 >
@@ -263,7 +263,7 @@ const FacilitiesPage = () => {
               ))}
             </div>
 
-            <div className="border-b border-slate-100 mb-4 w-full overflow-x-auto">
+            <div className="border-b border-slate-100 dark:border-slate-800 mb-4 w-full overflow-x-auto">
               <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-max">
                 {[
                   { id: "all", label: "All Facilities" },
@@ -279,8 +279,8 @@ const FacilitiesPage = () => {
                     className={cn(
                       "shrink-0 whitespace-nowrap px-4 py-2.5 text-3xs font-black uppercase tracking-widest",
                       "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
-                      "hover:text-emerald-700 hover:bg-emerald-50/40",
-                      "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                      "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
+                      "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                     )}
                   >
                     {tab.label}
@@ -290,7 +290,7 @@ const FacilitiesPage = () => {
             </div>
           </Tabs>
 
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
             <DataTable
               columns={facilityColumns}
               data={data?.facilities || []}

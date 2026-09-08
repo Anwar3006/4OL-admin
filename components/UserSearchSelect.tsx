@@ -85,7 +85,7 @@ export function UserSearchSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0 rounded-2xl overflow-hidden shadow-2xl border-none z-[100] bg-white">
+      <PopoverContent className="w-[400px] p-0 rounded-2xl overflow-hidden shadow-2xl border-none z-[100] bg-white dark:bg-slate-800">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search by name or email..."
@@ -120,7 +120,7 @@ export function UserSearchSelect({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col flex-1 overflow-hidden">
-                    <span className="font-bold text-slate-900 truncate">
+                    <span className="font-bold text-slate-900 dark:text-slate-100 truncate">
                       {u.first_name} {u.last_name}
                     </span>
                     <span className="text-xs text-slate-400 truncate">

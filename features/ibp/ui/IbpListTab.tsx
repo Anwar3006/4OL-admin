@@ -56,7 +56,7 @@ export default function IbpListTab({
         header: "Business",
         cell: ({ row }: { row: { original: IbpRow } }) => (
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {row.original.business_name}
               {row.original.is_featured && <span className="ml-1">⭐</span>}
             </span>
@@ -71,7 +71,7 @@ export default function IbpListTab({
         id: "location",
         header: "Location",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-slate-600 dark:text-slate-300">
             {[row.original.city, row.original.region].filter(Boolean).join(", ") || "—"}
           </span>
         ),
@@ -80,21 +80,21 @@ export default function IbpListTab({
         id: "contact",
         header: "Contact",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs text-slate-600">{row.original.phone_number ?? "—"}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{row.original.phone_number ?? "—"}</span>
         ),
       },
       {
         id: "branches",
         header: "Branches",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs font-semibold text-slate-600">{row.original.branches ?? 1}</span>
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{row.original.branches ?? 1}</span>
         ),
       },
       {
         id: "spend",
         header: "Spend",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs text-slate-600">{formatMoney(row.original.total_spend)}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{formatMoney(row.original.total_spend)}</span>
         ),
       },
       {
@@ -138,7 +138,7 @@ export default function IbpListTab({
         header: "Suspended",
         cell: ({ row }: { row: { original: IbpRow } }) => (
           <div className="flex flex-col max-w-[220px]">
-            <span className="text-xs text-slate-600 truncate">
+            <span className="text-xs text-slate-600 dark:text-slate-300 truncate">
               {row.original.suspended_reason ?? "—"}
             </span>
             <span className="text-2xs text-slate-400">{formatDate(row.original.suspended_at)}</span>
@@ -177,12 +177,12 @@ export default function IbpListTab({
     <div className="w-full min-w-0 space-y-4">
       {banner}
       <input
-        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+        className="w-full sm:max-w-sm h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
         placeholder="🔍 Search businesses…"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
       />
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={businesses}

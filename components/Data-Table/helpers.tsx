@@ -17,11 +17,11 @@ export const StatsCard = ({
 }) => {
   const colorClasses = {
     default: "text-foreground",
-    success: "text-green-600",
-    warning: "text-yellow-600",
-    neutral: "text-gray-600",
-    red: "text-red-600",
-    info: "text-blue-600",
+    success: "text-green-600 dark:text-green-400",
+    warning: "text-yellow-600 dark:text-yellow-400",
+    neutral: "text-gray-600 dark:text-gray-300",
+    red: "text-red-600 dark:text-red-400",
+    info: "text-blue-600 dark:text-blue-400",
   };
 
   return (
@@ -31,7 +31,7 @@ export const StatsCard = ({
     >
       <div
         className={cn(
-          "bg-white border rounded-lg p-4",
+          "bg-white dark:bg-slate-800 border rounded-lg p-4",
           active && "shadow-md border-green-600"
         )}
       >
@@ -50,7 +50,7 @@ export function TableSkeleton() {
       <div className="h-8 bg-gray-200 rounded w-32 animate-pulse" />
       <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+          <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
         ))}
       </div>
     </div>
@@ -66,7 +66,7 @@ export const ErrorState = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      <div className="text-red-600 text-lg font-semibold mb-2">Error</div>
+      <div className="text-red-600 dark:text-red-400 text-lg font-semibold mb-2">Error</div>
       <p className="text-sm text-muted-foreground mb-4">{error}</p>
       <Button onClick={onRetry} variant="outline">
         Try Again

@@ -46,9 +46,9 @@ const getModuleRoute = (module: string): string => {
 };
 
 const windowStatusStyles: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  scheduled: "bg-amber-50 text-amber-700 border-amber-100",
-  expired: "bg-red-50 text-red-600 border-red-100",
+  active: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  scheduled: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
+  expired: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-100 dark:border-red-500/30",
 };
 
 export const topRatedItemColumns: ColumnDef<any>[] = [
@@ -57,11 +57,11 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     header: "Item",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 border border-blue-100">
+        <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center text-blue-500 border border-blue-100 dark:border-blue-500/30">
           {getModuleIcon(row.original.module)}
         </div>
         <div>
-          <div className="font-black text-slate-800 text-xs uppercase tracking-tight leading-none mb-1">
+          <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight leading-none mb-1">
             {row.original.title}
           </div>
           <div className="text-3xs text-slate-400 font-bold uppercase tracking-widest leading-none">
@@ -75,7 +75,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "module",
     header: "Module",
     cell: ({ row }) => (
-      <span className="text-2xs font-bold uppercase tracking-widest text-slate-600">
+      <span className="text-2xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300">
         {row.original.module.replace(/_/g, " ")}
       </span>
     ),
@@ -84,7 +84,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "rating",
     header: "Rating",
     cell: ({ row }) => (
-      <div className="text-xs font-black text-slate-600">
+      <div className="text-xs font-black text-slate-600 dark:text-slate-300">
         {row.original.rating
           ? `⭐ ${row.original.rating.toFixed(1)} (${row.original.rating_count || 0})`
           : "—"}
@@ -101,8 +101,8 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
           className={cn(
             "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border",
             source === "subscription"
-              ? "bg-purple-50 text-purple-700 border-purple-100"
-              : "bg-emerald-50 text-emerald-700 border-emerald-100",
+              ? "bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-500/30"
+              : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
           )}
         >
           {source === "subscription" ? "💎 Subscription" : "📝 Manual"}
@@ -114,7 +114,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
     accessorKey: "rank",
     header: "Rank",
     cell: ({ row }) => (
-      <div className="text-xs font-black text-slate-600">
+      <div className="text-xs font-black text-slate-600 dark:text-slate-300">
         {row.original.rank ? `#${row.original.rank}` : "—"}
       </div>
     ),
@@ -168,7 +168,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
       return (
         <div className="flex items-center justify-end gap-2">
           <button aria-label="View Details"
-            className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors rounded flex items-center justify-center"
+            className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors rounded flex items-center justify-center"
             onClick={(e) => {
               e.stopPropagation();
               router.push(getModuleRoute(item.module));
@@ -178,7 +178,7 @@ export const topRatedItemColumns: ColumnDef<any>[] = [
           </button>
           {!isSubscriptionSourced && (
             <button aria-label="Delete"
-              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded flex items-center justify-center disabled:opacity-50"
+              className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors rounded flex items-center justify-center disabled:opacity-50"
               onClick={(e) => {
                 e.stopPropagation();
                 setConfirmOpen(true);

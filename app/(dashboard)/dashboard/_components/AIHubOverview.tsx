@@ -18,14 +18,14 @@ export default function AIHubOverview({
 
   return (
     <div className="card">
-      <div className="card-header border-b border-slate-100 mb-4">
+      <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4">
         <h2 className="card-title">AI Hub Overview</h2>
         <span className="badge badge-indigo text-3xs">RPC</span>
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="p-2 rounded-xl border border-slate-100 bg-slate-50 text-center">
-            <div className="text-lg font-black text-slate-800">
+          <div key={stat.label} className="p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-center">
+            <div className="text-lg font-black text-slate-800 dark:text-slate-200">
               {loading ? "..." : stat.value}
             </div>
             <div className="text-3xs font-bold text-slate-400 uppercase tracking-widest">
@@ -34,7 +34,7 @@ export default function AIHubOverview({
           </div>
         ))}
       </div>
-      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+      <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3 text-xs text-slate-500">
         Accuracy and anomaly claims are hidden until model-evaluation
         instrumentation exists.
       </div>

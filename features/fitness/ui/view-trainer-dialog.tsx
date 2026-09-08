@@ -21,9 +21,9 @@ const ViewTrainerDialog = () => {
   const { data, isLoading } = useTrainer(entityId!) ;
 
   const statusColors = {
-    active: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    pending: "bg-amber-100 text-amber-700 border-amber-200",
-    inactive: "bg-slate-100 text-slate-700 border-slate-200",
+    active: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-200",
+    pending: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-200",
+    inactive: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700",
   };
 
   return (
@@ -39,7 +39,7 @@ const ViewTrainerDialog = () => {
               <div className="flex items-start justify-between">
                 <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
                   <AvatarImage src={(data as any).image_url || ''} className="object-cover" />
-                  <AvatarFallback className="bg-slate-100 text-2xl font-bold text-slate-400">
+                  <AvatarFallback className="bg-slate-100 dark:bg-slate-800 text-2xl font-bold text-slate-400">
                     <User className="h-10 w-10" />
                   </AvatarFallback>
                 </Avatar>
@@ -54,44 +54,44 @@ const ViewTrainerDialog = () => {
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div className='flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-colors hover:bg-slate-100'>
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <div className="h-10 w-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
                   <Phone className='h-5 w-5 text-primary' />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Phone</span>
-                  <span className="text-sm font-semibold text-slate-700">{(data as any).phone}</span>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{(data as any).phone}</span>
                 </div>
               </div>
 
               <div className='flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-colors hover:bg-slate-100'>
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <div className="h-10 w-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
                   <Mail className='h-5 w-5 text-primary' />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Email</span>
-                  <span className="text-sm font-semibold text-slate-700 truncate max-w-[150px]">{(data as any).email}</span>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[150px]">{(data as any).email}</span>
                 </div>
               </div>
 
               {(data as any).whatsapp && (
                 <div className='flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-colors hover:bg-slate-100'>
-                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                  <div className="h-10 w-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
                     <MessageSquare className='h-5 w-5 text-emerald-500' />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">WhatsApp</span>
-                    <span className="text-sm font-semibold text-slate-700">{(data as any).whatsapp}</span>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{(data as any).whatsapp}</span>
                   </div>
                 </div>
               )}
 
               <div className='flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-colors hover:bg-slate-100'>
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <div className="h-10 w-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
                   <Activity className='h-5 w-5 text-amber-500' />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Specialization</span>
-                  <span className="text-sm font-semibold text-slate-700">{(data as any).specialization}</span>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{(data as any).specialization}</span>
                 </div>
               </div>
             </div>
@@ -103,7 +103,7 @@ const ViewTrainerDialog = () => {
               </h4>
               <div className='flex flex-wrap gap-2'>
                 {(data as any).services.map((s: string, i: number) => (
-                  <Badge key={i} variant='secondary' className="bg-white border text-xs font-medium px-3 py-1">
+                  <Badge key={i} variant='secondary' className="bg-white dark:bg-slate-800 border text-xs font-medium px-3 py-1">
                     {s}
                   </Badge>
                 ))}

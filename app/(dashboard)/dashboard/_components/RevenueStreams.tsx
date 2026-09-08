@@ -23,7 +23,7 @@ export default function RevenueStreams({
           <RevenueLine label="Completed Transactions" value={formatCurrency(metrics?.finance.revenue)} pct={100} />
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
+        <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-4 text-xs text-slate-500">
           Revenue analytics are awaiting the transaction pipeline. No VAT,
           provider split, or gross-profit claim is shown until payments write
           to `transaction_records`.
@@ -38,9 +38,9 @@ function RevenueLine({ label, value, pct }: { label: string; value: string; pct:
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span>{label}</span>
-        <b className="text-slate-800">{value}</b>
+        <b className="text-slate-800 dark:text-slate-200">{value}</b>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div className="h-full bg-ek-green" style={{ width: `${pct}%` }} />
       </div>
     </div>

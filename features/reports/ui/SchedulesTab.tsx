@@ -91,7 +91,7 @@ function DefinitionForm({
         <div className="space-y-1.5">
           <Label className="text-xs font-bold uppercase tracking-widest text-slate-500">Cadence</Label>
           <select
-            className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
+            className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
             value={draft.cadence}
             onChange={(e) => onChange({ ...draft, cadence: e.target.value })}>
             {["daily", "weekly", "monthly", "quarterly", "yearly"].map((c) => (
@@ -131,7 +131,7 @@ function DefinitionForm({
                 className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${
                   active
                     ? "bg-emerald-600 border-emerald-600 text-white"
-                    : "bg-white border-slate-200 text-slate-600 hover:border-emerald-300"
+                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-300"
                 }`}>
                 {SECTION_LABELS[section]}
               </button>
@@ -141,7 +141,7 @@ function DefinitionForm({
       </div>
 
       <div className="flex items-center gap-6 pt-1">
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={draft.aiNarrative}
@@ -149,7 +149,7 @@ function DefinitionForm({
           />
           AI narrative
         </label>
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={draft.enabled}
@@ -159,7 +159,7 @@ function DefinitionForm({
         </label>
       </div>
       {!aiConfigured ? (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+        <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-lg p-2.5">
           OPENAI_API_KEY is not configured on this deployment — runs ship as metrics-only reports until it is set.
         </p>
       ) : null}
@@ -233,7 +233,7 @@ export default function SchedulesTab() {
       {draft ? (
         <Card>
           <CardContent className="pt-5">
-            <h3 className="text-sm font-black text-slate-800 mb-4">
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-4">
               {draft.definitionId ? "Edit schedule" : "New schedule"}
             </h3>
             <DefinitionForm draft={draft} onChange={setDraft} aiConfigured={Boolean(meta.data?.aiConfigured)} />
@@ -253,7 +253,7 @@ export default function SchedulesTab() {
         <Card>
           <CardContent className="py-14 text-center">
             <CalendarClock className="h-8 w-8 mx-auto text-slate-300 mb-3" />
-            <p className="text-sm font-bold text-slate-700">No report schedules yet</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No report schedules yet</p>
             <p className="text-xs text-slate-500 mt-1">Create the first schedule — e.g. a weekly platform pulse for the leadership team.</p>
           </CardContent>
         </Card>
@@ -273,7 +273,7 @@ export default function SchedulesTab() {
             <TableBody>
               {definitions.map((definition: ReportDefinition) => (
                 <TableRow key={definition.id}>
-                  <TableCell className="font-bold text-slate-800">
+                  <TableCell className="font-bold text-slate-800 dark:text-slate-200">
                     {definition.name}
                     {!definition.enabled ? <Badge variant="secondary" className="ml-2">Paused</Badge> : null}
                   </TableCell>

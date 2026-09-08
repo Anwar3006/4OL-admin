@@ -39,7 +39,7 @@ const HealthTab = () => {
           <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
             📱 Registered Platforms
           </div>
-          <div className="text-2xl font-black text-slate-800">
+          <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
             {isLoading ? "..." : platforms.length.toLocaleString()}
           </div>
         </div>
@@ -47,7 +47,7 @@ const HealthTab = () => {
           <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
             ✅ Enabled
           </div>
-          <div className="text-2xl font-black text-emerald-700">
+          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
             {isLoading ? "..." : enabledCount.toLocaleString()}
           </div>
         </div>
@@ -55,7 +55,7 @@ const HealthTab = () => {
           <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
             🔄 Successful Syncs
           </div>
-          <div className="text-2xl font-black text-blue-600">
+          <div className="text-2xl font-black text-blue-600 dark:text-blue-400">
             {isLoading ? "..." : totalSuccess.toLocaleString()}
           </div>
         </div>
@@ -63,14 +63,14 @@ const HealthTab = () => {
           <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
             ⚠️ Failed Syncs
           </div>
-          <div className="text-2xl font-black text-red-600">
+          <div className="text-2xl font-black text-red-600 dark:text-red-400">
             {isLoading ? "..." : totalFailures.toLocaleString()}
           </div>
         </div>
       </div>
 
       {/* Connected platforms table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-x-auto shadow-sm">
         <div className="px-6 pt-5 pb-3">
           <h3 className="section-heading">
             Connected Platforms
@@ -78,7 +78,7 @@ const HealthTab = () => {
         </div>
         <table className="w-full text-left min-w-[760px]">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-100">
+            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
               {["Platform", "Sync Frequency", "Successful", "Failed", "Last Sync", "Status"].map(
                 (h) => (
                   <th
@@ -101,7 +101,7 @@ const HealthTab = () => {
             )}
             {!isLoading && isError && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-sm text-red-600">
+                <td colSpan={6} className="py-10 text-center text-sm text-red-600 dark:text-red-400">
                   Failed to load health platforms. Try refreshing the page.
                 </td>
               </tr>
@@ -114,17 +114,17 @@ const HealthTab = () => {
               </tr>
             )}
             {platforms.map((platform) => (
-              <tr key={platform.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                <td className="px-6 py-3 text-xs font-black text-slate-800">
+              <tr key={platform.id} className="border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                <td className="px-6 py-3 text-xs font-black text-slate-800 dark:text-slate-200">
                   {platform.platform_name}
                 </td>
-                <td className="px-6 py-3 text-xs font-semibold text-slate-600">
+                <td className="px-6 py-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   Every {platform.sync_frequency_mins ?? 60} min
                 </td>
-                <td className="px-6 py-3 text-xs font-bold text-emerald-700">
+                <td className="px-6 py-3 text-xs font-bold text-emerald-700 dark:text-emerald-400">
                   {Number(platform.sync_success || 0).toLocaleString()}
                 </td>
-                <td className="px-6 py-3 text-xs font-bold text-red-600">
+                <td className="px-6 py-3 text-xs font-bold text-red-600 dark:text-red-400">
                   {Number(platform.sync_failures || 0).toLocaleString()}
                 </td>
                 <td className="px-6 py-3 text-xs text-slate-500">
@@ -134,8 +134,8 @@ const HealthTab = () => {
                   <span
                     className={`text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
                       platform.is_enabled
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                        : "bg-slate-100 text-slate-500 border-slate-200"
+                        ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
                     }`}
                   >
                     {platform.is_enabled ? "Enabled" : "Disabled"}
@@ -148,7 +148,7 @@ const HealthTab = () => {
       </div>
 
       {/* Recent sync failures */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-x-auto shadow-sm">
         <div className="px-6 pt-5 pb-3">
           <h3 className="section-heading">
             Recent Sync Failures
@@ -156,7 +156,7 @@ const HealthTab = () => {
         </div>
         <table className="w-full text-left min-w-[760px]">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-100">
+            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
               {["User", "Platform", "Error", "Failed At", "Retries"].map((h) => (
                 <th
                   key={h}
@@ -176,11 +176,11 @@ const HealthTab = () => {
               </tr>
             )}
             {failures.map((failure, i) => (
-              <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50">
-                <td className="px-6 py-3 text-xs font-bold text-slate-700">
+              <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                <td className="px-6 py-3 text-xs font-bold text-slate-700 dark:text-slate-300">
                   {failure.user_name || "Unknown user"}
                 </td>
-                <td className="px-6 py-3 text-xs font-semibold text-slate-600">
+                <td className="px-6 py-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   {failure.platform_name || "—"}
                 </td>
                 <td className="px-6 py-3 text-xs text-slate-500 max-w-[280px] truncate">
@@ -189,7 +189,7 @@ const HealthTab = () => {
                 <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">
                   {formatDate(failure.synced_at)}
                 </td>
-                <td className="px-6 py-3 text-xs font-bold text-slate-700">
+                <td className="px-6 py-3 text-xs font-bold text-slate-700 dark:text-slate-300">
                   {failure.retry_count}
                 </td>
               </tr>
@@ -199,7 +199,7 @@ const HealthTab = () => {
       </div>
 
       {/* GH-DPA compliance note */}
-      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-xs font-medium text-blue-800">
+      <div className="rounded-xl border border-blue-100 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/15 p-4 text-xs font-medium text-blue-800 dark:text-blue-400">
         🔒 <span className="font-black">Ghana Data Protection Act (2012) note:</span>{" "}
         health sync data is biometric personal data. Platform registrations and
         sync-frequency changes are super_admin-only, sync failures must be

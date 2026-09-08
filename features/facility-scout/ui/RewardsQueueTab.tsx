@@ -83,9 +83,9 @@ export default function RewardsQueueTab({ data, loading }: FacilityScoutTabProps
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             {tiers.map((tier) => (
-              <div key={tier.label} className="rounded-xl border border-slate-200 px-4 py-3 text-center">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-600">{tier.label}</div>
-                <div className="text-lg font-black text-emerald-700">{tier.mb} MB</div>
+              <div key={tier.label} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3 text-center">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">{tier.label}</div>
+                <div className="text-lg font-black text-emerald-700 dark:text-emerald-400">{tier.mb} MB</div>
               </div>
             ))}
           </CardContent>
@@ -98,23 +98,23 @@ export default function RewardsQueueTab({ data, loading }: FacilityScoutTabProps
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl bg-slate-50 p-3">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3">
               <div className="text-xs text-slate-500 uppercase tracking-widest">Disbursed</div>
-              <div className="text-xl font-black text-slate-800">{sent.length}</div>
+              <div className="text-xl font-black text-slate-800 dark:text-slate-200">{sent.length}</div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3">
               <div className="text-xs text-slate-500 uppercase tracking-widest">Pending</div>
-              <div className="text-xl font-black text-amber-600">{pending.length}</div>
+              <div className="text-xl font-black text-amber-600 dark:text-amber-400">{pending.length}</div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3">
               <div className="text-xs text-slate-500 uppercase tracking-widest">Data Sent</div>
-              <div className="text-xl font-black text-emerald-700">
+              <div className="text-xl font-black text-emerald-700 dark:text-emerald-400">
                 {sent.reduce((sum: number, r: any) => sum + Number(r.reward_mb ?? 0), 0)} MB
               </div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900 p-3">
               <div className="text-xs text-slate-500 uppercase tracking-widest">Network Mix</div>
-              <div className="text-xs font-bold text-slate-700">
+              <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {Object.entries(NETWORK_LABEL)
                   .map(([key, label]) => `${label} ${queue.filter((r: any) => r.network === key).length}`)
                   .join(" · ")}
@@ -187,7 +187,7 @@ export default function RewardsQueueTab({ data, loading }: FacilityScoutTabProps
                     <TableCell className="font-bold">
                       {referral.facility_profile?.facility_name ?? "—"}
                     </TableCell>
-                    <TableCell className="font-black text-emerald-700">{referral.reward_mb} MB</TableCell>
+                    <TableCell className="font-black text-emerald-700 dark:text-emerald-400">{referral.reward_mb} MB</TableCell>
                     <TableCell>{NETWORK_LABEL[referral.network ?? ""] ?? referral.network ?? "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{maskPhone(referral.delivery_phone)}</TableCell>
                     <TableCell>

@@ -169,7 +169,7 @@ export function ModerationTable({
                             aria-label="Dismiss"
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+                            className="h-8 w-8 text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 hover:text-emerald-600 dark:hover:text-emerald-400"
                             disabled={isActing}
                             onClick={() => handleAction(item.id, "dismiss")}
                           >
@@ -179,7 +179,7 @@ export function ModerationTable({
                             aria-label="Warn"
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:bg-amber-50 hover:text-amber-600"
+                            className="h-8 w-8 text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 hover:text-amber-600 dark:hover:text-amber-400"
                             disabled={isActing}
                             onClick={() => handleAction(item.id, "warn")}
                           >
@@ -189,7 +189,7 @@ export function ModerationTable({
                             aria-label="Remove content"
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                            className="h-8 w-8 text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400"
                             disabled={isActing}
                             onClick={() => handleAction(item.id, "remove")}
                           >
@@ -199,7 +199,7 @@ export function ModerationTable({
                             aria-label="Ban author"
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-700"
+                            className="h-8 w-8 text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-700 dark:hover:text-red-400"
                             disabled={isActing}
                             onClick={() => handleAction(item.id, "ban")}
                           >

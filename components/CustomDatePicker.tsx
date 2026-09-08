@@ -80,7 +80,7 @@ const CustomDatePicker = <T extends FieldValues>({
         return (
           <FormItem className="flex flex-col space-y-2">
             {label && (
-              <FormLabel className="text-sm font-bold text-slate-700 tracking-tight">
+              <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 tracking-tight">
                 {label}
               </FormLabel>
             )}
@@ -89,7 +89,7 @@ const CustomDatePicker = <T extends FieldValues>({
               <FormControl>
                 <Input
                   className={cn(
-                    "h-14 rounded-xl border-slate-200 pr-12 font-medium transition-all focus-visible:ring-emerald-500/20",
+                    "h-14 rounded-xl border-slate-200 dark:border-slate-700 pr-12 font-medium transition-all focus-visible:ring-emerald-500/20",
                     className,
                   )}
                   placeholder={placeholder}
@@ -112,13 +112,13 @@ const CustomDatePicker = <T extends FieldValues>({
                     variant="ghost"
                     size="icon"
                     disabled={disabled}
-                    className="absolute right-2 h-10 w-10 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50"
+                    className="absolute right-2 h-10 w-10 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15"
                   >
                     <CalendarIcon className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-auto p-0 rounded-2xl shadow-2xl border-slate-100 overflow-hidden"
+                  className="w-auto p-0 rounded-2xl shadow-2xl border-slate-100 dark:border-slate-800 overflow-hidden"
                   align="end"
                 >
                   <div className="flex flex-col md:flex-row">
@@ -149,16 +149,16 @@ const CustomDatePicker = <T extends FieldValues>({
                     </div>
 
                     {showTimePicker && (
-                      <div className="border-t md:border-t-0 md:border-l border-slate-100 p-4 bg-slate-50/50 w-full md:w-[180px] flex flex-col justify-center">
+                      <div className="border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-900/50 w-full md:w-[180px] flex flex-col justify-center">
                         <div className="flex items-center gap-2 mb-3 px-1">
-                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                          <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
                             Time
                           </span>
                         </div>
                         <Input
                           type="time"
-                          className="bg-white border-slate-200 rounded-lg h-10 text-sm font-bold focus-visible:ring-emerald-500"
+                          className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg h-10 text-sm font-bold focus-visible:ring-emerald-500"
                           value={
                             field.value
                               ? format(new Date(field.value), "HH:mm")

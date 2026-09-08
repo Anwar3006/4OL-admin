@@ -82,7 +82,7 @@ const MapPage = () => {
       className={cn(
         "animate-in fade-in duration-500 space-y-4",
         isFullScreen
-          ? "fixed inset-0 z-50 bg-white p-4 overflow-y-auto"
+          ? "fixed inset-0 z-50 bg-white dark:bg-slate-800 p-4 overflow-y-auto"
           : "flex flex-col",
       )}
     >
@@ -152,7 +152,7 @@ const MapPage = () => {
       </div>
 
       <Tabs value={activeTab} className="w-full min-w-0" onValueChange={handleTabChange}>
-        <div className="border-b border-slate-200 mb-2 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-2 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
@@ -166,9 +166,9 @@ const MapPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 <span className="mr-1.5">{tab.icon}</span>

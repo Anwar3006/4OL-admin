@@ -65,7 +65,7 @@ export default function EnquiryDetailDialog({
               ].map(([label, value]) => (
                 <div key={label as string} className="flex justify-between border-b border-slate-50 pb-2">
                   <span className="text-slate-400 font-medium">{label}</span>
-                  <span className="text-slate-800 uppercase tracking-tight text-right">
+                  <span className="text-slate-800 dark:text-slate-200 uppercase tracking-tight text-right">
                     {label === "Type" ? <TypeBadge type={enquiry.enquiry_type} /> : value}
                   </span>
                 </div>
@@ -73,24 +73,24 @@ export default function EnquiryDetailDialog({
             </div>
 
             {enquiry.medication_description && (
-              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3">
                 <div className="text-3xs font-black uppercase tracking-widest text-slate-400 mb-1">
                   Description
                 </div>
-                <p className="text-xs font-medium text-slate-600">{enquiry.medication_description}</p>
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-300">{enquiry.medication_description}</p>
               </div>
             )}
 
             {enquiry.pharmacy && (
               <button
                 onClick={() => viewFacility.open(enquiry.pharmacy!.id)}
-                className="w-full flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-left hover:bg-emerald-100 transition-all"
+                className="w-full flex items-center justify-between rounded-xl border border-emerald-100 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 px-3 py-2.5 text-left hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all"
               >
                 <div>
                   <div className="text-3xs font-black uppercase tracking-widest text-emerald-500 mb-0.5">
                     🏥 Matched Pharmacy
                   </div>
-                  <div className="text-xs font-black text-emerald-800">
+                  <div className="text-xs font-black text-emerald-800 dark:text-emerald-400">
                     {enquiry.pharmacy.facility_name ?? "Unknown pharmacy"}
                   </div>
                   {(enquiry.pharmacy.area || enquiry.pharmacy.region) && (
@@ -99,7 +99,7 @@ export default function EnquiryDetailDialog({
                     </div>
                   )}
                 </div>
-                <span className="text-3xs font-black uppercase tracking-widest text-emerald-600">
+                <span className="text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                   View Profile →
                 </span>
               </button>
@@ -115,13 +115,13 @@ export default function EnquiryDetailDialog({
                     <div
                       key={r.id}
                       className={`flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 ${
-                        r.facility?.id ? "hover:bg-slate-50 transition-all" : ""
+                        r.facility?.id ? "hover:bg-slate-50 dark:hover:bg-slate-900 transition-all" : ""
                       }`}
                       onClick={r.facility?.id ? () => viewFacility.open(r.facility!.id) : undefined}
                       role={r.facility?.id ? "button" : undefined}
                     >
                       <div>
-                        <div className="text-xs font-black text-slate-700">
+                        <div className="text-xs font-black text-slate-700 dark:text-slate-300">
                           {r.facility?.facility_name ?? (r.responder_kind === "wholesaler" ? "Wholesaler" : "Pharmacy")}
                           {r.facility?.id && <span className="ml-1 text-3xs text-emerald-500">🏥</span>}
                         </div>
@@ -129,7 +129,7 @@ export default function EnquiryDetailDialog({
                           {r.status} · {r.available ? "Available" : "Unavailable"}
                         </div>
                       </div>
-                      <span className="text-xs font-black text-emerald-600">
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                         {r.price !== null ? formatMoney(r.price) : "—"}
                       </span>
                     </div>

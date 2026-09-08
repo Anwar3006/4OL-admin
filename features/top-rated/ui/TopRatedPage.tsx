@@ -138,54 +138,54 @@ const TopRatedPage = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">{totalItems}</div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{totalItems}</div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Total Items
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.facility || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Facilities
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.fitness_plan || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Fitness Plans
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.outdoor_route || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Outdoor Routes
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.outdoor_event || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Outdoor Events
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.challenge || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
             Challenges
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {moduleCounts?.exercise || 0}
           </div>
           <div className="text-2xs font-bold uppercase tracking-widest text-slate-500">
@@ -199,7 +199,7 @@ const TopRatedPage = () => {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={
@@ -218,9 +218,9 @@ const TopRatedPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}

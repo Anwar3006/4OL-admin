@@ -119,7 +119,7 @@ export function TreeMultiSelect({
           >
             {/* LEFT ZONE: Selection (85% width) */}
             <div
-              className="flex items-center flex-1 gap-2 px-2 hover:bg-slate-50 transition-colors"
+              className="flex items-center flex-1 gap-2 px-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
               style={{ paddingLeft: `${level * 1.2 + 0.75}rem` }}
             >
               <div className="relative flex items-center h-full">
@@ -132,9 +132,9 @@ export function TreeMultiSelect({
                 className={cn(
                   "text-sm truncate",
                   level === 0
-                    ? "font-bold text-slate-900"
-                    : "font-medium text-slate-600",
-                  value.includes(item.id) && "text-emerald-600",
+                    ? "font-bold text-slate-900 dark:text-slate-100"
+                    : "font-medium text-slate-600 dark:text-slate-300",
+                  value.includes(item.id) && "text-emerald-600 dark:text-emerald-400",
                 )}
               >
                 {item.name}
@@ -152,7 +152,7 @@ export function TreeMultiSelect({
                     [item.id]: !expanded[item.id],
                   }));
                 }}
-                className="w-16 bg-gray-100 flex items-center justify-center border-l border-transparent group-hover:border-slate-100 hover:bg-slate-100 transition-all cursor-pointer"
+                className="w-16 bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-l border-transparent group-hover:border-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 {isExpanded ? (
                   <ChevronDown className="h-4 w-4 text-slate-400" />
@@ -180,7 +180,7 @@ export function TreeMultiSelect({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-between min-h-11 h-auto px-3 border-slate-200 transition-all",
+              "w-full justify-between min-h-11 h-auto px-3 border-slate-200 dark:border-slate-700 transition-all",
               open && "ring-2 ring-emerald-500/20 border-emerald-500",
             )}
           >
@@ -197,7 +197,7 @@ export function TreeMultiSelect({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[450px] p-0 shadow-2xl border-slate-200 rounded-xl overflow-hidden bg-white"
+          className="w-[450px] p-0 shadow-2xl border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800"
           align="start"
         >
           <Command className="rounded-none" shouldFilter={false}>
@@ -223,12 +223,12 @@ export function TreeMultiSelect({
       </Popover>
 
       {selectedItems.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-3 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+        <div className="flex flex-wrap gap-2 p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
           {selectedItems.map((item) => (
             <Badge
               key={item.id}
               variant="secondary"
-              className="pl-2 pr-1 py-1 gap-1 bg-white border-slate-200 text-slate-700 hover:bg-red-50 hover:text-red-700 hover:border-red-100 transition-all cursor-pointer group"
+              className="pl-2 pr-1 py-1 gap-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-500/15 hover:text-red-700 dark:hover:text-red-400 hover:border-red-100 dark:hover:border-red-500/30 transition-all cursor-pointer group"
               onClick={() => toggleValue(item.id)}
             >
               <span className="text-xs font-medium">{item.name}</span>

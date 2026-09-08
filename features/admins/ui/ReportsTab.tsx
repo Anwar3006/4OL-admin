@@ -13,7 +13,7 @@ interface AiAnalytics {
 const MetricRow = ({ label, value, color }: { label: string; value: string; color?: string }) => (
   <div className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 text-xs font-bold">
     <span className="text-slate-500 font-medium">{label}</span>
-    <span className={cn("text-slate-900", color)}>{value}</span>
+    <span className={cn("text-slate-900 dark:text-slate-100", color)}>{value}</span>
   </div>
 );
 
@@ -43,7 +43,7 @@ export default function ReportsTab() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="card">
-        <div className="card-header border-b border-slate-100 mb-4"><h2 className="card-title text-sm">📊 Admin Activity Report</h2></div>
+        <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4"><h2 className="card-title text-sm">📊 Admin Activity Report</h2></div>
         <div className="space-y-0.5">
           {adminLoading ? (
             <div className="text-xs text-slate-400 py-4 text-center">Loading…</div>
@@ -60,7 +60,7 @@ export default function ReportsTab() {
       </div>
 
       <div className="card">
-        <div className="card-header border-b border-slate-100 mb-4"><h2 className="card-title text-sm">🛡️ Security Report</h2></div>
+        <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4"><h2 className="card-title text-sm">🛡️ Security Report</h2></div>
         <div className="space-y-0.5">
           {adminLoading ? (
             <div className="text-xs text-slate-400 py-4 text-center">Loading…</div>
@@ -77,7 +77,7 @@ export default function ReportsTab() {
       </div>
 
       <div className="card">
-        <div className="card-header border-b border-slate-100 mb-4"><h2 className="card-title text-sm">🤖 AI Audit Summary</h2></div>
+        <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-4"><h2 className="card-title text-sm">🤖 AI Audit Summary</h2></div>
         <div className="space-y-0.5">
           {aiLoading ? (
             <div className="text-xs text-slate-400 py-4 text-center">Loading…</div>

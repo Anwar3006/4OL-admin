@@ -89,7 +89,7 @@ const HealthyLivingPage = () => {
         header: "Article Name",
         cell: ({ row }: any) => (
           <div className="flex flex-col gap-1">
-            <span className="font-bold text-sm text-slate-800">
+            <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
               {row.original.name.length > 20
                 ? `${row.original.name.slice(0, 20)}...`
                 : row.original.name}
@@ -102,8 +102,8 @@ const HealthyLivingPage = () => {
         header: "Status",
         cell: ({ row }: any) => {
           const statusColors: Record<string, string> = {
-            published: "bg-emerald-50 text-emerald-700",
-            draft: "bg-slate-100 text-slate-700",
+            published: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+            draft: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
             archived: "bg-rose-50 text-rose-700",
           };
           const colorClass =
@@ -130,13 +130,13 @@ const HealthyLivingPage = () => {
               {cats.slice(0, 2).map((name) => (
                 <span
                   key={name}
-                  className="text-2xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700"
+                  className="text-2xs font-semibold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
                 >
                   {name}
                 </span>
               ))}
               {cats.length > 2 && (
-                <span className="text-2xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
                   +{cats.length - 2}
                 </span>
               )}
@@ -149,7 +149,7 @@ const HealthyLivingPage = () => {
         header: "Views",
         cell: ({ row }: any) => (
           <div className="flex items-center gap-1 justify-center">
-            <span className="text-sm text-slate-600">
+            <span className="text-sm text-slate-600 dark:text-slate-300">
               {row.original.view_count || 0}
             </span>
           </div>
@@ -159,7 +159,7 @@ const HealthyLivingPage = () => {
         accessorKey: "created_at",
         header: "Created",
         cell: ({ row }: any) => (
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-slate-600 dark:text-slate-300">
             {new Date(row.original.created_at).toLocaleDateString(undefined, {
               dateStyle: "medium",
             })}
@@ -174,7 +174,7 @@ const HealthyLivingPage = () => {
           return (
             <div className="flex items-center justify-end gap-2">
               <button
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   viewHealthyLiving.open(item.id);
@@ -183,7 +183,7 @@ const HealthyLivingPage = () => {
                 👁️
               </button>
               <button
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   addHealthLiving.open(item);
@@ -192,7 +192,7 @@ const HealthyLivingPage = () => {
                 ✏️
               </button>
               <button
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeleteClick(item);
@@ -229,7 +229,7 @@ const HealthyLivingPage = () => {
       <HealthyLivingStats />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={
@@ -252,9 +252,9 @@ const HealthyLivingPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 <span className="mr-1.5">{tab.icon}</span>
@@ -268,7 +268,7 @@ const HealthyLivingPage = () => {
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center mb-4">
             <div className="relative w-full sm:flex-1 sm:min-w-[240px]">
               <input
-                className="w-full h-9 pl-3 pr-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
+                className="w-full h-9 pl-3 pr-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-ek-green/20 outline-none transition-all"
                 placeholder="🔍 Search articles by title, topic..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -277,10 +277,10 @@ const HealthyLivingPage = () => {
 
             <div className="flex w-full sm:w-auto gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[140px] h-9 text-xs font-bold bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
+                <SelectTrigger className="w-full sm:w-[140px] h-9 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-ek-green/20">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white dark:bg-slate-800">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
@@ -290,7 +290,7 @@ const HealthyLivingPage = () => {
             </div>
           </div>
 
-          <div className="card p-0 overflow-hidden border border-slate-200 shadow-sm rounded-xl">
+          <div className="card p-0 overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
             <DataTable
               columns={tableColumns}
               data={healthyLivingData?.healthyLivings || []}

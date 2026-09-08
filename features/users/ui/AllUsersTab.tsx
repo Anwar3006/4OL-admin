@@ -52,7 +52,7 @@ const relativeTime = (value: string | null) => {
 };
 
 const selectClass =
-  "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-emerald-500/20";
+  "h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20";
 
 export default function AllUsersTab() {
   const router = useRouter();
@@ -100,11 +100,11 @@ export default function AllUsersTab() {
           return (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-800">
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                   {displayName(user)}
                 </span>
                 {user.public_id && (
-                  <span className="text-3xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="text-3xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30">
                     {user.public_id}
                   </span>
                 )}
@@ -118,7 +118,7 @@ export default function AllUsersTab() {
         id: "phone",
         header: "Phone",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-xs font-semibold text-slate-600">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
             {row.original.phone_number ?? "—"}
           </span>
         ),
@@ -146,7 +146,7 @@ export default function AllUsersTab() {
         id: "region",
         header: "Region",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
-          <span className="text-xs text-slate-600">{row.original.region ?? "—"}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{row.original.region ?? "—"}</span>
         ),
       },
       {
@@ -154,7 +154,7 @@ export default function AllUsersTab() {
         header: "Engagement",
         cell: ({ row }: { row: { original: AdminUserRow } }) => (
           <div className="flex items-center gap-2">
-            <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-1.5 w-16 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-emerald-500"
                 style={{ width: `${row.original.engagement_score}%` }}
@@ -238,7 +238,7 @@ export default function AllUsersTab() {
     <div className="w-full min-w-0 space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search name, email, phone, NHIS…"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
@@ -277,7 +277,7 @@ export default function AllUsersTab() {
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={users}

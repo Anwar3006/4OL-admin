@@ -41,7 +41,7 @@ export default function PremiumIbpsTab() {
         header: "Business",
         cell: ({ row }: { row: { original: IbpRow } }) => (
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               ⭐ {row.original.business_name}
             </span>
             <span className="text-xs text-slate-400">
@@ -54,7 +54,7 @@ export default function PremiumIbpsTab() {
         id: "location",
         header: "Location",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs text-slate-600">
+          <span className="text-xs text-slate-600 dark:text-slate-300">
             {[row.original.city, row.original.region].filter(Boolean).join(", ") || "—"}
           </span>
         ),
@@ -63,7 +63,7 @@ export default function PremiumIbpsTab() {
         id: "budget",
         header: "Campaign Budget",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs font-semibold text-slate-600">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
             {formatMoney(row.original.campaign_budget)}
           </span>
         ),
@@ -72,7 +72,7 @@ export default function PremiumIbpsTab() {
         id: "spend",
         header: "Total Spend",
         cell: ({ row }: { row: { original: IbpRow } }) => (
-          <span className="text-xs text-slate-600">{formatMoney(row.original.total_spend)}</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300">{formatMoney(row.original.total_spend)}</span>
         ),
       },
       {
@@ -132,7 +132,7 @@ export default function PremiumIbpsTab() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={columns}
           data={featured}

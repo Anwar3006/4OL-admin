@@ -109,7 +109,7 @@ function OnboardingSection() {
   const pendingCount = data?.requests.filter((r) => r.status === "pending").length ?? 0;
 
   return (
-    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white shadow-sm mt-2 rounded-lg">
+    <section className="mx-auto lg:px-4 py-4 sm:py-6 lg:pb-10 lg:pt-2 max-w-[2400px] bg-white dark:bg-slate-800 shadow-sm mt-2 rounded-lg">
       <SectionHeader
         title="Onboarding Requests"
         Icon={UserPlus}
@@ -129,7 +129,7 @@ function OnboardingSection() {
                   "px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border",
                   statusFilter === tab.value
                     ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-400",
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400",
                 ].join(" ")}
               >
                 {tab.label}
@@ -158,8 +158,8 @@ function OnboardingSection() {
               className={[
                 "px-3 py-1 text-xs font-medium rounded-md transition-all",
                 typeFilter === tab.value
-                  ? "bg-slate-100 text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700",
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
               ].join(" ")}
             >
               {tab.label}
@@ -218,7 +218,7 @@ function OnboardingSection() {
               {selectedRequest.notes && (
                 <div>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Notes</label>
-                  <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-md border italic">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 p-3 rounded-md border italic">
                     "{selectedRequest.notes}"
                   </p>
                 </div>
@@ -226,7 +226,7 @@ function OnboardingSection() {
 
               <div className="pt-4 border-t flex items-center justify-between text-xs text-slate-400">
                 <span>Submitted on {format(new Date(selectedRequest.created_at), "PPP p")}</span>
-                <span className="capitalize px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">
+                <span className="capitalize px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
                   {selectedRequest.status}
                 </span>
               </div>

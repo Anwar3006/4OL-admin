@@ -143,7 +143,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
             ratingCount={currentFacility.rating_count}
           />
           {currentFacility.is_top_rated && (
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200 gap-1 animate-in fade-in zoom-in">
+            <Badge className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-200 gap-1 animate-in fade-in zoom-in">
               <Trophy size={12} /> Featured
             </Badge>
           )}
@@ -181,7 +181,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
             ))}
           </div>
           {localRating && (
-            <span className="text-xs text-amber-600 font-medium">
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
               {localRating} star{localRating !== 1 ? "s" : ""}
             </span>
           )}
@@ -189,7 +189,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
 
         <Textarea
           placeholder="Log an internal observation or follow-up note..."
-          className="min-h-32 rounded-2xl border-slate-200 focus:border-primary focus:ring-primary/20 transition-all resize-none p-4 pt-5 bg-slate-50/30"
+          className="min-h-32 rounded-2xl border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-primary/20 transition-all resize-none p-4 pt-5 bg-slate-50/30 dark:bg-slate-900/30"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending || isSubmittingRating}
@@ -198,7 +198,7 @@ export function FacilityRatingSection({ facility, adminId, auditData }: Props) {
         <div className="flex items-center justify-between mt-2">
           <div className="text-xs text-muted-foreground">
             {localRating ? (
-              <span className="text-amber-600 font-medium">
+              <span className="text-amber-600 dark:text-amber-400 font-medium">
                 Rating will be saved with comment
               </span>
             ) : (
@@ -254,19 +254,19 @@ function ReviewBox({ review }: { review: any }) {
   const isInternalNote = !review.rating;
 
   return (
-    <div className="group relative bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+    <div className="group relative bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-300">
       <div className="flex items-start gap-4">
-        <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+        <div className="h-10 w-10 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400">
           <UserCircle size={24} />
         </div>
         <div className="flex-1 space-y-1">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <h5 className="text-sm font-bold text-slate-800">You</h5>
+              <h5 className="text-sm font-bold text-slate-800 dark:text-slate-200">You</h5>
               {isInternalNote && (
                 <Badge
                   variant="outline"
-                  className="text-3xs uppercase tracking-tighter h-4 px-1.5 bg-slate-50 font-bold"
+                  className="text-3xs uppercase tracking-tighter h-4 px-1.5 bg-slate-50 dark:bg-slate-900 font-bold"
                 >
                   Internal Audit
                 </Badge>
@@ -292,7 +292,7 @@ function ReviewBox({ review }: { review: any }) {
             </div>
           )}
 
-          <p className="text-sm text-slate-600 leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {review.comment_text || (
               <span className="text-slate-300 italic">
                 Updated facility status.

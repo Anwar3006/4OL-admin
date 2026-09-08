@@ -45,7 +45,7 @@ const CHANNEL_OPTIONS = [
 ];
 
 const selectClass =
-  "h-9 px-3 rounded-xl border border-slate-200 bg-white text-2xs font-black uppercase tracking-widest text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all";
+  "h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all";
 
 /**
  * Gap Analysis Part M (M3): full filter bar (search/status/type/channel),
@@ -126,8 +126,8 @@ export default function AllCampaignsTab() {
         <span
           className={`text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
             data.status === "live"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-              : "bg-amber-50 text-amber-700 border-amber-100"
+              ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+              : "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30"
           }`}
         >
           {data.status}
@@ -149,7 +149,7 @@ export default function AllCampaignsTab() {
     <div className="w-full min-w-0 space-y-4 mt-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search campaigns..."
           value={searchInput}
           onChange={(e) => {
@@ -226,7 +226,7 @@ export default function AllCampaignsTab() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={marketingColumns}
           data={filtered}

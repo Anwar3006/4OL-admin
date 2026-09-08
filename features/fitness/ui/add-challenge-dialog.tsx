@@ -128,9 +128,9 @@ const AddChallengeDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Trophy className="h-6 w-6 text-primary" />
               {isEditMode ? "Edit Fitness Challenge" : "Launch New Challenge"}
@@ -222,7 +222,7 @@ const AddChallengeDialog = () => {
                           </SelectTrigger>
                         </FormControl>
                         {/*bg-white and explicit layer definitions protect from transparent dropdown bleed */}
-                        <SelectContent className="bg-white z-[100]">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100]">
                           {CHALLENGE_STATUS.map((s) => (
                             <SelectItem
                               key={s}
@@ -393,7 +393,7 @@ const AddChallengeDialog = () => {
                   control={form.control}
                   name="is_public"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-white dark:bg-slate-800">
                       <div className="space-y-0.5">
                         <FormLabel>Public Challenge</FormLabel>
                         <FormDescription>Visible to all users</FormDescription>

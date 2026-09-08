@@ -192,7 +192,7 @@ export default function SchematicPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               Architecture Map
             </CardTitle>
           </CardHeader>
@@ -200,13 +200,13 @@ export default function SchematicPage() {
             {architecture.map((item) => (
               <div
                 key={item.name}
-                className="flex gap-3 rounded-lg border border-slate-200 p-4"
+                className="flex gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
                   <item.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="font-bold text-slate-800">{item.name}</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200">{item.name}</div>
                   <div className="mt-1 text-sm text-slate-500">{item.detail}</div>
                 </div>
               </div>
@@ -216,13 +216,13 @@ export default function SchematicPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               Service Health
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading && (
-              <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center text-sm font-medium text-slate-400">
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-8 text-center text-sm font-medium text-slate-400">
                 Checking services...
               </div>
             )}
@@ -230,9 +230,9 @@ export default function SchematicPage() {
               services.map(([name, status]) => (
                 <div
                   key={name}
-                  className="flex items-center justify-between rounded-lg border border-slate-200 p-3"
+                  className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 p-3"
                 >
-                  <span className="text-sm font-bold capitalize text-slate-700">
+                  <span className="text-sm font-bold capitalize text-slate-700 dark:text-slate-300">
                     {name.replace(/([A-Z])/g, " $1")}
                   </span>
                   <Badge
@@ -258,13 +258,13 @@ export default function SchematicPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               <Package className="h-4 w-4" /> Tech Stack
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {loading && !schematic && (
-              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
                 Loading...
               </div>
             )}
@@ -275,7 +275,7 @@ export default function SchematicPage() {
                     key={dep.name}
                     className="flex items-center justify-between text-sm"
                   >
-                    <span className="font-medium text-slate-700">{dep.name}</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{dep.name}</span>
                     <span className="font-mono text-xs text-slate-500">
                       v{dep.version}
                     </span>
@@ -288,29 +288,29 @@ export default function SchematicPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               <ShieldCheck className="h-4 w-4" /> RBAC Model
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading && !schematic && (
-              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
                 Loading...
               </div>
             )}
             {schematic && (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-slate-200 p-3 text-center">
-                    <div className="text-2xl font-black text-slate-800">
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
                       {schematic.rbac.roleCount}
                     </div>
                     <div className="text-xs font-semibold uppercase text-slate-500">
                       Roles
                     </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 p-3 text-center">
-                    <div className="text-2xl font-black text-slate-800">
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
                       {schematic.rbac.permissionCount}
                     </div>
                     <div className="text-xs font-semibold uppercase text-slate-500">
@@ -332,13 +332,13 @@ export default function SchematicPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700">
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
               <ScrollText className="h-4 w-4" /> Platform Build
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {loading && !schematic && (
-              <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-400">
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-400">
                 Loading...
               </div>
             )}
@@ -346,20 +346,20 @@ export default function SchematicPage() {
               <>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">App version</span>
-                  <span className="font-mono text-xs text-slate-700">
+                  <span className="font-mono text-xs text-slate-700 dark:text-slate-300">
                     v{schematic.stack.app}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Migrations</span>
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
                     {schematic.migrations.count} applied
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Latest migration</span>
                   <span
-                    className="max-w-[180px] truncate font-mono text-xs text-slate-700"
+                    className="max-w-[180px] truncate font-mono text-xs text-slate-700 dark:text-slate-300"
                     title={schematic.migrations.latest ?? undefined}
                   >
                     {schematic.migrations.latest ?? "—"}
@@ -371,13 +371,13 @@ export default function SchematicPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Commit</span>
-                  <span className="font-mono text-xs text-slate-700">
+                  <span className="font-mono text-xs text-slate-700 dark:text-slate-300">
                     {schematic.build.commit ?? "local"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Generated</span>
-                  <span className="text-xs text-slate-700">
+                  <span className="text-xs text-slate-700 dark:text-slate-300">
                     {new Date(schematic.build.generatedAt).toLocaleTimeString()}
                   </span>
                 </div>

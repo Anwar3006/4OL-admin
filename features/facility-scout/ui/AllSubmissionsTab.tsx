@@ -101,7 +101,7 @@ export default function AllSubmissionsTab({ data, loading }: FacilityScoutTabPro
           onChange={(event) => setSearch(event.target.value)}
         />
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-widest"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold uppercase tracking-widest"
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
         >
@@ -113,7 +113,7 @@ export default function AllSubmissionsTab({ data, loading }: FacilityScoutTabPro
           <option value="rejected">Rejected</option>
         </select>
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-widest"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold uppercase tracking-widest"
           value={typeFilter}
           onChange={(event) => setTypeFilter(event.target.value)}
         >
@@ -198,7 +198,7 @@ export default function AllSubmissionsTab({ data, loading }: FacilityScoutTabPro
                           <Button size="sm" variant="outline" onClick={() => setAssignTarget(submission)}>
                             Assign
                           </Button>
-                          <Button size="sm" variant="ghost" className="text-red-600" onClick={() => setRejectTarget(submission)}>
+                          <Button size="sm" variant="ghost" className="text-red-600 dark:text-red-400" onClick={() => setRejectTarget(submission)}>
                             Reject
                           </Button>
                         </>
@@ -207,7 +207,7 @@ export default function AllSubmissionsTab({ data, loading }: FacilityScoutTabPro
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-emerald-700 border-emerald-200"
+                          className="text-emerald-700 dark:text-emerald-400 border-emerald-200"
                           disabled={register.isPending}
                           onClick={() => register.mutate({ id: submission.id })}
                         >

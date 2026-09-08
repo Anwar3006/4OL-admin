@@ -233,9 +233,9 @@ const AiGeneratePlanDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => (open ? undefined : close())}>
-      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <DialogHeader className="p-6 pb-4 border-b bg-gray-50">
+      <DialogContent className="max-w-3xl overflow-y-auto max-h-[92vh] p-0 border-none shadow-2xl bg-white dark:bg-slate-800">
+        <div className="bg-white dark:bg-slate-800 rounded-lg overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b bg-gray-50 dark:bg-gray-900">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-blue-500" />
               AI Generate Fitness Plan
@@ -312,7 +312,7 @@ const AiGeneratePlanDialog = () => {
                             <SelectValue placeholder="Select level" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100]">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100]">
                           {FITNESS_LEVELS.map((level) => (
                             <SelectItem
                               key={level.value}
@@ -390,7 +390,7 @@ const AiGeneratePlanDialog = () => {
                             <SelectValue placeholder="Select equipment access" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100]">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100]">
                           {EQUIPMENT_ACCESS_OPTIONS.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
@@ -508,7 +508,7 @@ const AiGeneratePlanDialog = () => {
                             <SelectValue placeholder="Select shape" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100]">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100]">
                           {BODY_SHAPES.map((shape) => (
                             <SelectItem key={shape.value} value={shape.value}>
                               {shape.label}
@@ -543,7 +543,7 @@ const AiGeneratePlanDialog = () => {
                             <SelectValue placeholder="Select body type" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-white z-[100]">
+                        <SelectContent className="bg-white dark:bg-slate-800 z-[100]">
                           {BODY_TYPES.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               {type.label}

@@ -69,10 +69,10 @@ const AdminsPage = () => {
         <button className="btn btn-primary text-white" onClick={() => addAdmin.open()}>✉️ Invite Admin</button>
       </PageHeader>
 
-      <div className="alert bg-red-50 border border-red-200 text-xs font-medium p-3 rounded-xl flex items-start gap-2.5">
+      <div className="alert bg-red-50 dark:bg-red-500/15 border border-red-200 text-xs font-medium p-3 rounded-xl flex items-start gap-2.5">
         <span className="text-base leading-none mt-0.5">⚠️</span>
         <div className="flex-1">
-          <strong className="text-red-700">Security Alert:</strong> Some admin accounts have MFA disabled. See the "MFA Not Set" stat below and the Security Center tab for details.
+          <strong className="text-red-700 dark:text-red-400">Security Alert:</strong> Some admin accounts have MFA disabled. See the "MFA Not Set" stat below and the Security Center tab for details.
         </div>
       </div>
 
@@ -81,7 +81,7 @@ const AdminsPage = () => {
       <AdminCommandBar />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="border-b border-slate-200 mb-5 w-full overflow-hidden">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
           <TabsList
             className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
@@ -95,9 +95,9 @@ const AdminsPage = () => {
                   "text-2xs sm:text-xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent",
                   "transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
                   "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                  "data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}

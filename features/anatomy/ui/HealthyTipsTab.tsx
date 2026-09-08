@@ -20,7 +20,7 @@ import {
 } from "@/features/healthy-living/data/useHealthyLiving";
 
 const inputCls =
-  "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 const labelCls =
   "text-2xs font-black uppercase tracking-widest text-slate-500 mb-1 block";
 
@@ -154,7 +154,7 @@ function AddTipDialog({
               <div>
                 <label className={labelCls}>Description</label>
                 <textarea
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20"
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -196,7 +196,7 @@ export default function HealthyTipsTab() {
 
   return (
     <div className="card">
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-5 py-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-5 py-4">
         <h3 className="section-heading">
           🌿 Healthy Tips by Body Part
         </h3>
@@ -221,7 +221,7 @@ export default function HealthyTipsTab() {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
+            <tr className="border-b border-slate-100 dark:border-slate-800 text-2xs font-black uppercase tracking-widest text-slate-400">
               <th className="px-5 py-3">Body Part</th>
               <th className="px-5 py-3">Healthy Tip</th>
               <th className="px-5 py-3">Status</th>
@@ -249,9 +249,9 @@ export default function HealthyTipsTab() {
               (rows ?? []).map((row) => (
                 <tr
                   key={`${row.tip_id}-${row.body_part_id}`}
-                  className="border-b border-slate-50 hover:bg-slate-50/60"
+                  className="border-b border-slate-50 hover:bg-slate-50/60 dark:hover:bg-slate-900/60"
                 >
-                  <td className="px-5 py-3 font-bold text-slate-800">
+                  <td className="px-5 py-3 font-bold text-slate-800 dark:text-slate-200">
                     {row.body_part_name}
                     {row.body_system && (
                       <div className="text-2xs font-medium text-slate-400">
@@ -262,7 +262,7 @@ export default function HealthyTipsTab() {
                   <td className="px-5 py-3">
                     <Link
                       href={`/healthy-living?id=${row.tip_id}`}
-                      className="font-semibold text-emerald-700 hover:underline"
+                      className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
                     >
                       {row.tip_name}
                     </Link>

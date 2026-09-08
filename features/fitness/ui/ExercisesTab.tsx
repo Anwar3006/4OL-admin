@@ -51,7 +51,7 @@ function FilterSelect({
 }) {
   return (
     <select
-      className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-2xs font-bold uppercase tracking-widest text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+      className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-label={label}
@@ -131,7 +131,7 @@ const ExercisesTab = () => {
       title: (data) => data.exercise_name,
       subtitle: (data) => data.category,
       badge: (data) => (
-        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-slate-50 text-slate-700 border-slate-100">
+        <span className="text-2xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-800">
           {data.difficulty_level}
         </span>
       ),
@@ -154,7 +154,7 @@ const ExercisesTab = () => {
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
           placeholder="🔍 Search exercises..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -166,7 +166,7 @@ const ExercisesTab = () => {
         <FilterSelect label="Tier" value={tier} options={TIERS} onChange={setTier} />
         <FilterSelect label="Status" value={status} options={STATUSES} onChange={setStatus} />
         <button
-          className="h-9 px-4 rounded-xl border border-slate-200 bg-white text-2xs font-black uppercase tracking-widest text-slate-600 hover:border-emerald-500 hover:text-emerald-700 transition-all"
+          className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all"
           onClick={exportCsv}
         >
           📥 Export CSV
@@ -183,7 +183,7 @@ const ExercisesTab = () => {
         <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">
           {totalItems.toLocaleString()} exercise{totalItems === 1 ? "" : "s"} match the current filters
           <button
-            className="ml-2 text-emerald-700 hover:underline normal-case"
+            className="ml-2 text-emerald-700 dark:text-emerald-400 hover:underline normal-case"
             onClick={() => {
               setSearch("");
               setCategory("");
@@ -199,7 +199,7 @@ const ExercisesTab = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
         <DataTable
           columns={exerciseColumns}
           data={exercises}

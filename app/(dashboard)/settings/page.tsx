@@ -340,7 +340,7 @@ export default function SettingsPage() {
       )}
 
       {success && (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-900">
+        <Alert className="border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-900">
           <Check className="h-4 w-4" />
           <AlertTitle>Saved</AlertTitle>
           <AlertDescription>{success}</AlertDescription>
@@ -389,7 +389,7 @@ export default function SettingsPage() {
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 data-[state=active]:border-emerald-700 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 data-[state=active]:shadow-none"
+                className="shrink-0 rounded-none border-b-2 border-transparent px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400 data-[state=active]:bg-transparent data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-none"
               >
                 <tab.icon className="mr-2 h-4 w-4" />
                 {tab.label}
@@ -461,7 +461,7 @@ function GeneralSettings({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           General Configuration
         </CardTitle>
         <Button type="button" size="sm" onClick={onSave} disabled={loading || saving || !settings}>
@@ -558,7 +558,7 @@ function PlansTable({ loading, plans }: { loading: boolean; plans: Plan[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Subscription Plans
         </CardTitle>
       </CardHeader>
@@ -581,7 +581,7 @@ function PlansTable({ loading, plans }: { loading: boolean; plans: Plan[] }) {
             {!loading &&
               plans.map((plan) => (
                 <TableRow key={plan.id}>
-                  <TableCell className="font-bold text-slate-800">{plan.name}</TableCell>
+                  <TableCell className="font-bold text-slate-800 dark:text-slate-200">{plan.name}</TableCell>
                   <TableCell><Badge variant="blue">{plan.key}</Badge></TableCell>
                   <TableCell>{formatMoney(plan.price_ghs, "GHS")}</TableCell>
                   <TableCell>{plan.duration_days ? `${plan.duration_days} days` : "Lifetime"}</TableCell>
@@ -611,7 +611,7 @@ function FeatureFlags({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Feature Flags
         </CardTitle>
       </CardHeader>
@@ -624,10 +624,10 @@ function FeatureFlags({
           flags.map((flag) => (
             <div
               key={flag.id}
-              className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <div className="font-bold text-slate-800">{flag.name}</div>
+                <div className="font-bold text-slate-800 dark:text-slate-200">{flag.name}</div>
                 <div className="mt-1 text-xs text-slate-500">
                   {flag.description || "No description"}
                 </div>
@@ -657,12 +657,12 @@ function ApiKeysTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           API Key Status
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Alert className="mb-4 border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="mb-4 border-amber-200 bg-amber-50 dark:bg-amber-500/15 text-amber-900">
           <KeyRound className="h-4 w-4" />
           <AlertTitle>Secrets are masked</AlertTitle>
           <AlertDescription>
@@ -689,7 +689,7 @@ function ApiKeysTable({
             {!loading &&
               keys.map((key) => (
                 <TableRow key={key.id}>
-                  <TableCell className="font-bold text-slate-800">{key.name}</TableCell>
+                  <TableCell className="font-bold text-slate-800 dark:text-slate-200">{key.name}</TableCell>
                   <TableCell>{key.provider}</TableCell>
                   <TableCell>{key.environment}</TableCell>
                   <TableCell><Badge variant="outline">{key.source}</Badge></TableCell>
@@ -720,7 +720,7 @@ function IntegrationsList({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Integrations
         </CardTitle>
       </CardHeader>
@@ -733,10 +733,10 @@ function IntegrationsList({
           integrations.map((integration) => (
             <div
               key={integration.id}
-              className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <div className="font-bold text-slate-800">{integration.name}</div>
+                <div className="font-bold text-slate-800 dark:text-slate-200">{integration.name}</div>
                 <div className="mt-1 text-xs text-slate-500">
                   {integration.provider}
                   {integration.webhook_url ? ` · ${integration.webhook_url}` : ""}
@@ -778,7 +778,7 @@ function MaintenanceSettings({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700">
+        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
           Maintenance Mode
         </CardTitle>
         <Button type="button" size="sm" onClick={onSave} disabled={loading || saving || !maintenance}>
@@ -787,9 +787,9 @@ function MaintenanceSettings({
         </Button>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
           <div>
-            <div className="font-bold text-slate-800">Enable maintenance mode</div>
+            <div className="font-bold text-slate-800 dark:text-slate-200">Enable maintenance mode</div>
             <div className="mt-1 text-xs text-slate-500">
               When enabled, public app surfaces should display the maintenance message.
             </div>
@@ -860,7 +860,7 @@ function Field({
 
 function EmptyPanel({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center text-sm font-medium text-slate-400">
+    <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-8 text-center text-sm font-medium text-slate-400">
       {label}
     </div>
   );

@@ -12,7 +12,7 @@ export default function SystemHealth({
     {
       label: "Dashboard RPC",
       value: loading ? "Checking" : metrics ? "Connected" : "Unavailable",
-      color: metrics ? "text-ek-green-dark" : "text-amber-600",
+      color: metrics ? "text-ek-green-dark" : "text-amber-600 dark:text-amber-400",
     },
     {
       label: "Activity Feed",
@@ -22,7 +22,7 @@ export default function SystemHealth({
     {
       label: "Transactions",
       value: metrics?.finance.revenue_status === "live" ? "Live" : "Awaiting pipeline",
-      color: "text-amber-600",
+      color: "text-amber-600 dark:text-amber-400",
     },
     {
       label: "Security Score",

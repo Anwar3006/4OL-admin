@@ -9,19 +9,19 @@ import { Heart, Shield, Stethoscope } from "lucide-react";
 
 const LoginPage = () => {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-2 bg-white">
+    <div className="grid min-h-dvh lg:grid-cols-2 bg-white dark:bg-slate-800">
       
       {/* Left Column: Green Branding Panel */}
       <div className="relative hidden lg:flex flex-col bg-emerald-600 overflow-hidden p-12 2xl:p-24 justify-between">
         {/* Decorative circles - Scaled for 4K */}
-        <div className="absolute -top-20 -left-20 w-64 h-64 2xl:w-96 2xl:h-96 rounded-full bg-white/10" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 2xl:w-[600px] 2xl:h-[600px] rounded-full bg-white/10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] 2xl:w-[800px] 2xl:h-[800px] rounded-full bg-white/5" />
+        <div className="absolute -top-20 -left-20 w-64 h-64 2xl:w-96 2xl:h-96 rounded-full bg-white/10 dark:bg-slate-800/10" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 2xl:w-[600px] 2xl:h-[600px] rounded-full bg-white/10 dark:bg-slate-800/10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] 2xl:w-[800px] 2xl:h-[800px] rounded-full bg-white/5 dark:bg-slate-800/5" />
         
         {/* Top Logo & Brand */}
         <div className="relative z-10 flex items-center gap-3 2xl:gap-4">
           <Link href="/login" className="flex items-center gap-3 2xl:gap-4 transition-opacity hover:opacity-80">
-            <div className="flex items-center justify-center p-1.5 2xl:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="flex items-center justify-center p-1.5 2xl:p-2.5 rounded-xl bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm">
               <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
@@ -50,15 +50,15 @@ const LoginPage = () => {
 
           {/* Feature pills */}
           <div className="flex flex-wrap gap-3 2xl:gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
               <Heart className="w-4 h-4 2xl:w-5 2xl:h-5" />
               Patient Care
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
               <Shield className="w-4 h-4 2xl:w-5 2xl:h-5" />
               Secure Data
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 2xl:px-6 2xl:py-3 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm 2xl:text-lg font-medium">
               <Stethoscope className="w-4 h-4 2xl:w-5 2xl:h-5" />
               Facility Tools
             </div>
@@ -81,7 +81,7 @@ const LoginPage = () => {
       </div>
 
       {/* Right Column: Form Container */}
-      <div className="flex flex-col p-6 md:p-10 2xl:p-24 h-full overflow-y-auto bg-white">
+      <div className="flex flex-col p-6 md:p-10 2xl:p-24 h-full overflow-y-auto bg-white dark:bg-slate-800">
         {/* Mobile-only logo */}
         <div className="flex items-center lg:hidden mb-8">
           <Link href="/login" className="flex items-center gap-3 transition-opacity hover:opacity-80">

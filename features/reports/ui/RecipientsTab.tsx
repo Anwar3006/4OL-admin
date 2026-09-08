@@ -87,7 +87,7 @@ export default function RecipientsTab() {
       <Card>
         <CardContent className="py-14 text-center">
           <Users className="h-8 w-8 mx-auto text-slate-300 mb-3" />
-          <p className="text-sm font-bold text-slate-700">Create a report schedule first</p>
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Create a report schedule first</p>
           <p className="text-xs text-slate-500 mt-1">Recipients are attached to a schedule — create one in the Schedules tab.</p>
         </CardContent>
       </Card>
@@ -99,7 +99,7 @@ export default function RecipientsTab() {
       <div className="flex items-center gap-3">
         <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Schedule</span>
         <select
-          className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm min-w-[240px]"
+          className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm min-w-[240px]"
           value={definitionId ?? ""}
           onChange={(e) => setDefinitionId(e.target.value)}>
           {definitions.map((d) => (
@@ -125,7 +125,7 @@ export default function RecipientsTab() {
         <Card>
           <CardContent className="py-14 text-center">
             <Users className="h-8 w-8 mx-auto text-slate-300 mb-3" />
-            <p className="text-sm font-bold text-slate-700">Nobody receives this report yet</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Nobody receives this report yet</p>
             <p className="text-xs text-slate-500 mt-1">Add admins — they will see the report in their Reports inbox on delivery day.</p>
           </CardContent>
         </Card>
@@ -136,7 +136,7 @@ export default function RecipientsTab() {
               <CardContent className="pt-5 space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
                   <select
-                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm min-w-[220px]"
+                    className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm min-w-[220px]"
                     value={row.adminId}
                     onChange={(e) => update(index, { adminId: e.target.value })}>
                     <option value="">Select admin…</option>
@@ -147,7 +147,7 @@ export default function RecipientsTab() {
                     ))}
                   </select>
 
-                  <div className="flex items-center gap-3 text-sm font-semibold text-slate-700">
+                  <div className="flex items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {["inbox", "email"].map((channel) => (
                       <label key={channel} className="flex items-center gap-1.5 capitalize">
                         <input
@@ -193,8 +193,8 @@ export default function RecipientsTab() {
                           }
                           className={`px-2.5 py-1 rounded-full border text-xs font-bold ${
                             hidden
-                              ? "bg-red-50 border-red-200 text-red-600"
-                              : "bg-white border-slate-200 text-slate-500 hover:border-red-200"
+                              ? "bg-red-50 dark:bg-red-500/15 border-red-200 text-red-600 dark:text-red-400"
+                              : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-red-200"
                           }`}>
                           {hidden ? "🙈 " : ""}
                           {SECTION_LABELS[section] ?? section}

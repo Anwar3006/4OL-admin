@@ -100,7 +100,7 @@ export default function TaskDetailDialog({
         {!canEdit ? (
           // Read-only view for roles without tasks.edit.
           <div className="space-y-3 text-sm">
-            <h4 className="text-sm font-bold text-slate-800">{task.title}</h4>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{task.title}</h4>
             {task.description && (
               <p className="text-xs text-slate-500 whitespace-pre-wrap">{task.description}</p>
             )}
@@ -127,7 +127,7 @@ export default function TaskDetailDialog({
             />
             <div className="grid grid-cols-2 gap-3">
               <select
-                className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as AdminTask["status"])}
               >
@@ -136,7 +136,7 @@ export default function TaskDetailDialog({
                 ))}
               </select>
               <select
-                className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as AdminTask["priority"])}
               >
@@ -148,7 +148,7 @@ export default function TaskDetailDialog({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <select
-                className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -161,7 +161,7 @@ export default function TaskDetailDialog({
                 )}
               </select>
               <select
-                className="h-9 px-3 rounded-lg border border-slate-200 text-xs font-bold"
+                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold"
                 value={assigneeId}
                 onChange={(e) => setAssigneeId(e.target.value)}
               >
@@ -190,7 +190,7 @@ export default function TaskDetailDialog({
             <div className="flex items-center justify-between pt-2">
               <Button
                 variant="outline"
-                className="text-red-600 border-red-200 hover:bg-red-50"
+                className="text-red-600 dark:text-red-400 border-red-200 hover:bg-red-50 dark:hover:bg-red-500/15"
                 onClick={handleDelete}
                 disabled={deleteTask.isPending}
               >

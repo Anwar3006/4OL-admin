@@ -45,7 +45,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
             title="Approve & Launch"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               setStatus("live");
@@ -57,7 +57,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
             aria-label="Reject"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               setStatus("rejected");
@@ -73,7 +73,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
           title="Pause campaign"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+          className="h-8 w-8 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             setStatus("paused");
@@ -90,7 +90,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
           title="Launch campaign"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+          className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             setStatus("live");
@@ -103,7 +103,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
         aria-label="View Details"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           openView(marketing.id);
@@ -115,7 +115,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
         aria-label="Edit"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           openEdit(marketing);
@@ -127,7 +127,7 @@ function CampaignRowActions({ marketing }: { marketing: TMarketingProfileOutput 
         aria-label="Delete"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
         disabled={deleteMutation.isPending}
         onClick={(e) => {
           e.stopPropagation();
@@ -149,7 +149,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     header: "Campaign",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-xs uppercase tracking-tight">
+        <div className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight">
           {row.original.headline}
         </div>
         <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
@@ -162,7 +162,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     accessorKey: "campaign_type",
     header: "Type",
     cell: ({ row }) => (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-blue-50 text-blue-700 border border-blue-100">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-500/30">
         {row.original.campaign_type ?? row.original.marketingType}
       </span>
     ),
@@ -171,7 +171,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "target",
     header: "Target",
     cell: ({ row }) => (
-      <span className="text-xs font-bold text-slate-600">
+      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
         {row.original.target_segment || "All users"}
       </span>
     ),
@@ -185,7 +185,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "period",
     header: "Period",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
         {fmtDate(row.original.startDate)} → {fmtDate(row.original.endDate)}
       </span>
     ),
@@ -194,7 +194,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "budget",
     header: "Budget",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 dark:text-slate-300 tabular-nums">
         {formatCurrency(row.original.budget, { fallback: "—" })}
       </span>
     ),
@@ -203,7 +203,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "impressions",
     header: "Impressions",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 dark:text-slate-300 tabular-nums">
         {(row.original.impressions ?? 0).toLocaleString()}
       </span>
     ),
@@ -212,7 +212,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "clicks",
     header: "Clicks",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 dark:text-slate-300 tabular-nums">
         {(row.original.clicks ?? 0).toLocaleString()}
       </span>
     ),
@@ -221,7 +221,7 @@ export const marketingColumns: ColumnDef<TMarketingProfileOutput>[] = [
     id: "ctr",
     header: "CTR",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-emerald-700 tabular-nums">
+      <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 tabular-nums">
         {ctr(row.original.impressions ?? 0, row.original.clicks ?? 0)}
       </span>
     ),

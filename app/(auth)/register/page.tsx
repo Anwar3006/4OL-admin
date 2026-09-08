@@ -8,10 +8,10 @@ import RegisterForm from "../_components/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-2 bg-white">
+    <div className="grid min-h-dvh lg:grid-cols-2 bg-white dark:bg-slate-800">
       
       {/* Left Column: Form Container */}
-      <div className="flex flex-col p-6 md:p-10 h-full overflow-y-auto bg-white">
+      <div className="flex flex-col p-6 md:p-10 h-full overflow-y-auto bg-white dark:bg-slate-800">
         {/* Mobile-only logo */}
         <div className="flex items-center lg:hidden mb-8">
           <Link href="/register" className="flex items-center gap-3 transition-opacity hover:opacity-80">
@@ -40,14 +40,14 @@ export default function RegisterPage() {
       {/* Right Column: Green Branding Panel */}
       <div className="relative hidden lg:flex flex-col bg-emerald-600 overflow-hidden p-12 justify-between">
         {/* Decorative circles */}
-        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/10" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-white/10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-white/5" />
+        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/10 dark:bg-slate-800/10" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-white/10 dark:bg-slate-800/10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-white/5 dark:bg-slate-800/5" />
         
         {/* Top Logo & Brand */}
         <div className="relative z-10 flex items-center gap-3">
           <Link href="/login" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <div className="flex items-center justify-center p-1.5 rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="flex items-center justify-center p-1.5 rounded-xl bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm">
               <Image
                 src="/assets/images/all-img/logo.png"
                 alt="4 Our Life Logo"
@@ -76,15 +76,15 @@ export default function RegisterPage() {
 
           {/* Feature pills */}
           <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm font-medium">
               <Heart className="w-4 h-4" />
               Patient Care
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm font-medium">
               <Shield className="w-4 h-4" />
               Secure Data
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm font-medium">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 dark:bg-slate-800/15 backdrop-blur-sm text-white text-sm font-medium">
               <Stethoscope className="w-4 h-4" />
               Facility Tools
             </div>

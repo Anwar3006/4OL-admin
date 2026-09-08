@@ -151,13 +151,13 @@ export default function RolesPermissionsTab() {
 
   if (loadError) {
     return (
-      <div className="card p-6 flex items-start gap-3 border-amber-200 bg-amber-50">
-        <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+      <div className="card p-6 flex items-start gap-3 border-amber-200 bg-amber-50 dark:bg-amber-500/15">
+        <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
         <div className="text-sm text-amber-800 font-medium leading-relaxed">
           <p className="font-black mb-1">RBAC matrix unavailable</p>
           <p>{loadError}</p>
-          <p className="mt-2 text-amber-700/80">
-            Run <code className="bg-amber-100 px-1 rounded">supabase/migrations/20260817_rbac_permission_catalog.sql</code>{" "}
+          <p className="mt-2 text-amber-700/80 dark:text-amber-400/80">
+            Run <code className="bg-amber-100 dark:bg-amber-500/20 px-1 rounded">supabase/migrations/20260817_rbac_permission_catalog.sql</code>{" "}
             against the database, then reload this tab.
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function RolesPermissionsTab() {
               "px-3 py-1.5 rounded-lg text-xs font-black border transition-colors",
               selectedRole === role.role
                 ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white text-slate-600 border-slate-200 hover:border-slate-400",
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400",
             )}
             title={role.description ?? undefined}
           >
@@ -196,7 +196,7 @@ export default function RolesPermissionsTab() {
 
       {/* Permission matrix for the selected role */}
       <div className="card overflow-hidden p-0">
-        <div className="card-header border-b border-slate-100 flex justify-between items-center gap-3 flex-wrap">
+        <div className="card-header border-b border-slate-100 dark:border-slate-800 flex justify-between items-center gap-3 flex-wrap">
           <h2 className="card-title text-sm">
             🛡️ Default permissions — {roles.find((r) => r.role === selectedRole)?.label ?? selectedRole}
           </h2>
@@ -226,8 +226,8 @@ export default function RolesPermissionsTab() {
           {PERMISSION_RESOURCES.map((resource) => {
             const defs = PERMISSION_CATALOG.filter((p) => p.resource === resource);
             return (
-              <div key={resource} className="border border-slate-100 rounded-xl overflow-hidden">
-                <div className="bg-slate-50 px-3 py-2 text-3xs font-black uppercase tracking-widest text-slate-400">
+              <div key={resource} className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 px-3 py-2 text-3xs font-black uppercase tracking-widest text-slate-400">
                   {resource}
                 </div>
                 <div className="divide-y divide-slate-50">
@@ -241,7 +241,7 @@ export default function RolesPermissionsTab() {
                         disabled={!canEdit}
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors",
-                          canEdit ? "hover:bg-slate-50 cursor-pointer" : "cursor-default",
+                          canEdit ? "hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer" : "cursor-default",
                         )}
                         title={def.description}
                       >
@@ -250,7 +250,7 @@ export default function RolesPermissionsTab() {
                         ) : (
                           <Minus className="w-3.5 h-3.5 text-slate-200 shrink-0" />
                         )}
-                        <span className="text-xs font-bold text-slate-700">{def.key}</span>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{def.key}</span>
                       </button>
                     );
                   })}
@@ -263,7 +263,7 @@ export default function RolesPermissionsTab() {
 
       {/* Per-user overrides */}
       <div className="card overflow-hidden p-0">
-        <div className="card-header border-b border-slate-100">
+        <div className="card-header border-b border-slate-100 dark:border-slate-800">
           <h2 className="card-title text-sm">🎯 Per-user overrides</h2>
         </div>
         <div className="p-4 space-y-4">
@@ -321,8 +321,8 @@ export default function RolesPermissionsTab() {
             <p className="text-xs text-slate-400 font-bold">No per-user overrides configured.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-xs font-bold text-slate-600 border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-widest text-3xs">
+              <table className="w-full text-xs font-bold text-slate-600 dark:text-slate-300 border-collapse">
+                <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-400 uppercase tracking-widest text-3xs">
                   <tr>
                     <th className="p-3 font-black text-left">User</th>
                     <th className="p-3 font-black text-left">Permission</th>
@@ -341,8 +341,8 @@ export default function RolesPermissionsTab() {
                           className={cn(
                             "badge text-3xs font-black",
                             ov.effect === "grant"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-700",
+                              ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                              : "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400",
                           )}
                         >
                           {ov.effect}
@@ -354,7 +354,7 @@ export default function RolesPermissionsTab() {
                           <button
                             type="button"
                             onClick={() => removeOverride(ov.user_id, ov.permission_key)}
-                            className="text-red-400 hover:text-red-600"
+                            className="text-red-400 hover:text-red-600 dark:hover:text-red-400"
                             aria-label="Remove override"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

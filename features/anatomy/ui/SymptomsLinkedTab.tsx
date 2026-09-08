@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAnatomySymptoms, useBodyParts } from "@/features/anatomy/data/useAnatomy";
 
 const inputCls =
-  "h-9 px-3 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white";
+  "h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500/20 outline-none bg-white dark:bg-slate-800";
 
 const severityBadge = (severity: string | null) => {
   const s = (severity || "").toLowerCase();
@@ -34,7 +34,7 @@ export default function SymptomsLinkedTab() {
 
   return (
     <div className="card">
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-5 py-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-5 py-4">
         <h3 className="section-heading">
           🩺 Symptoms Linked to Body Parts
         </h3>
@@ -79,7 +79,7 @@ export default function SymptomsLinkedTab() {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 text-2xs font-black uppercase tracking-widest text-slate-400">
+            <tr className="border-b border-slate-100 dark:border-slate-800 text-2xs font-black uppercase tracking-widest text-slate-400">
               <th className="px-5 py-3">Body Part</th>
               <th className="px-5 py-3">Symptom</th>
               <th className="px-5 py-3">Severity</th>
@@ -105,13 +105,13 @@ export default function SymptomsLinkedTab() {
               (rows ?? []).map((row) => (
                 <tr
                   key={`${row.symptom_id}-${row.body_part_id}`}
-                  className="border-b border-slate-50 hover:bg-slate-50/60"
+                  className="border-b border-slate-50 hover:bg-slate-50/60 dark:hover:bg-slate-900/60"
                 >
-                  <td className="px-5 py-3 font-bold text-slate-800">{row.body_part_name}</td>
+                  <td className="px-5 py-3 font-bold text-slate-800 dark:text-slate-200">{row.body_part_name}</td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/symptoms?id=${row.symptom_id}`}
-                      className="font-semibold text-emerald-700 hover:underline"
+                      className="font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
                     >
                       {row.symptom_name}
                     </Link>

@@ -17,7 +17,7 @@ export default function AICheckerTab() {
       {/* Gradient status banner */}
       <div className="rounded-2xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 text-white p-6 shadow-md">
         <div className="flex flex-wrap items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-2xl shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-white/15 dark:bg-slate-800/15 flex items-center justify-center text-2xl shrink-0">
             🤖
           </div>
           <div className="min-w-0 flex-1">
@@ -29,7 +29,7 @@ export default function AICheckerTab() {
               {stats ? `${stats.interaction_pairs.toLocaleString()} interaction pairs indexed` : "indexing catalog…"}
             </div>
           </div>
-          <span className="badge bg-white/20 text-white border-0 uppercase">98.1% Accuracy</span>
+          <span className="badge bg-white/20 dark:bg-slate-800/20 text-white border-0 uppercase">98.1% Accuracy</span>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function AICheckerTab() {
       </div>
 
       {/* Clinical review notice */}
-      <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800 font-medium">
+      <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-500/15 px-4 py-3 text-xs text-blue-800 dark:text-blue-400 font-medium">
         <span>ℹ️</span>
         <span>
           Interaction verdicts undergo <strong>monthly pharmacist review</strong>{" "}

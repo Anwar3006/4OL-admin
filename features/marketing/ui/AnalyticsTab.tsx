@@ -81,7 +81,7 @@ export default function AnalyticsTab() {
       </div>
 
       {/* ROI Summary */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
         <h3 className="section-heading mb-4">ROI Summary</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
@@ -90,8 +90,8 @@ export default function AnalyticsTab() {
             { label: "CPA", value: dash(performance.cpa) },
             { label: "Premium Upgrades", value: dash(funnel.upgrades) },
           ].map((item) => (
-            <div key={item.label} className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
-              <div className="text-xl font-black text-slate-800">{item.value}</div>
+            <div key={item.label} className="rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 text-center">
+              <div className="text-xl font-black text-slate-800 dark:text-slate-200">{item.value}</div>
               <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">{item.label}</div>
             </div>
           ))}
@@ -103,7 +103,7 @@ export default function AnalyticsTab() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Channel Breakdown */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
           <h3 className="section-heading mb-4">Channel Breakdown</h3>
           {channels.length === 0 ? (
             <p className="text-xs text-slate-400 font-medium">No channel data yet — assign channels when creating campaigns.</p>
@@ -115,7 +115,7 @@ export default function AnalyticsTab() {
                     <span>{CHANNEL_LABELS[channel.channel] ?? channel.channel}</span>
                     <span>{channel.impressions.toLocaleString()} imp · {channel.clicks.toLocaleString()} clicks</span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                     <div
                       className="h-full rounded-full bg-emerald-500"
                       style={{ width: `${Math.round((channel.impressions / maxChannelImpressions) * 100)}%` }}
@@ -128,19 +128,19 @@ export default function AnalyticsTab() {
         </div>
 
         {/* Top Campaigns by CTR */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
           <h3 className="section-heading mb-4">Top Campaigns by CTR</h3>
           {top_campaigns_by_ctr.length === 0 ? (
             <p className="text-xs text-slate-400 font-medium">No impression data recorded yet.</p>
           ) : (
             <div className="space-y-2">
               {top_campaigns_by_ctr.map((campaign, index) => (
-                <div key={campaign.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-2.5">
+                <div key={campaign.id} className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 px-4 py-2.5">
                   <div className="min-w-0">
-                    <div className="text-xs font-black text-slate-700 truncate">{index + 1}. {campaign.headline}</div>
+                    <div className="text-xs font-black text-slate-700 dark:text-slate-300 truncate">{index + 1}. {campaign.headline}</div>
                     <div className="text-2xs font-bold uppercase tracking-widest text-slate-400">{campaign.status}</div>
                   </div>
-                  <span className="text-xs font-black text-emerald-600 shrink-0 ml-3">{campaign.ctr}%</span>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0 ml-3">{campaign.ctr}%</span>
                 </div>
               ))}
             </div>
@@ -149,12 +149,12 @@ export default function AnalyticsTab() {
       </div>
 
       {/* User Acquisition Funnel */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
         <h3 className="section-heading mb-4">User Acquisition Funnel</h3>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {funnelStages.map((stage) => (
-            <div key={stage.label} className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
-              <div className="text-lg font-black text-slate-800">{dash(stage.value)}</div>
+            <div key={stage.label} className="rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 text-center">
+              <div className="text-lg font-black text-slate-800 dark:text-slate-200">{dash(stage.value)}</div>
               <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 mt-1">{stage.label}</div>
             </div>
           ))}

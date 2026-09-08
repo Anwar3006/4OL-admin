@@ -75,7 +75,7 @@ export default function SubscriptionsTab() {
             setPlan(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           {PLANS.map((p) => (
             <option key={p.value} value={p.value}>{p.label}</option>
@@ -87,7 +87,7 @@ export default function SubscriptionsTab() {
             setType(e.target.value);
             setPage(1);
           }}
-          className="h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none"
+          className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none"
         >
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>

@@ -246,7 +246,7 @@ const FitCoinsTab = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+        <Loader2 className="h-6 w-6 animate-spin text-emerald-600 dark:text-emerald-400" />
       </div>
     );
   }
@@ -254,7 +254,7 @@ const FitCoinsTab = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* ── Purpose & usage ── */}
-      <div className="alert bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-sm font-medium leading-relaxed">
+      <div className="alert bg-amber-50 dark:bg-amber-500/15 border border-amber-200 text-amber-800 p-4 rounded-lg text-sm font-medium leading-relaxed">
         <span className="font-black">🪙 What are FitCoins?</span> FitCoins reward activity:
         completing workouts, outdoor events, streak milestones and challenges earns coins,
         which users redeem against the rewards catalog below. Amounts here are read by the
@@ -264,8 +264,8 @@ const FitCoinsTab = () => {
       </div>
 
       {/* ── Activity tiers ── */}
-      <div className="card bg-white">
-        <h3 className="text-xl font-black text-slate-800 mb-1">🎯 Reward Tiers by Activity</h3>
+      <div className="card bg-white dark:bg-slate-800">
+        <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-1">🎯 Reward Tiers by Activity</h3>
         <p className="text-sm text-slate-500 font-medium mb-4">
           Coins awarded per activity. Daily cap limits repeat awards per user per day
           (blank = unlimited).
@@ -273,7 +273,7 @@ const FitCoinsTab = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+              <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                 <th className="py-2 pr-4">Activity</th>
                 <th className="py-2 pr-4">Purpose</th>
                 <th className="py-2 pr-4 w-24">Coins</th>
@@ -288,7 +288,7 @@ const FitCoinsTab = () => {
                 return (
                   <tr key={tier.activity_key} className="border-b border-slate-50">
                     <td className="py-3 pr-4">
-                      <span className="text-sm font-bold text-slate-800">{tier.label}</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{tier.label}</span>
                       <div className="text-3xs text-slate-400 font-mono">{tier.activity_key}</div>
                     </td>
                     <td className="py-3 pr-4 text-xs text-slate-500 max-w-[280px]">
@@ -299,7 +299,7 @@ const FitCoinsTab = () => {
                         type="number"
                         min={0}
                         disabled={!canManage}
-                        className="w-20 h-8 px-2 text-sm border border-slate-200 rounded-lg disabled:bg-slate-50"
+                        className="w-20 h-8 px-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg disabled:bg-slate-50"
                         value={draft.coins}
                         onChange={(e) =>
                           setTierDrafts((prev) => ({
@@ -315,7 +315,7 @@ const FitCoinsTab = () => {
                         min={1}
                         placeholder="∞"
                         disabled={!canManage}
-                        className="w-20 h-8 px-2 text-sm border border-slate-200 rounded-lg disabled:bg-slate-50"
+                        className="w-20 h-8 px-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg disabled:bg-slate-50"
                         value={draft.daily_cap}
                         onChange={(e) =>
                           setTierDrafts((prev) => ({
@@ -361,8 +361,8 @@ const FitCoinsTab = () => {
 
       {/* ── Rewards catalog ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card bg-white">
-          <h3 className="text-xl font-black text-slate-800 mb-4">🎁 Redemption Catalog</h3>
+        <div className="card bg-white dark:bg-slate-800">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-4">🎁 Redemption Catalog</h3>
           {rewards.length === 0 ? (
             <p className="text-sm text-slate-400 font-medium py-4">No rewards defined yet.</p>
           ) : (
@@ -370,10 +370,10 @@ const FitCoinsTab = () => {
               {rewards.map((reward) => (
                 <div
                   key={reward.id}
-                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-bold text-slate-800 truncate">
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                       {reward.name}
                     </div>
                     {reward.description && (
@@ -400,10 +400,10 @@ const FitCoinsTab = () => {
             </div>
           )}
           {canManage && (
-            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+            <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
               <input
                 placeholder="Reward name"
-                className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl"
+                className="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
                 value={newRewardName}
                 onChange={(e) => setNewRewardName(e.target.value)}
               />
@@ -411,7 +411,7 @@ const FitCoinsTab = () => {
                 placeholder="Cost"
                 type="number"
                 min={1}
-                className="w-24 px-3 py-2 text-sm border border-slate-200 rounded-xl"
+                className="w-24 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
                 value={newRewardCost}
                 onChange={(e) => setNewRewardCost(e.target.value)}
               />
@@ -428,8 +428,8 @@ const FitCoinsTab = () => {
         </div>
 
         {/* ── Recent redemptions ── */}
-        <div className="card bg-white">
-          <h3 className="text-xl font-black text-slate-800 mb-4">🧾 Recent Redemptions</h3>
+        <div className="card bg-white dark:bg-slate-800">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-4">🧾 Recent Redemptions</h3>
           <p className="text-xs text-slate-400 font-medium mb-3">
             Coins are reserved the moment a user requests a reward. Approve once fulfilment is
             confirmed on your end, or reject to refund the coins.
@@ -441,10 +441,10 @@ const FitCoinsTab = () => {
               {redemptions.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-bold text-slate-800 truncate">{r.user_name}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{r.user_name}</div>
                     <div className="text-2xs text-slate-400">
                       {r.fitcoin_rewards?.name ?? "Reward"} ·{" "}
                       {new Date(r.redeemed_at).toLocaleDateString()}
@@ -487,7 +487,7 @@ const FitCoinsTab = () => {
                           variant="outline"
                           disabled={reviewingId === r.id}
                           onClick={() => reviewRedemption(r.id, "reject")}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400"
                         >
                           Reject
                         </Button>
@@ -512,16 +512,16 @@ const FitCoinsTab = () => {
       </div>
 
       {/* ── Ledger ── */}
-      <div className="card bg-white">
+      <div className="card bg-white dark:bg-slate-800">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-black text-slate-800">📒 FitCoins Ledger</h3>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200">📒 FitCoins Ledger</h3>
           <span className="badge badge-slate text-3xs font-black">
             {ledgerTotal.toLocaleString()} entries
           </span>
         </div>
         {ledgerLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
+            <Loader2 className="h-5 w-5 animate-spin text-emerald-600 dark:text-emerald-400" />
           </div>
         ) : ledger.length === 0 ? (
           <p className="text-sm text-slate-400 font-medium py-4">No ledger entries yet.</p>
@@ -529,7 +529,7 @@ const FitCoinsTab = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="py-2 pr-4">User</th>
                   <th className="py-2 pr-4">Type</th>
                   <th className="py-2 pr-4">Amount</th>
@@ -539,9 +539,9 @@ const FitCoinsTab = () => {
               <tbody>
                 {ledger.map((row) => (
                   <tr key={row.id} className="border-b border-slate-50">
-                    <td className="py-2.5 pr-4 text-xs font-bold text-slate-700">{row.user_name}</td>
+                    <td className="py-2.5 pr-4 text-xs font-bold text-slate-700 dark:text-slate-300">{row.user_name}</td>
                     <td className="py-2.5 pr-4 text-2xs font-mono text-slate-500">{row.transaction_type}</td>
-                    <td className={`py-2.5 pr-4 text-xs font-black ${Number(row.amount) >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                    <td className={`py-2.5 pr-4 text-xs font-black ${Number(row.amount) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
                       {Number(row.amount) >= 0 ? "+" : ""}
                       {Number(row.amount).toLocaleString()}
                     </td>

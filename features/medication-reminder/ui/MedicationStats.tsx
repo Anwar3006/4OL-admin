@@ -32,7 +32,7 @@ export default function MedicationStats() {
   const { data: drugStats, isLoading: drugLoading } = useDrugKpiStats();
 
   if (isLoading || !stats) {
-    return <div className="h-24 animate-pulse bg-slate-100 rounded-xl mb-6 w-full"></div>;
+    return <div className="h-24 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-xl mb-6 w-full"></div>;
   }
 
   // Helper to format deltas

@@ -57,8 +57,8 @@ interface NewAdminDashboardShellProps {
 // removed from nav data entirely; only status/role badges remain.
 const badgeToneClass: Record<string, string> = {
   LIVE: "bg-red-500 text-white",
-  SA: "bg-white/15 text-white border border-white/15",
-  Fac: "bg-white/15 text-white/90 border border-white/15",
+  SA: "bg-white/15 dark:bg-slate-800/15 text-white border border-white/15",
+  Fac: "bg-white/15 dark:bg-slate-800/15 text-white/90 border border-white/15",
 };
 
 export default function NewAdminDashboardShell({
@@ -249,7 +249,7 @@ export default function NewAdminDashboardShell({
                   tooltip="4 Our Life"
                   className="hover:bg-transparent cursor-default text-sidebar-foreground"
                 >
-                  <div className="flex size-fit items-center justify-center rounded-full bg-white/10">
+                  <div className="flex size-fit items-center justify-center rounded-full bg-white/10 dark:bg-slate-800/10">
                     <Image
                       src="/assets/images/all-img/logo.png"
                       alt="4 Our Life"
@@ -295,7 +295,7 @@ export default function NewAdminDashboardShell({
                             <SidebarMenuButton
                               onClick={handleLogout}
                               tooltip="Logout"
-                              className="text-white/55 hover:bg-white/10 hover:text-white transition-colors font-medium text-xs"
+                              className="text-white/55 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white transition-colors font-medium text-xs"
                             >
                               <span className="flex items-center justify-center">
                                 {item.icon}
@@ -316,8 +316,8 @@ export default function NewAdminDashboardShell({
                               className={cn(
                                 "transition-colors font-medium text-xs",
                                 active
-                                  ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
-                                  : "text-white hover:bg-white/10 hover:text-white",
+                                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                                  : "text-white hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
                               )}
                             >
                               <span className="flex items-center justify-center">
@@ -343,8 +343,8 @@ export default function NewAdminDashboardShell({
                                       className={cn(
                                         "font-medium text-xs",
                                         isLinkActive(child.href)
-                                          ? "bg-white text-slate-900 shadow-sm hover:bg-white hover:text-slate-900"
-                                          : "text-white/50 hover:bg-white/10 hover:text-white",
+                                          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                                          : "text-white/50 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
                                       )}
                                     >
                                       <Link href={child.href}>
@@ -368,8 +368,8 @@ export default function NewAdminDashboardShell({
                             className={cn(
                               "transition-colors font-medium text-xs",
                               active
-                                ? "bg-white! text-black! shadow-sm hover:bg-white hover:text-slate-900"
-                                : "text-white hover:bg-white/10 hover:text-white",
+                                ? "bg-white! text-black! shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                                : "text-white hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
                             )}
                           >
                             <Link href={item.href}>
@@ -384,7 +384,7 @@ export default function NewAdminDashboardShell({
                               className={cn(
                                 "rounded-full px-2 text-2xs font-bold uppercase tracking-wider",
                                 badgeToneClass[item.badge] ??
-                                  "bg-white/15 text-white",
+                                  "bg-white/15 dark:bg-slate-800/15 text-white",
                               )}
                             >
                               {item.badge}
@@ -407,10 +407,10 @@ export default function NewAdminDashboardShell({
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                       size="lg"
-                      className="text-white hover:bg-white/10 data-[state=open]:bg-white/10 data-[state=open]:text-white"
+                      className="text-white hover:bg-white/10 dark:hover:bg-slate-800/10 data-[state=open]:bg-white/10 data-[state=open]:text-white"
                     >
                       <Avatar className="size-8 rounded-lg">
-                        <AvatarFallback className="bg-white/15 text-white font-semibold text-xs rounded-lg">
+                        <AvatarFallback className="bg-white/15 dark:bg-slate-800/15 text-white font-semibold text-xs rounded-lg">
                           {getInitials()}
                         </AvatarFallback>
                       </Avatar>

@@ -64,7 +64,7 @@ export default function ComplianceGRA({ loading: dashboardLoading }: { loading: 
 
   return (
     <div className="card">
-      <div className="card-header border-b border-slate-100 mb-3 flex items-center justify-between">
+      <div className="card-header border-b border-slate-100 dark:border-slate-800 mb-3 flex items-center justify-between">
         <h2 className="card-title text-sm">Compliance & GRA</h2>
         <div className="flex items-center gap-2">
           <span className={`badge text-3xs ${isConfigured ? "badge-green" : "badge-amber"}`}>
@@ -79,7 +79,7 @@ export default function ComplianceGRA({ loading: dashboardLoading }: { loading: 
         {items.map((item) => (
           <div key={item.label} className="flex justify-between items-center py-1.5 border-b border-slate-50 last:border-0 text-xs font-bold gap-4">
             <span className="text-slate-500">{item.label}</span>
-            <span className="text-right text-slate-600 capitalize">
+            <span className="text-right text-slate-600 dark:text-slate-300 capitalize">
               {dashboardLoading || loading ? "Loading" : item.value}
             </span>
           </div>

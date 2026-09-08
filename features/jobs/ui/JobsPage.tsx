@@ -40,21 +40,21 @@ import {
 import PostJobForm from "./post-job-form";
 
 const POSTING_BADGE: Record<string, string> = {
-  draft: "bg-slate-100 text-slate-500 border-slate-200",
-  pending_review: "bg-amber-50 text-amber-700 border-amber-100",
-  published: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  closed: "bg-red-50 text-red-600 border-red-100",
-  filled: "bg-indigo-50 text-indigo-700 border-indigo-100",
-  expired: "bg-slate-100 text-slate-400 border-slate-200",
+  draft: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
+  pending_review: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
+  published: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  closed: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-100 dark:border-red-500/30",
+  filled: "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-100",
+  expired: "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 const APPLICATION_BADGE: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-100",
+  pending: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
   reviewed: "bg-sky-50 text-sky-700 border-sky-100",
-  shortlisted: "bg-indigo-50 text-indigo-700 border-indigo-100",
-  rejected: "bg-red-50 text-red-600 border-red-100",
-  hired: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  withdrawn: "bg-slate-100 text-slate-400 border-slate-200",
+  shortlisted: "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-100",
+  rejected: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-100 dark:border-red-500/30",
+  hired: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  withdrawn: "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 const PREMIUM_SERVICES = [
@@ -170,13 +170,13 @@ const JobsPage = () => {
     );
 
   const selectClass =
-    "h-9 px-3 rounded-xl border border-slate-200 text-2xs font-black uppercase tracking-widest bg-white outline-none";
+    "h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none";
 
   const listingsTable = (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <input
-          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
+          className="flex-1 min-w-[220px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none"
           placeholder="🔍 Search job title..."
           value={search}
           onChange={(e) => updateParams({ search: e.target.value })}
@@ -247,10 +247,10 @@ const JobsPage = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
         <table className="w-full text-left min-w-[900px]">
           <thead>
-            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+            <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
               <th className="px-4 py-3 w-8" />
               <th className="px-3 py-3">Posting</th>
               <th className="px-3 py-3">Facility</th>
@@ -277,7 +277,7 @@ const JobsPage = () => {
               </tr>
             ) : (
               postings.map((row: JobPostingRow) => (
-                <tr key={row.id} className="hover:bg-slate-50/60">
+                <tr key={row.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -286,15 +286,15 @@ const JobsPage = () => {
                     />
                   </td>
                   <td className="px-3 py-3">
-                    <p className="text-sm font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                       {row.is_featured && "⭐ "}
                       {row.title}
                     </p>
-                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                    <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-slate-800 rounded px-1.5 py-0.5 font-mono">
                       {postingDisplayId(row)}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-xs font-bold text-slate-600">
+                  <td className="px-3 py-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                     {row.facility_profile?.facility_name ?? "—"}
                   </td>
                   <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
@@ -303,7 +303,7 @@ const JobsPage = () => {
                   <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
                     {row.region ?? "—"}
                   </td>
-                  <td className="px-3 py-3 text-xs font-black text-slate-700">
+                  <td className="px-3 py-3 text-xs font-black text-slate-700 dark:text-slate-300">
                     {row.application_count ?? 0}
                   </td>
                   <td className="px-3 py-3 text-xs font-bold text-slate-500">
@@ -377,9 +377,9 @@ const JobsPage = () => {
   );
 
   const pendingQueueSection = (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-3">
       <div>
-        <h3 className="text-sm font-black text-slate-900">
+        <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
           ⏳ Pending Requests ({pendingQueue?.postings.length ?? 0})
         </h3>
         <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest">
@@ -394,10 +394,10 @@ const JobsPage = () => {
         (pendingQueue?.postings ?? []).map((row) => (
           <div
             key={row.id}
-            className="flex flex-wrap items-center gap-3 border border-slate-100 rounded-xl px-4 py-3"
+            className="flex flex-wrap items-center gap-3 border border-slate-100 dark:border-slate-800 rounded-xl px-4 py-3"
           >
             <div className="flex-1 min-w-[200px]">
-              <p className="text-sm font-black text-slate-800">{row.title}</p>
+              <p className="text-sm font-black text-slate-800 dark:text-slate-200">{row.title}</p>
               <p className="text-2xs font-bold text-slate-400">
                 {row.facility_profile?.facility_name ?? "—"} ·{" "}
                 {row.job_type.replace(/_/g, " ")} · {row.region ?? "—"}
@@ -452,7 +452,7 @@ const JobsPage = () => {
       </PageHeader>
 
       {!canManage && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
+        <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
           🔒 Read-only: your role lacks the jobs.manage permission. Posting,
           review and applicant decisions are disabled.
         </div>
@@ -473,7 +473,7 @@ const JobsPage = () => {
           updateParams({ tab: tab === "listings" ? undefined : tab });
         }}
       >
-        <div className="border-b border-slate-200 w-full overflow-x-auto">
+        <div className="border-b border-slate-200 dark:border-slate-700 w-full overflow-x-auto">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-max">
             {[
               { id: "listings", label: "All Listings" },
@@ -489,8 +489,8 @@ const JobsPage = () => {
                 className={cn(
                   "shrink-0 whitespace-nowrap px-4 py-3 text-2xs font-black uppercase tracking-widest",
                   "text-slate-400 border-b-2 border-transparent transition-all rounded-none outline-none cursor-pointer",
-                  "hover:text-emerald-700 hover:bg-emerald-50/40",
-                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 data-[state=active]:border-emerald-700",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
                 )}
               >
                 {tab.label}
@@ -528,10 +528,10 @@ const JobsPage = () => {
               ))}
             </select>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
             <table className="w-full text-left min-w-[900px]">
               <thead>
-                <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <tr className="text-3xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="px-4 py-3">Applicant</th>
                   <th className="px-3 py-3">Applied For</th>
                   <th className="px-3 py-3">Licence</th>
@@ -557,13 +557,13 @@ const JobsPage = () => {
                 ) : (
                   (applicantData?.applications ?? []).map(
                     (app: JobApplicationRow) => (
-                      <tr key={app.id} className="hover:bg-slate-50/60">
+                      <tr key={app.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
                         <td className="px-4 py-3">
-                          <p className="text-sm font-black text-slate-800">
+                          <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                             {app.is_boosted && "⭐ "}
                             {maskApplicantName(app.user_profiles)}
                           </p>
-                          <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 rounded px-1.5 py-0.5 font-mono">
+                          <span className="text-3xs font-black uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-slate-800 rounded px-1.5 py-0.5 font-mono">
                             {applicationDisplayId(app)}
                           </span>
                           {/* Part AM: wizard applicant profile summary */}
@@ -578,7 +578,7 @@ const JobsPage = () => {
                           </p>
                         </td>
                         <td className="px-3 py-3">
-                          <p className="text-xs font-bold text-slate-700">
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
                             {app.job_postings?.title ?? "—"}
                           </p>
                           <p className="text-2xs font-bold text-slate-400">
@@ -591,8 +591,8 @@ const JobsPage = () => {
                               className={cn(
                                 "text-3xs font-black uppercase tracking-widest rounded-full px-2.5 py-1 border",
                                 app.licence.verification_status === "verified"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                  : "bg-slate-100 text-slate-500 border-slate-200",
+                                  ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
                               )}
                             >
                               {app.licence.issuing_body ?? "Licence"} ·{" "}
@@ -624,7 +624,7 @@ const JobsPage = () => {
                         </td>
                         <td className="px-4 py-3 text-right whitespace-nowrap">
                           <select
-                            className="h-8 px-2 rounded-lg border border-slate-200 text-3xs font-black uppercase tracking-widest bg-white outline-none disabled:opacity-40"
+                            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-3xs font-black uppercase tracking-widest bg-white dark:bg-slate-800 outline-none disabled:opacity-40"
                             disabled={updateApplication.isPending || !canManage}
                             value={app.status}
                             onChange={(e) =>
@@ -651,7 +651,7 @@ const JobsPage = () => {
         </TabsContent>
 
         <TabsContent value="cvs" className="mt-5 space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
+          <div className="bg-amber-50 dark:bg-amber-500/15 border border-amber-200 rounded-2xl px-4 py-3 text-xs font-bold text-amber-800">
             🔐 K-D3: the Digital CV vault is metadata-only today. AES
             encryption-at-rest, consent gates and HSM key management ship with
             the platform-security epic.
@@ -670,15 +670,15 @@ const JobsPage = () => {
               (cvData?.cvs ?? []).map((cv) => (
                 <div
                   key={cv.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"
+                  className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-black text-slate-800">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                       {cv.user_profiles?.first_name ?? "Unknown"}{" "}
                       {cv.user_profiles?.last_name?.[0] ?? ""}****
                     </p>
                     {cv.open_to_offers && (
-                      <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2 py-0.5">
+                      <span className="shrink-0 text-3xs font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30 rounded-full px-2 py-0.5">
                         Open to offers
                       </span>
                     )}
@@ -688,7 +688,7 @@ const JobsPage = () => {
                       cv.employment_status ??
                       "—"}
                   </p>
-                  <div className="mt-3 space-y-1 text-xs font-bold text-slate-600">
+                  <div className="mt-3 space-y-1 text-xs font-bold text-slate-600 dark:text-slate-300">
                     <p>🎓 {cv.qualification ?? "—"}</p>
                     <p>🩺 {cv.specialty ?? "—"}</p>
                     <p>🏛️ {cv.licence_body ?? "—"}</p>
@@ -710,17 +710,17 @@ const JobsPage = () => {
             {PREMIUM_SERVICES.map((service) => (
               <div
                 key={service.name}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 space-y-2"
               >
                 <p className="text-2xl">{service.icon}</p>
-                <p className="text-sm font-black text-slate-800">{service.name}</p>
-                <p className="text-2xs font-black uppercase tracking-widest text-emerald-700">
+                <p className="text-sm font-black text-slate-800 dark:text-slate-200">{service.name}</p>
+                <p className="text-2xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
                   {service.price}
                 </p>
                 <p className="text-xs font-bold text-slate-500">
                   {service.description}
                 </p>
-                <p className="text-2xs font-black uppercase tracking-widest text-slate-400 pt-2 border-t border-slate-100">
+                <p className="text-2xs font-black uppercase tracking-widest text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                   Revenue: —
                 </p>
               </div>
@@ -733,9 +733,9 @@ const JobsPage = () => {
             {STRATEGY_CARDS.map((card) => (
               <div
                 key={card.title}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 space-y-2"
               >
-                <p className="text-sm font-black text-slate-800">
+                <p className="text-sm font-black text-slate-800 dark:text-slate-200">
                   {card.icon} {card.title}
                 </p>
                 <p className="text-xs font-bold text-slate-500">{card.body}</p>

@@ -58,7 +58,7 @@ export default function FlaggedUsersTab() {
         header: "User",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-slate-800">{row.original.name}</div>
+            <div className="font-bold text-slate-800 dark:text-slate-200">{row.original.name}</div>
             <div className="text-2xs text-slate-400 uppercase">{row.original.userStatus}</div>
           </div>
         ),
@@ -101,10 +101,10 @@ export default function FlaggedUsersTab() {
 
   return (
     <div className="w-full min-w-0 space-y-4">
-      <div className={`alert border text-xs p-3 rounded-lg flex items-start gap-2 ${flags.length > 0 ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
+      <div className={`alert border text-xs p-3 rounded-lg flex items-start gap-2 ${flags.length > 0 ? "bg-red-50 dark:bg-red-500/15 border-red-200" : "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200"}`}>
         <span className="text-lg">{flags.length > 0 ? "⚠️" : "✅"}</span>
         <div className="flex-1">
-          <strong className={flags.length > 0 ? "text-red-700" : "text-emerald-700"}>
+          <strong className={flags.length > 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}>
             {isLoading ? "Loading…" : `${flags.length} flagged user${flags.length === 1 ? "" : "s"}`}
           </strong>{" "}
           {flags.length > 0 ? "– potential abuse, fraud, or misinformation. Review and take action." : "No pending user flags."}

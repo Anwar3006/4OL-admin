@@ -36,10 +36,10 @@ const ELIGIBLE_USER_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  expired: "bg-slate-100 text-slate-500 border-slate-200",
-  scheduled: "bg-blue-50 text-blue-700 border-blue-100",
-  paused: "bg-amber-50 text-amber-700 border-amber-100",
+  active: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/30",
+  expired: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700",
+  scheduled: "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30",
+  paused: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
 };
 
 const fmtDate = (value: string | null | undefined) =>
@@ -110,7 +110,7 @@ function DiscountRowActions({
         title="Edit"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           onEdit(discount);
@@ -123,7 +123,7 @@ function DiscountRowActions({
         title="Copy code"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           void copyCode();
@@ -138,7 +138,7 @@ function DiscountRowActions({
           variant="ghost"
           size="icon"
           disabled={busy}
-          className="h-8 w-8 text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+          className="h-8 w-8 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/15 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             clone();
@@ -153,7 +153,7 @@ function DiscountRowActions({
           variant="ghost"
           size="icon"
           disabled={busy}
-          className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+          className="h-8 w-8 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/15 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             updateMutation.mutate({
@@ -171,7 +171,7 @@ function DiscountRowActions({
         variant="ghost"
         size="icon"
         disabled={busy}
-        className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+        className="h-8 w-8 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           if (window.confirm(`Delete discount code ${discount.code}? This cannot be undone.`)) {
@@ -193,7 +193,7 @@ export const createDiscountColumns = (options: {
     header: "Code",
     cell: ({ row }) => (
       <div>
-        <div className="font-black text-slate-800 text-xs tracking-tight font-mono">
+        <div className="font-black text-slate-800 dark:text-slate-200 text-xs tracking-tight font-mono">
           {row.original.code}
         </div>
         <div className="text-2xs text-slate-400 font-bold uppercase tracking-widest">
@@ -206,7 +206,7 @@ export const createDiscountColumns = (options: {
     id: "type",
     header: "Type",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
         {TYPE_LABELS[row.original.discount_type] ?? row.original.discount_type}
       </span>
     ),
@@ -215,7 +215,7 @@ export const createDiscountColumns = (options: {
     id: "discount",
     header: "Discount",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-emerald-700">
+      <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">
         {discountLabel(row.original)}
       </span>
     ),
@@ -224,7 +224,7 @@ export const createDiscountColumns = (options: {
     id: "eligible_users",
     header: "Eligible Users",
     cell: ({ row }) => (
-      <span className="text-xs font-bold text-slate-600">
+      <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
         {ELIGIBLE_USER_LABELS[row.original.eligible_users ?? "all"] ?? "All users"}
       </span>
     ),
@@ -233,7 +233,7 @@ export const createDiscountColumns = (options: {
     id: "uses",
     header: "Uses",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-700 tabular-nums">
+      <span className="text-xs font-black text-slate-700 dark:text-slate-300 tabular-nums">
         {row.original.current_uses ?? 0}
         <span className="text-slate-400 font-bold">
           {" / "}
@@ -246,7 +246,7 @@ export const createDiscountColumns = (options: {
     id: "expiry",
     header: "Expiry",
     cell: ({ row }) => (
-      <span className="text-xs font-black text-slate-600 uppercase tracking-tight">
+      <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-tight">
         {fmtDate(row.original.valid_until)}
       </span>
     ),

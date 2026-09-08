@@ -115,7 +115,7 @@ const UsersTab = () => {
         header: "User",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden shrink-0">
+            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden shrink-0">
               {row.original.avatar_url ? (
                 <Image
                   src={row.original.avatar_url}
@@ -130,7 +130,7 @@ const UsersTab = () => {
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-slate-800 text-xs truncate">
+              <span className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate">
                 {row.original.name || "Unnamed user"}
               </span>
               <span className="text-2xs text-slate-400">
@@ -175,7 +175,7 @@ const UsersTab = () => {
         accessorKey: "plan",
         header: "Current Plan",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-semibold text-slate-700">
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             {row.original.plan}
           </span>
         ),
@@ -184,7 +184,7 @@ const UsersTab = () => {
         accessorKey: "plan_completions",
         header: "Plan Compl.",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-bold text-slate-700">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
             {row.original.plan_completions.toLocaleString()}
           </span>
         ),
@@ -194,7 +194,7 @@ const UsersTab = () => {
         header: "Workouts",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
           <div className="flex flex-col">
-            <span className="text-xs font-black text-slate-800">
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200">
               {row.original.workouts.toLocaleString()}
             </span>
             <span className="text-3xs text-slate-400 font-bold uppercase">
@@ -207,7 +207,7 @@ const UsersTab = () => {
         accessorKey: "fitcoins",
         header: "FitCoins",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-black text-yellow-600">
+          <span className="text-xs font-black text-yellow-600 dark:text-yellow-400">
             🪙 {row.original.fitcoins.toLocaleString()}
           </span>
         ),
@@ -216,7 +216,7 @@ const UsersTab = () => {
         accessorKey: "ai_calls",
         header: "AI Calls",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-bold text-purple-600">
+          <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
             {row.original.ai_calls.toLocaleString()}
           </span>
         ),
@@ -225,7 +225,7 @@ const UsersTab = () => {
         accessorKey: "last_active",
         header: "Last Active",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-medium text-slate-600">
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
             {formatDate(row.original.last_active)}
           </span>
         ),
@@ -261,8 +261,8 @@ const UsersTab = () => {
                 }}
                 className={`h-8 px-2.5 rounded-lg text-2xs font-black uppercase transition-colors disabled:opacity-50 ${
                   row.original.is_premium
-                    ? "text-slate-500 hover:text-red-600 hover:bg-red-50"
-                    : "text-emerald-600 hover:bg-emerald-50"
+                    ? "text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15"
+                    : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15"
                 }`}
               >
                 {pendingUserId === row.original.user_id
@@ -275,7 +275,7 @@ const UsersTab = () => {
             <a
               aria-label="Open user profile"
               href={`/users?search=${encodeURIComponent(row.original.name || row.original.user_id)}`}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               👁️
@@ -290,10 +290,10 @@ const UsersTab = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 gap-6">
-        <div className="lg:col-span-3 card bg-white">
+        <div className="lg:col-span-3 card bg-white dark:bg-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-2xl font-black text-slate-800">
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-200">
                 👥 Fitness Users
               </h3>
               <p className="text-slate-500 font-medium mt-1">
@@ -310,7 +310,7 @@ const UsersTab = () => {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 placeholder="Search by name..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

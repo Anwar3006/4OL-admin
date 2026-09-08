@@ -2,9 +2,9 @@ import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 export const ACCURACY_CLS = {
-  good: "text-emerald-600",
-  warn: "text-amber-600",
-  bad: "text-red-600",
+  good: "text-emerald-600 dark:text-emerald-400",
+  warn: "text-amber-600 dark:text-amber-400",
+  bad: "text-red-600 dark:text-red-400",
 } as const;
 
 export function accuracyClass(accuracy: number, target: number) {

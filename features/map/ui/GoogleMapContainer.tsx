@@ -333,7 +333,7 @@ const GoogleMapContainer = ({
   });
 
   return isLoaded ? (
-    <div className="h-full w-full overflow-hidden rounded-xl border bg-slate-50 shadow-inner">
+    <div className="h-full w-full overflow-hidden rounded-xl border bg-slate-50 dark:bg-slate-900 shadow-inner">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
@@ -400,9 +400,9 @@ const GoogleMapContainer = ({
         />
         {isLoading && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-            <div className="flex items-center gap-2 bg-white/90 px-4 py-2 rounded-full shadow-lg border border-emerald-100">
+            <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 px-4 py-2 rounded-full shadow-lg border border-emerald-100 dark:border-emerald-500/30">
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-              <span className="text-sm font-bold text-emerald-800 tracking-tight">
+              <span className="text-sm font-bold text-emerald-800 dark:text-emerald-400 tracking-tight">
                 SCANNING AREA...
               </span>
             </div>
@@ -443,13 +443,13 @@ const GoogleMapContainer = ({
             onCloseClick={() => setSelectedIbpPin(null)}
           >
             <div className="text-xs space-y-1 min-w-[160px]">
-              <div className="font-bold text-slate-800">🏪 {selectedIbpPin.business_name}</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200">🏪 {selectedIbpPin.business_name}</div>
               <div className="text-slate-500 capitalize">{selectedIbpPin.business_category}</div>
               <div className="text-slate-400">
                 {selectedIbpPin.district}, {selectedIbpPin.region}
               </div>
               <button
-                className="mt-1 text-emerald-700 font-bold hover:underline"
+                className="mt-1 text-emerald-700 dark:text-emerald-400 font-bold hover:underline"
                 onClick={() => router.push("/ibp")}
               >
                 View Business →
@@ -464,7 +464,7 @@ const GoogleMapContainer = ({
             onCloseClick={() => setSelectedRoutePin(null)}
           >
             <div className="text-xs space-y-1 min-w-[180px]">
-              <div className="font-bold text-slate-800">🌳 {selectedRoutePin.name}</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200">🌳 {selectedRoutePin.name}</div>
               <div className="text-slate-500 capitalize">
                 {selectedRoutePin.category || "Trail"} · {selectedRoutePin.difficulty}
               </div>
@@ -477,7 +477,7 @@ const GoogleMapContainer = ({
                 {!selectedRoutePin.has_gps && " · ⚠️ No GPS"}
               </div>
               <button
-                className="mt-1 text-emerald-700 font-bold hover:underline"
+                className="mt-1 text-emerald-700 dark:text-emerald-400 font-bold hover:underline"
                 onClick={() =>
                   router.push(`/fitness?tab=outdoor&route=${selectedRoutePin.id}`)
                 }

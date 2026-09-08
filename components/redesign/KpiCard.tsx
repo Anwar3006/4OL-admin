@@ -42,29 +42,29 @@ interface KpiCardProps {
 }
 
 const ICON_BG: Record<string, string> = {
-  blue: "bg-blue-50 text-blue-600",
-  green: "bg-emerald-50 text-emerald-600",
-  purple: "bg-purple-50 text-purple-600",
-  teal: "bg-teal-50 text-teal-600",
-  amber: "bg-amber-50 text-amber-600",
-  indigo: "bg-indigo-50 text-indigo-600",
-  orange: "bg-orange-50 text-orange-500",
-  gold: "bg-yellow-50 text-yellow-600",
-  red: "bg-red-50 text-red-600",
-  pink: "bg-pink-50 text-pink-600",
+  blue: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  green: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  purple: "bg-purple-50 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  teal: "bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-400",
+  amber: "bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  indigo: "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
+  orange: "bg-orange-50 dark:bg-orange-500/15 text-orange-500",
+  gold: "bg-yellow-50 dark:bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
+  red: "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400",
+  pink: "bg-pink-50 dark:bg-pink-500/15 text-pink-600 dark:text-pink-400",
 };
 
 const VALUE_CLR: Record<string, string> = {
-  blue: "text-blue-700",
-  green: "text-emerald-700",
-  purple: "text-purple-700",
-  teal: "text-teal-700",
-  amber: "text-amber-700",
-  indigo: "text-indigo-700",
-  orange: "text-orange-600",
-  gold: "text-yellow-700",
-  red: "text-red-700",
-  pink: "text-pink-700",
+  blue: "text-blue-700 dark:text-blue-400",
+  green: "text-emerald-700 dark:text-emerald-400",
+  purple: "text-purple-700 dark:text-purple-400",
+  teal: "text-teal-700 dark:text-teal-400",
+  amber: "text-amber-700 dark:text-amber-400",
+  indigo: "text-indigo-700 dark:text-indigo-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  gold: "text-yellow-700 dark:text-yellow-400",
+  red: "text-red-700 dark:text-red-400",
+  pink: "text-pink-700 dark:text-pink-400",
 };
 
 export default function KpiCard({
@@ -88,7 +88,7 @@ export default function KpiCard({
     <Card
       className={cn(
         "flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0 hover:shadow-md transition-shadow",
-        isError && "border-red-100 bg-red-50/30",
+        isError && "border-red-100 dark:border-red-500/30 bg-red-50/30 dark:bg-red-500/15/30",
         href && "cursor-pointer hover:border-emerald-200",
       )}
     >
@@ -118,7 +118,7 @@ export default function KpiCard({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer border-0 bg-transparent"
+                    className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer border-0 bg-transparent"
                     // Prevent navigation when the card itself is a link.
                     onClick={(e) => e.preventDefault()}
                   >
@@ -140,7 +140,7 @@ export default function KpiCard({
         {/* ── Middle: Value ── */}
         <div className="flex flex-col gap-1.5">
           {isLoading ? (
-            <div className="h-8 w-24 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-8 w-24 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
           ) : (
             <div
               className={cn(
@@ -149,7 +149,7 @@ export default function KpiCard({
                 // card boundary (S-D4).
                 "text-2xl font-semibold leading-tight tracking-tight tabular-nums break-words",
                 isError
-                  ? "text-red-700"
+                  ? "text-red-700 dark:text-red-400"
                   : isEmpty
                     ? "text-slate-400"
                     : VALUE_CLR[variant],

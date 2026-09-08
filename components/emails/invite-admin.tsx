@@ -35,7 +35,7 @@ export const InviteAdminEmail = ({
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="bg-[#f3f4f6] py-10 font-sans">
-          <Container className="mx-auto max-w-[600px] bg-white shadow-sm border border-[#e5e7eb] rounded-lg overflow-hidden">
+          <Container className="mx-auto max-w-[600px] bg-white dark:bg-slate-800 shadow-sm border border-[#e5e7eb] rounded-lg overflow-hidden">
             {/* Header: Solid Color Header using Row/Column for centering */}
             <Section className="bg-[#059669] p-8">
               <Row>

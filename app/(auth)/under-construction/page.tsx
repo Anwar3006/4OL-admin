@@ -74,7 +74,7 @@ const UnderConstructionPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900"
+                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Privacy policy
                   </a>
@@ -82,7 +82,7 @@ const UnderConstructionPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900"
+                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Faq
                   </a>
@@ -90,7 +90,7 @@ const UnderConstructionPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900"
+                    className="text-slate-500 dark:text-slate-400 text-sm transition duration-150 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Email us
                   </a>

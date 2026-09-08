@@ -82,7 +82,7 @@ const TrainersTab = () => {
       header: "Trainer Profile",
       cell: ({ row }: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden">
+          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden">
             {row.original.user_profiles?.avatar_url ? (
               <Image
                 src={row.original.user_profiles.avatar_url}
@@ -98,7 +98,7 @@ const TrainersTab = () => {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-800">
+              <span className="font-bold text-slate-800 dark:text-slate-200">
                 {row.original.user_profiles?.first_name}{" "}
                 {row.original.user_profiles?.last_name}
               </span>
@@ -135,7 +135,7 @@ const TrainersTab = () => {
       accessorKey: "experience",
       header: "Experience",
       cell: ({ row }: any) => (
-        <span className="text-xs font-bold text-slate-800">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
           {row.original.years_experience || 0} years
         </span>
       ),
@@ -168,7 +168,7 @@ const TrainersTab = () => {
       accessorKey: "rating",
       header: "Rating",
       cell: ({ row }: any) => (
-        <div className="flex items-center gap-1 text-xs font-bold text-slate-800">
+        <div className="flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-slate-200">
           <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
           {row.original.average_rating?.toFixed(1) || "5.0"}
         </div>
@@ -226,10 +226,10 @@ const TrainersTab = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 gap-6">
-        <div className="lg:col-span-3 card bg-white">
+        <div className="lg:col-span-3 card bg-white dark:bg-slate-800">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-2xl font-black text-slate-800">
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-200">
                 👨‍🏫 Trainer Directory
               </h3>
               <p className="text-slate-500 font-medium mt-1">
@@ -249,7 +249,7 @@ const TrainersTab = () => {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 placeholder="Search by trainer name or specialty..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

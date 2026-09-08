@@ -164,7 +164,7 @@ export default function BillingTab() {
       <p className="text-xs text-slate-400">
         Revenue, net revenue and receivables KPIs activate automatically once the
         transactions source of record (decision K-D7) is wired in.{" "}
-        <Link href="/transactions" className="font-medium text-emerald-600 hover:underline inline-flex items-center gap-1">
+        <Link href="/transactions" className="font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1">
           Transactions dashboard <ArrowRight className="size-3" />
         </Link>
       </p>
