@@ -1,14 +1,35 @@
 "use client";
 
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import DataTable, { type Column } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
+import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
 import { pct } from "./formatters";
 import { columns } from "./columns";
 
+const PHASE_COLORS: Record<string, string> = {
+  Menstrual: "#EC4899",
+  Follicular: "#3B82F6",
+  Ovulatory: "#F59E0B",
+  Luteal: "#8B5CF6",
+};
+const PHASE_FALLBACK_COLOR = "#64748B";
+
+const GOAL_BARS: Record<string, { bar: string; text: string }> = {
+  "Track Period": { bar: "bg-pink-500", text: "text-pink-700 dark:text-pink-400" },
+  "Trying to Conceive": { bar: "bg-purple-500", text: "text-purple-700 dark:text-purple-400" },
+  Pregnancy: { bar: "bg-teal-500", text: "text-teal-700 dark:text-teal-400" },
+  "Manage PCOS": { bar: "bg-blue-500", text: "text-blue-700 dark:text-blue-400" },
+};
+const GOAL_FALLBACK = { bar: "bg-slate-400", text: "text-slate-500" };
 
 export default function Overview({ payload }: { payload: any }) {
   const summary = payload.summary ?? {};
+  const phaseDistribution: Row[] = payload.phaseDistribution ?? [];
+  const phaseTotal = phaseDistribution.reduce((sum, item) => sum + Number(item.count ?? 0), 0);
+  const trackingGoals: Row[] = payload.trackingGoals ?? [];
+  const goalTotal = Math.max(1, trackingGoals.reduce((sum, item) => sum + Number(item.count ?? 0), 0));
   const regionColumns: Column<Row>[] = [
     { key: "region", label: "Region" },
     { key: "activeTrackers", label: "Active (30d)" },
@@ -103,6 +124,101 @@ export default function Overview({ payload }: { payload: any }) {
             {!(payload.symptoms ?? []).length && (
               <p className="text-xs text-slate-500">
                 No normalized daily symptom data is available.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <div className="card-title">Current phase distribution</div>
+              <div className="mt-1 text-2xs text-slate-500">
+                Latest cycle per tracker, today.
+              </div>
+            </div>
+          </div>
+          {!phaseTotal ? (
+            <p className="p-4 text-xs text-slate-500">
+              No cycle phase data is available yet.
+            </p>
+          ) : (
+            <>
+              <div className="h-48 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={phaseDistribution}
+                      dataKey="count"
+                      nameKey="phase"
+                      innerRadius={45}
+                      outerRadius={65}
+                      paddingAngle={5}
+                    >
+                      {phaseDistribution.map((item) => (
+                        <Cell
+                          key={item.phase}
+                          fill={PHASE_COLORS[item.phase] ?? PHASE_FALLBACK_COLOR}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="grid grid-cols-2 gap-2 p-4 pt-0">
+                {phaseDistribution.map((item) => (
+                  <div
+                    key={item.phase}
+                    className="flex items-center gap-2 text-2xs font-bold text-slate-500"
+                  >
+                    <div
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: PHASE_COLORS[item.phase] ?? PHASE_FALLBACK_COLOR }}
+                    />
+                    <span>
+                      {item.phase} ({Math.round((Number(item.count) / phaseTotal) * 100)}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <div className="card-title">Tracking goal mix</div>
+              <div className="mt-1 text-2xs text-slate-500">
+                Chosen at onboarding, from period_user_settings.
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3 p-4">
+            {trackingGoals.map((item: Row) => {
+              const style = GOAL_BARS[item.goal] ?? GOAL_FALLBACK;
+              const share = Math.round((Number(item.count ?? 0) / goalTotal) * 100);
+              return (
+                <div key={item.goal} className="flex items-center gap-3">
+                  <span className="w-40 shrink-0 truncate text-xs text-slate-700 dark:text-slate-300">
+                    {item.goal}
+                  </span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className={cn("h-2 rounded-full", style.bar)}
+                      style={{ width: `${share}%` }}
+                    />
+                  </div>
+                  <span className={cn("w-10 text-right text-2xs font-semibold", style.text)}>
+                    {share}%
+                  </span>
+                </div>
+              );
+            })}
+            {!trackingGoals.length && (
+              <p className="text-xs text-slate-500">
+                No onboarding goal data is available.
               </p>
             )}
           </div>

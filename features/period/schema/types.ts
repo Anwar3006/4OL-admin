@@ -1,7 +1,3 @@
-import {
-  Activity, Baby, BookOpenCheck, BrainCircuit, CalendarCheck, ClipboardList,
-  Flag, Gem, HeartHandshake, Megaphone, Settings2, ShieldCheck, Sparkles, Users,
-} from "lucide-react";
 import type { PeriodTabId } from "@/features/period/schema/period-tracker";
 
 /**
@@ -16,7 +12,8 @@ export type Tab = {
   id: PeriodTabId;
   label: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
+  /** Emoji glyph, rendered as text — not a component. */
+  icon: string;
 };
 
 export const tabs: Tab[] = [
@@ -24,84 +21,84 @@ export const tabs: Tab[] = [
     id: "overview",
     label: "Overview",
     description: "Adoption, retention and data health",
-    icon: Activity,
+    icon: "📊",
   },
   {
     id: "users",
     label: "Users & Cycles",
     description: "One privacy-minimized row per tracker",
-    icon: Users,
+    icon: "👥",
   },
   {
     id: "logs",
     label: "Daily Logs",
     description: "Structured observations and sync state",
-    icon: ClipboardList,
+    icon: "📝",
   },
   {
     id: "corrections",
     label: "Corrections",
     description: "Review calendar changes with an audit trail",
-    icon: CalendarCheck,
+    icon: "🔧",
   },
   {
     id: "safety",
     label: "Safety Review",
     description: "Non-diagnostic signals and review SLAs",
-    icon: Flag,
+    icon: "🚩",
   },
   {
     id: "notes",
     label: "Calendar Notes",
     description: "Flag metadata without exposing note text",
-    icon: ClipboardList,
+    icon: "📅",
   },
   {
     id: "consent",
     label: "Consent & Privacy",
     description: "Consent history and privacy requests",
-    icon: ShieldCheck,
+    icon: "🛡️",
   },
   {
     id: "content",
     label: "Content",
     description: "Clinically governed education",
-    icon: BookOpenCheck,
+    icon: "📚",
   },
   {
     id: "engagement",
     label: "Engagement",
     description: "Consent-filtered campaigns and notifications",
-    icon: Megaphone,
+    icon: "📣",
   },
   {
     id: "trivia",
     label: "Trivia",
     description: "Reviewed questions and learning outcomes",
-    icon: Sparkles,
+    icon: "✨",
   },
   {
     id: "forecasts",
     label: "Forecasts",
     description: "Accuracy, confidence, drift and rollout",
-    icon: BrainCircuit,
+    icon: "🧠",
   },
   {
     id: "quality",
     label: "App Quality",
     description: "Sync, client health and feature flags",
-    icon: Settings2,
+    icon: "✅",
   },
   {
     id: "ttc",
     label: "TTC & Fertility",
     description: "Aggregates and masked metadata only — never intimate detail",
-    icon: Baby,
+    icon: "🤰",
   },
   {
     id: "premium",
     label: "Premium",
     description: "Cycle Pro grants, onboarding trials and expiry policy",
-    icon: Gem,
+    icon: "💎",
   },
 ];

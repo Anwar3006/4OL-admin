@@ -6,13 +6,17 @@
  *
  *   verify           pending_review   -> in_verification
  *   begin_grace      in_verification  -> grace_period
- *   process_now      grace_period     -> completed (+ anonymization)
+ *   process_now      grace_period     -> completed (+ full cascade)
  *   cancel           any non-terminal -> cancelled
  *   remind_download  grace_period     -> audit-only (data download reminder)
  *   resend_otp       in_verification  -> audit-only (OTP re-trigger)
  *
- * Anonymization mirrors Epic 21's expire RPC field set exactly
- * (app-owned user_profiles columns only; auth.users untouched).
+ * process_now (Epic 3.4) calls public.purge_or_anonymize_user(), the same
+ * RPC the grace-period cron uses — see
+ * supabase/migrations/20260908_epic3_4_retention_deletion_cascade.sql.
+ * An active legal hold makes that RPC a no-op; this route surfaces that as
+ * a 409 and leaves the request's status untouched rather than marking it
+ * "completed" over a hold.
  */
 
 import { NextResponse } from "next/server";
@@ -87,6 +91,26 @@ export async function PATCH(
     );
   }
 
+  // process_now runs the cascade FIRST, before anything about this request
+  // is written — an active legal hold must leave the request exactly as it
+  // was (still in grace_period), not marked "completed" with the data
+  // untouched underneath it.
+  if (parsed.data.action === "process_now") {
+    const { data: purgeResult, error: purgeError } = await admin.rpc(
+      "purge_or_anonymize_user",
+      { p_user_id: row.user_id },
+    );
+    if (purgeError) {
+      return NextResponse.json({ error: purgeError.message }, { status: 500 });
+    }
+    if (purgeResult && (purgeResult as { skipped?: boolean }).skipped) {
+      return NextResponse.json(
+        { error: "Cannot process: this user has an active legal hold." },
+        { status: 409 },
+      );
+    }
+  }
+
   const nowIso = new Date().toISOString();
   const patch: Record<string, unknown> = {};
   if (transition.to) patch.status = transition.to;
@@ -135,31 +159,6 @@ export async function PATCH(
       .eq("user_id", row.user_id);
     if (statusError) {
       console.error(`[delete-account-requests/${parsed.data.action}] profile status error:`, statusError.message);
-    }
-  }
-
-  // process_now performs the same anonymization as the cron RPC.
-  if (parsed.data.action === "process_now") {
-    const { error: anonError } = await admin
-      .from("user_profiles")
-      .update({
-        first_name: "Deleted",
-        last_name: "User",
-        phone_number: "deleted",
-        avatar_url: null,
-        dob: null,
-        sex: null,
-        notes: null,
-        expo_push_token: null,
-        status: "banned",
-        deleted_at: nowIso,
-      })
-      .eq("user_id", row.user_id);
-    if (anonError) {
-      return NextResponse.json(
-        { error: `Status updated but anonymization failed: ${anonError.message}` },
-        { status: 500 },
-      );
     }
   }
 

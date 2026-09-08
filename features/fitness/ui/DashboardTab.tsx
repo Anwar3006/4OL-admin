@@ -175,9 +175,8 @@ const DashboardTab = () => {
             {!isLoading && topExercises.length === 0 && (
               <div className="text-xs text-slate-400 font-semibold py-2">No exercise logs yet.</div>
             )}
-            {topExercises.map((item, i) => {
+            {topExercises.map((item) => {
               const pct = Math.round((item.completion_count / maxExerciseCount) * 100);
-              const bars = ["bg-blue-500", "bg-teal-500", "bg-orange-500", "bg-purple-500", "bg-emerald-500"];
               return (
                 <div key={item.exercise_id}>
                   <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">
@@ -186,7 +185,7 @@ const DashboardTab = () => {
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ${bars[i % bars.length]}`}
+                      className="h-full rounded-full bg-blue-500 transition-all duration-700"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

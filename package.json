@@ -74,6 +74,7 @@
     "flatpickr": "^4.6.13",
     "framer-motion": "^10.10.0",
     "jose": "^6.2.2",
+    "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
     "lexical": "^0.39.0",
     "lodash": "^4.17.23",

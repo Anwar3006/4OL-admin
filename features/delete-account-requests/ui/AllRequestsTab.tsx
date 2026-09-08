@@ -8,17 +8,23 @@
  */
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   useDeleteAccountRequests,
   useDeleteRequestAction,
+  useLegalHolds,
+  useReleaseLegalHold,
+  useGenerateExport,
+  useExportDownloadLink,
   type DeleteRequestAction,
   type DeleteRequestStatus,
 } from "@/features/delete-account-requests/data/useDeleteAccountRequests";
 import { usePagination } from "@/hooks/use-pagination";
 import { maskPhone } from "@/lib/masking";
+import LegalHoldDialog from "./LegalHoldDialog";
 
 const STATUS_STYLES: Record<string, string> = {
   pending_review: "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/30",
@@ -52,6 +58,7 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
     key: `delete_req_page_${statusFilter ?? "all"}`,
   });
   const [search, setSearch] = useState("");
+  const [holdDialogUserId, setHoldDialogUserId] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useDeleteAccountRequests({
     page,
     limit: pageSize,
@@ -59,10 +66,16 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
     status: statusFilter,
   });
   const actionMutation = useDeleteRequestAction();
+  const releaseHoldMutation = useReleaseLegalHold();
+  const generateExportMutation = useGenerateExport();
+  const downloadLinkMutation = useExportDownloadLink();
 
   const requests = data?.requests || [];
   const totalItems = data?.meta?.total || 0;
   const totalPages = Math.max(1, data?.meta?.totalPages || Math.ceil(totalItems / pageSize) || 1);
+
+  const { data: holds } = useLegalHolds(requests.map((r) => r.user_id));
+  const holdByUserId = new Map((holds ?? []).map((h) => [h.user_id, h]));
 
   const handleAction = (requestId: string, action: DeleteRequestAction) => {
     if (action === "process_now" && !confirm("Process this deletion now? Account data will be anonymized permanently.")) return;
@@ -72,6 +85,22 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
 
   const exportCsv = () => {
     window.open("/api/admin/delete-account-requests/export", "_blank");
+  };
+
+  const copyDownloadLink = (requestId: string) => {
+    downloadLinkMutation.mutate(
+      { requestId },
+      {
+        onSuccess: async (result) => {
+          try {
+            await navigator.clipboard.writeText(result.signed_url);
+            toast.success("Download link copied — valid for 1 hour. Relay it to the user directly.");
+          } catch {
+            toast.error("Could not copy the link.");
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -129,12 +158,22 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
                     </td>
                     <td className="px-4 py-3 text-2xs font-bold text-slate-400">{maskPhone(r.phone_number)}</td>
                     <td className="px-4 py-3">
-                      <span className={cn(
-                        "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border whitespace-nowrap",
-                        STATUS_STYLES[r.status] ?? "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-800",
-                      )}>
-                        {r.status.replace(/_/g, " ")}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className={cn(
+                          "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border whitespace-nowrap",
+                          STATUS_STYLES[r.status] ?? "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-800",
+                        )}>
+                          {r.status.replace(/_/g, " ")}
+                        </span>
+                        {holdByUserId.has(r.user_id) && (
+                          <span
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border whitespace-nowrap bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-100 dark:border-orange-500/30"
+                            title={holdByUserId.get(r.user_id)?.reason}
+                          >
+                            ⚖️ Legal Hold
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-2xs font-bold text-slate-400 uppercase tracking-tight whitespace-nowrap">
                       {format(new Date(r.created_at), "MMM dd, yyyy")}
@@ -158,8 +197,52 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
                             {a.label}
                           </Button>
                         ))}
-                        {ACTIONS_BY_STATUS[r.status].length === 0 && (
-                          <span className="text-3xs font-black uppercase tracking-widest text-slate-300">Terminal</span>
+                        {r.status === "grace_period" && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={generateExportMutation.isPending}
+                              className="h-7 px-2 text-3xs font-black uppercase tracking-widest rounded-lg border text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              onClick={() => generateExportMutation.mutate({ requestId: r.id })}
+                            >
+                              📦 Generate Export
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={downloadLinkMutation.isPending}
+                              className="h-7 px-2 text-3xs font-black uppercase tracking-widest rounded-lg border text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              onClick={() => copyDownloadLink(r.id)}
+                            >
+                              🔗 Copy Link
+                            </Button>
+                          </>
+                        )}
+                        {holdByUserId.has(r.user_id) ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={releaseHoldMutation.isPending}
+                            className="h-7 px-2 text-3xs font-black uppercase tracking-widest rounded-lg border text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-500/30 hover:bg-orange-50 dark:hover:bg-orange-500/15"
+                            onClick={() => {
+                              const hold = holdByUserId.get(r.user_id);
+                              if (hold && confirm(`Release the legal hold on this account?\n\nReason on file: ${hold.reason}`)) {
+                                releaseHoldMutation.mutate({ holdId: hold.id });
+                              }
+                            }}
+                          >
+                            ⚖️ Release Hold
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-3xs font-black uppercase tracking-widest rounded-lg border text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            onClick={() => setHoldDialogUserId(r.user_id)}
+                          >
+                            ⚖️ Legal Hold
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -194,6 +277,10 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
           </div>
         </div>
       </div>
+
+      {holdDialogUserId && (
+        <LegalHoldDialog userId={holdDialogUserId} onClose={() => setHoldDialogUserId(null)} />
+      )}
     </div>
   );
 }

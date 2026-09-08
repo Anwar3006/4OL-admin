@@ -376,21 +376,45 @@ Goal: an authorized person changes a token once and both products consume it.
       list.ts`, `features/period/api/data-helpers.ts`) with genuinely
       different masking rules, not copies of one function — consolidating
       them is a real behavior decision, not touched here.
-- [~] **3.4 Complete retention and deletion policy.** Documentation only
-      (by design — this needs legal/compliance sign-off, not an engineering
-      default). Full map at `docs/epic3-4-retention-map.md`. Headline
-      finding: "deleting an account" today is a single `UPDATE
-      user_profiles` (blank name, null PII, ~100-year auth ban) — identical
-      code path whether triggered by an admin or the grace-period-expiry
-      cron. None of the ~80 other tables with a live FK to `user_profiles`,
-      `auth.users` itself, or any storage object (prescriptions/CVs/chat
-      attachments) are ever touched. No legal-hold concept exists anywhere.
-      No real per-user data export exists (`data_export_url` is never
-      written by anything). Backup/PITR retention is a Supabase-dashboard
-      setting with zero in-repo documentation. The doc proposes (not
-      decides) a disposition per user-owned table and flags financial
-      records and HCP credentials as needing an actual legal answer rather
-      than a default.
+- [x] **3.4 Complete retention and deletion policy.** Legal/compliance
+      dispositions decided interactively (HCP: retain indefinitely;
+      financial + collector-reward data: retain 7 years then anonymize;
+      everything else: anonymize or hard-delete immediately per
+      `docs/epic3-4-retention-map.md`'s decided-dispositions table), then
+      built. The duplicated single `UPDATE user_profiles` in both
+      `expire_delete_account_grace_periods()` and `detail.ts`'s
+      `process_now` is now one function, `purge_or_anonymize_user(p_user_id)`
+      (`supabase/migrations/20260908_epic3_4_retention_deletion_cascade.sql`),
+      that both callers go through. Most "anonymize" tables needed zero new
+      code — they hold only an opaque FK and are anonymized transitively
+      once `user_profiles` is blanked, verified per-table against
+      `lib/db/database.types.ts` rather than assumed; real work was limited
+      to hard-deleting `job_applications`/`job_alerts`/`job_saved`/
+      `notifications`/`user_push_tokens`/`user_notes`, stripping
+      `medication_enquiries`' denormalized PII columns, and queuing the
+      orphaned avatar/prescription/resume storage objects for cleanup (the
+      `storage-cleanup` Edge Function was hard-coded to one bucket
+      regardless of the queue row's own `bucket_name` — fixed alongside).
+      `legal_holds` (a table, not a flag — overlapping matters need
+      independent tracking) short-circuits the purge function and the new
+      `anonymize_expired_financial_records()` daily sweep;
+      `features/delete-account-requests/api/legal-hold.ts` places/releases
+      one, gated by a new `legalholds.manage` permission
+      (`compliance_officer`, mirroring `deleteaccount.approve`'s grant set).
+      Financial-record retention keeps identity resolvable during its
+      7-year window without a new PII table: `auth.users` was already never
+      touched by deletion (a separate, pre-existing decision), so it's the
+      anchor compliance staff resolve identity through — see "Resolving
+      identity during a retention window" in the map doc. GDPR export
+      (`api/export-request.ts` + `api/export-download.ts`) walks the same
+      user-owned table list, zips one JSON file per table into a new
+      private `user-data-exports` bucket, and mints a fresh 1-hour signed
+      URL on demand rather than storing a long-lived one; admin-triggered
+      only, since a self-serve in-app button needs its own Expo release and
+      email doesn't send yet (no SES credentials). Backup/PITR retention
+      documented against the Supabase Pro-tier default (7-day daily
+      backups) since the project is currently on the free plan — flagged in
+      the doc to update if a PITR add-on is purchased later.
 
 ## Epic 4 — P1 activate provider-backed capabilities
 

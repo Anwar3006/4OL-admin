@@ -615,7 +615,7 @@ function PeriodWorkspace() {
       </div>
 
       <div
-        className="tabs flex-nowrap overflow-x-auto lg:flex-wrap lg:overflow-visible"
+        className="tabs flex-nowrap overflow-x-auto"
         role="tablist"
         aria-label="Period Tracker operations"
       >
@@ -655,7 +655,10 @@ function PeriodWorkspace() {
               }
             }}
           >
-            <tab.icon className="h-3.5 w-3.5" aria-hidden="true" /> {tab.label}
+            <span aria-hidden="true" className="text-sm leading-none">
+              {tab.icon}
+            </span>{" "}
+            {tab.label}
           </button>
         ))}
       </div>

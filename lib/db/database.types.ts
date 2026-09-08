@@ -5,7 +5,7 @@
  * (needs the Supabase CLI and `SUPABASE_PROJECT_ID`, or an access token)
  *
  * This is the shape of the live `public` schema in project
- * rhbbxttxnvcziyqzptqs, generated 6 Sept 2026. It is the source of truth that
+ * rhbbxttxnvcziyqzptqs, generated 8 Sept 2026. It is the source of truth that
  * the hand-written per-feature `schema/types.ts` files can drift from — see
  * lib/db/README.md.
  */
@@ -2559,6 +2559,7 @@ export type Database = {
       delete_account_requests: {
         Row: {
           created_at: string
+          data_export_generated_at: string | null
           data_export_requested_at: string | null
           data_export_url: string | null
           email: string
@@ -2575,6 +2576,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_export_generated_at?: string | null
           data_export_requested_at?: string | null
           data_export_url?: string | null
           email: string
@@ -2591,6 +2593,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_export_generated_at?: string | null
           data_export_requested_at?: string | null
           data_export_url?: string | null
           email?: string
@@ -6719,12 +6722,44 @@ export type Database = {
         }
         Relationships: []
       }
+      job_alert_notifications: {
+        Row: {
+          id: string
+          job_id: string
+          notified_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          job_id: string
+          notified_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          job_id?: string
+          notified_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_alert_notifications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_alerts: {
         Row: {
           created_at: string
           id: string
           is_active: boolean
           job_types: string[]
+          latitude: number | null
+          longitude: number | null
+          radius_km: number | null
           regions: string[]
           specialties: string[]
           updated_at: string
@@ -6735,6 +6770,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           job_types?: string[]
+          latitude?: number | null
+          longitude?: number | null
+          radius_km?: number | null
           regions?: string[]
           specialties?: string[]
           updated_at?: string
@@ -6745,6 +6783,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           job_types?: string[]
+          latitude?: number | null
+          longitude?: number | null
+          radius_km?: number | null
           regions?: string[]
           specialties?: string[]
           updated_at?: string
@@ -7025,6 +7066,39 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      legal_holds: {
+        Row: {
+          id: string
+          matter_reference: string | null
+          placed_at: string
+          placed_by: string | null
+          reason: string
+          released_at: string | null
+          released_by: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          matter_reference?: string | null
+          placed_at?: string
+          placed_by?: string | null
+          reason: string
+          released_at?: string | null
+          released_by?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          matter_reference?: string | null
+          placed_at?: string
+          placed_by?: string | null
+          reason?: string
+          released_at?: string | null
+          released_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       maintenance_history: {
         Row: {
@@ -13639,6 +13713,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      anonymize_expired_financial_records: { Args: never; Returns: Json }
       apply_drug_body_part_rules: {
         Args: { p_only_unmapped?: boolean }
         Returns: number
@@ -14337,6 +14412,7 @@ export type Database = {
         Returns: undefined
       }
       purge_expired_report_runs: { Args: never; Returns: number }
+      purge_or_anonymize_user: { Args: { p_user_id: string }; Returns: Json }
       raise_escrow_dispute: {
         Args: { p_enquiry_id: string; p_reason: string }
         Returns: Json
@@ -14510,8 +14586,6 @@ export type Database = {
         Args: { p_admin_id?: string; p_campaign_id: string }
         Returns: Json
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       start_admin_session: {
         Args: {
           p_admin_id: string
@@ -14634,6 +14708,10 @@ export type Database = {
         Returns: boolean
       }
       user_has_push_token: { Args: { p_user_id: string }; Returns: boolean }
+      verify_cron_shared_secret: {
+        Args: { p_secret: string }
+        Returns: boolean
+      }
       verify_device_sign_in_otp: {
         Args: { p_otp: string; p_request_id: string }
         Returns: Json

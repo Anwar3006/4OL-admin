@@ -487,8 +487,18 @@ export async function GET(request: NextRequest) {
     else if (at >= previousStart) previousActive.add(log.user_id);
   }
 
+  const PHASE_LABELS: Record<string, string> = {
+    menstrual: "Menstrual",
+    follicular: "Follicular",
+    ovulatory: "Ovulatory",
+    luteal: "Luteal",
+  };
+  const phaseCounts = new Map<string, number>();
+
   const regions = new Map<string, { region: string; userIds: Set<string>; active: Set<string>; newUsers: Set<string>; current: Set<string>; previous: Set<string>; lengths: number[]; irregularUsers: Set<string>; optedIn: Set<string> }>();
   for (const [userId, latest] of latestCyclePerUser(cycleRows)) {
+    const phaseLabel = latest.current_phase ? (PHASE_LABELS[latest.current_phase] ?? latest.current_phase.replaceAll("_", " ")) : "Not calculated";
+    phaseCounts.set(phaseLabel, (phaseCounts.get(phaseLabel) ?? 0) + 1);
     const region = profiles.get(userId)?.region ?? "Not supplied";
     const row = regions.get(region) ?? { region, userIds: new Set<string>(), active: new Set<string>(), newUsers: new Set<string>(), current: new Set<string>(), previous: new Set<string>(), lengths: [] as number[], irregularUsers: new Set<string>(), optedIn: new Set<string>() };
     row.userIds.add(userId);
@@ -510,6 +520,21 @@ export async function GET(request: NextRequest) {
       const name = typeof symptom === "string" ? symptom : symptom?.name;
       if (name) symptomCounts[name] = (symptomCounts[name] ?? 0) + 1;
     }
+  }
+
+  // Onboarding goal is set independently of ever logging a cycle, so this is
+  // its own query rather than scoped to `userIds` from the cycle prelude.
+  const GOAL_LABELS: Record<string, string> = {
+    track_period: "Track Period",
+    trying_to_conceive: "Trying to Conceive",
+    pregnancy: "Pregnancy",
+    pcos_support: "Manage PCOS",
+  };
+  const { data: settingsRows } = await admin.from("period_user_settings").select("tracking_goal");
+  const goalCounts = new Map<string, number>();
+  for (const setting of settingsRows ?? []) {
+    const label = GOAL_LABELS[setting.tracking_goal] ?? setting.tracking_goal ?? "Track Period";
+    goalCounts.set(label, (goalCounts.get(label) ?? 0) + 1);
   }
 
   return NextResponse.json({
@@ -534,5 +559,7 @@ export async function GET(request: NextRequest) {
       marketingOptIn: percent(row.optedIn.size, row.userIds.size),
     })),
     symptoms: Object.entries(symptomCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name, count]) => ({ name, count })),
+    phaseDistribution: [...phaseCounts.entries()].map(([phase, count]) => ({ phase, count })),
+    trackingGoals: [...goalCounts.entries()].map(([goal, count]) => ({ goal, count })),
   });
 }

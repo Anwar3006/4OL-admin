@@ -160,17 +160,6 @@
   --clr-slate-800: #1e293b;
   --clr-slate-900: #0f172a;
 
-  /* Forensic watermark ink (components/security/ForensicWatermark.tsx,
-     Part AK-D6). Read at ~4.5% opacity so it is invisible in normal use and
-     only legible when a screenshot is contrast-enhanced. That only works if
-     the ink differs from the surface it sits on — a fixed color composited
-     with an identical background at 4.5% opacity is mathematically that
-     background, at any zoom. Themed here rather than hardcoded so it always
-     has something to contrast against. The dark value lives in its OWN rule
-     below :root, not inside the early `.dark { --color-*: ... }` block above
-     — see the comment there for why that placement silently loses. */
-  --wm-ink: #0f172a;
-
   /* Shadows */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -196,22 +185,6 @@
   --kpi-p: clamp(10px, 1.2vw + 4px, 18px);
   --control-h: 2.25rem;
   --grid-gap: 1rem;
-}
-
-/* --wm-ink's dark value has to live in its own rule textually AFTER :root,
-   not inside the early `.dark { --color-*: ... }` token block above (where
-   it was first written and silently lost). `:root` and `.dark` are both
-   single-class-equivalent selectors — specificity 0,1,0, a tie — and
-   <html class="dark"> matches BOTH simultaneously, so the tie breaks on
-   source order: whichever rule is LATER in the file wins, regardless of
-   which one reads as "more specific" to a human. The early `.dark{}` block
-   sits before `:root`, so `:root`'s #0f172a was overriding the intended
-   dark #f1f5f9 on every page, and the watermark stayed invisible-on-dark —
-   confirmed by rescanning after the first attempt: still 612 hits at
-   rgb(15, 23, 42)-on-rgb(15, 23, 42), unchanged. Keep any future `.dark`
-   override of a :root-defined variable down here, after :root. */
-.dark {
-  --wm-ink: #f1f5f9;
 }
 
 /* Part X: compact density (mockup body.ts-compact, L793–807) — set via the

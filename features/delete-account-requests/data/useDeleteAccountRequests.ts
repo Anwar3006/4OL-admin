@@ -327,6 +327,123 @@ export const useDeleteRequestStatsQuery = () =>
     staleTime: 30 * 1000,
   });
 
+// ── Epic 3.4: legal hold ─────────────────────────────────────────────────
+// legal_holds has RLS enabled with zero policies (service-role only), so
+// this reads through the API route rather than the browser client — see
+// features/delete-account-requests/README.md.
+
+export interface LegalHold {
+  id: string;
+  user_id: string;
+  reason: string;
+  matter_reference: string | null;
+  placed_by: string | null;
+  placed_at: string;
+}
+
+export const useLegalHolds = (userIds: string[]) =>
+  useQuery({
+    queryKey: ["legal-holds", [...userIds].sort()],
+    queryFn: async (): Promise<LegalHold[]> => {
+      if (userIds.length === 0) return [];
+      const res = await fetch(
+        `/api/admin/delete-account-requests/legal-hold?user_ids=${userIds.join(",")}`,
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Failed to load legal holds (${res.status})`);
+      return json.holds as LegalHold[];
+    },
+    enabled: userIds.length > 0,
+    staleTime: 30 * 1000,
+  });
+
+export const usePlaceLegalHold = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      reason,
+      matterReference,
+    }: {
+      userId: string;
+      reason: string;
+      matterReference?: string;
+    }) => {
+      const res = await fetch("/api/admin/delete-account-requests/legal-hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, reason, matter_reference: matterReference }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Failed to place hold (${res.status})`);
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["legal-holds"] });
+      toast.success("Legal hold placed — this account is now excluded from deletion/anonymization.");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
+export const useReleaseLegalHold = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ holdId }: { holdId: string }) => {
+      const res = await fetch("/api/admin/delete-account-requests/legal-hold", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hold_id: holdId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Failed to release hold (${res.status})`);
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["legal-holds"] });
+      toast.success("Legal hold released.");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
+// ── Epic 3.4: GDPR data export ──────────────────────────────────────────
+
+export const useGenerateExport = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ requestId }: { requestId: string }) => {
+      const res = await fetch("/api/admin/delete-account-requests/export-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: requestId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Failed to generate export (${res.status})`);
+      return json as { object_path: string; generated_at: string; row_count: number };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: DELETE_REQUEST_KEYS.all });
+      toast.success(`Export generated — ${data.row_count} rows packaged.`);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
+export const useExportDownloadLink = () => {
+  return useMutation({
+    mutationFn: async ({ requestId }: { requestId: string }) => {
+      const res = await fetch(
+        `/api/admin/delete-account-requests/export-download?request_id=${requestId}`,
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Failed to get download link (${res.status})`);
+      return json as { signed_url: string; expires_in: number; generated_at: string };
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
 // Manual entry (mockup "+ Manual Entry") behind deleteaccount.approve.
 export const useCreateManualDeleteRequest = () => {
   const queryClient = useQueryClient();

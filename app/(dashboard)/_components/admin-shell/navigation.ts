@@ -61,22 +61,14 @@ export const dashboardNavSections: DashboardNavSection[] = [
     items: [
       { title: "Dashboard", href: "/dashboard", icon: "🏠", permission: "dashboard.view" },
       {
+        // Flat, no children: /transactions already renders these seven as
+        // page tabs (recent/service-charge/subscriptions/failed/refunds/
+        // tax-vat/expenses), so the sidebar sub-nav duplicated the same
+        // destinations one level up.
         title: "Transactions",
         href: "/transactions",
         icon: "💳",
         permission: "transactions.view",
-        children: [
-          { title: "Recent Transactions", href: "/transactions?tab=recent" },
-          {
-            title: "Service Charge %",
-            href: "/transactions?tab=service-charge",
-          },
-          { title: "Subscriptions", href: "/transactions?tab=subscriptions" },
-          { title: "Failed", href: "/transactions?tab=failed" },
-          { title: "Refunds", href: "/transactions?tab=refunds" },
-          { title: "Tax & VAT", href: "/transactions?tab=tax-vat" },
-          { title: "Expenses", href: "/transactions?tab=expenses" },
-        ],
       },
     ],
   },
@@ -88,16 +80,13 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "IBP Businesses", href: "/ibp", icon: "🏢", permission: "ibp.view" },
       { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },
       {
+        // Flat, no children: /reports already renders these as page tabs
+        // (inbox/schedules/recipients/runs), so the sidebar sub-nav
+        // duplicated the same destinations one level up.
         title: "Reports",
         href: "/reports",
         icon: "📊",
         permission: "reports.view",
-        children: [
-          { title: "My Reports", href: "/reports?tab=inbox" },
-          { title: "Schedules", href: "/reports?tab=schedules", permission: "reports.manage" },
-          { title: "Recipients", href: "/reports?tab=recipients", permission: "reports.manage" },
-          { title: "Run History", href: "/reports?tab=runs", permission: "reports.manage" },
-        ],
       },
     ],
   },
@@ -213,23 +202,13 @@ export const dashboardNavSections: DashboardNavSection[] = [
       { title: "Platform Schematic", href: "/schematic", icon: "🗂️", permission: "schematic.view" },
       { title: "Settings", href: "/settings", icon: "⚙️" },
       {
+        // Flat, no children: /delete-account-request already renders these
+        // five as page tabs (all/pending/grace/completed/settings), so the
+        // sidebar sub-nav duplicated the same destinations one level up.
         title: "Delete Account Requests",
         href: "/delete-account-request",
         icon: "🗑️",
         permission: "deleteaccount.view",
-        children: [
-          { title: "All Requests", href: "/delete-account-request?tab=all" },
-          {
-            title: "Pending Review",
-            href: "/delete-account-request?tab=pending",
-          },
-          { title: "Grace Period", href: "/delete-account-request?tab=grace" },
-          { title: "Completed", href: "/delete-account-request?tab=completed" },
-          {
-            title: "Settings & Policy",
-            href: "/delete-account-request?tab=settings",
-          },
-        ],
       },
       { title: "Logout", href: "/logout", icon: "🚪" },
     ],
