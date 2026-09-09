@@ -23,6 +23,12 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "fn_record_period_cycle": {
+    "args": "p_period_start_date date, p_period_end_date date, p_cycle_length smallint, p_period_length smallint, p_next_period_forecast date, p_ovulation_forecast date, p_fertile_window daterange, p_model_key text, p_model_version text, p_confidence numeric, p_explanation_code text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "get_anatomy_body_part_bundle": {
     "args": "p_body_part_id uuid, p_gender text, p_preview_limit integer",
     "returns": "jsonb",

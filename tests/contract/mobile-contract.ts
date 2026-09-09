@@ -175,6 +175,15 @@ export const CONTRACT_RPCS = [
   "dispatch_notification",
   "fn_create_group_conversation",
   "fn_mark_conversation_read",
+
+  // Added 9 Sept 2026 with the Plasence Phase 0 trust-repair pass.
+  // /api/period/me is a contracted route and its POST confirm_period_start
+  // action delegates here (the atomic cycle+forecast write period_cycles'
+  // missing owner-write RLS policy required) — same gap class as
+  // submit_period_trivia and the chat RPCs above. security definer, callable
+  // by any authenticated user; scoped internally to auth.uid(), not a
+  // parameter.
+  "fn_record_period_cycle",
 ] as const;
 
 /**

@@ -37,6 +37,8 @@ export type CycleStatistics = {
   regularity: Regularity;
 };
 
+export type OvulationEvidence = "estimated" | "opk_detected" | "insufficient_data";
+
 export type PeriodPrediction = {
   predictedPeriodStart: string;
   predictedPeriodEnd: string;
@@ -45,6 +47,7 @@ export type PeriodPrediction = {
   fertileWindowStart: string;
   fertileWindowEnd: string;
   confidence: number;
+  ovulationEvidence: OvulationEvidence;
   modelKey: "traditional-v1";
 };
 
@@ -152,10 +155,19 @@ export function calculateConfidence(cycleCount: number, coefficientOfVariation: 
  * Start + Average Cycle Length (period length only affects bleed duration,
  * never the next start date — the corrected formula from ToChange.md).
  */
+/**
+ * `opkPositiveNearWindow` is a simple caller-computed flag (a positive/peak
+ * period_ovulation_tests result within the estimated fertile window) rather
+ * than raw test rows — keeps this module free of DB-shaped input, since it's
+ * ported in parallel to mobile. It only changes the reported evidence label
+ * in Phase 0, never the predicted date itself (recalculating dates from
+ * OPK/BBT/mucus signals is Phase 1).
+ */
 export function predictNextPeriod(
   cycles: CycleInput[],
   mostRecentPeriodStart: string,
   typicalPeriodLength = DEFAULT_PERIOD_LENGTH,
+  opkPositiveNearWindow = false,
 ): PeriodPrediction {
   const stats = calculateCycleStatistics(cycles);
   const start = parseIsoDate(mostRecentPeriodStart);
@@ -174,8 +186,15 @@ export function predictNextPeriod(
     conservativeOvulationDate = toIsoDate(addDays(conservativeStart, -14));
   }
 
-  const fertileWindowStart = addDays(ovulation, -7);
-  const fertileWindowEnd = addDays(ovulation, 2);
+  // ASRM's biological fertile window: six days ending on ovulation. Kept
+  // identical to mobile's cycleContext fallback (calculations.ts) — the two
+  // previously disagreed (10 days here vs 6 on mobile), which is exactly the
+  // "one canonical prediction" bug Phase 0 fixes.
+  const fertileWindowStart = addDays(ovulation, -4);
+  const fertileWindowEnd = addDays(ovulation, 1);
+
+  const ovulationEvidence: OvulationEvidence =
+    stats.cycleCount < 2 ? "insufficient_data" : opkPositiveNearWindow ? "opk_detected" : "estimated";
 
   return {
     predictedPeriodStart: toIsoDate(predictedStart),
@@ -185,6 +204,7 @@ export function predictNextPeriod(
     fertileWindowStart: toIsoDate(fertileWindowStart),
     fertileWindowEnd: toIsoDate(fertileWindowEnd),
     confidence: calculateConfidence(stats.cycleCount, stats.coefficientOfVariation),
+    ovulationEvidence,
     modelKey: "traditional-v1",
   };
 }

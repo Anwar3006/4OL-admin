@@ -126,17 +126,17 @@ export default function PremiumOperations({
               className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
             />
           </label>
+          {/* Single tier since Phase 0's consolidation — no more choice to
+              make, but kept as a disabled field so the grant summary above
+              still reads naturally. */}
+          <input type="hidden" name="tier" value="cycle_pro" />
           <label className="form-label">
             Tier
-            <select
-              name="tier"
-              defaultValue="cycle_pro"
-              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
-            >
-              <option value="cycle_pro">Cycle Pro (full)</option>
-              <option value="cycle_pro_ttc">Cycle Pro — TTC tools</option>
-              <option value="cycle_pro_insights">Cycle Pro — Insights</option>
-            </select>
+            <input
+              disabled
+              value="Cycle Pro"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-500"
+            />
           </label>
           <label className="form-label">
             Duration cap

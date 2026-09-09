@@ -104,6 +104,10 @@ const ActionSchema = z.discriminatedUnion("action", [
     periodEndDate: DateString.nullable().optional(),
   }),
   z.object({
+    action: z.literal("end_period_cycle"),
+    periodEndDate: DateString,
+  }),
+  z.object({
     action: z.literal("request_correction"),
     cycleId: z.string().uuid(),
     reason: z.string().trim().min(5).max(500),
@@ -265,6 +269,19 @@ export async function GET(request: NextRequest) {
     }
   } catch {
     // Insight generation is best-effort; never block the tracker payload.
+  }
+
+  // Fertility Insights are a Cycle Pro feature — Insights screen gating on
+  // mobile is client-side (the route itself), but the content must not
+  // reach an ineligible client in the first place. Redact rather than skip
+  // the entitlement check on failure: an unreadable entitlement should not
+  // fail open into premium content.
+  try {
+    const { data: entitlement } = await supabase.rpc("get_my_entitlement");
+    const periodPremium = Boolean((entitlement as { period_premium?: boolean } | null)?.period_premium);
+    if (!periodPremium) insights = [];
+  } catch {
+    insights = [];
   }
 
   return NextResponse.json({
@@ -443,9 +460,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "confirm_period_start") {
-    const [{ data: settings }, { data: history }] = await Promise.all([
+    const [{ data: settings }, { data: history }, { data: recentOpk }] = await Promise.all([
       supabase.from("period_user_settings").select("typical_cycle_length,typical_period_length").eq("user_id", user.id).maybeSingle(),
       supabase.from("period_cycles").select("period_start_date,period_length").eq("user_id", user.id).order("period_start_date", { ascending: false }).limit(12),
+      supabase.from("period_ovulation_tests").select("id").eq("user_id", user.id).gte("logged_on", input.periodStartDate).in("result", ["positive", "peak"]).limit(1),
     ]);
     const typicalCycleLength = settings?.typical_cycle_length ?? DEFAULT_CYCLE_LENGTH;
     const typicalPeriodLength = settings?.typical_period_length ?? DEFAULT_PERIOD_LENGTH;
@@ -454,38 +472,50 @@ export async function POST(request: NextRequest) {
       ...(history ?? []),
       { period_start_date: input.periodStartDate, period_length: typicalPeriodLength },
     ];
-    const prediction = predictNextPeriod(cycleHistory, input.periodStartDate, typicalPeriodLength);
+    const prediction = predictNextPeriod(cycleHistory, input.periodStartDate, typicalPeriodLength, Boolean(recentOpk?.length));
 
-    const { data: cycle, error: cycleError } = await supabase.from("period_cycles").upsert({
-      user_id: user.id,
-      period_start_date: input.periodStartDate,
-      period_end_date: input.periodEndDate ?? null,
-      cycle_length: typicalCycleLength,
-      period_length: typicalPeriodLength,
-      next_period_forecast: prediction.predictedPeriodStart,
-      ovulation_forecast: prediction.predictedOvulationDate,
-      source: "user",
-    }, { onConflict: "user_id,period_start_date" }).select("id").single();
-    if (cycleError) return NextResponse.json({ error: "Unable to confirm the period start date" }, { status: 500 });
+    // Cycle upsert + forecast supersede + forecast insert happen atomically,
+    // as the table owner, inside fn_record_period_cycle — period_cycles has
+    // never had an owner write policy (only admin_insert/admin_update since
+    // 20260814_period_tracker_rls_hardening.sql), so the three-call sequence
+    // this replaced was silently RLS-rejected for every non-admin caller.
+    const { data: result, error: rpcError } = await supabase.rpc("fn_record_period_cycle", {
+      p_period_start_date: input.periodStartDate,
+      p_period_end_date: input.periodEndDate ?? null,
+      p_cycle_length: typicalCycleLength,
+      p_period_length: typicalPeriodLength,
+      p_next_period_forecast: prediction.predictedPeriodStart,
+      p_ovulation_forecast: prediction.predictedOvulationDate,
+      p_fertile_window: `[${prediction.fertileWindowStart},${prediction.fertileWindowEnd}]`,
+      p_model_key: prediction.modelKey,
+      p_model_version: "1.0.0",
+      p_confidence: prediction.confidence,
+      // ovulationEvidence takes priority — it's what tells the client whether
+      // to render ovulation as confidently estimated, OPK-supported, or "not
+      // enough data yet"; the irregular-conservative note is secondary.
+      p_explanation_code:
+        prediction.ovulationEvidence !== "estimated"
+          ? prediction.ovulationEvidence
+          : prediction.conservativeOvulationDate
+            ? "irregular_conservative_available"
+            : null,
+    });
+    if (rpcError || !result) return NextResponse.json({ error: "Unable to confirm the period start date" }, { status: 500 });
 
-    // Retire any prior active forecast before writing the new one — keeps
-    // forecast-accuracy history (absolute_error_days) intact for later
-    // comparison instead of overwriting it in place.
-    await supabase.from("period_forecasts").update({ superseded_at: new Date().toISOString() }).eq("user_id", user.id).is("superseded_at", null);
-    const { data: forecast, error: forecastError } = await supabase.from("period_forecasts").insert({
-      user_id: user.id,
-      cycle_id: cycle.id,
-      model_key: prediction.modelKey,
-      model_version: "1.0.0",
-      predicted_period_start: prediction.predictedPeriodStart,
-      predicted_ovulation_date: prediction.predictedOvulationDate,
-      fertile_window: `[${prediction.fertileWindowStart},${prediction.fertileWindowEnd}]`,
-      confidence: prediction.confidence,
-      explanation_code: prediction.conservativeOvulationDate ? "irregular_conservative_available" : null,
-    }).select("id,predicted_period_start,predicted_ovulation_date,confidence").single();
-    if (forecastError) return NextResponse.json({ error: "Unable to generate a forecast" }, { status: 500 });
+    const { cycle, forecast } = result as { cycle: Record<string, unknown> & { id: string }; forecast: Record<string, unknown> };
+    return NextResponse.json({ ok: true, data: { cycleId: cycle.id, cycle, forecast } }, { status: 201 });
+  }
 
-    return NextResponse.json({ ok: true, data: { cycleId: cycle.id, forecast } }, { status: 201 });
+  if (input.action === "end_period_cycle") {
+    const { data: openCycle } = await supabase.from("period_cycles").select("id,period_start_date").eq("user_id", user.id).is("period_end_date", null).order("period_start_date", { ascending: false }).limit(1).maybeSingle();
+    if (!openCycle) return NextResponse.json({ error: "No open period to end" }, { status: 404 });
+    if (input.periodEndDate < openCycle.period_start_date) return NextResponse.json({ error: "Period end cannot be before its start" }, { status: 400 });
+
+    const daysBetween = (Date.parse(`${input.periodEndDate}T00:00:00Z`) - Date.parse(`${openCycle.period_start_date}T00:00:00Z`)) / 86_400_000;
+    const periodLength = Math.round(daysBetween) + 1;
+    const { data: cycle, error } = await supabase.from("period_cycles").update({ period_end_date: input.periodEndDate, period_length: periodLength }).eq("id", openCycle.id).eq("user_id", user.id).select("id,period_start_date,period_end_date,cycle_length,period_length,next_period_forecast,ovulation_forecast,fertile_window,current_phase,source,created_at,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to end the period" }, { status: 500 });
+    return NextResponse.json({ ok: true, data: { cycle } });
   }
 
   if (input.action === "request_correction") {

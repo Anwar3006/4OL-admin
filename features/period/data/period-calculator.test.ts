@@ -37,12 +37,34 @@ test("cycle averaging: next period start = most recent start + average cycle len
   expect(prediction.predictedPeriodStart).toBe("2026-03-26");
   // ovulation = predicted start - 14 days = 2026-03-12
   expect(prediction.predictedOvulationDate).toBe("2026-03-12");
-  // fertile window = ovulation -7 / +2
-  expect(prediction.fertileWindowStart).toBe("2026-03-05");
-  expect(prediction.fertileWindowEnd).toBe("2026-03-14");
+  // fertile window = ovulation -4 / +1 (ASRM's 6-day biological window —
+  // Phase 0 trust repair converged this with mobile's cycleContext, which
+  // already used -4/+1; this module previously used -7/+2)
+  expect(prediction.fertileWindowStart).toBe("2026-03-08");
+  expect(prediction.fertileWindowEnd).toBe("2026-03-13");
   // period length falls back to the passed typical length (5) since no
   // recorded cycle has a period_length
   expect(prediction.predictedPeriodEnd).toBe("2026-03-30");
+  // 3 regular cycles logged, no OPK signal passed -> a plain estimate
+  expect(prediction.ovulationEvidence).toBe("estimated");
+});
+
+test("ovulationEvidence reflects insufficient data and OPK detection", () => {
+  const oneCycle = [{ period_start_date: "2026-01-01" }];
+  expect(predictNextPeriod(oneCycle, "2026-01-01", 5).ovulationEvidence).toBe(
+    "insufficient_data",
+  );
+
+  const twoCycles = [
+    { period_start_date: "2026-01-01" },
+    { period_start_date: "2026-01-29" },
+  ];
+  expect(predictNextPeriod(twoCycles, "2026-01-29", 5).ovulationEvidence).toBe(
+    "estimated",
+  );
+  expect(
+    predictNextPeriod(twoCycles, "2026-01-29", 5, true).ovulationEvidence,
+  ).toBe("opk_detected");
 });
 
 test("date-range calculation: predicted end = predicted start + period length - 1", () => {

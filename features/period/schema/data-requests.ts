@@ -139,7 +139,11 @@ export const WriteSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("grant_premium"),
     userId: z.string().uuid(),
-    tier: z.enum(["cycle_pro", "cycle_pro_ttc", "cycle_pro_insights"]).default("cycle_pro"),
+    // Collapsed to a single tier (Phase 0 trust repair) — cycle_pro_ttc and
+    // cycle_pro_insights had contradictory, overlapping benefit copy while
+    // being independently priced/selectable. period_premium_grants.tier is
+    // now DB-constrained to this one value too.
+    tier: z.literal("cycle_pro").default("cycle_pro"),
     source: z.enum(["manual", "trivia_prize", "goodwill", "clinical_program", "partner", "beta"]).default("manual"),
     reason: z.string().trim().min(2).max(500),
     notes: z.string().trim().max(1000).optional(),
