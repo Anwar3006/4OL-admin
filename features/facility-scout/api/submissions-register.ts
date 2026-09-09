@@ -5,6 +5,11 @@
  * registrar links the submission to the facility it added; if no facility
  * id is provided yet, the submission simply advances to registered and the
  * linkage can be PATCHed in later. Reward disbursement is a separate step.
+ *
+ * Callable by a full reviewer (facilityscout.review) for any submission, or
+ * by the registrar it's assigned to (facilityscout.assignments) for their
+ * own assignment only — an ownership check, not a blanket grant, since a
+ * registrar otherwise has no access to other submissions.
  */
 
 import { NextResponse } from "next/server";
@@ -21,8 +26,12 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminApiUser("facilityscout.review");
+  const reviewAuth = await requireAdminApiUser("facilityscout.review");
+  const auth = reviewAuth.ok
+    ? reviewAuth
+    : await requireAdminApiUser("facilityscout.assignments");
   if (!auth.ok) return adminAuthErrorResponse(auth);
+  const isFullReviewer = reviewAuth.ok;
 
   const { id } = await params;
   let body: unknown;
@@ -43,7 +52,7 @@ export async function POST(
   const admin = getAdminClient();
   const { data: existing, error: fetchError } = await admin
     .from("facility_scout_submissions")
-    .select("id, submission_ref, status")
+    .select("id, submission_ref, status, assigned_collector_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -58,6 +67,20 @@ export async function POST(
       { error: "Submission is already registered" },
       { status: 409 },
     );
+  }
+
+  if (!isFullReviewer) {
+    const { data: ownCollector } = await admin
+      .from("data_collectors")
+      .select("id")
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+    if (!ownCollector || existing.assigned_collector_id !== ownCollector.id) {
+      return NextResponse.json(
+        { error: "This submission isn't assigned to you" },
+        { status: 403 },
+      );
+    }
   }
 
   const { data: updated, error: updateError } = await admin

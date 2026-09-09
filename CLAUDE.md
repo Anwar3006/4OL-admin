@@ -69,7 +69,7 @@ them reading tables that do not exist. See `docs/cleanup-handoff.md`.
 
 ### 2. Changes to the mobile contract must be additive
 
-**31 API routes, 48 RPCs and 38 tables** are consumed by the Expo app. Old
+**32 API routes, 48 RPCs and 40 tables** are consumed by the Expo app. Old
 builds live on phones for months. Never drop a field, rename a route, reorder an RPC
 parameter, or tighten an RLS policy on a listed table without shipping a
 mobile release first. New parameters get defaults.

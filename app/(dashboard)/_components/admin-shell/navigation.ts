@@ -160,6 +160,15 @@ export const dashboardNavSections: DashboardNavSection[] = [
         icon: "🔍",
         permission: "facilityscout.view",
       },
+      {
+        // Registrar-only in practice: registrar's ROLE_DEFAULTS grants only
+        // facilityscout.assignments, not facilityscout.view, so this and
+        // the item above are mutually exclusive per role today.
+        title: "My Field Work",
+        href: "/my-field-work",
+        icon: "🧭",
+        permission: "facilityscout.assignments",
+      },
       { title: "FAQ", href: "/faq", icon: "❓", permission: "faq.view" },
       {
         title: "Notifications",

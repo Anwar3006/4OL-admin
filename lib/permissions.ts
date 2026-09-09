@@ -94,6 +94,7 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("bedtracker", "manage", "Manage beds, wards and dispatches"),
   p("facilityscout", "view", "View FacilityScout submissions"),
   p("facilityscout", "review", "Review submissions and release rewards"),
+  p("facilityscout", "assignments", "View submissions assigned to me and register the facilities I've verified"),
   p("chats", "view", "View conversations and support tickets"),
   p("chats", "reply", "Reply to conversations and tickets"),
   p("chats", "moderate", "Moderate flagged messages and groups"),
@@ -184,13 +185,15 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "fitness_notifications.send",
     "reports.view",
   ]),
+  // Registrar IS the field data-collector role: they receive assigned scout
+  // submissions and register the facilities they verify in person. Their
+  // create/edit power over facility_profile is enforced at the RPC layer
+  // (register_facility_with_profile, registrar_update_own_facility), scoped
+  // to their own submissions — not a blanket facilities.create/edit grant,
+  // which would also unlock the full Facilities admin page.
   registrar: D([
     "dashboard.view",
-    "users.view",
-    "facilities.view", "facilities.create", "facilities.edit",
-    "bedtracker.view", "facilityscout.view", "facilityscout.review",
-    "ibp.view",
-    "tasks.view",
+    "facilityscout.assignments",
   ]),
   content_manager: D([
     "dashboard.view",

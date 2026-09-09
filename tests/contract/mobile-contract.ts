@@ -71,6 +71,11 @@ export const CONTRACT_ROUTES: ContractRoute[] = [
   { path: "/api/send-otp",                     file: "app/api/send-otp/route.ts",                   methods: ["POST"],                          consumer: "components/auth/OTPForm.tsx" },
   { path: "/api/verify-otp",                   file: "app/api/verify-otp/route.ts",                 methods: ["POST"],                          consumer: "components/auth/OTPForm.tsx" },
   { path: "/api/user/redeem-promo",            file: "app/api/user/redeem-promo/route.ts",          methods: ["POST"],                          consumer: "app/(app)/(auth)/(tabs)/(fitness)/premium.tsx" },
+
+  // ── Added 9 Sept 2026 — Facility Scout mobile submission flow ─────────
+  // First mobile dependency on this feature; the other six FacilityScout
+  // routes remain admin-console-only. See features/facility-scout/README.md.
+  { path: "/api/facilityscout/submissions/upload-url", file: "app/api/facilityscout/submissions/upload-url/route.ts", methods: ["GET"], consumer: "hooks/use-facility-scout.ts" },
 ];
 
 /**
@@ -221,4 +226,9 @@ export const CONTRACT_TABLES = [
   "fitness_outdoor_events",
   "fitness_outdoor_routes",
   "onboarding_requests",
+
+  // Added 9 Sept 2026 — Facility Scout mobile submission flow. Both written
+  // to directly via the RLS-enforced client, not through an API route.
+  "facility_scout_config",
+  "facility_scout_submissions",
 ] as const;

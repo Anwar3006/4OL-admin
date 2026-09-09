@@ -37,6 +37,7 @@ All six URLs are unchanged; `app/` holds a re-export per route and no logic.
 | `/api/facilityscout/submissions/[id]/register` | POST | `api/submissions-register.ts` |
 | `/api/facilityscout/submissions/[id]/reject` | POST | `api/submissions-reject.ts` |
 | `/api/facilityscout/rewards/[id]/disburse` | POST | `api/rewards-disburse.ts` |
+| `/api/facilityscout/submissions/upload-url` | GET | `api/upload-url.ts` |
 
 Dynamic segments work exactly as before: the `[id]` folder stays in `app/`,
 and the handler still receives its `params`. Only the file the route points at
@@ -50,8 +51,26 @@ deprecated `@/lib/supabase*` shims. See `lib/db/README.md`.
 
 ## Mobile contract
 
-None of these routes is in `tests/contract/mobile-contract.ts` — the Expo app
-does not call Facility Scout. Free to change shape.
+`GET /api/facilityscout/submissions/upload-url` is in
+`tests/contract/mobile-contract.ts` as of September 2026 — the Expo app's
+Facility Scout submission flow (`hooks/use-facility-scout.ts`) depends on it
+to mint a signed photo-upload URL. Changes to it must be additive per that
+file's rule. The other six routes remain admin-console-only and free to
+change shape.
+
+Mobile does **not** go through an API route to create a submission — it
+writes `facility_scout_submissions` rows directly via the RLS-enforced
+client, the same pattern `facility_reviews` uses. Two RLS policies
+(`create own scout submission`, `own scout submission or admin`) and a third
+on `facility_scout_config` (`read scout config`) were added in
+`supabase/migrations/20260909_facility_scout_mobile_ingestion.sql` — both
+tables had RLS **on** with **zero** policies before that, the exact
+no-policy-means-empty-or-blocked failure mode this file's parent CLAUDE.md
+warns about. A mobile insert only ever sets `submitted_by`, `facility_name`,
+`facility_type`, `gps_location`, `photos`, `region` — every other column
+(`status`, `match_status`, `reviewed_*`, `assigned_collector_id`, ...) is a
+DB default or admin-only, and there is deliberately no `UPDATE`/`DELETE`
+policy for `authenticated` on this table.
 
 ## Things that will surprise you
 

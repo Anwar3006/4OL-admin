@@ -1,6 +1,7 @@
 "use server";
 
 import { getAdminClient } from "@/lib/db/admin";
+import { getServerClient } from "@/lib/db/server";
 
 export async function adminRegisterFacilityWithProfile(payload: any) {
   const admin = getAdminClient();
@@ -20,6 +21,40 @@ export async function adminUpdateFacilityProfile(payload: any) {
   );
   if (error) throw new Error(error.message);
   return data;
+}
+
+/**
+ * Registrar (or admin) edit of a facility they own, while it's still
+ * pending/rejected — registrar_update_own_facility enforces the ownership
+ * and status-lock check server-side, but only if it's given the REAL
+ * caller's id. Unlike the sibling actions in this file, which trust the
+ * RPC's own auth check, that check is a no-op here: getAdminClient() calls
+ * as service_role, and register_facility_with_profile /
+ * registrar_update_own_facility both short-circuit their role check via
+ * `auth.role() <> 'service_role'`. So this action resolves the caller's id
+ * itself from their session cookie (never from a client-supplied value)
+ * before calling the RPC — that's the only real access control here.
+ */
+export async function registrarUpdateOwnFacility(payload: {
+  facilityId: string;
+  data: Record<string, unknown>;
+}) {
+  const server = await getServerClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await server.auth.getUser();
+  if (authError || !user?.id) {
+    throw new Error("Not signed in");
+  }
+
+  const admin = getAdminClient();
+  const { error } = await admin.rpc("registrar_update_own_facility", {
+    p_user_id: user.id,
+    p_facility_id: payload.facilityId,
+    p_payload: payload.data,
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function adminChangeFacilityStatus(payload: any) {
