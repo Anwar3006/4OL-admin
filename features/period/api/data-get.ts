@@ -537,6 +537,13 @@ export async function GET(request: NextRequest) {
     goalCounts.set(label, (goalCounts.get(label) ?? 0) + 1);
   }
 
+  // Phase 2 accuracy instrumentation: fn_record_period_cycle backfills
+  // confirmed_period_start/absolute_error_days on the forecast a new period
+  // start confirms. Null until at least one forecast has been through a
+  // full cycle since that migration shipped — sample size grows over time.
+  const { data: forecastErrorRows } = await admin.from("period_forecasts").select("absolute_error_days").not("absolute_error_days", "is", null).limit(5000);
+  const forecastErrorDays = (forecastErrorRows ?? []).map((row) => row.absolute_error_days as number);
+
   return NextResponse.json({
     summary: {
       activeTrackers: currentActive.size,
@@ -546,6 +553,8 @@ export async function GET(request: NextRequest) {
       averageCycleLength: average(cycleRows.map((cycle) => cycle.cycle_length)),
       retention: calculateRetention(currentActive, previousActive),
       marketingOptIn: [...consentMap.values()].filter((value) => value.get("marketing")?.granted).length,
+      forecastError: average(forecastErrorDays),
+      forecastErrorSamples: forecastErrorDays.length,
     },
     definitions: PERIOD_METRIC_DEFINITIONS,
     regions: [...regions.values()].map((row) => ({

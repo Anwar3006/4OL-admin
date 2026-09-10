@@ -36,6 +36,22 @@ function parseWindow(fertileWindow: string | null | undefined): [string, string]
   return match ? [match[1], match[2]] : null;
 }
 
+/**
+ * Sustained BBT rise: mean of the 3 most recent readings vs the 3 before,
+ * >=0.2°C. Shared between the insight card above and predictNextPeriod's
+ * ovulationEvidence ('bbt_pattern') — same threshold, one place it's
+ * defined. Returns the shift in °C, or null if there isn't one /
+ * insufficient readings (fewer than 6).
+ */
+export function detectBbtShift(sortedTemps: number[]): number | null {
+  if (sortedTemps.length < 6) return null;
+  const recent = sortedTemps.slice(-3);
+  const prior = sortedTemps.slice(-6, -3);
+  const mean = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
+  const shift = mean(recent) - mean(prior);
+  return shift >= 0.2 ? shift : null;
+}
+
 function formatDate(iso: string): string {
   const parsed = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime())) return iso;
@@ -94,22 +110,17 @@ export function generateFertilityInsights(input: GeneratorInput): InsightDraft[]
     .filter((log) => typeof log.basal_body_temperature === "number")
     .sort((a, b) => (a.logged_on < b.logged_on ? -1 : 1))
     .map((log) => log.basal_body_temperature as number);
-  if (temps.length >= 6) {
-    const recent = temps.slice(-3);
-    const prior = temps.slice(-6, -3);
-    const mean = (values: number[]) => values.reduce((sum, value) => sum + value, 0) / values.length;
-    const shift = mean(recent) - mean(prior);
-    if (shift >= 0.2) {
-      drafts.push({
-        insight_type: "bbt_shift",
-        insight_date: today,
-        title: "Temperature shift noted",
-        message: `Your recent temperature readings may show a slight upward shift (about ${shift.toFixed(1)}°C). Temperature shifts can follow ovulation, but a single pattern is not a diagnosis.`,
-        confidence: 0.45,
-        evidence: { sampleCount: temps.length, shiftCelsius: Number(shift.toFixed(2)) },
-        safety_level: "informational",
-      });
-    }
+  const bbtShift = detectBbtShift(temps);
+  if (bbtShift != null) {
+    drafts.push({
+      insight_type: "bbt_shift",
+      insight_date: today,
+      title: "Temperature shift noted",
+      message: `Your recent temperature readings may show a slight upward shift (about ${bbtShift.toFixed(1)}°C). Temperature shifts can follow ovulation, but a single pattern is not a diagnosis.`,
+      confidence: 0.45,
+      evidence: { sampleCount: temps.length, shiftCelsius: Number(bbtShift.toFixed(2)) },
+      safety_level: "informational",
+    });
   }
 
   // 5) Cycle variability — informational, never diagnostic.

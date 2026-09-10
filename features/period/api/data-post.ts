@@ -214,6 +214,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (input.action === "review_appointment_request") {
+    const { error } = await admin.from("period_preconception_appointments").update({
+      request_status: input.resolution,
+    }).eq("id", input.id).eq("request_status", "requested");
+    if (error) return NextResponse.json({ error: "Unable to review appointment request" }, { status: 500 });
+    await writeAudit(user.id, "review", "period_preconception_appointment", input.id, { resolution: input.resolution });
+    return NextResponse.json({ ok: true });
+  }
+
   if (input.action === "audit_export") {
     await writeAudit(user.id, "export", "period_tracker", input.scope, { rowCount: input.rowCount, reason: input.reason, containsDirectIdentifiers: false });
     return NextResponse.json({ ok: true });

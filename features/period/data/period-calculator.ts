@@ -37,7 +37,7 @@ export type CycleStatistics = {
   regularity: Regularity;
 };
 
-export type OvulationEvidence = "estimated" | "opk_detected" | "insufficient_data";
+export type OvulationEvidence = "estimated" | "opk_detected" | "bbt_pattern" | "insufficient_data";
 
 export type PeriodPrediction = {
   predictedPeriodStart: string;
@@ -156,18 +156,24 @@ export function calculateConfidence(cycleCount: number, coefficientOfVariation: 
  * never the next start date — the corrected formula from ToChange.md).
  */
 /**
- * `opkPositiveNearWindow` is a simple caller-computed flag (a positive/peak
- * period_ovulation_tests result within the estimated fertile window) rather
- * than raw test rows — keeps this module free of DB-shaped input, since it's
- * ported in parallel to mobile. It only changes the reported evidence label
- * in Phase 0, never the predicted date itself (recalculating dates from
- * OPK/BBT/mucus signals is Phase 1).
+ * `opkPositiveNearWindow` and `bbtShiftDetected` are simple caller-computed
+ * flags (a positive/peak period_ovulation_tests result within the estimated
+ * fertile window; a sustained BBT rise per detectBbtShift in
+ * fertility-insights.ts) rather than raw rows — keeps this module free of
+ * DB-shaped input, since it's ported in parallel to mobile. They only change
+ * the reported evidence label, never the predicted date itself —
+ * recalculating dates from OPK/BBT/mucus signals is deliberately out of
+ * scope (see the product audit's own warning about overconfident
+ * predictions). bbt_pattern takes priority over opk_detected, while
+ * deliberately avoiding language that claims an exact ovulation date was
+ * confirmed.
  */
 export function predictNextPeriod(
   cycles: CycleInput[],
   mostRecentPeriodStart: string,
   typicalPeriodLength = DEFAULT_PERIOD_LENGTH,
   opkPositiveNearWindow = false,
+  bbtShiftDetected = false,
 ): PeriodPrediction {
   const stats = calculateCycleStatistics(cycles);
   const start = parseIsoDate(mostRecentPeriodStart);
@@ -194,7 +200,13 @@ export function predictNextPeriod(
   const fertileWindowEnd = addDays(ovulation, 1);
 
   const ovulationEvidence: OvulationEvidence =
-    stats.cycleCount < 2 ? "insufficient_data" : opkPositiveNearWindow ? "opk_detected" : "estimated";
+    stats.cycleCount < 2
+      ? "insufficient_data"
+      : bbtShiftDetected
+        ? "bbt_pattern"
+        : opkPositiveNearWindow
+          ? "opk_detected"
+          : "estimated";
 
   return {
     predictedPeriodStart: toIsoDate(predictedStart),

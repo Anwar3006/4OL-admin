@@ -3,12 +3,13 @@ import { z } from "zod";
 import { getPeriodRequestClient } from "@/features/period/data/request-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import { DEFAULT_CYCLE_LENGTH, DEFAULT_PERIOD_LENGTH, predictNextPeriod, type CycleInput } from "@/features/period/data/period-calculator";
-import { generateFertilityInsights } from "@/features/period/data/fertility-insights";
+import { generateFertilityInsights, detectBbtShift } from "@/features/period/data/fertility-insights";
 
 const DateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support"]);
+const Goal = z.enum(["track_period", "trying_to_conceive", "pregnancy", "pcos_support", "postpartum"]);
 const TtcReadinessStatus = z.enum(["not_started", "planned", "completed", "not_applicable"]);
 const OvulationTestResult = z.enum(["negative", "low", "high", "peak", "positive", "invalid"]);
+const PregnancyTestResult = z.enum(["negative", "faint_positive", "positive", "invalid"]);
 
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -53,6 +54,18 @@ const ActionSchema = z.discriminatedUnion("action", [
     source: z.enum(["user", "device", "offline_sync"]).default("device"),
   }),
   z.object({
+    action: z.literal("save_pregnancy_test"),
+    id: z.string().uuid().optional(),
+    loggedOn: DateString,
+    testedAt: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable().optional(),
+    result: PregnancyTestResult,
+    brand: z.string().trim().max(120).nullable().optional(),
+    notesCiphertext: z.string().max(20_000).nullable().optional(),
+    clientEventId: z.string().trim().min(8).max(200).optional(),
+    appVersion: z.string().trim().max(40).optional(),
+    source: z.enum(["user", "device", "offline_sync"]).default("device"),
+  }),
+  z.object({
     action: z.literal("update_ttc_checklist_progress"),
     checklistItemId: z.string().uuid(),
     status: z.enum(["not_started", "planned", "done", "skipped"]),
@@ -70,6 +83,11 @@ const ActionSchema = z.discriminatedUnion("action", [
     status: z.enum(["planned", "completed", "cancelled"]).default("planned"),
     questions: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
     notesCiphertext: z.string().max(20_000).nullable().optional(),
+    // Phase 3: linking a facility marks this a request an admin fulfills
+    // (review_appointment_request) rather than a purely self-logged
+    // appointment — request_status is derived server-side from this, never
+    // accepted directly from the client.
+    facilityId: z.string().uuid().nullable().optional(),
   }),
   z.object({
     action: z.literal("save_daily_log"),
@@ -142,6 +160,9 @@ const ActionSchema = z.discriminatedUnion("action", [
     periodReminders: z.boolean().optional(),
     fertileWindowReminders: z.boolean().optional(),
     contentReminders: z.boolean().optional(),
+    ovulationTestReminders: z.boolean().optional(),
+    prenatalVitaminReminders: z.boolean().optional(),
+    preconceptionChecklistReminders: z.boolean().optional(),
     quietHoursStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().optional(),
     quietHoursEnd: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().optional(),
   }),
@@ -160,6 +181,7 @@ export async function GET(request: NextRequest) {
     preferences,
     ttcProfile,
     ovulationTests,
+    pregnancyTests,
     ttcChecklistItems,
     ttcChecklistProgress,
     preconceptionAppointments,
@@ -176,9 +198,10 @@ export async function GET(request: NextRequest) {
     supabase.from("period_notification_preferences").select("period_reminders,fertile_window_reminders,content_reminders,ovulation_test_reminders,prenatal_vitamin_reminders,preconception_checklist_reminders,quiet_hours_start,quiet_hours_end,timezone,updated_at").eq("user_id", user.id).maybeSingle(),
     supabase.from("period_ttc_profiles").select("trying_since,conception_timeline,show_conception_language,partner_involved,prenatal_vitamin_started_on,preconception_visit_status,preconception_visit_date,medication_review_status,vaccine_review_status,chronic_condition_review_status,sti_screening_status,dental_check_status,lifestyle_focus_areas,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).maybeSingle(),
     supabase.from("period_ovulation_tests").select("id,logged_on,tested_at,result,brand,notes_ciphertext,source,client_event_id,app_version,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(180),
+    supabase.from("period_pregnancy_tests").select("id,logged_on,tested_at,result,brand,notes_ciphertext,source,client_event_id,app_version,created_at,updated_at").eq("user_id", user.id).order("logged_on", { ascending: false }).limit(60),
     supabase.from("period_ttc_checklist_items").select("id,code,title,description,category,source_label,source_url,display_order,is_active,updated_at").eq("is_active", true).order("display_order", { ascending: true }),
     supabase.from("period_ttc_checklist_progress").select("checklist_item_id,status,target_date,completed_at,reminder_enabled,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
-    supabase.from("period_preconception_appointments").select("id,appointment_date,timezone,clinician_name,purpose,status,questions,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("appointment_date", { ascending: false }).limit(50),
+    supabase.from("period_preconception_appointments").select("id,appointment_date,timezone,clinician_name,purpose,status,questions,notes_ciphertext,facility_id,request_status,created_at,updated_at").eq("user_id", user.id).order("appointment_date", { ascending: false }).limit(50),
     supabase.from("period_fertility_insights").select("id,cycle_id,insight_date,insight_type,title,message,confidence,evidence,source_model,safety_level,status,expires_at,created_at,updated_at").eq("user_id", user.id).eq("status", "active").order("insight_date", { ascending: false }).limit(20),
     supabase.from("period_content").select("id,title,topic,summary,content_type,locale,tags,media_url,version,body_html,published_at").eq("status", "published").order("published_at", { ascending: false }).limit(100),
     supabase.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone").in("status", ["ready", "live", "ended"]).order("starts_at", { ascending: true }).limit(12),
@@ -194,6 +217,7 @@ export async function GET(request: NextRequest) {
     preferences,
     ttcProfile,
     ovulationTests,
+    pregnancyTests,
     ttcChecklistItems,
     ttcChecklistProgress,
     preconceptionAppointments,
@@ -250,12 +274,22 @@ export async function GET(request: NextRequest) {
   let insights = (fertilityInsights.data ?? []) as any[];
   try {
     const today = new Date().toISOString().slice(0, 10);
+    // BBT-shift evidence must not span into a prior cycle — the same
+    // bounding already applied to confirm_period_start's bbtShiftDetected
+    // and the mobile client's ovulationEvidence label. Without this, the
+    // "Temperature shift noted" card could compare a stale reading from
+    // weeks ago against a fresh one, since logs.data is otherwise just the
+    // 400 most recent rows with no cycle boundary.
+    const currentCycleStart = cycles.data?.[0]?.period_start_date;
+    const currentCycleLogs = currentCycleStart
+      ? (logs.data ?? []).filter((log) => log.logged_on >= currentCycleStart)
+      : (logs.data ?? []);
     const drafts = generateFertilityInsights({
       today,
       trackingGoal: settings.data?.tracking_goal ?? null,
       cycles: (cycles.data ?? []) as any[],
       forecasts: (forecasts.data ?? []) as any[],
-      dailyLogs: (logs.data ?? []) as any[],
+      dailyLogs: currentCycleLogs as any[],
       ovulationTests: (ovulationTests.data ?? []) as any[],
       checklistItems: (ttcChecklistItems.data ?? []) as any[],
       checklistProgress: (ttcChecklistProgress.data ?? []) as any[],
@@ -293,6 +327,7 @@ export async function GET(request: NextRequest) {
     notificationPreferences: preferences.data,
     ttcProfile: ttcProfile.data,
     ovulationTests: ovulationTests.data ?? [],
+    pregnancyTests: pregnancyTests.data ?? [],
     ttcChecklistItems: ttcChecklistItems.data ?? [],
     ttcChecklistProgress: ttcChecklistProgress.data ?? [],
     preconceptionAppointments: preconceptionAppointments.data ?? [],
@@ -403,6 +438,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, data }, { status: 201 });
   }
 
+  if (input.action === "save_pregnancy_test") {
+    const payload = {
+      user_id: user.id,
+      logged_on: input.loggedOn,
+      tested_at: input.testedAt ?? null,
+      result: input.result,
+      brand: input.brand?.trim() || null,
+      notes_ciphertext: input.notesCiphertext ?? null,
+      source: input.source,
+      client_event_id: input.clientEventId ?? null,
+      app_version: input.appVersion ?? null,
+    };
+
+    if (input.id) {
+      const { data, error } = await supabase.from("period_pregnancy_tests").update(payload).eq("id", input.id).eq("user_id", user.id).select("id,updated_at").single();
+      if (error) return NextResponse.json({ error: "Unable to save pregnancy test" }, { status: 500 });
+      return NextResponse.json({ ok: true, data });
+    }
+
+    if (input.clientEventId) {
+      const { data: existing } = await supabase.from("period_pregnancy_tests").select("id").eq("user_id", user.id).eq("client_event_id", input.clientEventId).maybeSingle();
+      if (existing?.id) {
+        const { data, error } = await supabase.from("period_pregnancy_tests").update(payload).eq("id", existing.id).eq("user_id", user.id).select("id,updated_at").single();
+        if (error) return NextResponse.json({ error: "Unable to save pregnancy test" }, { status: 500 });
+        return NextResponse.json({ ok: true, data });
+      }
+    }
+
+    const { data, error } = await supabase.from("period_pregnancy_tests").insert(payload).select("id,updated_at").single();
+    if (error) return NextResponse.json({ error: "Unable to save pregnancy test" }, { status: 500 });
+    return NextResponse.json({ ok: true, data }, { status: 201 });
+  }
+
   if (input.action === "update_ttc_checklist_progress") {
     const completedAt = input.status === "done" ? new Date().toISOString() : null;
     const { error } = await supabase.from("period_ttc_checklist_progress").upsert({
@@ -428,10 +496,17 @@ export async function POST(request: NextRequest) {
       status: input.status,
       questions: input.questions,
       notes_ciphertext: input.notesCiphertext ?? null,
+      facility_id: input.facilityId ?? null,
+      request_status: input.facilityId ? "requested" : "self_logged",
     };
 
     if (input.id) {
-      const { data, error } = await supabase.from("period_preconception_appointments").update(payload).eq("id", input.id).eq("user_id", user.id).select("id,updated_at").single();
+      // request_status is intentionally excluded from an update to an
+      // existing row — once a facility request is out, only
+      // review_appointment_request (admin) or a fresh insert changes its
+      // status, not the owner editing other fields.
+      const { request_status: _requestStatus, ...updatePayload } = payload;
+      const { data, error } = await supabase.from("period_preconception_appointments").update(updatePayload).eq("id", input.id).eq("user_id", user.id).select("id,updated_at").single();
       if (error) return NextResponse.json({ error: "Unable to save appointment" }, { status: 500 });
       return NextResponse.json({ ok: true, data });
     }
@@ -448,7 +523,26 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "save_notification_preferences") {
-    const { error } = await supabase.from("period_notification_preferences").upsert({ user_id: user.id, period_reminders: input.periodReminders ?? true, fertile_window_reminders: input.fertileWindowReminders ?? true, content_reminders: input.contentReminders ?? false, quiet_hours_start: input.quietHoursStart ?? null, quiet_hours_end: input.quietHoursEnd ?? null }, { onConflict: "user_id" });
+    // Ensure the row exists first (defaults only apply on first creation),
+    // then apply only the fields this call actually provided. The previous
+    // version upserted every field with a `?? default` fallback on every
+    // call, which meant saving just one toggle (e.g. ovulationTestReminders
+    // from a dedicated reminders section) silently reset every other
+    // preference back to its default — a real clobbering bug once this
+    // action has more than one caller.
+    await supabase.from("period_notification_preferences").upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+    const patch: Record<string, unknown> = {};
+    if (input.periodReminders !== undefined) patch.period_reminders = input.periodReminders;
+    if (input.fertileWindowReminders !== undefined) patch.fertile_window_reminders = input.fertileWindowReminders;
+    if (input.contentReminders !== undefined) patch.content_reminders = input.contentReminders;
+    if (input.ovulationTestReminders !== undefined) patch.ovulation_test_reminders = input.ovulationTestReminders;
+    if (input.prenatalVitaminReminders !== undefined) patch.prenatal_vitamin_reminders = input.prenatalVitaminReminders;
+    if (input.preconceptionChecklistReminders !== undefined) patch.preconception_checklist_reminders = input.preconceptionChecklistReminders;
+    if (input.quietHoursStart !== undefined) patch.quiet_hours_start = input.quietHoursStart;
+    if (input.quietHoursEnd !== undefined) patch.quiet_hours_end = input.quietHoursEnd;
+    const { error } = Object.keys(patch).length
+      ? await supabase.from("period_notification_preferences").update(patch).eq("user_id", user.id)
+      : { error: null };
     if (error) return NextResponse.json({ error: "Unable to save notification preferences" }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
@@ -460,25 +554,40 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "confirm_period_start") {
-    const [{ data: settings }, { data: history }, { data: recentOpk }] = await Promise.all([
+    const [{ data: settings }, { data: history }] = await Promise.all([
       supabase.from("period_user_settings").select("typical_cycle_length,typical_period_length").eq("user_id", user.id).maybeSingle(),
       supabase.from("period_cycles").select("period_start_date,period_length").eq("user_id", user.id).order("period_start_date", { ascending: false }).limit(12),
-      supabase.from("period_ovulation_tests").select("id").eq("user_id", user.id).gte("logged_on", input.periodStartDate).in("result", ["positive", "peak"]).limit(1),
     ]);
     const typicalCycleLength = settings?.typical_cycle_length ?? DEFAULT_CYCLE_LENGTH;
     const typicalPeriodLength = settings?.typical_period_length ?? DEFAULT_PERIOD_LENGTH;
 
+    // Evidence for a newly-started cycle must come from the cycle that just
+    // ended. The previous implementation queried on/after the new start date,
+    // which ignored the prior cycle's OPKs and could mix unrelated BBT values.
+    const previousCycleStart = (history ?? []).find(
+      (cycle) => cycle.period_start_date < input.periodStartDate,
+    )?.period_start_date;
+    const [{ data: recentOpk }, { data: recentTemps }] = previousCycleStart
+      ? await Promise.all([
+          supabase.from("period_ovulation_tests").select("id").eq("user_id", user.id).gte("logged_on", previousCycleStart).lt("logged_on", input.periodStartDate).in("result", ["positive", "peak"]).limit(1),
+          supabase.from("period_daily_logs").select("logged_on,basal_body_temperature").eq("user_id", user.id).gte("logged_on", previousCycleStart).lt("logged_on", input.periodStartDate).not("basal_body_temperature", "is", null).order("logged_on", { ascending: false }).limit(6),
+        ])
+      : [{ data: [] }, { data: [] }];
+
     const cycleHistory: CycleInput[] = [
-      ...(history ?? []),
+      ...(history ?? []).filter(
+        (cycle) => cycle.period_start_date !== input.periodStartDate,
+      ),
       { period_start_date: input.periodStartDate, period_length: typicalPeriodLength },
     ];
-    const prediction = predictNextPeriod(cycleHistory, input.periodStartDate, typicalPeriodLength, Boolean(recentOpk?.length));
+    const sortedTemps = [...(recentTemps ?? [])].sort((a, b) => a.logged_on.localeCompare(b.logged_on)).map((row) => row.basal_body_temperature as number);
+    const bbtShiftDetected = detectBbtShift(sortedTemps) != null;
+    const prediction = predictNextPeriod(cycleHistory, input.periodStartDate, typicalPeriodLength, Boolean(recentOpk?.length), bbtShiftDetected);
 
     // Cycle upsert + forecast supersede + forecast insert happen atomically,
-    // as the table owner, inside fn_record_period_cycle — period_cycles has
-    // never had an owner write policy (only admin_insert/admin_update since
-    // 20260814_period_tracker_rls_hardening.sql), so the three-call sequence
-    // this replaced was silently RLS-rejected for every non-admin caller.
+    // as the table owner, inside fn_record_period_cycle. Security definer
+    // here is for atomicity, not an RLS gap — period_cycles has had an
+    // owner-write policy since 20260814163334_period_tracker_mobile_contract_fixes.sql.
     const { data: result, error: rpcError } = await supabase.rpc("fn_record_period_cycle", {
       p_period_start_date: input.periodStartDate,
       p_period_end_date: input.periodEndDate ?? null,
@@ -490,9 +599,9 @@ export async function POST(request: NextRequest) {
       p_model_key: prediction.modelKey,
       p_model_version: "1.0.0",
       p_confidence: prediction.confidence,
-      // ovulationEvidence takes priority — it's what tells the client whether
-      // to render ovulation as confidently estimated, OPK-supported, or "not
-      // enough data yet"; the irregular-conservative note is secondary.
+      // ovulationEvidence is a cautious support label (estimated, OPK-supported,
+      // BBT pattern, or insufficient data), never proof of an exact ovulation
+      // date; the irregular-conservative note is secondary.
       p_explanation_code:
         prediction.ovulationEvidence !== "estimated"
           ? prediction.ovulationEvidence

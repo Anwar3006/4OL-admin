@@ -93,6 +93,11 @@ export const WriteSchema = z.discriminatedUnion("action", [
     resolution: z.enum(["approved", "rejected"]),
   }),
   z.object({
+    action: z.literal("review_appointment_request"),
+    id: z.string().uuid(),
+    resolution: z.enum(["confirmed", "declined"]),
+  }),
+  z.object({
     action: z.literal("update_content_status"),
     id: z.string().uuid(),
     status: z.enum(["draft", "review", "published", "archived"]),

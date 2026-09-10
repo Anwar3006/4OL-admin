@@ -65,6 +65,15 @@ test("ovulationEvidence reflects insufficient data and OPK detection", () => {
   expect(
     predictNextPeriod(twoCycles, "2026-01-29", 5, true).ovulationEvidence,
   ).toBe("opk_detected");
+
+  // A sustained BBT pattern outranks a same-cycle OPK positive, without
+  // claiming that the exact ovulation date was confirmed.
+  expect(
+    predictNextPeriod(twoCycles, "2026-01-29", 5, true, true).ovulationEvidence,
+  ).toBe("bbt_pattern");
+  expect(
+    predictNextPeriod(twoCycles, "2026-01-29", 5, false, true).ovulationEvidence,
+  ).toBe("bbt_pattern");
 });
 
 test("date-range calculation: predicted end = predicted start + period length - 1", () => {

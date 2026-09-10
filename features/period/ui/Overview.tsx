@@ -46,7 +46,7 @@ export default function Overview({ payload }: { payload: any }) {
   ];
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
         <KpiCard
           icon="👥"
           label="Active Trackers (30d)"
@@ -86,6 +86,22 @@ export default function Overview({ payload }: { payload: any }) {
           label="30-day Retention"
           value={pct(summary.retention)}
           variant="blue"
+        />
+        <KpiCard
+          icon="🎯"
+          label="Forecast Accuracy"
+          value={
+            summary.forecastError == null
+              ? "Not enough data yet"
+              : `±${summary.forecastError} days`
+          }
+          delta={
+            summary.forecastErrorSamples
+              ? `${summary.forecastErrorSamples} confirmed forecast${summary.forecastErrorSamples === 1 ? "" : "s"}`
+              : undefined
+          }
+          deltaType="neutral"
+          variant="teal"
         />
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
