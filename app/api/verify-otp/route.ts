@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify code against otp_verifications (see lib/sms.ts)
+    // Verify the code against the active Twilio Verify challenge.
     const result = await checkVerificationCode(phoneNumber, otp);
 
     if (!result.success) {

@@ -437,41 +437,31 @@ Support replies went to the from-address instead of the person who wrote in.
 Fixed during E5.1. Worth knowing because the same shape can hide in any
 untyped call into a typed SDK.
 
-### AWS SES is not configured — email does not send
+### Transactional email uses Resend
 
-`lib/email.ts` is written and wired, but nothing has been set:
+`lib/email.ts` is the single sender for support mail, admin invites, admin login
+alerts and device sign-in OTP. It requires:
 
 ```
-AWS_REGION              already in .env.example as eu-north-1
-SES_FROM_EMAIL          must be a VERIFIED SES identity in that region
-AWS_ACCESS_KEY_ID       omit both if the runtime supplies a role
-AWS_SECRET_ACCESS_KEY
-SES_CONFIGURATION_SET   optional, bounce/complaint tracking
+RESEND_API_KEY
+RESEND_FROM_EMAIL       must use a domain verified in Resend
 ```
 
-Two things likely to bite:
+Until both are set, `missingEmailConfig()` names the absent variable and the
+device-OTP route refuses before issuing a code. The sender address should not be
+added until its domain has completed SPF/DKIM verification in Resend.
 
-1. **`AWS_REGION` is `eu-north-1` while Postgres is `eu-west-1`.** SES only
-   sees identities verified in its own region, and the failure reads
-   _"Email address is not verified"_ — which looks like a verification problem
-   rather than a region one. Check the region first.
-2. **A new SES account is sandboxed** until AWS grants production access, and
-   can only send to verified addresses.
+### Messaging providers
 
-Until it is set, `missingEmailConfig()` names the absent variable and the
-device-OTP route refuses **before** issuing a code — issuing one it cannot
-deliver would burn the 60-second resend cooldown.
+| Channel   | Provider                                       |
+| --------- | ---------------------------------------------- |
+| Phone OTP | Twilio Verify                                  |
+| WhatsApp  | Twilio                                         |
+| Email     | Resend via `lib/email.ts`                      |
+| Plain SMS | AWS End User Messaging via `lib/aws-sms.ts`, pending account access |
 
-**Affected:** admin invites, admin login alerts, device sign-in OTP.
-
-### Four messaging providers, should be two
-
-| Channel | Live                                  | Also present                                |
-| ------- | ------------------------------------- | ------------------------------------------- |
-| SMS     | `lib/sms.ts` — AWS End User Messaging | `lib/twilio.ts` (one file imports **both**) |
-| Email   | `lib/email.ts` — AWS SES              | `resend` in `app/api/support/route.js`      |
-
-Decide and delete the losers.
+The SES webhook remains only as dormant rollback infrastructure; no email send
+path uses SES.
 
 ### Smaller, still open
 

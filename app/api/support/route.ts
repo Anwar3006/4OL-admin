@@ -1,4 +1,10 @@
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import {
+  isEmailConfigured,
+  missingEmailConfig,
+  sendEmail,
+} from "@/lib/email";
 // import nodemailer from "nodemailer";
 
 // export async function POST(req: NextRequest) {
@@ -93,16 +99,6 @@ import type { NextRequest } from "next/server";
 // }
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-import { Resend } from "resend";
-
-// Validate Resend API Key
-if (!process.env.RESEND_API_KEY) {
-  console.error("RESEND_API_KEY is not configured in environment variables");
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -116,13 +112,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate Resend API Key
-    if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY not configured");
+    if (!isEmailConfigured()) {
+      const missing = missingEmailConfig();
+      console.error("[support] email is not configured:", missing.join(", "));
       return NextResponse.json(
         {
-          error: "Email service not configured. Please set RESEND_API_KEY in environment variables.",
-          details: "RESEND_API_KEY is required to send emails"
+          error: "Email service is not configured.",
+          details: `Set ${missing.join(" and ")}.`,
         },
         { status: 500 }
       );
@@ -130,11 +126,6 @@ export async function POST(req: NextRequest) {
 
     // Team email - explicitly set to life@4ourlife.com
     const teamEmail = process.env.SUPPORT_TEAM_EMAIL || "life@4ourlife.com";
-
-    // Debug logging
-    console.log("SUPPORT_TEAM_EMAIL from env:", process.env.SUPPORT_TEAM_EMAIL);
-    console.log("Sending email to:", teamEmail);
-    console.log("Resend API Key configured:", !!process.env.RESEND_API_KEY);
 
     // Validate team email
     if (!teamEmail || !teamEmail.includes("@")) {
@@ -162,17 +153,7 @@ export async function POST(req: NextRequest) {
       </div>
     `;
 
-    // Get the "from" email - use environment variable or default to Resend test domain
-    // NOTE: When using onboarding@resend.dev, you can only send to verified email addresses
-    // For production, you should verify your own domain in Resend and use an email from that domain
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "Support Team <onboarding@resend.dev>";
-
-    console.log("Sending email from:", fromEmail);
-    console.log("Sending email to:", teamEmail);
-
-    // Send using Resend
-    const result = await resend.emails.send({
-      from: fromEmail,
+    const result = await sendEmail({
       to: teamEmail,
       // `replyTo`, not `reply_to`. Resend's typed client rejects the snake_case
       // key, so this field was silently dropped for as long as the file was
@@ -192,14 +173,19 @@ ${message}
       `,
     });
 
-    console.log("Resend API Response:", result);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Failed to send email", details: result.error },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json(
       { message: "Email sent successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Resend Error:", error);
+    console.error("Support email error:", error);
     console.error("Error details:", JSON.stringify(error, null, 2));
 
     // Provide more specific error messages

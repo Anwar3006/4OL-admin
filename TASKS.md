@@ -90,9 +90,9 @@ These are conditional tasks, not coding estimates:
 - **WhatsApp campaigns:** Twilio account credentials exist locally, but the
   approved content-template SID and WhatsApp sender are absent. Production sends
   cannot work until the sender and templates are approved.
-- **Transactional SES email:** AWS region and verified SES sender are absent.
-  A new SES account may also be sandboxed. Resend is configured for support mail,
-  but it does not make the SES-dependent OTP/report paths operational.
+- **Transactional email:** all sending paths now use Resend. Production still
+  needs a verified sender domain and `RESEND_FROM_EMAIL` in the deployment
+  environment.
 - **AI generation and narrative reports:** `OPENAI_API_KEY` is absent. Even after
   configuration, generated health content must stay draft until human review.
 - **Infrastructure controls:** Cloudflare/Vercel/GitHub/Sentry/Datadog or cloud

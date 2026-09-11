@@ -1,10 +1,23 @@
 import { Twilio } from "twilio";
 import { getAdminClient } from "./db/admin";
 
-export const client = new Twilio(
-  process.env.TWILIO_ACCOUNT_SID!,
-  process.env.TWILIO_AUTH_TOKEN!,
-);
+let client: Twilio | null = null;
+
+export function getTwilioClient(): Twilio {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+  if (!accountSid || !authToken) {
+    const missing = [
+      !accountSid ? "TWILIO_ACCOUNT_SID" : null,
+      !authToken ? "TWILIO_AUTH_TOKEN" : null,
+    ].filter(Boolean);
+    throw new Error(`Twilio is not configured: set ${missing.join(" and ")}.`);
+  }
+
+  if (!client) client = new Twilio(accountSid, authToken);
+  return client;
+}
 
 export async function initiateWhatsAppHandshake(
   to: string,
@@ -23,7 +36,7 @@ export async function initiateWhatsAppHandshake(
 
     console.log("Sending to: ", `whatsapp:${to}`);
 
-    const response = await client.messages.create({
+    const response = await getTwilioClient().messages.create({
       from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
       to: `whatsapp:${to}`,
       contentSid: templateSid,
@@ -71,7 +84,7 @@ export async function sendWhatsApp(to: string, message: string) {
   try {
     const formattedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
 
-    const response = await client.messages.create({
+    const response = await getTwilioClient().messages.create({
       from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
       to: formattedTo,
       body: message,
@@ -92,7 +105,7 @@ export async function checkWhatsAppAvailability(
   phone: string,
 ): Promise<boolean> {
   try {
-    const lookup = await client.lookups.v2
+    const lookup = await getTwilioClient().lookups.v2
       .phoneNumbers(phone)
       .fetch({
         fields: 'whatsapp',
@@ -106,6 +119,5 @@ export async function checkWhatsAppAvailability(
   }
 }
 
-// Plain SMS, OTP verification, and formatPhoneNumber moved to lib/sms.ts
-// (now backed by AWS SNS/End User Messaging instead of Twilio's SMS/Verify
-// APIs). This file keeps only the Twilio-specific WhatsApp functions above.
+// Plain SMS remains in lib/sms.ts. OTP verification uses this same Twilio
+// client through Twilio Verify; WhatsApp continues to use it above.

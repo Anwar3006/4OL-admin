@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send verification code via AWS SNS/End User Messaging SMS
+    // Send verification code via Twilio Verify.
     const result = await sendVerificationCode(phoneNumber);
 
     if (!result.success) {
@@ -38,5 +38,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 

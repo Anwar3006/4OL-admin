@@ -234,7 +234,6 @@ code, or a bad dynamic import.
 - **Seed JSON lives in `scripts/seed-data/`, not the app tree.** Nothing under
   `app/`, `features/` or `lib/` imports it, which is why the build heap is
   2048 MB rather than the 4096 it used to need.
-- **Email does not send.** `lib/email.ts` is wired to AWS SES but no AWS
-  credentials or `SES_FROM_EMAIL` are set — admin invites, login alerts and the
-  device sign-in OTP are all affected. See the pending-items section of
-  `docs/cleanup-handoff.md`.
+- **Transactional email uses Resend.** `lib/email.ts` is the shared sender for
+  support mail, admin invites, login alerts and the device sign-in OTP. Both
+  `RESEND_API_KEY` and a `RESEND_FROM_EMAIL` on a verified domain are required.

@@ -1,11 +1,4 @@
-import crypto from "node:crypto";
-import { PinpointSMSVoiceV2Client, SendTextMessageCommand } from "@aws-sdk/client-pinpoint-sms-voice-v2";
-import { getAdminClient } from "./db/admin";
-
-const smsClient = new PinpointSMSVoiceV2Client({ region: process.env.AWS_REGION });
-
-const OTP_TTL_MINUTES = 10;
-const OTP_MAX_ATTEMPTS = 5;
+import { getTwilioClient } from "./twilio";
 
 export const formatPhoneNumber = (contact: string): string => {
   // Remove any spaces or special characters
@@ -27,113 +20,70 @@ export const formatPhoneNumber = (contact: string): string => {
   return cleanContact;
 };
 
-export async function sendSMS(to: string, message: string) {
-  try {
-    const response = await smsClient.send(
-      new SendTextMessageCommand({
-        DestinationPhoneNumber: to,
-        OriginationIdentity: process.env.SMS_ORIGINATION_ID,
-        MessageBody: message,
-        MessageType: "TRANSACTIONAL",
-        ConfigurationSetName: process.env.SMS_CONFIG_SET,
-      }),
-    );
-    return { success: true, messageId: response.MessageId };
-  } catch (error: any) {
-    console.error("SMS Error Details:", {
-      name: error.name,
-      message: error.message,
-    });
-    return { success: false, error: error.message || "Failed to send SMS" };
-  }
-}
-
-function hashOtp(code: string): string {
-  return crypto.createHash("sha256").update(code).digest("hex");
-}
-
 /**
- * Generates and sends a 6-digit verification code. Twilio Verify used to
- * generate, store, and check these codes for us — that logic now lives here
- * and in checkVerificationCode(), backed by the otp_verifications table.
+ * Sends and verifies phone OTPs through Twilio Verify. The public API shape is
+ * unchanged so the mobile clients do not need a provider-specific change.
  */
 export async function sendVerificationCode(phoneNumber: string) {
-  try {
-    const code = crypto.randomInt(100000, 1000000).toString();
-    const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000).toISOString();
-
-    const supabaseAdmin = getAdminClient();
-    const { error: dbError } = await supabaseAdmin.from("otp_verifications").insert({
-      phone_number: phoneNumber,
-      otp_code: hashOtp(code),
-      expires_at: expiresAt,
-      verified: false,
-      attempts: 0,
-    });
-    if (dbError) throw dbError;
-
-    const smsResult = await sendSMS(
-      phoneNumber,
-      `Your Our Life verification code is ${code}. It expires in ${OTP_TTL_MINUTES} minutes.`,
-    );
-    if (!smsResult.success) throw new Error(smsResult.error);
-
-    return { success: true, status: "pending" };
-  } catch (error: any) {
-    console.error("Verification code send error:", error);
+  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  if (!serviceSid) {
     return {
       success: false,
-      error: error.message || "Failed to send verification code",
+      error: "Twilio Verify is not configured: set TWILIO_VERIFY_SERVICE_SID.",
+    };
+  }
+
+  try {
+    const verification = await getTwilioClient().verify.v2
+      .services(serviceSid)
+      .verifications.create({
+        to: phoneNumber,
+        channel: "sms",
+      });
+
+    return {
+      success: true,
+      status: verification.status,
+      sid: verification.sid,
+    };
+  } catch (error) {
+    const err = error as { message?: string };
+    console.error("Twilio Verify send error:", err.message);
+    return {
+      success: false,
+      error: err.message || "Failed to send verification code",
     };
   }
 }
 
-/**
- * Checks a verification code against the most recent unverified,
- * unexpired code for this phone number, enforcing a max attempt count
- * (Twilio Verify did this internally; AWS SNS has no equivalent).
- */
 export async function checkVerificationCode(phoneNumber: string, code: string) {
-  try {
-    const supabaseAdmin = getAdminClient();
-    const { data: pending, error: fetchError } = await supabaseAdmin
-      .from("otp_verifications")
-      .select("id, otp_code, attempts")
-      .eq("phone_number", phoneNumber)
-      .eq("verified", false)
-      .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (fetchError) throw fetchError;
-
-    if (!pending) {
-      return { success: false, status: "expired", error: "Code has expired or was never sent" };
-    }
-
-    if (pending.attempts >= OTP_MAX_ATTEMPTS) {
-      return { success: false, status: "max_attempts_reached", error: "Too many incorrect attempts" };
-    }
-
-    const matches = pending.otp_code === hashOtp(code);
-
-    if (!matches) {
-      await supabaseAdmin
-        .from("otp_verifications")
-        .update({ attempts: pending.attempts + 1 })
-        .eq("id", pending.id);
-      return { success: false, status: "denied", valid: false, error: "Invalid verification code" };
-    }
-
-    await supabaseAdmin.from("otp_verifications").update({ verified: true }).eq("id", pending.id);
-
-    return { success: true, status: "approved", valid: true };
-  } catch (error: any) {
-    console.error("Verification code check error:", error);
+  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  if (!serviceSid) {
     return {
       success: false,
-      error: error.message || "Failed to verify code",
+      error: "Twilio Verify is not configured: set TWILIO_VERIFY_SERVICE_SID.",
+    };
+  }
+
+  try {
+    const verification = await getTwilioClient().verify.v2
+      .services(serviceSid)
+      .verificationChecks.create({
+        to: phoneNumber,
+        code,
+      });
+
+    return {
+      success: verification.status === "approved",
+      status: verification.status,
+      valid: verification.valid,
+    };
+  } catch (error) {
+    const err = error as { message?: string };
+    console.error("Twilio Verify check error:", err.message);
+    return {
+      success: false,
+      error: err.message || "Failed to verify code",
     };
   }
 }

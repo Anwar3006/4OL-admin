@@ -10,6 +10,12 @@ function envStatus(name: string) {
   return Boolean(process.env[name]) ? "configured" : "missing";
 }
 
+function envGroupStatus(names: string[]) {
+  return names.every((name) => Boolean(process.env[name]))
+    ? "configured"
+    : "missing";
+}
+
 export interface PlatformHealth {
   status: "healthy" | "degraded" | "unhealthy";
   timestamp: string;
@@ -33,9 +39,10 @@ export async function getPlatformHealth(): Promise<PlatformHealth> {
     api: "healthy",
     supabase: supabaseStatus,
     firebase: envStatus("FIREBASE_SERVICE_ACCOUNT_JSON"),
-    twilio: envStatus("TWILIO_AUTH_TOKEN"),
+    twilio: envGroupStatus(["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"]),
+    twilioVerify: envStatus("TWILIO_VERIFY_SERVICE_SID"),
     awsSms: envStatus("SMS_ORIGINATION_ID"),
-    resend: envStatus("RESEND_API_KEY"),
+    resend: envGroupStatus(["RESEND_API_KEY", "RESEND_FROM_EMAIL"]),
     paystack: envStatus("PAYSTACK_SECRET_KEY"),
     googleMaps: envStatus("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),
     gemini: envStatus("GEMINI_API_KEY"),
