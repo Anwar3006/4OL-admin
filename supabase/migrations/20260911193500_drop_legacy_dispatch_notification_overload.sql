@@ -1,0 +1,12 @@
+-- dispatch_notification(jsonb) and dispatch_notification(jsonb, uuid DEFAULT
+-- NULL) coexisted, and every real caller invokes it via PostgREST/supabase-js
+-- as `.rpc("dispatch_notification", { p_recipients })` (a single named arg),
+-- which is ambiguous between the two and errors with "Could not choose the
+-- best candidate function". Affected every caller except the one place
+-- (20260908_epic5_4_job_alert_matching.sql) that already knew to work around
+-- it with explicit positional 2-arg syntax. The 2-arg version is a strict
+-- superset of the 1-arg one (adds notification_delivery_receipts tracking +
+-- bad-token cleanup) and already defaults p_campaign_id to NULL, so dropping
+-- the redundant 1-arg overload makes every existing single-arg call
+-- unambiguous again with no application code changes required.
+drop function if exists public.dispatch_notification(jsonb);
