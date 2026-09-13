@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
-async function getRequestUser(req: NextRequest) {
-  const token = req.headers
-    .get("authorization")
-    ?.replace("Bearer ", "")
-    .trim();
-  if (!token) return null;
-  const admin = getAdminClient();
-  const {
-    data: { user },
-    error,
-  } = await admin.auth.getUser(token);
-  if (error || !user?.id) return null;
-  return user;
-}
 
+import { getRequestUser } from "@/lib/mobile-auth";
 const VALID_PRIORITIES = ["Low", "Medium", "High"];
 const VALID_SATISFACTION_RATINGS = [1, 2, 3, 4, 5];
 

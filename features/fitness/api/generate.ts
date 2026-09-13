@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAdminClient } from "@/lib/db/admin";
+import { getRequestUser } from "@/lib/mobile-auth";
 import { generateFitnessPlan } from "@/features/fitness/data/generate-plan";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -62,19 +63,12 @@ async function assignPlanToUser(admin: any, userId: string, planId: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const admin = getAdminClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await admin.auth.getUser(token);
-  if (authError || !user?.id) {
+  const user = await getRequestUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const admin = getAdminClient();
   const userId = user.id;
 
   const rateLimit = await checkRateLimit(admin, userId, "fitness/generate", {

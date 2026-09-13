@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
-async function getRequestUser(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token) return null;
-  const admin = getAdminClient();
-  const {
-    data: { user },
-    error,
-  } = await admin.auth.getUser(token);
-  if (error || !user?.id) return null;
-  return user;
-}
+
+import { getRequestUser } from "@/lib/mobile-auth";
 
 /**
  * GET /api/chat/conversations
@@ -21,7 +12,8 @@ async function getRequestUser(req: NextRequest) {
  * FIX: Previously used auth.api.getSession() (BetterAuth) which returned null.
  * Also: session.user.id was a BetterAuth text ID, but get_conversations RPC
  * expects a UUID — caused "operator does not exist: uuid = text" 500 error.
- * admin.auth.getUser() returns a real UUID from auth.users.
+ * The JWT's `sub` claim is a real UUID from auth.users, which is what the
+ * RPC needs. (Identity now comes from @/lib/mobile-auth, verified in-process.)
  *
  * Query params:
  *   include_public=true  — also include groups the user is not yet a member

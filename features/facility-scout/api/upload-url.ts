@@ -2,22 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
 const BUCKET = "facility-scout-photos";
 
 /** ~10 years — same practical-permanent-URL tradeoff as chat attachments. */
 const VIEW_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 365 * 10;
 
-async function getRequestUser(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token) return null;
-  const admin = getAdminClient();
-  const {
-    data: { user },
-    error,
-  } = await admin.auth.getUser(token);
-  if (error || !user?.id) return null;
-  return user;
-}
 
 function sanitizeFilename(input: string) {
   const name = input?.trim() || "photo";

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
+
 /**
  * PATCH /api/user/push-token
  *
@@ -13,23 +15,14 @@ import { getAdminClient } from "@/lib/db/admin";
  * Body: { expoPushToken: string }
  */
 export async function PATCH(req: NextRequest) {
-  // Validate via Supabase Auth — accepts the native session JWT from mobile
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-
-  if (!token) {
+  // Verifies the native session JWT's signature in-process — see
+  // @/lib/mobile-auth. No round trip to GoTrue.
+  const user = await getRequestUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = getAdminClient();
-
-  // getUser() validates the JWT cryptographically using the project's JWT secret
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
-
-  if (authError || !user?.id) {
-    console.warn("[push-token] Invalid JWT:", authError?.message);
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const body = await req.json().catch(() => null);
   const expoPushToken = body?.expoPushToken;

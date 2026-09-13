@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
+import { getRequestUser } from "@/lib/mobile-auth";
 
 /**
- * Validates the Bearer token and returns the Supabase user.
- * Used by all routes in this file.
+ * The local `getRequestUser` that used to live here called
+ * `admin.auth.getUser(token)` — a network round trip to GoTrue on every
+ * request, before the query this route actually exists to run.
+ *
+ * `@/lib/mobile-auth` verifies the JWT signature in-process instead. Same
+ * guarantee, no round trip. See that module for the rollover behaviour while
+ * legacy HS256 tokens are still in circulation.
  */
-async function getRequestUser(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token) return null;
-  const admin = getAdminClient();
-  const { data: { user }, error } = await admin.auth.getUser(token);
-  if (error || !user?.id) return null;
-  return user;
-}
 
 /**
  * GET /api/user/profile
@@ -34,11 +32,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // user_metadata is Record<string, unknown>, so narrow before use — the old
+  // code got `any` from the Supabase user object and never had to.
+  const metadataAvatar =
+    typeof user.user_metadata.avatar_url === "string"
+      ? user.user_metadata.avatar_url
+      : null;
+
   const profile = data
     ? {
         ...data,
         email: user.email ?? null,
-        avatar_url: data.avatar_url ?? user.user_metadata?.avatar_url ?? null,
+        avatar_url: data.avatar_url ?? metadataAvatar,
       }
     : null;
 

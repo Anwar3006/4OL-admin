@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
+
 /**
  * POST /api/user/delete-account-request
  *
@@ -15,19 +17,12 @@ import { getAdminClient } from "@/lib/db/admin";
  * Body: { reason?: string }
  */
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-
-  if (!token) {
+  const user = await getRequestUser(request);
+  if (!user?.id || !user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = getAdminClient();
-
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
-  if (authError || !user?.id || !user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const body = await request.json().catch(() => ({}));
   const reason = typeof body?.reason === "string" ? body.reason : "";
@@ -81,18 +76,12 @@ export async function POST(request: NextRequest) {
  * cancel option). Returns the caller's most recent request, or null.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-
-  if (!token) {
+  const user = await getRequestUser(request);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = getAdminClient();
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
-  if (authError || !user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const { data, error } = await admin
     .from("delete_account_requests")
@@ -121,18 +110,12 @@ export async function GET(request: NextRequest) {
  * Body: { action: "cancel" }
  */
 export async function PATCH(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-
-  if (!token) {
+  const user = await getRequestUser(request);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = getAdminClient();
-  const { data: { user }, error: authError } = await admin.auth.getUser(token);
-  if (authError || !user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const body = await request.json().catch(() => ({}));
   if (body?.action !== "cancel") {

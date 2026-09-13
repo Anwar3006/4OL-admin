@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getAdminClient } from "@/lib/db/admin";
+
+import { getRequestUser } from "@/lib/mobile-auth";
 
 /**
  * POST /api/user/redeem-promo — promo-code redemption from the mobile paywall
  * (Marketing mockup parity build, Phase 4).
  *
- * Flow: JWT identifies the user (token-scoped client, no user-id parameter to
- * spoof) → service-role client validates the code against marketing_discounts
+ * Flow: JWT identifies the user (signature verified in-process, no user-id
+ * parameter to spoof) → service-role client validates the code against marketing_discounts
  * and grants a user_subscriptions row with source='promo' → an audit trail
  * lands in discount_redemptions and current_uses is incremented.
  *
@@ -17,33 +18,17 @@ import { getAdminClient } from "@/lib/db/admin";
  * Degrades gracefully (503) while the unification migration is unapplied.
  */
 
-function bearerToken(request: NextRequest) {
-  return request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
-}
 
 const GRANTABLE_TYPES = new Set(["free_trial", "partner"]);
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = getAdminClient();
-  const token = bearerToken(req);
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY!,
-    {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    },
-  );
-
-  const {
-    data: { user },
-    error: userError,
-  } = await userClient.auth.getUser();
-  if (userError || !user?.id) {
+  // The token-scoped client here existed only to call getUser() for the id —
+  // every query below already runs through supabaseAdmin. Verifying the JWT
+  // in-process gives the same id without the round trip, and without building
+  // a second Supabase client per request.
+  const user = await getRequestUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = user.id;

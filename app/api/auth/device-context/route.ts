@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
+
 /**
  * GET /api/auth/device-context
  *
@@ -16,22 +18,12 @@ import { getAdminClient } from "@/lib/db/admin";
  * omits the location line. Nothing here may block a sign-in.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "").trim();
-
-  if (!token) {
+  const user = await getRequestUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const admin = getAdminClient();
-  const {
-    data: { user },
-    error,
-  } = await admin.auth.getUser(token);
-
-  if (error || !user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   // x-forwarded-for is a comma-separated chain; the client is the first entry.
   const forwarded = req.headers.get("x-forwarded-for");

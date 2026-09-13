@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { getRequestUser } from "@/lib/mobile-auth";
+
 /**
  * GET /api/user/entitlement — the mobile app's single source of truth for
  * "is this user premium?" (FITNESS_MOCKUP_GAP_ANALYSIS.md, decision D6).
@@ -23,6 +25,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Verify the token's signature in-process before trusting it. The
+  // token-scoped client below still carries the JWT so get_my_entitlement()
+  // resolves auth.uid() inside Postgres under RLS — that part is unchanged.
+  // What is gone is the extra auth.getUser() round trip that used to sit
+  // between this check and the RPCs.
+  const user = await getRequestUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY!,
@@ -31,14 +43,6 @@ export async function GET(req: NextRequest) {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     },
   );
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError || !user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const [entitlementRes, tiersRes] = await Promise.all([
     supabase.rpc("get_my_entitlement"),

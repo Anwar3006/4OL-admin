@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
 const CONTENT_TYPES = ["condition", "symptom", "healthy_living", "fitness_exercise"] as const;
 const ACTIONS = ["like", "save"] as const;
 
@@ -50,14 +51,6 @@ async function fetchContentTitles(
   }
 }
 
-async function getRequestUser(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "").trim();
-  if (!token) return null;
-  const admin = getAdminClient();
-  const { data: { user }, error } = await admin.auth.getUser(token);
-  if (error || !user?.id) return null;
-  return user;
-}
 
 function parseParams(input: {
   contentType?: unknown;

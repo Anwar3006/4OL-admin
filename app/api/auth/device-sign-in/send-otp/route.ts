@@ -3,6 +3,7 @@ import { isEmailConfigured, missingEmailConfig, sendEmail } from "@/lib/email";
 
 import { getAdminClient } from "@/lib/db/admin";
 
+import { getRequestUser } from "@/lib/mobile-auth";
 function maskEmail(email: string) {
   const [local, domain] = email.split("@");
   if (!local || !domain) return email;
@@ -59,12 +60,8 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = getAdminClient();
-  const {
-    data: { user },
-    error: userError,
-  } = await admin.auth.getUser(token);
-
-  if (userError || !user?.id) {
+  const user = await getRequestUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
