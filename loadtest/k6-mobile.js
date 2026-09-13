@@ -194,6 +194,70 @@ function ensureSignedIn() {
 const ACCRA_BBOX = { minlng: -0.35, minlat: 5.47, maxlng: -0.05, maxlat: 5.70 };
 const SEARCH_TERMS = ['malaria', 'headache', 'clinic', 'diabetes', 'pharmacy', 'fever'];
 
+/**
+ * Fire one of every request before the ramp starts.
+ *
+ * The first run of this script died 32 seconds in because one PostgREST query
+ * named a column that does not exist. PostgREST answers 400, k6 counted it as a
+ * failure, and abortOnFail — correctly — stopped the test. A malformed request
+ * should not cost a fifteen-minute run to discover, so check the surface first
+ * and say plainly what is broken.
+ */
+export function setup() {
+  if (MODE !== 'auth') {
+    console.log('smoke check: MODE=anon, skipping authenticated endpoints');
+  }
+
+  const u = users[0];
+  let token = null;
+  if (MODE === 'auth') {
+    const res = http.post(
+      `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+      JSON.stringify({ email: u.email, password: u.password }),
+      { headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' } }
+    );
+    if (res.status !== 200) {
+      throw new Error(`smoke check: sign-in failed (${res.status}). Did you run seed-users.mjs?`);
+    }
+    token = res.json('access_token');
+  }
+
+  const checks = [
+    ['rpc get_home_carousel', `${SUPABASE_URL}/rest/v1/rpc/get_home_carousel`, 'POST', '{}'],
+    ['rpc get_public_faqs', `${SUPABASE_URL}/rest/v1/rpc/get_public_faqs`, 'POST', '{}'],
+    ['rest categories', `${SUPABASE_URL}/rest/v1/categories?select=*&limit=1`, 'GET', null],
+    ['rest conditions', `${SUPABASE_URL}/rest/v1/conditions?select=id,name,slug&limit=1`, 'GET', null],
+    ['rest healthy_living_info', `${SUPABASE_URL}/rest/v1/healthy_living_info?select=id,name,slug,description,image_url&limit=1`, 'GET', null],
+    ['rest symptoms', `${SUPABASE_URL}/rest/v1/symptoms?select=id,name&limit=1`, 'GET', null],
+  ];
+  if (MODE === 'auth') {
+    for (const p of ['/api/user/profile', '/api/user/app-config', '/api/user/notifications', '/api/user/entitlement']) {
+      checks.push([`api ${p}`, `${API_URL}${p}`, 'GET', null]);
+    }
+  }
+
+  const broken = [];
+  for (const [name, url, method, body] of checks) {
+    const headers = url.startsWith(SUPABASE_URL)
+      ? { apikey: ANON_KEY, Authorization: `Bearer ${token || ANON_KEY}`, 'Content-Type': 'application/json' }
+      : { Authorization: `Bearer ${token}` };
+    const res = method === 'POST'
+      ? http.post(url, body, { headers })
+      : http.get(url, { headers });
+    if (res.status < 200 || res.status >= 400) {
+      broken.push(`  ${name} -> ${res.status} ${String(res.body).slice(0, 160)}`);
+    }
+  }
+
+  if (broken.length) {
+    throw new Error(
+      `smoke check failed — fix these before ramping:\n${broken.join('\n')}`
+    );
+  }
+  console.log(`smoke check: all ${checks.length} endpoints healthy, starting ramp`);
+  return {};
+}
+
 export default function () {
   const token = ensureSignedIn();
   if (MODE === 'auth' && !token) {
@@ -227,7 +291,9 @@ export default function () {
 
   group('04 browse health content', () => {
     rest('conditions?select=id,name,slug&limit=30', token);
-    rest('healthy_living_info?select=id,title&limit=20', token);
+    // Columns mirror hooks/use-healthy-living.ts HEALTHY_LIVING_LIST_COLUMNS.
+    // There is no `title` column — asking for one returns 400, not an empty set.
+    rest('healthy_living_info?select=id,name,slug,description,image_url&limit=20', token);
     rest('symptoms?select=id,name&limit=30', token);
   });
   sleep(1 + Math.random() * 2);
@@ -259,6 +325,17 @@ export function handleSummary(data) {
   const pick = (name, stat) => (m[name] && m[name].values ? m[name].values[stat] : null);
   const fmt = (v) => (v === null || v === undefined ? 'n/a' : `${v.toFixed(1)} ms`);
 
+  // Where the time actually goes. Without this split, a 300 ms p50 is
+  // unactionable — you cannot tell speed-of-light from handshake overhead from
+  // a slow server, and they have completely different fixes.
+  const phase = (name) => pick(name, 'med');
+  const waiting = phase('http_req_waiting');        // server think time + 1 RTT
+  const tls     = phase('http_req_tls_handshaking');
+  const conn    = phase('http_req_connecting');
+  const blocked = phase('http_req_blocked');
+  const recv    = phase('http_req_receiving');
+  const sending = phase('http_req_sending');
+
   const lines = [
     '',
     '═══════════════════════════════════════════════════════════════',
@@ -275,6 +352,18 @@ export function handleSummary(data) {
     `  Supabase REST   p50 ${fmt(pick('t_supabase_rest', 'med'))}   p95 ${fmt(pick('t_supabase_rest', 'p(95)'))}   p99 ${fmt(pick('t_supabase_rest', 'p(99)'))}`,
     `  Next.js API     p50 ${fmt(pick('t_next_api', 'med'))}   p95 ${fmt(pick('t_next_api', 'p(95)'))}   p99 ${fmt(pick('t_next_api', 'p(99)'))}`,
     `  Sign-in         p50 ${fmt(pick('t_signin', 'med'))}   p95 ${fmt(pick('t_signin', 'p(95)'))}`,
+    '',
+    '  ── where the time goes (median per request) ───────────────',
+    `  waiting (TTFB)  ${fmt(waiting)}   ← server work + one network round trip`,
+    `  TLS handshake   ${fmt(tls)}`,
+    `  TCP connect     ${fmt(conn)}`,
+    `  blocked         ${fmt(blocked)}   ← queued waiting for a free connection`,
+    `  sending         ${fmt(sending)}`,
+    `  receiving       ${fmt(recv)}   ← payload size shows up here`,
+    '',
+    '  If TLS + connect are near zero, connections are being reused and the',
+    '  time is real network + server. If they are large, the client is opening',
+    '  a fresh connection per request and that is the cheap fix.',
     '',
     '  ── failure ────────────────────────────────────────────────',
     `  overall error rate  : ${((pick('http_req_failed', 'rate') || 0) * 100).toFixed(2)} %`,

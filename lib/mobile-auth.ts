@@ -56,6 +56,17 @@ import { supabaseAnonKey, supabaseUrl } from "./db/env";
  * still issuing HS256 tokens and the optimisation is not active.
  */
 
+/** How long verification took, and which path it took. */
+export interface AuthTiming {
+  /** Milliseconds spent inside getRequestUser. */
+  ms: number;
+  /** "local" = signature verified in-process; "network" = HS256 fallback. */
+  path: "local" | "network" | "rejected";
+}
+
+/** Timing of the most recent verification on this instance. */
+export let lastAuthTiming: AuthTiming = { ms: 0, path: "local" };
+
 export interface RequestUser {
   id: string;
   email: string | null;
@@ -80,6 +91,39 @@ function getVerifier(): SupabaseClient {
   return verifier;
 }
 
+/**
+ * Warm the JWKS on a cold instance, before the first request needs it.
+ *
+ * The module-scoped client above makes the JWKS cache survive between requests
+ * on a WARM instance. A COLD one still starts empty — and on that first
+ * request, verification blocks on fetching the key set from Supabase, which is
+ * a full round trip to Ireland (~230 ms measured) stacked on top of whatever
+ * the cold start already cost. Under a ramp, every new instance Vercel spins up
+ * pays it, which is exactly the shape of a bad p99.
+ *
+ * Kicking the fetch off at module load lets it overlap with the rest of the
+ * function's initialisation instead of sitting in the critical path. Deliberately
+ * not awaited: a slow or failing JWKS must never stop the module from loading —
+ * verification will simply fetch it on demand as before.
+ */
+let jwksWarmup: Promise<unknown> | null = null;
+
+function warmJwks(): void {
+  if (jwksWarmup) return;
+  try {
+    // A throwaway token: we do not care about the result, only the side effect
+    // of populating the client's JWKS cache. An invalid token still triggers
+    // the key fetch before it fails.
+    jwksWarmup = getVerifier()
+      .auth.getClaims("warmup.invalid.token")
+      .catch(() => undefined);
+  } catch {
+    jwksWarmup = null;
+  }
+}
+
+warmJwks();
+
 /** Pull the bearer token out of the Authorization header. */
 export function getBearerToken(req: Request): string | null {
   const header = req.headers.get("authorization");
@@ -102,6 +146,11 @@ export async function getRequestUser(req: Request): Promise<RequestUser | null> 
   const token = getBearerToken(req);
   if (!token) return null;
 
+  const startedAt = Date.now();
+  const done = (path: AuthTiming["path"]) => {
+    lastAuthTiming = { ms: Date.now() - startedAt, path };
+  };
+
   try {
     const { data, error } = await getVerifier().auth.getClaims(token);
 
@@ -109,6 +158,7 @@ export async function getRequestUser(req: Request): Promise<RequestUser | null> 
       // Expired, tampered, or an unknown signing key. Not worth distinguishing
       // for the caller — all of them are 401 — but log the reason.
       if (error) console.warn("[mobile-auth] rejected:", error.message);
+      done("rejected");
       return null;
     }
 
@@ -121,19 +171,25 @@ export async function getRequestUser(req: Request): Promise<RequestUser | null> 
       console.warn(
         `[mobile-auth] rejected: role "${String(claims.role)}" is not authenticated`,
       );
+      done("rejected");
       return null;
     }
 
     const sub = typeof claims.sub === "string" ? claims.sub : null;
     if (!sub) {
       console.warn("[mobile-auth] rejected: token has no sub claim");
+      done("rejected");
       return null;
     }
 
     // Asymmetric tokens carry a `kid` and were verified in-process. HS256 ones
     // went out to GoTrue inside getClaims — correct, but it is the round trip
     // this module exists to remove, so make it visible.
-    if (typeof data.header?.alg === "string" && data.header.alg.startsWith("HS")) {
+    const isSymmetric =
+      typeof data.header?.alg === "string" && data.header.alg.startsWith("HS");
+    done(isSymmetric ? "network" : "local");
+
+    if (isSymmetric) {
       console.warn(
         "[mobile-auth] slow path: HS256 token verified over the network. " +
           "Expected during signing-key rollover; should stop once old sessions expire.",
@@ -153,6 +209,7 @@ export async function getRequestUser(req: Request): Promise<RequestUser | null> 
     // Network failure on the HS256 fallback, or a malformed token that threw
     // rather than returning an error. Fail closed.
     console.error("[mobile-auth] verification threw:", err);
+    done("rejected");
     return null;
   }
 }
