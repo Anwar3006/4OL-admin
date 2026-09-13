@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getAdminClient } from "@/lib/db/admin";
-import { getRequestUser } from "@/lib/mobile-auth";
+import { getBearerToken, getRequestUser } from "@/lib/mobile-auth";
 import { generateFitnessPlan } from "@/features/fitness/data/generate-plan";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -64,7 +64,11 @@ async function assignPlanToUser(admin: any, userId: string, planId: string) {
 
 export async function POST(req: NextRequest) {
   const user = await getRequestUser(req);
-  if (!user) {
+  // The raw token is still needed below: get_my_entitlement() must run on a
+  // token-scoped client so auth.uid() resolves. Identity itself is verified
+  // in-process by getRequestUser — this is not a second auth check.
+  const token = getBearerToken(req);
+  if (!user || !token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
