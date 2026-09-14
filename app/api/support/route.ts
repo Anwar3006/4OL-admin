@@ -155,10 +155,7 @@ export async function POST(req: NextRequest) {
 
     const result = await sendEmail({
       to: teamEmail,
-      // `replyTo`, not `reply_to`. Resend's typed client rejects the snake_case
-      // key, so this field was silently dropped for as long as the file was
-      // .jsx and unchecked — support replies went to the from-address instead
-      // of the person who wrote in. Surfaced by the E5.1 conversion.
+      // Keep replies directed to the person who submitted the support form.
       replyTo: email,
       subject: `New Support Request from ${name}`,
       html: htmlContent,
@@ -192,16 +189,16 @@ ${message}
     let errorMessage = "Failed to send email";
     let errorDetails = (error instanceof Error ? error.message : String(error));
 
-    // Check for common Resend errors
+    // Check for common SendGrid errors
     if ((error instanceof Error ? error.message : String(error))?.includes("API key")) {
-      errorMessage = "Invalid or missing Resend API key";
-      errorDetails = "Please check your RESEND_API_KEY environment variable";
+      errorMessage = "Invalid or missing SendGrid API key";
+      errorDetails = "Please check your SENDGRID_API_KEY environment variable";
     } else if ((error instanceof Error ? error.message : String(error))?.includes("domain") || (error instanceof Error ? error.message : String(error))?.includes("verify")) {
       errorMessage = "Domain verification required";
-      errorDetails = "The email domain needs to be verified in Resend. When using onboarding@resend.dev, you can only send to verified email addresses.";
+      errorDetails = "The from-address must belong to a verified SendGrid Sender Identity or authenticated domain.";
     } else if ((error instanceof Error ? error.message : String(error))?.includes("rate limit") || (error instanceof Error ? error.message : String(error))?.includes("quota")) {
       errorMessage = "Email sending rate limit exceeded";
-      errorDetails = "Please try again later or upgrade your Resend plan";
+      errorDetails = "Please try again later or review the Twilio SendGrid account limits";
     }
 
     return NextResponse.json(

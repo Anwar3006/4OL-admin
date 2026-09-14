@@ -221,7 +221,7 @@ code, or a bad dynamic import.
 
   Converting them found three live bugs nothing else could have: the email
   password-reset flow calling two functions that do not exist, a support email
-  passing `reply_to` where Resend expects `replyTo` (silently dropped), and a
+  passing `reply_to` where the email sender expects `replyTo` (silently dropped), and a
   details page initialising object state to `[]` so a failed query rendered
   blanks instead of an error.
 - **`eslint.config.mjs` excludes `redesign/**`** entirely.
@@ -234,6 +234,6 @@ code, or a bad dynamic import.
 - **Seed JSON lives in `scripts/seed-data/`, not the app tree.** Nothing under
   `app/`, `features/` or `lib/` imports it, which is why the build heap is
   2048 MB rather than the 4096 it used to need.
-- **Transactional email uses Resend.** `lib/email.ts` is the shared sender for
+- **Transactional email uses Twilio SendGrid.** `lib/email.ts` is the shared sender for
   support mail, admin invites, login alerts and the device sign-in OTP. Both
-  `RESEND_API_KEY` and a `RESEND_FROM_EMAIL` on a verified domain are required.
+  `SENDGRID_API_KEY` and a `SENDGRID_FROM_EMAIL` on an authenticated domain are required.

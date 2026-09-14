@@ -9,7 +9,7 @@ const IntegrationSchema = z.object({
   provider: z.enum([
     "google",
     "twilio",
-    "resend",
+    "sendgrid",
     "paystack",
     "momo",
     "gemini",

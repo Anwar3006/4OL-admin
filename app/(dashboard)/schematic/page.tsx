@@ -54,7 +54,7 @@ const architecture = [
   },
   {
     name: "External Services",
-    detail: "Firebase, Twilio, Resend, Paystack, Google Maps, and Gemini via env configuration.",
+    detail: "Firebase, Twilio, SendGrid, Paystack, Google Maps, and Gemini via env configuration.",
     icon: GitBranch,
   },
 ];

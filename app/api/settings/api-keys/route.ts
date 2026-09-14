@@ -5,7 +5,7 @@ import { getAdminClient } from "@/lib/db/admin";
 const envKeyMap = [
   { name: "Google Maps", provider: "google", env: "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY" },
   { name: "Twilio", provider: "twilio", env: "TWILIO_AUTH_TOKEN" },
-  { name: "Resend", provider: "resend", env: "RESEND_API_KEY" },
+  { name: "Twilio SendGrid", provider: "sendgrid", env: "SENDGRID_API_KEY" },
   { name: "Paystack", provider: "paystack", env: "PAYSTACK_SECRET_KEY" },
   { name: "Gemini", provider: "gemini", env: "GEMINI_API_KEY" },
   { name: "Firebase Admin", provider: "firebase", env: "FIREBASE_SERVICE_ACCOUNT_JSON" },

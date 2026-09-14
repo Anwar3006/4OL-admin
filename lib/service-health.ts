@@ -42,7 +42,7 @@ export async function getPlatformHealth(): Promise<PlatformHealth> {
     twilio: envGroupStatus(["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"]),
     twilioVerify: envStatus("TWILIO_VERIFY_SERVICE_SID"),
     awsSms: envStatus("SMS_ORIGINATION_ID"),
-    resend: envGroupStatus(["RESEND_API_KEY", "RESEND_FROM_EMAIL"]),
+    sendgrid: envGroupStatus(["SENDGRID_API_KEY", "SENDGRID_FROM_EMAIL"]),
     paystack: envStatus("PAYSTACK_SECRET_KEY"),
     googleMaps: envStatus("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"),
     gemini: envStatus("GEMINI_API_KEY"),

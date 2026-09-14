@@ -430,26 +430,27 @@ The font-family was never the variable, and three plausible theories
 
 ### `reply_to` was silently dropped on the support email
 
-`app/api/support/route.ts` passed `reply_to: email` to Resend, which expects
+`app/api/support/route.ts` passed `reply_to: email` to the email sender, which expects
 `replyTo`. The typed client rejects the snake_case key — but the file was
 `.jsx` and unchecked, so it compiled and shipped with the field discarded.
 Support replies went to the from-address instead of the person who wrote in.
 Fixed during E5.1. Worth knowing because the same shape can hide in any
 untyped call into a typed SDK.
 
-### Transactional email uses Resend
+### Transactional email uses Twilio SendGrid
 
 `lib/email.ts` is the single sender for support mail, admin invites, admin login
 alerts and device sign-in OTP. It requires:
 
 ```
-RESEND_API_KEY
-RESEND_FROM_EMAIL       must use a domain verified in Resend
+SENDGRID_API_KEY
+SENDGRID_FROM_EMAIL       must use a domain authenticated in SendGrid
+SENDGRID_FROM_NAME        optional; defaults to 4 Our Life
 ```
 
 Until both are set, `missingEmailConfig()` names the absent variable and the
 device-OTP route refuses before issuing a code. The sender address should not be
-added until its domain has completed SPF/DKIM verification in Resend.
+added until its domain has completed authentication in SendGrid.
 
 ### Messaging providers
 
@@ -457,7 +458,7 @@ added until its domain has completed SPF/DKIM verification in Resend.
 | --------- | ---------------------------------------------- |
 | Phone OTP | Twilio Verify                                  |
 | WhatsApp  | Twilio                                         |
-| Email     | Resend via `lib/email.ts`                      |
+| Email     | Twilio SendGrid via `lib/email.ts`             |
 | Plain SMS | AWS End User Messaging via `lib/aws-sms.ts`, pending account access |
 
 The SES webhook remains only as dormant rollback infrastructure; no email send

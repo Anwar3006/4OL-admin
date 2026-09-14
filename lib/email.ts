@@ -1,14 +1,15 @@
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 
 /**
- * The one transactional email sender: Resend.
+ * The one transactional email sender: Twilio SendGrid.
  *
  * Admin invites, login alerts, device sign-in codes, and support messages all
  * use this wrapper so configuration and delivery failures behave consistently.
  *
  * Required configuration:
- *   RESEND_API_KEY
- *   RESEND_FROM_EMAIL       a sender on a domain verified in Resend
+ *   SENDGRID_API_KEY
+ *   SENDGRID_FROM_EMAIL     a sender on a domain authenticated in SendGrid
+ *   SENDGRID_FROM_NAME      optional; defaults to "4 Our Life"
  */
 
 export interface SendEmailArgs {
@@ -24,11 +25,11 @@ export type SendEmailResult =
   | { success: true; messageId?: string }
   | { success: false; error: string };
 
-/** Which required variables are missing. Empty means Resend can be attempted. */
+/** Which required variables are missing. Empty means SendGrid can be attempted. */
 export function missingEmailConfig(): string[] {
   const missing: string[] = [];
-  if (!process.env.RESEND_API_KEY) missing.push("RESEND_API_KEY");
-  if (!process.env.RESEND_FROM_EMAIL) missing.push("RESEND_FROM_EMAIL");
+  if (!process.env.SENDGRID_API_KEY) missing.push("SENDGRID_API_KEY");
+  if (!process.env.SENDGRID_FROM_EMAIL) missing.push("SENDGRID_FROM_EMAIL");
   return missing;
 }
 
@@ -36,13 +37,30 @@ export function isEmailConfigured(): boolean {
   return missingEmailConfig().length === 0;
 }
 
-// Lazily constructed. At module scope this would build a client during the
-// build, when no environment is loaded — the mistake lib/supabase/indexAdmin.ts
-// made with a service-role client.
-let client: Resend | null = null;
-function getClient(): Resend {
-  if (!client) client = new Resend(process.env.RESEND_API_KEY);
-  return client;
+// Configure lazily so importing a route during `next build` never requires
+// production credentials. Keep the key that configured the singleton so test
+// and local environment changes cannot accidentally reuse a stale client.
+let configuredApiKey: string | null = null;
+function getClient() {
+  const apiKey = process.env.SENDGRID_API_KEY!;
+  if (configuredApiKey !== apiKey) {
+    sgMail.setApiKey(apiKey);
+    configuredApiKey = apiKey;
+  }
+  return sgMail;
+}
+
+function sendGridErrorMessage(error: unknown): string {
+  const candidate = error as {
+    message?: string;
+    response?: { body?: { errors?: Array<{ message?: string }> } };
+  };
+  const apiMessages = candidate.response?.body?.errors
+    ?.map((item) => item.message)
+    .filter(Boolean);
+  return apiMessages?.length
+    ? apiMessages.join("; ")
+    : candidate.message || "Failed to send email";
 }
 
 export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
@@ -55,32 +73,26 @@ export async function sendEmail(args: SendEmailArgs): Promise<SendEmailResult> {
   }
 
   try {
-    const { data, error } = await getClient().emails.send({
-      from: process.env.RESEND_FROM_EMAIL!,
+    const [response] = await getClient().send({
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL!,
+        name: process.env.SENDGRID_FROM_NAME || "4 Our Life",
+      },
       to: args.to,
       subject: args.subject,
       html: args.html,
       ...(args.text ? { text: args.text } : {}),
       ...(args.replyTo ? { replyTo: args.replyTo } : {}),
     });
-
-    if (error) {
-      console.error("[email] Resend send failed:", {
-        name: error.name,
-        message: error.message,
-        to: args.to,
-      });
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, messageId: data?.id };
+    const header = response.headers?.["x-message-id"];
+    const messageId = Array.isArray(header) ? header[0] : header;
+    return { success: true, ...(messageId ? { messageId } : {}) };
   } catch (error) {
-    const err = error as { name?: string; message?: string };
-    console.error("[email] Resend send failed:", {
-      name: err.name,
-      message: err.message,
+    const message = sendGridErrorMessage(error);
+    console.error("[email] SendGrid send failed:", {
+      message,
       to: args.to,
     });
-    return { success: false, error: err.message || "Failed to send email" };
+    return { success: false, error: message };
   }
 }

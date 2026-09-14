@@ -90,8 +90,8 @@ These are conditional tasks, not coding estimates:
 - **WhatsApp campaigns:** Twilio account credentials exist locally, but the
   approved content-template SID and WhatsApp sender are absent. Production sends
   cannot work until the sender and templates are approved.
-- **Transactional email:** all sending paths now use Resend. Production still
-  needs a verified sender domain and `RESEND_FROM_EMAIL` in the deployment
+- **Transactional email:** all sending paths now use Twilio SendGrid. Production still
+  needs an authenticated sender domain and `SENDGRID_FROM_EMAIL` in the deployment
   environment.
 - **AI generation and narrative reports:** `OPENAI_API_KEY` is absent. Even after
   configuration, generated health content must stay draft until human review.

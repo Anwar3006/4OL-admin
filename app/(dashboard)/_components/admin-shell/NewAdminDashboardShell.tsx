@@ -237,7 +237,7 @@ export default function NewAdminDashboardShell({
       />
       <AdminSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
-      <SidebarProvider className="min-h-svh">
+      <SidebarProvider className="h-svh min-h-0 overflow-hidden">
         {/* ── Sidebar: solid emerald panel, flush top-to-bottom ── */}
         <Sidebar collapsible="icon" className="border-sidebar-border">
           {/* ── Header: Logo ── */}
@@ -480,7 +480,7 @@ export default function NewAdminDashboardShell({
         </Sidebar>
 
         {/* ── Main Content Area ── */}
-        <SidebarInset className="bg-background min-h-svh min-w-0 max-w-[3800px]!">
+        <SidebarInset className="h-svh min-h-0 min-w-0 max-w-[3800px]! overflow-y-auto bg-background">
           {/* Sticky Header */}
           <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 sm:px-6 2xl:px-10 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-2">

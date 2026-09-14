@@ -77,8 +77,8 @@ not a regression. Triaging it is separate work.
 
 ## Not CI secrets
 
-Everything else in `.env.example` — `OPENAI_API_KEY`, `RESEND_API_KEY`,
-`RESEND_FROM_EMAIL`, `TWILIO_*`, `AWS_*`, `TRIVIA_DEVICE_PEPPER`,
+Everything else in `.env.example` — `OPENAI_API_KEY`, `SENDGRID_API_KEY`,
+`SENDGRID_FROM_EMAIL`, `TWILIO_*`, `AWS_*`, `TRIVIA_DEVICE_PEPPER`,
 `PERIOD_LEAD_ENCRYPTION_KEY`, `API_KEY` — is runtime configuration for the
 deployment environment. Neither workflow reads any of it, and adding them to
 GitHub would widen the blast radius of a compromised Actions run for no gain.

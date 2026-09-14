@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { render } from "@react-email/render";
+import * as React from "react";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { sendEmail } from "@/lib/email";
+import InviteUserEmail from "@/components/emails/invite-user";
 
-// Invite a platform user (mockup `m-invite-user`). Creates a user_invites
-// row and returns the accept link; SMS/email dispatch hooks into the same
-// row when providers are wired.
+// Invite a platform user and deliver the acceptance link by transactional email.
 
 const InviteUserSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -103,6 +105,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to create invite." }, { status: 500 });
   }
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (!appUrl) {
+    await admin.from("user_invites").delete().eq("id", invite.id);
+    return NextResponse.json(
+      { error: "NEXT_PUBLIC_APP_URL is not configured; the invite was not sent." },
+      { status: 500 },
+    );
+  }
+
+  const inviteLink = `${appUrl}/accept-invite?token=${token}`;
+  const html = await render(
+    React.createElement(InviteUserEmail, {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      inviteLink,
+    }),
+  );
+  const sent = await sendEmail({
+    to: parsed.data.email,
+    subject: "You’re invited to join 4 Our Life",
+    html,
+  });
+
+  if (!sent.success) {
+    await admin.from("user_invites").delete().eq("id", invite.id);
+    console.error("[admin/users/invite] SendGrid delivery failed:", sent.error);
+    return NextResponse.json(
+      { error: `Failed to send invitation email: ${sent.error}` },
+      { status: 502 },
+    );
+  }
+
   await admin.from("activity_logs").insert({
     actor_id: auth.user.id,
     action_type: "user_invited",
@@ -121,7 +155,8 @@ export async function POST(req: NextRequest) {
     {
       success: true,
       inviteId: invite.id,
-      inviteLink: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite?token=${token}`,
+      inviteLink,
+      emailSent: true,
     },
     { status: 201 },
   );

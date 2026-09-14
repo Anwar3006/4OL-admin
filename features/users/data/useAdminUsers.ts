@@ -107,14 +107,11 @@ export const useInviteUser = () => {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to send invite.");
-      return json as { success: boolean; inviteLink: string };
+      return json as { success: boolean; inviteLink: string; emailSent: boolean };
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       invalidateUsers(queryClient);
-      toast.success("Invitation created.");
-      if (data.inviteLink) {
-        toast.info(`Invite link: ${data.inviteLink}`, { duration: 12000 });
-      }
+      toast.success("Invitation sent by email.");
     },
     onError: (error) => toast.error(error.message),
   });

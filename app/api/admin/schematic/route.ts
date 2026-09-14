@@ -28,7 +28,7 @@ const STACK_DEPS = [
   "zod",
   "recharts",
   "twilio",
-  "resend",
+  "@sendgrid/mail",
   "openai",
 ];
 
