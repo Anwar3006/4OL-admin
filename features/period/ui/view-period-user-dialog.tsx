@@ -21,19 +21,19 @@ export default function ViewPeriodUserDialog() {
 
   return (
     <Modal isOpen={isOpen} onClose={close} title="Tracker detail">
-      <div className="space-y-5">
+      <div className="space-y-5 3xl:space-y-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+            <div className="text-sm 3xl:text-base 4xl:text-lg font-bold text-slate-800 dark:text-slate-200">
               {row.user || "Unnamed tracker"}
             </div>
-            <div className="mt-1 flex items-center gap-2 text-2xs text-slate-500">
-              <code className="text-2xs">{shortId(row.userId)}</code>
+            <div className="mt-1 flex items-center gap-2 text-2xs 3xl:text-xs 4xl:text-sm text-slate-500">
+              <code className="text-2xs 3xl:text-xs 4xl:text-sm">{shortId(row.userId)}</code>
               <span>·</span>
               <span>{row.region || "Not supplied"}</span>
             </div>
           </div>
-          <span className="badge badge-blue capitalize">
+          <span className="badge badge-blue capitalize 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm">
             {String(row.source ?? "user").replaceAll("_", " ")}
           </span>
         </div>
@@ -80,10 +80,10 @@ function Section({
 }) {
   return (
     <section>
-      <h4 className="mb-2 text-2xs font-bold uppercase tracking-wider text-slate-400">
+      <h4 className="mb-2 3xl:mb-3 text-2xs 3xl:text-xs 4xl:text-sm font-bold uppercase tracking-wider text-slate-400">
         {title}
       </h4>
-      <div className="grid grid-cols-2 gap-3">{children}</div>
+      <div className="grid grid-cols-2 gap-3 3xl:gap-4">{children}</div>
     </section>
   );
 }
@@ -91,8 +91,8 @@ function Section({
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <div className="text-2xs text-slate-400">{label}</div>
-      <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+      <div className="text-2xs 3xl:text-xs 4xl:text-sm text-slate-400">{label}</div>
+      <div className="text-xs 3xl:text-sm 4xl:text-base font-semibold text-slate-700 dark:text-slate-300">
         {value}
       </div>
     </div>

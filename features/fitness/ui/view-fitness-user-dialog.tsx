@@ -30,10 +30,10 @@ export default function ViewFitnessUserDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg font-bold text-slate-400 overflow-hidden shrink-0">
+      <DialogContent className="sm:max-w-lg 3xl:max-w-2xl 4xl:max-w-3xl p-0 overflow-hidden">
+        <DialogHeader className="p-6 3xl:p-7 border-b bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-4 3xl:gap-5">
+            <div className="h-12 w-12 3xl:h-14 3xl:w-14 4xl:h-16 4xl:w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg 3xl:text-xl 4xl:text-2xl font-bold text-slate-400 overflow-hidden shrink-0">
               {row.avatar_url ? (
                 <Image
                   src={row.avatar_url}
@@ -48,18 +48,19 @@ export default function ViewFitnessUserDialog() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg font-bold truncate">
+              <DialogTitle className="text-lg 3xl:text-xl 4xl:text-2xl font-bold truncate">
                 {row.name || "Unnamed user"}
               </DialogTitle>
-              <div className="text-2xs text-muted-foreground mt-0.5">
+              <div className="text-2xs 3xl:text-xs 4xl:text-sm text-muted-foreground mt-0.5">
                 Joined {formatDate(row.joined_at)}
               </div>
             </div>
             <Badge
               className={
-                row.is_premium
+                (row.is_premium
                   ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 border-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 border-slate-200") +
+                " 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm"
               }
             >
               {row.tier_name || "Free"}
@@ -67,12 +68,12 @@ export default function ViewFitnessUserDialog() {
           </div>
         </DialogHeader>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 3xl:p-7 space-y-5 3xl:space-y-6">
           <section>
-            <h4 className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-3">
+            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
               Subscription
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
               <Field
                 label="Expires"
                 value={
@@ -90,10 +91,10 @@ export default function ViewFitnessUserDialog() {
           <Separator />
 
           <section>
-            <h4 className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-3">
+            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
               Training
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
               <Field label="Experience" value={row.level || "—"} />
               <Field label="Body type" value={row.body_type || "—"} />
               <Field
@@ -112,10 +113,10 @@ export default function ViewFitnessUserDialog() {
           <Separator />
 
           <section>
-            <h4 className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-3">
+            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
               Activity
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
               <Field
                 label="Workouts logged"
                 value={`${row.workouts.toLocaleString()} (${Number(row.kcal || 0).toLocaleString()} kcal)`}
@@ -127,9 +128,10 @@ export default function ViewFitnessUserDialog() {
                 value={
                   <Badge
                     className={
-                      row.status === "banned"
+                      (row.status === "banned"
                         ? "bg-red-50 dark:bg-red-500/15 text-red-700 border-red-200"
-                        : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 border-emerald-200"
+                        : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 border-emerald-200") +
+                      " 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm"
                     }
                   >
                     {row.status || "active"}
@@ -147,8 +149,8 @@ export default function ViewFitnessUserDialog() {
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <div className="text-2xs text-slate-400">{label}</div>
-      <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
+      <div className="text-2xs 3xl:text-xs 4xl:text-sm text-slate-400">{label}</div>
+      <div className="text-xs 3xl:text-sm 4xl:text-base font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
         {value}
       </div>
     </div>
