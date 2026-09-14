@@ -102,9 +102,31 @@ export const options = {
   // These are the SLO. When they break, you have found the knee — that is the
   // answer to "max threshold of concurrent requests", and abortOnFail stops the
   // run there instead of spending ten more minutes proving it harder.
+  //
+  // Two details here are the difference between a useful run and a wasted one,
+  // both learned the hard way:
+  //
+  // 1. SCOPED TO THE SCENARIO. The smoke check in setup() makes its own
+  //    requests, and one of them is deliberately the first, coldest call to a
+  //    Vercel function — several seconds. Unscoped, those samples land in
+  //    http_req_duration and can trip the abort before the ramp has started.
+  //    Requests made in setup() carry no `scenario` tag, so filtering on
+  //    {scenario:mobile_ramp} excludes them and measures only the load.
+  //
+  // 2. delayAbortEval IS LONG ENOUGH TO HAVE A SAMPLE. A p95 over 30 requests
+  //    is the second-slowest request — one cold start decides it. Two minutes
+  //    in there are thousands of samples and the percentile means something.
+  //
+  // The global duration ceiling is 5 s rather than 2.5 s on purpose: the
+  // measured p99 through Vercel is already 6.8 s, so a 2.5 s abort stops the
+  // run on a known condition instead of finding the point where the system
+  // actually degrades. The per-tier thresholds below stay tight, but they only
+  // report — they do not abort.
   thresholds: {
-    'http_req_failed':   [{ threshold: 'rate<0.01', abortOnFail: true, delayAbortEval: '30s' }],
-    'http_req_duration': [{ threshold: 'p(95)<2500', abortOnFail: true, delayAbortEval: '30s' }],
+    'http_req_failed{scenario:mobile_ramp}':
+      [{ threshold: 'rate<0.01', abortOnFail: true, delayAbortEval: '2m' }],
+    'http_req_duration{scenario:mobile_ramp}':
+      [{ threshold: 'p(95)<5000', abortOnFail: true, delayAbortEval: '2m' }],
     't_supabase_rpc':    ['p(50)<400', 'p(95)<1500'],
     't_supabase_rest':   ['p(50)<400', 'p(95)<1500'],
     't_next_api':        ['p(50)<800', 'p(95)<2500'],
@@ -163,29 +185,47 @@ function api(path, token) {
   return record(res, tNextApi, errNextApi, `api:${path}`);
 }
 
-// Sign in once per VU and cache the JWT for the VU's lifetime — this is what
-// the real app does (session persisted in SecureStore, auto-refreshed). Signing
-// in every iteration would measure GoTrue's bcrypt cost, not your read path.
-let vuToken = null;
+// ── tokens ───────────────────────────────────────────────────────────────────
+//
+// Tokens are minted ONCE, in setup(), and shared by every VU for the whole run.
+//
+// The previous design signed each VU in on its first iteration. That looked
+// realistic and was not: as the ramp added VUs, a hundred accounts hammered
+// /auth/v1/token from a single hotspot IP, and Supabase Auth — correctly —
+// started answering 429 over_request_rate_limit. In the 20:40 run, 338 of 473
+// sign-in attempts were refused. Those 429s were the ONLY errors in the run,
+// they were what tripped abortOnFail, and the latency tail followed them rather
+// than the load.
+//
+// Real traffic does not look like that. A phone signs in once and then holds
+// the session for weeks in SecureStore, refreshing in the background; ten
+// thousand users arrive from thousands of different IPs. Minting a small pool
+// up front and reusing it is BOTH closer to production and free of the
+// artificial limit, which is the rare case where the realistic thing is also
+// the convenient one.
+//
+// TOKEN_POOL is how many distinct identities the run exercises. It needs to be
+// large enough that per-user rows (profile, notifications, entitlement) are not
+// all the same row — not large enough to matter for load, since the read path
+// does the same work regardless of who is asking.
+const TOKEN_POOL = Number(__ENV.TOKEN_POOL || 12);
 
-function ensureSignedIn() {
-  if (MODE !== 'auth') return null;
-  if (vuToken) return vuToken;
-
-  const u = users[exec.vu.idInTest % users.length];
+/** Sign one user in. Returns the access token, or null with the reason logged. */
+function mintToken(u, tagged) {
   const res = http.post(
     `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
     JSON.stringify({ email: u.email, password: u.password }),
-    { headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' }, tags: { endpoint: 'auth:signin' } }
+    {
+      headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+      tags: tagged ? { endpoint: 'auth:signin' } : undefined,
+    }
   );
-  tSignIn.add(res.timings.duration);
-
+  if (tagged) tSignIn.add(res.timings.duration);
   if (res.status !== 200) {
     console.error(`sign-in failed for ${u.email}: ${res.status} ${res.body}`);
     return null;
   }
-  vuToken = res.json('access_token');
-  return vuToken;
+  return res.json('access_token');
 }
 
 // ── the session ──────────────────────────────────────────────────────────────
@@ -208,18 +248,31 @@ export function setup() {
     console.log('smoke check: MODE=anon, skipping authenticated endpoints');
   }
 
-  const u = users[0];
+  // Mint the shared token pool, paced so GoTrue's per-IP limiter never sees a
+  // burst. A second between sign-ins costs ~12 s of setup and buys a run with
+  // no 429s in it at all.
+  const tokens = [];
   let token = null;
   if (MODE === 'auth') {
-    const res = http.post(
-      `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-      JSON.stringify({ email: u.email, password: u.password }),
-      { headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' } }
-    );
-    if (res.status !== 200) {
-      throw new Error(`smoke check: sign-in failed (${res.status}). Did you run seed-users.mjs?`);
+    const want = Math.min(TOKEN_POOL, users.length);
+    for (let i = 0; i < want; i++) {
+      const t = mintToken(users[i], true);
+      if (t) tokens.push(t);
+      sleep(1);
     }
-    token = res.json('access_token');
+    if (tokens.length === 0) {
+      throw new Error(
+        'setup: could not mint a single token. Did you run seed-users.mjs, and is ' +
+        'SUPABASE_URL/ANON_KEY right? A 429 here means the IP is still cooling down ' +
+        'from a previous run — wait a few minutes.'
+      );
+    }
+    if (tokens.length < want) {
+      console.warn(`setup: minted ${tokens.length} of ${want} tokens; continuing with what we have`);
+    } else {
+      console.log(`setup: minted ${tokens.length} tokens, shared across all VUs`);
+    }
+    token = tokens[0];
   }
 
   const checks = [
@@ -255,11 +308,16 @@ export function setup() {
     );
   }
   console.log(`smoke check: all ${checks.length} endpoints healthy, starting ramp`);
-  return {};
+  return { tokens };
 }
 
-export default function () {
-  const token = ensureSignedIn();
+export default function (data) {
+  // One identity per VU, drawn round-robin from the pool minted in setup().
+  // No sign-in happens on the hot path at all, so /auth/v1/token contributes
+  // nothing to the measured load and cannot rate-limit the run.
+  const pool = (data && data.tokens) || [];
+  const token = MODE === 'auth' ? pool[exec.vu.idInTest % pool.length] : null;
+
   if (MODE === 'auth' && !token) {
     sleep(1);
     return;

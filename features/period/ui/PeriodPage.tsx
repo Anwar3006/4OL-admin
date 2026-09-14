@@ -49,6 +49,8 @@ import Overview from "./Overview";
 import TriviaOperations, {
   TriviaBatchModal,
 } from "./TriviaOperations";
+import ViewPeriodUserDialog from "./view-period-user-dialog";
+import { useViewPeriodUserDialog } from "@/features/period/data/dialog-hooks";
 import LibraryOperations, {
   CreateForm,
 } from "./LibraryOperations";
@@ -90,6 +92,7 @@ function PeriodWorkspace() {
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
+  const viewPeriodUser = useViewPeriodUserDialog<Row>();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const triviaBatch =
     (payload.data ?? []).find((row: Row) => row.batchId === triviaBatchId) ??
@@ -860,7 +863,9 @@ function PeriodWorkspace() {
                     ? (row) => {
                         if (row.batchId) setTriviaBatchId(row.batchId);
                       }
-                    : undefined
+                    : activeTab === "users"
+                      ? (row) => viewPeriodUser.open(row)
+                      : undefined
                 }
                 rowActions={rowActions}
               />
@@ -874,6 +879,7 @@ function PeriodWorkspace() {
         saving={saving}
         onClose={() => setTriviaBatchId(null)}
       />
+      <ViewPeriodUserDialog />
     </div>
   );
 }

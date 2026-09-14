@@ -240,6 +240,30 @@ export const useViewOutdoorReviewDialog = () => {
   };
 };
 
+/**
+ * Fitness ▸ Users row detail. Opens with the already-fetched FitnessUserRow
+ * (see useFitnessUsers) rather than re-fetching by id — the table row
+ * already has everything the dialog shows, so there's no reason to make a
+ * second round trip just to open it.
+ */
+export const useViewFitnessUserDialog = <T = any>() => {
+  const openDialog = useDialogStore((state) => state.openDialog);
+  const closeDialog = useDialogStore((state) => state.closeDialog);
+  const isOpen = useDialogStore((state) =>
+    state.isDialogOpen("view-fitness-user"),
+  );
+  const data = useDialogStore((state) =>
+    state.getDialogData<T>("view-fitness-user"),
+  );
+
+  return {
+    isOpen,
+    data,
+    open: (row: T) => openDialog("view-fitness-user", { data: row }),
+    close: () => closeDialog("view-fitness-user"),
+  };
+};
+
 export const useAiGeneratePlanDialog = <T = any>() => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);

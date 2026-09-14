@@ -7,9 +7,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { useFitnessUsers, type FitnessUserRow } from "@/features/fitness/data/useFitnessAnalytics";
-import { Search } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { usePermissionContext } from "@/stores/permission-context";
+import { useViewFitnessUserDialog } from "@/features/fitness/data/dialog-hooks";
+import ViewFitnessUserDialog from "./view-fitness-user-dialog";
 
 /**
  * Fitness Users (Gap Analysis Part V) — fitness-specific columns fed by the
@@ -41,6 +43,7 @@ const UsersTab = () => {
   const { userRole } = usePermissionContext();
   const isSuperAdmin = userRole === "super_admin";
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const viewUser = useViewFitnessUserDialog<FitnessUserRow>();
 
   // Read page from URL to trigger refetch when pagination changes
   const page = parseInt(searchParams.get("fit_user_page") || "1", 10);
@@ -272,19 +275,22 @@ const UsersTab = () => {
                     : "Make Premium"}
               </button>
             )}
-            <a
-              aria-label="Open user profile"
-              href={`/users?search=${encodeURIComponent(row.original.name || row.original.user_id)}`}
+            <button
+              type="button"
+              aria-label="View fitness profile"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewUser.open(row.original);
+              }}
               className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/15 transition-colors"
-              onClick={(e) => e.stopPropagation()}
             >
-              👁️
-            </a>
+              <Eye className="h-4 w-4" />
+            </button>
           </div>
         ),
       },
     ],
-    [isSuperAdmin, pendingUserId, handleGrant, handleRevoke],
+    [isSuperAdmin, pendingUserId, handleGrant, handleRevoke, viewUser],
   );
 
   return (
@@ -332,8 +338,10 @@ const UsersTab = () => {
             pageSizeKey: "fit_user_pageSize",
           }}
           totalItems={data?.meta?.total || 0}
+          onRowClick={(row: FitnessUserRow) => viewUser.open(row)}
         />
       </div>
+      <ViewFitnessUserDialog />
     </div>
   );
 };

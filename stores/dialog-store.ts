@@ -49,7 +49,9 @@ export type DialogTypes =
   | "flag-user"
   | "add-group"
   | "view-group"
-  | "add-top-rated-item";
+  | "add-top-rated-item"
+  | "view-period-user"
+  | "view-fitness-user";
 
 /**
  * Generic dialog configuration
