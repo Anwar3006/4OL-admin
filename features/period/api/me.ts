@@ -171,6 +171,7 @@ const ActionSchema = z.discriminatedUnion("action", [
 
 export async function GET(request: NextRequest) {
   const { supabase, user } = await getPeriodRequestClient(request);
+  const admin = getAdminClient();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const [
@@ -209,7 +210,7 @@ export async function GET(request: NextRequest) {
     // have not expired. Drafts must never become visible merely because their
     // date range includes today. Historical results remain available from the
     // dedicated /api/period/trivia endpoint.
-    supabase.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:period_trivia_rewards(name,description,icon,reward_type,value)").eq("status", "ready").gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(12),
+    admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:reward_catalog(name,description,icon,image_url,reward_type,value,amount,currency)").eq("status", "ready").gte("ends_at", new Date().toISOString()).order("starts_at", { ascending: true }).limit(12),
     supabase.from("period_feature_flags").select("key,description,rollout_percent,minimum_app_version").eq("enabled", true),
   ]);
 

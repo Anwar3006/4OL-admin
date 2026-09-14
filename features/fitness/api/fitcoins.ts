@@ -196,6 +196,26 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = getAdminClient();
+  const { data: catalogReward, error: catalogError } = await admin
+    .from("reward_catalog")
+    .insert({
+      name: parsed.data.name,
+      description: parsed.data.description ?? null,
+      reward_type: "fitcoins",
+      value: `${parsed.data.cost} FitCoins`,
+      domains: ["fitcoins"],
+      fulfillment_method: "manual",
+      is_active: parsed.data.isActive ?? true,
+      created_by: auth.user.id,
+    })
+    .select("id")
+    .single();
+  if (catalogError || !catalogReward) {
+    return NextResponse.json(
+      { error: catalogError?.message ?? "Shared reward creation failed" },
+      { status: 500 },
+    );
+  }
   const { data, error } = await admin
     .from("fitcoin_rewards")
     .insert({
@@ -203,10 +223,12 @@ export async function POST(req: NextRequest) {
       description: parsed.data.description ?? null,
       cost: parsed.data.cost,
       is_active: parsed.data.isActive ?? true,
+      catalog_reward_id: catalogReward.id,
     })
     .select("id")
     .single();
   if (error || !data) {
+    await admin.from("reward_catalog").delete().eq("id", catalogReward.id);
     return NextResponse.json({ error: error?.message ?? "Insert failed" }, { status: 500 });
   }
 
@@ -240,12 +262,28 @@ export async function PUT(req: NextRequest) {
   }
 
   const admin = getAdminClient();
+  const { data: existing } = await admin
+    .from("fitcoin_rewards")
+    .select("catalog_reward_id")
+    .eq("id", parsed.data.rewardId)
+    .maybeSingle();
   const { error } = await admin
     .from("fitcoin_rewards")
     .update(patch)
     .eq("id", parsed.data.rewardId);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (existing?.catalog_reward_id) {
+    const catalogPatch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (parsed.data.name !== undefined) catalogPatch.name = parsed.data.name;
+    if (parsed.data.description !== undefined) catalogPatch.description = parsed.data.description;
+    if (parsed.data.cost !== undefined) catalogPatch.value = `${parsed.data.cost} FitCoins`;
+    if (parsed.data.isActive !== undefined) catalogPatch.is_active = parsed.data.isActive;
+    await admin
+      .from("reward_catalog")
+      .update(catalogPatch)
+      .eq("id", existing.catalog_reward_id);
   }
 
   await admin.rpc("log_admin_activity", {

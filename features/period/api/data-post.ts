@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (input.action === "create_trivia_reward") {
-    const { data, error } = await admin.from("period_trivia_rewards").insert({ name: input.name, description: input.description, icon: input.icon, reward_type: input.rewardType, value: input.value ?? null, created_by: user.id }).select("id").single();
+    const { data, error } = await admin.from("reward_catalog").insert({ name: input.name, description: input.description, icon: input.icon, reward_type: input.rewardType, value: input.value ?? null, domains: ["trivia"], fulfillment_method: "manual", created_by: user.id }).select("id").single();
     if (error) return NextResponse.json({ error: "Unable to create reward" }, { status: 500 });
     await writeAudit(user.id, "create", "period_trivia_reward", data.id);
     return NextResponse.json({ ok: true, id: data.id }, { status: 201 });

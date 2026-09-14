@@ -136,6 +136,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
     title: "Engagement",
     items: [
       {
+        title: "Rewards",
+        href: "/rewards",
+        icon: "🎁",
+        permission: "rewards.view",
+      },
+      {
         title: "Reviews & Ratings",
         href: "/reviews",
         icon: "⭐",

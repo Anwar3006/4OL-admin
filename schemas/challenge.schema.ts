@@ -19,6 +19,7 @@ export const challengeSchema = z.object({
   end_date: z.coerce.date({ error: "End date is required" }),
   goal_metric: z.string().optional().nullable(),
   goal_value: z.number().nonnegative().optional().nullable(),
+  reward_id: z.string().uuid().optional().nullable(),
   reward_description: z.string().optional().nullable(),
   reward_image_url: z.string().or(z.literal("")).optional().nullable(),
   status: z.enum(CHALLENGE_STATUS).default("draft"),

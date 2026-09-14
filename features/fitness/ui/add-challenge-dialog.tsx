@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -60,6 +61,16 @@ const AddChallengeDialog = () => {
     useUpdateChallenge();
 
   const [tagInput, setTagInput] = useState("");
+  const [rewardCatalog, setRewardCatalog] = useState<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    icon: string;
+    value: string | null;
+    amount: number | null;
+    currency: string | null;
+  }>>([]);
   const isPending = isCreating || isUpdating;
 
   const defaultValues: Partial<TChallengeInput> = {
@@ -70,6 +81,7 @@ const AddChallengeDialog = () => {
     end_date: new Date(),
     goal_metric: "steps",
     goal_value: 10000,
+    reward_id: null,
     reward_description: "",
     reward_image_url: "",
     status: "draft",
@@ -91,6 +103,7 @@ const AddChallengeDialog = () => {
         start_date: data.start_date ? new Date(data.start_date) : new Date(),
         end_date: data.end_date ? new Date(data.end_date) : new Date(),
         description: data.description ?? "",
+        reward_id: data.reward_id ?? null,
         reward_description: data.reward_description ?? "",
         reward_image_url: data.reward_image_url ?? "",
         featured_image_url: data.featured_image_url ?? "",
@@ -100,6 +113,27 @@ const AddChallengeDialog = () => {
       form.reset(defaultValues as TChallengeInput);
     }
   }, [isOpen, isEditMode, data]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    void fetch("/api/rewards", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Unable to load rewards");
+        if (!cancelled) {
+          setRewardCatalog(
+            (payload.rewards ?? []).filter((reward: { is_active: boolean }) => reward.is_active),
+          );
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) toast.error((error as Error).message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   const onSubmit = (values: TChallengeInput) => {
     if (isEditMode && data?.id) {
@@ -142,6 +176,55 @@ const AddChallengeDialog = () => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="p-6 space-y-6"
             >
+              <FormField
+                control={form.control}
+                name="reward_id"
+                render={({ field }) => (
+                  <FormItem className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
+                    <FormLabel>Reusable Reward</FormLabel>
+                    <Select
+                      value={field.value ?? "none"}
+                      onValueChange={(value) => {
+                        if (value === "none") {
+                          field.onChange(null);
+                          return;
+                        }
+                        const reward = rewardCatalog.find((item) => item.id === value);
+                        field.onChange(value);
+                        if (reward) {
+                          const displayValue = reward.amount !== null
+                            ? `${reward.currency ?? "GHS"} ${Number(reward.amount).toLocaleString()}`
+                            : reward.value;
+                          form.setValue(
+                            "reward_description",
+                            [reward.name, displayValue].filter(Boolean).join(" — "),
+                          );
+                          form.setValue("reward_image_url", reward.image_url ?? "");
+                        }
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-slate-900">
+                          <SelectValue placeholder="Select from the shared rewards catalogue" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="z-[100] bg-white dark:bg-slate-800">
+                        <SelectItem value="none">No reward</SelectItem>
+                        {rewardCatalog.map((reward) => (
+                          <SelectItem key={reward.id} value={reward.id}>
+                            {reward.icon} {reward.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Every active reward is available here, including rewards first created for Trivia.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Media Zones */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField

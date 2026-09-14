@@ -4419,6 +4419,7 @@ export type Database = {
       }
       fitcoin_rewards: {
         Row: {
+          catalog_reward_id: string | null
           cost: number
           created_at: string
           description: string | null
@@ -4428,6 +4429,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          catalog_reward_id?: string | null
           cost: number
           created_at?: string
           description?: string | null
@@ -4437,6 +4439,7 @@ export type Database = {
           name: string
         }
         Update: {
+          catalog_reward_id?: string | null
           cost?: number
           created_at?: string
           description?: string | null
@@ -4446,6 +4449,13 @@ export type Database = {
           name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fitcoin_rewards_catalog_reward_id_fkey"
+            columns: ["catalog_reward_id"]
+            isOneToOne: true
+            referencedRelation: "reward_catalog"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fitcoin_rewards_min_tier_id_fkey"
             columns: ["min_tier_id"]
@@ -4877,6 +4887,7 @@ export type Database = {
           id: string
           is_public: boolean | null
           max_participants: number | null
+          reward_id: string | null
           reward_description: string | null
           reward_image_url: string | null
           start_date: string
@@ -4900,6 +4911,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           max_participants?: number | null
+          reward_id?: string | null
           reward_description?: string | null
           reward_image_url?: string | null
           start_date: string
@@ -4923,6 +4935,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           max_participants?: number | null
+          reward_id?: string | null
           reward_description?: string | null
           reward_image_url?: string | null
           start_date?: string
@@ -4933,6 +4946,13 @@ export type Database = {
           view_count?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fitness_challenges_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fitness_challenges_created_by_fkey"
             columns: ["created_by"]
@@ -10257,6 +10277,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "period_trivia_events_catalog_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "period_trivia_events_reward_id_fkey"
             columns: ["reward_id"]
             isOneToOne: false
@@ -10323,6 +10350,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "period_trivia_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "period_trivia_fulfillment_catalog_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
             referencedColumns: ["id"]
           },
           {
@@ -11517,6 +11551,134 @@ export type Database = {
             columns: ["registrar_id"]
             isOneToOne: false
             referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_catalog: {
+        Row: {
+          amount: number | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          domains: string[]
+          fulfillment_method: string
+          icon: string
+          id: string
+          image_url: string | null
+          inventory_count: number | null
+          is_active: boolean
+          metadata: Json
+          name: string
+          reward_type: string
+          source_key: string | null
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          domains?: string[]
+          fulfillment_method?: string
+          icon?: string
+          id?: string
+          image_url?: string | null
+          inventory_count?: number | null
+          is_active?: boolean
+          metadata?: Json
+          name: string
+          reward_type?: string
+          source_key?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          domains?: string[]
+          fulfillment_method?: string
+          icon?: string
+          id?: string
+          image_url?: string | null
+          inventory_count?: number | null
+          is_active?: boolean
+          metadata?: Json
+          name?: string
+          reward_type?: string
+          source_key?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
+      reward_grants: {
+        Row: {
+          awarded_at: string
+          claimed_at: string | null
+          created_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          reward_id: string
+          reward_snapshot: Json
+          source_domain: string
+          source_id: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          claimed_at?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          reward_id: string
+          reward_snapshot?: Json
+          source_domain: string
+          source_id?: string | null
+          source_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          claimed_at?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          reward_id?: string
+          reward_snapshot?: Json
+          source_domain?: string
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_grants_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
             referencedColumns: ["id"]
           },
         ]

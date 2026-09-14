@@ -143,7 +143,7 @@ export async function GET() {
     admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(20),
     admin.from("period_trivia_leads").select("id,event_id,user_id,status,social_platform,acquisition_source,campaign_code,created_at,last_contacted_at").order("created_at", { ascending: false }).limit(100),
     admin.from("period_content_sources").select("id", { count: "exact", head: true }),
-    admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
+    admin.from("reward_catalog").select("id,name,description,icon,image_url,reward_type,value,amount,currency,domains,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
   ]);
   return NextResponse.json({ jobs: jobs ?? [], events: events ?? [], leads: leads ?? [], sourceLinks: sourceLinks ?? 0, rewards: rewards ?? [] });
 }

@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").order("submitted_at", { ascending: false }).limit(10000),
       admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id,leaderboard_publish_at").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_platform,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
-      admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active,created_at").order("created_at", { ascending: false }).limit(100),
+      admin.from("reward_catalog").select("id,name,description,icon,image_url,reward_type,value,amount,currency,domains,fulfillment_method,is_active,created_at").order("created_at", { ascending: false }).limit(100),
       admin.from("period_trivia_fulfillment").select("id,event_id,submission_id,user_id,tier_label,reward_id,prize_status,sent_at,prompt_sent_at,confirmed_at,fulfilled_at,notes,created_at").order("created_at", { ascending: false }).limit(500),
       admin.from("period_trivia_blocked_devices").select("id,device_hash,mobile_hash,user_id,violation,evidence,status,detected_at,unblocked_at").order("detected_at", { ascending: false }).limit(200),
       admin.from("period_trivia_rules").select("key,description,value,enforced_by,is_active,updated_at").order("key"),

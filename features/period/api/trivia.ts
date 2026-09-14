@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
   catch { return NextResponse.json({ error: "Trivia security is not configured" }, { status: 503 }); }
 
   const viewerId = await getPeriodRequestUserId(request);
-  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:period_trivia_rewards(name,description,icon,reward_type,value)").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
+  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:reward_catalog(name,description,icon,image_url,reward_type,value,amount,currency)").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
   const current = (events ?? []).find((event) => new Date(event.starts_at) <= new Date(now) && new Date(event.ends_at) >= new Date(now));
   const upcoming = (events ?? []).find((event) => new Date(event.starts_at) > new Date(now));
   const ended = [...(events ?? [])].reverse().find((event) => new Date(event.ends_at) < new Date(now));
@@ -120,13 +120,13 @@ export async function GET(request: NextRequest) {
       leaderboard = (data ?? []).map((row, index) => ({ rank: index + 1, participant: `Player ${String(index + 1).padStart(2, "0")}`, score: row.score, durationSeconds: row.duration_seconds }));
       // G14: last-Trivia winners list (mobile-only reveal after the event).
       // Aggregate tier/status only — never user ids or contact detail.
-      const { data: winnerRows } = await admin.from("period_trivia_fulfillment").select("tier_label,prize_status,reward:period_trivia_rewards(name)").eq("event_id", event.id).order("created_at", { ascending: true });
+      const { data: winnerRows } = await admin.from("period_trivia_fulfillment").select("tier_label,prize_status,reward:reward_catalog(name)").eq("event_id", event.id).order("created_at", { ascending: true });
       winners = (winnerRows ?? []).map((row: any) => ({ tierLabel: row.tier_label, prizeStatus: row.prize_status, rewardName: row.reward?.name ?? null }));
     }
   }
   // G5: the signed-in player's own prize fulfilment lifecycle.
   if (viewerId) {
-    const { data: mine } = await admin.from("period_trivia_fulfillment").select("id,event_id,tier_label,prize_status,prompt_sent_at,confirmed_at,fulfilled_at,reward:period_trivia_rewards(name,description)").eq("user_id", viewerId).order("created_at", { ascending: false }).limit(5);
+    const { data: mine } = await admin.from("period_trivia_fulfillment").select("id,event_id,tier_label,prize_status,prompt_sent_at,confirmed_at,fulfilled_at,reward:reward_catalog(name,description)").eq("user_id", viewerId).order("created_at", { ascending: false }).limit(5);
     myFulfillment = (mine ?? []).map((row: any) => ({ id: row.id, eventId: row.event_id, tierLabel: row.tier_label, prizeStatus: row.prize_status, promptSentAt: row.prompt_sent_at, confirmedAt: row.confirmed_at, fulfilledAt: row.fulfilled_at, rewardName: row.reward?.name ?? null, rewardDescription: row.reward?.description ?? null }));
   }
   const response = NextResponse.json({ event, state, completed, blocked, questions, leaderboard, winners, myFulfillment, serverNow: now });
