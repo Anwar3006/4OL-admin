@@ -30,6 +30,33 @@ type SubscriptionRow = {
   subscription_tiers?: { key: string; name: string } | null;
 };
 
+const SCOPE_LABELS: Record<"all_access" | "fitness_only" | "period_only", string> = {
+  all_access: "Entire app",
+  fitness_only: "Fitness only",
+  period_only: "Period Tracker only",
+};
+
+// Entire app / Fitness: free-form up to 3650 days server-side, these are
+// just convenient presets (Custom reveals a number input).
+const GENERAL_DURATION_OPTIONS = [
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+  { value: "90", label: "90 days (~3 months)" },
+  { value: "365", label: "365 days" },
+] as const;
+
+// Period Tracker: hard-capped at exactly these values -- a Postgres CHECK
+// constraint and a Zod schema both enforce it (see grant-logic.ts), so
+// this list mirrors the server-side truth rather than inventing a new rule.
+const PERIOD_DURATION_OPTIONS = [
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+  { value: "60", label: "60 days" },
+  { value: "90", label: "90 days (~3 months)" },
+] as const;
+
 const FITNESS_ALERT_TYPES = [
   { value: "workout_reminder", label: "Workout reminder" },
   { value: "challenge", label: "Challenge" },
@@ -84,21 +111,48 @@ const SubscriptionsTab = () => {
 
   // ── Grant form state ────────────────────────────────────────
   const [grantUser, setGrantUser] = useState("");
+  const [grantScope, setGrantScope] = useState<"all_access" | "fitness_only" | "period_only">("all_access");
   const [grantTier, setGrantTier] = useState<"premium" | "lifetime">("premium");
-  const [grantDays, setGrantDays] = useState("");
+  const [grantDuration, setGrantDuration] = useState("30");
+  const [grantCustomDays, setGrantCustomDays] = useState("");
   const [grantNote, setGrantNote] = useState("");
   const [granting, setGranting] = useState(false);
+
+  const grantDurationOptions =
+    grantScope === "period_only"
+      ? PERIOD_DURATION_OPTIONS
+      : [...GENERAL_DURATION_OPTIONS, { value: "custom", label: "Custom…" }];
 
   const handleGrant = async () => {
     if (!grantUser) {
       toast.error("Select a user first");
       return;
     }
+    if (grantScope === "period_only" && !grantNote.trim()) {
+      toast.error("A reason is required for Period Tracker grants");
+      return;
+    }
+    const durationDays =
+      grantDuration === "custom" ? Number(grantCustomDays) : Number(grantDuration);
     setGranting(true);
     try {
-      const body: Record<string, unknown> = { userId: grantUser, tierKey: grantTier };
-      if (grantTier === "premium" && grantDays) body.durationDays = Number(grantDays);
-      if (grantNote.trim()) body.note = grantNote.trim();
+      const body: Record<string, unknown> = {
+        userId: grantUser,
+        tierKey: grantScope === "period_only" ? "premium" : grantTier,
+        scope: grantScope,
+      };
+      if (grantScope === "period_only" || grantTier === "premium") {
+        if (!durationDays) {
+          toast.error("Enter a duration");
+          setGranting(false);
+          return;
+        }
+        body.durationDays = durationDays;
+      }
+      if (grantNote.trim()) {
+        body.note = grantNote.trim();
+        body.reason = grantNote.trim();
+      }
       const res = await fetch("/api/subscriptions/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,9 +160,12 @@ const SubscriptionsTab = () => {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Grant failed");
-      toast.success(`${grantTier === "lifetime" ? "Lifetime premium" : "Premium"} assigned`);
+      toast.success(
+        `${grantScope === "period_only" ? "Period Tracker Cycle Pro" : grantTier === "lifetime" ? "Lifetime premium" : "Premium"} assigned (${SCOPE_LABELS[grantScope]})`,
+      );
       setGrantUser("");
-      setGrantDays("");
+      setGrantDuration("30");
+      setGrantCustomDays("");
       setGrantNote("");
       load();
     } catch (err) {
@@ -174,6 +231,104 @@ const SubscriptionsTab = () => {
     }
   };
 
+  // ── Bulk grant state ────────────────────────────────────────
+  const [bulkMode, setBulkMode] = useState<"selected" | "all_active">("selected");
+  const [bulkPickUser, setBulkPickUser] = useState("");
+  const [bulkTargets, setBulkTargets] = useState<string[]>([]);
+  const [bulkScope, setBulkScope] = useState<"all_access" | "fitness_only" | "period_only">("all_access");
+  const [bulkTier, setBulkTier] = useState<"premium" | "lifetime">("premium");
+  const [bulkDuration, setBulkDuration] = useState("30");
+  const [bulkCustomDays, setBulkCustomDays] = useState("");
+  const [bulkReason, setBulkReason] = useState("");
+  const [bulkAllActiveCount, setBulkAllActiveCount] = useState<number | null>(null);
+  const [bulkAllActiveSample, setBulkAllActiveSample] = useState<string[]>([]);
+  const [bulkConfirmText, setBulkConfirmText] = useState("");
+  const [previewingAll, setPreviewingAll] = useState(false);
+  const [bulkGranting, setBulkGranting] = useState(false);
+
+  const bulkDurationOptions =
+    bulkScope === "period_only"
+      ? PERIOD_DURATION_OPTIONS
+      : [...GENERAL_DURATION_OPTIONS, { value: "custom", label: "Custom…" }];
+
+  const previewAllActive = async () => {
+    setPreviewingAll(true);
+    setBulkAllActiveCount(null);
+    try {
+      const res = await fetch("/api/subscriptions/admin/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targets: { mode: "all_active" },
+          scope: bulkScope,
+          durationDays: 1,
+          reason: "preview",
+          preview: true,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Preview failed");
+      setBulkAllActiveCount(json.count);
+      setBulkAllActiveSample(json.sample ?? []);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setPreviewingAll(false);
+    }
+  };
+
+  const bulkTargetCount = bulkMode === "selected" ? bulkTargets.length : (bulkAllActiveCount ?? 0);
+  const bulkCanSubmit =
+    bulkReason.trim().length >= 4 &&
+    (bulkMode === "selected"
+      ? bulkTargets.length > 0
+      : bulkAllActiveCount !== null && bulkConfirmText.trim() === "GRANT ALL");
+
+  const handleBulkGrant = async () => {
+    const durationDays = bulkDuration === "custom" ? Number(bulkCustomDays) : Number(bulkDuration);
+    if (!durationDays) {
+      toast.error("Enter a duration");
+      return;
+    }
+    setBulkGranting(true);
+    try {
+      const res = await fetch("/api/subscriptions/admin/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targets:
+            bulkMode === "selected"
+              ? { mode: "selected", userIds: bulkTargets }
+              : { mode: "all_active" },
+          scope: bulkScope,
+          tierKey: bulkTier,
+          durationDays,
+          reason: bulkReason.trim(),
+          preview: false,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Bulk grant failed");
+      const failedCount = (json.failed ?? []).length;
+      if (failedCount > 0) {
+        toast.error(`Granted ${json.granted}, ${failedCount} failed — see console for details`);
+        console.warn("Bulk grant failures", json.failed);
+      } else {
+        toast.success(`Granted ${SCOPE_LABELS[bulkScope]} to ${json.granted} user(s)`);
+      }
+      setBulkTargets([]);
+      setBulkAllActiveCount(null);
+      setBulkAllActiveSample([]);
+      setBulkConfirmText("");
+      setBulkReason("");
+      load();
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBulkGranting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* ── Grant panel (super admin only) ── */}
@@ -185,35 +340,72 @@ const SubscriptionsTab = () => {
             notified in-app. Paystack purchases will appear here automatically once
             payment collection is enabled.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
             <div className="md:col-span-2">
               <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">User</label>
               <UserSearchSelect value={grantUser} onValueChange={setGrantUser} />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Tier</label>
+              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Scope</label>
               <select
                 className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
-                value={grantTier}
+                value={grantScope}
+                onChange={(e) => {
+                  const next = e.target.value as typeof grantScope;
+                  setGrantScope(next);
+                  setGrantDuration(next === "fitness_only" || next === "period_only" ? "30" : grantDuration);
+                }}
+              >
+                <option value="all_access">Entire app</option>
+                <option value="fitness_only">Fitness only</option>
+                <option value="period_only">Period Tracker only</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Tier</label>
+              <select
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 disabled:bg-slate-50 disabled:text-slate-400"
+                value={grantScope === "period_only" ? "premium" : grantTier}
+                disabled={grantScope === "period_only"}
                 onChange={(e) => setGrantTier(e.target.value as "premium" | "lifetime")}
               >
-                <option value="premium">Premium (30 days)</option>
-                <option value="lifetime">Lifetime Premium</option>
+                {grantScope === "period_only" ? (
+                  <option value="premium">Cycle Pro</option>
+                ) : (
+                  <>
+                    <option value="premium">Premium</option>
+                    <option value="lifetime">Lifetime Premium</option>
+                  </>
+                )}
               </select>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">
-                Days {grantTier === "lifetime" ? "(n/a)" : "(optional)"}
+                Duration {grantTier === "lifetime" && grantScope !== "period_only" ? "(n/a)" : ""}
               </label>
-              <input
-                type="number"
-                min={1}
-                disabled={grantTier === "lifetime"}
-                placeholder="30"
-                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl disabled:bg-slate-50 disabled:text-slate-300"
-                value={grantDays}
-                onChange={(e) => setGrantDays(e.target.value)}
-              />
+              {grantDuration === "custom" ? (
+                <input
+                  type="number"
+                  min={1}
+                  max={3650}
+                  autoFocus
+                  placeholder="Days"
+                  className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
+                  value={grantCustomDays}
+                  onChange={(e) => setGrantCustomDays(e.target.value)}
+                />
+              ) : (
+                <select
+                  className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 disabled:bg-slate-50 disabled:text-slate-400"
+                  value={grantDuration}
+                  disabled={grantTier === "lifetime" && grantScope !== "period_only"}
+                  onChange={(e) => setGrantDuration(e.target.value)}
+                >
+                  {grantDurationOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              )}
             </div>
             <Button
               onClick={handleGrant}
@@ -225,7 +417,11 @@ const SubscriptionsTab = () => {
             </Button>
           </div>
           <input
-            placeholder="Note (optional, stored with the grant for audit)"
+            placeholder={
+              grantScope === "period_only"
+                ? "Reason (required for Period Tracker grants, stored for audit)"
+                : "Note (optional, stored with the grant for audit)"
+            }
             className="w-full mt-3 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
             value={grantNote}
             onChange={(e) => setGrantNote(e.target.value)}
@@ -235,6 +431,186 @@ const SubscriptionsTab = () => {
         <div className="alert bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 p-3 rounded-lg text-sm font-medium">
           Assigning or revoking premium access is restricted to the super admin. You can
           still review entitlements below.
+        </div>
+      )}
+
+      {/* ── Bulk grant panel (super admin only) ── */}
+      {isSuperAdmin && (
+        <div className="card bg-white dark:bg-slate-800">
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-1">👥 Bulk Grant Premium</h3>
+          <p className="text-sm text-slate-500 font-medium mb-4">
+            Grant free premium access to many users at once — a picked list, or every
+            active user. Each grant is independent (one failure never blocks the rest)
+            and this is logged as a single audit entry.
+          </p>
+
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setBulkMode("selected")}
+              className={`h-9 px-4 rounded-xl text-sm font-bold border ${
+                bulkMode === "selected"
+                  ? "bg-emerald-600 text-white border-emerald-600"
+                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              Selected users
+            </button>
+            <button
+              type="button"
+              onClick={() => setBulkMode("all_active")}
+              className={`h-9 px-4 rounded-xl text-sm font-bold border ${
+                bulkMode === "all_active"
+                  ? "bg-emerald-600 text-white border-emerald-600"
+                  : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              All active users
+            </button>
+          </div>
+
+          {bulkMode === "selected" ? (
+            <div className="space-y-3 mb-4">
+              <UserSearchSelect
+                value={bulkPickUser}
+                onValueChange={setBulkPickUser}
+                placeholder="Add a user…"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!bulkPickUser || bulkTargets.includes(bulkPickUser)}
+                onClick={() => {
+                  setBulkTargets((prev) => [...prev, bulkPickUser]);
+                  setBulkPickUser("");
+                }}
+              >
+                + Add user
+              </Button>
+              {bulkTargets.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {bulkTargets.map((id) => (
+                    <span key={id} className="badge badge-slate text-3xs font-bold">
+                      {id.slice(0, 8)}…
+                      <button
+                        type="button"
+                        className="ml-1 text-red-500 font-black"
+                        onClick={() => setBulkTargets((prev) => prev.filter((x) => x !== id))}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2 mb-4">
+              <Button variant="outline" size="sm" disabled={previewingAll} onClick={previewAllActive}>
+                {previewingAll && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Preview audience
+              </Button>
+              {bulkAllActiveCount !== null && (
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  This will grant {bulkAllActiveCount} active user{bulkAllActiveCount === 1 ? "" : "s"}
+                  {bulkAllActiveSample.length > 0 && (
+                    <span className="font-normal text-slate-500"> — e.g. {bulkAllActiveSample.join(", ")}</span>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mb-3">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Scope</label>
+              <select
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                value={bulkScope}
+                onChange={(e) => {
+                  const next = e.target.value as typeof bulkScope;
+                  setBulkScope(next);
+                  setBulkDuration("30");
+                }}
+              >
+                <option value="all_access">Entire app</option>
+                <option value="fitness_only">Fitness only</option>
+                <option value="period_only">Period Tracker only</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Tier</label>
+              <select
+                className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 disabled:bg-slate-50 disabled:text-slate-400"
+                value={bulkScope === "period_only" ? "premium" : bulkTier}
+                disabled={bulkScope === "period_only"}
+                onChange={(e) => setBulkTier(e.target.value as "premium" | "lifetime")}
+              >
+                {bulkScope === "period_only" ? (
+                  <option value="premium">Cycle Pro</option>
+                ) : (
+                  <>
+                    <option value="premium">Premium</option>
+                    <option value="lifetime">Lifetime Premium</option>
+                  </>
+                )}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Duration</label>
+              {bulkDuration === "custom" ? (
+                <input
+                  type="number"
+                  min={1}
+                  max={3650}
+                  autoFocus
+                  placeholder="Days"
+                  className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
+                  value={bulkCustomDays}
+                  onChange={(e) => setBulkCustomDays(e.target.value)}
+                />
+              ) : (
+                <select
+                  className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                  value={bulkDuration}
+                  onChange={(e) => setBulkDuration(e.target.value)}
+                >
+                  {bulkDurationOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            {bulkMode === "all_active" && bulkAllActiveCount !== null && (
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">
+                  Type GRANT ALL to confirm
+                </label>
+                <input
+                  className="w-full h-10 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
+                  value={bulkConfirmText}
+                  onChange={(e) => setBulkConfirmText(e.target.value)}
+                  placeholder="GRANT ALL"
+                />
+              </div>
+            )}
+          </div>
+
+          <input
+            placeholder="Reason (required, stored with the grant for audit)"
+            className="w-full mb-3 px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl"
+            value={bulkReason}
+            onChange={(e) => setBulkReason(e.target.value)}
+          />
+
+          <Button
+            onClick={handleBulkGrant}
+            disabled={!bulkCanSubmit || bulkGranting}
+            className="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold disabled:opacity-50"
+          >
+            {bulkGranting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Grant to {bulkTargetCount || "…"} user{bulkTargetCount === 1 ? "" : "s"}
+          </Button>
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { SUPER_ADMIN_ROLE } from "@/lib/admin-roles";
 import { getAdminClient } from "@/lib/db/admin";
+import { GrantError, grantPeriodPremium, grantSubscription } from "./grant-logic";
 
 /**
  * Admin subscriptions management (FITNESS_MOCKUP_GAP_ANALYSIS.md, D6).
@@ -23,13 +24,22 @@ const GrantSchema = z.object({
   userId: z.string().uuid(),
   tierKey: z.enum(["premium", "lifetime"]),
   // Optional override of the tier's default duration (days); ignored for
-  // lifetime. Never <= 0.
+  // lifetime and for period_only (which has its own fixed enum below).
+  // Never <= 0.
   durationDays: z.number().int().min(1).max(3650).optional(),
   note: z.string().trim().max(500).optional(),
   // all_access (default) bridges to full Plasence access via
   // get_my_entitlement(); fitness_only does not (Mapping Audit "three
-  // scoped passes" gap-closure).
-  scope: z.enum(["all_access", "fitness_only"]).optional(),
+  // scoped passes" gap-closure). period_only writes period_premium_grants
+  // instead of user_subscriptions -- Period Tracker's own, separate
+  // entitlement system, capped at 90 days by policy (see grant-logic.ts).
+  scope: z.enum(["all_access", "fitness_only", "period_only"]).optional(),
+  // Required (and audit-logged) when scope is period_only, mirroring
+  // features/period/api/data-post.ts's grant_premium action.
+  reason: z.string().trim().min(2).max(500).optional(),
+}).refine((v) => v.scope !== "period_only" || !!v.reason, {
+  message: "A reason is required for Period Tracker grants",
+  path: ["reason"],
 });
 
 const RevokeSchema = z.object({
@@ -98,81 +108,51 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
   }
-  const { userId, tierKey, durationDays, note, scope } = parsed.data;
+  const { userId, tierKey, durationDays, note, scope, reason } = parsed.data;
 
   const admin = getAdminClient();
 
-  const { data: profile } = await admin
-    .from("user_profiles")
-    .select("user_id")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (!profile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  try {
+    if (scope === "period_only") {
+      const grant = await grantPeriodPremium(admin, {
+        userId,
+        durationDays: durationDays ?? 30,
+        reason: reason!,
+        notes: note,
+        grantedBy: auth.user.id,
+      });
+      await admin.rpc("log_admin_activity", {
+        p_admin_id: auth.user.id,
+        p_action_type: "subscription_grant",
+        p_target_table: "period_premium_grants",
+        p_record_id: grant.id,
+        p_description: `Assigned Period Tracker Cycle Pro (period_only) to user ${userId} until ${grant.expiresAt}`,
+      });
+      return NextResponse.json({ success: true, subscriptionId: grant.id });
+    }
 
-  const { data: tier, error: tierError } = await admin
-    .from("subscription_tiers")
-    .select("id, key, name, duration_days")
-    .eq("key", tierKey)
-    .maybeSingle();
-  if (tierError || !tier) {
-    return NextResponse.json({ error: "Subscription tier not found" }, { status: 400 });
-  }
-
-  // Replacement semantics: expire any current active grant, then insert the
-  // new one (the partial unique index allows one active row per user).
-  await admin
-    .from("user_subscriptions")
-    .update({ status: "expired", note: "Superseded by admin grant" })
-    .eq("user_id", userId)
-    .eq("status", "active");
-
-  const effectiveDays = tierKey === "lifetime" ? null : durationDays ?? tier.duration_days;
-  const startsAt = new Date().toISOString();
-  const expiresAt = effectiveDays
-    ? new Date(Date.now() + effectiveDays * 86_400_000).toISOString()
-    : null;
-
-  const { data: inserted, error: insertError } = await admin
-    .from("user_subscriptions")
-    .insert({
-      user_id: userId,
-      tier_id: tier.id,
-      status: "active",
-      source: "admin_grant",
-      granted_by: auth.user.id,
-      starts_at: startsAt,
-      expires_at: expiresAt,
-      note: note ?? null,
+    const grant = await grantSubscription(admin, {
+      userId,
+      tierKey,
+      durationDays,
+      note,
       scope: scope ?? "all_access",
-    })
-    .select("id")
-    .single();
-  if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+      grantedBy: auth.user.id,
+    });
+    await admin.rpc("log_admin_activity", {
+      p_admin_id: auth.user.id,
+      p_action_type: "subscription_grant",
+      p_target_table: "user_subscriptions",
+      p_record_id: grant.id,
+      p_description: `Assigned ${grant.tierName} (${scope ?? "all_access"}) to user ${userId}${grant.expiresAt ? ` until ${grant.expiresAt}` : " (lifetime)"}`,
+    });
+    return NextResponse.json({ success: true, subscriptionId: grant.id });
+  } catch (err) {
+    if (err instanceof GrantError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Grant failed" }, { status: 500 });
   }
-
-  await admin.rpc("log_admin_activity", {
-    p_admin_id: auth.user.id,
-    p_action_type: "subscription_grant",
-    p_target_table: "user_subscriptions",
-    p_record_id: inserted.id,
-    p_description: `Assigned ${tier.name} (${scope ?? "all_access"}) to user ${userId}${expiresAt ? ` until ${expiresAt}` : " (lifetime)"}`,
-  });
-
-  // Best-effort in-app notice through the shared notifications pipeline.
-  await admin.rpc("notify_fitness", {
-    p_user_id: userId,
-    p_type: "billing",
-    p_title: `${tier.name} activated 🎉`,
-    p_body: expiresAt
-      ? `Your ${tier.name} access is active until ${new Date(expiresAt).toLocaleDateString()}.`
-      : `Your ${tier.name} access is active — forever.`,
-    p_metadata: { screen: "premium" },
-  });
-
-  return NextResponse.json({ success: true, subscriptionId: inserted.id });
 }
 
 export async function PATCH(req: NextRequest) {
