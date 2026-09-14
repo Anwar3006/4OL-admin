@@ -23,6 +23,7 @@ import React, {
 import {
   Download,
   HeartHandshake,
+  Info,
   Loader2,
   Plus,
   RefreshCw,
@@ -249,6 +250,18 @@ function PeriodWorkspace() {
       "Content draft created for clinical review.",
     );
   };
+
+  // Mirrors the mockup's own amber-row highlight for an irregular cycle
+  // (admin-panel.html:6143), using the same normal ranges its overview cards
+  // state: 21-35 day cycle, 3-7 day period.
+  const getUserRowClassName = useCallback((row: Row) => {
+    const cycleLength = row.cycleLength as number | null | undefined;
+    const periodLength = row.periodLength as number | null | undefined;
+    const irregular =
+      (cycleLength != null && (cycleLength < 21 || cycleLength > 35)) ||
+      (periodLength != null && (periodLength < 3 || periodLength > 7));
+    return irregular ? "row-flagged" : undefined;
+  }, []);
 
   const rowActions = useMemo<RowAction<Row>[]>(() => {
     if (activeTab === "corrections")
@@ -790,16 +803,23 @@ function PeriodWorkspace() {
                 mutate={mutate}
               />
             )}
-            {activeTab === "engagement" && (
-              <SummaryNote
-                icon={<HeartHandshake className="h-4 w-4" />}
-                text={`Delivery events (30d): ${
-                  Object.entries(payload.eventCounts ?? {})
+            {activeTab === "engagement" &&
+              (Object.keys(payload.eventCounts ?? {}).length ? (
+                <SummaryNote
+                  icon={<HeartHandshake className="h-4 w-4" />}
+                  text={`Delivery events (30d): ${Object.entries(
+                    payload.eventCounts ?? {},
+                  )
                     .map(([key, value]) => `${key} ${value}`)
-                    .join(" · ") || "No events"
-                }`}
-              />
-            )}
+                    .join(" · ")}`}
+                />
+              ) : (
+                <SummaryNote
+                  icon={<Info className="h-4 w-4" />}
+                  tone="info"
+                  text="Campaign creation and delivery are real — dispatching resolves the consent-opted-in audience and inserts real notifications, and Reached below reflects that. Open Rate, Action Rate and this delivery-event feed are not: nothing logs a notification open or in-app action back yet, so period_notification_events stays empty."
+                />
+              ))}
             {activeTab === "consent" && (
               <PrivacyRequests
                 rows={payload.privacyRequests ?? []}
@@ -868,6 +888,9 @@ function PeriodWorkspace() {
                       : undefined
                 }
                 rowActions={rowActions}
+                getRowClassName={
+                  activeTab === "users" ? getUserRowClassName : undefined
+                }
               />
             </div>
           </div>

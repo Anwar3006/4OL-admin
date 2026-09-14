@@ -1,15 +1,3 @@
-/**
- * GENERATED FILE — DO NOT EDIT BY HAND.
- *
- * Regenerate with:  pnpm gen:types
- * (needs the Supabase CLI and `SUPABASE_PROJECT_ID`, or an access token)
- *
- * This is the shape of the live `public` schema in project
- * rhbbxttxnvcziyqzptqs, generated 8 Sept 2026. It is the source of truth that
- * the hand-written per-feature `schema/types.ts` files can drift from — see
- * lib/db/README.md.
- */
-
 export type Json =
   | string
   | number
@@ -9700,10 +9688,12 @@ export type Database = {
           appointment_date: string
           clinician_name: string | null
           created_at: string
+          facility_id: string | null
           id: string
           notes_ciphertext: string | null
           purpose: string
           questions: string[]
+          request_status: string
           status: string
           timezone: string
           updated_at: string
@@ -9713,10 +9703,12 @@ export type Database = {
           appointment_date: string
           clinician_name?: string | null
           created_at?: string
+          facility_id?: string | null
           id?: string
           notes_ciphertext?: string | null
           purpose?: string
           questions?: string[]
+          request_status?: string
           status?: string
           timezone?: string
           updated_at?: string
@@ -9726,12 +9718,67 @@ export type Database = {
           appointment_date?: string
           clinician_name?: string | null
           created_at?: string
+          facility_id?: string | null
           id?: string
           notes_ciphertext?: string | null
           purpose?: string
           questions?: string[]
+          request_status?: string
           status?: string
           timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_preconception_appointments_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      period_pregnancy_tests: {
+        Row: {
+          app_version: string | null
+          brand: string | null
+          client_event_id: string | null
+          created_at: string
+          id: string
+          logged_on: string
+          notes_ciphertext: string | null
+          result: string
+          source: string
+          tested_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          brand?: string | null
+          client_event_id?: string | null
+          created_at?: string
+          id?: string
+          logged_on: string
+          notes_ciphertext?: string | null
+          result: string
+          source?: string
+          tested_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          brand?: string | null
+          client_event_id?: string | null
+          created_at?: string
+          id?: string
+          logged_on?: string
+          notes_ciphertext?: string | null
+          result?: string
+          source?: string
+          tested_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -9847,6 +9894,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      period_reminder_log: {
+        Row: {
+          checklist_item_id: string | null
+          created_at: string
+          id: string
+          reminder_kind: string
+          sent_on: string
+          user_id: string
+        }
+        Insert: {
+          checklist_item_id?: string | null
+          created_at?: string
+          id?: string
+          reminder_kind: string
+          sent_on: string
+          user_id: string
+        }
+        Update: {
+          checklist_item_id?: string | null
+          created_at?: string
+          id?: string
+          reminder_kind?: string
+          sent_on?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_reminder_log_checklist_item_id_fkey"
+            columns: ["checklist_item_id"]
+            isOneToOne: false
+            referencedRelation: "period_ttc_checklist_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       period_safety_flags: {
         Row: {
@@ -10592,6 +10674,7 @@ export type Database = {
           created_at: string
           notes_ciphertext: string | null
           reminder_enabled: boolean
+          reminder_time: string | null
           status: string
           target_date: string | null
           updated_at: string
@@ -10603,6 +10686,7 @@ export type Database = {
           created_at?: string
           notes_ciphertext?: string | null
           reminder_enabled?: boolean
+          reminder_time?: string | null
           status?: string
           target_date?: string | null
           updated_at?: string
@@ -10614,6 +10698,7 @@ export type Database = {
           created_at?: string
           notes_ciphertext?: string | null
           reminder_enabled?: boolean
+          reminder_time?: string | null
           status?: string
           target_date?: string | null
           updated_at?: string
@@ -13805,12 +13890,10 @@ export type Database = {
       delete_my_cv: { Args: never; Returns: Json }
       delete_old_notifications: { Args: never; Returns: undefined }
       detect_admin_multi_ip_sessions: { Args: never; Returns: Json }
-      dispatch_notification:
-        | { Args: { p_recipients: Json }; Returns: Json }
-        | {
-            Args: { p_campaign_id?: string; p_recipients: Json }
-            Returns: Json
-          }
+      dispatch_notification: {
+        Args: { p_campaign_id?: string; p_recipients: Json }
+        Returns: Json
+      }
       dispatch_notification_async: {
         Args: { p_campaign_id?: string; p_recipients: Json }
         Returns: Json
@@ -13894,6 +13977,11 @@ export type Database = {
             Returns: string
           }
       fn_fitness_challenge_deadlines: { Args: never; Returns: number }
+      fn_fitness_exercise_is_locked: {
+        Args: { p_exercise_id: string }
+        Returns: boolean
+      }
+      fn_fitness_expire_stale_assignments: { Args: never; Returns: undefined }
       fn_fitness_streak_alerts: { Args: never; Returns: number }
       fn_fitness_subscription_renewals: { Args: never; Returns: number }
       fn_make_group_leader: {
@@ -13907,6 +13995,22 @@ export type Database = {
       fn_mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
+      }
+      fn_record_period_cycle: {
+        Args: {
+          p_confidence?: number
+          p_cycle_length?: number
+          p_explanation_code?: string
+          p_fertile_window?: unknown
+          p_model_key?: string
+          p_model_version?: string
+          p_next_period_forecast?: string
+          p_ovulation_forecast?: string
+          p_period_end_date?: string
+          p_period_length?: number
+          p_period_start_date: string
+        }
+        Returns: Json
       }
       get_admin_dashboard_metrics: {
         Args: { time_filter?: string }
@@ -14031,6 +14135,17 @@ export type Database = {
           expo_push_token: string
           id: string
           instructions: string
+          user_id: string
+        }[]
+      }
+      get_due_period_reminders: {
+        Args: { p_current_time: string }
+        Returns: {
+          body: string
+          expo_push_token: string
+          metadata: Json
+          reminder_kind: string
+          title: string
           user_id: string
         }[]
       }
@@ -14411,6 +14526,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      period_user_has_premium: { Args: { p_user_id: string }; Returns: boolean }
       purge_expired_report_runs: { Args: never; Returns: number }
       purge_or_anonymize_user: { Args: { p_user_id: string }; Returns: Json }
       raise_escrow_dispute: {
@@ -14461,6 +14577,10 @@ export type Database = {
           s_types: Json[]
         }
         Returns: string
+      }
+      registrar_update_own_facility: {
+        Args: { p_facility_id: string; p_payload: Json; p_user_id: string }
+        Returns: undefined
       }
       replace_role_permissions: {
         Args: { p_permission_keys: string[]; p_role: string }

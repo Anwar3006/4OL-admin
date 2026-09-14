@@ -26,35 +26,20 @@ export const useTrainers = ({
   return useQuery({
     queryKey: TRAINER_QUERY_KEYS.list({ page, limit, search }),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      let query = supabase
-        .from("fitness_trainers")
-        .select(
-          "*, user_profiles!fitness_trainers_user_id_fkey(first_name, last_name, email, avatar_url)",
-          { count: "exact" },
-        )
-        .order("created_at", { ascending: false });
-
-      if (search) {
-        // Search by user profile fields via join
-        query = query.or(
-          `user_profiles.first_name.ilike.%${search}%,user_profiles.last_name.ilike.%${search}%`,
-        );
+      // Goes through an API route, not getBrowserClient(), because the
+      // trainer's email lives in auth.users -- PostgREST can't embed it off
+      // user_profiles (no email column there) and resolving it needs the
+      // service role. See features/fitness/api/trainers.ts.
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (search) params.set("search", search);
+      const res = await fetch(`/api/fitness/trainers?${params}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Failed to load trainers.");
       }
-
-      const { data, count, error } = await query.range(from, to);
-      if (error) throw new Error(error.message);
-
-      const total = count ?? 0;
-      return {
-        trainers: (data || []) as TTrainerOutput[],
-        meta: {
-          total,
-          totalPages: Math.ceil(total / limit),
-          currentPage: page,
-        },
+      return (await res.json()) as {
+        trainers: TTrainerOutput[];
+        meta: { total: number; totalPages: number; currentPage: number };
       };
     },
   });
@@ -64,15 +49,12 @@ export const useTrainer = (id: string | null) => {
   return useQuery({
     queryKey: TRAINER_QUERY_KEYS.detail(id!),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("fitness_trainers")
-        .select(
-          "*, user_profiles!fitness_trainers_user_id_fkey(first_name, last_name, email, avatar_url)",
-        )
-        .eq("id", id!)
-        .single();
-      if (error) throw new Error(error.message);
-      return data as TTrainerOutput;
+      const res = await fetch(`/api/fitness/trainers?id=${id}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Failed to load trainer.");
+      }
+      return (await res.json()) as TTrainerOutput;
     },
     enabled: !!id,
   });

@@ -94,11 +94,16 @@ export default function ViewFitnessUserDialog() {
               Training
             </h4>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Training level" value={row.level || "—"} />
+              <Field label="Experience" value={row.level || "—"} />
+              <Field label="Body type" value={row.body_type || "—"} />
+              <Field
+                label="Goals"
+                value={row.fitness_goals?.length ? row.fitness_goals.join(", ") : "—"}
+              />
               <Field label="Current plan" value={row.plan || "—"} />
               <Field
-                label="Plan completions"
-                value={row.plan_completions.toLocaleString()}
+                label="Plan completion"
+                value={`${Math.min(100, Math.max(0, row.plan_completion_pct ?? 0))}%`}
               />
               <Field label="Last active" value={formatDate(row.last_active)} />
             </div>

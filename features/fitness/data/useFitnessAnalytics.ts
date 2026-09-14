@@ -17,13 +17,23 @@ export interface FitnessUserRow {
   status: string | null;
   plan: string;
   level: string | null;
+  /** Onboarding body type (fitness_onboarding_selections.body_type). */
+  body_type: string | null;
+  /** Onboarding fitness goals (fitness_onboarding_selections.fitness_goals). */
+  fitness_goals: string[];
   workouts: number;
   kcal: number;
   fitcoins: number;
   ai_calls: number;
   joined_at: string;
   last_active: string | null;
-  plan_completions: number;
+  /**
+   * This user's own progress on their currently assigned plan (0-100):
+   * their completed sessions against that plan, divided by the plan's
+   * total session count (duration_weeks * workouts_per_week). Not the
+   * plan's global completion count across every user.
+   */
+  plan_completion_pct: number;
   /**
    * SUBSCRIPTION tier — not to be confused with `level`, which is the
    * training level (beginner/intermediate/advanced) from fitness onboarding.

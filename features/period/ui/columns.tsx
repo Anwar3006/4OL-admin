@@ -4,65 +4,124 @@ import type { Column } from "@/components/redesign/DataTable";
 import type { PeriodTabId } from "@/features/period/schema/period-tracker";
 
 import type { Row } from "@/features/period/schema/types";
-import { bool, consentState, date, dateTime, pct, shortId, status } from "./formatters";
+import {
+  bbt,
+  bool,
+  cervicalMucus,
+  consentState,
+  cycleLength,
+  date,
+  dateTime,
+  exerciseMinutes,
+  flow,
+  forecastDate,
+  goalBadge,
+  idBadge,
+  medication,
+  notTracked,
+  pct,
+  periodLength,
+  purpleText,
+  reminderBadge,
+  smallText,
+  sourceBadge,
+  status,
+  symptomsList,
+  syncStatus,
+} from "./formatters";
 
 /**
- * Column definitions per tab. 328 lines of table config that used to sit
- * between the formatters and the page component.
+ * Column definitions per tab. Badge classes (.b + color modifier) and
+ * .id-badge are the scoped mockup-theme port -- see formatters.tsx.
  */
-export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = {
+export const columns: Record<
+  Exclude<PeriodTabId, "overview">,
+  Column<Row>[]
+> = {
   users: [
-    { key: "user", label: "User" },
+    {
+      key: "user",
+      label: "User",
+      render: (value) => (
+        <span style={{ fontWeight: 700 }}>{value || "—"}</span>
+      ),
+    },
     {
       key: "userId",
       label: "User ID",
-      render: (value) => <code className="text-xs">{shortId(value)}</code>,
+      render: (value) => idBadge(value),
     },
-    { key: "region", label: "Region" },
-    { key: "lastPeriod", label: "Last Period", render: date },
+    { key: "region", label: "Region", render: smallText },
+    { key: "goal", label: "Goal", render: goalBadge },
     {
-      key: "cycleLength",
-      label: "Cycle",
-      render: (value) => (value ? `${value} days` : "—"),
+      key: "lastPeriod",
+      label: "Last Period",
+      render: (value) => <span className="td-s">{date(value)}</span>,
     },
+    { key: "cycleLength", label: "Cycle", render: cycleLength },
+    { key: "periodLength", label: "Period", render: periodLength },
+    { key: "nextForecast", label: "Next Forecast", render: forecastDate },
     {
-      key: "periodLength",
-      label: "Period",
-      render: (value) => (value ? `${value} days` : "—"),
+      key: "ovulationDate",
+      label: "Ovulation Estimate",
+      render: (value) => purpleText(date(value)),
     },
-    { key: "nextForecast", label: "Next Forecast", render: date },
-    { key: "ovulationDate", label: "Ovulation Estimate", render: date },
     {
       key: "fertileWindow",
       label: "Fertile Window",
-      render: (value) => value || "—",
+      render: purpleText,
     },
-    { key: "dailyLogs", label: "Daily Logs" },
-    { key: "notes", label: "Notes" },
-    { key: "marketingOptIn", label: "Marketing", render: bool },
+    {
+      key: "dailyLogs",
+      label: "Daily Logs",
+      render: (value) => (
+        <span style={{ fontWeight: 700 }} className="text-xs 3xl:text-sm">
+          {value}
+        </span>
+      ),
+    },
+    { key: "reminders", label: "Reminders", render: reminderBadge },
+    {
+      key: "marketing",
+      label: "Marketing",
+      render: (value) => consentState(value),
+    },
   ],
   logs: [
-    { key: "logged_on", label: "Date", render: date },
-    { key: "user", label: "User" },
-    { key: "region", label: "Region" },
-    { key: "flow", label: "Flow", render: (value) => value || "Not logged" },
-    { key: "moodsText", label: "Moods" },
-    { key: "symptomsText", label: "Symptoms" },
+    {
+      key: "logged_on",
+      label: "Date",
+      render: (value) => (
+        <span className="text-[8px] 3xl:text-xs">{date(value)}</span>
+      ),
+    },
+    {
+      key: "user_id",
+      label: "User",
+      render: (value) => idBadge(value),
+    },
+    { key: "region", label: "Region", render: smallText },
+    { key: "flow", label: "Flow", render: flow },
+    { key: "moodsText", label: "Moods", render: smallText },
+    { key: "symptoms", label: "Symptoms", render: symptomsList },
     {
       key: "basal_body_temperature",
       label: "BBT",
-      render: (value, row) =>
-        value
-          ? `${value}°${String(row.temperature_unit ?? "c").toUpperCase()}`
-          : "—",
+      render: (value, row) => bbt(value, row.temperature_unit),
     },
     {
       key: "cervical_mucus",
       label: "Cervical Mucus",
-      render: (value) => value?.replaceAll("_", " ") || "—",
+      render: cervicalMucus,
     },
-    { key: "source", label: "Source" },
-    { key: "sync_status", label: "Sync", render: status },
+    { key: "exercise_minutes", label: "Exercise", render: exerciseMinutes },
+    {
+      key: "medication_logged",
+      label: "Medication",
+      render: (value, row) => medication(value, row.medication_name),
+    },
+    { key: "source", label: "Source", render: sourceBadge },
+    { key: "sync_status", label: "Sync", render: syncStatus },
   ],
   corrections: [
     { key: "user", label: "User" },
@@ -106,7 +165,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "userId",
       label: "User ID",
-      render: (value) => <code className="text-xs">{shortId(value)}</code>,
+      render: (value) => idBadge(value),
     },
     { key: "region", label: "Region" },
     { key: "tracking", label: "Tracking", render: bool },
@@ -119,9 +178,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       key: "openRequests",
       label: "Open Privacy Requests",
       render: (value) => (
-        <span className={cn("badge", value ? "badge-red" : "badge-green")}>
-          {value}
-        </span>
+        <span className={cn("b", value ? "br" : "bg")}>{value}</span>
       ),
     },
   ],
@@ -165,8 +222,22 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       render: (value) => `${value} days`,
     },
     { key: "reached_count", label: "Reached" },
-    { key: "openRate", label: "Open Rate", render: pct },
-    { key: "actionRate", label: "Action Rate", render: pct },
+    {
+      key: "openRate",
+      label: "Open Rate",
+      render: () =>
+        notTracked(
+          "No pipeline logs a notification open yet -- period_notification_events and period_campaigns.opened_count are never written to. Campaign creation, audience resolution and delivery (reached_count) are real.",
+        ),
+    },
+    {
+      key: "actionRate",
+      label: "Action Rate",
+      render: () =>
+        notTracked(
+          "No pipeline logs an in-app action on a campaign yet -- period_campaigns.action_count is never written to.",
+        ),
+    },
     { key: "scheduled_at", label: "Scheduled", render: dateTime },
     { key: "status", label: "Status", render: status },
   ],
@@ -175,7 +246,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       key: "source",
       label: "Source",
       render: (value) => (
-        <span className={cn("badge", value === "ai" ? "badge-blue" : "badge-green")}>
+        <span className={cn("b", value === "ai" ? "bbl" : "bg")}>
           {value === "ai" ? "AI" : "Manual"}
         </span>
       ),
@@ -188,7 +259,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       key: "rewardAttached",
       label: "Reward",
       render: (value) => (
-        <span className={cn("badge", value ? "badge-green" : "badge-blue")}>
+        <span className={cn("b", value ? "bg" : "bbl")}>
           {value ? "Attached" : "None"}
         </span>
       ),
@@ -228,9 +299,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       key: "failure",
       label: "Failures",
       render: (value) => (
-        <span className={cn("badge", value ? "badge-red" : "badge-green")}>
-          {value}
-        </span>
+        <span className={cn("b", value ? "br" : "bg")}>{value}</span>
       ),
     },
     { key: "warning", label: "Warnings" },
@@ -246,13 +315,13 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "user_id",
       label: "User ID",
-      render: (value) => <code className="text-xs">{shortId(value)}</code>,
+      render: (value) => idBadge(value),
     },
     {
       key: "tier",
       label: "Tier",
       render: (value) => (
-        <span className="badge badge-purple">
+        <span className="b bpu">
           {String(value ?? "cycle_pro").replaceAll("_", " ")}
         </span>
       ),
@@ -261,12 +330,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       key: "source",
       label: "Source",
       render: (value) => (
-        <span
-          className={cn(
-            "badge",
-            value === "onboarding_trial" ? "badge-blue" : "badge-green",
-          )}
-        >
+        <span className={cn("b", value === "onboarding_trial" ? "bbl" : "bg")}>
           {String(value ?? "manual").replaceAll("_", " ")}
         </span>
       ),
@@ -281,12 +345,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
         row.state === "revoked" || row.state === "expired" ? (
           "—"
         ) : (
-          <span
-            className={cn(
-              "badge",
-              Number(value) <= 3 ? "badge-red" : "badge-green",
-            )}
-          >
+          <span className={cn("b", Number(value) <= 3 ? "br" : "bg")}>
             {value}
           </span>
         ),
@@ -301,7 +360,7 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
     {
       key: "user_id",
       label: "User",
-      render: (value) => <code className="text-xs">{shortId(value)}</code>,
+      render: (value) => idBadge(value),
     },
     {
       key: "purpose",
@@ -312,16 +371,20 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
         </span>
       ),
     },
-    { key: "clinician_name", label: "Clinician", render: (value) => value || "—" },
+    {
+      key: "clinician_name",
+      label: "Clinician",
+      render: (value) => value || "—",
+    },
     { key: "appointment_date", label: "Date", render: date },
     {
       key: "questionsCount",
       label: "Questions Prepared",
       render: (value) =>
         Number(value) > 0 ? (
-          <span className="badge badge-green">{value} prepared</span>
+          <span className="b bg">{value} prepared</span>
         ) : (
-          <span className="badge badge-slate">None</span>
+          <span className="b bdk">None</span>
         ),
     },
     {
@@ -329,11 +392,11 @@ export const columns: Record<Exclude<PeriodTabId, "overview">, Column<Row>[]> = 
       label: "Status",
       render: (value) =>
         value === "completed" ? (
-          <span className="badge badge-green">completed</span>
+          <span className="b bg">completed</span>
         ) : value === "planned" ? (
-          <span className="badge badge-blue">planned</span>
+          <span className="b bbl">planned</span>
         ) : (
-          <span className="badge badge-slate">{value}</span>
+          <span className="b bdk">{value}</span>
         ),
     },
   ],

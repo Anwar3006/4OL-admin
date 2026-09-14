@@ -31,7 +31,7 @@ import { loadProfiles, maskName, pageRows, profileMaps } from "./data-helpers";
  * it that way would be a performance regression.
  *
  * Everything below the `consent` branch shares one expensive prelude: a
- * 5,000-row `period_cycles` scan plus profile, consent, note and daily-log
+ * 5,000-row `period_cycles` scan plus profile, consent and daily-log
  * lookups keyed off it. The branches ABOVE that prelude — engagement, content,
  * trivia, forecasts, quality, premium, ttc, logs, corrections, safety, notes,
  * consent — return before it runs and never pay for it.
@@ -340,7 +340,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (tab === "logs") {
-    const { data: logs, error } = await admin.from("period_daily_logs").select("id,user_id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,exercise_minutes,medication_logged,source,app_version,sync_status,created_at,updated_at").order("logged_on", { ascending: false }).limit(5000);
+    const { data: logs, error } = await admin.from("period_daily_logs").select("id,user_id,cycle_id,logged_on,flow,moods,symptoms,basal_body_temperature,temperature_unit,cervical_mucus,exercise_minutes,medication_logged,medication_name,source,app_version,sync_status,created_at,updated_at").order("logged_on", { ascending: false }).limit(5000);
     if (error) return NextResponse.json({ error: "Unable to load daily logs" }, { status: 500 });
     const userIds = [...new Set((logs ?? []).map((row) => row.user_id))];
     const profiles = profileMaps(await loadProfiles(admin, userIds));
@@ -434,37 +434,46 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.json({ error: "Unable to load cycle data" }, { status: 500 });
   const cycleRows = (cycles ?? []) as CycleRecord[];
   const userIds = [...new Set(cycleRows.map((cycle) => cycle.user_id))];
-  const [{ data: consents }, { data: noteRows }, { data: dailyLogs }] = await Promise.all([
+  const [{ data: consents }, { data: dailyLogs }] = await Promise.all([
     userIds.length ? admin.from("period_consent_events").select("user_id,consent_type,granted,policy_version,source,created_at").in("user_id", userIds).order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
-    userIds.length ? admin.from("period_notes").select("user_id").in("user_id", userIds) : Promise.resolve({ data: [] }),
     userIds.length ? admin.from("period_daily_logs").select("user_id,logged_on,symptoms,created_at").in("user_id", userIds).limit(5000) : Promise.resolve({ data: [] }),
   ]);
   const profiles = profileMaps(await loadProfiles(admin, userIds));
   const consentMap = latestConsents((consents ?? []) as ConsentRecord[]);
 
   if (tab === "users") {
-    const noteCounts = new Map<string, number>();
-    for (const note of noteRows ?? []) noteCounts.set(note.user_id, (noteCounts.get(note.user_id) ?? 0) + 1);
+    const { data: settingsRows } = userIds.length
+      ? await admin.from("period_user_settings").select("user_id,tracking_goal,reminders_enabled").in("user_id", userIds)
+      : { data: [] as { user_id: string; tracking_goal: string; reminders_enabled: boolean }[] };
+    const goalByUser = new Map((settingsRows ?? []).map((row) => [row.user_id, row.tracking_goal]));
+    const remindersByUser = new Map((settingsRows ?? []).map((row) => [row.user_id, row.reminders_enabled]));
     const logCounts = new Map<string, number>();
     for (const log of dailyLogs ?? []) logCounts.set(log.user_id, (logCounts.get(log.user_id) ?? 0) + 1);
     const latestCycles = [...latestCyclePerUser(cycleRows).values()];
-    const rows = latestCycles.map((cycle) => ({
-      id: cycle.user_id,
-      user: maskName(profiles.get(cycle.user_id)?.first_name, profiles.get(cycle.user_id)?.last_name),
-      userId: cycle.user_id,
-      region: profiles.get(cycle.user_id)?.region ?? "Not supplied",
-      lastPeriod: cycle.period_start_date,
-      cycleLength: cycle.cycle_length,
-      periodLength: cycle.period_length,
-      nextForecast: cycle.next_period_forecast,
-      ovulationDate: cycle.ovulation_forecast,
-      fertileWindow: cycle.fertile_window,
-      currentPhase: cycle.current_phase ?? "Not calculated",
-      dailyLogs: logCounts.get(cycle.user_id) ?? 0,
-      notes: noteCounts.get(cycle.user_id) ?? 0,
-      marketingOptIn: consentMap.get(cycle.user_id)?.get("marketing")?.granted === true,
-      source: cycle.source,
-    })).filter((row) => !query || JSON.stringify(row).toLowerCase().includes(query));
+    const rows = latestCycles.map((cycle) => {
+      const marketing = consentMap.get(cycle.user_id)?.get("marketing");
+      return {
+        id: cycle.user_id,
+        user: maskName(profiles.get(cycle.user_id)?.first_name, profiles.get(cycle.user_id)?.last_name),
+        userId: cycle.user_id,
+        region: profiles.get(cycle.user_id)?.region ?? "Not supplied",
+        goal: goalByUser.get(cycle.user_id) ?? "track_period",
+        lastPeriod: cycle.period_start_date,
+        cycleLength: cycle.cycle_length,
+        periodLength: cycle.period_length,
+        nextForecast: cycle.next_period_forecast,
+        ovulationDate: cycle.ovulation_forecast,
+        fertileWindow: cycle.fertile_window,
+        currentPhase: cycle.current_phase ?? "Not calculated",
+        dailyLogs: logCounts.get(cycle.user_id) ?? 0,
+        reminders: remindersByUser.get(cycle.user_id) ?? false,
+        // Tri-state like the Consent tab's own marketing column: "not asked"
+        // is the honest state until the mobile app offers this consent, and
+        // isn't the same thing as a declined "No".
+        marketing: !marketing ? "not_asked" : marketing.granted ? "granted" : "declined",
+        source: cycle.source,
+      };
+    }).filter((row) => !query || JSON.stringify(row).toLowerCase().includes(query));
     return NextResponse.json(pageRows(rows, page, pageSize));
   }
 

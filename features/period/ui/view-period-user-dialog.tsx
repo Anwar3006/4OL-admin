@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Modal from "@/components/redesign/Modal";
 import { useViewPeriodUserDialog } from "@/features/period/data/dialog-hooks";
 import type { Row } from "@/features/period/schema/types";
-import { bool, date, shortId } from "./formatters";
+import { consentState, date, goalBadge, reminderBadge, shortId } from "./formatters";
 
 /**
  * Period Tracker ▸ Users & Cycles row detail (Gap: "clicking a user
@@ -39,6 +39,7 @@ export default function ViewPeriodUserDialog() {
         </div>
 
         <Section title="Cycle">
+          <Field label="Tracking goal" value={goalBadge(row.goal)} />
           <Field label="Last period" value={date(row.lastPeriod)} />
           <Field label="Current phase" value={row.currentPhase || "Not calculated"} />
           <Field
@@ -59,10 +60,10 @@ export default function ViewPeriodUserDialog() {
 
         <Section title="Engagement">
           <Field label="Daily logs" value={String(row.dailyLogs ?? 0)} />
-          <Field label="Notes on record" value={String(row.notes ?? 0)} />
+          <Field label="Reminders" value={reminderBadge(Boolean(row.reminders))} />
           <Field
             label="Marketing opt-in"
-            value={bool(Boolean(row.marketingOptIn))}
+            value={consentState(row.marketing ?? "not_asked")}
           />
         </Section>
       </div>

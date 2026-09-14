@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import "@/components/mockup-theme/mockup-theme.css";
 
 export type Column<T> = {
   key: string;
@@ -34,6 +35,9 @@ type DataTableProps<T> = {
   onRowClick?: (row: T) => void;
   rowActions?: RowAction<T>[];
   isLoading?: boolean;
+  /** Extra class for a specific row's <tr> -- e.g. the mockup's flagged-row
+   * amber highlight (admin-panel.html:6143, `style="background:#FFFBEB"`). */
+  getRowClassName?: (row: T) => string | undefined;
 };
 
 export default function DataTable<T extends Record<string, any>>({
@@ -48,6 +52,7 @@ export default function DataTable<T extends Record<string, any>>({
   onRowClick,
   rowActions = [],
   isLoading = false,
+  getRowClassName,
 }: DataTableProps<T>) {
   const [internalPage, setInternalPage] = useState(1);
   const page = externalPage ?? internalPage;
@@ -60,25 +65,16 @@ export default function DataTable<T extends Record<string, any>>({
   };
 
   return (
-    <div className={cn("overflow-x-auto", isLoading && "opacity-60")}>
-      <table className="w-full text-left text-sm">
+    <div className={cn("mockup-theme overflow-x-auto", isLoading && "opacity-60")}>
+      <table>
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b bg-slate-50 dark:bg-slate-900">
+          <tr>
             {columns.map((column) => (
-              <th
-                key={column.key}
-                // Matches components/Data-Table/data-table.tsx, which the other
-                // 17 features use. This component's only consumer is Period,
-                // and plain sentence-case headers here were the whole reason
-                // that page read as a different typeface to the rest.
-                className="p-3 text-2xs font-black uppercase tracking-widest text-slate-500"
-              >
-                {column.label}
-              </th>
+              <th key={column.key}>{column.label}</th>
             ))}
             {rowActions.length > 0 && (
-              <th className="p-3">
+              <th>
                 <span className="sr-only">Actions</span>
               </th>
             )}
@@ -90,10 +86,7 @@ export default function DataTable<T extends Record<string, any>>({
             return (
               <tr
                 key={getRowId(row, index)}
-                className={cn(
-                  "border-b last:border-0",
-                  isClickable && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900",
-                )}
+                className={cn(isClickable && "cursor-pointer", getRowClassName?.(row))}
                 role={isClickable ? "button" : undefined}
                 tabIndex={isClickable ? 0 : undefined}
                 onClick={() => onRowClick?.(row)}
@@ -106,7 +99,7 @@ export default function DataTable<T extends Record<string, any>>({
                 }}
               >
                 {columns.map((column) => (
-                  <td key={column.key} className="p-3 align-top">
+                  <td key={column.key}>
                     {column.render
                       ? column.render(row[column.key], row)
                       : (row[column.key] ?? "—")}
@@ -114,7 +107,7 @@ export default function DataTable<T extends Record<string, any>>({
                 ))}
                 {rowActions.length > 0 && (
                   <td
-                    className="p-3 text-right align-top"
+                    className="text-right"
                     onClick={(event) => event.stopPropagation()}
                   >
                     <DropdownMenu>
@@ -149,7 +142,7 @@ export default function DataTable<T extends Record<string, any>>({
           })}
           {!data.length && (
             <tr>
-              <td colSpan={columns.length + (rowActions.length > 0 ? 1 : 0)} className="p-6 text-center text-slate-500">
+              <td colSpan={columns.length + (rowActions.length > 0 ? 1 : 0)} className="td-s text-center">
                 No records to display.
               </td>
             </tr>
@@ -157,12 +150,12 @@ export default function DataTable<T extends Record<string, any>>({
         </tbody>
       </table>
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 p-3 text-xs text-slate-500">
+        <div className="pag">
           <span>Page {page} of {totalPages}</span>
-          <div className="flex gap-2">
+          <div className="pag-b">
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="pb"
               disabled={page <= 1}
               onClick={() => goToPage(page - 1)}
             >
@@ -170,7 +163,7 @@ export default function DataTable<T extends Record<string, any>>({
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="pb"
               disabled={page >= totalPages}
               onClick={() => goToPage(page + 1)}
             >

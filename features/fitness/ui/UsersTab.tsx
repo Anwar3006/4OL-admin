@@ -12,6 +12,32 @@ import { useSearchParams } from "next/navigation";
 import { usePermissionContext } from "@/stores/permission-context";
 import { useViewFitnessUserDialog } from "@/features/fitness/data/dialog-hooks";
 import ViewFitnessUserDialog from "./view-fitness-user-dialog";
+import "@/components/mockup-theme/mockup-theme.css";
+
+// Beginner/intermediate/advanced -> traffic-light badge, same mapping
+// already used for exercise difficulty in features/fitness/ui/exerciseColumns.tsx.
+const EXPERIENCE_BADGE: Record<string, string> = {
+  beginner: "b bg",
+  intermediate: "b by",
+  advanced: "b br",
+};
+
+// fitness_onboarding_selections.fitness_goals is a free-form string[]; this
+// covers the values seen in practice, falling back to a neutral badge for
+// anything unrecognized rather than hiding the goal.
+const GOAL_BADGE: Record<string, string> = {
+  muscle: "b bg",
+  muscle_gain: "b bg",
+  fat_loss: "b br",
+  weight_loss: "b br",
+  sport: "b bbl",
+  endurance: "b bt",
+  flexibility: "b bin",
+  general_fitness: "b bpu",
+};
+
+const titleCase = (value: string) =>
+  value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
 /**
  * Fitness Users (Gap Analysis Part V) — fitness-specific columns fed by the
@@ -166,13 +192,41 @@ const UsersTab = () => {
         ),
       },
       {
-        accessorKey: "level",
-        header: "Training Level",
+        accessorKey: "body_type",
+        header: "Body Type",
         cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="badge badge-blue h-5 text-3xs uppercase font-black">
-            {row.original.level || "—"}
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {row.original.body_type ? titleCase(row.original.body_type) : "—"}
           </span>
         ),
+      },
+      {
+        accessorKey: "level",
+        header: "Experience",
+        cell: ({ row }: { row: { original: FitnessUserRow } }) => {
+          const level = row.original.level;
+          const badgeClass = level ? EXPERIENCE_BADGE[level] ?? "b bdk" : "b bdk";
+          return (
+            <span className={badgeClass}>{level ? titleCase(level) : "—"}</span>
+          );
+        },
+      },
+      {
+        accessorKey: "fitness_goals",
+        header: "Goals",
+        cell: ({ row }: { row: { original: FitnessUserRow } }) => {
+          const goals = row.original.fitness_goals;
+          if (!goals?.length) return <span className="text-3xs text-slate-400">—</span>;
+          return (
+            <div className="flex flex-wrap gap-1">
+              {goals.map((goal) => (
+                <span key={goal} className={GOAL_BADGE[goal] ?? "b bdk"}>
+                  {titleCase(goal)}
+                </span>
+              ))}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "plan",
@@ -184,13 +238,21 @@ const UsersTab = () => {
         ),
       },
       {
-        accessorKey: "plan_completions",
+        accessorKey: "plan_completion_pct",
         header: "Plan Compl.",
-        cell: ({ row }: { row: { original: FitnessUserRow } }) => (
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-            {row.original.plan_completions.toLocaleString()}
-          </span>
-        ),
+        cell: ({ row }: { row: { original: FitnessUserRow } }) => {
+          const pct = Math.min(100, Math.max(0, row.original.plan_completion_pct ?? 0));
+          return (
+            <div className="min-w-17.5">
+              <span className="text-3xs font-black text-slate-700 dark:text-slate-300">
+                {pct}%
+              </span>
+              <div className="pgb">
+                <div className="pgbf" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "workouts",
@@ -325,7 +387,7 @@ const UsersTab = () => {
         </div>
       </div>
 
-      <div className="card p-0 overflow-hidden">
+      <div className="card p-0 overflow-hidden mockup-theme">
         <DataTable
           columns={columns}
           data={data?.rows || []}

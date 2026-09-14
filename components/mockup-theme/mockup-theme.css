@@ -1,0 +1,295 @@
+/**
+ * Scoped port of admin-panel.html's own design tokens (the static design
+ * blueprint referenced by CLAUDE.md as "the blueprint for several companion
+ * products"). Used by the Period Tracker and the Fitness Users table.
+ *
+ * Everything here is nested under `.mockup-theme` on purpose: the source
+ * mockup styles bare `th`/`td`/`tr` selectors, which would silently
+ * restyle every other table in this admin panel if imported unscoped.
+ * Wrap only the tree that should look like the mockup in a
+ * `<div className="mockup-theme">` (or add the class to an existing
+ * wrapper) and nothing outside it is affected.
+ *
+ * Dark mode: this app toggles dark mode via a `.dark` class on <html>
+ * (tailwind.config.js `darkMode: "class"`, components/providers/
+ * ThemeProvider.tsx) — not the mockup's own `[data-theme="dark"]`
+ * attribute — so dark overrides below key off `.dark .mockup-theme`.
+ *
+ * The mockup's own body rule is `font-family:'Source Sans 3','Inter',
+ * 'Segoe UI',sans-serif` (admin-panel.html:6,10) -- a different primary
+ * face than this app's own Inter-first stack (app/layout.tsx). Loaded here,
+ * scoped, with the same weight subset the mockup requests (400/600 + 400
+ * italic) so text inside .mockup-theme actually matches instead of silently
+ * falling back to Inter.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap");
+
+.mockup-theme {
+  font-family: "Source Sans 3", "Inter", "Segoe UI", sans-serif;
+  --g: #059669;
+  --gd: #064e3b;
+  --gl: #ecfdf5;
+  --gm: #d1fae5;
+  --blue: #2563eb;
+  --bluel: #eff6ff;
+  --bluem: #bfdbfe;
+  --red: #dc2626;
+  --redl: #fef2f2;
+  --redm: #fecaca;
+  --gold: #d97706;
+  --goldl: #fffbeb;
+  --goldm: #fde68a;
+  --purp: #7c3aed;
+  --purpl: #f5f3ff;
+  --purpm: #ddd6fe;
+  --orng: #ea580c;
+  --orngl: #fff7ed;
+  --orngm: #fed7aa;
+  --teal: #0d9488;
+  --teall: #f0fdfa;
+  --tealm: #99f6e4;
+  --indigo: #4338ca;
+  --indigol: #eef2ff;
+  --indigom: #c7d2fe;
+  --pink: #db2777;
+  --pinkl: #fdf2f8;
+  --pinkm: #fbcfe8;
+  --bg: #f9fafb;
+  --bd: #e5e7eb;
+  --mu: #6b7280;
+  --tx: #111827;
+  --tx2: #374151;
+}
+
+.dark .mockup-theme {
+  --g: #10b981;
+  --gd: #6ee7b7;
+  --gl: #064e3b;
+  --gm: #065f46;
+  --blue: #3b82f6;
+  --bluel: #1e3a8a;
+  --bluem: #1e40af;
+  --red: #ef4444;
+  --redl: #450a0a;
+  --redm: #7f1d1d;
+  --gold: #f59e0b;
+  --goldl: #451a03;
+  --goldm: #78350f;
+  --purp: #a78bfa;
+  --purpl: #2e1065;
+  --purpm: #4c1d95;
+  --orng: #fb923c;
+  --orngl: #431407;
+  --orngm: #7c2d12;
+  --teal: #2dd4bf;
+  --teall: #134e4a;
+  --tealm: #115e59;
+  --indigo: #818cf8;
+  --indigol: #1e1b4b;
+  --indigom: #312e81;
+  --pink: #f472b6;
+  --pinkl: #831843;
+  --pinkm: #831843;
+  --bg: #0b1120;
+  --bd: #1e293b;
+  --mu: #64748b;
+  --tx: #f1f5f9;
+  --tx2: #94a3b8;
+}
+
+/* ── Table shell ──────────────────────────────────────────────────────── */
+
+.mockup-theme table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mockup-theme th {
+  background: var(--bg);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mu);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--bd);
+  white-space: nowrap;
+}
+.mockup-theme td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bd);
+  font-size: 13px;
+  vertical-align: middle;
+  color: var(--tx);
+}
+.mockup-theme tr:last-child td {
+  border-bottom: none;
+}
+.mockup-theme tr:hover td {
+  background: #f8fafd;
+}
+.dark .mockup-theme tr:hover td {
+  background: #1e293b;
+}
+.mockup-theme tr.row-flagged {
+  background: var(--goldl);
+}
+
+/* ── Secondary / monospace text ──────────────────────────────────────── */
+
+.mockup-theme .td-s {
+  font-size: 11px;
+  color: var(--mu);
+}
+.mockup-theme .td-m {
+  font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+  font-size: 12px;
+}
+
+/* ── ID pill ──────────────────────────────────────────────────────────── */
+
+.mockup-theme .id-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  background: var(--indigol);
+  color: var(--indigo);
+  border: 1px solid var(--indigom);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Badge (.b + 10 color modifiers) ─────────────────────────────────── */
+
+.mockup-theme .b {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.mockup-theme .bg {
+  background: var(--gm);
+  color: var(--gd);
+}
+.mockup-theme .bbl {
+  background: var(--bluem);
+  color: var(--blue);
+}
+.mockup-theme .br {
+  background: var(--redm);
+  color: var(--red);
+}
+.mockup-theme .by {
+  background: var(--goldm);
+  color: #92400e;
+}
+.dark .mockup-theme .by {
+  color: var(--gold);
+}
+.mockup-theme .bpu {
+  background: var(--purpm);
+  color: var(--purp);
+}
+.mockup-theme .bt {
+  background: var(--tealm);
+  color: var(--teal);
+}
+.mockup-theme .bo {
+  background: var(--orngm);
+  color: var(--orng);
+}
+.mockup-theme .bin {
+  background: var(--indigom);
+  color: var(--indigo);
+}
+.mockup-theme .bpi {
+  background: var(--pinkm);
+  color: var(--pink);
+}
+.dark .mockup-theme .bpi {
+  color: #f9a8d4;
+}
+.mockup-theme .bdk {
+  background: #1e293b;
+  color: #94a3b8;
+}
+.dark .mockup-theme .bdk {
+  background: #334155;
+  color: #cbd5e1;
+}
+/* Mockup hard-codes this pair inline wherever "Not asked" appears (e.g.
+   admin-panel.html:6143, 6205-6207) rather than using a class -- given a
+   name here so it can adapt for dark mode instead of staying a fixed
+   light-grey chip on a dark background. */
+.mockup-theme .bmu {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.dark .mockup-theme .bmu {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+/* ── Percentage bar (mockup's own .pgb/.pgbf classes) ────────────────── */
+
+.mockup-theme .pgb {
+  background: #e2e8f0;
+  border-radius: 10px;
+  height: 4px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+.dark .mockup-theme .pgb {
+  background: #334155;
+}
+.mockup-theme .pgbf {
+  height: 4px;
+  border-radius: 10px;
+  background: var(--g);
+}
+
+/* ── Pagination footer ───────────────────────────────────────────────── */
+
+.mockup-theme .pag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  background: var(--bg);
+  border-top: 1px solid var(--bd);
+  font-size: 11px;
+  color: var(--mu);
+}
+.mockup-theme .pag-b {
+  display: flex;
+  gap: 6px;
+}
+.mockup-theme .pb {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--bd);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--tx2);
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dark .mockup-theme .pb {
+  background: #1e293b;
+}
+.mockup-theme .pb:hover:not(:disabled) {
+  background: var(--bg);
+}
+.mockup-theme .pb:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

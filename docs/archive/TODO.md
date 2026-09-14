@@ -43,3 +43,7 @@ one resolves now.
 
 Going forward it would save us real time if the AI work started from current
 main, and if we agreed who owns a feature before two versions of it get built.
+
+To be done:
+Remove library, reduce the subtext and move it up along with the searchbox. test test test everything.
+Trivia should use some flowery hero instead of the current target.
