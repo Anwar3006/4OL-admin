@@ -13,7 +13,7 @@ export default function PrivacyRequests({
 }: {
   rows: Row[];
   saving: boolean;
-  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<boolean>;
 }) {
   const requestColumns: Column<Row>[] = [
     { key: "user", label: "User" },

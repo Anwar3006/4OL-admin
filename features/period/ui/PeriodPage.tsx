@@ -183,10 +183,12 @@ function PeriodWorkspace() {
         setMessage(success);
         setShowCreate(false);
         await loadData();
+        return true;
       } catch (cause) {
         setError(
           cause instanceof Error ? cause.message : "Unable to save this change",
         );
+        return false;
       } finally {
         setSaving(false);
       }
@@ -394,7 +396,7 @@ function PeriodWorkspace() {
             ),
         },
         {
-          label: "Publish as reviewed",
+          label: "Publish",
           onClick: (row) =>
             mutate(
               {
@@ -402,7 +404,7 @@ function PeriodWorkspace() {
                 id: row.id,
                 status: "published",
               },
-              "Content marked clinically reviewed and published.",
+              "Content published.",
             ),
         },
         {

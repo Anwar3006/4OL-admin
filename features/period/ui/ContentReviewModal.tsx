@@ -46,7 +46,7 @@ export default function ContentReviewModal({
   onClose,
 }: {
   item: Row | null;
-  mutate: (body: Record<string, unknown>, message: string) => Promise<void>;
+  mutate: (body: Record<string, unknown>, message: string) => Promise<boolean>;
   saving: boolean;
   onClose: () => void;
 }) {
@@ -58,6 +58,7 @@ export default function ContentReviewModal({
       isOpen={Boolean(item)}
       onClose={onClose}
       title={item.title || "Content draft"}
+      size="wide"
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <span className="text-2xs text-slate-500">
@@ -81,14 +82,15 @@ export default function ContentReviewModal({
               type="button"
               className="btn btn-primary btn-sm"
               disabled={saving}
-              onClick={() =>
-                mutate(
+              onClick={async () => {
+                const published = await mutate(
                   { action: "update_content_status", id: item.id, status: "published" },
-                  "Content marked clinically reviewed and published.",
-                )
-              }
+                  "Content published.",
+                );
+                if (published) onClose();
+              }}
             >
-              Publish as reviewed
+              Publish
             </button>
             <button
               type="button"

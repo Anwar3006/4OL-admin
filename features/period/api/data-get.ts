@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     const [{ data, error }, { data: publications }, { data: sourceLinks }, { data: collections }, { data: aiSuggestions }] = await Promise.all([
       // body_html/metadata/ai_job_id/reviewed_by were missing here, so the
       // Content tab could never show what an AI draft (or a manual entry)
-      // actually said -- the row-level "Publish as reviewed" action was a
+      // actually said -- the row-level "Publish" action was a
       // blind status flip with nothing to read first.
       admin.from("period_content").select("id,title,slug,summary,body_html,topic,content_type,locale,tags,cover_image_url,reading_minutes,reading_level,featured,curation_type,ai_job_id,version,reads,completion_count,helpful_count,not_helpful_count,status,reviewed_by,clinical_reviewed_at,review_expires_at,published_at,created_at,metadata").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,display_order").eq("channel", "plasence_library").limit(1000),

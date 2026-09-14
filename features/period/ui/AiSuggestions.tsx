@@ -12,7 +12,7 @@ export default function AiSuggestions({
 }: {
   suggestions: Row[];
   saving: boolean;
-  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<boolean>;
 }) {
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const reviewQueue = suggestions.filter((item) => item.status === "review");

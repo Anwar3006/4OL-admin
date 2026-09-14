@@ -22,7 +22,7 @@ export default function LibraryOperations({
   rows: Row[];
   collections: Row[];
   saving: boolean;
-  mutate: (body: any, message: string) => Promise<void>;
+  mutate: (body: any, message: string) => Promise<boolean>;
 }) {
   const [showCollection, setShowCollection] = useState(false);
   const published = rows.filter((item) => item.status === "published");

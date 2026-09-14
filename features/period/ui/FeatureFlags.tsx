@@ -11,7 +11,7 @@ export default function FeatureFlags({
 }: {
   flags: Row[];
   saving: boolean;
-  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<boolean>;
 }) {
   return (
     <div className="card p-4">

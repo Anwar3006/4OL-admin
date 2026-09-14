@@ -1,14 +1,16 @@
-"use client"
+"use client";
 
-import React, { useEffect } from 'react'
-import { X } from 'lucide-react'
+import React, { useEffect } from "react";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-  footer?: React.ReactNode
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  size?: "default" | "wide";
 }
 
 export default function Modal({
@@ -16,29 +18,37 @@ export default function Modal({
   onClose,
   title,
   children,
-  footer
+  footer,
+  size = "default",
 }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-content 3xl:max-w-2xl 4xl:max-w-3xl"
-        onClick={e => e.stopPropagation()}
+        className={cn(
+          "modal-content",
+          size === "wide"
+            ? "max-w-[calc(100vw-1.5rem)]! sm:max-w-4xl! xl:max-w-6xl!"
+            : "3xl:max-w-6xl 4xl:max-w-7xl",
+        )}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 3xl:p-5 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="text-sm 3xl:text-lg 4xl:text-xl font-bold text-slate-800 dark:text-slate-200">{title}</h3>
+          <h3 className="text-sm 3xl:text-lg 4xl:text-xl font-bold text-slate-800 dark:text-slate-200">
+            {title}
+          </h3>
           <button
             onClick={onClose}
             className="w-7 h-7 3xl:w-9 3xl:h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
@@ -47,10 +57,8 @@ export default function Modal({
           </button>
         </div>
 
-        <div className="p-4 3xl:p-5">
-          {children}
-        </div>
-        
+        <div className="p-4 3xl:p-5">{children}</div>
+
         {footer && (
           <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 rounded-b-xl">
             {footer}
@@ -58,5 +66,5 @@ export default function Modal({
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -29,7 +29,7 @@ export default function TriviaOperations({
   blockedDevices: Row[];
   rules: Row[];
   saving: boolean;
-  mutate: (body: any, message: string) => Promise<void>;
+  mutate: (body: any, message: string) => Promise<boolean>;
 }) {
   const [rankingView, setRankingView] = useState<"current" | "monthly" | "overall">("current");
   const rewardById = new Map(rewards.map((reward) => [reward.id, reward]));
@@ -454,7 +454,7 @@ export function TriviaBatchModal({
   onClose,
 }: {
   batch: Row | null;
-  mutate: (body: any, message: string) => Promise<void>;
+  mutate: (body: any, message: string) => Promise<boolean>;
   saving: boolean;
   onClose: () => void;
 }) {

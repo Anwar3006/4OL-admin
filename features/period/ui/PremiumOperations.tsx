@@ -10,7 +10,7 @@ export default function PremiumOperations({
 }: {
   settings: Row | null;
   saving: boolean;
-  mutate: (body: Record<string, unknown>, success: string) => Promise<void>;
+  mutate: (body: Record<string, unknown>, success: string) => Promise<boolean>;
 }) {
   return (
     <div className="grid gap-4 xl:grid-cols-2">

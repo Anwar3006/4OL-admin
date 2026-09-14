@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
     supabase.from("period_ttc_checklist_progress").select("checklist_item_id,status,target_date,reminder_time,completed_at,reminder_enabled,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
     supabase.from("period_preconception_appointments").select("id,appointment_date,timezone,clinician_name,purpose,status,questions,notes_ciphertext,facility_id,request_status,created_at,updated_at").eq("user_id", user.id).order("appointment_date", { ascending: false }).limit(50),
     supabase.from("period_fertility_insights").select("id,cycle_id,insight_date,insight_type,title,message,confidence,evidence,source_model,safety_level,status,expires_at,created_at,updated_at").eq("user_id", user.id).eq("status", "active").order("insight_date", { ascending: false }).limit(20),
-    supabase.from("period_content").select("id,title,topic,summary,content_type,locale,tags,media_url,version,body_html,published_at").eq("status", "published").order("published_at", { ascending: false }).limit(100),
+    supabase.from("period_content").select("id,title,slug,topic,summary,content_type,locale,tags,cover_image_url,media_url,reading_minutes,reading_level,version,body_html,published_at").eq("status", "published").order("published_at", { ascending: false }).limit(100),
     // Today/promotional surfaces receive only explicitly reviewed events that
     // have not expired. Drafts must never become visible merely because their
     // date range includes today. Historical results remain available from the
