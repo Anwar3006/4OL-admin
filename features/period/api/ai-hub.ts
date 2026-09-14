@@ -27,12 +27,33 @@ const GenerateSchema = z.object({
 
 type Source = { id: string; menu: z.infer<typeof SourceMenu>; title: string; excerpt: string; body: string };
 
+// conditions and symptoms store their write-ups as Lexical rich-text JSON
+// across several section columns (about/diagnosis/treatment/...) -- there
+// is no flat `description`/`content` column on either table. Selecting
+// `description` (the healthy_living_info shape) against them fails the
+// whole PostgREST request, which is what threw SOURCE_CONDITIONS_UNAVAILABLE
+// / SOURCE_SYMPTOMS_UNAVAILABLE for every generation that included them.
+const LEXICAL_SECTIONS = [
+  "about", "diagnosis", "treatment", "complications", "prevention", "contact_your_doctor", "more_information",
+] as const;
+
+function lexicalToPlainText(doc: unknown): string {
+  const parts: string[] = [];
+  const walk = (node: any) => {
+    if (!node) return;
+    if (typeof node.text === "string" && node.text.trim()) parts.push(node.text.trim());
+    if (Array.isArray(node.children)) node.children.forEach(walk);
+  };
+  walk((doc as any)?.root);
+  return parts.join(" ");
+}
+
 async function loadSources(menus: z.infer<typeof SourceMenu>[]): Promise<Source[]> {
   const admin = getAdminClient();
   const configs = {
     healthy_living: { table: "healthy_living_info", title: "name", hasStatus: true, fields: "id,name,description,content,status" },
-    conditions: { table: "conditions", title: "name", hasStatus: true, fields: "id,name,description,status" },
-    symptoms: { table: "symptoms", title: "name", hasStatus: true, fields: "id,name,description,status" },
+    conditions: { table: "conditions", title: "name", hasStatus: true, fields: `id,name,status,${LEXICAL_SECTIONS.join(",")}` },
+    symptoms: { table: "symptoms", title: "name", hasStatus: true, fields: `id,name,status,${LEXICAL_SECTIONS.join(",")}` },
   } as const;
   const batches = await Promise.all(menus.map(async (menu) => {
     const config = configs[menu];
@@ -40,7 +61,11 @@ async function loadSources(menus: z.infer<typeof SourceMenu>[]): Promise<Source[
     const { data, error } = config.hasStatus ? await base.or("status.eq.published,status.eq.active,status.is.null") : await base;
     if (error) throw new Error(`SOURCE_${menu.toUpperCase()}_UNAVAILABLE`);
     return (data ?? []).map((row: any) => {
-      const body = [row.description, row.content ? JSON.stringify(row.content) : ""].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const body = (
+        menu === "healthy_living"
+          ? [row.description, row.content ? JSON.stringify(row.content) : ""].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ")
+          : LEXICAL_SECTIONS.map((key) => lexicalToPlainText(row[key])).filter(Boolean).join("\n")
+      ).replace(/\s+/g, " ").trim();
       return {
       id: String(row.id), menu, title: String(row[config.title] ?? "Untitled"),
       excerpt: body.slice(0, 1200), body: body.slice(0, 12000),
