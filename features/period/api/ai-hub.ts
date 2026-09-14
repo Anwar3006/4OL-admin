@@ -171,6 +171,13 @@ export async function POST(request: NextRequest) {
   if (jobError || !job) return NextResponse.json({ error: "Unable to start an auditable AI job" }, { status: 500 });
 
   const started = Date.now();
+  // Populated once the model responds, read from the catch block too -- a
+  // failed validation used to discard the model's actual output entirely
+  // (only error_code was persisted), so every AI_OUTPUT_FAILED_VALIDATION
+  // was undebuggable after the fact. Captured here so a failure still
+  // records what came back and specifically why it didn't pass.
+  let rawOutput: unknown = null;
+  let parsedItems: any[] = [];
   try {
     const sources = await loadSources(input.sourceMenus);
     if (sources.length < 3) throw new Error("INSUFFICIENT_APPROVED_SOURCE_CONTENT");
@@ -196,7 +203,9 @@ SOURCE_RECORDS=${JSON.stringify(sourceContext)}`;
       },
     });
     const output = JSON.parse(completion.choices[0].message.content ?? "{}");
+    rawOutput = output;
     const items = Array.isArray(output.items) ? output.items : [];
+    parsedItems = items;
     if (input.jobType === "trivia_generation" && (items.length !== 10 || items.some((item: any) => item.options?.length !== input.answerCount || item.correctOption < 0 || item.correctOption >= input.answerCount))) {
       throw new Error("AI_OUTPUT_FAILED_VALIDATION");
     }
@@ -246,7 +255,34 @@ SOURCE_RECORDS=${JSON.stringify(sourceContext)}`;
     return NextResponse.json({ id: job.id, status: "review", itemCount: items.length, output });
   } catch (error) {
     const code = error instanceof Error ? error.message.slice(0, 100) : "AI_JOB_FAILED";
-    await admin.from("period_ai_jobs").update({ status: "failed", error_code: code, latency_ms: Date.now() - started, completed_at: new Date().toISOString() }).eq("id", job.id);
+    const expectedCount = input.jobType === "trivia_generation" ? 10
+      : input.jobType === "engagement_copy" ? 5
+      : ["content_curation", "content_suggestion"].includes(input.jobType) ? input.suggestionCount
+      : null;
+    const diagnostic = rawOutput
+      ? {
+          expectedCount, actualCount: parsedItems.length,
+          itemIssues: parsedItems.map((item: any, index: number) => {
+            const issues =
+              input.jobType === "trivia_generation"
+                ? [
+                    item?.options?.length !== input.answerCount && `options.length=${item?.options?.length ?? 0} (expected ${input.answerCount})`,
+                    (item?.correctOption < 0 || item?.correctOption >= input.answerCount) && `correctOption=${item?.correctOption} out of range`,
+                  ]
+                : [!item?.title && "missing title", !item?.summary && "missing summary", !item?.body && "missing body"];
+            return { index, issues: issues.filter(Boolean) };
+          }).filter((entry) => entry.issues.length > 0),
+        }
+      : null;
+    await admin.from("period_ai_jobs").update({
+      status: "failed", error_code: code,
+      // output/validation are NOT NULL (default '{}'::jsonb) -- only
+      // overwrite them once the model actually responded; an early failure
+      // (bad sources, no API key) leaves them at that default rather than
+      // sending an explicit null the column would reject.
+      ...(rawOutput ? { output: rawOutput, validation: diagnostic } : {}),
+      latency_ms: Date.now() - started, completed_at: new Date().toISOString(),
+    }).eq("id", job.id);
     return NextResponse.json({ error: code === "AI_PROVIDER_NOT_CONFIGURED" ? "AI generation is not configured. Add OPENAI_API_KEY before using this workflow." : "The AI draft failed validation and was not published.", code }, { status: code === "AI_PROVIDER_NOT_CONFIGURED" ? 503 : 422 });
   }
 }
