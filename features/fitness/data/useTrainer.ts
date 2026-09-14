@@ -31,9 +31,10 @@ export const useTrainers = ({
 
       let query = supabase
         .from("fitness_trainers")
-        .select("*, user_profiles(first_name, last_name, email, avatar_url)", {
-          count: "exact",
-        })
+        .select(
+          "*, user_profiles!fitness_trainers_user_id_fkey(first_name, last_name, email, avatar_url)",
+          { count: "exact" },
+        )
         .order("created_at", { ascending: false });
 
       if (search) {
@@ -65,7 +66,9 @@ export const useTrainer = (id: string | null) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fitness_trainers")
-        .select("*, user_profiles(first_name, last_name, email, avatar_url)")
+        .select(
+          "*, user_profiles!fitness_trainers_user_id_fkey(first_name, last_name, email, avatar_url)",
+        )
         .eq("id", id!)
         .single();
       if (error) throw new Error(error.message);
