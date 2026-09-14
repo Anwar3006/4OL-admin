@@ -30,6 +30,26 @@ import {
   syncStatus,
 } from "./formatters";
 
+const PILL_COLORS = ["bg", "bbl", "bpu", "bt", "by", "br"];
+
+function labeledPill(
+  value: unknown,
+  fallback: string,
+  colors: Record<string, string>,
+) {
+  const raw = String(value || fallback).toLowerCase();
+  const color =
+    colors[raw] ??
+    PILL_COLORS[
+      [...raw].reduce((total, character) => total + character.charCodeAt(0), 0) %
+        PILL_COLORS.length
+    ];
+  const label = raw
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return <span className={cn("b text-xs!", color)}>{label}</span>;
+}
+
 /**
  * Column definitions per tab. Badge classes (.b + color modifier) and
  * .id-badge are the scoped mockup-theme port -- see formatters.tsx.
@@ -188,7 +208,14 @@ export const columns: Record<
     {
       key: "curation_type",
       label: "Origin",
-      render: (value) => value?.replaceAll("_", " ") || "native",
+      render: (value) =>
+        labeledPill(value, "native", {
+          native: "bg",
+          ai_suggested: "bpu",
+          ai_curated: "bbl",
+          curated: "bt",
+          imported: "by",
+        }),
     },
     {
       key: "sourceMenus",
@@ -199,9 +226,28 @@ export const columns: Record<
     {
       key: "content_type",
       label: "Type",
-      render: (value) => value?.replaceAll("_", " "),
+      render: (value) =>
+        labeledPill(value, "article", {
+          article: "bbl",
+          quick_read: "bg",
+          video: "bpu",
+          podcast: "by",
+          expert_qa: "bt",
+        }),
     },
-    { key: "locale", label: "Locale" },
+    {
+      key: "locale",
+      label: "Locale",
+      render: (value) =>
+        labeledPill(value, "en", {
+          en: "bg",
+          "en-gh": "bg",
+          fr: "bbl",
+          tw: "bpu",
+          ee: "bt",
+          ga: "by",
+        }),
+    },
     { key: "version", label: "Version" },
     { key: "reads", label: "Reads" },
     { key: "completionRate", label: "Completion", render: pct },

@@ -488,6 +488,7 @@ export function TriviaBatchModal({
       isOpen={Boolean(batch)}
       onClose={onClose}
       title={`${batch.source === "ai" ? "AI-generated" : "Manual"} batch — ${questions.length} question${questions.length === 1 ? "" : "s"}`}
+      size="wide"
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-2">
@@ -538,13 +539,14 @@ export function TriviaBatchModal({
             type="button"
             className="btn btn-primary btn-sm"
             disabled={saving || !allIds.length}
-            onClick={() =>
-              bulkStatus(
+            onClick={async () => {
+              const markedReady = await bulkStatus(
                 allIds,
                 "published",
                 "All questions in this batch marked ready.",
-              )
-            }
+              );
+              if (markedReady) onClose();
+            }}
           >
             Mark all as ready
           </button>

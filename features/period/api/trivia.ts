@@ -82,7 +82,8 @@ export async function GET(request: NextRequest) {
   try { deviceHash = privacyHash(deviceToken, "device"); }
   catch { return NextResponse.json({ error: "Trivia security is not configured" }, { status: 503 }); }
 
-  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:period_trivia_rewards(name,description,icon)").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
+  const viewerId = await getPeriodRequestUserId(request);
+  const { data: events } = await admin.from("period_trivia_events").select("id,title,slug,status,starts_at,ends_at,timezone,leaderboard_publish_at,reward:period_trivia_rewards(name,description,icon,reward_type,value)").in("status", ["ready", "live", "ended"]).gte("ends_at", new Date(Date.now() - 14 * 86400000).toISOString()).order("starts_at", { ascending: true }).limit(20);
   const current = (events ?? []).find((event) => new Date(event.starts_at) <= new Date(now) && new Date(event.ends_at) >= new Date(now));
   const upcoming = (events ?? []).find((event) => new Date(event.starts_at) > new Date(now));
   const ended = [...(events ?? [])].reverse().find((event) => new Date(event.ends_at) < new Date(now));
@@ -97,7 +98,9 @@ export async function GET(request: NextRequest) {
   const { count: blockedCount } = await admin.from("period_trivia_blocked_devices").select("id", { count: "exact", head: true }).eq("device_hash", deviceHash).in("status", ["blocked", "under_review"]);
   const blocked = Boolean(blockedCount);
   if (event) {
-    completed = Boolean((await admin.from("period_trivia_submissions").select("id", { count: "exact", head: true }).eq("event_id", event.id).eq("device_hash", deviceHash)).count);
+    completed = viewerId
+      ? Boolean((await admin.from("period_trivia_submissions").select("id", { count: "exact", head: true }).eq("event_id", event.id).eq("user_id", viewerId)).count)
+      : false;
     if (state === "live" && !completed && !blocked) {
       const { data } = await admin.from("period_trivia_questions").select("id,position,topic,question,options,difficulty").eq("event_id", event.id).eq("status", "published").eq("validation_status", "valid").order("position");
       let fetched = (data ?? []).length === 10 ? data ?? [] : [];
@@ -122,7 +125,6 @@ export async function GET(request: NextRequest) {
     }
   }
   // G5: the signed-in player's own prize fulfilment lifecycle.
-  const viewerId = await getPeriodRequestUserId(request);
   if (viewerId) {
     const { data: mine } = await admin.from("period_trivia_fulfillment").select("id,event_id,tier_label,prize_status,prompt_sent_at,confirmed_at,fulfilled_at,reward:period_trivia_rewards(name,description)").eq("user_id", viewerId).order("created_at", { ascending: false }).limit(5);
     myFulfillment = (mine ?? []).map((row: any) => ({ id: row.id, eventId: row.event_id, tierLabel: row.tier_label, prizeStatus: row.prize_status, promptSentAt: row.prompt_sent_at, confirmedAt: row.confirmed_at, fulfilledAt: row.fulfilled_at, rewardName: row.reward?.name ?? null, rewardDescription: row.reward?.description ?? null }));
@@ -139,8 +141,13 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Complete all 10 answers and the consented lead form.", details: parsed.error.flatten() }, { status: 400 });
   const input = parsed.data;
   const admin = getAdminClient();
+  const userId = await getPeriodRequestUserId(request);
+  if (!userId) return NextResponse.json({ error: "Sign in to submit your Trivia entry." }, { status: 401 });
   const { data: event } = await admin.from("period_trivia_events").select("id,status,starts_at,ends_at").eq("id", input.eventId).maybeSingle();
   if (eventState(event) !== "live") return NextResponse.json({ error: "This Trivia is not accepting submissions." }, { status: 409 });
+  const { count: accountEntries, error: accountCheckError } = await admin.from("period_trivia_submissions").select("id", { count: "exact", head: true }).eq("event_id", input.eventId).eq("user_id", userId);
+  if (accountCheckError) return NextResponse.json({ error: "Unable to verify Trivia eligibility." }, { status: 500 });
+  if (accountEntries) return NextResponse.json({ error: "This account has already completed this Trivia.", completed: true }, { status: 409 });
   const rules = await loadTriviaRules(admin);
   const { data: questions } = await admin.from("period_trivia_questions").select("id,correct_option,options").eq("event_id", input.eventId).eq("status", "published").eq("validation_status", "valid");
   if ((questions ?? []).length !== 10) return NextResponse.json({ error: "This Trivia is not ready." }, { status: 409 });
@@ -173,8 +180,6 @@ export async function POST(request: NextRequest) {
       : submitted;
     return canonicalOption === question.correct_option;
   }).length;
-  const userId = await getPeriodRequestUserId(request);
-  if (!userId) return NextResponse.json({ error: "Sign in to submit your Trivia entry." }, { status: 401 });
   try {
     const mobile = normalizeMobile(input.lead.momoPhone);
     const deviceHash = privacyHash(deviceToken, "device");
@@ -187,7 +192,7 @@ export async function POST(request: NextRequest) {
       p_utm_source: input.attribution?.utmSource ?? null, p_utm_medium: input.attribution?.utmMedium ?? null, p_utm_campaign: input.attribution?.utmCampaign ?? null,
     });
     if (error) {
-      if (error?.code === "23505") return NextResponse.json({ error: "This device or mobile number has already completed this Trivia.", completed: true }, { status: 409 });
+      if (error?.code === "23505") return NextResponse.json({ error: "An entry already exists for this account, device, or mobile number.", completed: true }, { status: 409 });
       throw error;
     }
     return NextResponse.json({ completed: true, score, questionCount: 10, leaderboardAvailableAfter: event!.ends_at });
