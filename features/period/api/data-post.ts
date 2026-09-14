@@ -245,6 +245,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (input.action === "update_content_image") {
+    const { error } = await admin.from("period_content").update({ cover_image_url: input.coverImageUrl }).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to update the cover image" }, { status: 500 });
+    await writeAudit(user.id, "update", "period_content", input.id, { coverImageUrl: input.coverImageUrl });
+    return NextResponse.json({ ok: true });
+  }
+
   if (input.action === "create_content_collection") {
     const { data, error } = await admin.from("period_content_collections").insert({ title: input.title, slug: `${slugify(input.title)}-${Date.now().toString(36)}`, description: input.description ?? null, curation_type: input.curationType, created_by: user.id }).select("id").single();
     if (error) return NextResponse.json({ error: "Unable to create Library collection" }, { status: 500 });

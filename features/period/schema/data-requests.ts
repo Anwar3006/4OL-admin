@@ -103,6 +103,14 @@ export const WriteSchema = z.discriminatedUnion("action", [
     status: z.enum(["draft", "review", "published", "archived"]),
   }),
   z.object({
+    action: z.literal("update_content_image"),
+    id: z.string().uuid(),
+    // AI drafts only ever produce a text coverImageBrief (never a real
+    // image) -- this lets an admin attach a real one while reviewing,
+    // same as the manual create form.
+    coverImageUrl: z.string().url().max(2000),
+  }),
+  z.object({
     action: z.literal("update_feature_flag"),
     key: z.string().trim().min(2).max(100),
     enabled: z.boolean(),

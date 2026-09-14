@@ -50,6 +50,7 @@ import Overview from "./Overview";
 import TriviaOperations, {
   TriviaBatchModal,
 } from "./TriviaOperations";
+import ContentReviewModal from "./ContentReviewModal";
 import ViewPeriodUserDialog from "./view-period-user-dialog";
 import { useViewPeriodUserDialog } from "@/features/period/data/dialog-hooks";
 import LibraryOperations, {
@@ -93,10 +94,14 @@ function PeriodWorkspace() {
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
+  const [contentReviewId, setContentReviewId] = useState<string | null>(null);
   const viewPeriodUser = useViewPeriodUserDialog<Row>();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const triviaBatch =
     (payload.data ?? []).find((row: Row) => row.batchId === triviaBatchId) ??
+    null;
+  const contentReviewItem =
+    (payload.data ?? []).find((row: Row) => row.id === contentReviewId) ??
     null;
 
   const loadData = useCallback(async () => {
@@ -796,6 +801,7 @@ function PeriodWorkspace() {
                 leads={payload.leads ?? []}
                 rewards={payload.rewards ?? []}
                 submissions={payload.submissions ?? []}
+                rankings={payload.rankings ?? {}}
                 fulfillments={payload.fulfillments ?? []}
                 blockedDevices={payload.blockedDevices ?? []}
                 rules={payload.rules ?? []}
@@ -885,7 +891,9 @@ function PeriodWorkspace() {
                       }
                     : activeTab === "users"
                       ? (row) => viewPeriodUser.open(row)
-                      : undefined
+                      : activeTab === "content"
+                        ? (row) => setContentReviewId(row.id)
+                        : undefined
                 }
                 rowActions={rowActions}
                 getRowClassName={
@@ -901,6 +909,12 @@ function PeriodWorkspace() {
         mutate={mutate}
         saving={saving}
         onClose={() => setTriviaBatchId(null)}
+      />
+      <ContentReviewModal
+        item={contentReviewItem}
+        mutate={mutate}
+        saving={saving}
+        onClose={() => setContentReviewId(null)}
       />
       <ViewPeriodUserDialog />
     </div>

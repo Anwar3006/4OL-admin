@@ -82,7 +82,11 @@ export async function GET(request: NextRequest) {
 
   if (tab === "content") {
     const [{ data, error }, { data: publications }, { data: sourceLinks }, { data: collections }, { data: aiSuggestions }] = await Promise.all([
-      admin.from("period_content").select("id,title,slug,summary,topic,content_type,locale,tags,cover_image_url,reading_minutes,reading_level,featured,curation_type,version,reads,completion_count,helpful_count,not_helpful_count,status,clinical_reviewed_at,review_expires_at,published_at,created_at").order("created_at", { ascending: false }).limit(1000),
+      // body_html/metadata/ai_job_id/reviewed_by were missing here, so the
+      // Content tab could never show what an AI draft (or a manual entry)
+      // actually said -- the row-level "Publish as reviewed" action was a
+      // blind status flip with nothing to read first.
+      admin.from("period_content").select("id,title,slug,summary,body_html,topic,content_type,locale,tags,cover_image_url,reading_minutes,reading_level,featured,curation_type,ai_job_id,version,reads,completion_count,helpful_count,not_helpful_count,status,reviewed_by,clinical_reviewed_at,review_expires_at,published_at,created_at,metadata").order("created_at", { ascending: false }).limit(1000),
       admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,display_order").eq("channel", "plasence_library").limit(1000),
       admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").limit(5000),
       admin.from("period_content_collections").select("id,title,slug,status,curation_type,display_order,published_at,period_content_collection_items(content_id,display_order)").order("display_order").limit(200),
@@ -107,10 +111,13 @@ export async function GET(request: NextRequest) {
   if (tab === "trivia") {
     const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }, { data: fulfillments }, { data: blockedDevices }, { data: rules }] = await Promise.all([
       admin.from("period_trivia_questions").select("id,event_id,position,topic,question,options,correct_option,explanation,difficulty,status,validation_status,ai_job_id,manual_batch_id,source_refs,reviewed_by,published_at,created_by,created_at").order("created_at", { ascending: false }).limit(1000),
-      admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").gte("submitted_at", new Date(Date.now() - 30 * 86400000).toISOString()).limit(5000),
-      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id").order("starts_at", { ascending: false }).limit(100),
+      // Rankings are aggregated below and only the compact result is sent to
+      // the browser. Keep the all-time scan server-side so monthly/lifetime
+      // boards are based on real submissions rather than display fixtures.
+      admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").order("submitted_at", { ascending: false }).limit(10000),
+      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id,leaderboard_publish_at").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_platform,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
-      admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active").eq("is_active", true).order("created_at", { ascending: false }).limit(100),
+      admin.from("period_trivia_rewards").select("id,name,description,icon,reward_type,value,is_active,created_at").order("created_at", { ascending: false }).limit(100),
       admin.from("period_trivia_fulfillment").select("id,event_id,submission_id,user_id,tier_label,reward_id,prize_status,sent_at,prompt_sent_at,confirmed_at,fulfilled_at,notes,created_at").order("created_at", { ascending: false }).limit(500),
       admin.from("period_trivia_blocked_devices").select("id,device_hash,mobile_hash,user_id,violation,evidence,status,detected_at,unblocked_at").order("detected_at", { ascending: false }).limit(200),
       admin.from("period_trivia_rules").select("key,description,value,enforced_by,is_active,updated_at").order("key"),
@@ -158,8 +165,6 @@ export async function GET(request: NextRequest) {
       .filter((batch) => (!status || Object.keys(batch.statusCounts).includes(status)) && (!query || JSON.stringify(batch).toLowerCase().includes(query)))
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
-    const answers = (submissions ?? []).reduce((sum, item) => sum + Number(item.question_count), 0);
-    const correct = (submissions ?? []).reduce((sum, item) => sum + Number(item.score), 0);
     const maskedLeads = (leads ?? []).map((lead) => {
       try {
         const name = decryptLead(lead.full_name_ciphertext);
@@ -169,7 +174,171 @@ export async function GET(request: NextRequest) {
           name: `${name.slice(0, 1)}${"•".repeat(Math.max(2, Math.min(8, name.length - 1)))}`, mobile: maskMobile(mobile), socialPlatform: lead.social_platform ?? "Social", socialHandle: `${handle.slice(0, 2)}••••` };
       } catch { return { ...lead, full_name_ciphertext: undefined, mobile_ciphertext: undefined, social_handle_ciphertext: undefined, name: "Encrypted lead", mobile: "Protected", socialPlatform: lead.social_platform ?? "Social", socialHandle: "Protected" }; }
     });
-    return NextResponse.json({ ...pageRows(batchRows, page, pageSize), events: events ?? [], leads: maskedLeads, submissions: submissions ?? [], rewards: rewards ?? [], fulfillments: fulfillments ?? [], blockedDevices: blockedDevices ?? [], rules: rules ?? [], summary: { attempts30d: submissions?.length ?? 0, leads30d: maskedLeads.length, correctRate: percent(correct, answers) } });
+
+    const submissionRows = submissions ?? [];
+    const leadBySubmission = new Map(maskedLeads.map((lead) => [lead.submission_id, lead]));
+    const eventRows = events ?? [];
+    const now = Date.now();
+    const latestEndedEvent = eventRows.find((event) =>
+      event.status === "ended" || new Date(event.ends_at).getTime() < now,
+    ) ?? null;
+
+    const participantLabel = (submission: (typeof submissionRows)[number]) => {
+      const source = submission.user_id ?? submission.id;
+      let hash = 0;
+      for (let index = 0; index < source.length; index += 1) {
+        hash = (Math.imul(hash, 31) + source.charCodeAt(index)) | 0;
+      }
+      return `Player ${String((Math.abs(hash) % 99) + 1).padStart(2, "0")}`;
+    };
+    const ranked = (rows: typeof submissionRows) => [...rows].sort((a, b) =>
+      Number(b.score) - Number(a.score)
+      || Number(a.duration_seconds ?? Number.MAX_SAFE_INTEGER) - Number(b.duration_seconds ?? Number.MAX_SAFE_INTEGER)
+      || new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime(),
+    );
+
+    const latestRows = latestEndedEvent
+      ? ranked(submissionRows.filter((submission) => submission.event_id === latestEndedEvent.id))
+      : [];
+    const currentRanking = latestRows.slice(0, 100).map((submission, index) => {
+      const lead = leadBySubmission.get(submission.id);
+      return {
+        rank: index + 1,
+        participant: participantLabel(submission),
+        userId: submission.user_id,
+        consentedLead: lead?.mobile ?? null,
+        consentVersion: lead?.consent_version ?? null,
+        score: submission.score,
+        questionCount: submission.question_count,
+        durationSeconds: submission.duration_seconds,
+        submittedAt: submission.submitted_at,
+        deviceCheck: "unique",
+      };
+    });
+
+    const rankingAnchor = latestEndedEvent?.starts_at
+      ? new Date(latestEndedEvent.starts_at)
+      : new Date();
+    const monthStart = new Date(Date.UTC(rankingAnchor.getUTCFullYear(), rankingAnchor.getUTCMonth(), 1));
+    const monthEnd = new Date(Date.UTC(rankingAnchor.getUTCFullYear(), rankingAnchor.getUTCMonth() + 1, 1));
+    const monthRows = submissionRows.filter((submission) => {
+      const submittedAt = new Date(submission.submitted_at);
+      return submittedAt >= monthStart && submittedAt < monthEnd;
+    });
+
+    type Aggregate = {
+      participant: string;
+      userId: string | null;
+      events: Set<string>;
+      totalScore: number;
+      totalQuestions: number;
+      perfectScores: number;
+      bestTimeSeconds: number | null;
+      firstPlayedAt: string;
+      lastPlayedAt: string;
+    };
+    const aggregate = (rows: typeof submissionRows) => {
+      const byParticipant = new Map<string, Aggregate>();
+      for (const submission of rows) {
+        const key = submission.user_id ?? submission.id;
+        const existing = byParticipant.get(key);
+        const duration = submission.duration_seconds == null ? null : Number(submission.duration_seconds);
+        if (!existing) {
+          byParticipant.set(key, {
+            participant: participantLabel(submission),
+            userId: submission.user_id,
+            events: new Set([submission.event_id]),
+            totalScore: Number(submission.score),
+            totalQuestions: Number(submission.question_count),
+            perfectScores: Number(submission.score) === Number(submission.question_count) ? 1 : 0,
+            bestTimeSeconds: duration,
+            firstPlayedAt: submission.submitted_at,
+            lastPlayedAt: submission.submitted_at,
+          });
+          continue;
+        }
+        existing.events.add(submission.event_id);
+        existing.totalScore += Number(submission.score);
+        existing.totalQuestions += Number(submission.question_count);
+        if (Number(submission.score) === Number(submission.question_count)) existing.perfectScores += 1;
+        if (duration != null && (existing.bestTimeSeconds == null || duration < existing.bestTimeSeconds)) existing.bestTimeSeconds = duration;
+        if (submission.submitted_at < existing.firstPlayedAt) existing.firstPlayedAt = submission.submitted_at;
+        if (submission.submitted_at > existing.lastPlayedAt) existing.lastPlayedAt = submission.submitted_at;
+      }
+      return [...byParticipant.values()].sort((a, b) =>
+        b.totalScore - a.totalScore
+        || Number(a.bestTimeSeconds ?? Number.MAX_SAFE_INTEGER) - Number(b.bestTimeSeconds ?? Number.MAX_SAFE_INTEGER)
+        || new Date(a.firstPlayedAt).getTime() - new Date(b.firstPlayedAt).getTime(),
+      );
+    };
+
+    const titleCounts = new Map<string, number>();
+    for (const event of eventRows.filter((item) => item.status === "ended" || new Date(item.ends_at).getTime() < now)) {
+      const winner = ranked(submissionRows.filter((submission) => submission.event_id === event.id))[0];
+      if (winner?.user_id) titleCounts.set(winner.user_id, (titleCounts.get(winner.user_id) ?? 0) + 1);
+    }
+    const monthlyRanking = aggregate(monthRows).slice(0, 100).map((row, index) => ({
+      rank: index + 1,
+      participant: row.participant,
+      userId: row.userId,
+      eventsEntered: row.events.size,
+      totalScore: row.totalScore,
+      totalQuestions: row.totalQuestions,
+      perfectScores: row.perfectScores,
+      bestTimeSeconds: row.bestTimeSeconds,
+      lastPlayedAt: row.lastPlayedAt,
+    }));
+    const overallRanking = aggregate(submissionRows).slice(0, 100).map((row, index) => ({
+      rank: index + 1,
+      participant: row.participant,
+      userId: row.userId,
+      lifetimeScore: row.totalScore,
+      eventsPlayed: row.events.size,
+      titlesWon: row.userId ? titleCounts.get(row.userId) ?? 0 : 0,
+      memberSince: row.firstPlayedAt,
+    }));
+    const fulfillmentSubmissionIds = new Set((fulfillments ?? []).map((item) => item.submission_id).filter(Boolean));
+    const fulfillmentSubmissions = submissionRows.filter((submission) => fulfillmentSubmissionIds.has(submission.id));
+    const eventsWithResults = eventRows.map((event) => {
+      const eventSubmissions = submissionRows.filter((submission) => submission.event_id === event.id);
+      const scoredQuestions = eventSubmissions.reduce((sum, submission) => sum + Number(submission.question_count), 0);
+      const scoreTotal = eventSubmissions.reduce((sum, submission) => sum + Number(submission.score), 0);
+      return {
+        ...event,
+        entryCount: eventSubmissions.length,
+        averageScore: eventSubmissions.length
+          ? Math.round((scoreTotal / eventSubmissions.length) * 10) / 10
+          : null,
+        averageScorePercent: percent(scoreTotal, scoredQuestions),
+      };
+    });
+    const thirtyDaysAgo = now - 30 * 86400000;
+    const submissions30d = submissionRows.filter((submission) => new Date(submission.submitted_at).getTime() >= thirtyDaysAgo);
+    const answers30d = submissions30d.reduce((sum, item) => sum + Number(item.question_count), 0);
+    const correct30d = submissions30d.reduce((sum, item) => sum + Number(item.score), 0);
+
+    return NextResponse.json({
+      ...pageRows(batchRows, page, pageSize),
+      events: eventsWithResults,
+      leads: maskedLeads,
+      submissions: fulfillmentSubmissions,
+      rewards: rewards ?? [],
+      fulfillments: fulfillments ?? [],
+      blockedDevices: blockedDevices ?? [],
+      rules: rules ?? [],
+      rankings: {
+        latestEvent: latestEndedEvent,
+        current: currentRanking,
+        monthly: monthlyRanking,
+        overall: overallRanking,
+        monthLabel: rankingAnchor.toLocaleDateString("en-GH", { month: "long", year: "numeric", timeZone: "Africa/Accra" }),
+      },
+      summary: {
+        attempts30d: submissions30d.length,
+        leads30d: maskedLeads.filter((lead) => new Date(lead.created_at).getTime() >= thirtyDaysAgo).length,
+        correctRate: percent(correct30d, answers30d),
+      },
+    });
   }
 
   if (tab === "forecasts") {

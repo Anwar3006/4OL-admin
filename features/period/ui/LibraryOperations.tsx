@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import { type PeriodTabId } from "@/features/period/schema/period-tracker";
 import TopicCategorySelect from "./TopicCategorySelect";
+import ImageDropZone from "@/components/ImageDropZone";
 import type { Row } from "@/features/period/schema/types";
+
+/** ImageDropZone hands back a storage key, not a URL -- mirrors the same
+ * public-URL template it uses internally (components/ImageDropZone.tsx:193). */
+function publicImageUrl(key: string) {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${key}`;
+}
 
 
 export default function LibraryOperations({
@@ -256,6 +263,7 @@ export function CreateForm({
 }) {
   const campaign = activeTab === "engagement";
   const trivia = activeTab === "trivia";
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   return (
     <form
       className="card space-y-3 p-4"
@@ -490,15 +498,19 @@ export function CreateForm({
                     placeholder="cramps, nutrition, luteal"
                   />
                 </label>
-                <label className="form-label">
-                  Cover image URL
-                  <input
-                    name="coverImageUrl"
-                    type="url"
-                    maxLength={2000}
-                    className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
-                  />
-                </label>
+                <div className="form-label">
+                  Cover image
+                  <input type="hidden" name="coverImageUrl" value={coverImageUrl} />
+                  <div className="mt-1">
+                    <ImageDropZone
+                      filePath="period"
+                      text="Drop a cover image here"
+                      mediaType="image"
+                      maxFiles={1}
+                      onFilesChange={(keys) => setCoverImageUrl(keys[0] ? publicImageUrl(keys[0]) : "")}
+                    />
+                  </div>
+                </div>
                 <label className="form-label">
                   Reading minutes
                   <input

@@ -13,6 +13,7 @@ export default function TriviaOperations({
   leads,
   rewards,
   submissions,
+  rankings,
   fulfillments,
   blockedDevices,
   rules,
@@ -23,12 +24,14 @@ export default function TriviaOperations({
   leads: Row[];
   rewards: Row[];
   submissions: Row[];
+  rankings: Row;
   fulfillments: Row[];
   blockedDevices: Row[];
   rules: Row[];
   saving: boolean;
   mutate: (body: any, message: string) => Promise<void>;
 }) {
+  const [rankingView, setRankingView] = useState<"current" | "monthly" | "overall">("current");
   const rewardById = new Map(rewards.map((reward) => [reward.id, reward]));
   const submissionById = new Map(
     submissions.map((submission) => [submission.id, submission]),
@@ -41,149 +44,112 @@ export default function TriviaOperations({
   const activeBlocks = blockedDevices.filter(
     (item) => item.status !== "unblocked",
   );
+  const latestEvent = rankings.latestEvent as Row | null | undefined;
+  const fulfillmentRows = latestEvent
+    ? fulfillments.filter((item) => item.event_id === latestEvent.id)
+    : fulfillments;
+  const pendingFulfillments = fulfillmentRows.filter((item) => item.prize_status === "pending").length;
+  const sentFulfillments = fulfillmentRows.filter((item) => item.prize_status === "sent").length;
+  const fulfilledCount = fulfillmentRows.filter((item) => item.prize_status === "fulfilled").length;
+  const currentRanking = (rankings.current ?? []) as Row[];
+  const monthlyRanking = (rankings.monthly ?? []) as Row[];
+  const overallRanking = (rankings.overall ?? []) as Row[];
+
+  const participantLabel = (identifier: string | null | undefined) => {
+    if (!identifier) return "Guest";
+    let hash = 0;
+    for (let index = 0; index < identifier.length; index += 1) {
+      hash = (Math.imul(hash, 31) + identifier.charCodeAt(index)) | 0;
+    }
+    return `Player ${String((Math.abs(hash) % 99) + 1).padStart(2, "0")}`;
+  };
+  const duration = (seconds: unknown) => {
+    if (seconds == null || !Number.isFinite(Number(seconds))) return "—";
+    const total = Math.max(0, Number(seconds));
+    return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  };
+  const rank = (value: number, lifetime = false) =>
+    value === 1 ? `${lifetime ? "🌟" : "🥇"} 1` : value === 2 ? "🥈 2" : value === 3 ? "🥉 3" : String(value);
+  const linkedEvents = (rewardId: string) => events.filter((event) => event.reward_id === rewardId);
+
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 xl:grid-cols-2">
-      <section
-        className="card overflow-hidden"
-        aria-labelledby="trivia-events-heading"
-      >
+      <section className="card overflow-hidden" aria-labelledby="trivia-prizes-heading">
         <div className="card-header">
           <div>
-            <h3 id="trivia-events-heading" className="card-title">
-              Friday schedules
-            </h3>
+            <h3 id="trivia-prizes-heading" className="card-title">🏆 Trivia prizes &amp; rewards</h3>
             <p className="text-2xs text-slate-500">
-              The quiz unlocks only during its reviewed start/end window.
+              Published prizes are read from the reward catalog and shown on the mobile Trivia page before play.
             </p>
           </div>
-          <Link href="/ai-hub/period" className="btn btn-primary btn-sm">
-            Schedule & generate
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="badge badge-green">📱 {rewards.filter((reward) => reward.is_active).length} visible in-app</span>
+            <Link href="/ai-hub/period" className="btn btn-primary btn-sm">Manage prizes</Link>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b bg-slate-50 dark:bg-slate-900">
-                <th className="p-3">Event</th>
-                <th className="p-3">Window</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
+          <table className="w-full min-w-[980px] text-left text-xs">
+            <thead><tr className="border-b bg-slate-50 dark:bg-slate-900">
+              <th className="p-3">Icon</th><th className="p-3">Prize name</th><th className="p-3">Type</th><th className="p-3">Value</th><th className="p-3">Availability</th><th className="p-3">Eligibility</th><th className="p-3">Linked event</th><th className="p-3">Status</th><th className="p-3">Mobile visibility</th>
+            </tr></thead>
             <tbody>
-              {events.map((item) => (
-                <tr key={item.id} className="border-b">
-                  <td className="p-3 font-medium">{item.title}</td>
-                  <td className="p-3">
-                    {dateTime(item.starts_at)}
-                    <br />
-                    <span className="text-2xs text-slate-500">
-                      to {dateTime(item.ends_at)}
-                    </span>
-                  </td>
-                  <td className="p-3">{status(item.status)}</td>
-                  <td className="p-3 text-right">
-                    {item.status === "draft" && (
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        disabled={saving}
-                        onClick={() =>
-                          mutate(
-                            { action: "review_trivia_event", id: item.id },
-                            "Trivia is ready. The mobile countdown and start controls now follow this window.",
-                          )
-                        }
-                      >
-                        Mark ready
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {!events.length && (
-                <tr>
-                  <td colSpan={4} className="p-4 text-slate-500">
-                    No Trivia event has been scheduled.
-                  </td>
-                </tr>
-              )}
+              {rewards.map((reward) => {
+                const rewardEvents = linkedEvents(reward.id);
+                return <tr key={reward.id} className={cn("border-b", !reward.is_active && "opacity-65")}>
+                  <td className="p-3 text-lg">{reward.icon || "🎁"}</td>
+                  <td className="p-3"><div className="font-semibold">{reward.name}</div><div className="mt-0.5 text-2xs text-slate-500">{reward.description || "Trivia reward"}</div></td>
+                  <td className="p-3"><span className="badge badge-purple capitalize">{String(reward.reward_type ?? "prize").replaceAll("_", " ")}</span></td>
+                  <td className="p-3 font-semibold">{reward.value || "—"}</td>
+                  <td className="p-3">{rewardEvents.length ? `${rewardEvents.length} linked event${rewardEvents.length === 1 ? "" : "s"}` : "Reward catalog"}</td>
+                  <td className="max-w-56 p-3 text-2xs text-slate-600 dark:text-slate-400">{reward.description || "Set by the linked Trivia event and prize tier."}</td>
+                  <td className="p-3 text-2xs">{rewardEvents.length ? rewardEvents.slice(0, 2).map((event) => event.title).join(", ") : "Not linked"}</td>
+                  <td className="p-3"><span className={cn("badge", reward.is_active ? "badge-green" : "badge-amber")}>{reward.is_active ? "✅ Published" : "📝 Draft"}</span></td>
+                  <td className="p-3"><span className={cn("badge", reward.is_active ? "badge-green" : "badge-slate")}>{reward.is_active ? "👁 Visible in-app" : "Hidden until published"}</span></td>
+                </tr>;
+              })}
+              {!rewards.length && <tr><td colSpan={9} className="p-4 text-slate-500">No Trivia prizes have been configured.</td></tr>}
             </tbody>
           </table>
         </div>
       </section>
+
       <section
         className="card overflow-hidden"
-        aria-labelledby="trivia-leads-heading"
+        aria-labelledby="trivia-rankings-heading"
       >
         <div className="card-header">
           <div>
-            <h3 id="trivia-leads-heading" className="card-title">
-              Trivia leads
+            <h3 id="trivia-rankings-heading" className="card-title">
+              🏆 Trivia leads &amp; rankings
             </h3>
             <p className="text-2xs text-slate-500">
-              Consent-gated, encrypted and linked to user records when signed
-              in.
+              Consent-gated leads stay masked. Public boards use anonymous player labels; ties resolve by score, fastest time, then submission time.
             </p>
           </div>
-          <span className="badge badge-blue">{leads.length} records</span>
+          <span className="badge badge-blue">🔒 Privacy-hashed</span>
+        </div>
+        <div className="flex flex-wrap gap-2 border-b px-4 py-3" role="tablist" aria-label="Trivia ranking period">
+          {([
+            ["current", `🔥 Just ended${latestEvent?.title ? ` — ${latestEvent.title}` : ""}`],
+            ["monthly", `📅 Monthly — ${rankings.monthLabel ?? "Current month"}`],
+            ["overall", "🌟 Overall (lifetime)"],
+          ] as const).map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={rankingView === value} className={cn("btn btn-sm", rankingView === value ? "btn-primary" : "btn-secondary")} onClick={() => setRankingView(value)}>{label}</button>)}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b bg-slate-50 dark:bg-slate-900">
-                <th className="p-3">Lead</th>
-                <th className="p-3">Mobile</th>
-                <th className="p-3">Social</th>
-                <th className="p-3">User link</th>
-                <th className="p-3">Consent</th>
-                <th className="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.slice(0, 20).map((lead) => (
-                <tr key={lead.id} className="border-b">
-                  <td className="p-3">{lead.name}</td>
-                  <td className="p-3">{lead.mobile}</td>
-                  <td className="p-3">
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                      {lead.socialPlatform ?? "Social"}
-                    </span>
-                    <br />
-                    <span className="text-2xs text-slate-500">
-                      {lead.socialHandle}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <code className="text-2xs">
-                      {lead.user_id ? shortId(lead.user_id) : "Guest"}
-                    </code>
-                  </td>
-                  <td className="p-3">
-                    {lead.consent_version}
-                    <br />
-                    <span className="text-2xs text-slate-500">
-                      {dateTime(lead.consented_at)}
-                    </span>
-                  </td>
-                  <td className="p-3">{status(lead.status)}</td>
-                </tr>
-              ))}
-              {!leads.length && (
-                <tr>
-                  <td colSpan={6} className="p-4 text-slate-500">
-                    No consented Trivia leads yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {rankingView === "current" && <table className="w-full min-w-[880px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">User link</th><th className="p-3">Consented lead</th><th className="p-3">Score</th><th className="p-3">Time</th><th className="p-3">Submitted</th><th className="p-3">Device check</th></tr></thead><tbody>
+            {currentRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3"><code className="text-2xs">{item.userId ? shortId(item.userId) : "Guest"}</code></td><td className="p-3 text-2xs">{item.consentedLead ? <>{item.consentedLead}<br/><span className="text-slate-500">{item.consentVersion}</span></> : <span className="text-slate-500">No consented lead</span>}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.score}/{item.questionCount}</td><td className="p-3">{duration(item.durationSeconds)}</td><td className="p-3 text-2xs text-slate-500">{dateTime(item.submittedAt)}</td><td className="p-3"><span className="badge badge-green">✅ Unique</span></td></tr>)}
+            {!currentRanking.length && <tr><td colSpan={8} className="p-4 text-slate-500">No submissions are available for the most recently ended Trivia.</td></tr>}
+          </tbody></table>}
+          {rankingView === "monthly" && <table className="w-full min-w-[760px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">Events entered</th><th className="p-3">Total score</th><th className="p-3">Perfect scores</th><th className="p-3">Best time</th><th className="p-3">Last played</th></tr></thead><tbody>
+            {monthlyRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3">{item.eventsEntered}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.totalScore} / {item.totalQuestions}</td><td className="p-3">{item.perfectScores}</td><td className="p-3">{duration(item.bestTimeSeconds)}</td><td className="p-3 text-2xs text-slate-500">{date(item.lastPlayedAt)}</td></tr>)}
+            {!monthlyRanking.length && <tr><td colSpan={7} className="p-4 text-slate-500">No submissions are available for this month.</td></tr>}
+          </tbody></table>}
+          {rankingView === "overall" && <table className="w-full min-w-[680px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">Lifetime score</th><th className="p-3">Events played</th><th className="p-3">Titles won</th><th className="p-3">Member since</th></tr></thead><tbody>
+            {overallRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank), true)}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.lifetimeScore} points</td><td className="p-3">{item.eventsPlayed}</td><td className="p-3">{Number(item.titlesWon) > 0 ? <span className="badge badge-green">🏆 {item.titlesWon} title{Number(item.titlesWon) === 1 ? "" : "s"}</span> : "—"}</td><td className="p-3 text-2xs text-slate-500">{date(item.memberSince)}</td></tr>)}
+            {!overallRanking.length && <tr><td colSpan={6} className="p-4 text-slate-500">No lifetime ranking data is available yet.</td></tr>}
+          </tbody></table>}
         </div>
       </section>
-      </div>
 
       <section
         className="card overflow-hidden"
@@ -192,39 +158,23 @@ export default function TriviaOperations({
         <div className="card-header">
           <div>
             <h3 id="trivia-fulfillment-heading" className="card-title">
-              Winners &amp; prize fulfillment
+              🎁 Winners &amp; prize fulfillment{latestEvent?.title ? ` — ${latestEvent.title}` : ""}
             </h3>
             <p className="text-2xs text-slate-500">
-              One row per winner × prize tier. Mark <strong>Sent</strong> once
-              the prize is paid out — the winner then receives the in-app
-              fulfillment prompt. <strong>Fulfilled</strong> closes the loop.
-              Cash/airtime payouts use the consented lead MoMo number.
+              One row per winner × prize tier. Sending a prize triggers the in-app confirmation prompt; fulfillment closes the payout loop.
             </p>
           </div>
-          <span className="badge badge-blue">
-            {fulfillments.filter((item) => item.prize_status === "pending").length}{" "}
-            to send ·{" "}
-            {fulfillments.filter((item) => item.prize_status === "fulfilled").length}{" "}
-            fulfilled
-          </span>
+          <div className="flex flex-wrap justify-end gap-2"><span className="badge badge-amber">📤 {pendingFulfillments} to send</span><span className="badge badge-blue">⏳ {sentFulfillments} awaiting confirmation</span><span className="badge badge-green">✅ {fulfilledCount} fulfilled</span></div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full min-w-[1040px] text-left text-xs">
             <thead>
               <tr className="border-b bg-slate-50 dark:bg-slate-900">
-                <th className="p-3">Tier</th>
-                <th className="p-3">Prize</th>
-                <th className="p-3">Winner</th>
-                <th className="p-3">Consented lead</th>
-                <th className="p-3">Prize status</th>
-                <th className="p-3">Fulfillment prompt</th>
-                <th className="p-3">
-                  <span className="sr-only">Actions</span>
-                </th>
+                <th className="p-3">Tier</th><th className="p-3">Prize</th><th className="p-3">Winner</th><th className="p-3">Consented lead</th><th className="p-3">Eligibility met</th><th className="p-3">Prize status</th><th className="p-3">Fulfillment prompt</th><th className="p-3"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>
-              {fulfillments.map((item) => {
+              {fulfillmentRows.map((item) => {
                 const reward = item.reward_id
                   ? rewardById.get(item.reward_id)
                   : null;
@@ -235,8 +185,8 @@ export default function TriviaOperations({
                   ? leadBySubmission.get(item.submission_id)
                   : null;
                 return (
-                  <tr key={item.id} className="border-b">
-                    <td className="p-3 font-medium">{item.tier_label}</td>
+                  <tr key={item.id} className={cn("border-b", item.prize_status === "pending" && "bg-amber-50/70 dark:bg-amber-950/20")}>
+                    <td className="p-3"><span className="badge badge-blue">{item.tier_label}</span></td>
                     <td className="p-3">
                       {reward
                         ? `${reward.icon} ${reward.name}`
@@ -249,11 +199,7 @@ export default function TriviaOperations({
                       ) : null}
                     </td>
                     <td className="p-3">
-                      <code className="text-2xs">
-                        {submission?.user_id
-                          ? shortId(submission.user_id)
-                          : "Guest"}
-                      </code>
+                      <span className="font-semibold">{participantLabel(submission?.user_id ?? submission?.id)}</span>{submission?.user_id && <><br/><code className="text-2xs text-slate-500">{shortId(submission.user_id)}</code></>}
                     </td>
                     <td className="p-3">
                       {lead?.mobile ?? (
@@ -262,6 +208,7 @@ export default function TriviaOperations({
                         </span>
                       )}
                     </td>
+                    <td className="p-3 text-2xs">{submission ? `${submission.score}/${submission.question_count}${submission.duration_seconds != null ? ` · ${duration(submission.duration_seconds)}` : ""}` : item.notes || "Recorded by prize tier"}</td>
                     <td className="p-3">{status(item.prize_status)}</td>
                     <td className="p-3 text-2xs text-slate-500">
                       {item.prize_status === "fulfilled"
@@ -313,9 +260,9 @@ export default function TriviaOperations({
                   </tr>
                 );
               })}
-              {!fulfillments.length && (
+              {!fulfillmentRows.length && (
                 <tr>
-                  <td colSpan={7} className="p-4 text-slate-500">
+                  <td colSpan={8} className="p-4 text-slate-500">
                     No prize fulfillment entries yet. Winners appear here once
                     a finished event's prize tiers are recorded.
                   </td>
@@ -327,6 +274,22 @@ export default function TriviaOperations({
       </section>
 
       <div className="grid gap-4 xl:grid-cols-2">
+      <section className="card overflow-hidden" aria-labelledby="trivia-events-heading">
+        <div className="card-header"><div><h3 id="trivia-events-heading" className="card-title">🗓 Scheduled &amp; past Trivias</h3><p className="text-2xs text-slate-500">Draft → ready → live → ended. Mobile unlocks only inside the reviewed Africa/Accra window.</p></div><Link href="/ai-hub/period" className="btn btn-primary btn-sm">Schedule &amp; generate</Link></div>
+        <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Event</th><th className="p-3">Window</th><th className="p-3">Reward</th><th className="p-3">Entries</th><th className="p-3">Status</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead><tbody>
+          {events.map((item) => { const eventReward = item.reward_id ? rewardById.get(item.reward_id) : null; return <tr key={item.id} className="border-b"><td className="p-3 font-semibold">{item.title}</td><td className="p-3 text-2xs">{dateTime(item.starts_at)}<br/><span className="text-slate-500">to {dateTime(item.ends_at)}</span></td><td className="p-3 text-2xs">{eventReward ? `${eventReward.icon || "🎁"} ${eventReward.name}` : "Not attached"}</td><td className="p-3 font-semibold">{item.entryCount ?? "—"}</td><td className="p-3">{status(item.status)}</td><td className="p-3 text-right">{item.status === "draft" && <button type="button" className="btn btn-secondary btn-sm" disabled={saving} onClick={() => mutate({ action: "review_trivia_event", id: item.id }, "Trivia is ready. The mobile countdown and start controls now follow this window.")}>Mark ready</button>}</td></tr>; })}
+          {!events.length && <tr><td colSpan={6} className="p-4 text-slate-500">No Trivia event has been scheduled.</td></tr>}
+        </tbody></table></div>
+      </section>
+
+      <section className="card overflow-hidden" aria-labelledby="trivia-leads-heading">
+        <div className="card-header"><div><h3 id="trivia-leads-heading" className="card-title">Consented lead register</h3><p className="text-2xs text-slate-500">Encrypted at rest and masked here; linked to an account when the participant is signed in.</p></div><span className="badge badge-blue">{leads.length} records</span></div>
+        <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Lead</th><th className="p-3">Mobile</th><th className="p-3">Social</th><th className="p-3">User link</th><th className="p-3">Consent</th><th className="p-3">Status</th></tr></thead><tbody>
+          {leads.slice(0, 20).map((lead) => <tr key={lead.id} className="border-b"><td className="p-3">{lead.name}</td><td className="p-3">{lead.mobile}</td><td className="p-3"><span className="font-medium">{lead.socialPlatform ?? "Social"}</span><br/><span className="text-2xs text-slate-500">{lead.socialHandle}</span></td><td className="p-3"><code className="text-2xs">{lead.user_id ? shortId(lead.user_id) : "Guest"}</code></td><td className="p-3 text-2xs">{lead.consent_version}<br/><span className="text-slate-500">{dateTime(lead.consented_at)}</span></td><td className="p-3">{status(lead.status)}</td></tr>)}
+          {!leads.length && <tr><td colSpan={6} className="p-4 text-slate-500">No consented Trivia leads yet.</td></tr>}
+        </tbody></table></div>
+      </section>
+
         <section
           className="card overflow-hidden"
           aria-labelledby="trivia-blocked-heading"
@@ -406,10 +369,9 @@ export default function TriviaOperations({
           </div>
         </section>
 
-        <section
-          className="card overflow-hidden"
-          aria-labelledby="trivia-rules-heading"
-        >
+      </div>
+
+        <section className="card overflow-hidden" aria-labelledby="trivia-rules-heading">
           <div className="card-header">
             <div>
               <h3 id="trivia-rules-heading" className="card-title">
@@ -426,6 +388,7 @@ export default function TriviaOperations({
               <thead>
                 <tr className="border-b bg-slate-50 dark:bg-slate-900">
                   <th className="p-3">Rule</th>
+                  <th className="p-3">Description</th>
                   <th className="p-3">Value</th>
                   <th className="p-3">Enforced by</th>
                   <th className="p-3">Active</th>
@@ -438,10 +401,8 @@ export default function TriviaOperations({
                       <div className="font-medium">
                         {String(rule.key).replaceAll("_", " ")}
                       </div>
-                      <div className="text-2xs text-slate-500">
-                        {rule.description}
-                      </div>
                     </td>
+                    <td className="max-w-md p-3 text-2xs text-slate-500">{rule.description}</td>
                     <td className="p-3">
                       <code className="text-2xs">{rule.value}</code>
                     </td>
@@ -473,7 +434,7 @@ export default function TriviaOperations({
                 ))}
                 {!rules.length && (
                   <tr>
-                    <td colSpan={4} className="p-4 text-slate-500">
+                    <td colSpan={5} className="p-4 text-slate-500">
                       No Trivia rules configured.
                     </td>
                   </tr>
@@ -482,7 +443,6 @@ export default function TriviaOperations({
             </table>
           </div>
         </section>
-      </div>
     </div>
   );
 }
