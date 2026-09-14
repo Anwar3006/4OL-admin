@@ -36,6 +36,7 @@ type MarketingSubscriptionRow = {
   benefits: string[] | null;
   is_active: boolean;
   display_order: number;
+  product_scope: "full_access" | "plasence" | "fitness";
   created_at: string;
   subscribers?: number;
   active_subscribers?: number;
@@ -89,7 +90,7 @@ const mapSubscriptionRow = (
   id: row.id,
   name: row.name,
   description: row.description ?? "",
-  tierType: row.key,
+  tierType: row.product_scope,
   price: Number(row.price_ghs ?? 0),
   period: PERIOD_FROM_DAYS(row.duration_days),
   billingCycle:
@@ -116,6 +117,7 @@ const buildSubscriptionPayload = (
       : 30,
   benefits: data.privileges,
   is_active: data.isActive,
+  product_scope: data.tierType,
 });
 
 export const useMarketingSubscriptions = ({

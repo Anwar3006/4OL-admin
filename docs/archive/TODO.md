@@ -47,3 +47,5 @@ main, and if we agreed who owns a feature before two versions of it get built.
 To be done:
 Remove library, reduce the subtext and move it up along with the searchbox. test test test everything.
 Trivia should use some flowery hero instead of the current target.
+
+The fitness plans table should include the number of users currently on the plan, for the tier it is supposed to represent the subscription level, so free means all free users can hop on the plan and other levels so wire them up. This means apart from the Plasence and Fitness we need to have free, starter, pro and elite tiers. We need to plan this first to clearly define which features the tiers will get.

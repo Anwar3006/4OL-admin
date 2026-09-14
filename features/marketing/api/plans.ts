@@ -22,6 +22,7 @@ const CREATE_SCHEMA = z.object({
   duration_days: z.number().int().positive().max(3650).nullable().optional(),
   benefits: z.array(z.string().max(200)).max(30).default([]),
   is_active: z.boolean().default(true),
+  product_scope: z.enum(["full_access", "plasence", "fitness"]),
 });
 
 const slugify = (value: string) =>
@@ -85,7 +86,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const key = slugify(parsed.data.name);
+  const baseKey = slugify(parsed.data.name);
+  if (!/^[a-z][a-z0-9_]{0,39}$/.test(baseKey)) {
+    return NextResponse.json(
+      { error: "Plan name must contain letters or digits" },
+      { status: 400 },
+    );
+  }
+  const key =
+    parsed.data.product_scope === "full_access"
+      ? baseKey
+      : `${parsed.data.product_scope}_${baseKey}`.slice(0, 40);
   if (!/^[a-z][a-z0-9_]{0,39}$/.test(key)) {
     return NextResponse.json(
       { error: "Plan name must contain letters or digits" },
@@ -105,6 +116,7 @@ export async function POST(request: Request) {
       benefits: parsed.data.benefits,
       is_active: parsed.data.is_active,
       display_order: 9,
+      product_scope: parsed.data.product_scope,
     })
     .select()
     .single();
@@ -125,7 +137,11 @@ export async function POST(request: Request) {
     p_description: `Subscription plan "${created.name}" created`,
     p_severity: "info",
     p_old_data: null,
-    p_new_data: { name: created.name, price_ghs: created.price_ghs },
+    p_new_data: {
+      name: created.name,
+      price_ghs: created.price_ghs,
+      product_scope: created.product_scope,
+    },
   });
 
   return NextResponse.json({ data: created }, { status: 201 });

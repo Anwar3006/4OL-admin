@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,17 @@ type SubscriptionRow = {
   expires_at: string | null;
   note: string | null;
   subscription_tiers?: { key: string; name: string } | null;
+};
+
+type FitnessSubscriptionPlan = {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  price_ghs: number;
+  duration_days: number | null;
+  benefits: string[];
+  is_active: boolean;
 };
 
 const SCOPE_LABELS: Record<"all_access" | "fitness_only" | "period_only", string> = {
@@ -86,6 +98,8 @@ const SubscriptionsTab = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [fitnessPlans, setFitnessPlans] = useState<FitnessSubscriptionPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
   const limit = 20;
 
   const load = useCallback(async () => {
@@ -108,6 +122,30 @@ const SubscriptionsTab = () => {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadPlans = async () => {
+      setPlansLoading(true);
+      try {
+        const res = await fetch(
+          "/api/subscriptions/admin?resource=plans&productScope=fitness",
+          { cache: "no-store" },
+        );
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Failed to load Fitness plans");
+        if (!cancelled) setFitnessPlans(json.plans ?? []);
+      } catch (err) {
+        if (!cancelled) toast.error((err as Error).message);
+      } finally {
+        if (!cancelled) setPlansLoading(false);
+      }
+    };
+    void loadPlans();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ── Grant form state ────────────────────────────────────────
   const [grantUser, setGrantUser] = useState("");
@@ -331,6 +369,51 @@ const SubscriptionsTab = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="card bg-white dark:bg-slate-800">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-black text-slate-800 dark:text-slate-200">💪 Fitness subscription plans</h3>
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              Shared with Marketing. Fitness plans created there appear here automatically.
+            </p>
+          </div>
+          <Link href="/marketing?tab=subscriptions" className="btn btn-secondary btn-sm">
+            Manage in Marketing
+          </Link>
+        </div>
+        {plansLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+          </div>
+        ) : fitnessPlans.length ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {fitnessPlans.map((plan) => (
+              <div key={plan.id} className="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-black text-slate-800 dark:text-slate-200">{plan.name}</div>
+                    <div className="mt-1 text-xs text-slate-500">{plan.description || "Fitness subscription"}</div>
+                  </div>
+                  <span className={`badge ${plan.is_active ? "badge-green" : "badge-slate"}`}>
+                    {plan.is_active ? "Active" : "Hidden"}
+                  </span>
+                </div>
+                <div className="mt-3 text-lg font-black text-emerald-700 dark:text-emerald-400">
+                  GH₵{Number(plan.price_ghs).toFixed(2)}
+                  <span className="ml-1 text-2xs text-slate-400">
+                    {plan.duration_days ? `/ ${plan.duration_days} days` : "one-time"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-8 text-center text-sm text-slate-500">
+            No Fitness plans have been created yet.
+          </div>
+        )}
+      </div>
+
       {/* ── Grant panel (super admin only) ── */}
       {isSuperAdmin ? (
         <div className="card bg-white dark:bg-slate-800">

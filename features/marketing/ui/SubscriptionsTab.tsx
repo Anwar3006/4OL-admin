@@ -27,7 +27,12 @@ import {
   useReviewUpgradeRequest,
   TUserSubscriptionRow,
 } from "@/features/marketing/data/useSubscriptions";
-import { TMarketingSubscriptionOutput } from "@/features/marketing/schema/subscription";
+import {
+  SUBSCRIPTION_PRODUCTS,
+  SUBSCRIPTION_PRODUCT_LABELS,
+  TMarketingSubscriptionInput,
+  TMarketingSubscriptionOutput,
+} from "@/features/marketing/schema/subscription";
 import { formatCurrency } from "@/lib/format";
 
 type SubTab = "all" | "at_risk" | "billing" | "requests";
@@ -147,6 +152,8 @@ function PlanCard({
 
 export default function SubscriptionsTab() {
   const [subTab, setSubTab] = useState<SubTab>("all");
+  const [productScope, setProductScope] =
+    useState<TMarketingSubscriptionInput["tierType"]>("full_access");
   const upgradeRequests = useUpgradeRequests("pending");
   const reviewRequest = useReviewUpgradeRequest();
   const [planFilter, setPlanFilter] = useState("");
@@ -187,16 +194,20 @@ export default function SubscriptionsTab() {
   const allColumns = useMemo(() => createSubscriberColumns(), []);
   const riskColumns = useMemo(() => createSubscriberColumns({ atRisk: true }), []);
 
-  const planList = plans.data?.data ?? [];
+  const planList = useMemo(() => plans.data?.data ?? [], [plans.data?.data]);
+  const visiblePlans = useMemo(
+    () => planList.filter((plan) => plan.tierType === productScope),
+    [planList, productScope],
+  );
   const popularPlanId = useMemo(() => {
-    const candidates = planList.filter(
-      (plan) => plan.tierType !== "free" && (plan.active_subscribers ?? 0) > 0,
+    const candidates = visiblePlans.filter(
+      (plan) => (plan.active_subscribers ?? 0) > 0,
     );
     if (candidates.length === 0) return null;
     return candidates.reduce((best, plan) =>
       (plan.active_subscribers ?? 0) > (best.active_subscribers ?? 0) ? plan : best,
     ).id;
-  }, [planList]);
+  }, [visiblePlans]);
 
   const kpis = overview.data?.subscribers;
   const subscriberRows = subscribers.data?.data ?? [];
@@ -246,9 +257,26 @@ export default function SubscriptionsTab() {
       </div>
 
       {/* ── Plan catalog ── */}
+      <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Subscription product">
+        {SUBSCRIPTION_PRODUCTS.map((product) => (
+          <button
+            key={product}
+            type="button"
+            role="tab"
+            aria-selected={productScope === product}
+            onClick={() => setProductScope(product)}
+            className={cn(
+              "btn btn-sm",
+              productScope === product ? "btn-primary" : "btn-secondary",
+            )}
+          >
+            {SUBSCRIPTION_PRODUCT_LABELS[product]}
+          </button>
+        ))}
+      </div>
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">
-          Plans ({planList.length})
+          {SUBSCRIPTION_PRODUCT_LABELS[productScope]} plans ({visiblePlans.length})
         </h3>
         <div className="flex items-center gap-2">
           <Button
@@ -275,7 +303,7 @@ export default function SubscriptionsTab() {
             <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
           ))}
         {!plans.isLoading &&
-          planList.map((plan) => (
+          visiblePlans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
@@ -283,6 +311,11 @@ export default function SubscriptionsTab() {
               onEdit={() => setPlanDialog({ open: true, plan })}
             />
           ))}
+        {!plans.isLoading && visiblePlans.length === 0 && (
+          <div className="sm:col-span-2 xl:col-span-4 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 p-8 text-center text-xs font-bold text-slate-400">
+            No {SUBSCRIPTION_PRODUCT_LABELS[productScope]} plans yet. Create the first one above.
+          </div>
+        )}
       </div>
 
       {/* ── Sub-tab switcher ── */}
@@ -513,6 +546,7 @@ export default function SubscriptionsTab() {
         open={planDialog.open}
         onOpenChange={(open) => setPlanDialog((prev) => ({ ...prev, open }))}
         plan={planDialog.plan}
+        defaultTierType={productScope}
       />
     </div>
   );

@@ -12084,6 +12084,7 @@ export type Database = {
           key: string
           name: string
           price_ghs: number
+          product_scope: string
         }
         Insert: {
           benefits?: Json
@@ -12096,6 +12097,7 @@ export type Database = {
           key: string
           name: string
           price_ghs?: number
+          product_scope?: string
         }
         Update: {
           benefits?: Json
@@ -12108,6 +12110,7 @@ export type Database = {
           key?: string
           name?: string
           price_ghs?: number
+          product_scope?: string
         }
         Relationships: []
       }

@@ -28,6 +28,8 @@ import {
   TMarketingSubscriptionInput,
   TMarketingSubscriptionOutput,
   SUBSCRIPTION_PERIODS,
+  SUBSCRIPTION_PRODUCTS,
+  SUBSCRIPTION_PRODUCT_LABELS,
 } from "@/features/marketing/schema/subscription";
 import {
   useCreateMarketingSubscription,
@@ -39,13 +41,24 @@ const PERIOD_OPTIONS = SUBSCRIPTION_PERIODS.map((period) => ({
   label: period === "Lifetime" ? "Lifetime (one-time)" : period,
 }));
 
+const PRODUCT_OPTIONS = SUBSCRIPTION_PRODUCTS.map((product) => ({
+  value: product,
+  label: SUBSCRIPTION_PRODUCT_LABELS[product],
+}));
+
 interface PlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   plan: TMarketingSubscriptionOutput | null;
+  defaultTierType?: TMarketingSubscriptionInput["tierType"];
 }
 
-export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps) {
+export default function PlanDialog({
+  open,
+  onOpenChange,
+  plan,
+  defaultTierType = "full_access",
+}: PlanDialogProps) {
   const createMutation = useCreateMarketingSubscription();
   const updateMutation = useUpdateMarketingSubscription();
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -55,7 +68,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
     defaultValues: {
       name: "",
       description: "",
-      tierType: "consumer",
+      tierType: defaultTierType,
       price: 0,
       period: "1month",
       billingCycle: "monthly",
@@ -70,7 +83,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
       form.reset({
         name: plan?.name ?? "",
         description: plan?.description ?? "",
-        tierType: plan?.tierType ?? "consumer",
+        tierType: plan?.tierType ?? defaultTierType,
         price: plan?.price ?? 0,
         period: plan?.period ?? "1month",
         billingCycle: plan?.billingCycle ?? "monthly",
@@ -79,7 +92,7 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
         isActive: plan?.isActive ?? true,
       });
     }
-  }, [open, plan, form]);
+  }, [open, plan, form, defaultTierType]);
 
   const handleSubmit = async (data: TMarketingSubscriptionInput) => {
     try {
@@ -125,6 +138,12 @@ export default function PlanDialog({ open, onOpenChange, plan }: PlanDialogProps
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CustomSelect
+                name="tierType"
+                label="Subscription Type"
+                options={PRODUCT_OPTIONS}
+                control={form.control}
+              />
               <CustomSelect
                 name="period"
                 label="Billing Period"

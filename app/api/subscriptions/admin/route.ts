@@ -60,6 +60,22 @@ export async function GET(req: NextRequest) {
   const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
   const admin = getAdminClient();
+  if (url.searchParams.get("resource") === "plans") {
+    const productScope = url.searchParams.get("productScope");
+    let plansQuery = admin
+      .from("subscription_tiers")
+      .select("id,key,name,description,price_ghs,duration_days,benefits,is_active,display_order,product_scope")
+      .order("display_order", { ascending: true })
+      .order("price_ghs", { ascending: true });
+    if (["full_access", "plasence", "fitness"].includes(productScope ?? "")) {
+      plansQuery = plansQuery.eq("product_scope", productScope!);
+    }
+    const { data: plans, error: plansError } = await plansQuery;
+    if (plansError)
+      return NextResponse.json({ error: plansError.message }, { status: 500 });
+    return NextResponse.json({ plans: plans ?? [] });
+  }
+
   let query = admin
     .from("user_subscriptions")
     .select("id, user_id, tier_id, status, source, scope, granted_by, starts_at, expires_at, paystack_reference, note, created_at, subscription_tiers(key, name)", { count: "exact" })

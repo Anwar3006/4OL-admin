@@ -18,6 +18,21 @@ export const SUBSCRIPTION_BILLING_CYCLES = [
   "one-time",
 ] as const;
 
+export const SUBSCRIPTION_PRODUCTS = [
+  "full_access",
+  "plasence",
+  "fitness",
+] as const;
+
+export const SUBSCRIPTION_PRODUCT_LABELS: Record<
+  (typeof SUBSCRIPTION_PRODUCTS)[number],
+  string
+> = {
+  full_access: "Full Access",
+  plasence: "Plasence",
+  fitness: "Fitness",
+};
+
 export const SUBSCRIPTION_PRIVILEGES = [
   "business_analytics",
   "performance_analytics",
@@ -46,7 +61,7 @@ export const subscriptionPrivilegeSchema = z.union([
 export const marketingSubscriptionSchema = z.object({
   name: z.string().min(2, "Subscription name is required"),
   description: z.string().optional(),
-  tierType: z.string().min(1, "Tier type is required"),
+  tierType: z.enum(SUBSCRIPTION_PRODUCTS),
   price: z.coerce.number().min(0, "Price cannot be negative"),
   period: z.enum(SUBSCRIPTION_PERIODS),
   billingCycle: z.enum(SUBSCRIPTION_BILLING_CYCLES),

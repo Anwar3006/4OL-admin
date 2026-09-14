@@ -19,6 +19,7 @@ const PATCH_SCHEMA = z.object({
   duration_days: z.number().int().positive().max(3650).nullable().optional(),
   benefits: z.array(z.string().max(200)).max(30).optional(),
   is_active: z.boolean().optional(),
+  product_scope: z.enum(["full_access", "plasence", "fitness"]).optional(),
 });
 
 export async function GET(
@@ -90,6 +91,8 @@ export async function PATCH(
   if (parsed.data.duration_days !== undefined) update.duration_days = parsed.data.duration_days;
   if (parsed.data.benefits !== undefined) update.benefits = parsed.data.benefits;
   if (parsed.data.is_active !== undefined) update.is_active = parsed.data.is_active;
+  if (parsed.data.product_scope !== undefined)
+    update.product_scope = parsed.data.product_scope;
 
   const { data: updated, error: updateError } = await admin
     .from("subscription_tiers")
