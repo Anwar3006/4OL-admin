@@ -109,18 +109,20 @@ export async function GET(request: NextRequest) {
   }
 
   if (tab === "trivia") {
-    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }, { data: fulfillments }, { data: blockedDevices }, { data: rules }] = await Promise.all([
+    const [{ data: questions, error }, { data: submissions }, { data: events }, { data: leads }, { data: rewards }, { data: fulfillments }, { data: blockedDevices }, { data: rules }, { data: rewardTiers }, { data: criteriaTypes }] = await Promise.all([
       admin.from("period_trivia_questions").select("id,event_id,position,topic,question,options,correct_option,explanation,difficulty,status,validation_status,ai_job_id,manual_batch_id,source_refs,reviewed_by,published_at,created_by,created_at").order("created_at", { ascending: false }).limit(1000),
       // Rankings are aggregated below and only the compact result is sent to
       // the browser. Keep the all-time scan server-side so monthly/lifetime
       // boards are based on real submissions rather than display fixtures.
       admin.from("period_trivia_submissions").select("id,event_id,user_id,score,question_count,duration_seconds,submitted_at").order("submitted_at", { ascending: false }).limit(10000),
-      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id,leaderboard_publish_at").order("starts_at", { ascending: false }).limit(100),
+      admin.from("period_trivia_events").select("id,title,status,starts_at,ends_at,timezone,question_count,reviewed_at,reward_id,leaderboard_publish_at,closed_at").order("starts_at", { ascending: false }).limit(100),
       admin.from("period_trivia_leads").select("id,event_id,submission_id,user_id,full_name_ciphertext,mobile_ciphertext,social_platform,social_handle_ciphertext,consent_version,consented_at,acquisition_source,campaign_code,utm_source,utm_medium,utm_campaign,status,assigned_to,last_contacted_at,created_at").order("created_at", { ascending: false }).limit(1000),
-      admin.from("reward_catalog").select("id,name,description,icon,image_url,reward_type,value,amount,currency,domains,fulfillment_method,is_active,created_at").order("created_at", { ascending: false }).limit(100),
+      admin.from("reward_catalog").select("id,name,description,icon,image_url,reward_type,value,amount,currency,domains,fulfillment_method,inventory_count,is_active,created_at").order("created_at", { ascending: false }).limit(100),
       admin.from("period_trivia_fulfillment").select("id,event_id,submission_id,user_id,tier_label,reward_id,prize_status,sent_at,prompt_sent_at,confirmed_at,fulfilled_at,notes,created_at").order("created_at", { ascending: false }).limit(500),
       admin.from("period_trivia_blocked_devices").select("id,device_hash,mobile_hash,user_id,violation,evidence,status,detected_at,unblocked_at").order("detected_at", { ascending: false }).limit(200),
       admin.from("period_trivia_rules").select("key,description,value,enforced_by,is_active,updated_at").order("key"),
+      admin.from("reward_tiers").select("id,source_domain,source_id,reward_id,tier_label,tier_order,criteria_type,criteria_params,max_winners,stackable,created_at").eq("source_domain", "trivia").order("tier_order", { ascending: true }).limit(500),
+      admin.from("reward_criteria_types").select("key,label,description,params_schema,is_active").eq("is_active", true).order("key"),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load trivia" }, { status: 500 });
 
@@ -326,6 +328,8 @@ export async function GET(request: NextRequest) {
       fulfillments: fulfillments ?? [],
       blockedDevices: blockedDevices ?? [],
       rules: rules ?? [],
+      rewardTiers: rewardTiers ?? [],
+      criteriaTypes: criteriaTypes ?? [],
       rankings: {
         latestEvent: latestEndedEvent,
         current: currentRanking,

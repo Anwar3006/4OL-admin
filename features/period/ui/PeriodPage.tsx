@@ -807,6 +807,8 @@ function PeriodWorkspace() {
                 fulfillments={payload.fulfillments ?? []}
                 blockedDevices={payload.blockedDevices ?? []}
                 rules={payload.rules ?? []}
+                rewardTiers={payload.rewardTiers ?? []}
+                criteriaTypes={payload.criteriaTypes ?? []}
                 saving={saving}
                 mutate={mutate}
               />

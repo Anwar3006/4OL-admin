@@ -8,8 +8,8 @@ import { encryptLead, normalizeMobile, privacyHash } from "@/features/period/dat
 const COOKIE = "plasence_trivia_device";
 const SubmitSchema = z.object({
   eventId: z.string().uuid(),
+  attemptId: z.string().uuid(),
   answers: z.array(z.object({ questionId: z.string().uuid(), option: z.number().int().min(-1).max(5) })).length(10),
-  durationSeconds: z.number().int().min(0).max(86400).optional(),
   lead: z.object({
     fullName: z.string().trim().min(2).max(160),
     momoPhone: z.string().trim().min(7).max(32),
@@ -116,7 +116,10 @@ export async function GET(request: NextRequest) {
       questions = fetched;
     }
     if (state === "ended" && new Date() >= new Date(event.leaderboard_publish_at || event.ends_at)) {
-      const { data } = await admin.from("period_trivia_submissions").select("id,score,duration_seconds,submitted_at").eq("event_id", event.id).order("score", { ascending: false }).order("duration_seconds", { ascending: true }).order("submitted_at", { ascending: true }).limit(100);
+      // Reads the same comparator close_period_trivia_event ranks by (score
+      // desc, duration asc, submitted_at asc, id asc) instead of a
+      // hand-typed ordering that could drift from it.
+      const { data } = await admin.from("period_trivia_ranked_submissions").select("id,score,duration_seconds,submitted_at,rnk").eq("event_id", event.id).order("rnk", { ascending: true }).limit(100);
       leaderboard = (data ?? []).map((row, index) => ({ rank: index + 1, participant: `Player ${String(index + 1).padStart(2, "0")}`, score: row.score, durationSeconds: row.duration_seconds }));
       // G14: last-Trivia winners list (mobile-only reveal after the event).
       // Aggregate tier/status only — never user ids or contact detail.
@@ -164,11 +167,6 @@ export async function POST(request: NextRequest) {
     // Fall through to the unique-constraint guard if hashing fails.
   }
 
-  // G4: minimum completion time — instant answers are bot behaviour.
-  if (rules.minimumCompletionSeconds > 0 && (input.durationSeconds ?? 0) < rules.minimumCompletionSeconds) {
-    return NextResponse.json({ error: `Trivia takes at least ${rules.minimumCompletionSeconds} seconds — please answer thoughtfully and try again.` }, { status: 429 });
-  }
-
   // G4: undo the per-device option shuffle before scoring so the client's
   // answer indices map back to the canonical option order.
   const deviceHashForScoring = privacyHash(request.cookies.get(COOKIE)?.value || "", "device");
@@ -185,14 +183,16 @@ export async function POST(request: NextRequest) {
     const deviceHash = privacyHash(deviceToken, "device");
     const mobileHash = privacyHash(mobile, "mobile");
     const { error } = await admin.rpc("submit_period_trivia", {
-      p_event_id: input.eventId, p_user_id: userId, p_device_hash: deviceHash, p_mobile_hash: mobileHash,
-      p_score: score, p_answers: input.answers, p_duration_seconds: input.durationSeconds ?? null,
+      p_event_id: input.eventId, p_user_id: userId, p_attempt_id: input.attemptId, p_device_hash: deviceHash, p_mobile_hash: mobileHash,
+      p_score: score, p_answers: input.answers, p_minimum_completion_seconds: rules.minimumCompletionSeconds,
       p_full_name_ciphertext: encryptLead(input.lead.fullName), p_mobile_ciphertext: encryptLead(mobile), p_social_platform: input.lead.socialPlatform, p_social_handle_ciphertext: encryptLead(input.lead.socialHandle),
       p_consent_version: input.lead.consentVersion, p_campaign_code: input.attribution?.campaignCode ?? null,
       p_utm_source: input.attribution?.utmSource ?? null, p_utm_medium: input.attribution?.utmMedium ?? null, p_utm_campaign: input.attribution?.utmCampaign ?? null,
     });
     if (error) {
       if (error?.code === "23505") return NextResponse.json({ error: "An entry already exists for this account, device, or mobile number.", completed: true }, { status: 409 });
+      if (/completed too quickly/i.test(error.message)) return NextResponse.json({ error: `Trivia takes at least ${rules.minimumCompletionSeconds} seconds — please answer thoughtfully and try again.` }, { status: 429 });
+      if (/no active attempt found|already been submitted/i.test(error.message)) return NextResponse.json({ error: "Your Trivia session expired. Start the quiz again." }, { status: 409 });
       throw error;
     }
     return NextResponse.json({ completed: true, score, questionCount: 10, leaderboardAvailableAfter: event!.ends_at });

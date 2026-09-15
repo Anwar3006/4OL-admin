@@ -75,7 +75,7 @@ export async function GET() {
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getAdminClient();
-  const [catalog, triviaEvents, challenges, fitcoinItems, scoutConfig, grants] =
+  const [catalog, triviaEvents, challenges, fitcoinItems, scoutConfig, grants, criteriaTypes] =
     await Promise.all([
       admin.from("reward_catalog").select("*").order("created_at", { ascending: false }),
       admin
@@ -99,9 +99,14 @@ export async function GET() {
         .select("id,reward_id,user_id,source_domain,source_type,status,awarded_at,fulfilled_at")
         .order("awarded_at", { ascending: false })
         .limit(100),
+      // Pregenerated winner-criteria registry — the same dropdown source the
+      // trivia tier builder uses, exposed here too so any future domain's
+      // reward UI can share it rather than re-fetching from a trivia-specific
+      // endpoint.
+      admin.from("reward_criteria_types").select("key,label,description,params_schema,is_active").eq("is_active", true).order("key"),
     ]);
 
-  const firstError = [catalog, triviaEvents, challenges, fitcoinItems, scoutConfig, grants]
+  const firstError = [catalog, triviaEvents, challenges, fitcoinItems, scoutConfig, grants, criteriaTypes]
     .map((result) => result.error)
     .find(Boolean);
   if (firstError) {
@@ -115,6 +120,7 @@ export async function GET() {
     fitcoinItems: fitcoinItems.data ?? [],
     facilityScoutConfig: scoutConfig.data ?? null,
     grants: grants.data ?? [],
+    criteriaTypes: criteriaTypes.data ?? [],
   });
 }
 

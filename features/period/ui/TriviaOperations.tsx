@@ -17,6 +17,8 @@ export default function TriviaOperations({
   fulfillments,
   blockedDevices,
   rules,
+  rewardTiers,
+  criteriaTypes,
   saving,
   mutate,
 }: {
@@ -28,10 +30,16 @@ export default function TriviaOperations({
   fulfillments: Row[];
   blockedDevices: Row[];
   rules: Row[];
+  rewardTiers: Row[];
+  criteriaTypes: Row[];
   saving: boolean;
   mutate: (body: any, message: string) => Promise<boolean>;
 }) {
   const [rankingView, setRankingView] = useState<"current" | "monthly" | "overall">("current");
+  const [tierEventId, setTierEventId] = useState<string>("");
+  const [tierForm, setTierForm] = useState<{ rewardId: string; tierLabel: string; tierOrder: string; criteriaType: string; criteriaParams: string; maxWinners: string; stackable: boolean }>({
+    rewardId: "", tierLabel: "", tierOrder: "1", criteriaType: "", criteriaParams: "{}", maxWinners: "", stackable: false,
+  });
   const rewardById = new Map(rewards.map((reward) => [reward.id, reward]));
   const submissionById = new Map(
     submissions.map((submission) => [submission.id, submission]),
@@ -71,6 +79,42 @@ export default function TriviaOperations({
   const rank = (value: number, lifetime = false) =>
     value === 1 ? `${lifetime ? "🌟" : "🥇"} 1` : value === 2 ? "🥈 2" : value === 3 ? "🥉 3" : String(value);
   const linkedEvents = (rewardId: string) => events.filter((event) => event.reward_id === rewardId);
+
+  const activeRewards = rewards.filter((reward) => reward.is_active);
+  const criteriaByKey = new Map(criteriaTypes.map((item) => [item.key, item]));
+  const selectedTierEvent = events.find((event) => event.id === tierEventId) ?? events[0] ?? null;
+  const eventTiers = selectedTierEvent
+    ? rewardTiers.filter((tier) => tier.source_id === selectedTierEvent.id).sort((a, b) => Number(a.tier_order) - Number(b.tier_order))
+    : [];
+  const eventEnded = selectedTierEvent ? new Date(selectedTierEvent.ends_at).getTime() <= Date.now() : false;
+  const worstCaseBudget = eventTiers.reduce<Record<string, number>>((acc, tier) => {
+    const reward = rewardById.get(tier.reward_id);
+    if (!reward?.amount || !reward.currency || !tier.max_winners) return acc;
+    acc[reward.currency] = (acc[reward.currency] ?? 0) + Number(reward.amount) * Number(tier.max_winners);
+    return acc;
+  }, {});
+
+  const submitTier = async () => {
+    if (!selectedTierEvent || !tierForm.rewardId || !tierForm.tierLabel.trim() || !tierForm.criteriaType) return;
+    let criteriaParams: Record<string, unknown> = {};
+    try { criteriaParams = tierForm.criteriaParams.trim() ? JSON.parse(tierForm.criteriaParams) : {}; }
+    catch { alert("Criteria params must be valid JSON, e.g. {\"n\": 10}"); return; }
+    const ok = await mutate(
+      {
+        action: "create_reward_tier",
+        eventId: selectedTierEvent.id,
+        rewardId: tierForm.rewardId,
+        tierLabel: tierForm.tierLabel.trim(),
+        tierOrder: Number(tierForm.tierOrder) || 1,
+        criteriaType: tierForm.criteriaType,
+        criteriaParams,
+        maxWinners: tierForm.maxWinners ? Number(tierForm.maxWinners) : undefined,
+        stackable: tierForm.stackable,
+      },
+      "Reward tier added.",
+    );
+    if (ok) setTierForm({ rewardId: "", tierLabel: "", tierOrder: String(eventTiers.length + 2), criteriaType: "", criteriaParams: "{}", maxWinners: "", stackable: false });
+  };
 
   return (
     <div className="space-y-4">
@@ -271,6 +315,89 @@ export default function TriviaOperations({
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="card overflow-hidden" aria-labelledby="trivia-tiers-heading">
+        <div className="card-header">
+          <div>
+            <h3 id="trivia-tiers-heading" className="card-title">🏗 Reward tiers</h3>
+            <p className="text-2xs text-slate-500">
+              Each tier pairs a reward with a pregenerated criteria type — never free text — so closing an event can only ever assign winners against a rule that's actually implemented.
+            </p>
+          </div>
+          <select
+            className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800"
+            value={selectedTierEvent?.id ?? ""}
+            onChange={(e) => setTierEventId(e.target.value)}
+          >
+            {events.map((event) => <option key={event.id} value={event.id}>{event.title}</option>)}
+          </select>
+        </div>
+        {selectedTierEvent && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-xs">
+                <thead><tr className="border-b bg-slate-50 dark:bg-slate-900">
+                  <th className="p-3">Order</th><th className="p-3">Tier label</th><th className="p-3">Criteria</th><th className="p-3">Reward</th><th className="p-3">Max winners</th><th className="p-3">Stackable</th><th className="p-3"><span className="sr-only">Actions</span></th>
+                </tr></thead>
+                <tbody>
+                  {eventTiers.map((tier) => {
+                    const reward = rewardById.get(tier.reward_id);
+                    const criteria = criteriaByKey.get(tier.criteria_type);
+                    return <tr key={tier.id} className="border-b">
+                      <td className="p-3 font-semibold">{tier.tier_order}</td>
+                      <td className="p-3">{tier.tier_label}</td>
+                      <td className="p-3 text-2xs">{criteria?.label ?? tier.criteria_type}<br/><code className="text-2xs text-slate-500">{JSON.stringify(tier.criteria_params)}</code></td>
+                      <td className="p-3 text-2xs">{reward ? `${reward.icon} ${reward.name}` : "Unlinked"}</td>
+                      <td className="p-3">{tier.max_winners ?? "Uncapped"}</td>
+                      <td className="p-3">{tier.stackable ? <span className="badge badge-blue">Stacks</span> : <span className="badge badge-slate">Exclusive</span>}</td>
+                      <td className="p-3 text-right">
+                        {!selectedTierEvent.closed_at && (
+                          <button type="button" className="btn btn-secondary btn-sm" disabled={saving} onClick={() => mutate({ action: "delete_reward_tier", id: tier.id }, "Reward tier removed.")}>Remove</button>
+                        )}
+                      </td>
+                    </tr>;
+                  })}
+                  {!eventTiers.length && <tr><td colSpan={7} className="p-4 text-slate-500">No reward tiers configured for this event yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+            {!selectedTierEvent.closed_at && (
+              <div className="flex flex-wrap items-end gap-2 border-t p-3">
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Order</label><input type="number" min={1} className="w-16 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" value={tierForm.tierOrder} onChange={(e) => setTierForm((f) => ({ ...f, tierOrder: e.target.value }))} /></div>
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Tier label</label><input className="w-40 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" placeholder="e.g. 1st place" value={tierForm.tierLabel} onChange={(e) => setTierForm((f) => ({ ...f, tierLabel: e.target.value }))} /></div>
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Reward</label><select className="w-48 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" value={tierForm.rewardId} onChange={(e) => setTierForm((f) => ({ ...f, rewardId: e.target.value }))}><option value="">Select a reward…</option>{activeRewards.map((reward) => <option key={reward.id} value={reward.id}>{reward.icon} {reward.name}</option>)}</select></div>
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Criteria</label><select className="w-44 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" value={tierForm.criteriaType} onChange={(e) => setTierForm((f) => ({ ...f, criteriaType: e.target.value }))}><option value="">Select criteria…</option>{criteriaTypes.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></div>
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Params (JSON)</label><input className="w-32 rounded-md border border-slate-300 px-2 py-1 text-xs font-mono dark:border-slate-600 dark:bg-slate-800" placeholder='{"n": 10}' value={tierForm.criteriaParams} onChange={(e) => setTierForm((f) => ({ ...f, criteriaParams: e.target.value }))} /></div>
+                <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Max winners</label><input type="number" min={1} className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" placeholder="Uncapped" value={tierForm.maxWinners} onChange={(e) => setTierForm((f) => ({ ...f, maxWinners: e.target.value }))} /></div>
+                <label className="flex items-center gap-1 text-2xs text-slate-500"><input type="checkbox" checked={tierForm.stackable} onChange={(e) => setTierForm((f) => ({ ...f, stackable: e.target.checked }))} /> Stackable</label>
+                <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={submitTier}>Add tier</button>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t p-3">
+              <p className="text-2xs text-slate-500">
+                Worst-case payout if every tier fully pays out:{" "}
+                {Object.keys(worstCaseBudget).length
+                  ? Object.entries(worstCaseBudget).map(([currency, amount]) => `${currency} ${amount.toLocaleString()}`).join(" + ")
+                  : "No cash/currency amounts capped by max winners yet"}
+              </p>
+              {selectedTierEvent.closed_at ? (
+                <span className="badge badge-green">✅ Closed at {dateTime(selectedTierEvent.closed_at)}</span>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  disabled={saving || !eventEnded || !eventTiers.length}
+                  title={!eventEnded ? "This Trivia's window hasn't ended yet" : !eventTiers.length ? "Add at least one reward tier first" : undefined}
+                  onClick={() => mutate({ action: "close_trivia_event", id: selectedTierEvent.id }, "Trivia closed — winners assigned and sent to the fulfillment queue.")}
+                >
+                  Close event &amp; assign winners
+                </button>
+              )}
+            </div>
+          </>
+        )}
+        {!events.length && <p className="p-4 text-xs text-slate-500">Schedule a Trivia event first to configure reward tiers.</p>}
       </section>
 
       <div className="grid gap-4 xl:grid-cols-2">

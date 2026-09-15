@@ -163,6 +163,65 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (input.action === "create_reward_tier") {
+    const { data, error } = await admin.from("reward_tiers").insert({
+      source_domain: "trivia",
+      source_id: input.eventId,
+      reward_id: input.rewardId,
+      tier_label: input.tierLabel,
+      tier_order: input.tierOrder,
+      criteria_type: input.criteriaType,
+      criteria_params: input.criteriaParams,
+      max_winners: input.maxWinners ?? null,
+      stackable: input.stackable,
+      created_by: user.id,
+    }).select("id").single();
+    if (error) return NextResponse.json({ error: error.message.includes("duplicate key") ? "A tier already uses this order for this event." : "Unable to create the reward tier." }, { status: error.message.includes("duplicate key") ? 409 : 500 });
+    await writeAudit(user.id, "create", "reward_tier", data.id, { eventId: input.eventId, criteriaType: input.criteriaType });
+    return NextResponse.json({ ok: true, id: data.id }, { status: 201 });
+  }
+
+  if (input.action === "update_reward_tier") {
+    const { data: existing } = await admin.from("reward_tiers").select("source_id").eq("id", input.id).maybeSingle();
+    if (!existing) return NextResponse.json({ error: "Reward tier not found" }, { status: 404 });
+    const { data: event } = await admin.from("period_trivia_events").select("closed_at").eq("id", existing.source_id).maybeSingle();
+    if (event?.closed_at) return NextResponse.json({ error: "This Trivia is already closed — tiers cannot be edited." }, { status: 409 });
+    const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (input.rewardId !== undefined) payload.reward_id = input.rewardId;
+    if (input.tierLabel !== undefined) payload.tier_label = input.tierLabel;
+    if (input.tierOrder !== undefined) payload.tier_order = input.tierOrder;
+    if (input.criteriaType !== undefined) payload.criteria_type = input.criteriaType;
+    if (input.criteriaParams !== undefined) payload.criteria_params = input.criteriaParams;
+    if (input.maxWinners !== undefined) payload.max_winners = input.maxWinners;
+    if (input.stackable !== undefined) payload.stackable = input.stackable;
+    const { error } = await admin.from("reward_tiers").update(payload).eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to update the reward tier." }, { status: 500 });
+    await writeAudit(user.id, "update", "reward_tier", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "delete_reward_tier") {
+    const { data: existing } = await admin.from("reward_tiers").select("source_id").eq("id", input.id).maybeSingle();
+    if (!existing) return NextResponse.json({ error: "Reward tier not found" }, { status: 404 });
+    const { data: event } = await admin.from("period_trivia_events").select("closed_at").eq("id", existing.source_id).maybeSingle();
+    if (event?.closed_at) return NextResponse.json({ error: "This Trivia is already closed — tiers cannot be deleted." }, { status: 409 });
+    const { error } = await admin.from("reward_tiers").delete().eq("id", input.id);
+    if (error) return NextResponse.json({ error: "Unable to delete the reward tier." }, { status: 500 });
+    await writeAudit(user.id, "delete", "reward_tier", input.id);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "close_trivia_event") {
+    // Stricter than this route's usual single period.edit gate — closing an
+    // event moves real money/inventory, so it also requires Rewards access.
+    const rewardsAuth = await requireAdminApiUser("rewards.manage");
+    if (!rewardsAuth.ok) return NextResponse.json({ error: "Closing a Trivia and assigning winners also requires the Rewards permission." }, { status: 403 });
+    const { data, error } = await admin.rpc("close_period_trivia_event", { p_event_id: input.id, p_closed_by: user.id });
+    if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+    await writeAudit(user.id, "close", "period_trivia_event", input.id, data as Record<string, unknown>);
+    return NextResponse.json({ ok: true, summary: data });
+  }
+
   if (input.action === "update_trivia_question_status") {
     const published = input.status === "published";
     const { error } = await admin.from("period_trivia_questions").update({ status: input.status, validation_status: published ? "valid" : undefined, reviewed_by: published ? user.id : undefined, published_at: published ? new Date().toISOString() : null }).eq("id", input.id);
