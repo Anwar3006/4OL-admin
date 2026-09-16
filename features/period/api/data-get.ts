@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       // actually said -- the row-level "Publish" action was a
       // blind status flip with nothing to read first.
       admin.from("period_content").select("id,title,slug,summary,body_html,topic,content_type,locale,tags,cover_image_url,reading_minutes,reading_level,featured,curation_type,ai_job_id,version,reads,completion_count,helpful_count,not_helpful_count,status,reviewed_by,clinical_reviewed_at,review_expires_at,published_at,created_at,metadata").order("created_at", { ascending: false }).limit(1000),
-      admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,display_order").eq("channel", "plasence_library").limit(1000),
+      admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,featured_until,surfaces,frequency_cap_days,display_order").eq("channel", "plasence_library").limit(1000),
       admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").limit(5000),
       admin.from("period_content_collections").select("id,title,slug,status,curation_type,display_order,published_at,period_content_collection_items(content_id,display_order)").order("display_order").limit(200),
       admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,output,validation,error_code,created_at,completed_at,scheduled_at,frequency_cap_days,surface_duration_weeks,surface_channel").in("job_type", ["content_suggestion", "content_curation"]).order("created_at", { ascending: false }).limit(200),
@@ -100,12 +100,57 @@ export async function GET(request: NextRequest) {
       ...item,
       libraryStatus: publicationMap.get(item.id)?.status ?? "not_published",
       libraryStartsAt: publicationMap.get(item.id)?.starts_at ?? null,
+      featuredUntil: publicationMap.get(item.id)?.featured_until ?? null,
+      surfaces: publicationMap.get(item.id)?.surfaces ?? [],
+      frequencyCapDays: publicationMap.get(item.id)?.frequency_cap_days ?? null,
       sourceMenus: [...new Set((sourceMap.get(item.id) ?? []).map((source) => source.source_menu))],
       sourceCount: (sourceMap.get(item.id) ?? []).length,
       helpfulPercent: percent(Number(item.helpful_count), Number(item.helpful_count) + Number(item.not_helpful_count)),
       completionRate: percent(Number(item.completion_count), Number(item.reads)),
     })).filter((row) => (!status || row.status === status) && (!query || JSON.stringify(row).toLowerCase().includes(query)));
-    return NextResponse.json({ ...pageRows(rows, page, pageSize), collections: collections ?? [], aiSuggestions: aiSuggestions ?? [] });
+    // The suggestions queue is per-article, not per-job: each AI-generated
+    // draft is its own row with its own schedule, because the admin grades
+    // and schedules articles, not generation runs. Derived from `rows` (no
+    // extra query) and enriched with the job that produced it, so the table
+    // can show grounding, the model used and the failure reason.
+    const jobMap = new Map((aiSuggestions ?? []).map((job) => [job.id, job]));
+    const suggestionRows = rows
+      .filter((row) => row.ai_job_id && jobMap.has(row.ai_job_id))
+      .map((row) => {
+        const job = jobMap.get(row.ai_job_id)!;
+        const config = (job.configuration ?? {}) as Record<string, unknown>;
+        return {
+          id: row.id,
+          jobId: job.id,
+          title: row.title,
+          topic: row.topic,
+          format: row.content_type ?? config.contentFormat ?? null,
+          status: row.status,
+          clinicalReviewedAt: row.clinical_reviewed_at,
+          sourceMenus: row.sourceMenus,
+          sourceCount: row.sourceCount,
+          libraryStatus: row.libraryStatus,
+          scheduledAt: row.libraryStartsAt,
+          featuredUntil: row.featuredUntil,
+          surfaces: row.surfaces,
+          frequencyCapDays: row.frequencyCapDays,
+          jobStatus: job.status,
+          jobType: job.job_type,
+          errorCode: job.error_code,
+          suggestedAt: job.created_at,
+        };
+      });
+
+    return NextResponse.json({
+      ...pageRows(rows, page, pageSize),
+      collections: collections ?? [],
+      aiSuggestions: suggestionRows,
+      aiJobs: aiSuggestions ?? [],
+      // Indexed source links, for the AI Suggestions header badge. Capped at
+      // the same 5000 the per-content map is, so it is a floor, not a true
+      // count -- it stops being accurate only past 5000 links.
+      sourceLinkCount: (sourceLinks ?? []).length,
+    });
   }
 
   if (tab === "trivia") {

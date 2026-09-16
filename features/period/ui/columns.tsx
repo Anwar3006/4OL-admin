@@ -4,6 +4,7 @@ import type { Column } from "@/components/redesign/DataTable";
 import type { PeriodTabId } from "@/features/period/schema/period-tracker";
 
 import type { Row } from "@/features/period/schema/types";
+import { darkPill, neutralPill } from "./pills";
 import {
   bbt,
   bool,
@@ -30,25 +31,29 @@ import {
   syncStatus,
 } from "./formatters";
 
-const PILL_COLORS = ["bg", "bbl", "bpu", "bt", "by", "br"];
+/** period_content.curation_type -> the wording admin-panel.html uses. */
+const ORIGIN_LABELS: Record<string, string> = {
+  native: "native",
+  manual: "native",
+  ai_suggested: "ai assisted",
+  ai_curated: "ai curated",
+  curated: "curated",
+  rule_based: "rule based",
+  imported: "imported",
+};
 
-function labeledPill(
-  value: unknown,
-  fallback: string,
-  colors: Record<string, string>,
-) {
-  const raw = String(value || fallback).toLowerCase();
-  const color =
-    colors[raw] ??
-    PILL_COLORS[
-      [...raw].reduce((total, character) => total + character.charCodeAt(0), 0) %
-        PILL_COLORS.length
-    ];
-  const label = raw
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-  return <span className={cn("b text-xs!", color)}>{label}</span>;
-}
+const MENU_LABELS: Record<string, string> = {
+  healthy_living: "Healthy Living",
+  conditions: "Diseases & Conditions",
+  symptoms: "Symptoms",
+};
+
+const originLabel = (value: unknown) =>
+  ORIGIN_LABELS[String(value ?? "native")] ??
+  String(value ?? "native").replaceAll("_", " ");
+
+const menuLabel = (value: string) =>
+  MENU_LABELS[value] ?? value.replaceAll("_", " ");
 
 /**
  * Column definitions per tab. Badge classes (.b + color modifier) and
@@ -202,58 +207,83 @@ export const columns: Record<
       ),
     },
   ],
+  // Ported column-for-column from the Content tab in admin-panel.html
+  // (#tc-per-content). Topic is a high-contrast pill, Origin and Type are
+  // quiet grey pills at the same 10px, Locale stays plain text. See
+  // ./pills.tsx for why the old hashed-colour labeledPill is gone: four of
+  // the six classes it hashed into have no rule in globals.css, so every
+  // Topic cell rendered green.
   content: [
-    { key: "title", label: "Title" },
-    { key: "topic", label: "Topic" },
+    {
+      key: "title",
+      label: "Title",
+      render: (value) => <span style={{ fontWeight: 700 }}>{value || "—"}</span>,
+    },
+    {
+      key: "topic",
+      label: "Topic",
+      render: (value) => darkPill(value, "General"),
+    },
     {
       key: "curation_type",
       label: "Origin",
-      render: (value) =>
-        labeledPill(value, "native", {
-          native: "bg",
-          ai_suggested: "bpu",
-          ai_curated: "bbl",
-          curated: "bt",
-          imported: "by",
-        }),
+      render: (value) => neutralPill(originLabel(value)),
     },
     {
       key: "sourceMenus",
       label: "Linked Sources",
       render: (value, row) =>
-        value?.length ? `${value.join(", ")} (${row.sourceCount})` : "Native",
+        smallText(
+          value?.length
+            ? `${(value as string[]).map(menuLabel).join(", ")} (${row.sourceCount})`
+            : "Native",
+        ),
     },
     {
       key: "content_type",
+      // Same pill treatment and same 10px as Origin -- they are the two
+      // "what kind of thing is this" columns and should read as a pair.
       label: "Type",
-      render: (value) =>
-        labeledPill(value, "article", {
-          article: "bbl",
-          quick_read: "bg",
-          video: "bpu",
-          podcast: "by",
-          expert_qa: "bt",
-        }),
+      render: (value) => neutralPill(value, "article"),
+    },
+    { key: "locale", label: "Locale", render: (value) => value || "en" },
+    { key: "version", label: "Version", render: (value) => value ?? 1 },
+    {
+      key: "reads",
+      label: "Reads",
+      render: (value) => (
+        <span style={{ fontWeight: 700 }}>
+          {Number(value ?? 0).toLocaleString()}
+        </span>
+      ),
     },
     {
-      key: "locale",
-      label: "Locale",
+      key: "completionRate",
+      label: "Completion",
+      // The mockup greens out a strong completion rate and leaves a weak one
+      // plain, so the column reads at a glance instead of needing comparison.
       render: (value) =>
-        labeledPill(value, "en", {
-          en: "bg",
-          "en-gh": "bg",
-          fr: "bbl",
-          tw: "bpu",
-          ee: "bt",
-          ga: "by",
-        }),
+        value == null ? (
+          "—"
+        ) : (
+          <span
+            className={cn(Number(value) >= 70 && "font-bold text-emerald-600")}
+          >
+            {pct(value)}
+          </span>
+        ),
     },
-    { key: "version", label: "Version" },
-    { key: "reads", label: "Reads" },
-    { key: "completionRate", label: "Completion", render: pct },
     { key: "helpfulPercent", label: "Helpful", render: pct },
-    { key: "clinical_reviewed_at", label: "Clinical Review", render: date },
-    { key: "libraryStatus", label: "Plasence Library", render: status },
+    {
+      key: "clinical_reviewed_at",
+      label: "Clinical Review",
+      render: (value) =>
+        value ? (
+          <span className="td-s">{date(value)}</span>
+        ) : (
+          <span className="text-slate-500">—</span>
+        ),
+    },
     { key: "status", label: "Status", render: status },
   ],
   engagement: [

@@ -7,8 +7,10 @@ import DataTable, { type Column } from "@/components/redesign/DataTable";
 import KpiCard from "@/components/redesign/KpiCard";
 import PageHeader from "@/components/redesign/PageHeader";
 import TopicCategorySelect from "./TopicCategorySelect";
+import { ModelSelect } from "./AiGenerateFields";
 import { cn } from "@/lib/utils";
 import { useAiJobContext } from "@/stores/ai-job-context";
+import { aiModelLabel } from "@/features/ai/schema/models";
 
 type Row = Record<string, any>;
 type Scope = "trivia" | "content";
@@ -37,7 +39,7 @@ const jobColumns: Column<Row>[] = [
   { key: "job_type", label: "Type", render: (value) => value?.replaceAll("_", " ") },
   { key: "status", label: "Status", render: statusBadge },
   { key: "source_menus", label: "Sources", render: (value) => (Array.isArray(value) ? value.join(", ") : "—") },
-  { key: "model_key", label: "Model" },
+  { key: "model_key", label: "Model", render: (value) => aiModelLabel(value) },
   { key: "error_code", label: "Error", render: (value) => value || "—" },
   { key: "created_at", label: "Started", render: dateTime },
   { key: "completed_at", label: "Completed", render: dateTime },
@@ -108,7 +110,14 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
     const form = new FormData(event.currentTarget);
     setError(null);
     setMessage(null);
-    const body: Record<string, unknown> = { jobType, sourceMenus, topic: form.get("topic") || undefined };
+    const body: Record<string, unknown> = {
+      jobType,
+      sourceMenus,
+      topic: form.get("topic") || undefined,
+      // Validated server-side against features/ai/schema/models.ts; the
+      // select only ever offers ids from that same registry.
+      model: form.get("model") || undefined,
+    };
     if (scope === "trivia") {
       if (jobType === "trivia_generation") {
         body.difficulty = form.get("difficulty");
@@ -221,6 +230,13 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
       {error && <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-500/15 p-3 text-xs text-red-900 dark:text-red-400" role="alert">{error}</div>}
       {message && <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/15 p-3 text-xs text-emerald-900" role="status">{message}</div>}
 
+      {/* Content generation moved to dialogs on the Period Content tab (New
+          content / Generate suggestions), so this route is the job audit
+          view for that scope -- the admin comes here to see what ran, not to
+          start something. Trivia keeps its form for now because Friday event
+          scheduling and the reward catalog still live on this page; moving
+          those is a separate change. */}
+      {scope === "trivia" && (
       <form className="card space-y-3 p-4" onSubmit={generate} aria-label="Generate an AI draft">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <label className="form-label">
@@ -286,6 +302,8 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           </div>
         )}
 
+        {scope === "trivia" && <ModelSelect />}
+
         {scope === "content" && (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <label className="form-label">
@@ -346,6 +364,23 @@ export default function AiHubPeriodWorkspace({ scope }: { scope: Scope }) {
           </button>
         </div>
       </form>
+      )}
+
+      {scope === "content" && (
+        <div
+          className="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-500/15 p-3 text-xs text-blue-950 dark:text-blue-400"
+          role="note"
+        >
+          <strong>This is the job audit trail.</strong> Every generation run is
+          recorded below, including failures and the model each one used. To
+          start a new run, use <strong>New content</strong> or{" "}
+          <strong>Generate suggestions</strong> on the{" "}
+          <Link className="underline" href="/period?tab=content">
+            Period Content tab
+          </Link>
+          .
+        </div>
+      )}
 
       {scope === "trivia" && (
         <div className="grid gap-4 xl:grid-cols-2">

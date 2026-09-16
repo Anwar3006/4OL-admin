@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { AI_MODEL_IDS, DEFAULT_AI_MODEL } from "@/features/ai/schema/models";
 
 
 const SourceMenu = z.enum(["healthy_living", "conditions", "symptoms"]);
@@ -23,6 +24,10 @@ const GenerateSchema = z.object({
   readingLength: z.enum(["short", "medium", "long"]).default("medium"),
   locale: z.string().trim().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/).default("en"),
   suggestionCount: z.number().int().min(1).max(12).default(8),
+  // Admin-selected, and validated against the curated registry rather than
+  // accepted as free text: an unknown id would reach OpenAI and 400 there,
+  // which the admin only ever sees as an opaque failed job.
+  model: z.enum(AI_MODEL_IDS).default(DEFAULT_AI_MODEL),
 });
 
 type Source = { id: string; menu: z.infer<typeof SourceMenu>; title: string; excerpt: string; body: string };
@@ -157,7 +162,12 @@ export async function POST(request: NextRequest) {
 
   const input = parsed.data;
   const admin = getAdminClient();
-  const modelName = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
+  // Was `process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o"` -- one model for
+  // the whole platform, changeable only by a redeploy, and silently ignoring
+  // the column default (which still said gemini-2.0-flash). The admin now
+  // picks per job; model_key below records what actually ran, so an old
+  // job stays explainable after the default moves on.
+  const modelName = input.model;
   const { data: job, error: jobError } = await admin.from("period_ai_jobs").insert({
     job_type: input.jobType, status: "running", source_menus: input.sourceMenus,
     configuration: {

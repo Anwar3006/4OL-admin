@@ -24,7 +24,18 @@ import * as path from "path";
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 
 import * as fs from "fs";
-import { getAdminClient } from "../lib/db/admin";
+import { createClient } from "@supabase/supabase-js";
+
+// lib/db/admin.ts starts with `import "server-only"`, a Next.js build guard
+// that throws when resolved outside Next's bundler (including plain tsx) —
+// so this script builds its own service-role client instead of importing
+// app code, the same way loadtest/seed-users.mjs already does.
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_KEY;
+  if (!url || !key) throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY must be set (.env.local).");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+}
 
 const USERS_FILE = path.join(process.cwd(), "loadtest", "reward-qa-users.json");
 const SLUG_PREFIX = "qa-reward-test-";
@@ -226,10 +237,14 @@ async function destroy() {
   console.log("\nLast step: node loadtest/seed-reward-qa-users.mjs destroy");
 }
 
-const [, , cmd] = process.argv;
-if (cmd === "create") await create();
-else if (cmd === "destroy") await destroy();
-else {
-  console.log("usage: npx tsx scripts/seed-reward-qa-event.ts create | destroy");
-  process.exit(1);
+async function main() {
+  const [, , cmd] = process.argv;
+  if (cmd === "create") await create();
+  else if (cmd === "destroy") await destroy();
+  else {
+    console.log("usage: npx tsx scripts/seed-reward-qa-event.ts create | destroy");
+    process.exit(1);
+  }
 }
+
+main();

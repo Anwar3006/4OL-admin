@@ -257,19 +257,41 @@ export async function GET(request: NextRequest) {
   try {
     const adminForTips = getAdminClient();
     const nowIso = new Date().toISOString();
-    const { data: tipJobs } = await adminForTips.from("period_ai_jobs").select("id,output,scheduled_at,surface_duration_weeks").eq("job_type", "content_suggestion").eq("status", "completed").eq("surface_channel", "today_tip").lte("scheduled_at", nowIso).limit(20);
-    tipSuggestions = (tipJobs ?? [])
-      .filter((job: any) => {
-        const windowMs = Math.max(1, Number(job.surface_duration_weeks ?? 2)) * 7 * 86400000;
-        return job.scheduled_at && Date.now() - new Date(job.scheduled_at).getTime() <= windowMs;
+    // This block used to read period_ai_jobs where status = 'completed'.
+    // The AI pipeline never writes that value -- features/period/api/ai-hub.ts
+    // sets 'review' on success and 'failed' otherwise -- so the filter
+    // matched zero rows and the Today tip was silently dead from the day it
+    // shipped. It also read the whole job, so one schedule covered every
+    // draft from a run.
+    //
+    // Scheduling is per-article now, so this reads the publication rows that
+    // name the today_for_you surface and are still inside their featured
+    // window.
+    const { data: tipRows } = await adminForTips
+      .from("period_content_publications")
+      .select("content_id,starts_at,featured_until,surfaces,period_content(title,summary,slug,status)")
+      .eq("channel", "plasence_library")
+      .in("status", ["live", "scheduled"])
+      .contains("surfaces", ["today_for_you"])
+      .lte("starts_at", nowIso)
+      .limit(20);
+    tipSuggestions = (tipRows ?? [])
+      .filter((row: any) => !row.featured_until || new Date(row.featured_until).getTime() > Date.now())
+      .map((row: any) => {
+        const article = Array.isArray(row.period_content) ? row.period_content[0] : row.period_content;
+        if (!article || article.status !== "published") return null;
+        return {
+          recommendationType: "engagement",
+          reasonCode: "ai_today_tip",
+          contentId: row.content_id,
+          slug: article.slug ?? null,
+          title: typeof article.title === "string" ? article.title : "Today's tip",
+          message: typeof article.summary === "string" ? article.summary : "",
+          sendEligible: false,
+          safetyPolicy: "period-safety-v1",
+        };
       })
-      .map((job: any) => {
-        const output = job.output ?? {};
-        const title = typeof output.title === "string" ? output.title : "Today's tip";
-        const message = typeof output.summary === "string" ? output.summary : typeof output.message === "string" ? output.message : typeof output.body === "string" ? output.body : "";
-        return { recommendationType: "engagement", reasonCode: "ai_today_tip", title, message, sendEligible: false, safetyPolicy: "period-safety-v1" };
-      })
-      .filter((tip: any) => tip.message.length > 0);
+      .filter((tip: any) => Boolean(tip) && tip.message.length > 0);
   } catch {
     // Tip surfacing is best-effort.
   }

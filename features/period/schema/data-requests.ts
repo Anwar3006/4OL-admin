@@ -230,6 +230,31 @@ export const WriteSchema = z.discriminatedUnion("action", [
     surfaceDurationWeeks: z.number().int().min(1).max(12),
     surfaceChannel: z.enum(["plasence_library", "push_digest", "today_tip"]).default("plasence_library"),
   }),
+  // Per-article scheduling. Replaces schedule_ai_suggestion for anything
+  // new: that one writes to period_ai_jobs, which nothing reads, and is
+  // per-run so all eight drafts from a generation shared one date. This
+  // writes the publication row the mobile feed actually queries.
+  z.object({
+    action: z.literal("schedule_content"),
+    contentId: z.string().uuid(),
+    startsAt: z.string().datetime(),
+    // How long it stays promoted. "permanent" keeps it featured with no end;
+    // a week count un-features it after that, leaving it published.
+    featuredWeeks: z.union([z.number().int().min(1).max(52), z.literal("permanent")]),
+    surfaces: z.array(z.enum(["library_featured", "today_for_you"])).max(2),
+    frequencyCapDays: z.number().int().min(1).max(90).nullable().optional(),
+  }),
+  z.object({
+    action: z.literal("unschedule_content"),
+    contentId: z.string().uuid(),
+  }),
+  // The inverse of unschedule_content. Pausing keeps the publication row and
+  // its dates, so resuming is a status flip -- the admin should not have to
+  // re-enter a schedule they never changed.
+  z.object({
+    action: z.literal("resume_content"),
+    contentId: z.string().uuid(),
+  }),
   z.object({
     action: z.literal("dispatch_campaign"),
     campaignId: z.string().uuid(),

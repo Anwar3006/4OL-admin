@@ -500,6 +500,138 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  // Per-article scheduling -- writes the publication row the mobile feed
+  // actually reads (features/period/api/library.ts), which is what
+  // schedule_ai_suggestion above never did.
+  if (input.action === "schedule_content") {
+    const { data: content } = await admin
+      .from("period_content")
+      .select("id,title,status,clinical_reviewed_at,ai_job_id")
+      .eq("id", input.contentId)
+      .maybeSingle();
+    if (!content) return NextResponse.json({ error: "Content not found" }, { status: 404 });
+    // The gate that makes scheduling safe: an article cannot be queued to
+    // appear on a date if nobody has signed off on it clinically. Without
+    // this, scheduling would be a way to publish around review.
+    if (!content.clinical_reviewed_at) {
+      return NextResponse.json(
+        { error: "This article has no clinical review on record. Complete the review before scheduling it." },
+        { status: 409 },
+      );
+    }
+
+    const startsAt = new Date(input.startsAt);
+    const featuredUntil =
+      input.featuredWeeks === "permanent"
+        ? null
+        : new Date(startsAt.getTime() + input.featuredWeeks * 7 * 86400000).toISOString();
+
+    // status 'scheduled' rather than 'live': library.ts serves both and
+    // gates on starts_at <= now, so a future date is simply not served yet
+    // and no cron is needed to flip it.
+    const { error } = await admin
+      .from("period_content_publications")
+      .upsert(
+        {
+          content_id: input.contentId,
+          channel: "plasence_library",
+          status: "scheduled",
+          starts_at: input.startsAt,
+          // Deliberately NULL: the end date un-features, it does not remove.
+          // ends_at is the takedown lever and stays untouched here.
+          ends_at: null,
+          featured: input.surfaces.length > 0,
+          featured_until: featuredUntil,
+          surfaces: input.surfaces,
+          frequency_cap_days: input.frequencyCapDays ?? null,
+          ai_job_id: content.ai_job_id ?? null,
+          scheduled_by: user.id,
+          published_by: user.id,
+        },
+        { onConflict: "content_id,channel" },
+      );
+    if (error) return NextResponse.json({ error: "Unable to schedule this article" }, { status: 500 });
+
+    // An article the mobile feed will serve must also be 'published' --
+    // library.ts joins on period_content.status = 'published'.
+    if (content.status !== "published") {
+      await admin
+        .from("period_content")
+        .update({ status: "published", published_at: new Date().toISOString() })
+        .eq("id", input.contentId);
+    }
+
+    await writeAudit(user.id, "schedule", "period_content", input.contentId, {
+      startsAt: input.startsAt,
+      featuredUntil,
+      surfaces: input.surfaces,
+      frequencyCapDays: input.frequencyCapDays ?? null,
+    });
+    return NextResponse.json({ ok: true, featuredUntil });
+  }
+
+  if (input.action === "unschedule_content") {
+    // Pause, not delete: keeps the row (and its audit trail) so the admin
+    // can see what the schedule was, and so re-scheduling is an update
+    // rather than a fresh row with a new id.
+    const { error } = await admin
+      .from("period_content_publications")
+      .update({ status: "paused" })
+      .eq("content_id", input.contentId)
+      .eq("channel", "plasence_library");
+    if (error) return NextResponse.json({ error: "Unable to unschedule this article" }, { status: 500 });
+    await writeAudit(user.id, "unschedule", "period_content", input.contentId, {});
+    return NextResponse.json({ ok: true });
+  }
+
+  if (input.action === "resume_content") {
+    const { data: publication } = await admin
+      .from("period_content_publications")
+      .select("id,starts_at,featured_until,period_content(clinical_reviewed_at)")
+      .eq("content_id", input.contentId)
+      .eq("channel", "plasence_library")
+      .maybeSingle();
+    if (!publication) {
+      return NextResponse.json(
+        { error: "This article has never been scheduled, so there is nothing to resume." },
+        { status: 404 },
+      );
+    }
+    // Resuming makes the article visible again, so it faces the same gate as
+    // scheduling it did -- a review that lapsed or was revoked while the
+    // article sat paused must not be walked around by pressing Resume.
+    const article = Array.isArray(publication.period_content)
+      ? publication.period_content[0]
+      : (publication.period_content as any);
+    if (!article?.clinical_reviewed_at) {
+      return NextResponse.json(
+        { error: "This article has no clinical review on record. Complete the review before resuming it." },
+        { status: 409 },
+      );
+    }
+
+    // Deliberately does NOT shift starts_at or featured_until. A pause is a
+    // hold, not a reset: if the promotion window already elapsed while it was
+    // paused, resuming brings the article back as published-but-not-promoted
+    // rather than silently re-promoting it for a fresh full window. Extending
+    // the window is what Edit is for, and that is an explicit choice.
+    const { error } = await admin
+      .from("period_content_publications")
+      .update({ status: "scheduled", published_by: user.id })
+      .eq("id", publication.id);
+    if (error) return NextResponse.json({ error: "Unable to resume this article" }, { status: 500 });
+
+    const windowElapsed = Boolean(
+      publication.featured_until && new Date(publication.featured_until).getTime() <= Date.now(),
+    );
+    await writeAudit(user.id, "resume", "period_content", input.contentId, {
+      startsAt: publication.starts_at,
+      featuredUntil: publication.featured_until,
+      windowElapsed,
+    });
+    return NextResponse.json({ ok: true, windowElapsed });
+  }
+
   const { error } = await admin.from("period_ai_model_metrics").update({ status: input.status }).eq("id", input.id);
   if (error) return NextResponse.json({ error: "Unable to update forecast model" }, { status: 500 });
   await writeAudit(user.id, "status_change", "period_forecast_model", input.id, { status: input.status });

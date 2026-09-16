@@ -58,9 +58,13 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(100, Math.max(1, Number(request.nextUrl.searchParams.get("limit") ?? 50)));
 
   const { data: publicationRows, error: publicationError } = await admin.from("period_content_publications")
-    .select("content_id,status,starts_at,ends_at,featured,display_order,minimum_app_version")
+    .select("content_id,status,starts_at,ends_at,featured,featured_until,surfaces,display_order,minimum_app_version")
     .eq("channel", "plasence_library").in("status", ["live", "scheduled"]).limit(1000);
   if (publicationError) return NextResponse.json({ error: "Unable to load the Library catalog" }, { status: 500 });
+  // starts_at gates visibility; ends_at is a hard takedown and stays NULL
+  // for normal content. The rotation lever is featured_until below, which
+  // demotes an article out of the featured carousel and the Today row while
+  // leaving it readable -- a user who bookmarked it still finds it.
   const active = (publicationRows ?? []).filter((row) => new Date(row.starts_at).getTime() <= now && (!row.ends_at || new Date(row.ends_at).getTime() > now));
   const ids = active.map((row) => row.content_id);
   if (!ids.length) return NextResponse.json({ content: [], recommendations: [], collections: [], bookmarks: [], progress: [], serverTime: new Date().toISOString() });
@@ -88,11 +92,35 @@ export async function GET(request: NextRequest) {
   (sourceRows ?? []).forEach((source) => sourcesMap.set(source.period_content_id, [...(sourcesMap.get(source.period_content_id) ?? []), source]));
   const bookmarkSet = new Set((bookmarksResult.data ?? []).map((item: any) => item.content_id));
   const progressMap = new Map((progressResult.data ?? []).map((item: any) => [item.content_id, item]));
-  const normalized = (contentRows ?? []).map((item) => ({ ...item, featured: item.featured || publicationMap.get(item.id)?.featured, sources: sourcesMap.get(item.id) ?? [], body_html: slug === item.slug ? item.body_html : undefined, preview: stripHtml(item.body_html).slice(0, 220) }));
+  // A publication is still "promoting" an article only while it is inside
+  // its featured window. Past featured_until the article stays in the feed
+  // (published, searchable, bookmarkable) but featured goes false, so it
+  // drops out of the Library carousel and the Today "For You" row.
+  const isPromoting = (row: any) =>
+    Boolean(row?.featured) && (!row.featured_until || new Date(row.featured_until).getTime() > now);
+  const normalized = (contentRows ?? []).map((item) => {
+    const publication = publicationMap.get(item.id);
+    const promoting = isPromoting(publication);
+    const surfaces: string[] = promoting ? (publication?.surfaces ?? []) : [];
+    return {
+      ...item,
+      // item.featured is the editor's evergreen flag; the publication row is
+      // the scheduled one. Either can promote, but only within the window.
+      featured: promoting ? true : Boolean(item.featured) && !publication?.featured_until,
+      surfaces,
+      sources: sourcesMap.get(item.id) ?? [],
+      body_html: slug === item.slug ? item.body_html : undefined,
+      preview: stripHtml(item.body_html).slice(0, 220),
+    };
+  });
   const ranked = rankContent(normalized, logResult.data, cycleResult.data, bookmarkSet, progressMap);
   const filtered = ranked.filter((item) => (!slug || item.slug === slug) && (!search || `${item.title} ${item.summary} ${item.topic} ${(item.tags ?? []).join(" ")}`.toLowerCase().includes(search)) && (!topic || item.topic.toLowerCase() === topic) && (!contentType || item.content_type === contentType)).slice(0, limit);
   const activeCollections = (collectionRows ?? []).filter((item: any) => (!item.starts_at || new Date(item.starts_at).getTime() <= now) && (!item.ends_at || new Date(item.ends_at).getTime() > now)).map((collection: any) => ({ ...collection, items: (collection.period_content_collection_items ?? []).filter((item: any) => ids.includes(item.content_id)).sort((a: any, b: any) => a.display_order - b.display_order), period_content_collection_items: undefined }));
-  const responseBody = { content: filtered, recommendations: ranked.slice(0, 8), collections: activeCollections, bookmarks: [...bookmarkSet], progress: [...progressMap.values()], topics: [...new Set(ranked.map((item) => item.topic))].sort(), serverTime: new Date().toISOString() };
+  // The Today screen's "For You" row is fed from recommendations, so it is
+  // scoped to articles whose schedule actually names that surface. Articles
+  // promoted only to the Library carousel never reach Today.
+  const todayEligible = ranked.filter((item: any) => (item.surfaces ?? []).includes("today_for_you"));
+  const responseBody = { content: filtered, recommendations: (todayEligible.length ? todayEligible : ranked).slice(0, 8), collections: activeCollections, bookmarks: [...bookmarkSet], progress: [...progressMap.values()], topics: [...new Set(ranked.map((item) => item.topic))].sort(), serverTime: new Date().toISOString() };
   const etag = `"${createHash("sha256").update(JSON.stringify(responseBody)).digest("base64url")}"`;
   if (request.headers.get("if-none-match") === etag) return new NextResponse(null, { status: 304, headers: { ETag: etag } });
   return NextResponse.json(responseBody, { headers: { ETag: etag, "Cache-Control": userId ? "private, max-age=60" : "public, max-age=60, stale-while-revalidate=300" } });

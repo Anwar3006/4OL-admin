@@ -60,6 +60,8 @@ import PrivacyRequests from "./PrivacyRequests";
 import FeatureFlags from "./FeatureFlags";
 import PremiumOperations from "./PremiumOperations";
 import AiSuggestions from "./AiSuggestions";
+import ContentCreateDialog from "./ContentCreateDialog";
+import AiSuggestionsDialog from "./AiSuggestionsDialog";
 import TtcOperations from "./TtcOperations";
 import SummaryNote from "./SummaryNote";
 
@@ -91,6 +93,7 @@ function PeriodWorkspace() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
+  const [showSuggestDialog, setShowSuggestDialog] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
@@ -149,6 +152,7 @@ function PeriodWorkspace() {
     setPage(1);
     setQuery("");
     setShowCreate(false);
+    setShowSuggestDialog(false);
     setShowExport(false);
     setTriviaBatchId(null);
     setMessage(null);
@@ -743,7 +747,9 @@ function PeriodWorkspace() {
           </div>
         </form>
       )}
-      {showCreate && (
+      {/* Content creation is a dialog (manual and AI in one place); the
+          other tabs keep the inline card until they get the same treatment. */}
+      {showCreate && activeTab !== "content" && (
         <CreateForm
           activeTab={activeTab}
           events={payload.events ?? []}
@@ -753,6 +759,18 @@ function PeriodWorkspace() {
           onCancel={() => setShowCreate(false)}
         />
       )}
+      <ContentCreateDialog
+        open={showCreate && activeTab === "content"}
+        onClose={() => setShowCreate(false)}
+        events={payload.events ?? []}
+        rewards={payload.rewards ?? []}
+        saving={saving}
+        onManualSubmit={createRecord}
+      />
+      <AiSuggestionsDialog
+        open={showSuggestDialog}
+        onClose={() => setShowSuggestDialog(false)}
+      />
 
       <section
         id={`period-panel-${activeTab}`}
@@ -787,8 +805,10 @@ function PeriodWorkspace() {
             {activeTab === "content" && (
               <AiSuggestions
                 suggestions={payload.aiSuggestions ?? []}
+                sourceLinkCount={payload.sourceLinkCount ?? 0}
                 saving={saving}
                 mutate={mutate}
+                onGenerate={() => setShowSuggestDialog(true)}
               />
             )}
             {activeTab === "trivia" && (
