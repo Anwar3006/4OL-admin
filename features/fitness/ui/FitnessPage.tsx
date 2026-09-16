@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useFitnessDashboardKpis } from "@/features/fitness/data/useFitnessDashboard";
 
 import {
-  DashboardTab,
+  OverviewTab,
   ExercisesTab,
   PlansTab,
   ChallengesTab,
@@ -26,7 +26,7 @@ import {
 } from "./tabs";
 
 const fitnessTabs = [
-  { id: "dashboard", label: "Dashboard", icon: "📊" },
+  { id: "overview", label: "Overview", icon: "📊" },
   { id: "exercises", label: "Exercises", icon: "🏋️" },
   { id: "plans", label: "Plans", icon: "📋" },
   { id: "challenges", label: "Challenges", icon: "🏆" },
@@ -42,24 +42,21 @@ const fitnessTabs = [
   { id: "whatsapp", label: "WhatsApp", icon: "💬" },
 ];
 
+const normaliseFitnessTab = (value: string | null) => {
+  if (!value || value === "dashboard") return "overview";
+  return fitnessTabs.some((tab) => tab.id === value) ? value : "overview";
+};
+
 const FitnessPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabParam || "dashboard");
+  const activeTab = normaliseFitnessTab(tabParam);
   const { data, isLoading } = useFitnessDashboardKpis();
   const metrics = data?.metrics;
 
-  // Keep tab in sync if the URL changes externally (e.g. search navigation)
-  useEffect(() => {
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    router.push(value === "dashboard" ? "/fitness" : `/fitness?tab=${value}`, {
+    router.push(value === "overview" ? "/fitness" : "/fitness?tab=" + value, {
       scroll: false,
     });
   };
@@ -159,10 +156,10 @@ const FitnessPage = () => {
         {/* Tab content — each panel is also full-width */}
         <div className="w-full min-w-0">
           <TabsContent
-            value="dashboard"
+            value="overview"
             className="outline-none w-full min-w-0"
           >
-            <DashboardTab />
+            <OverviewTab />
           </TabsContent>
           <TabsContent
             value="exercises"

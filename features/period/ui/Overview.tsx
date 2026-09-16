@@ -2,6 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import DataTable, { type Column } from "@/components/redesign/DataTable";
+import FeatureCatalogueCard from "@/components/redesign/FeatureCatalogueCard";
 import KpiCard from "@/components/redesign/KpiCard";
 import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
@@ -104,6 +105,11 @@ export default function Overview({ payload }: { payload: any }) {
           variant="teal"
         />
       </div>
+      <FeatureCatalogueCard
+        areaIds={["period"]}
+        title="Period Tracker features"
+        description="What Plasence currently promises users, how an admin can recognise that each service is working, and which additions are only future ideas."
+      />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="card xl:col-span-2">
           <div className="card-header">

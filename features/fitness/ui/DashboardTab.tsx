@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
+import FeatureCatalogueCard from "@/components/redesign/FeatureCatalogueCard";
 import { useFitnessDashboardKpis } from "@/features/fitness/data/useFitnessDashboard";
 
-const DashboardTab = () => {
+const OverviewTab = () => {
   const { data, isLoading } = useFitnessDashboardKpis();
   const metrics = data?.metrics;
 
@@ -35,6 +36,11 @@ const DashboardTab = () => {
 
   return (
     <div className="w-full min-w-0 animate-in fade-in duration-500 space-y-5">
+      <FeatureCatalogueCard
+        areaIds={["fitness"]}
+        title="Fitness features"
+        description="What Fitness currently promises users, how an admin can recognise that each service is working, and which additions are only future ideas."
+      />
 
       {/* Mini KPI row */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
@@ -224,4 +230,4 @@ const DashboardTab = () => {
   );
 };
 
-export default DashboardTab;
+export default OverviewTab;

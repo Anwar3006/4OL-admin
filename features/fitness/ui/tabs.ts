@@ -1,4 +1,4 @@
-export { default as DashboardTab } from "./DashboardTab";
+export { default as OverviewTab } from "./DashboardTab";
 export { default as ExercisesTab } from "./ExercisesTab";
 export { default as PlansTab } from "./PlansTab";
 export { default as ChallengesTab } from "./ChallengesTab";
@@ -12,4 +12,3 @@ export { default as AiLogTab } from "./AiLogTab";
 export { default as HealthTab } from "./HealthTab";
 export { default as SubscriptionsTab } from "./SubscriptionsTab";
 export { default as FitCoinsTab } from "./FitCoinsTab";
-

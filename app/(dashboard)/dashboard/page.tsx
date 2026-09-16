@@ -25,6 +25,7 @@ import ActivityFeed from "./_components/ActivityFeed";
 import AIHubOverview from "./_components/AIHubOverview";
 import RegionalCoverage from "./_components/RegionalCoverage";
 import HealthFeaturesStatus from "./_components/HealthFeaturesStatus";
+import FeatureCatalogueCard from "@/components/redesign/FeatureCatalogueCard";
 import PendingTasks from "./_components/PendingTasks";
 import ComplianceGRA from "./_components/ComplianceGRA";
 import {
@@ -283,6 +284,11 @@ const DashboardPage = () => {
           <RegionalCoverage metrics={metrics} loading={loading} />
         </div>
       </div>
+
+      <FeatureCatalogueCard
+        title="Mobile features catalogue"
+        description="The complete plain-English register of user-facing mobile services. Open a service to see what users should be able to do, the simplest way to confirm it is working, and clearly separated future ideas."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <HealthFeaturesStatus metrics={metrics} loading={loading} />
