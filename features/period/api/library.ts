@@ -54,6 +54,18 @@ export async function GET(request: NextRequest) {
   const topic = (request.nextUrl.searchParams.get("topic") ?? "").trim().toLowerCase();
   const contentType = (request.nextUrl.searchParams.get("type") ?? "").trim().toLowerCase();
   const locale = (request.nextUrl.searchParams.get("locale") ?? "en").trim().toLowerCase();
+  // The mobile app asks for "en". Admins write regional tags -- the content
+  // dialog defaults to "en-GH" -- and an exact .eq("locale", locale) made
+  // those two never meet: an en-GH article was published, live, inside its
+  // window, and simply absent from the feed. It still appeared on the Today
+  // screen, because me.ts has no locale filter at all, so tapping it opened
+  // a Library that did not have it. Matching on the language subtag is what
+  // the app actually means by "en".
+  const localeBase = locale.split("-")[0];
+  const localeMatches = (value: unknown) => {
+    const candidate = String(value ?? "en").trim().toLowerCase();
+    return candidate === locale || candidate.split("-")[0] === localeBase;
+  };
   const slug = (request.nextUrl.searchParams.get("slug") ?? "").trim();
   const limit = Math.min(100, Math.max(1, Number(request.nextUrl.searchParams.get("limit") ?? 50)));
 
@@ -77,7 +89,7 @@ export async function GET(request: NextRequest) {
     : false;
 
   const [{ data: contentRows, error: contentError }, { data: sourceRows }, { data: collectionRows }, bookmarksResult, progressResult, logResult, cycleResult] = await Promise.all([
-    admin.from("period_content").select("id,title,slug,summary,topic,content_type,locale,tags,media_url,cover_image_url,reading_minutes,reading_level,featured,version,body_html,reads,helpful_count,not_helpful_count,clinical_reviewed_at,published_at,curation_type").in("id", ids).eq("status", "published").eq("locale", locale).order("published_at", { ascending: false }),
+    admin.from("period_content").select("id,title,slug,summary,topic,content_type,locale,tags,media_url,cover_image_url,reading_minutes,reading_level,featured,version,body_html,reads,helpful_count,not_helpful_count,clinical_reviewed_at,published_at,curation_type").in("id", ids).eq("status", "published").order("published_at", { ascending: false }),
     admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").in("period_content_id", ids),
     admin.from("period_content_collections").select("id,title,slug,description,cover_image_url,curation_type,display_order,starts_at,ends_at,period_content_collection_items(content_id,display_order,reason)").eq("status", "published").order("display_order"),
     userId ? admin.from("period_content_bookmarks").select("content_id,created_at").eq("user_id", userId) : Promise.resolve({ data: [] as any[] }),
@@ -114,13 +126,14 @@ export async function GET(request: NextRequest) {
     };
   });
   const ranked = rankContent(normalized, logResult.data, cycleResult.data, bookmarkSet, progressMap);
-  const filtered = ranked.filter((item) => (!slug || item.slug === slug) && (!search || `${item.title} ${item.summary} ${item.topic} ${(item.tags ?? []).join(" ")}`.toLowerCase().includes(search)) && (!topic || item.topic.toLowerCase() === topic) && (!contentType || item.content_type === contentType)).slice(0, limit);
+  const filtered = ranked.filter((item) => localeMatches(item.locale) && (!slug || item.slug === slug) && (!search || `${item.title} ${item.summary} ${item.topic} ${(item.tags ?? []).join(" ")}`.toLowerCase().includes(search)) && (!topic || item.topic.toLowerCase() === topic) && (!contentType || item.content_type === contentType)).slice(0, limit);
   const activeCollections = (collectionRows ?? []).filter((item: any) => (!item.starts_at || new Date(item.starts_at).getTime() <= now) && (!item.ends_at || new Date(item.ends_at).getTime() > now)).map((collection: any) => ({ ...collection, items: (collection.period_content_collection_items ?? []).filter((item: any) => ids.includes(item.content_id)).sort((a: any, b: any) => a.display_order - b.display_order), period_content_collection_items: undefined }));
   // The Today screen's "For You" row is fed from recommendations, so it is
   // scoped to articles whose schedule actually names that surface. Articles
   // promoted only to the Library carousel never reach Today.
-  const todayEligible = ranked.filter((item: any) => (item.surfaces ?? []).includes("today_for_you"));
-  const responseBody = { content: filtered, recommendations: (todayEligible.length ? todayEligible : ranked).slice(0, 8), collections: activeCollections, bookmarks: [...bookmarkSet], progress: [...progressMap.values()], topics: [...new Set(ranked.map((item) => item.topic))].sort(), serverTime: new Date().toISOString() };
+  const localeRanked = ranked.filter((item: any) => localeMatches(item.locale));
+  const todayEligible = localeRanked.filter((item: any) => (item.surfaces ?? []).includes("today_for_you"));
+  const responseBody = { content: filtered, recommendations: (todayEligible.length ? todayEligible : localeRanked).slice(0, 8), collections: activeCollections, bookmarks: [...bookmarkSet], progress: [...progressMap.values()], topics: [...new Set(ranked.map((item) => item.topic))].sort(), serverTime: new Date().toISOString() };
   const etag = `"${createHash("sha256").update(JSON.stringify(responseBody)).digest("base64url")}"`;
   if (request.headers.get("if-none-match") === etag) return new NextResponse(null, { status: 304, headers: { ETag: etag } });
   return NextResponse.json(responseBody, { headers: { ETag: etag, "Cache-Control": userId ? "private, max-age=60" : "public, max-age=60, stale-while-revalidate=300" } });

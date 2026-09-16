@@ -205,7 +205,22 @@ export async function GET(request: NextRequest) {
     supabase.from("period_ttc_checklist_progress").select("checklist_item_id,status,target_date,reminder_time,completed_at,reminder_enabled,notes_ciphertext,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
     supabase.from("period_preconception_appointments").select("id,appointment_date,timezone,clinician_name,purpose,status,questions,notes_ciphertext,facility_id,request_status,created_at,updated_at").eq("user_id", user.id).order("appointment_date", { ascending: false }).limit(50),
     supabase.from("period_fertility_insights").select("id,cycle_id,insight_date,insight_type,title,message,confidence,evidence,source_model,safety_level,status,expires_at,created_at,updated_at").eq("user_id", user.id).eq("status", "active").order("insight_date", { ascending: false }).limit(20),
-    supabase.from("period_content").select("id,title,slug,topic,summary,content_type,locale,tags,cover_image_url,media_url,reading_minutes,reading_level,version,body_html,published_at").eq("status", "published").order("published_at", { ascending: false }).limit(5),
+    // The Today screen's "For You" row is built from this. It used to select
+    // on status='published' alone, which is a weaker gate than the Library
+    // feed's (features/period/api/library.ts also requires a live publication
+    // row inside its window). So For You could advertise an article the
+    // Library would not serve, and tapping it navigated to a Library that did
+    // not contain it -- nothing opened, no error.
+    //
+    // The !inner embed applies that gate in the same round trip rather than
+    // costing another Accra-to-eu-west-1 hop.
+    supabase.from("period_content")
+      .select("id,title,slug,topic,summary,content_type,locale,tags,cover_image_url,media_url,reading_minutes,reading_level,version,body_html,published_at,period_content_publications!inner(status,starts_at,ends_at)")
+      .eq("status", "published")
+      .eq("period_content_publications.channel", "plasence_library")
+      .in("period_content_publications.status", ["live", "scheduled"])
+      .lte("period_content_publications.starts_at", new Date().toISOString())
+      .order("published_at", { ascending: false }).limit(5),
     // Today/promotional surfaces receive only explicitly reviewed events that
     // have not expired. Drafts must never become visible merely because their
     // date range includes today. Historical results remain available from the
@@ -241,7 +256,7 @@ export async function GET(request: NextRequest) {
   const latestCycle = cycles.data?.[0];
   const symptomWords = (latestLog?.symptoms ?? []).map((item: any) => String(item.name ?? item).toLowerCase());
   const phase = String(latestCycle?.current_phase ?? "").toLowerCase();
-  const recommendations = (content.data ?? []).map((item: any) => {
+  const recommendations = (content.data ?? []).map(({ period_content_publications, ...item }: any) => {
     const haystack = `${item.title} ${item.topic} ${(item.tags ?? []).join(" ")}`.toLowerCase();
     const symptomMatch = symptomWords.find((word: string) => haystack.includes(word));
     const phaseMatch = phase && haystack.includes(phase);

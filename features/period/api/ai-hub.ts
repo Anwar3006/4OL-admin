@@ -5,6 +5,7 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import { AI_MODEL_IDS, DEFAULT_AI_MODEL } from "@/features/ai/schema/models";
+import { markdownToHtml } from "./data-helpers";
 
 
 const SourceMenu = z.enum(["healthy_living", "conditions", "symptoms"]);
@@ -241,14 +242,26 @@ SOURCE_RECORDS=${JSON.stringify(sourceContext)}`;
         await admin.from("period_trivia_events").update({ reward_id: input.rewardId }).eq("id", input.eventId);
       }
     } else if (input.jobType !== "engagement_copy") {
-      const readingMinutes = { short: 3, medium: 6, long: 10 }[input.readingLength];
-      const escapeHtml = (value: unknown) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+      // Was a fixed lookup off the admin's Reading length dropdown
+      // ({short:3, medium:6, long:10}), so every article generated at
+      // "Medium" claimed 6 minutes no matter how long it actually was --
+      // a number that described the request, not the result. Now measured
+      // from the draft, using the same 220 wpm as the manual create path in
+      // data-post.ts so the two agree. readingLength still steers the
+      // prompt; it just no longer pretends to be the outcome.
+      const estimateMinutes = (body: string) =>
+        Math.max(1, Math.ceil(String(body ?? "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length / 220));
+      // The model writes Markdown regardless of what the prompt asks for, so
+      // its body is converted rather than escaped-and-wrapped -- the old
+      // approach preserved "###" and "**" as literal characters all the way
+      // to the mobile Library. markdownToHtml escapes first, then introduces
+      // only its own tags, so raw HTML from the model still cannot inject.
       const contentRows = items.map((item: any) => ({
         title: item.title, topic: input.topic || "Period health", content_type: input.contentFormat,
         locale: input.locale, summary: item.summary,
-        body_html: `<p>${escapeHtml(item.body || item.summary).replace(/\r?\n\r?\n/g, "</p><p>").replace(/\r?\n/g, "<br>")}</p>`,
+        body_html: markdownToHtml(item.body || item.summary),
         tags: Array.isArray(item.tags) ? item.tags.slice(0, 8).map((tag: unknown) => String(tag).slice(0, 48)) : [],
-        reading_minutes: readingMinutes, status: "draft", curation_type: "ai_suggested",
+        reading_minutes: estimateMinutes(item.body || item.summary), status: "draft", curation_type: "ai_suggested",
         ai_job_id: job.id, created_by: user.id,
         metadata: { audience: input.audience, tone: input.tone, coverImageBrief: item.coverImageBrief || null, sourceJobType: input.jobType },
       }));
