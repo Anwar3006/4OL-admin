@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       admin.from("period_content_publications").select("content_id,channel,status,starts_at,ends_at,featured,featured_until,surfaces,frequency_cap_days,display_order").eq("channel", "plasence_library").limit(1000),
       admin.from("period_content_sources").select("period_content_id,source_menu,source_id,source_title").limit(5000),
       admin.from("period_content_collections").select("id,title,slug,status,curation_type,display_order,published_at,period_content_collection_items(content_id,display_order)").order("display_order").limit(200),
-      admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,output,validation,error_code,created_at,completed_at,scheduled_at,frequency_cap_days,surface_duration_weeks,surface_channel").in("job_type", ["content_suggestion", "content_curation"]).order("created_at", { ascending: false }).limit(200),
+      admin.from("period_ai_jobs").select("id,job_type,status,source_menus,configuration,output,validation,error_code,created_at,completed_at").in("job_type", ["content_suggestion", "content_curation"]).order("created_at", { ascending: false }).limit(200),
     ]);
     if (error) return NextResponse.json({ error: "Unable to load content" }, { status: 500 });
     const publicationMap = new Map((publications ?? []).map((item) => [item.content_id, item]));

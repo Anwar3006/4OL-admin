@@ -222,17 +222,10 @@ export const WriteSchema = z.discriminatedUnion("action", [
     value: z.string().trim().min(1).max(200),
     isActive: z.boolean(),
   }),
-  z.object({
-    action: z.literal("schedule_ai_suggestion"),
-    jobId: z.string().uuid(),
-    scheduledAt: z.string().datetime(),
-    frequencyCapDays: z.number().int().min(1).max(90),
-    surfaceDurationWeeks: z.number().int().min(1).max(12),
-    surfaceChannel: z.enum(["plasence_library", "push_digest", "today_tip"]).default("plasence_library"),
-  }),
-  // Per-article scheduling. Replaces schedule_ai_suggestion for anything
-  // new: that one writes to period_ai_jobs, which nothing reads, and is
-  // per-run so all eight drafts from a generation shared one date. This
+  // Per-article scheduling. Replaced schedule_ai_suggestion, which wrote
+  // scheduled_at/frequency_cap_days/surface_* onto period_ai_jobs -- columns
+  // nothing read, so the schedule date passed and nothing happened -- and was
+  // per-run, so every draft from one generation shared a single date. This
   // writes the publication row the mobile feed actually queries.
   z.object({
     action: z.literal("schedule_content"),

@@ -60,8 +60,12 @@ import PrivacyRequests from "./PrivacyRequests";
 import FeatureFlags from "./FeatureFlags";
 import PremiumOperations from "./PremiumOperations";
 import AiSuggestions from "./AiSuggestions";
-import ContentCreateDialog from "./ContentCreateDialog";
-import AiSuggestionsDialog from "./AiSuggestionsDialog";
+import ContentCreateDialog, {
+  type ContentCreateMode,
+} from "./ContentCreateDialog";
+import TriviaCreateDialog, {
+  type TriviaCreateMode,
+} from "./TriviaCreateDialog";
 import TtcOperations from "./TtcOperations";
 import SummaryNote from "./SummaryNote";
 
@@ -93,7 +97,11 @@ function PeriodWorkspace() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
-  const [showSuggestDialog, setShowSuggestDialog] = useState(false);
+  // Which tab the content dialog opens on. "Generate suggestions" in the AI
+  // Suggestions header is the same dialog, opened straight onto its AI mode
+  // -- one dialog, not two that queue the same job.
+  const [createMode, setCreateMode] = useState<ContentCreateMode>("manual");
+  const [triviaMode, setTriviaMode] = useState<TriviaCreateMode>("event");
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
@@ -152,7 +160,8 @@ function PeriodWorkspace() {
     setPage(1);
     setQuery("");
     setShowCreate(false);
-    setShowSuggestDialog(false);
+    setCreateMode("manual");
+    setTriviaMode("event");
     setShowExport(false);
     setTriviaBatchId(null);
     setMessage(null);
@@ -618,14 +627,18 @@ function PeriodWorkspace() {
           <button
             type="button"
             className="btn btn-primary btn-sm"
-            onClick={() => setShowCreate((value) => !value)}
+            onClick={() => {
+              setCreateMode("manual");
+              setTriviaMode("event");
+              setShowCreate((value) => !value);
+            }}
             aria-expanded={showCreate}
           >
             <Plus className="h-4 w-4" /> New{" "}
             {activeTab === "content"
               ? "content"
               : activeTab === "trivia"
-                ? "question"
+                ? "trivia"
                 : "campaign"}
           </button>
         )}
@@ -749,7 +762,7 @@ function PeriodWorkspace() {
       )}
       {/* Content creation is a dialog (manual and AI in one place); the
           other tabs keep the inline card until they get the same treatment. */}
-      {showCreate && activeTab !== "content" && (
+      {showCreate && !["content", "trivia"].includes(activeTab) && (
         <CreateForm
           activeTab={activeTab}
           events={payload.events ?? []}
@@ -761,15 +774,21 @@ function PeriodWorkspace() {
       )}
       <ContentCreateDialog
         open={showCreate && activeTab === "content"}
+        initialMode={createMode}
         onClose={() => setShowCreate(false)}
         events={payload.events ?? []}
         rewards={payload.rewards ?? []}
         saving={saving}
         onManualSubmit={createRecord}
       />
-      <AiSuggestionsDialog
-        open={showSuggestDialog}
-        onClose={() => setShowSuggestDialog(false)}
+      <TriviaCreateDialog
+        open={showCreate && activeTab === "trivia"}
+        initialMode={triviaMode}
+        onClose={() => setShowCreate(false)}
+        events={payload.events ?? []}
+        rewards={payload.rewards ?? []}
+        saving={saving}
+        mutate={mutate}
       />
 
       <section
@@ -808,7 +827,10 @@ function PeriodWorkspace() {
                 sourceLinkCount={payload.sourceLinkCount ?? 0}
                 saving={saving}
                 mutate={mutate}
-                onGenerate={() => setShowSuggestDialog(true)}
+                onGenerate={() => {
+                  setCreateMode("generate");
+                  setShowCreate(true);
+                }}
               />
             )}
             {activeTab === "trivia" && (
@@ -831,6 +853,14 @@ function PeriodWorkspace() {
                 criteriaTypes={payload.criteriaTypes ?? []}
                 saving={saving}
                 mutate={mutate}
+                onSchedule={() => {
+                  setTriviaMode("event");
+                  setShowCreate(true);
+                }}
+                onAddReward={() => {
+                  setTriviaMode("reward");
+                  setShowCreate(true);
+                }}
               />
             )}
             {activeTab === "engagement" &&

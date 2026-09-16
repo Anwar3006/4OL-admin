@@ -490,19 +490,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  if (input.action === "schedule_ai_suggestion") {
-    const { data: job } = await admin.from("period_ai_jobs").select("id,status,job_type").eq("id", input.jobId).maybeSingle();
-    if (!job) return NextResponse.json({ error: "AI suggestion not found" }, { status: 404 });
-    if (!["content_suggestion", "content_curation"].includes(job.job_type)) return NextResponse.json({ error: "Only content suggestion jobs can be scheduled" }, { status: 400 });
-    const { error } = await admin.from("period_ai_jobs").update({ scheduled_at: input.scheduledAt, frequency_cap_days: input.frequencyCapDays, surface_duration_weeks: input.surfaceDurationWeeks, surface_channel: input.surfaceChannel, scheduled_by: user.id }).eq("id", input.jobId);
-    if (error) return NextResponse.json({ error: "Unable to schedule the suggestion" }, { status: 500 });
-    await writeAudit(user.id, "schedule", "period_ai_job", input.jobId, { scheduledAt: input.scheduledAt, frequencyCapDays: input.frequencyCapDays });
-    return NextResponse.json({ ok: true });
-  }
-
   // Per-article scheduling -- writes the publication row the mobile feed
-  // actually reads (features/period/api/library.ts), which is what
-  // schedule_ai_suggestion above never did.
+  // actually reads (features/period/api/library.ts). The action this
+  // replaced, schedule_ai_suggestion, wrote to period_ai_jobs columns that
+  // nothing queried, so its schedule date passed and nothing happened.
   if (input.action === "schedule_content") {
     const { data: content } = await admin
       .from("period_content")

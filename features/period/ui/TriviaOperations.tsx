@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import Modal from "@/components/redesign/Modal";
 import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
@@ -21,6 +20,8 @@ export default function TriviaOperations({
   criteriaTypes,
   saving,
   mutate,
+  onSchedule,
+  onAddReward,
 }: {
   events: Row[];
   leads: Row[];
@@ -34,6 +35,10 @@ export default function TriviaOperations({
   criteriaTypes: Row[];
   saving: boolean;
   mutate: (body: any, message: string) => Promise<boolean>;
+  /** Opens the New trivia dialog on its Event tab. */
+  onSchedule: () => void;
+  /** Opens the New trivia dialog on its Reward tab. */
+  onAddReward: () => void;
 }) {
   const [rankingView, setRankingView] = useState<"current" | "monthly" | "overall">("current");
   const [tierEventId, setTierEventId] = useState<string>("");
@@ -128,7 +133,7 @@ export default function TriviaOperations({
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <span className="badge badge-green">📱 {rewards.filter((reward) => reward.is_active).length} visible in-app</span>
-            <Link href="/ai-hub/period" className="btn btn-primary btn-sm">Manage prizes</Link>
+            <button type="button" className="btn btn-primary btn-sm" onClick={onAddReward}>Add reward</button>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -402,7 +407,7 @@ export default function TriviaOperations({
 
       <div className="grid gap-4 xl:grid-cols-2">
       <section className="card overflow-hidden" aria-labelledby="trivia-events-heading">
-        <div className="card-header"><div><h3 id="trivia-events-heading" className="card-title">🗓 Scheduled &amp; past Trivias</h3><p className="text-2xs text-slate-500">Draft → ready → live → ended. Mobile unlocks only inside the reviewed Africa/Accra window.</p></div><Link href="/ai-hub/period" className="btn btn-primary btn-sm">Schedule &amp; generate</Link></div>
+        <div className="card-header"><div><h3 id="trivia-events-heading" className="card-title">🗓 Scheduled &amp; past Trivias</h3><p className="text-2xs text-slate-500">Draft → ready → live → ended. Mobile unlocks only inside the reviewed Africa/Accra window.</p></div><button type="button" className="btn btn-primary btn-sm" onClick={onSchedule}>Schedule &amp; generate</button></div>
         <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Event</th><th className="p-3">Window</th><th className="p-3">Reward</th><th className="p-3">Entries</th><th className="p-3">Status</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead><tbody>
           {events.map((item) => { const eventReward = item.reward_id ? rewardById.get(item.reward_id) : null; return <tr key={item.id} className="border-b"><td className="p-3 font-semibold">{item.title}</td><td className="p-3 text-2xs">{dateTime(item.starts_at)}<br/><span className="text-slate-500">to {dateTime(item.ends_at)}</span></td><td className="p-3 text-2xs">{eventReward ? `${eventReward.icon || "🎁"} ${eventReward.name}` : "Not attached"}</td><td className="p-3 font-semibold">{item.entryCount ?? "—"}</td><td className="p-3">{status(item.status)}</td><td className="p-3 text-right">{item.status === "draft" && <button type="button" className="btn btn-secondary btn-sm" disabled={saving} onClick={() => mutate({ action: "review_trivia_event", id: item.id }, "Trivia is ready. The mobile countdown and start controls now follow this window.")}>Mark ready</button>}</td></tr>; })}
           {!events.length && <tr><td colSpan={6} className="p-4 text-slate-500">No Trivia event has been scheduled.</td></tr>}
