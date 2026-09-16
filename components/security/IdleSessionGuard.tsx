@@ -15,9 +15,21 @@ import { getBrowserClient } from "@/lib/db/browser";
  * so a busy page doesn't hammer the timer reset.
  */
 
-const FALLBACK_IDLE_LIMIT_MS = 30 * 60 * 1000;
+/**
+ * Must match DEFAULT_TIMEOUT_MINUTES in app/api/admin/session-policy/route.ts
+ * and the zod default in app/api/settings/security/route.ts.
+ *
+ * It was 30 while both of those said 60, and this value is not a rare edge
+ * case: it is what every admin runs on until the policy fetch below resolves,
+ * and what they keep if that one request fails. A cold start, a token refresh
+ * landing mid-flight or a dropped connection therefore halved the configured
+ * timeout with nothing logged and nothing shown.
+ */
+const FALLBACK_IDLE_LIMIT_MS = 60 * 60 * 1000;
 const WARNING_WINDOW_MS = 2 * 60 * 1000;
 const RESET_THROTTLE_MS = 5_000;
+/** Re-read the policy so a saved change reaches open tabs without a reload. */
+const POLICY_REFRESH_MS = 10 * 60 * 1000;
 const LAST_ACTIVITY_KEY = "4ol-admin-last-activity";
 
 function formatRemaining(totalSeconds: number) {
@@ -45,20 +57,24 @@ export default function IdleSessionGuard() {
     // stale timestamp from a previous signed-out session.
     markActivity(true);
 
-    fetch("/api/admin/session-policy", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return null;
-        return response.json() as Promise<{ sessionTimeoutMinutes?: number }>;
-      })
-      .then((policy) => {
+    // Fetched on mount and then periodically: a single failed request used to
+    // pin the tab to the fallback for its whole lifetime, and a timeout saved
+    // in Settings never reached tabs that were already open.
+    const loadPolicy = async () => {
+      try {
+        const response = await fetch("/api/admin/session-policy", { cache: "no-store" });
+        if (!response.ok) return;
+        const policy = (await response.json()) as { sessionTimeoutMinutes?: number };
         const minutes = Number(policy?.sessionTimeoutMinutes);
         if (Number.isFinite(minutes) && minutes >= 5 && minutes <= 720) {
           idleLimit.current = minutes * 60 * 1000;
         }
-      })
-      .catch(() => {
-        // Fail securely on the existing 30-minute timeout.
-      });
+      } catch {
+        // Keep the current limit and try again on the next refresh.
+      }
+    };
+    void loadPolicy();
+    const policyTimer = setInterval(() => void loadPolicy(), POLICY_REFRESH_MS);
 
     const syncActivity = (event: StorageEvent) => {
       if (event.key !== LAST_ACTIVITY_KEY || !event.newValue) return;
@@ -74,12 +90,24 @@ export default function IdleSessionGuard() {
       "keydown",
       "wheel",
       "touchstart",
-      "scroll",
+      "focus",
     ];
     const handleActivity = () => markActivity(false);
     events.forEach((event) =>
       window.addEventListener(event, handleActivity, { passive: true }),
     );
+    // Scroll separately, in the CAPTURE phase. Scroll events fired by an
+    // element do not bubble, so a plain window listener only ever saw the
+    // document scrolling -- and most of this dashboard scrolls inside its
+    // own containers (every .tbl wrapper, every modal body). Reading a long
+    // table by scrolling it therefore counted as being idle.
+    window.addEventListener("scroll", handleActivity, { passive: true, capture: true });
+    // Returning to the tab is activity: an admin who spent the window in
+    // another tab should not be signed out the instant they come back.
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") markActivity(true);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("storage", syncActivity);
 
     const interval = setInterval(async () => {
@@ -111,8 +139,13 @@ export default function IdleSessionGuard() {
 
     return () => {
       events.forEach((event) => window.removeEventListener(event, handleActivity));
+      // The capture flag has to match the one used to add it, or the
+      // listener is never removed.
+      window.removeEventListener("scroll", handleActivity, { capture: true });
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("storage", syncActivity);
       clearInterval(interval);
+      clearInterval(policyTimer);
     };
   }, []);
 
