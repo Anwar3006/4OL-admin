@@ -102,6 +102,11 @@ function PeriodWorkspace() {
   // -- one dialog, not two that queue the same job.
   const [createMode, setCreateMode] = useState<ContentCreateMode>("manual");
   const [triviaMode, setTriviaMode] = useState<TriviaCreateMode>("event");
+  // Some rejections are a checklist, not a sentence -- "Mark ready" can fail
+  // on question count AND the start weekday at once. Those come back from the
+  // API as an `issues` array and get a dialog; everything else stays in the
+  // inline banner.
+  const [blockingIssues, setBlockingIssues] = useState<{ title: string; issues: string[] } | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [saving, setSaving] = useState(false);
   const [triviaBatchId, setTriviaBatchId] = useState<string | null>(null);
@@ -187,12 +192,20 @@ function PeriodWorkspace() {
           body: JSON.stringify(body),
         });
         const result = await response.json();
-        if (!response.ok)
+        if (!response.ok) {
+          if (Array.isArray(result.issues) && result.issues.length) {
+            setBlockingIssues({
+              title: typeof result.error === "string" ? result.error : "This change was rejected",
+              issues: result.issues.map((issue: unknown) => String(issue)),
+            });
+            return false;
+          }
           throw new Error(
             typeof result.error === "string"
               ? result.error
               : "Unable to save this change",
           );
+        }
         setMessage(success);
         setShowCreate(false);
         await loadData();
@@ -970,6 +983,34 @@ function PeriodWorkspace() {
         saving={saving}
         onClose={() => setContentReviewId(null)}
       />
+      <Modal
+        isOpen={Boolean(blockingIssues)}
+        onClose={() => setBlockingIssues(null)}
+        title="⚠️ Not ready yet"
+      >
+        <p className="text-xs text-slate-600 dark:text-slate-300">
+          {blockingIssues?.title}
+        </p>
+        <ul className="mt-3 space-y-2">
+          {(blockingIssues?.issues ?? []).map((issue) => (
+            <li
+              key={issue}
+              className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+            >
+              {issue}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setBlockingIssues(null)}
+          >
+            Got it
+          </button>
+        </div>
+      </Modal>
       <ViewPeriodUserDialog />
     </div>
   );

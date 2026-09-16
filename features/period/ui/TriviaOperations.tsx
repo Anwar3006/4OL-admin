@@ -5,6 +5,7 @@ import Modal from "@/components/redesign/Modal";
 import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
 import { date, dateTime, shortId, status } from "./formatters";
+import { Pager, usePaged } from "./Pager";
 
 
 export default function TriviaOperations({
@@ -92,6 +93,20 @@ export default function TriviaOperations({
     ? rewardTiers.filter((tier) => tier.source_id === selectedTierEvent.id).sort((a, b) => Number(a.tier_order) - Number(b.tier_order))
     : [];
   const eventEnded = selectedTierEvent ? new Date(selectedTierEvent.ends_at).getTime() <= Date.now() : false;
+  // One page size for every table on this tab, so the rhythm is the same
+  // wherever the admin is looking. All ten arrays are already in memory --
+  // see ./Pager.tsx for why this pages client-side.
+  const rewardsPage = usePaged(rewards);
+  const currentPage = usePaged(currentRanking);
+  const monthlyPage = usePaged(monthlyRanking);
+  const overallPage = usePaged(overallRanking);
+  const fulfillmentPage = usePaged(fulfillmentRows);
+  const tiersPage = usePaged(eventTiers);
+  const eventsPage = usePaged(events);
+  const leadsPage = usePaged(leads);
+  const blockedPage = usePaged(blockedDevices);
+  const rulesPage = usePaged(rules);
+
   const worstCaseBudget = eventTiers.reduce<Record<string, number>>((acc, tier) => {
     const reward = rewardById.get(tier.reward_id);
     if (!reward?.amount || !reward.currency || !tier.max_winners) return acc;
@@ -142,7 +157,7 @@ export default function TriviaOperations({
               <th className="p-3">Icon</th><th className="p-3">Prize name</th><th className="p-3">Type</th><th className="p-3">Value</th><th className="p-3">Availability</th><th className="p-3">Eligibility</th><th className="p-3">Linked event</th><th className="p-3">Status</th><th className="p-3">Mobile visibility</th>
             </tr></thead>
             <tbody>
-              {rewards.map((reward) => {
+              {rewardsPage.pageRows.map((reward) => {
                 const rewardEvents = linkedEvents(reward.id);
                 return <tr key={reward.id} className={cn("border-b", !reward.is_active && "opacity-65")}>
                   <td className="p-3 text-lg">{reward.icon || "🎁"}</td>
@@ -160,6 +175,7 @@ export default function TriviaOperations({
             </tbody>
           </table>
         </div>
+        <Pager page={rewardsPage.page} totalPages={rewardsPage.totalPages} total={rewardsPage.total} onPageChange={rewardsPage.setPage} label="rewards" />
       </section>
 
       <section
@@ -186,18 +202,21 @@ export default function TriviaOperations({
         </div>
         <div className="overflow-x-auto">
           {rankingView === "current" && <table className="w-full min-w-[880px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">User link</th><th className="p-3">Consented lead</th><th className="p-3">Score</th><th className="p-3">Time</th><th className="p-3">Submitted</th><th className="p-3">Device check</th></tr></thead><tbody>
-            {currentRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3"><code className="text-2xs">{item.userId ? shortId(item.userId) : "Guest"}</code></td><td className="p-3 text-2xs">{item.consentedLead ? <>{item.consentedLead}<br/><span className="text-slate-500">{item.consentVersion}</span></> : <span className="text-slate-500">No consented lead</span>}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.score}/{item.questionCount}</td><td className="p-3">{duration(item.durationSeconds)}</td><td className="p-3 text-2xs text-slate-500">{dateTime(item.submittedAt)}</td><td className="p-3"><span className="badge badge-green">✅ Unique</span></td></tr>)}
+            {currentPage.pageRows.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3"><code className="text-2xs">{item.userId ? shortId(item.userId) : "Guest"}</code></td><td className="p-3 text-2xs">{item.consentedLead ? <>{item.consentedLead}<br/><span className="text-slate-500">{item.consentVersion}</span></> : <span className="text-slate-500">No consented lead</span>}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.score}/{item.questionCount}</td><td className="p-3">{duration(item.durationSeconds)}</td><td className="p-3 text-2xs text-slate-500">{dateTime(item.submittedAt)}</td><td className="p-3"><span className="badge badge-green">✅ Unique</span></td></tr>)}
             {!currentRanking.length && <tr><td colSpan={8} className="p-4 text-slate-500">No submissions are available for the most recently ended Trivia.</td></tr>}
           </tbody></table>}
           {rankingView === "monthly" && <table className="w-full min-w-[760px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">Events entered</th><th className="p-3">Total score</th><th className="p-3">Perfect scores</th><th className="p-3">Best time</th><th className="p-3">Last played</th></tr></thead><tbody>
-            {monthlyRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3">{item.eventsEntered}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.totalScore} / {item.totalQuestions}</td><td className="p-3">{item.perfectScores}</td><td className="p-3">{duration(item.bestTimeSeconds)}</td><td className="p-3 text-2xs text-slate-500">{date(item.lastPlayedAt)}</td></tr>)}
+            {monthlyPage.pageRows.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank))}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3">{item.eventsEntered}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.totalScore} / {item.totalQuestions}</td><td className="p-3">{item.perfectScores}</td><td className="p-3">{duration(item.bestTimeSeconds)}</td><td className="p-3 text-2xs text-slate-500">{date(item.lastPlayedAt)}</td></tr>)}
             {!monthlyRanking.length && <tr><td colSpan={7} className="p-4 text-slate-500">No submissions are available for this month.</td></tr>}
           </tbody></table>}
           {rankingView === "overall" && <table className="w-full min-w-[680px] text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Rank</th><th className="p-3">Player</th><th className="p-3">Lifetime score</th><th className="p-3">Events played</th><th className="p-3">Titles won</th><th className="p-3">Member since</th></tr></thead><tbody>
-            {overallRanking.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank), true)}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.lifetimeScore} points</td><td className="p-3">{item.eventsPlayed}</td><td className="p-3">{Number(item.titlesWon) > 0 ? <span className="badge badge-green">🏆 {item.titlesWon} title{Number(item.titlesWon) === 1 ? "" : "s"}</span> : "—"}</td><td className="p-3 text-2xs text-slate-500">{date(item.memberSince)}</td></tr>)}
+            {overallPage.pageRows.map((item) => <tr key={`${item.userId ?? item.participant}-${item.rank}`} className="border-b"><td className="p-3 font-extrabold">{rank(Number(item.rank), true)}</td><td className="p-3 font-semibold">{item.participant}</td><td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">{item.lifetimeScore} points</td><td className="p-3">{item.eventsPlayed}</td><td className="p-3">{Number(item.titlesWon) > 0 ? <span className="badge badge-green">🏆 {item.titlesWon} title{Number(item.titlesWon) === 1 ? "" : "s"}</span> : "—"}</td><td className="p-3 text-2xs text-slate-500">{date(item.memberSince)}</td></tr>)}
             {!overallRanking.length && <tr><td colSpan={6} className="p-4 text-slate-500">No lifetime ranking data is available yet.</td></tr>}
           </tbody></table>}
         </div>
+        {rankingView === "current" && <Pager page={currentPage.page} totalPages={currentPage.totalPages} total={currentPage.total} onPageChange={currentPage.setPage} label="entries" />}
+        {rankingView === "monthly" && <Pager page={monthlyPage.page} totalPages={monthlyPage.totalPages} total={monthlyPage.total} onPageChange={monthlyPage.setPage} label="players" />}
+        {rankingView === "overall" && <Pager page={overallPage.page} totalPages={overallPage.totalPages} total={overallPage.total} onPageChange={overallPage.setPage} label="players" />}
       </section>
 
       <section
@@ -223,7 +242,7 @@ export default function TriviaOperations({
               </tr>
             </thead>
             <tbody>
-              {fulfillmentRows.map((item) => {
+              {fulfillmentPage.pageRows.map((item) => {
                 const reward = item.reward_id
                   ? rewardById.get(item.reward_id)
                   : null;
@@ -320,6 +339,7 @@ export default function TriviaOperations({
             </tbody>
           </table>
         </div>
+        <Pager page={fulfillmentPage.page} totalPages={fulfillmentPage.totalPages} total={fulfillmentPage.total} onPageChange={fulfillmentPage.setPage} label="winners" />
       </section>
 
       <section className="card overflow-hidden" aria-labelledby="trivia-tiers-heading">
@@ -346,7 +366,7 @@ export default function TriviaOperations({
                   <th className="p-3">Order</th><th className="p-3">Tier label</th><th className="p-3">Criteria</th><th className="p-3">Reward</th><th className="p-3">Max winners</th><th className="p-3">Stackable</th><th className="p-3"><span className="sr-only">Actions</span></th>
                 </tr></thead>
                 <tbody>
-                  {eventTiers.map((tier) => {
+                  {tiersPage.pageRows.map((tier) => {
                     const reward = rewardById.get(tier.reward_id);
                     const criteria = criteriaByKey.get(tier.criteria_type);
                     return <tr key={tier.id} className="border-b">
@@ -367,6 +387,7 @@ export default function TriviaOperations({
                 </tbody>
               </table>
             </div>
+          <Pager page={tiersPage.page} totalPages={tiersPage.totalPages} total={tiersPage.total} onPageChange={tiersPage.setPage} label="tiers" />
             {!selectedTierEvent.closed_at && (
               <div className="flex flex-wrap items-end gap-2 border-t p-3">
                 <div className="flex flex-col gap-1"><label className="text-2xs text-slate-500">Order</label><input type="number" min={1} className="w-16 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800" value={tierForm.tierOrder} onChange={(e) => setTierForm((f) => ({ ...f, tierOrder: e.target.value }))} /></div>
@@ -409,17 +430,19 @@ export default function TriviaOperations({
       <section className="card overflow-hidden" aria-labelledby="trivia-events-heading">
         <div className="card-header"><div><h3 id="trivia-events-heading" className="card-title">🗓 Scheduled &amp; past Trivias</h3><p className="text-2xs text-slate-500">Draft → ready → live → ended. Mobile unlocks only inside the reviewed Africa/Accra window.</p></div><button type="button" className="btn btn-primary btn-sm" onClick={onSchedule}>Schedule &amp; generate</button></div>
         <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Event</th><th className="p-3">Window</th><th className="p-3">Reward</th><th className="p-3">Entries</th><th className="p-3">Status</th><th className="p-3"><span className="sr-only">Actions</span></th></tr></thead><tbody>
-          {events.map((item) => { const eventReward = item.reward_id ? rewardById.get(item.reward_id) : null; return <tr key={item.id} className="border-b"><td className="p-3 font-semibold">{item.title}</td><td className="p-3 text-2xs">{dateTime(item.starts_at)}<br/><span className="text-slate-500">to {dateTime(item.ends_at)}</span></td><td className="p-3 text-2xs">{eventReward ? `${eventReward.icon || "🎁"} ${eventReward.name}` : "Not attached"}</td><td className="p-3 font-semibold">{item.entryCount ?? "—"}</td><td className="p-3">{status(item.status)}</td><td className="p-3 text-right">{item.status === "draft" && <button type="button" className="btn btn-secondary btn-sm" disabled={saving} onClick={() => mutate({ action: "review_trivia_event", id: item.id }, "Trivia is ready. The mobile countdown and start controls now follow this window.")}>Mark ready</button>}</td></tr>; })}
+          {eventsPage.pageRows.map((item) => { const eventReward = item.reward_id ? rewardById.get(item.reward_id) : null; return <tr key={item.id} className="border-b"><td className="p-3 font-semibold">{item.title}</td><td className="p-3 text-2xs">{dateTime(item.starts_at)}<br/><span className="text-slate-500">to {dateTime(item.ends_at)}</span></td><td className="p-3 text-2xs">{eventReward ? `${eventReward.icon || "🎁"} ${eventReward.name}` : "Not attached"}</td><td className="p-3 font-semibold">{item.entryCount ?? "—"}</td><td className="p-3">{status(item.status)}</td><td className="p-3 text-right">{item.status === "draft" && <button type="button" className="btn btn-secondary btn-sm" disabled={saving} onClick={() => mutate({ action: "review_trivia_event", id: item.id }, "Trivia is ready. The mobile countdown and start controls now follow this window.")}>Mark ready</button>}</td></tr>; })}
           {!events.length && <tr><td colSpan={6} className="p-4 text-slate-500">No Trivia event has been scheduled.</td></tr>}
         </tbody></table></div>
+        <Pager page={eventsPage.page} totalPages={eventsPage.totalPages} total={eventsPage.total} onPageChange={eventsPage.setPage} label="events" />
       </section>
 
       <section className="card overflow-hidden" aria-labelledby="trivia-leads-heading">
         <div className="card-header"><div><h3 id="trivia-leads-heading" className="card-title">Consented lead register</h3><p className="text-2xs text-slate-500">Encrypted at rest and masked here; linked to an account when the participant is signed in.</p></div><span className="badge badge-blue">{leads.length} records</span></div>
         <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b bg-slate-50 dark:bg-slate-900"><th className="p-3">Lead</th><th className="p-3">Mobile</th><th className="p-3">Social</th><th className="p-3">User link</th><th className="p-3">Consent</th><th className="p-3">Status</th></tr></thead><tbody>
-          {leads.slice(0, 20).map((lead) => <tr key={lead.id} className="border-b"><td className="p-3">{lead.name}</td><td className="p-3">{lead.mobile}</td><td className="p-3"><span className="font-medium">{lead.socialPlatform ?? "Social"}</span><br/><span className="text-2xs text-slate-500">{lead.socialHandle}</span></td><td className="p-3"><code className="text-2xs">{lead.user_id ? shortId(lead.user_id) : "Guest"}</code></td><td className="p-3 text-2xs">{lead.consent_version}<br/><span className="text-slate-500">{dateTime(lead.consented_at)}</span></td><td className="p-3">{status(lead.status)}</td></tr>)}
+          {leadsPage.pageRows.map((lead) => <tr key={lead.id} className="border-b"><td className="p-3">{lead.name}</td><td className="p-3">{lead.mobile}</td><td className="p-3"><span className="font-medium">{lead.socialPlatform ?? "Social"}</span><br/><span className="text-2xs text-slate-500">{lead.socialHandle}</span></td><td className="p-3"><code className="text-2xs">{lead.user_id ? shortId(lead.user_id) : "Guest"}</code></td><td className="p-3 text-2xs">{lead.consent_version}<br/><span className="text-slate-500">{dateTime(lead.consented_at)}</span></td><td className="p-3">{status(lead.status)}</td></tr>)}
           {!leads.length && <tr><td colSpan={6} className="p-4 text-slate-500">No consented Trivia leads yet.</td></tr>}
         </tbody></table></div>
+        <Pager page={leadsPage.page} totalPages={leadsPage.totalPages} total={leadsPage.total} onPageChange={leadsPage.setPage} label="leads" />
       </section>
 
         <section
@@ -455,7 +478,7 @@ export default function TriviaOperations({
                 </tr>
               </thead>
               <tbody>
-                {blockedDevices.map((item) => (
+                {blockedPage.pageRows.map((item) => (
                   <tr key={item.id} className="border-b">
                     <td className="p-3">
                       <code className="text-2xs">{shortId(item.device_hash)}</code>
@@ -499,6 +522,7 @@ export default function TriviaOperations({
               </tbody>
             </table>
           </div>
+          <Pager page={blockedPage.page} totalPages={blockedPage.totalPages} total={blockedPage.total} onPageChange={blockedPage.setPage} label="devices" />
         </section>
 
       </div>
@@ -527,7 +551,7 @@ export default function TriviaOperations({
                 </tr>
               </thead>
               <tbody>
-                {rules.map((rule) => (
+                {rulesPage.pageRows.map((rule) => (
                   <tr key={rule.key} className="border-b">
                     <td className="p-3">
                       <div className="font-medium">
@@ -574,6 +598,7 @@ export default function TriviaOperations({
               </tbody>
             </table>
           </div>
+          <Pager page={rulesPage.page} totalPages={rulesPage.totalPages} total={rulesPage.total} onPageChange={rulesPage.setPage} label="rules" />
         </section>
     </div>
   );

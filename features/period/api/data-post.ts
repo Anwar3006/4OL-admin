@@ -161,7 +161,53 @@ export async function POST(request: NextRequest) {
 
   if (input.action === "review_trivia_event") {
     const { error } = await admin.rpc("review_period_trivia_event", { p_event_id: input.id, p_reviewer: user.id });
-    if (error) return NextResponse.json({ error: error.message }, { status: 409 });
+    if (error) {
+      // review_period_trivia_event raises short messages ("exactly 10
+      // reviewed questions are required") that say what is wrong but never
+      // what the event actually has. The admin was left to open the question
+      // list and count by hand. So on rejection we go back and measure, and
+      // return the numbers alongside the reason.
+      const [{ data: event }, { data: questions }] = await Promise.all([
+        admin.from("period_trivia_events").select("title,starts_at,timezone").eq("id", input.id).maybeSingle(),
+        admin.from("period_trivia_questions").select("status,validation_status,position").eq("event_id", input.id),
+      ]);
+      const all = questions ?? [];
+      const ready = all.filter(
+        (q) => q.status === "published" && q.validation_status === "valid" &&
+          Number(q.position) >= 1 && Number(q.position) <= 10,
+      ).length;
+
+      const issues: string[] = [];
+      if (ready !== 10) {
+        const drafts = all.filter((q) => q.status === "draft").length;
+        const inReview = all.filter((q) => q.status === "review").length;
+        const invalid = all.filter((q) => q.validation_status && q.validation_status !== "valid").length;
+        const unpositioned = all.filter((q) => !q.position).length;
+        issues.push(
+          `${ready} of 10 questions are ready to publish (${all.length} attached in total).` +
+            (drafts ? ` ${drafts} still draft.` : "") +
+            (inReview ? ` ${inReview} awaiting review.` : "") +
+            (invalid ? ` ${invalid} failed validation.` : "") +
+            (unpositioned ? ` ${unpositioned} not attached to a position.` : ""),
+        );
+      }
+      if (event?.starts_at) {
+        // Mirrors the RPC's isodow check, in the event's own timezone.
+        const weekday = new Intl.DateTimeFormat("en-GB", {
+          weekday: "long",
+          timeZone: event.timezone || "Africa/Accra",
+        }).format(new Date(event.starts_at));
+        if (weekday !== "Friday") {
+          issues.push(`Friday Trivia must start on a Friday — this one starts on a ${weekday} in ${event.timezone || "Africa/Accra"}.`);
+        }
+      }
+      if (!issues.length) issues.push(error.message);
+
+      return NextResponse.json(
+        { error: `${event?.title ?? "This Trivia"} cannot be marked ready yet.`, issues, reason: error.message },
+        { status: 409 },
+      );
+    }
     await writeAudit(user.id, "review", "period_trivia_event", input.id);
     return NextResponse.json({ ok: true });
   }
