@@ -23,7 +23,7 @@ const GenerateSchema = z.object({
   audience: z.enum(["general", "teens", "adults", "caregivers"]).default("general"),
   tone: z.enum(["supportive", "educational", "concise"]).default("supportive"),
   readingLength: z.enum(["short", "medium", "long"]).default("medium"),
-  locale: z.string().trim().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/).default("en"),
+  locale: z.string().trim().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/).default("en-GH"),
   suggestionCount: z.number().int().min(1).max(12).default(8),
   // Admin-selected, and validated against the curated registry rather than
   // accepted as free text: an unknown id would reach OpenAI and 400 there,
@@ -258,7 +258,9 @@ SOURCE_RECORDS=${JSON.stringify(sourceContext)}`;
       // only its own tags, so raw HTML from the model still cannot inject.
       const contentRows = items.map((item: any) => ({
         title: item.title, topic: input.topic || "Period health", content_type: input.contentFormat,
-        locale: input.locale, summary: item.summary,
+        // Lowercased for the same reason as the manual create path: the feed
+        // normalises its locale parameter that way before comparing.
+        locale: input.locale.toLowerCase(), summary: item.summary,
         body_html: markdownToHtml(item.body || item.summary),
         tags: Array.isArray(item.tags) ? item.tags.slice(0, 8).map((tag: unknown) => String(tag).slice(0, 48)) : [],
         reading_minutes: estimateMinutes(item.body || item.summary), status: "draft", curation_type: "ai_suggested",

@@ -91,7 +91,10 @@ export async function POST(request: NextRequest) {
       title: input.title,
       topic: input.topic,
       content_type: input.contentType,
-      locale: input.locale,
+      // Lowercased on write: the mobile feed lowercases its locale parameter
+      // before comparing, so a stored "en-GH" could never match a request
+      // for "en-GH". BCP-47 is case-insensitive, so this is the same tag.
+      locale: input.locale.toLowerCase(),
       summary: input.summary ?? null,
       body_html: input.bodyHtml,
       slug: `${slugify(input.title)}-${Date.now().toString(36)}`,

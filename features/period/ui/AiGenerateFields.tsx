@@ -207,7 +207,7 @@ export function buildContentGenerateBody(
     audience: form.get("audience"),
     tone: form.get("tone"),
     readingLength: form.get("readingLength"),
-    locale: form.get("locale") || "en",
+    locale: form.get("locale") || "en-GH",
     suggestionCount: Number.isFinite(count) && count > 0 ? count : 8,
     model: form.get("model") || DEFAULT_AI_MODEL,
   };

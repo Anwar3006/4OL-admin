@@ -29,7 +29,7 @@ export const WriteSchema = z.discriminatedUnion("action", [
     title: z.string().trim().min(2).max(200),
     topic: z.string().trim().min(2).max(100),
     contentType: z.enum(["article", "quick_read", "video", "podcast", "expert_qa"]).default("article"),
-    locale: z.string().trim().min(2).max(12).default("en"),
+    locale: z.string().trim().min(2).max(12).default("en-GH"),
     summary: z.string().trim().max(500).optional(),
     bodyHtml: z.string().trim().min(2).max(50_000),
     tags: z.array(z.string().trim().min(1).max(60)).max(20).default([]),

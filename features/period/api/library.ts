@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   const search = (request.nextUrl.searchParams.get("q") ?? "").trim().toLowerCase();
   const topic = (request.nextUrl.searchParams.get("topic") ?? "").trim().toLowerCase();
   const contentType = (request.nextUrl.searchParams.get("type") ?? "").trim().toLowerCase();
-  const locale = (request.nextUrl.searchParams.get("locale") ?? "en").trim().toLowerCase();
+  const locale = (request.nextUrl.searchParams.get("locale") ?? "en-GH").trim().toLowerCase();
   // The mobile app asks for "en". Admins write regional tags -- the content
   // dialog defaults to "en-GH" -- and an exact .eq("locale", locale) made
   // those two never meet: an en-GH article was published, live, inside its
