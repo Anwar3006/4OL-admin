@@ -220,6 +220,34 @@ const ChallengesTab = () => {
       },
     },
     {
+      accessorKey: "completion_count",
+      header: "Completions",
+      cell: ({ row }: any) => (
+        <span className="text-sm font-black tabular-nums text-slate-800 dark:text-slate-200">
+          {(row.original.completion_count ?? 0).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "completion_rate",
+      header: "Compl. %",
+      cell: ({ row }: any) => {
+        const participants = row.original.current_participants ?? 0;
+        const completions = row.original.completion_count ?? 0;
+        const rate = participants ? Math.min(100, Math.round((completions / participants) * 100)) : 0;
+        return (
+          <div className="min-w-[92px] space-y-1">
+            <span className="text-xs font-black tabular-nums text-slate-700 dark:text-slate-300">
+              {rate}%
+            </span>
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${rate}%` }} />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "duration",
       header: "Duration",
       cell: ({ row }: any) => {

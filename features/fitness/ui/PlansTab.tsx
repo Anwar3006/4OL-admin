@@ -160,6 +160,88 @@ const PlansTab = () => {
       ),
     },
     {
+      accessorKey: "users",
+      header: "Users",
+      cell: ({ row }: any) => {
+        const assignments = row.original.fitness_user_assignments ?? [];
+        return (
+          <div className="min-w-[90px]">
+            <div className="text-sm font-black tabular-nums text-slate-800 dark:text-slate-200">
+              {assignments.length.toLocaleString()}
+            </div>
+            <div className="text-3xs font-bold uppercase tracking-wider text-slate-400">
+              enrolled
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "completion",
+      header: "Completion",
+      cell: ({ row }: any) => {
+        const assignments = row.original.fitness_user_assignments ?? [];
+        const completed = assignments.filter((item: any) => item.status === "completed").length;
+        const rate = assignments.length ? Math.round((completed / assignments.length) * 100) : 0;
+        return (
+          <div className="min-w-[120px] space-y-1">
+            <div className="flex items-center justify-between text-2xs font-bold text-slate-600 dark:text-slate-300">
+              <span>{completed} completed</span>
+              <span className="tabular-nums">{rate}%</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${rate}%` }} />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "conclusion",
+      header: "Conclusion",
+      cell: ({ row }: any) => {
+        const assignments = row.original.fitness_user_assignments ?? [];
+        const completed = assignments.filter((item: any) => item.status === "completed").length;
+        const abandoned = assignments.filter((item: any) => item.status === "abandoned").length;
+        const active = assignments.filter((item: any) => item.status === "active").length;
+        const rate = assignments.length ? (completed / assignments.length) * 100 : 0;
+        const conclusion =
+          assignments.length === 0
+            ? {
+                label: "No users enrolled",
+                detail: "Waiting for the first enrolment",
+                tone: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+              }
+            : rate >= 70
+              ? {
+                  label: "Completion healthy",
+                  detail: `${completed} of ${assignments.length} users completed`,
+                  tone: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+                }
+              : abandoned > completed
+                ? {
+                    label: "Drop-off risk",
+                    detail: `${abandoned} abandoned · ${completed} completed`,
+                    tone: "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400",
+                  }
+                : {
+                    label: "Users still active",
+                    detail: `${active} active · ${completed} completed`,
+                    tone: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
+                  };
+        return (
+          <div className="min-w-[165px]">
+            <span className={cn("inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-2xs font-black uppercase tracking-wider", conclusion.tone)}>
+              {conclusion.label}
+            </span>
+            <p className="mt-1.5 text-3xs font-semibold text-slate-400">
+              {conclusion.detail}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "stats",
       header: "Popularity",
       cell: ({ row }: any) => (
@@ -302,6 +384,10 @@ const PlansTab = () => {
       </div>
 
       <div className="card p-0 overflow-hidden">
+        <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-3 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
+          <span className="font-black">How Conclusion works:</span>{" "}
+          Completion healthy means at least 70% finished. Drop-off risk means more users abandoned than completed. Users still active means the remaining cohort is still working through the plan.
+        </div>
         <DataTable
           columns={columns}
           data={data?.plans || []}

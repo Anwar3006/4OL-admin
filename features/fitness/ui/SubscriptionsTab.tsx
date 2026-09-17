@@ -9,7 +9,9 @@ import { UserSearchSelect } from "@/components/UserSearchSelect";
 import { useHasPermission, usePermissionContext } from "@/stores/permission-context";
 
 /**
- * Subscriptions tab (FITNESS_MOCKUP_GAP_ANALYSIS.md, D6).
+ * Shared subscriptions operations surface (FITNESS_MOCKUP_GAP_ANALYSIS.md, D6).
+ * It now renders from the top-level Subscriptions workspace because grants
+ * cover the entire app, Fitness-only and Period Tracker-only access.
  * - Grant/revoke premium & lifetime access: SUPER ADMIN only (server
  *   enforced too — /api/subscriptions/admin POST/PATCH checks the role).
  * - Paystack payments arrive later as source='paystack' rows; this UI
@@ -24,6 +26,8 @@ type SubscriptionRow = {
   user_name: string;
   status: "active" | "expired" | "revoked";
   source: string;
+  scope: "all_access" | "fitness_only" | "period_only";
+  record_type: "subscription" | "period_grant";
   granted_by_name: string | null;
   starts_at: string;
   expires_at: string | null;
@@ -219,7 +223,7 @@ const SubscriptionsTab = () => {
       const res = await fetch("/api/subscriptions/admin", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscriptionId: row.id }),
+        body: JSON.stringify({ subscriptionId: row.id, recordType: row.record_type }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Revoke failed");
@@ -736,6 +740,7 @@ const SubscriptionsTab = () => {
                 <tr className="text-2xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="py-2 pr-4">User</th>
                   <th className="py-2 pr-4">Tier</th>
+                  <th className="py-2 pr-4">Service</th>
                   <th className="py-2 pr-4">Status</th>
                   <th className="py-2 pr-4">Source</th>
                   <th className="py-2 pr-4">Starts</th>
@@ -751,6 +756,11 @@ const SubscriptionsTab = () => {
                     <td className="py-3 pr-4">
                       <span className="badge badge-blue h-5 text-3xs uppercase font-black">
                         {row.subscription_tiers?.name ?? "—"}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className="badge badge-purple h-5 text-3xs uppercase font-black">
+                        {row.scope === "fitness_only" ? "Fitness" : row.scope === "period_only" ? "Plasence" : "Entire app"}
                       </span>
                     </td>
                     <td className="py-3 pr-4">

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
+import type { FitnessPlanDetail } from "@/features/fitness/data/useFitnessPlan";
 
 export function ViewFitnessPlanDialog() {
   const { isOpen, close, entityId } = useViewFitnessPlanDialog();
@@ -109,7 +110,7 @@ function DetailView({
   onDelete,
   onClose,
 }: {
-  data: any;
+  data: FitnessPlanDetail;
   onEdit: () => void;
   onDelete: () => void;
   onClose: () => void;
@@ -140,6 +141,8 @@ function DetailView({
     : [];
   const goals = Array.isArray(data.goals) ? data.goals : [];
   const tags = Array.isArray(data.tags) ? data.tags : [];
+  const members = data.fitness_user_assignments ?? [];
+  const coachName = data.coach_display_name?.trim() || "No public coach assigned";
 
   return (
     <>
@@ -173,12 +176,10 @@ function DetailView({
             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-black leading-tight">
               {data.title}
             </h2>
-            {data.coach_display_name && (
-              <p className="text-sm font-bold text-slate-500 flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5" />
-                Public attribution: &quot;by {data.coach_display_name}&quot;
-              </p>
-            )}
+            <p className="text-sm font-bold text-slate-500 flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5" />
+              Public coach: {coachName}
+            </p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto pt-2 md:pt-0">
@@ -325,6 +326,37 @@ function DetailView({
 
           {/* Sidebar Metrics Bento Row */}
           <div className="lg:col-span-5 space-y-6">
+            {/* Public coach ownership */}
+            <div className="rounded-[2rem] border border-emerald-100 bg-emerald-50/70 p-6 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="shrink-0 rounded-2xl bg-white p-3.5 text-emerald-600 shadow-sm dark:bg-slate-800 dark:text-emerald-400">
+                    <User className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block text-2xs font-black uppercase tracking-widest text-emerald-700/70 dark:text-emerald-300/70">
+                      Public Coach Name
+                    </span>
+                    <p className="mt-1 truncate text-base font-black text-slate-900 dark:text-white">
+                      {coachName}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Displayed on this plan in the mobile app.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                  className="shrink-0 rounded-xl border-emerald-200 bg-white font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-emerald-400"
+                >
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
+                </Button>
+              </div>
+            </div>
+
             {/* Timeline Breakdown Widget */}
             <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
               <div className="flex items-center gap-4">
@@ -444,6 +476,99 @@ function DetailView({
             </div>
           </div>
         </div>
+
+        {/* Enrolled plan members */}
+        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="section-heading">Users on this plan</h3>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                Names and current progress for every enrolled fitness user.
+              </p>
+            </div>
+            <Badge className="w-fit border-none bg-slate-100 px-3 py-1.5 font-black text-slate-700 hover:bg-slate-100 dark:bg-slate-700 dark:text-slate-200">
+              {members.length.toLocaleString()} enrolled
+            </Badge>
+          </div>
+
+          {members.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <User className="mx-auto h-8 w-8 text-slate-300" />
+              <p className="mt-3 text-sm font-bold text-slate-600 dark:text-slate-300">
+                No users are enrolled in this plan yet.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left">
+                <thead className="bg-slate-50 text-2xs font-black uppercase tracking-widest text-slate-400 dark:bg-slate-900/50">
+                  <tr>
+                    <th className="px-6 py-3">User</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Progress</th>
+                    <th className="px-4 py-3">Workouts</th>
+                    <th className="px-4 py-3">Started</th>
+                    <th className="px-6 py-3">Completed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {members.map((member) => {
+                    const fullName = [member.user?.first_name, member.user?.last_name]
+                      .filter(Boolean)
+                      .join(" ") || "Unknown user";
+                    const initials = fullName
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase();
+                    const statusTone =
+                      member.status === "completed"
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                        : member.status === "abandoned"
+                          ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400";
+
+                    return (
+                      <tr key={member.id} className="text-sm text-slate-600 dark:text-slate-300">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                              {initials || "?"}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900 dark:text-white">{fullName}</div>
+                              <div className="text-xs text-slate-400">Fitness member</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-2xs font-black uppercase tracking-wider ${statusTone}`}>
+                            {member.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 font-bold">
+                          Week {member.current_week}, day {member.current_day_number}
+                        </td>
+                        <td className="px-4 py-4 font-bold tabular-nums">
+                          {member.total_workouts_completed.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-4">
+                          {new Date(member.started_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                        </td>
+                        <td className="px-6 py-4">
+                          {member.completed_at
+                            ? new Date(member.completed_at).toLocaleDateString(undefined, { dateStyle: "medium" })
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
     </>
   );

@@ -150,6 +150,13 @@ export default function WhatsAppTab() {
 
   return (
     <div className="space-y-4">
+      <Alert className="border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100">
+        <MessageSquare className="h-4 w-4" />
+        <AlertDescription>
+          WhatsApp is an optional Fitness community channel. Members must opt in, and broadcasts can use only approved Meta templates. Delivery status is shown below after Meta sends a receipt.
+        </AlertDescription>
+      </Alert>
+
       <KpiGrid>
         <KpiCard
           icon={<Users className="size-4" />}
@@ -208,6 +215,22 @@ export default function WhatsAppTab() {
             Auto-Reply Rules
           </Button>
         </div>
+      )}
+
+      {canBroadcast && (
+        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-white dark:border-emerald-500/30 dark:from-emerald-500/10 dark:to-slate-900">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="text-base font-black">Quick Broadcast</CardTitle>
+              <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300">
+                Send now or schedule a message to a Fitness group using one of {approvedTemplates.length} approved templates.
+              </p>
+            </div>
+            <Button type="button" onClick={() => setBroadcastDialogOpen(true)} disabled={approvedTemplates.length === 0}>
+              <Send className="h-4 w-4" /> Compose broadcast
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       <Card>
@@ -281,26 +304,33 @@ export default function WhatsAppTab() {
               <TableRow>
                 <TableHead>Broadcast</TableHead>
                 <TableHead>Target</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Sent / Scheduled</TableHead>
+                <TableHead className="text-right">Sent To</TableHead>
+                <TableHead className="text-right">Open Rate</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                  <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-400">
                     Loading broadcasts...
                   </TableCell>
                 </TableRow>
               ) : broadcasts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                  <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-400">
                     No broadcasts queued.
                   </TableCell>
                 </TableRow>
               ) : (
                 broadcasts.map((broadcast) => {
                   const groupName = groups.find((g) => g.id === broadcast.group_id)?.name;
+                  const template = templates.find((item) => item.id === broadcast.template_id);
+                  const sentTo = Number(broadcast.delivery_stats?.sent ?? broadcast.delivery_stats?.delivered ?? 0);
+                  const opened = Number(broadcast.delivery_stats?.opened ?? broadcast.delivery_stats?.read ?? 0);
+                  const openRate = sentTo ? Math.round((opened / sentTo) * 100) : null;
                   return (
                     <TableRow key={broadcast.id}>
                       <TableCell className="min-w-[240px] whitespace-normal">
@@ -308,7 +338,10 @@ export default function WhatsAppTab() {
                         <div className="mt-1 line-clamp-2 text-xs text-slate-500">{broadcast.message}</div>
                       </TableCell>
                       <TableCell>{groupName ?? "Audience segment"}</TableCell>
+                      <TableCell><Badge variant="secondary" className="capitalize">{template?.category ?? "Fitness"}</Badge></TableCell>
                       <TableCell>{formatDate(broadcast.sent_at ?? broadcast.scheduled_at)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{sentTo.toLocaleString()}</TableCell>
+                      <TableCell className="text-right tabular-nums">{openRate == null ? "—" : `${openRate}%`}</TableCell>
                       <TableCell>
                         <Badge
                           variant={

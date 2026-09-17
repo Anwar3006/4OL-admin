@@ -15,6 +15,7 @@ import {
   usePendingOutdoorRoutes,
   useOutdoorIncentives,
   useUpdateOutdoorIncentives,
+  useFitnessOutdoorEngagements,
 } from "@/features/fitness/data/useFitnessOutdoor";
 import { useAddOutdoorRouteDialog, useViewOutdoorRouteDialog, useAddOutdoorEventDialog, useViewOutdoorEventDialog, useAddOutdoorReviewDialog, useViewOutdoorReviewDialog } from "@/features/fitness/data/dialog-hooks";
 import AddOutdoorRouteDialog from "./add-outdoor-route-dialog";
@@ -25,7 +26,6 @@ import AddOutdoorReviewDialog from "./add-outdoor-review-dialog";
 import ViewOutdoorReviewDialog from "./view-outdoor-review-dialog";
 import VerifyOutdoorRouteDialog from "./verify-outdoor-route-dialog";
 import EventParticipantsDialog from "./event-participants-dialog";
-import ChallengesTab from "./ChallengesTab";
 import { cn } from "@/lib/utils";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { useHasPermission } from "@/stores/permission-context";
@@ -40,7 +40,6 @@ import {
   Clock,
   Star,
   ShieldAlert,
-  Trophy,
   Coins,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -145,24 +144,23 @@ const OutdoorTab = () => {
   // Pending verification queue + incentive config (Gap Analysis Part F)
   const { data: pendingRoutes } = usePendingOutdoorRoutes();
   const { data: incentives } = useOutdoorIncentives();
+  const {
+    data: engagementData,
+    isLoading: engagementsLoading,
+    isError: engagementsError,
+    error: engagementsErrorObj,
+  } = useFitnessOutdoorEngagements();
   const updateIncentives = useUpdateOutdoorIncentives();
-  const [incentiveForm, setIncentiveForm] = useState<Record<string, number>>({
-    base_fitcoins: 50,
-    per_km_fitcoins: 10,
-    verification_bonus: 25,
-    event_bonus: 20,
-  });
-
-  useEffect(() => {
-    if (incentives) {
-      setIncentiveForm({
-        base_fitcoins: incentives.base_fitcoins ?? 50,
-        per_km_fitcoins: incentives.per_km_fitcoins ?? 10,
-        verification_bonus: incentives.verification_bonus ?? 25,
-        event_bonus: incentives.event_bonus ?? 20,
-      });
-    }
-  }, [incentives]);
+  const [incentiveEdits, setIncentiveEdits] = useState<Partial<Record<(typeof INCENTIVE_FIELDS)[number]["key"], number>>>({});
+  const incentiveForm = useMemo(
+    () => ({
+      base_fitcoins: incentiveEdits.base_fitcoins ?? incentives?.base_fitcoins ?? 50,
+      per_km_fitcoins: incentiveEdits.per_km_fitcoins ?? incentives?.per_km_fitcoins ?? 10,
+      verification_bonus: incentiveEdits.verification_bonus ?? incentives?.verification_bonus ?? 25,
+      event_bonus: incentiveEdits.event_bonus ?? incentives?.event_bonus ?? 20,
+    }),
+    [incentiveEdits, incentives],
+  );
 
   // Mutations
   const { mutate: deleteRoute } = useDeleteFitnessOutdoorRoute();
@@ -203,6 +201,8 @@ const OutdoorTab = () => {
   const totalRoutes = routesData?.meta?.total ?? 0;
   const totalEvents = eventsData?.meta?.total ?? 0;
   const totalReviews = reviewsData?.meta?.total ?? 0;
+  const totalCompletions = engagementData?.completions.length ?? 0;
+  const totalRatings = engagementData?.ratings.length ?? 0;
 
   // Render Star Utility
   const renderStars = useCallback((rating: number) => {
@@ -213,6 +213,60 @@ const OutdoorTab = () => {
       </div>
     );
   }, []);
+
+  const completionColumns = useMemo(
+    () => [
+      { accessorKey: "user_name", header: "User" },
+      {
+        accessorKey: "target_name",
+        header: "Outdoor Activity",
+        cell: ({ row }: any) => <div><div className="font-bold text-slate-800 dark:text-slate-200">{row.original.target_name}</div><div className="text-3xs font-black uppercase tracking-wider text-slate-400">{row.original.target_type}</div></div>,
+      },
+      {
+        accessorKey: "completed_at",
+        header: "Completed",
+        cell: ({ row }: any) => <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{new Date(row.original.completed_at).toLocaleString()}</span>,
+      },
+      {
+        accessorKey: "will_visit_at",
+        header: "Originally Planned",
+        cell: ({ row }: any) => <span className="text-xs text-slate-500">{row.original.will_visit_at ? new Date(row.original.will_visit_at).toLocaleString() : "Not scheduled"}</span>,
+      },
+      {
+        accessorKey: "engagement",
+        header: "Engagement",
+        cell: ({ row }: any) => <div className="flex gap-2 text-xs"><span>{row.original.is_liked ? "❤️ Liked" : "♡ Not liked"}</span><span>↗ {row.original.shared_count} shares</span></div>,
+      },
+    ],
+    [],
+  );
+
+  const mobileRatingColumns = useMemo(
+    () => [
+      { accessorKey: "user_name", header: "User" },
+      {
+        accessorKey: "target_name",
+        header: "Outdoor Activity",
+        cell: ({ row }: any) => <div><div className="font-bold text-slate-800 dark:text-slate-200">{row.original.target_name}</div><div className="text-3xs font-black uppercase tracking-wider text-slate-400">{row.original.target_type}</div></div>,
+      },
+      {
+        accessorKey: "rating",
+        header: "Rating",
+        cell: ({ row }: any) => renderStars(Number(row.original.rating ?? 0)),
+      },
+      {
+        accessorKey: "completed",
+        header: "Completion",
+        cell: ({ row }: any) => <span className={cn("badge text-3xs font-black uppercase", row.original.completed_at ? "badge-green" : "badge-amber")}>{row.original.completed_at ? "Completed" : "Not completed"}</span>,
+      },
+      {
+        accessorKey: "updated_at",
+        header: "Rated",
+        cell: ({ row }: any) => <span className="text-xs text-slate-500">{new Date(row.original.updated_at).toLocaleString()}</span>,
+      },
+    ],
+    [renderStars],
+  );
 
   // -------------------------------------------------------------
   // TABLE COLUMNS CONFIGURATIONS
@@ -622,7 +676,7 @@ const OutdoorTab = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Sub-KPI Row for Outdoor Management */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           icon="🌳"
           label="Total Outdoor Routes"
@@ -639,10 +693,21 @@ const OutdoorTab = () => {
         />
         <KpiCard
           icon="⭐"
-          label="Route Feedbacks"
-          value={totalReviews.toString()}
+          label="Outdoor Ratings"
+          value={(totalRatings || totalReviews).toString()}
           variant="orange"
-          delta="User reviews & ratings"
+          delta="Routes and events"
+        />
+        <KpiCard
+          icon="✅"
+          label="Outdoor Completions"
+          value={totalCompletions.toString()}
+          variant="purple"
+          delta={
+            engagementData?.isConfigured === false
+              ? "Tracking setup required"
+              : `${engagementData?.plannedVisits ?? 0} visits planned`
+          }
         />
       </div>
 
@@ -682,17 +747,17 @@ const OutdoorTab = () => {
               )}
             >
               <MessageSquare className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
-              Reviews
+              Ratings
             </TabsTrigger>
             <TabsTrigger
-              value="challenges"
+              value="completions"
               className={cn(
                 "px-4 py-2 text-xs font-bold rounded-lg transition-all border border-transparent cursor-pointer",
                 "data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-slate-200/60 dark:data-[state=active]:border-slate-700/60 data-[state=active]:shadow-sm",
               )}
             >
-              <Trophy className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
-              Challenges
+              <Calendar className="w-3.5 h-3.5 mr-1.5 inline-block shrink-0" />
+              Completions
             </TabsTrigger>
             <TabsTrigger
               value="incentives"
@@ -722,14 +787,6 @@ const OutdoorTab = () => {
                 onClick={() => addEventDialog.open()}
               >
                 <Plus className="h-4 w-4" /> Create Event
-              </button>
-            )}
-            {activeSubTab === "reviews" && (
-              <button
-                className="btn btn-primary text-white flex items-center gap-1 text-xs"
-                onClick={() => addReviewDialog.open()}
-              >
-                <Plus className="h-4 w-4" /> Post Review
               </button>
             )}
           </div>
@@ -900,6 +957,33 @@ const OutdoorTab = () => {
             SUB-TAB: REVIEWS
             ------------------------------------------------------------- */}
         <TabsContent value="reviews" className="outline-none space-y-4 w-full min-w-0">
+          {engagementData?.isConfigured === false && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="text-sm font-black">Outdoor rating tracking needs database setup</p>
+                <p className="mt-1 text-xs font-medium">
+                  {engagementData.setupMessage} Apply migration <code className="font-bold">20260917081703_fitness_outdoor_engagements_and_default_coach.sql</code>, then refresh this page.
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="card p-0 overflow-hidden">
+            <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">Mobile Ratings</h3>
+              <p className="mt-1 text-xs text-slate-500">Ratings members submit from route and event pages.</p>
+            </div>
+            <DataTable
+              columns={mobileRatingColumns}
+              data={engagementData?.ratings || []}
+              isLoading={engagementsLoading}
+              isError={engagementsError}
+              error={engagementsErrorObj}
+              pagination={false}
+            />
+          </div>
+
+          <div className="pt-2 text-xs font-black uppercase tracking-widest text-slate-400">Legacy written route reviews</div>
           <div className="card">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -948,11 +1032,32 @@ const OutdoorTab = () => {
           </div>
         </TabsContent>
 
-        {/* -------------------------------------------------------------
-            SUB-TAB: CHALLENGES (reused top-level module)
-            ------------------------------------------------------------- */}
-        <TabsContent value="challenges" className="outline-none space-y-4 w-full min-w-0">
-          <ChallengesTab />
+        <TabsContent value="completions" className="outline-none space-y-4 w-full min-w-0">
+          {engagementData?.isConfigured === false && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="text-sm font-black">Outdoor completion tracking needs database setup</p>
+                <p className="mt-1 text-xs font-medium">
+                  {engagementData.setupMessage} Apply migration <code className="font-bold">20260917081703_fitness_outdoor_engagements_and_default_coach.sql</code>, then refresh this page.
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="card p-0 overflow-hidden">
+            <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">Outdoor Completion Table</h3>
+              <p className="mt-1 text-xs text-slate-500">Members who marked a route or event completed in the mobile app.</p>
+            </div>
+            <DataTable
+              columns={completionColumns}
+              data={engagementData?.completions || []}
+              isLoading={engagementsLoading}
+              isError={engagementsError}
+              error={engagementsErrorObj}
+              pagination={false}
+            />
+          </div>
         </TabsContent>
 
         {/* -------------------------------------------------------------
@@ -981,7 +1086,7 @@ const OutdoorTab = () => {
                     value={incentiveForm[field.key]}
                     disabled={!canEditFitness}
                     onChange={(e) =>
-                      setIncentiveForm((prev) => ({
+                      setIncentiveEdits((prev) => ({
                         ...prev,
                         [field.key]: parseInt(e.target.value || "0", 10),
                       }))

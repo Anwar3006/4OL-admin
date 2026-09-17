@@ -70,6 +70,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
         icon: "💳",
         permission: "transactions.view",
       },
+      {
+        title: "Subscriptions",
+        href: "/subscriptions",
+        icon: "🎟️",
+        permission: "subscriptions.view",
+      },
     ],
   },
   {

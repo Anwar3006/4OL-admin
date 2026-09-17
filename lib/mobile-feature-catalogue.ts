@@ -508,9 +508,9 @@ export const mobileFeatureCatalogue: MobileFeatureArea[] = [
       {
         name: "Outdoor routes and events",
         description:
-          "Lets people discover approved outdoor routes, community events and outdoor challenges.",
+          "Lets people discover approved outdoor routes and events, plan a visit, invite a friend, mark it completed, like it and leave a rating.",
         workingWhen:
-          "Active routes and events appear with usable details, location information and correct reward terms.",
+          "Active routes and events show usable details and every visit, completion, like, share and rating appears once in the matching admin table.",
         state: "live",
       },
       {

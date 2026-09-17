@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { ClipboardList, Loader2, UserRound } from "lucide-react";
 import { MultiSelect } from "@/components/MultiSelect";
 import {
   fitnessPlanSchema,
@@ -44,33 +44,39 @@ import {
 } from "@/features/fitness/data/useFitnessPlan";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useTrainers } from "@/features/fitness/data/useTrainer";
+
+const DEFAULT_VALUES: TFitnessPlanInput = {
+  title: "",
+  description: "",
+  difficulty_level: "beginner",
+  duration_weeks: 4,
+  workouts_per_week: 3,
+  target_body_parts: [],
+  goals: [],
+  is_premium: false,
+  is_featured: false,
+  status: "published",
+  author_type: "admin",
+  coach_display_name: "Coach Ama",
+  tags: [],
+};
 
 const AddFitnessPlanDialog = () => {
   const { isOpen, close, data, isEditMode } = useAddFitnessPlanDialog();
   const { mutate: createPlan, isPending: isCreating } = useCreateFitnessPlan();
   const { mutate: updatePlan, isPending: isUpdating } = useUpdateFitnessPlan();
+  const { data: trainersData, isLoading: trainersLoading } = useTrainers({
+    page: 1,
+    limit: 100,
+    enabled: isOpen,
+  });
 
   const isPending = isCreating || isUpdating;
 
-  const defaultValues: TFitnessPlanInput = {
-    title: "",
-    description: "",
-    difficulty_level: "beginner",
-    duration_weeks: 4,
-    workouts_per_week: 3,
-    target_body_parts: [],
-    goals: [],
-    is_premium: false,
-    is_featured: false,
-    status: "published",
-    author_type: "admin",
-    coach_display_name: "",
-    tags: [],
-  };
-
   const form = useForm<TFitnessPlanInput>({
     resolver: zodResolver(fitnessPlanSchema),
-    defaultValues,
+    defaultValues: DEFAULT_VALUES,
   });
 
   useEffect(() => {
@@ -83,9 +89,9 @@ const AddFitnessPlanDialog = () => {
         tags: data.tags ?? [],
       });
     } else if (isOpen) {
-      form.reset(defaultValues);
+      form.reset(DEFAULT_VALUES);
     }
-  }, [isOpen, isEditMode, data]);
+  }, [isOpen, isEditMode, data, form]);
 
   const onSubmit = (values: TFitnessPlanInput) => {
     // Store an empty coach name as NULL so the mobile grid falls back to
@@ -106,6 +112,24 @@ const AddFitnessPlanDialog = () => {
     "Endurance",
     "Flexibility",
   ];
+  const selectedCoach = useWatch({
+    control: form.control,
+    name: "coach_display_name",
+  })?.trim();
+  const coachOptions = Array.from(
+    new Set([
+      "Coach Ama",
+      ...(trainersData?.trainers ?? [])
+        .filter((trainer) => trainer.status === "active" || trainer.is_verified)
+        .map((trainer) =>
+          [trainer.user_profiles?.first_name, trainer.user_profiles?.last_name]
+            .filter(Boolean)
+            .join(" "),
+        )
+        .filter(Boolean),
+      ...(selectedCoach ? [selectedCoach] : []),
+    ]),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={close}>
@@ -186,24 +210,41 @@ const AddFitnessPlanDialog = () => {
                 )}
               />
 
-              {/* Coach attribution — public display name, never the admin's
-                  real account name (FITNESS_MOCKUP_GAP_ANALYSIS.md, D7) */}
+              {/* Public coach attribution. The plan stores the selected
+                  trainer's public name so mobile can show "by <name>". */}
               <FormField
                 control={form.control}
                 name="coach_display_name"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Coach Display Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. Coach Ama"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
+                  <FormItem className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+                    <FormLabel className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+                      <UserRound className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      Public Coach Name
+                    </FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === "__none" ? null : value)}
+                      value={field.value || "__none"}
+                      disabled={trainersLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-slate-800">
+                          <SelectValue
+                            placeholder={trainersLoading ? "Loading trainers..." : "Select a trainer"}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="z-[100] bg-white dark:bg-slate-800">
+                        <SelectItem value="__none">No public coach</SelectItem>
+                        {coachOptions.map((coachName) => (
+                          <SelectItem key={coachName} value={coachName}>
+                            {coachName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormDescription>
-                      Shown as &quot;by &lt;name&gt;&quot; on the mobile Generated For You
-                      grid. This is a public alias — never your real name.
+                      Select the trainer name shown as &quot;by &lt;name&gt;&quot; on the
+                      mobile plan. Only active or verified trainers are listed.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -18,10 +18,12 @@ export const useTrainers = ({
   page,
   limit,
   search,
+  enabled = true,
 }: {
   page: number;
   limit: number;
   search?: string;
+  enabled?: boolean;
 }) => {
   return useQuery({
     queryKey: TRAINER_QUERY_KEYS.list({ page, limit, search }),
@@ -42,6 +44,7 @@ export const useTrainers = ({
         meta: { total: number; totalPages: number; currentPage: number };
       };
     },
+    enabled,
   });
 };
 

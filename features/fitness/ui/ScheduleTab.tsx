@@ -1,76 +1,24 @@
 "use client";
 
 import React from "react";
-import {
-  Calendar as CalendarIcon,
-  Search,
-  Filter,
-  Plus,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  FileEdit,
-  Mail,
-  MoreVertical,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { BellRing, CalendarCheck2, CircleAlert, Clock3 } from "lucide-react";
+import KpiCard from "@/components/redesign/KpiCard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  useFitnessContentSchedule,
-  type FitnessScheduledContent,
-} from "@/features/fitness/data/useFitnessContentSchedule";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFitnessScheduleStats } from "@/features/fitness/data/useFitnessAnalytics";
-
-const CONTENT_TYPE_LABEL: Record<FitnessScheduledContent["content_type"], string> = {
-  workout: "Workout",
-  challenge: "Challenge",
-  broadcast: "Broadcast",
-  article: "Article",
-};
-
-function contentLabel(row: FitnessScheduledContent) {
-  const metaTitle = row.metadata?.title;
-  if (typeof metaTitle === "string" && metaTitle.trim()) return metaTitle;
-  return `${CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type} #${row.reference_id?.slice(0, 8) ?? "—"}`;
-}
-
-function formatScheduledAt(value: string) {
-  return new Date(value).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-/**
- * Workout activity heatmap (Gap Analysis Part V, V-D3) — real completed
- * sessions from get_fitness_schedule_stats (8-week weekday x week grid),
- * replacing the mockup's hard-coded intensity grid.
- */
-const WorkoutHeatmap = () => {
-  const { data, isLoading } = useFitnessScheduleStats();
-
-  const weeks = Array.from(new Set((data?.heatmap ?? []).map((c) => c.week))).sort();
-  const maxSessions = Math.max(1, ...(data?.heatmap ?? []).map((c) => c.sessions));
-  const cellCount = (week: string, weekday: number) =>
-    data?.heatmap.find((c) => c.week === week && c.weekday === weekday)?.sessions ?? 0;
-
+export default function ScheduleTab() {
+  const { data, isLoading, isError } = useFitnessScheduleStats();
+  const heatmap = data?.heatmap ?? [];
+  const weeks = Array.from(new Set(heatmap.map((cell) => cell.week))).sort();
+  const maxSessions = Math.max(1, ...heatmap.map((cell) => cell.sessions));
+  const countFor = (week: string, weekday: number) =>
+    heatmap.find((cell) => cell.week === week && cell.weekday === weekday)?.sessions ?? 0;
   const shade = (count: number) => {
-    if (count === 0) return "bg-slate-100 dark:bg-slate-800";
+    if (!count) return "bg-slate-100 dark:bg-slate-800";
     const ratio = count / maxSessions;
     if (ratio <= 0.25) return "bg-emerald-200";
     if (ratio <= 0.5) return "bg-emerald-400";
@@ -79,285 +27,74 @@ const WorkoutHeatmap = () => {
   };
 
   return (
-    <Card className="border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800">
-      <CardHeader className="p-8 pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle className="text-xl font-black">
-            🔥 Workout Activity Heatmap
-          </CardTitle>
-          <div className="flex items-center gap-2 text-3xs font-black uppercase tracking-widest text-slate-400">
-            Low <span className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
-            <span className="w-3 h-3 rounded bg-emerald-200" />
-            <span className="w-3 h-3 rounded bg-emerald-400" />
-            <span className="w-3 h-3 rounded bg-emerald-600" />
-            <span className="w-3 h-3 rounded bg-emerald-800" /> High
-          </div>
-        </div>
-        <p className="text-slate-500 font-medium mt-1 text-xs">
-          Completed sessions, last 8 weeks — derived live from exercise_sessions
-        </p>
-      </CardHeader>
-      <CardContent className="px-8 pb-8">
-        {isLoading ? (
-          <div className="h-32 flex items-center justify-center text-sm text-slate-400">
-            Loading heatmap...
-          </div>
-        ) : weeks.length === 0 ? (
-          <div className="h-24 flex items-center justify-center text-sm text-slate-400">
-            No completed sessions in the last 8 weeks.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <div className="inline-grid gap-1" style={{ gridTemplateColumns: `2.5rem repeat(${weeks.length}, 1.5rem)` }}>
-              <div />
-              {weeks.map((week) => (
-                <div key={week} className="text-3xs font-black uppercase text-slate-400 text-center [writing-mode:vertical-rl] rotate-180 h-14">
-                  {week}
-                </div>
-              ))}
-              {WEEKDAY_LABELS.map((day, dayIndex) => (
-                <React.Fragment key={day}>
-                  <div className="text-3xs font-black uppercase text-slate-400 flex items-center">
-                    {day}
-                  </div>
-                  {weeks.map((week) => {
-                    const count = cellCount(week, dayIndex + 1);
-                    return (
-                      <div
-                        key={`${week}-${day}`}
-                        className={`w-6 h-6 rounded ${shade(count)}`}
-                        title={`${week} ${day}: ${count} sessions`}
-                      />
-                    );
-                  })}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-        {data && (
-          <div className="mt-4 flex flex-wrap gap-4 text-2xs font-black uppercase tracking-widest">
-            <span className="text-emerald-700 dark:text-emerald-400">✅ {data.this_week.completed.toLocaleString()} completed this week</span>
-            <span className="text-blue-600 dark:text-blue-400">🔄 {data.this_week.in_progress.toLocaleString()} in progress</span>
-            <span className="text-red-500">⛔ {data.this_week.abandoned.toLocaleString()} abandoned</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-const ScheduleTab = () => {
-  const { data: scheduledContent, isLoading, isError } = useFitnessContentSchedule();
-
-  return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Schedule Header & KPIs */}
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="lg:col-span-3 border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800">
-          <CardHeader className="p-8 pb-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <CardTitle className="text-2xl font-black">
-                  📅 Content Schedule
-                </CardTitle>
-                <p className="text-slate-500 font-medium mt-1">
-                  Coordinate workout releases, challenges, and group broadcasts
-                </p>
-              </div>
-              <Button className="rounded-xl font-bold bg-[#131927] hover:bg-slate-800">
-                <Plus className="h-4 w-4 mr-2" /> Schedule Content
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-            <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search scheduled items..."
-                  className="pl-9 h-12 rounded-2xl border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 focus-visible:ring-slate-900"
-                />
-              </div>
-              <Button
-                variant="outline"
-                className="h-12 rounded-2xl font-bold border-slate-200 dark:border-slate-700"
-              >
-                <Filter className="h-4 w-4 mr-2" /> Date Range
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Live workout heatmap (Part V) */}
-        <WorkoutHeatmap />
-
-        {/* <Card className="border-none shadow-sm rounded-[2rem] bg-emerald-500 text-white p-8">
-           <CardTitle className="text-lg font-black mb-6">📊 Pipeline</CardTitle>
-           <div className="space-y-4">
-              {[
-                { label: "Today", val: 12, icon: Clock },
-                { label: "Pending", val: 4, icon: AlertCircle },
-                { label: "Approved", val: 84, icon: CheckCircle2 },
-              ].map((stat, i) => (
-                <div key={i} className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <stat.icon className="h-4 w-4 opacity-80" />
-                      <span className="text-xs font-bold opacity-90">{stat.label}</span>
-                   </div>
-                   <span className="text-lg font-black">{stat.val}</span>
-                </div>
-              ))}
-           </div>
-        </Card> */}
-      </div>
-
-      {/* Content Calendar Table */}
-      <Card className="border-none shadow-sm rounded-[2rem] bg-white dark:bg-slate-800 overflow-hidden">
-        <CardHeader className="p-8 border-b border-slate-50">
-          <CardTitle className="text-xl font-black">
-            📅 Content Calendar
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-slate-50 dark:bg-slate-900">
-              <TableRow className="border-none">
-                <TableHead className="font-black text-2xs uppercase tracking-widest px-8">
-                  Content
-                </TableHead>
-                <TableHead className="font-black text-2xs uppercase tracking-widest">
-                  Type
-                </TableHead>
-                <TableHead className="font-black text-2xs uppercase tracking-widest">
-                  Target
-                </TableHead>
-                <TableHead className="font-black text-2xs uppercase tracking-widest">
-                  Date/Time
-                </TableHead>
-                <TableHead className="font-black text-2xs uppercase tracking-widest">
-                  Status
-                </TableHead>
-                <TableHead className="font-black text-2xs uppercase tracking-widest text-right px-8">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i} className="border-slate-50">
-                    {Array.from({ length: 6 }).map((__, j) => (
-                      <TableCell key={j} className="px-8">
-                        <Skeleton className="h-4 w-full max-w-32" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-
-              {!isLoading && isError && (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-sm text-red-600 dark:text-red-400">
-                    Failed to load the content schedule. Try refreshing the page.
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {!isLoading && !isError && (scheduledContent?.length ?? 0) === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-sm text-slate-400">
-                    📂 Nothing scheduled yet.
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {!isLoading &&
-                !isError &&
-                scheduledContent?.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors border-slate-50"
-                  >
-                    <TableCell className="px-8 font-bold text-slate-700 dark:text-slate-300">
-                      {contentLabel(row)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className="rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-none uppercase text-3xs tracking-widest px-2"
-                      >
-                        {CONTENT_TYPE_LABEL[row.content_type] ?? row.content_type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-slate-500">
-                      {row.target_audience ?? "All Users"}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                      {formatScheduledAt(row.scheduled_at)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          row.status === "sent" || row.status === "completed"
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-none px-3"
-                            : row.status === "cancelled" || row.status === "failed"
-                              ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-none px-3"
-                              : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-none px-3"
-                        }
-                      >
-                        {(row.status ?? "scheduled").toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right px-8">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-400"
-                        aria-label="More actions"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
+      <Card className="border-blue-200 bg-blue-50/60 dark:border-blue-500/30 dark:bg-blue-500/10">
+        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white">
+              <CalendarCheck2 className="size-5 text-blue-600" />
+              Member activity schedule
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm font-medium text-slate-600 dark:text-slate-300">
+              This page shows when members actually work out and whether sessions finish. The old “Content Schedule” button referred to publishing workouts and broadcasts, but it was not connected to an action, so it has been removed to avoid confusion.
+            </p>
+          </div>
+          <Link href="/notifications">
+            <Button variant="outline" className="shrink-0 bg-white dark:bg-slate-900">
+              <BellRing className="size-4" /> Manage reminders
+            </Button>
+          </Link>
         </CardContent>
       </Card>
 
-      {/* Admin Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Button
-          variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          <FileEdit className="h-5 w-5 text-blue-500" />
-          <span className="text-xs text-slate-600 dark:text-slate-300">Edit Templates</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          <Mail className="h-5 w-5 text-emerald-500" />
-          <span className="text-xs text-slate-600 dark:text-slate-300">Bulk Reminder</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          <Clock className="h-5 w-5 text-amber-500" />
-          <span className="text-xs text-slate-600 dark:text-slate-300">Review Queue</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-6 rounded-2xl border-slate-200 dark:border-slate-700 flex flex-col gap-2 font-bold hover:bg-slate-50 dark:hover:bg-slate-900"
-        >
-          <CheckCircle2 className="h-5 w-5 text-purple-500" />
-          <span className="text-xs text-slate-600 dark:text-slate-300">Auto-Rules</span>
-        </Button>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <KpiCard icon={<CalendarCheck2 className="size-4" />} label="Completed this week" value={isLoading ? "..." : data?.this_week.completed ?? 0} variant="green" />
+        <KpiCard icon={<Clock3 className="size-4" />} label="In progress" value={isLoading ? "..." : data?.this_week.in_progress ?? 0} variant="blue" />
+        <KpiCard icon={<CircleAlert className="size-4" />} label="Abandoned" value={isLoading ? "..." : data?.this_week.abandoned ?? 0} variant="red" />
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-xl font-black">Workout completion by day</CardTitle>
+              <p className="mt-1 text-xs font-medium text-slate-500">Completed mobile workout sessions during the last eight weeks.</p>
+            </div>
+            <div className="flex items-center gap-1 text-3xs font-black uppercase tracking-widest text-slate-400">
+              Low <span className="size-3 rounded bg-slate-100 dark:bg-slate-800" />
+              <span className="size-3 rounded bg-emerald-200" />
+              <span className="size-3 rounded bg-emerald-400" />
+              <span className="size-3 rounded bg-emerald-600" />
+              <span className="size-3 rounded bg-emerald-800" /> High
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isError ? (
+            <div className="rounded-xl bg-red-50 p-5 text-sm font-medium text-red-700 dark:bg-red-500/10 dark:text-red-300">Workout schedule data could not be loaded.</div>
+          ) : isLoading ? (
+            <div className="py-14 text-center text-sm text-slate-400">Loading activity schedule…</div>
+          ) : weeks.length === 0 ? (
+            <div className="py-14 text-center text-sm text-slate-400">No completed sessions have been recorded in the last eight weeks.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="inline-grid gap-1" style={{ gridTemplateColumns: `2.75rem repeat(${weeks.length}, 1.75rem)` }}>
+                <div />
+                {weeks.map((week) => <div key={week} className="h-14 rotate-180 text-center text-3xs font-black uppercase text-slate-400 [writing-mode:vertical-rl]">{week}</div>)}
+                {WEEKDAY_LABELS.map((day, index) => (
+                  <React.Fragment key={day}>
+                    <div className="flex items-center text-3xs font-black uppercase text-slate-400">{day}</div>
+                    {weeks.map((week) => {
+                      const count = countFor(week, index + 1);
+                      return <div key={`${week}-${day}`} className={`size-7 rounded-md ${shade(count)}`} title={`${week} ${day}: ${count} completed sessions`} />;
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default ScheduleTab;
+}

@@ -8,6 +8,25 @@ import {
 
 const supabase = getBrowserClient();
 
+export interface FitnessPlanMember {
+  id: string;
+  user_id: string;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+  current_week: number;
+  current_day_number: number;
+  total_workouts_completed: number;
+  user: {
+    first_name: string;
+    last_name: string;
+  } | null;
+}
+
+export type FitnessPlanDetail = TFitnessPlanOutput & {
+  fitness_user_assignments: FitnessPlanMember[];
+};
+
 export const FITNESS_PLAN_QUERY_KEYS = {
   all: ["fitness_plans"] as const,
   lists: () => [...FITNESS_PLAN_QUERY_KEYS.all, "list"] as const,
@@ -34,7 +53,7 @@ export const useFitnessPlans = ({
 
       let query = supabase
         .from("fitness_plans")
-        .select("*", { count: "exact" })
+        .select("*, fitness_user_assignments(status)", { count: "exact" })
         .order("created_at", { ascending: false });
 
       if (search) {
@@ -46,7 +65,9 @@ export const useFitnessPlans = ({
 
       const total = count ?? 0;
       return {
-        plans: (data || []) as TFitnessPlanOutput[],
+        plans: (data || []) as (TFitnessPlanOutput & {
+          fitness_user_assignments?: { status: string }[];
+        })[],
         meta: {
           total,
           totalPages: Math.ceil(total / limit),
@@ -63,11 +84,27 @@ export const useFitnessPlan = (id: string | null) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fitness_plans")
-        .select("*")
+        .select(`
+          *,
+          fitness_user_assignments(
+            id,
+            user_id,
+            status,
+            started_at,
+            completed_at,
+            current_week,
+            current_day_number,
+            total_workouts_completed,
+            user:user_profiles!fitness_user_assignments_user_id_fkey(
+              first_name,
+              last_name
+            )
+          )
+        `)
         .eq("id", id!)
         .single();
       if (error) throw new Error(error.message);
-      return data as TFitnessPlanOutput;
+      return data as unknown as FitnessPlanDetail;
     },
     enabled: !!id,
   });

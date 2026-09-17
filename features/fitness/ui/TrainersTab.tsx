@@ -1,302 +1,81 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, useEffect } from "react";
-import Image from "next/image";
-import { useDebounce } from "@/hooks/use-debounce";
-import { DataTable } from "@/components/Data-Table/data-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  useTrainers,
-  useDeleteTrainer,
-  useVerifyTrainer,
-} from "@/features/fitness/data/useTrainer";
-import { useAddTrainerDialog, useViewTrainerDialog } from "@/features/fitness/data/dialog-hooks";
-import AddTrainerDialog from "./add-trainer-dialog";
-import ViewTrainerDialog from "./view-trainer-dialog";
-import { cn } from "@/lib/utils";
-import {
-  UserSquare,
-  Search,
-  Filter,
-  Plus,
-  ShieldCheck,
-  Star,
-} from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, ClipboardList, ShieldCheck, UserRoundSearch } from "lucide-react";
 
-const TrainersTab = () => {
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
-  const limit = 10;
-  const searchParams = useSearchParams();
+const CURRENT_RULES = [
+  "Every current workout plan is publicly attributed to Coach Ama.",
+  "Coach Ama is a stock display alias, not a claim about a verified trainer.",
+  "Admins can still change the public coach name on an individual plan.",
+];
 
-  // Read page from URL to trigger refetch when pagination changes
-  const page = parseInt(searchParams.get("fit_train_page") || "1", 10);
+const FUTURE_SCOPE = [
+  "Trainer applications and identity verification",
+  "Qualifications, specialties and service areas",
+  "Workout ownership and trainer performance",
+  "Bookings, availability and member feedback",
+];
 
-  const trainerDialog = useAddTrainerDialog();
-  const viewTrainer = useViewTrainerDialog();
-  const { data, isLoading, isError, error } = useTrainers({
-    page,
-    limit,
-    search: debouncedSearch,
-  });
-  const { mutate: deleteTrainer } = useDeleteTrainer();
-  const { mutate: verifyTrainer } = useVerifyTrainer();
-
-  const handleEdit = useCallback(
-    (row: any) => {
-      trainerDialog.open(row);
-    },
-    [trainerDialog],
-  );
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      setDeleteId(id);
-    },
-    [],
-  );
-
-  const confirmDelete = useCallback(() => {
-    if (deleteId) {
-      deleteTrainer(deleteId);
-      setDeleteId(null);
-    }
-  }, [deleteId, deleteTrainer]);
-
-  const columns = useMemo(
-    () => [
-    {
-      accessorKey: "trainer",
-      header: "Trainer Profile",
-      cell: ({ row }: any) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xs font-bold text-slate-400 overflow-hidden">
-            {row.original.user_profiles?.avatar_url ? (
-              <Image
-                src={row.original.user_profiles.avatar_url}
-                alt=""
-                width={32}
-                height={32}
-                unoptimized
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              row.original.user_profiles?.first_name?.[0] || "T"
-            )}
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-800 dark:text-slate-200">
-                {row.original.user_profiles?.first_name}{" "}
-                {row.original.user_profiles?.last_name}
-              </span>
-              {row.original.is_verified && (
-                <ShieldCheck className="w-3 h-3 text-emerald-500 fill-emerald-50" />
-              )}
-            </div>
-            <span className="text-2xs text-slate-400">
-              {row.original.user_profiles?.email}
-            </span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "specialties",
-      header: "Specialties",
-      cell: ({ row }: any) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.specialties?.slice(0, 2).map((s: string, i: number) => (
-            <span key={i} className="badge badge-purple uppercase text-3xs">
-              {s}
-            </span>
-          ))}
-          {row.original.specialties?.length > 2 && (
-            <span className="text-3xs text-slate-400">
-              +{row.original.specialties.length - 2}
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "experience",
-      header: "Experience",
-      cell: ({ row }: any) => (
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-          {row.original.years_experience || 0} years
-        </span>
-      ),
-    },
-    {
-      accessorKey: "certifications",
-      header: "Documents",
-      cell: ({ row }: any) => (
-        <div className="flex flex-wrap gap-1">
-          {row.original.certifications?.length ? (
-            <>
-              {row.original.certifications.slice(0, 2).map((c: string, i: number) => (
-                <span key={i} className="badge badge-blue uppercase text-3xs">
-                  📄 {c}
-                </span>
-              ))}
-              {row.original.certifications.length > 2 && (
-                <span className="text-3xs text-slate-400">
-                  +{row.original.certifications.length - 2}
-                </span>
-              )}
-            </>
-          ) : (
-            <span className="text-2xs text-slate-400">None on file</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "rating",
-      header: "Rating",
-      cell: ({ row }: any) => (
-        <div className="flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-slate-200">
-          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-          {row.original.average_rating?.toFixed(1) || "5.0"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }: any) => (
-        <span
-          className={cn(
-            "badge uppercase tracking-wider text-2xs",
-            row.original.status === "active" ? "badge-green" : "badge-amber",
-          )}
-        >
-          {row.original.status}
-        </span>
-      ),
-    },
-    ],
-    [],
-  );
-
-  const rowActions = [
-    {
-      label: "View Profile",
-      icon: "👁️",
-      onClick: (row: any) => viewTrainer.open(row.id),
-    },
-    { label: "Edit", icon: "✏️", onClick: handleEdit },
-    {
-      label: "Verify / Revoke",
-      icon: "🛡️",
-      onClick: (row: any) => {
-        const verify = !row.is_verified;
-        if (
-          globalThis.confirm(
-            verify
-              ? `Verify ${row.user_profiles?.first_name ?? "this trainer"}'s documents and activate their profile?`
-              : `Revoke verification for ${row.user_profiles?.first_name ?? "this trainer"}? Their status returns to pending.`,
-          )
-        ) {
-          verifyTrainer({ id: row.id, verify });
-        }
-      },
-    },
-    {
-      label: "Delete",
-      icon: "🗑️",
-      onClick: (row: any) => handleDelete(row.id),
-      danger: true,
-    },
-  ];
-
+export default function TrainersTab() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 gap-6">
-        <div className="lg:col-span-3 card bg-white dark:bg-slate-800">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <Card className="overflow-hidden border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:border-emerald-500/30 dark:from-emerald-500/10 dark:via-slate-900 dark:to-blue-500/10">
+        <CardHeader className="gap-4 p-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+              <UserRoundSearch className="size-6" />
+            </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-200">
-                👨‍🏫 Trainer Directory
-              </h3>
-              <p className="text-slate-500 font-medium mt-1">
-                Manage certified fitness professionals and availability
+              <CardTitle className="text-2xl font-black text-slate-900 dark:text-white">
+                Trainers is a future feature
+              </CardTitle>
+              <p className="mt-1 max-w-3xl text-sm font-medium text-slate-600 dark:text-slate-300">
+                The trainer directory and marketplace are not live for members yet, so this page intentionally does not expose unfinished trainer management controls.
               </p>
             </div>
-            <button
-              className="btn btn-primary"
-              onClick={() => trainerDialog.open()}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Add Trainer
-            </button>
+            <Badge className="ml-auto bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300">
+              Planned
+            </Badge>
           </div>
+        </CardHeader>
+      </Card>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                placeholder="Search by trainer name or specialty..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-ek-green/20 focus:border-ek-green transition-all"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <button className="btn btn-secondary">
-              <Filter className="h-4 w-4 mr-1" /> Verification
-            </button>
-          </div>
-        </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base font-black">
+              <ShieldCheck className="size-5 text-emerald-600" />
+              What happens today
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {CURRENT_RULES.map((rule) => (
+              <div key={rule} className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{rule}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base font-black">
+              <ClipboardList className="size-5 text-blue-600" />
+              What will be built later
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {FUTURE_SCOPE.map((item) => (
+              <div key={item} className="flex items-center gap-3 border-b border-slate-100 pb-3 last:border-0 dark:border-slate-800">
+                <span className="size-2 rounded-full bg-blue-500" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
-
-      <div className="card p-0 overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={data?.trainers || []}
-          rowActions={rowActions}
-          isLoading={isLoading}
-          isError={isError}
-          error={error}
-          pagination={true}
-          urlPersistence={{
-            pageKey: "fit_train_page",
-            pageSizeKey: "fit_train_pageSize",
-          }}
-          totalItems={data?.meta?.total || 0}
-        />
-      </div>
-
-      <AddTrainerDialog />
-      <ViewTrainerDialog />
-
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this trainer?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
-};
-
-export default TrainersTab;
+}

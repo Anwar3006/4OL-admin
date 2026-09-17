@@ -45,6 +45,7 @@ const GrantSchema = z.object({
 const RevokeSchema = z.object({
   subscriptionId: z.string().uuid().optional(),
   userId: z.string().uuid().optional(),
+  recordType: z.enum(["subscription", "period_grant"]).default("subscription"),
 }).refine((v) => !!v.subscriptionId || !!v.userId, {
   message: "Provide subscriptionId or userId",
 });
@@ -76,36 +77,64 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ plans: plans ?? [] });
   }
 
-  let query = admin
+  let subscriptionQuery = admin
     .from("user_subscriptions")
     .select("id, user_id, tier_id, status, source, scope, granted_by, starts_at, expires_at, paystack_reference, note, created_at, subscription_tiers(key, name)", { count: "exact" })
     .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
-  if (userId) query = query.eq("user_id", userId);
-  if (status && ["active", "expired", "revoked"].includes(status)) {
-    query = query.eq("status", status);
+    .limit(1000);
+  let periodQuery = admin
+    .from("period_premium_grants")
+    .select("id,user_id,tier,source,reason,notes,starts_at,expires_at,revoked_at,granted_by,created_at")
+    .order("created_at", { ascending: false })
+    .limit(1000);
+  if (userId) {
+    subscriptionQuery = subscriptionQuery.eq("user_id", userId);
+    periodQuery = periodQuery.eq("user_id", userId);
   }
 
-  const { data: rows, error, count } = await query;
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  const [subscriptionsResult, periodResult] = await Promise.all([subscriptionQuery, periodQuery]);
+  if (subscriptionsResult.error) return NextResponse.json({ error: subscriptionsResult.error.message }, { status: 500 });
+  if (periodResult.error) return NextResponse.json({ error: periodResult.error.message }, { status: 500 });
+
+  const now = Date.now();
+  const rows = [
+    ...(subscriptionsResult.data ?? []).map((row) => ({ ...row, record_type: "subscription" as const })),
+    ...(periodResult.data ?? []).map((row) => ({
+      id: row.id,
+      user_id: row.user_id,
+      status: row.revoked_at ? "revoked" : new Date(row.expires_at).getTime() <= now ? "expired" : "active",
+      source: row.source,
+      scope: "period_only" as const,
+      granted_by: row.granted_by,
+      starts_at: row.starts_at,
+      expires_at: row.expires_at,
+      note: row.notes ?? row.reason,
+      created_at: row.created_at,
+      subscription_tiers: { key: "cycle_pro", name: "Cycle Pro" },
+      record_type: "period_grant" as const,
+    })),
+  ]
+    .filter((row) => !status || status === "all" || row.status === status)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const count = rows.length;
+  const pageRows = rows.slice(offset, offset + limit);
 
   // Resolve display names in a second step — avoids fragile FK-name hints
   // on user_profiles (GenericStringError pattern).
-  const ids = [...new Set((rows ?? []).flatMap((r) => [r.user_id, r.granted_by].filter(Boolean)))];
+  const ids = [...new Set(pageRows.flatMap((r) => [r.user_id, r.granted_by].filter(Boolean) as string[]))];
   const profiles = ids.length
     ? (await admin.from("user_profiles").select("user_id, first_name, last_name").in("user_id", ids)).data ?? []
     : [];
   const nameOf = new Map(profiles.map((p) => [p.user_id, `${p.first_name} ${p.last_name}`]));
 
   return NextResponse.json({
-    subscriptions: (rows ?? []).map((r) => ({
+    subscriptions: pageRows.map((r) => ({
       ...r,
       user_name: nameOf.get(r.user_id) ?? r.user_id,
       granted_by_name: r.granted_by ? nameOf.get(r.granted_by) ?? r.granted_by : null,
     })),
-    total: count ?? 0,
+    total: count,
   });
 }
 
@@ -187,6 +216,25 @@ export async function PATCH(req: NextRequest) {
   }
 
   const admin = getAdminClient();
+  if (parsed.data.recordType === "period_grant") {
+    let periodQuery = admin
+      .from("period_premium_grants")
+      .update({ revoked_at: new Date().toISOString(), revoked_by: auth.user.id })
+      .is("revoked_at", null);
+    if (parsed.data.subscriptionId) periodQuery = periodQuery.eq("id", parsed.data.subscriptionId);
+    else periodQuery = periodQuery.eq("user_id", parsed.data.userId!);
+    const { data: revoked, error } = await periodQuery.select("id,user_id").single();
+    if (error || !revoked) return NextResponse.json({ error: "No active Period Tracker grant found to revoke" }, { status: 404 });
+    await admin.rpc("log_admin_activity", {
+      p_admin_id: auth.user.id,
+      p_action_type: "subscription_revoke",
+      p_target_table: "period_premium_grants",
+      p_record_id: revoked.id,
+      p_description: `Revoked Period Tracker grant ${revoked.id} for user ${revoked.user_id}`,
+    });
+    return NextResponse.json({ success: true, subscriptionId: revoked.id });
+  }
+
   let query = admin
     .from("user_subscriptions")
     .update({ status: "revoked", note: "Revoked by admin" })

@@ -38,6 +38,7 @@ export const OUTDOOR_QUERY_KEYS = {
   eventRegistrations: (eventId: string) =>
     ["fitness_outdoor_event_registrations", eventId] as const,
   incentives: ["fitness_outdoor_incentives"] as const,
+  engagements: ["fitness_outdoor_engagements"] as const,
 };
 
 // =============================================================================
@@ -466,6 +467,99 @@ export const useDeleteFitnessOutdoorReview = () => {
     onError: (error: Error) => {
       toast.error(`Failed to delete review: ${error.message}`);
     },
+  });
+};
+
+export interface FitnessOutdoorEngagementRow {
+  id: string;
+  user_id: string;
+  user_name: string;
+  target_type: "route" | "event";
+  target_id: string;
+  target_name: string;
+  will_visit_at: string | null;
+  completed_at: string | null;
+  is_liked: boolean;
+  rating: number | null;
+  shared_count: number;
+  created_at: string;
+}
+
+export interface FitnessOutdoorEngagementData {
+  completions: FitnessOutdoorEngagementRow[];
+  ratings: FitnessOutdoorEngagementRow[];
+  plannedVisits: number;
+  likes: number;
+  isConfigured: boolean;
+  setupMessage: string | null;
+}
+
+/** Mobile engagement rows that back the Outdoor Completion and Ratings tables. */
+export const useFitnessOutdoorEngagements = () => {
+  return useQuery<FitnessOutdoorEngagementData, Error>({
+    queryKey: OUTDOOR_QUERY_KEYS.engagements,
+    queryFn: async () => {
+      const { data: rawRows, error } = await supabase
+        .from("fitness_outdoor_engagements")
+        .select("*, user:user_profiles(first_name,last_name)")
+        .order("updated_at", { ascending: false })
+        .limit(500);
+      if (error) {
+        const isMissingEngagementTable =
+          error.code === "PGRST205" ||
+          (error.message.includes("fitness_outdoor_engagements") &&
+            error.message.toLowerCase().includes("schema cache"));
+
+        if (isMissingEngagementTable) {
+          return {
+            completions: [],
+            ratings: [],
+            plannedVisits: 0,
+            likes: 0,
+            isConfigured: false,
+            setupMessage:
+              "Outdoor tracking is ready in the app code, but its database migration has not been applied to this Supabase project yet.",
+          };
+        }
+
+        throw new Error(error.message);
+      }
+
+      const rows = (rawRows ?? []) as any[];
+      const routeIds = [...new Set(rows.filter((row) => row.target_type === "route").map((row) => row.target_id))];
+      const eventIds = [...new Set(rows.filter((row) => row.target_type === "event").map((row) => row.target_id))];
+
+      const [routeResult, eventResult] = await Promise.all([
+        routeIds.length
+          ? supabase.from("fitness_outdoor_routes").select("id,name").in("id", routeIds)
+          : Promise.resolve({ data: [], error: null }),
+        eventIds.length
+          ? supabase.from("fitness_outdoor_events").select("id,title").in("id", eventIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (routeResult.error) throw new Error(routeResult.error.message);
+      if (eventResult.error) throw new Error(eventResult.error.message);
+
+      const targetNames = new Map<string, string>();
+      for (const route of routeResult.data ?? []) targetNames.set(`route:${route.id}`, route.name);
+      for (const event of eventResult.data ?? []) targetNames.set(`event:${event.id}`, event.title);
+
+      const engagementRows: FitnessOutdoorEngagementRow[] = rows.map((row) => ({
+        ...row,
+        user_name: [row.user?.first_name, row.user?.last_name].filter(Boolean).join(" ") || "Unknown user",
+        target_name: targetNames.get(`${row.target_type}:${row.target_id}`) ?? "Removed Outdoor item",
+      }));
+
+      return {
+        completions: engagementRows.filter((row) => row.completed_at),
+        ratings: engagementRows.filter((row) => row.rating != null),
+        plannedVisits: engagementRows.filter((row) => row.will_visit_at && !row.completed_at).length,
+        likes: engagementRows.filter((row) => row.is_liked).length,
+        isConfigured: true,
+        setupMessage: null,
+      };
+    },
+    staleTime: 30_000,
   });
 };
 

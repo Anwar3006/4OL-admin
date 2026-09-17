@@ -5515,6 +5515,56 @@ export type Database = {
           },
         ]
       }
+      fitness_outdoor_engagements: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_liked: boolean
+          rating: number | null
+          shared_count: number
+          target_id: string
+          target_type: string
+          updated_at: string
+          user_id: string
+          will_visit_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_liked?: boolean
+          rating?: number | null
+          shared_count?: number
+          target_id: string
+          target_type: string
+          updated_at?: string
+          user_id: string
+          will_visit_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_liked?: boolean
+          rating?: number | null
+          shared_count?: number
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+          user_id?: string
+          will_visit_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitness_outdoor_engagements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       fitness_outdoor_reviews: {
         Row: {
           comment: string | null

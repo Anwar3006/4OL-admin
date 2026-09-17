@@ -154,6 +154,9 @@ export interface FitnessHealthPlatformRow {
   platform_name: string;
   is_enabled: boolean;
   sync_frequency_mins: number;
+  data_types: string[];
+  connected_users: number;
+  synced_today: number;
   sync_success: number;
   sync_failures: number;
   last_sync_at: string | null;
