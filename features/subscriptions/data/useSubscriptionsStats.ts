@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import type { SparklinePoint } from "@/components/redesign/Sparkline";
 
 export interface SubscriptionsStats {
   total: number;
   active: number;
   /** New grants created per week, oldest first — real 8-week series. */
-  new_grants_trend: number[];
+  new_grants_trend: SparklinePoint[];
   by_scope: {
     all_access: number;
     fitness_only: number;

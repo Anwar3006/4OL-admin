@@ -151,19 +151,28 @@ export default function WhatsAppTab() {
   // with genuine, evenly-meaningful history (broadcasts already fetched
   // above, ordered by created_at). Everything else in `stats` is a single
   // current snapshot number with no history to chart.
-  const sentTrend = [...broadcasts]
+  const recentSentBroadcasts = [...broadcasts]
     .filter((b) => b.sent_at)
     .sort((a, b) => new Date(a.sent_at!).getTime() - new Date(b.sent_at!).getTime())
-    .slice(-12)
-    .map((b) => Number(b.delivery_stats?.sent ?? b.delivery_stats?.delivered ?? 0));
+    .slice(-12);
+  const sentTrend = recentSentBroadcasts.map((b) => Number(b.delivery_stats?.sent ?? b.delivery_stats?.delivered ?? 0));
+  const sentTrendPoints = recentSentBroadcasts.map((b) => ({
+    label: b.name,
+    value: Number(b.delivery_stats?.sent ?? b.delivery_stats?.delivered ?? 0),
+  }));
   const hasSentTrend = sentTrend.length >= 2;
-  const sentDirection: "up" | "down" | "neutral" = !hasSentTrend
+  const lastSent = sentTrend[sentTrend.length - 1] ?? 0;
+  const prevSent = sentTrend[sentTrend.length - 2] ?? 0;
+  const sentPct = hasSentTrend && prevSent > 0 ? Math.round(((lastSent - prevSent) / prevSent) * 100) : null;
+  // "flat" (equal to the prior broadcast, a real comparison) is a distinct
+  // amber signal from "neutral" (fewer than 2 sent broadcasts to compare).
+  const sentDirection: "up" | "down" | "flat" | "neutral" = !hasSentTrend
     ? "neutral"
-    : sentTrend[sentTrend.length - 1] > sentTrend[sentTrend.length - 2]
+    : lastSent > prevSent
       ? "up"
-      : sentTrend[sentTrend.length - 1] < sentTrend[sentTrend.length - 2]
+      : lastSent < prevSent
         ? "down"
-        : "neutral";
+        : "flat";
 
   return (
     <div className="space-y-4">
@@ -185,9 +194,17 @@ export default function WhatsAppTab() {
           icon={<Send className="size-4" />}
           label="Messages Sent"
           value={loading ? "..." : stats?.messages_sent ?? 0}
-          delta={hasSentTrend ? "Sent per broadcast, most recent 12" : undefined}
+          delta={
+            !hasSentTrend
+              ? undefined
+              : sentDirection === "flat"
+                ? "Same as last broadcast"
+                : sentPct != null
+                  ? `${Math.abs(sentPct)}% vs last broadcast`
+                  : "vs last broadcast"
+          }
           deltaType={sentDirection}
-          trend={hasSentTrend ? sentTrend : undefined}
+          trend={hasSentTrend ? sentTrendPoints : undefined}
           variant="purple"
           isLoading={loading}
           size={hasSentTrend ? "lg" : "default"}

@@ -216,13 +216,21 @@ const OutdoorTab = () => {
     completionsByWeek.set(bucket, (completionsByWeek.get(bucket) ?? 0) + 1);
   }
   const currentWeekBucket = weekBucket(new Date().toISOString());
+  const weekLabel = (bucket: number) =>
+    `Week of ${new Date(bucket * WEEK_MS).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   const completionsTrend = Array.from({ length: 8 }, (_, i) => completionsByWeek.get(currentWeekBucket - (7 - i)) ?? 0);
+  const completionsTrendPoints = Array.from({ length: 8 }, (_, i) => {
+    const bucket = currentWeekBucket - (7 - i);
+    return { label: weekLabel(bucket), value: completionsByWeek.get(bucket) ?? 0 };
+  });
   const lastWeekCompletions = completionsTrend[completionsTrend.length - 1] ?? 0;
   const prevWeekCompletions = completionsTrend[completionsTrend.length - 2] ?? 0;
   const completionsWowPct =
     prevWeekCompletions > 0 ? Math.round(((lastWeekCompletions - prevWeekCompletions) / prevWeekCompletions) * 100) : null;
-  const completionsDirection: "up" | "down" | "neutral" =
-    completionsWowPct == null || completionsWowPct === 0 ? "neutral" : completionsWowPct > 0 ? "up" : "down";
+  // "flat" (zero change, a real comparison) is a distinct amber signal
+  // from "neutral" (no prior week to compare against at all).
+  const completionsDirection: "up" | "down" | "flat" | "neutral" =
+    completionsWowPct == null ? "neutral" : completionsWowPct === 0 ? "flat" : completionsWowPct > 0 ? "up" : "down";
 
   // Render Star Utility
   const renderStars = useCallback((rating: number) => {
@@ -713,11 +721,13 @@ const OutdoorTab = () => {
             engagementData?.isConfigured === false
               ? "Tracking setup required"
               : completionsWowPct != null
-                ? `${Math.abs(completionsWowPct)}% vs last week`
+                ? completionsWowPct === 0
+                  ? "No change vs last week"
+                  : `${Math.abs(completionsWowPct)}% vs last week`
                 : "8-week trend"
           }
           deltaType={completionsDirection}
-          trend={engagementData?.isConfigured === false ? undefined : completionsTrend}
+          trend={engagementData?.isConfigured === false ? undefined : completionsTrendPoints}
           size={engagementData?.isConfigured === false ? "default" : "lg"}
         />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

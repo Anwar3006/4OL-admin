@@ -72,12 +72,19 @@ export default function ScheduleTab() {
               const weeklyTotals = weeks.map((w) =>
                 WEEKDAY_LABELS.reduce((sum, _, idx) => sum + countFor(w, idx + 1), 0),
               );
+              const weeklyTrendPoints = weeks.map((w, idx) => {
+                const [year, weekNum] = w.split("-W");
+                return { label: `Week ${weekNum}, ${year}`, value: weeklyTotals[idx] };
+              });
               const hasTrend = weeklyTotals.length >= 2;
               const lastWeek = weeklyTotals[weeklyTotals.length - 1] ?? 0;
               const prevWeek = weeklyTotals[weeklyTotals.length - 2] ?? 0;
               const wowPct = prevWeek > 0 ? Math.round(((lastWeek - prevWeek) / prevWeek) * 100) : null;
-              const wowDirection: "up" | "down" | "neutral" =
-                wowPct == null || wowPct === 0 ? "neutral" : wowPct > 0 ? "up" : "down";
+              // "flat" (zero change, a real comparison) is a distinct
+              // amber signal from "neutral" (no prior week to compare
+              // against at all) — collapsing them would hide a stall.
+              const wowDirection: "up" | "down" | "flat" | "neutral" =
+                wowPct == null ? "neutral" : wowPct === 0 ? "flat" : wowPct > 0 ? "up" : "down";
 
               return (
                 <>
@@ -97,15 +104,27 @@ export default function ScheduleTab() {
                   {hasTrend && (
                     <div className="flex items-center justify-between gap-3">
                       {wowPct != null ? (
-                        <Badge variant={wowDirection === "up" ? "emerald" : wowDirection === "down" ? "destructive" : "secondary"} className="shrink-0 font-medium">
+                        <Badge
+                          variant={
+                            wowDirection === "up"
+                              ? "emerald"
+                              : wowDirection === "down"
+                                ? "destructive"
+                                : wowDirection === "flat"
+                                  ? "amber"
+                                  : "secondary"
+                          }
+                          className="shrink-0 font-medium"
+                        >
                           {wowDirection === "up" && <span className="text-sm">↑</span>}
                           {wowDirection === "down" && <span className="text-sm">↓</span>}
-                          {Math.abs(wowPct)}% vs last week
+                          {wowDirection === "flat" && <span className="text-sm">→</span>}
+                          {wowDirection === "flat" ? "No change vs last week" : `${Math.abs(wowPct)}% vs last week`}
                         </Badge>
                       ) : (
                         <span className="shrink-0 text-2xs font-medium text-slate-400">8-week trend</span>
                       )}
-                      <Sparkline data={weeklyTotals} trend={wowDirection} height={36} />
+                      <Sparkline data={weeklyTrendPoints} trend={wowDirection} height={36} />
                     </div>
                   )}
 

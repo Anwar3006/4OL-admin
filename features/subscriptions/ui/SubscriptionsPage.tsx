@@ -8,9 +8,24 @@ import { useSubscriptionsStats } from "@/features/subscriptions/data/useSubscrip
 
 export default function SubscriptionsPage() {
   const { data: stats, isLoading, isError } = useSubscriptionsStats();
-  const activePct =
-    stats && stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : null;
   const scopePct = (n: number) => (stats && stats.active > 0 ? Math.round((n / stats.active) * 100) : 0);
+
+  // Real week-over-week growth direction from new_grants_trend (always 8
+  // points, server-side, app/api/subscriptions/admin/route.ts) — this was
+  // previously hardcoded to deltaType="neutral", which is why the hero
+  // card never showed a real up/down/flat signal or colored its sparkline.
+  const grantsTrend = stats?.new_grants_trend.map((p) => p.value) ?? [];
+  const lastWeekGrants = grantsTrend[grantsTrend.length - 1] ?? 0;
+  const prevWeekGrants = grantsTrend[grantsTrend.length - 2] ?? 0;
+  const grantsWowPct = prevWeekGrants > 0 ? Math.round(((lastWeekGrants - prevWeekGrants) / prevWeekGrants) * 100) : null;
+  const grantsDirection: "up" | "down" | "flat" | "neutral" =
+    lastWeekGrants > prevWeekGrants ? "up" : lastWeekGrants < prevWeekGrants ? "down" : "flat";
+  const grantsDeltaText =
+    prevWeekGrants > 0
+      ? `${Math.abs(grantsWowPct!)}% vs last week`
+      : lastWeekGrants > 0
+        ? `+${lastWeekGrants} new vs 0 last week`
+        : "No new grants this week";
 
   return (
     <div className="w-full min-w-0 space-y-6 animate-in fade-in duration-500">
@@ -31,8 +46,8 @@ export default function SubscriptionsPage() {
           icon={<CreditCard className="size-5" />}
           label="Active / Total Subscriptions"
           value={isLoading ? "..." : `${stats?.active ?? 0} / ${stats?.total ?? 0}`}
-          delta={activePct != null ? `${activePct}% currently active` : undefined}
-          deltaType="neutral"
+          delta={isLoading ? undefined : grantsDeltaText}
+          deltaType={grantsDirection}
           trend={stats?.new_grants_trend}
           isError={isError}
           variant="blue"

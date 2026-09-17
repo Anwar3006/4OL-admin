@@ -133,7 +133,12 @@ export async function GET(req: NextRequest) {
     grantsPerWeek.set(bucket, (grantsPerWeek.get(bucket) ?? 0) + 1);
   }
   const currentWeekBucket = weekBucket(new Date().toISOString());
-  const newGrantsTrend = Array.from({ length: 8 }, (_, i) => grantsPerWeek.get(currentWeekBucket - (7 - i)) ?? 0);
+  const weekLabel = (bucket: number) =>
+    `Week of ${new Date(bucket * WEEK_MS).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  const newGrantsTrend = Array.from({ length: 8 }, (_, i) => {
+    const bucket = currentWeekBucket - (7 - i);
+    return { label: weekLabel(bucket), value: grantsPerWeek.get(bucket) ?? 0 };
+  });
 
   const stats = {
     total: allRows.length,

@@ -6,7 +6,7 @@ import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Sparkline from "@/components/redesign/Sparkline";
+import Sparkline, { type SparklinePoint } from "@/components/redesign/Sparkline";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,13 @@ interface KpiCardProps {
   label: string;
   value: string | number;
   delta?: string;
-  deltaType?: "up" | "down" | "neutral";
+  /**
+   * "flat" (amber) is a real value change of zero vs the prior period — a
+   * stagnation signal, distinct from "neutral" (gray), which means there's
+   * no prior-period comparison to make at all. Don't use "neutral" for a
+   * genuine zero-change reading; it reads as "no data," not "no growth."
+   */
+  deltaType?: "up" | "down" | "flat" | "neutral";
   isLoading?: boolean;
   isError?: boolean;
   isEmpty?: boolean;
@@ -50,12 +56,14 @@ interface KpiCardProps {
   className?: string;
   /**
    * Real ordered series for an inline at-a-glance trend chart (oldest
-   * first). Only pass this when genuine historical data backs it — never
-   * to fill space. A card with a trend needs width to render it legibly;
-   * size it "lg" (or give it 2 grid columns) accordingly. Colour follows
-   * `deltaType`.
+   * first), each point labeled with what it actually is (shown on hover —
+   * e.g. "Week of Sep 1", a broadcast name). Only pass this when genuine
+   * historical data backs it — never to fill space, and never a
+   * placeholder label. A card with a trend needs width to render it
+   * legibly; size it "lg" (or give it 2 grid columns) accordingly. Colour
+   * follows `deltaType`.
    */
-  trend?: number[];
+  trend?: SparklinePoint[];
 }
 
 const SIZE_PADDING: Record<string, string> = {
@@ -220,16 +228,21 @@ export default function KpiCard({
                       ? "emerald"
                       : deltaType === "down"
                         ? "destructive"
-                        : "secondary"
+                        : deltaType === "flat"
+                          ? "amber"
+                          : "secondary"
                   }
                   className="shrink-0 font-medium"
                 >
                   {deltaType === "up" && <span className="text-sm">↑</span>}
                   {deltaType === "down" && <span className="text-sm">↓</span>}
+                  {deltaType === "flat" && <span className="text-sm">→</span>}
                   {delta}
                 </Badge>
               )}
-              {hasTrend && <Sparkline data={trend!} trend={deltaType} height={size === "sm" ? 28 : 36} />}
+              {hasTrend && (
+                <Sparkline data={trend!} trend={deltaType} height={size === "sm" ? 28 : size === "lg" ? 44 : 36} />
+              )}
             </div>
           )}
         </div>
