@@ -300,53 +300,72 @@ const DiseasesPage = () => {
         </button>
       </PageHeader>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 sm:gap-5">
-        <KpiCard
-          icon="📊"
-          label="Total Conditions"
-          value={data?.meta?.total?.toLocaleString() || "0"}
-          variant="blue"
-          delta="Health content database"
-          deltaType="neutral"
-        />
-        <KpiCard
-          icon="📂"
-          label="Categories"
-          value={stats?.totalCategories?.toLocaleString() || "0"}
-          variant="purple"
-          delta="Active database"
-        />
-        <KpiCard
-          icon="👁️"
-          label="Total Views"
-          value={isStatsLoading ? "..." : (stats?.totalViews ?? 0).toLocaleString()}
-          variant="red"
-          delta="Lifetime views"
-          deltaType="neutral"
-        />
-        <KpiCard
-          icon="⏳"
-          label="Recurring Type"
-          value={stats?.mostRecurringCategory || "N/A"}
-          variant="amber"
-          delta="Dominant category"
-        />
-        <KpiCard
-          icon="🛡️"
-          label="Body Focus"
-          value={stats?.mostAffectedBodyPart || "N/A"}
-          variant="teal"
-          delta="Targeted area"
-        />
-        <KpiCard
-          icon="✅"
-          label="Review Rate"
-          value={isStatsLoading ? "..." : `${stats?.reviewRate ?? 0}%`}
-          variant="green"
-          delta="Reviewed by an editor"
-          deltaType="neutral"
-        />
+      {/*
+        KPI Grid — no card here has genuine ordered history to chart.
+        `data.meta.total` (useDiseasesList) and every field on `stats`
+        (useConditionStats, features/diseases/data/useCondition.ts) are
+        recomputed from the live `conditions` table on each call: a
+        lifetime `view_count` sum, current category/body-part tallies, a
+        point-in-time reviewed/total ratio. None of that is a stored dated
+        series, so none of the six qualifies for a trend or `lg` sizing
+        (Rule 1). Total Conditions (catalog size) and Total Views (reach)
+        are the two numbers a content admin scans first, so those stay at
+        default size; the rest are diagnostic breakdowns and go compact.
+      */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <KpiCard
+            icon="📊"
+            label="Total Conditions"
+            value={data?.meta?.total?.toLocaleString() || "0"}
+            variant="blue"
+            delta="Health content database"
+            deltaType="neutral"
+          />
+          <KpiCard
+            icon="👁️"
+            label="Total Views"
+            value={isStatsLoading ? "..." : (stats?.totalViews ?? 0).toLocaleString()}
+            variant="red"
+            delta="Lifetime views"
+            deltaType="neutral"
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <KpiCard
+            size="sm"
+            icon="📂"
+            label="Categories"
+            value={stats?.totalCategories?.toLocaleString() || "0"}
+            variant="purple"
+            delta="Active database"
+          />
+          <KpiCard
+            size="sm"
+            icon="⏳"
+            label="Recurring Type"
+            value={stats?.mostRecurringCategory || "N/A"}
+            variant="amber"
+            delta="Dominant category"
+          />
+          <KpiCard
+            size="sm"
+            icon="🛡️"
+            label="Body Focus"
+            value={stats?.mostAffectedBodyPart || "N/A"}
+            variant="teal"
+            delta="Targeted area"
+          />
+          <KpiCard
+            size="sm"
+            icon="✅"
+            label="Review Rate"
+            value={isStatsLoading ? "..." : `${stats?.reviewRate ?? 0}%`}
+            variant="green"
+            delta="Reviewed by an editor"
+            deltaType="neutral"
+          />
+        </div>
       </div>
 
       <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>

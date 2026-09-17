@@ -98,12 +98,28 @@ export default function BedTrackerPage() {
         </Alert>
       )}
 
+      {/*
+        /api/bedtracker is a live snapshot — bed/ward/alert counts as of
+        this poll, with no history table behind any of them — so none of
+        these six get a sparkline; "Critical Wards" and "Active Alerts" are
+        the two live urgency signals a non-technical admin needs to spot
+        first (zero-bed wards, unresolved alerts), so they stay at default
+        size alongside "Facilities Online" (the overall connectivity
+        glance, unchanged per the existing merged-fraction pattern).
+        Total Beds / Occupancy / Ambulances are supporting capacity
+        numbers and go small. `deltaType` on Total Beds and Critical Wards
+        was "up"/"down" for plain descriptive captions ("X available",
+        "Zero beds left") with no real prior-period comparison behind
+        them — fixed to "neutral" so the arrow doesn't imply a trend that
+        isn't there; the red urgency read on Critical Wards still comes
+        through via its icon/variant.
+      */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <KpiCard icon={<Building2 className="h-5 w-5" />} label="Facilities Online" value={isLoading ? "..." : `${metrics?.facilitiesOnline ?? 0}/${metrics?.trackedFacilities ?? 0}`} variant="blue" delta="Tracked facilities" deltaType="neutral" />
-        <KpiCard icon={<Bed className="h-5 w-5" />} label="Total Beds" value={isLoading ? "..." : String(metrics?.totalBeds ?? 0)} variant="purple" delta={`${metrics?.availableBeds ?? 0} available`} deltaType="up" />
-        <KpiCard icon={<Gauge className="h-5 w-5" />} label="Occupancy" value={isLoading ? "..." : `${metrics?.occupancyPct ?? 0}%`} variant="amber" delta="Across tracked wards" deltaType="neutral" />
-        <KpiCard icon={<AlertTriangle className="h-5 w-5" />} label="Critical Wards" value={isLoading ? "..." : String(metrics?.criticalWards ?? 0)} variant="red" delta="Zero beds left" deltaType="down" />
-        <KpiCard icon={<Ambulance className="h-5 w-5" />} label="Ambulances" value={isLoading ? "..." : String(metrics?.ambulances ?? 0)} variant="green" delta={`${metrics?.ambulancesActive ?? 0} active`} deltaType="neutral" />
+        <KpiCard icon={<Bed className="h-5 w-5" />} label="Total Beds" value={isLoading ? "..." : String(metrics?.totalBeds ?? 0)} variant="purple" delta={`${metrics?.availableBeds ?? 0} available`} deltaType="neutral" size="sm" />
+        <KpiCard icon={<Gauge className="h-5 w-5" />} label="Occupancy" value={isLoading ? "..." : `${metrics?.occupancyPct ?? 0}%`} variant="amber" delta="Across tracked wards" deltaType="neutral" size="sm" />
+        <KpiCard icon={<AlertTriangle className="h-5 w-5" />} label="Critical Wards" value={isLoading ? "..." : String(metrics?.criticalWards ?? 0)} variant="red" delta="Zero beds left" deltaType="neutral" />
+        <KpiCard icon={<Ambulance className="h-5 w-5" />} label="Ambulances" value={isLoading ? "..." : String(metrics?.ambulances ?? 0)} variant="green" delta={`${metrics?.ambulancesActive ?? 0} active`} deltaType="neutral" size="sm" />
         <KpiCard icon={<CheckCircle2 className="h-5 w-5" />} label="Active Alerts" value={isLoading ? "..." : String(metrics?.activeAlerts ?? 0)} variant="red" delta={`${metrics?.activeDispatches ?? 0} open dispatches`} deltaType="neutral" />
       </div>
 

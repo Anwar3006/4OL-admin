@@ -347,15 +347,16 @@ export default function SettingsPage() {
         </Alert>
       )}
 
+      {/*
+        Platform settings, flags, keys and integrations are all current
+        config state — there's no dated history behind any of these
+        counts, so no card gets a trend. Active Flags (rollout state) and
+        Configured Keys (whether required secrets are actually set, which
+        is what turns the icon amber) are the two an admin needs to check
+        first and keep the default size; Platform and Connected are
+        descriptive context and go "sm".
+      */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          icon={<Settings className="h-5 w-5" />}
-          label="Platform"
-          value={loading ? "..." : settings?.platform_name || "4 Our Life"}
-          variant="blue"
-          delta={settings?.default_language?.toUpperCase() || "EN"}
-          deltaType="neutral"
-        />
         <KpiCard
           icon={<ToggleLeft className="h-5 w-5" />}
           label="Active Flags"
@@ -373,12 +374,22 @@ export default function SettingsPage() {
           deltaType="neutral"
         />
         <KpiCard
+          icon={<Settings className="h-5 w-5" />}
+          label="Platform"
+          value={loading ? "..." : settings?.platform_name || "4 Our Life"}
+          variant="blue"
+          delta={settings?.default_language?.toUpperCase() || "EN"}
+          deltaType="neutral"
+          size="sm"
+        />
+        <KpiCard
           icon={<Plug className="h-5 w-5" />}
           label="Connected"
           value={loading ? "..." : connectedIntegrations}
           variant="teal"
           delta={`${integrations.length} integrations`}
           deltaType="neutral"
+          size="sm"
         />
       </div>
 

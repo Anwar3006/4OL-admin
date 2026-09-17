@@ -89,6 +89,16 @@ const DashboardPage = () => {
 
   const kpis = metrics?.kpis;
 
+  // Merged fraction for the HCPs card (Rule 2's "Active / Total" precedent —
+  // features/bed-tracker's "Facilities Online" card): operations.hcp_verifications
+  // is every application regardless of status, verified_hcps is the subset
+  // with verification_status='verified'. Showing both in one value is more
+  // honest than the old "hcps" headline number, which actually counted
+  // unverified applications too.
+  const hcpTotal = kpis?.hcps ?? 0;
+  const hcpVerified = metrics?.operations.verified_hcps ?? 0;
+  const hcpVerifiedPct = hcpTotal > 0 ? Math.round((hcpVerified / hcpTotal) * 100) : null;
+
   return (
     <div className="flex flex-col gap-5 animate-in fade-in duration-500">
       <PageHeader
@@ -135,6 +145,28 @@ const DashboardPage = () => {
 
       <CriticalAlerts metrics={metrics} loading={loading} />
 
+      {/*
+        No trend on this row, for any card: every one of these 8 numbers was
+        traced to get_platform_overview_metrics() (supabase/migrations/
+        20260903_retire_fitness_users_table.sql) plus the queue counts
+        route.ts merges in. The RPC returns a single current value per KPI,
+        plus — for users/facilities/transactions/ai_calls/subscriptions
+        only — a two-bucket current-vs-previous-window count for the delta
+        badge (real, not fabricated). None of that is a dated, multi-point
+        series. The only per-row dated data already fetched anywhere on
+        this page is `activity` (10 most recent activity_logs rows, mixed
+        action types, not scoped to any one KPI) — same trap OutdoorTab's
+        comment warns about: too capped and un-scoped to bucket into a
+        trustworthy weekly trend for any card here. `revenue_mtd`, `hcps`
+        and `security_score` don't even have a real delta today (their
+        badges are status/count labels, correctly `deltaType="neutral"`
+        below, not a fabricated up/down). So: size="lg" and trend stay off
+        for the whole row (Rule 1), and hierarchy instead comes from which
+        3 numbers an admin needs first to gauge platform health — Total
+        Users (growth), Revenue (MTD) (money) and Facilities (provider
+        network coverage) — left at the default size; the other 5 are
+        `size="sm"`.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-5">
         <KpiCard
           icon="👥"
@@ -196,6 +228,7 @@ const DashboardPage = () => {
           isEmpty={!loading && !error && kpis?.transactions === 0}
           emptyLabel="0"
           href={canViewTransactions ? "/transactions" : undefined}
+          size="sm"
         />
         <KpiCard
           icon="🤖"
@@ -217,6 +250,7 @@ const DashboardPage = () => {
                 ]
               : []),
           ]}
+          size="sm"
         />
         <KpiCard
           icon="⭐"
@@ -230,19 +264,31 @@ const DashboardPage = () => {
           isEmpty={!loading && !error && kpis?.premium_subscriptions === 0}
           emptyLabel="0"
           href={canViewUsers ? "/users?tab=premium" : undefined}
+          size="sm"
         />
+        {/*
+          Merged fraction (Rule 2's "Active / Total" precedent — see
+          features/bed-tracker/ui/BedTrackerPage.tsx's "Facilities Online"
+          card): operations.hcp_verifications counts every application
+          regardless of status, verified_hcps is the verified subset. The
+          old headline number (kpis.hcps) was that same unfiltered total
+          labelled just "HCPs", which reads as "verified providers" but
+          wasn't — this is both more honest and denser than a plain count
+          plus a delta-badge aside.
+        */}
         <KpiCard
           icon="👨‍⚕️"
-          label="HCPs"
-          value={formatCount(kpis?.hcps)}
+          label="Verified / Total HCPs"
+          value={`${hcpVerified.toLocaleString()} / ${hcpTotal.toLocaleString()}`}
           variant="pink"
-          delta={`${metrics?.operations.verified_hcps ?? 0} verified`}
+          delta={hcpVerifiedPct != null ? `${hcpVerifiedPct}% verified` : "No applications yet"}
           deltaType="neutral"
           isLoading={loading}
           isError={!!error}
-          isEmpty={!loading && !error && kpis?.hcps === 0}
-          emptyLabel="0"
+          isEmpty={!loading && !error && hcpTotal === 0}
+          emptyLabel="0 / 0"
           href={canViewHcp ? "/hcp" : undefined}
+          size="sm"
         />
         <KpiCard
           icon="🔐"
@@ -250,7 +296,14 @@ const DashboardPage = () => {
           value={kpis?.security_score != null ? `${kpis.security_score}/100` : "Awaiting data"}
           variant="red"
           delta={`${metrics?.queues.open_security_threats ?? 0} open threats`}
-          deltaType={metrics?.queues.open_security_threats ? "down" : "neutral"}
+          // "N open threats" is a descriptive caption, not a real
+          // prior-period comparison (the score is computed fresh each
+          // request in app/api/dashboard/overview/route.ts and never
+          // persisted, so there's nothing to compare against) — "down"
+          // here would fabricate a trend that isn't there. Same fix as
+          // features/bed-tracker/ui/BedTrackerPage.tsx's Total Beds/Critical
+          // Wards cards; the red variant already carries the urgency read.
+          deltaType="neutral"
           isLoading={loading}
           isError={!!error}
           isEmpty={!loading && kpis?.security_score == null}
@@ -258,6 +311,7 @@ const DashboardPage = () => {
           menuItems={[
             ...(canViewSecurity ? [{ label: "Security Center", onClick: () => router.push("/security") }] : []),
           ]}
+          size="sm"
         />
       </div>
 

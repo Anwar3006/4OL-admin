@@ -216,6 +216,18 @@ export default function SecurityPage() {
         </Alert>
       )}
 
+      {/*
+        Threats, audit logs and security settings are all live-state reads
+        (open counts, a capped latest-50 log, current policy config) — none
+        of them retain the kind of dated, already-fetched history that
+        Notifications' campaign log or WhatsApp's broadcasts do, so no card
+        here gets a `trend`. Open Threats and Critical Threats are what an
+        admin needs to act on first, so they keep the default size; Audit
+        Events and 2FA Policy are supporting context and go "sm". None of
+        these badges compare to a prior period either — they read the
+        current state, so `deltaType` stays "neutral" throughout; severity
+        still comes through via `variant`'s red/green/amber.
+      */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={<AlertTriangle className="h-5 w-5" />}
@@ -223,7 +235,7 @@ export default function SecurityPage() {
           value={loading ? "..." : openThreats.length}
           variant={openThreats.length > 0 ? "red" : "green"}
           delta={openThreats.length > 0 ? "Needs review" : "Clear"}
-          deltaType={openThreats.length > 0 ? "down" : "up"}
+          deltaType="neutral"
         />
         <KpiCard
           icon={<Shield className="h-5 w-5" />}
@@ -231,7 +243,7 @@ export default function SecurityPage() {
           value={loading ? "..." : criticalThreats.length}
           variant={criticalThreats.length > 0 ? "red" : "blue"}
           delta={criticalThreats.length > 0 ? "High priority" : "None open"}
-          deltaType={criticalThreats.length > 0 ? "down" : "neutral"}
+          deltaType="neutral"
         />
         <KpiCard
           icon={<FileText className="h-5 w-5" />}
@@ -240,6 +252,7 @@ export default function SecurityPage() {
           variant="purple"
           delta="Latest 50"
           deltaType="neutral"
+          size="sm"
         />
         <KpiCard
           icon={<Lock className="h-5 w-5" />}
@@ -247,7 +260,8 @@ export default function SecurityPage() {
           value={settings?.require_2fa ? "Required" : "Optional"}
           variant={settings?.require_2fa ? "green" : "amber"}
           delta={settings?.source === "stored" ? "Stored config" : "Defaults"}
-          deltaType={settings?.require_2fa ? "up" : "neutral"}
+          deltaType="neutral"
+          size="sm"
         />
       </div>
 

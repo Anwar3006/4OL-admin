@@ -27,6 +27,24 @@ const GOAL_FALLBACK = { bar: "bg-slate-400", text: "text-slate-500" };
 
 export default function Overview({ payload }: { payload: any }) {
   const summary = payload.summary ?? {};
+  // Real 8-week trend — bucketed server-side (features/period/api/data-get.ts)
+  // from period_daily_logs rows already fetched for logs30d, now ordered by
+  // created_at desc so the 5,000-row cap can't silently drop recent rows.
+  const logsTrend: { label: string; value: number }[] = summary.logsTrend ?? [];
+  const hasLogsTrend = logsTrend.length >= 2;
+  const lastWeekLogs = logsTrend[logsTrend.length - 1]?.value ?? 0;
+  const prevWeekLogs = logsTrend[logsTrend.length - 2]?.value ?? 0;
+  const logsWowPct = prevWeekLogs > 0 ? Math.round(((lastWeekLogs - prevWeekLogs) / prevWeekLogs) * 100) : null;
+  // "flat" (zero change, a real comparison) is a distinct amber signal from
+  // "neutral" (no prior week to compare against at all).
+  const logsDirection: "up" | "down" | "flat" | "neutral" =
+    logsWowPct == null ? "neutral" : logsWowPct === 0 ? "flat" : logsWowPct > 0 ? "up" : "down";
+  const logsDeltaText =
+    logsWowPct != null
+      ? logsWowPct === 0
+        ? "No change vs last week"
+        : `${Math.abs(logsWowPct)}% vs last week`
+      : "8-week trend";
   const phaseDistribution: Row[] = payload.phaseDistribution ?? [];
   const phaseTotal = phaseDistribution.reduce((sum, item) => sum + Number(item.count ?? 0), 0);
   const trackingGoals: Row[] = payload.trackingGoals ?? [];
@@ -47,30 +65,51 @@ export default function Overview({ payload }: { payload: any }) {
   ];
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
+      {/*
+        Daily Logs is the one bento hero here: logsTrend is a genuine 8-week
+        series bucketed server-side from period_daily_logs rows the overview
+        request already fetches (see the comment on `logsTrend` above), so a
+        week-over-week trend is real, not fabricated.
+
+        Active Trackers and Total Trackers merge into one fraction card
+        ("33 active / 500 total" style, see BedTrackerPage's "Facilities
+        Online") since active is simply a subset of total — no separate
+        chart needed to say that.
+
+        Forecast Accuracy stays a plain number on purpose: period_forecasts
+        does carry confirmed_period_start per row (Phase 2 accuracy
+        instrumentation), but this endpoint only selects absolute_error_days
+        for the average, and the sample only grows as forecasts confirm over
+        a full cycle — charting it would need a new query against a still-thin,
+        nullable sample. Average Cycle and 30-day Retention are single
+        current-snapshot numbers with nothing dated already fetched that's
+        worth bucketing, so they stay compact rather than inflated.
+      */}
+      <KpiCard
+        icon="📝"
+        label="Daily Logs (30d)"
+        value={String(summary.logs30d ?? 0)}
+        variant="green"
+        delta={hasLogsTrend ? logsDeltaText : undefined}
+        deltaType={logsDirection}
+        trend={hasLogsTrend ? logsTrend : undefined}
+        size={hasLogsTrend ? "lg" : "default"}
+      />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
           icon="👥"
-          label="Active Trackers (30d)"
-          value={String(summary.activeTrackers ?? 0)}
+          label="Active / Total Trackers"
+          value={`${summary.activeTrackers ?? 0} / ${summary.totalTrackers ?? 0}`}
           variant="blue"
-        />
-        <KpiCard
-          icon="🧑‍🤝‍🧑"
-          label="Total Trackers"
-          value={String(summary.totalTrackers ?? 0)}
-          variant="teal"
-        />
-        <KpiCard
-          icon="📝"
-          label="Daily Logs (30d)"
-          value={String(summary.logs30d ?? 0)}
-          variant="green"
+          delta="Active in the last 30 days"
+          deltaType="neutral"
         />
         <KpiCard
           icon="📅"
           label="Cycle Records"
           value={String(summary.cycleLogs ?? 0)}
           variant="purple"
+          size="sm"
         />
         <KpiCard
           icon="🔄"
@@ -81,12 +120,14 @@ export default function Overview({ payload }: { payload: any }) {
               : `${summary.averageCycleLength} days`
           }
           variant="purple"
+          size="sm"
         />
         <KpiCard
           icon="↩️"
           label="30-day Retention"
           value={pct(summary.retention)}
           variant="blue"
+          size="sm"
         />
         <KpiCard
           icon="🎯"
@@ -103,6 +144,7 @@ export default function Overview({ payload }: { payload: any }) {
           }
           deltaType="neutral"
           variant="teal"
+          size="sm"
         />
       </div>
       <FeatureCatalogueCard

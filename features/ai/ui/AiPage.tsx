@@ -140,16 +140,15 @@ export default function AIPage() {
         </Alert>
       )}
 
+      {/*
+        get_ai_hub_overview and get_ai_analytics (both RPCs behind these
+        cards) return current-period aggregates only — no accuracy or
+        query-volume history is retained anywhere in the AI schema, so
+        there is no genuine series to chart. Pending Flags is the
+        actionable queue (content needing human review), so it keeps the
+        default size; the rest are descriptive snapshots and go "sm".
+      */}
       <KpiGrid>
-        <KpiCard
-          icon={<Bot className="h-5 w-5" />}
-          label="Active Models"
-          value={formatKpiValue(overview.data?.activeModels ?? null)}
-          variant="blue"
-          delta={`${formatKpiValue(models.data?.length ?? null)} registered`}
-          deltaType="neutral"
-          isLoading={overview.isPending}
-        />
         <KpiCard
           icon={<Shield className="h-5 w-5" />}
           label="Pending Flags"
@@ -158,8 +157,20 @@ export default function AIPage() {
           )}
           variant={(overview.data?.pendingFlags ?? 0) > 0 ? "red" : "green"}
           delta={`${formatKpiValue(analytics?.moderation.aiDetected ?? null)} AI detected`}
-          deltaType={(overview.data?.pendingFlags ?? 0) > 0 ? "down" : "up"}
+          // A current queue depth isn't a before/after read — variant
+          // already carries the red/green urgency signal.
+          deltaType="neutral"
           isLoading={overview.isPending && loading}
+        />
+        <KpiCard
+          icon={<Bot className="h-5 w-5" />}
+          label="Active Models"
+          value={formatKpiValue(overview.data?.activeModels ?? null)}
+          variant="blue"
+          delta={`${formatKpiValue(models.data?.length ?? null)} registered`}
+          deltaType="neutral"
+          isLoading={overview.isPending}
+          size="sm"
         />
         <KpiCard
           icon={<CheckCircle2 className="h-5 w-5" />}
@@ -169,6 +180,7 @@ export default function AIPage() {
           delta="Registry baseline"
           deltaType="neutral"
           isLoading={overview.isPending}
+          size="sm"
         />
         <KpiCard
           icon={<Zap className="h-5 w-5" />}
@@ -180,6 +192,7 @@ export default function AIPage() {
           delta={`${formatKpiValue(metrics?.avgLatency ?? null)}ms avg latency`}
           deltaType="neutral"
           isLoading={overview.isPending}
+          size="sm"
         />
       </KpiGrid>
 

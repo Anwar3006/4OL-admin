@@ -96,6 +96,17 @@ export default function DevOpsPage() {
         </Button>
       </PageHeader>
 
+      {/*
+        Every number here is a live telemetry read (a fresh Supabase ping,
+        process.uptime(), current queue depths) with nothing retained
+        between requests — there's no dated history to derive a trend
+        from, so no card gets one. Supabase reachability and API uptime
+        are the core infra-health signals, so they keep the default size;
+        the two queue counts are secondary and go "sm". Reachability isn't
+        a before/after comparison either (each load is an independent
+        ping), so `deltaType` stays "neutral" — `variant` still flags a
+        down Supabase in red.
+      */}
       <KpiGrid>
         <KpiCard
           icon={<Database className="size-4" />}
@@ -103,7 +114,7 @@ export default function DevOpsPage() {
           value={loading ? "..." : health?.supabase.reachable ? "Reachable" : "Down"}
           variant={health?.supabase.reachable ? "green" : "red"}
           delta={loading ? "" : `${health?.supabase.latency_ms ?? 0} ms round-trip`}
-          deltaType={health?.supabase.reachable ? "up" : "down"}
+          deltaType="neutral"
         />
         <KpiCard
           icon={<Activity className="size-4" />}
@@ -120,6 +131,7 @@ export default function DevOpsPage() {
           variant="purple"
           delta={`${health?.queues.failed_campaigns ?? 0} failed`}
           deltaType="neutral"
+          size="sm"
         />
         <KpiCard
           icon={<Flag className="size-4" />}
@@ -128,6 +140,7 @@ export default function DevOpsPage() {
           variant="amber"
           delta="Pending review"
           deltaType="neutral"
+          size="sm"
         />
       </KpiGrid>
 

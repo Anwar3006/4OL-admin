@@ -162,7 +162,17 @@ export default function MedEnquiryPage() {
         ))}
       </div>
 
-      {/* KPIs */}
+      {/*
+        get_med_enquiry_overview returns a single-point-in-time aggregate
+        (supabase/migrations/20260822_med_enquiry_depth.sql) — no history
+        retained, so there's nothing genuine to chart here. AllEnquiriesTab
+        below does fetch dated rows, but as its own paginated request
+        (capped, filterable by the admin) that isn't already loaded
+        alongside these KPIs, so it can't back a trustworthy trend either.
+        Total volume and the pending backlog are what an admin needs to see
+        first, so they stay full weight; escrow detail and the match-rate
+        summary are secondary, sized down instead of inflated to match.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
           icon="📊"
@@ -197,6 +207,7 @@ export default function MedEnquiryPage() {
           variant="indigo"
           isEmpty={empty}
           emptyLabel="Pending migration"
+          size="sm"
         />
         <KpiCard
           icon="✅"
@@ -205,6 +216,7 @@ export default function MedEnquiryPage() {
           variant="green"
           isEmpty={empty}
           emptyLabel="Pending migration"
+          size="sm"
         />
       </div>
 

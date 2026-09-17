@@ -79,6 +79,14 @@ export default function IBPPage() {
         </div>
       </div>
 
+      {/*
+        No card here gets a trend: get_ibp_kpi_stats() (supabase/migrations/
+        20260820_users_ibp_extension.sql) returns a single current-snapshot
+        aggregate with no history retained, so there is nothing genuine to
+        chart — see useIbpOverview. Total/Active/Pending stay full weight
+        (the headline counts); Premium, Products Pending and Suspended are
+        secondary detail, sized down instead of inflated to match.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard
           icon={<Building2 className="h-5 w-5" />}
@@ -115,6 +123,7 @@ export default function IBPPage() {
           delta="Featured flag"
           deltaType="neutral"
           isLoading={overview.isLoading}
+          size="sm"
         />
         <KpiCard
           icon={<Package className="h-5 w-5" />}
@@ -124,6 +133,7 @@ export default function IBPPage() {
           delta={`${stats?.products_published ?? 0} published`}
           deltaType="neutral"
           isLoading={overview.isLoading}
+          size="sm"
         />
         <KpiCard
           icon={<Ban className="h-5 w-5" />}
@@ -133,6 +143,7 @@ export default function IBPPage() {
           delta="Hidden from app"
           deltaType="neutral"
           isLoading={overview.isLoading}
+          size="sm"
         />
       </div>
 

@@ -38,47 +38,66 @@ export default function DeleteRequestStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5 mb-6">
-      <KpiCard
-        icon="⏳"
-        label="Pending Review"
-        value={stats.pending_review.toLocaleString()}
-        variant="gold"
-        delta="Awaiting first look"
-        deltaType="neutral"
-      />
-      <KpiCard
-        icon="📊"
-        label="In Verification"
-        value={stats.in_verification.toLocaleString()}
-        variant="blue"
-        delta="Identity check in progress"
-        deltaType="neutral"
-      />
-      <KpiCard
-        icon="⏱️"
-        label="In Grace Period"
-        value={stats.grace_period.toLocaleString()}
-        variant="purple"
-        delta="30-day window"
-        deltaType="neutral"
-      />
-      <KpiCard
-        icon="✅"
-        label="Completed"
-        value={stats.completed.toLocaleString()}
-        variant="green"
-        delta="All time"
-        deltaType="up"
-      />
-      <KpiCard
-        icon="📋"
-        label="Cancelled"
-        value={stats.cancelled.toLocaleString()}
-        variant="red"
-        delta="Withdrawn or rejected"
-        deltaType="neutral"
-      />
+    <div className="space-y-4 mb-6">
+      {/*
+        No trend: get_delete_account_request_stats is a pure current-state
+        count() FILTER (...) over delete_account_requests — no created_at
+        bucketing, no stored history of past counts — so there's nothing
+        genuine to chart (supabase/migrations/20260905_reapply_epic21_delete_account_vocabulary.sql).
+        Pending Review and In Grace Period get the primary slots: they're
+        the in-flight requests an admin must act on before a deadline
+        (grace period is a running 30-day countdown); Completed/Cancelled
+        are settled history and stay small.
+      */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        <KpiCard
+          icon="⏳"
+          label="Pending Review"
+          value={stats.pending_review.toLocaleString()}
+          variant="gold"
+          size="default"
+          delta="Awaiting first look"
+          deltaType="neutral"
+        />
+        <KpiCard
+          icon="⏱️"
+          label="In Grace Period"
+          value={stats.grace_period.toLocaleString()}
+          variant="purple"
+          size="default"
+          delta="30-day window"
+          deltaType="neutral"
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+        <KpiCard
+          icon="📊"
+          label="In Verification"
+          value={stats.in_verification.toLocaleString()}
+          variant="blue"
+          size="sm"
+          delta="Identity check in progress"
+          deltaType="neutral"
+        />
+        <KpiCard
+          icon="✅"
+          label="Completed"
+          value={stats.completed.toLocaleString()}
+          variant="green"
+          size="sm"
+          delta="All time"
+          deltaType="up"
+        />
+        <KpiCard
+          icon="📋"
+          label="Cancelled"
+          value={stats.cancelled.toLocaleString()}
+          variant="red"
+          size="sm"
+          delta="Withdrawn or rejected"
+          deltaType="neutral"
+        />
+      </div>
     </div>
   );
 }

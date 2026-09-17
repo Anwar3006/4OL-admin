@@ -61,41 +61,49 @@ export default function HealthyLivingStats() {
     );
   }
 
-  // Helper to format deltas
+  // Helper to format deltas. get_healthy_living_kpi_stats() (supabase/
+  // migrations/20260822_content_analytics_carousel_extension.sql) always
+  // computes a real last-30-days-vs-prior-30-days ratio server-side — it
+  // never returns "no comparison available" — so a delta of exactly 0 is a
+  // genuine stagnation reading, not a missing one. That makes "flat" (amber)
+  // the correct type for 0, not "neutral" (gray, reserved for when no prior
+  // period exists to compare against at all); this page was hardcoding the
+  // zero case to "neutral" the same way Subscriptions used to.
   const formatDelta = (delta: number) => {
-    const isPositive = delta > 0;
-    const sign = isPositive ? "+" : "";
+    const sign = delta > 0 ? "+" : "";
     return {
-      text: `${sign}${delta}% vs last month`,
-      type: isPositive ? "up" : delta < 0 ? "down" : "neutral",
+      text: delta === 0 ? "No change vs last month" : `${sign}${delta}% vs last month`,
+      type: delta > 0 ? "up" : delta < 0 ? "down" : "flat",
     } as const;
   };
 
-  const totalDelta = formatDelta(stats.total_delta);
   const publishedDelta = formatDelta(stats.published_delta);
 
   // Formatter for large numbers (e.g., 48000 -> 48K)
   const formatNumber = (num: number) => Intl.NumberFormat("en-US", { notation: "compact" }).format(num);
 
+  const publishedPct = stats.total_articles > 0 ? Math.round((stats.published_articles / stats.total_articles) * 100) : 0;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6">
-      <KpiCard
-        icon="📊"
-        label="Total Content"
-        value={stats.total_articles.toLocaleString()}
-        variant="blue"
-        delta={totalDelta.text}
-        deltaType={totalDelta.type}
-      />
+    // Neither card has a stored dated series to chart (both `_delta` fields
+    // are single point-in-time ratios, not multi-point history), so neither
+    // qualifies for `lg`/trend sizing (Rule 1). Total Content and Published
+    // count the same entity (healthy_living_info rows), with Published a
+    // strict subset — same relationship as Subscriptions' Active/Total — so
+    // they merge into one "Published / Total" card instead of restating the
+    // total twice; Total Views stays separate since it's a different metric
+    // (a lifetime engagement counter, not a content-count breakdown).
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6">
       <KpiCard
         icon="✅"
-        label="Published"
-        value={stats.published_articles.toLocaleString()}
+        label="Published / Total Content"
+        value={`${stats.published_articles.toLocaleString()} / ${stats.total_articles.toLocaleString()}`}
         variant="green"
-        delta={publishedDelta.text}
+        delta={`${publishedPct}% live · ${publishedDelta.text}`}
         deltaType={publishedDelta.type}
       />
       <KpiCard
+        size="sm"
         icon="👁️"
         label="Total Views"
         value={formatNumber(stats.total_views)}

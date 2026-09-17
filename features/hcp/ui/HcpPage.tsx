@@ -382,13 +382,40 @@ const HCPPage = () => {
         column exists on medication_enquiries (J-D4).
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <KpiCard icon="🩺" label="Total HCPs" value={String(metrics?.totalHcp ?? 0)} variant="blue" />
-        <KpiCard icon="✅" label="Verified & Active" value={String(metrics?.verified ?? 0)} variant="green" />
-        <KpiCard icon="⏳" label="Pending Approval" value={String(metrics?.pending ?? 0)} variant="gold" />
-        <KpiCard icon="💬" label="Group Chats" value={String(metrics?.groupChats ?? 0)} variant="teal" />
-        <KpiCard icon="👨‍⚕️" label="Doctors (MDC)" value={String(doctorsCount)} variant="purple" />
-        <KpiCard icon="💊" label="Med Enquiries" value="—" variant="red" />
+      {/*
+        No real trend: `metrics` (features/hcp/api/list.ts) is computed by
+        filtering whatever page of hcp_verifications the current
+        search/profession/status/region filters returned (capped at the
+        query's own `limit`), not from a stored history — there is no
+        admin-facing time series of registrations or verification
+        decisions to chart genuinely. Pending Approval gets the primary
+        slot since the licence-verification backlog is the actionable
+        number on this page; Total HCPs rides along as its denominator.
+        The rest is scale/context and stays compact.
+      */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <KpiCard
+            icon="⏳" label="Pending Approval" value={String(metrics?.pending ?? 0)} variant="gold" size="default"
+            delta={metrics?.pending ? "Licence checks awaiting review" : "No pending applications"}
+            deltaType="neutral"
+          />
+          <KpiCard
+            icon="🩺" label="Total HCPs" value={String(metrics?.totalHcp ?? 0)} variant="blue" size="default"
+            delta="Full registry"
+            deltaType="neutral"
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard
+            icon="✅" label="Verified & Active" value={String(metrics?.verified ?? 0)} variant="green" size="sm"
+            delta={metrics && metrics.totalHcp > 0 ? `${Math.round((metrics.verified / metrics.totalHcp) * 100)}% of registry` : undefined}
+            deltaType="up"
+          />
+          <KpiCard icon="💬" label="Group Chats" value={String(metrics?.groupChats ?? 0)} variant="teal" size="sm" delta="Professional group chats" deltaType="neutral" />
+          <KpiCard icon="👨‍⚕️" label="Doctors (MDC)" value={String(doctorsCount)} variant="purple" size="sm" />
+          <KpiCard icon="💊" label="Med Enquiries" value="—" variant="red" size="sm" />
+        </div>
       </div>
 
       <Tabs

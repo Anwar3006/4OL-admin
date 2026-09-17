@@ -68,6 +68,47 @@ export default function FacilityScoutPage() {
   const metrics = data?.metrics;
   const tabProps: FacilityScoutTabProps = { data, loading: isLoading };
 
+  // Real 8-week submissions trend — `scout_submissions` is already fetched
+  // whole by this same /api/facilityscout call (features/facility-scout/
+  // api/overview.ts), ordered by its own created_at desc and capped at
+  // 250, to back the "All Submissions" table below (AllSubmissionsTab).
+  // created_at is the actual submission date, not a "last touched" proxy,
+  // so bucketing it by week is genuine — the same pattern as the approved
+  // fitness/subscriptions sparklines, not a new query. (The 250-row cap
+  // would only undercount a week inside this window if that single week's
+  // submissions exceeded ~250, far above current programme volume.)
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const weekBucket = (iso: string) => Math.floor(new Date(iso).getTime() / WEEK_MS);
+  const submissionsByWeek = new Map<number, number>();
+  for (const row of data?.scout_submissions ?? []) {
+    if (!row.created_at) continue;
+    const bucket = weekBucket(row.created_at);
+    submissionsByWeek.set(bucket, (submissionsByWeek.get(bucket) ?? 0) + 1);
+  }
+  const currentWeekBucket = weekBucket(new Date().toISOString());
+  const weekLabel = (bucket: number) =>
+    `Week of ${new Date(bucket * WEEK_MS).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  const submissionsTrendPoints = Array.from({ length: 8 }, (_, i) => {
+    const bucket = currentWeekBucket - (7 - i);
+    return { label: weekLabel(bucket), value: submissionsByWeek.get(bucket) ?? 0 };
+  });
+  const lastWeekSubmissions = submissionsTrendPoints[submissionsTrendPoints.length - 1]?.value ?? 0;
+  const prevWeekSubmissions = submissionsTrendPoints[submissionsTrendPoints.length - 2]?.value ?? 0;
+  const submissionsWowPct =
+    prevWeekSubmissions > 0
+      ? Math.round(((lastWeekSubmissions - prevWeekSubmissions) / prevWeekSubmissions) * 100)
+      : null;
+  // "flat" (a real zero-change week-over-week) is a distinct amber signal
+  // from "neutral" (no prior week to compare against at all).
+  const submissionsDirection: "up" | "down" | "flat" | "neutral" =
+    submissionsWowPct == null ? "neutral" : submissionsWowPct === 0 ? "flat" : submissionsWowPct > 0 ? "up" : "down";
+  const submissionsDeltaText =
+    submissionsWowPct != null
+      ? submissionsWowPct === 0
+        ? "No change vs last week"
+        : `${Math.abs(submissionsWowPct)}% vs last week`
+      : "8-week trend";
+
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
@@ -95,13 +136,34 @@ export default function FacilityScoutPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        <KpiCard icon={<FileText className="h-5 w-5" />} label="Total Submissions" value={isLoading ? "..." : String(metrics?.totalSubmissions ?? 0)} variant="blue" delta="Community uploads" deltaType="neutral" />
-        <KpiCard icon={<ClipboardList className="h-5 w-5" />} label="Pending Review" value={isLoading ? "..." : String(metrics?.scoutPending ?? 0)} variant="amber" delta="Needs action" deltaType="neutral" />
-        <KpiCard icon={<CheckCircle2 className="h-5 w-5" />} label="Facilities Added" value={isLoading ? "..." : String(metrics?.facilitiesAdded ?? 0)} variant="green" delta="Registered + rewarded" deltaType="up" />
-        <KpiCard icon={<CopyX className="h-5 w-5" />} label="Duplicates" value={isLoading ? "..." : String(metrics?.duplicates ?? 0)} variant="red" delta="Matched existing" deltaType="down" />
-        <KpiCard icon={<Gift className="h-5 w-5" />} label="Rewards Queue" value={isLoading ? "..." : String(metrics?.rewardsQueue ?? 0)} variant="purple" delta="Awaiting disbursement" deltaType="neutral" />
-        <KpiCard icon={<Wifi className="h-5 w-5" />} label="Data Rewarded" value={isLoading ? "..." : `${metrics?.dataRewardedMb ?? 0} MB`} variant="blue" delta="Bundles sent" deltaType="up" />
+      {/*
+        Total Submissions is the one card here with a genuine dated series
+        behind it (see the trend computation above), so it's the sole
+        bento hero. Pending Review stays at default size next to it — it's
+        the actionable queue depth ("Needs action") an admin checks daily —
+        while the remaining four are snapshot counts with nothing to chart
+        and go small. `deltaType` on Facilities Added / Duplicates / Data
+        Rewarded was "up"/"down"/"up" on plain descriptive captions with no
+        real prior-period comparison behind them — fixed to "neutral".
+      */}
+      <div className="space-y-4">
+        <KpiCard
+          icon={<FileText className="h-5 w-5" />}
+          label="Total Submissions"
+          value={isLoading ? "..." : String(metrics?.totalSubmissions ?? 0)}
+          variant="blue"
+          delta={submissionsDeltaText}
+          deltaType={submissionsDirection}
+          trend={submissionsTrendPoints}
+          size="lg"
+        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <KpiCard icon={<ClipboardList className="h-5 w-5" />} label="Pending Review" value={isLoading ? "..." : String(metrics?.scoutPending ?? 0)} variant="amber" delta="Needs action" deltaType="neutral" />
+          <KpiCard icon={<CheckCircle2 className="h-5 w-5" />} label="Facilities Added" value={isLoading ? "..." : String(metrics?.facilitiesAdded ?? 0)} variant="green" delta="Registered + rewarded" deltaType="neutral" size="sm" />
+          <KpiCard icon={<CopyX className="h-5 w-5" />} label="Duplicates" value={isLoading ? "..." : String(metrics?.duplicates ?? 0)} variant="red" delta="Matched existing" deltaType="neutral" size="sm" />
+          <KpiCard icon={<Gift className="h-5 w-5" />} label="Rewards Queue" value={isLoading ? "..." : String(metrics?.rewardsQueue ?? 0)} variant="purple" delta="Awaiting disbursement" deltaType="neutral" size="sm" />
+          <KpiCard icon={<Wifi className="h-5 w-5" />} label="Data Rewarded" value={isLoading ? "..." : `${metrics?.dataRewardedMb ?? 0} MB`} variant="blue" delta="Bundles sent" deltaType="neutral" size="sm" />
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>

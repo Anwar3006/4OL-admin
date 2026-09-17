@@ -150,6 +150,17 @@ export default function SchematicPage() {
         </Alert>
       )}
 
+      {/*
+        Health, stack, RBAC and build info are all computed fresh on each
+        request (a live health check, package.json, the RBAC catalog,
+        migrations on disk) — nothing here is a dated series, so no card
+        gets a trend. API Status and Supabase are the two dependency-health
+        reads an admin needs first and keep the default size; Configured
+        Services and Last Check are supporting detail and go "sm". A
+        healthy read this instant isn't a before/after comparison, so
+        `deltaType` stays "neutral" — `variant` still carries the
+        green/amber/red signal.
+      */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           icon={<Server className="h-5 w-5" />}
@@ -157,7 +168,7 @@ export default function SchematicPage() {
           value={loading ? "..." : health?.status ?? "unknown"}
           variant={health?.status === "healthy" ? "green" : "amber"}
           delta="Live check"
-          deltaType={health?.status === "healthy" ? "up" : "neutral"}
+          deltaType="neutral"
         />
         <KpiCard
           icon={<Database className="h-5 w-5" />}
@@ -174,6 +185,7 @@ export default function SchematicPage() {
           variant="blue"
           delta={`${services.length} tracked`}
           deltaType="neutral"
+          size="sm"
         />
         <KpiCard
           icon={<CheckCircle2 className="h-5 w-5" />}
@@ -186,6 +198,7 @@ export default function SchematicPage() {
           variant="purple"
           delta="Current session"
           deltaType="neutral"
+          size="sm"
         />
       </div>
 

@@ -63,6 +63,14 @@ const TopRatedTab = () => {
         </div>
       )}
 
+      {/*
+        No trend here: view_count is a lifetime cumulative counter with no
+        history retained (no per-day snapshots), and slot occupancy is a
+        point-in-time count of the current leaderboard. Slots Occupied is
+        already the merged "x / cap" fraction and is the number that tells
+        an admin whether the board is full; it stays at default size while
+        the other two — derivable from it — stay small.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           icon="🏆"
@@ -75,12 +83,14 @@ const TopRatedTab = () => {
           label="Impressions (views)"
           value={impressions.toLocaleString()}
           variant="blue"
+          size="sm"
         />
         <KpiCard
           icon="📌"
           label="Slots Free"
           value={String(SLOT_CAP - board.length)}
           variant="green"
+          size="sm"
         />
       </div>
 

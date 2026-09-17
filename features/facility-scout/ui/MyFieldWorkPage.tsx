@@ -244,11 +244,18 @@ export default function MyFieldWorkPage() {
         subtitle="Submissions assigned to you, and the facilities you've registered"
       />
 
+      {/*
+        All four are current-state counts of this collector's own backlog
+        (no dated history to chart). "To Register" is the one actionable
+        queue — submissions assigned to this collector that still need a
+        registration — so it stays at default size; the other three are
+        reference counts and go small.
+      */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard icon="📍" label="To Register" value={String(toRegister.length)} variant="amber" />
-        <KpiCard icon="⏳" label="Pending Review" value={String(pendingFacilities.length)} variant="blue" />
-        <KpiCard icon="🚫" label="Rejected" value={String(rejectedFacilities.length)} variant="red" />
-        <KpiCard icon="✅" label="Registered" value={String(registeredFacilities.length)} variant="green" />
+        <KpiCard icon="⏳" label="Pending Review" value={String(pendingFacilities.length)} variant="blue" size="sm" />
+        <KpiCard icon="🚫" label="Rejected" value={String(rejectedFacilities.length)} variant="red" size="sm" />
+        <KpiCard icon="✅" label="Registered" value={String(registeredFacilities.length)} variant="green" size="sm" />
       </div>
 
       <div className="card p-0 overflow-hidden">

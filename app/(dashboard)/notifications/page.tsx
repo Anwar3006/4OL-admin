@@ -18,7 +18,6 @@ import BestTimeTab from "./_components/BestTimeTab";
 import PharmacyTab from "./_components/PharmacyTab";
 import ScheduledTab from "./_components/ScheduledTab";
 import KpiCard from "@/components/redesign/KpiCard";
-import KpiGrid from "@/components/redesign/KpiGrid";
 import PageHeader from "@/components/redesign/PageHeader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -363,6 +362,38 @@ export default function NotificationsPage() {
     }
   };
 
+  // Real 8-week campaign-creation trend, bucketed client-side from the
+  // campaigns already fetched for the Campaigns tab table below (most
+  // recent 75, ordered by created_at desc — app/api/notifications/
+  // route.ts) instead of a new query. created_at is set at insert and
+  // never null, unlike sent_at (stays null until a campaign actually
+  // sends), so it's the safe column to bucket on. The 75-row cap can only
+  // under-count the oldest of these 8 weeks if campaign creation volume is
+  // unusually high — the most recent weeks are always fully covered.
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const weekBucket = (iso: string) => Math.floor(new Date(iso).getTime() / WEEK_MS);
+  const campaignsByWeek = new Map<number, number>();
+  for (const campaign of data.campaigns) {
+    const bucket = weekBucket(campaign.created_at);
+    campaignsByWeek.set(bucket, (campaignsByWeek.get(bucket) ?? 0) + 1);
+  }
+  const currentWeekBucket = weekBucket(new Date().toISOString());
+  const weekLabel = (bucket: number) =>
+    `Week of ${new Date(bucket * WEEK_MS).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  const campaignsTrendPoints = Array.from({ length: 8 }, (_, i) => {
+    const bucket = currentWeekBucket - (7 - i);
+    return { label: weekLabel(bucket), value: campaignsByWeek.get(bucket) ?? 0 };
+  });
+  const campaignsTrend = campaignsTrendPoints.map((p) => p.value);
+  const lastWeekCampaigns = campaignsTrend[campaignsTrend.length - 1] ?? 0;
+  const prevWeekCampaigns = campaignsTrend[campaignsTrend.length - 2] ?? 0;
+  const campaignsWowPct =
+    prevWeekCampaigns > 0 ? Math.round(((lastWeekCampaigns - prevWeekCampaigns) / prevWeekCampaigns) * 100) : null;
+  // "flat" (zero change, a real comparison) is a distinct amber signal
+  // from "neutral" (no prior week to compare against at all).
+  const campaignsDirection: "up" | "down" | "flat" | "neutral" =
+    campaignsWowPct == null ? "neutral" : campaignsWowPct === 0 ? "flat" : campaignsWowPct > 0 ? "up" : "down";
+
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
       <PageHeader
@@ -387,13 +418,39 @@ export default function NotificationsPage() {
         </Alert>
       )}
 
-      <KpiGrid variant="six">
-        <KpiCard icon={<Megaphone className="size-4" />} label="Campaigns" value={loading ? "..." : metrics.campaigns ?? 0} variant="blue" delta={`${metrics.scheduledCampaigns ?? 0} scheduled`} deltaType="neutral" />
-        <KpiCard icon={<ShieldAlert className="size-4" />} label="Pending Approval" value={loading ? "..." : metrics.pendingApprovalCampaigns ?? 0} variant="amber" delta="Needs review" deltaType="neutral" />
-        <KpiCard icon={<Bell className="size-4" />} label="Notifications" value={loading ? "..." : metrics.notificationLog ?? 0} variant="purple" delta={`${metrics.unread ?? 0} unread`} deltaType="neutral" />
-        <KpiCard icon={<FileText className="size-4" />} label="Templates" value={loading ? "..." : metrics.activeTemplates ?? 0} variant="green" delta="Active" deltaType="up" />
-        <KpiCard icon={<Settings2 className="size-4" />} label="Automation" value={loading ? "..." : metrics.activeRules ?? 0} variant="amber" delta="Active rules" deltaType="neutral" />
-      </KpiGrid>
+      {/*
+        Campaigns is the only card with a real, evenly-ordered history
+        (campaigns-created-per-week, derived above from the rows already
+        fetched for the Campaigns tab) — that's what earns it the wide
+        hero slot. Pending Approval is the actionable queue so it keeps
+        the default size; Notifications/Templates/Automation are plain
+        snapshot counts with nothing to chart, so they stay compact.
+      */}
+      <div className="space-y-4">
+        <KpiCard
+          icon={<Megaphone className="size-4" />}
+          label="Campaigns"
+          value={loading ? "..." : metrics.campaigns ?? 0}
+          variant="blue"
+          delta={
+            campaignsWowPct != null
+              ? campaignsWowPct === 0
+                ? "No change vs last week"
+                : `${Math.abs(campaignsWowPct)}% vs last week`
+              : "8-week trend"
+          }
+          deltaType={campaignsDirection}
+          trend={campaignsTrendPoints}
+          isLoading={loading}
+          size="lg"
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard icon={<ShieldAlert className="size-4" />} label="Pending Approval" value={loading ? "..." : metrics.pendingApprovalCampaigns ?? 0} variant="amber" delta="Needs review" deltaType="neutral" />
+          <KpiCard icon={<Bell className="size-4" />} label="Notifications" value={loading ? "..." : metrics.notificationLog ?? 0} variant="purple" delta={`${metrics.unread ?? 0} unread`} deltaType="neutral" size="sm" />
+          <KpiCard icon={<FileText className="size-4" />} label="Templates" value={loading ? "..." : metrics.activeTemplates ?? 0} variant="green" delta="Active" deltaType="neutral" size="sm" />
+          <KpiCard icon={<Settings2 className="size-4" />} label="Automation" value={loading ? "..." : metrics.activeRules ?? 0} variant="amber" delta="Active rules" deltaType="neutral" size="sm" />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[420px_1fr]">
         <Card>

@@ -110,7 +110,22 @@ const MapPage = () => {
         </Link>
       </PageHeader>
 
-      {/* KPI row (5 cards, mockup F.1) */}
+      {/*
+        /api/map/stats is a point-in-time rollup (facility_profile /
+        collector counts and a district-coverage ratio computed fresh on
+        every call) — nothing here has retained history, so no card gets a
+        trend. Facilities Plotted (registry scale) and Coverage (% of
+        Ghana's districts reached — the number that drives where to send
+        collectors next) are the two an admin reads this page for and stay
+        at default size; IBPs on Map, Active Collectors and Footprint
+        Points are supporting detail and go small. (Footprint Tracker's
+        dated rows are fetched by a separate, filtered, paginated query
+        inside FootprintTab only when that tab is opened — not already
+        loaded here for this KPI row — so deriving a trend from them would
+        mean adding a new query, which isn't justified for a page where
+        the coverage percentage is already the more decision-relevant
+        number.)
+      */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         <KpiCard
           icon="🏥"
@@ -125,6 +140,7 @@ const MapPage = () => {
           value={isLoading ? "..." : (stats?.ibps_on_map ?? 0).toLocaleString()}
           variant="purple"
           delta="Geo-tagged businesses"
+          size="sm"
         />
         <KpiCard
           icon="👷"
@@ -132,6 +148,7 @@ const MapPage = () => {
           value={isLoading ? "..." : (stats?.active_collectors ?? 0).toLocaleString()}
           variant="blue"
           delta="GPS tracked"
+          size="sm"
         />
         <KpiCard
           icon="📡"
@@ -148,6 +165,7 @@ const MapPage = () => {
           value={isLoading ? "..." : (stats?.footprint_points ?? 0).toLocaleString()}
           variant="teal"
           delta={`+${stats?.footprint_points_today ?? 0} today`}
+          size="sm"
         />
       </div>
 

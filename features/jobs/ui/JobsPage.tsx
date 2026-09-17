@@ -458,11 +458,26 @@ const JobsPage = () => {
         </div>
       )}
 
+      {/*
+        No card here gets a trend. `postings` and `applicantData` are real
+        dated rows (job_postings.created_at, features/jobs/api/list.ts), but
+        both come back filtered by whatever the admin currently has typed
+        into search/type/status/region and capped at one page — not a
+        stable calendar window to bucket. Applicant rows are additionally
+        sorted `is_boosted` before `created_at` (features/jobs/api/
+        applicants.ts), the exact "capped feed ordered by the wrong column"
+        trap OutdoorTab's completions trend was fixed to avoid — the 50 rows
+        returned aren't "most recent 50." Total Listings and Pending Review
+        (both true unfiltered aggregates, unaffected by pagination) are what
+        an admin needs first; Applicants and Featured stay compact —
+        Featured is explicitly page-scoped already, so keeping it small
+        avoids it reading as a global count.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon="💼" label="Total Listings" value={String(metrics?.listings ?? 0)} variant="blue" />
-        <KpiCard icon="👥" label="Applicants" value={String(metrics?.applicants ?? 0)} variant="green" />
+        <KpiCard icon="👥" label="Applicants" value={String(metrics?.applicants ?? 0)} variant="green" size="sm" />
         <KpiCard icon="⏳" label="Pending Review" value={String(metrics?.pendingReview ?? 0)} variant="gold" />
-        <KpiCard icon="⭐" label="Featured (page)" value={String(featuredCount)} variant="purple" />
+        <KpiCard icon="⭐" label="Featured (page)" value={String(featuredCount)} variant="purple" size="sm" />
       </div>
 
       <Tabs

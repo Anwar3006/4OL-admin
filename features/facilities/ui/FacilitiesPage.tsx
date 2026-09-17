@@ -157,6 +157,15 @@ const FacilitiesPage = () => {
         </button>
       </PageHeader>
 
+      {/*
+        /api/facilities/stats returns a single current-snapshot aggregate
+        (facility_profile rows counted by status right now) with no dated
+        history retained, so none of these six get a trend — see the "no
+        trend, full stop" rule. Total and Pending stay at the default size
+        because they're the two numbers an admin actually acts on day to
+        day (registry scale, and the review queue the header's "Review
+        Pending" button points at); the rest are secondary context.
+      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard
           icon="📊"
@@ -169,6 +178,7 @@ const FacilitiesPage = () => {
           label="Active"
           value={stats?.active?.toLocaleString() ?? "0"}
           variant="green"
+          size="sm"
         />
         <KpiCard
           icon="⏳"
@@ -181,18 +191,21 @@ const FacilitiesPage = () => {
           label="Top Rated"
           value={stats?.topRated?.toLocaleString() ?? "0"}
           variant="purple"
+          size="sm"
         />
         <KpiCard
           icon="⭐"
           label="Avg Rating"
           value={stats?.averageRating != null ? `${stats.averageRating}` : "No ratings"}
           variant="teal"
+          size="sm"
         />
         <KpiCard
           icon="🚩"
           label="Rejected/Susp."
           value={((stats?.rejected ?? 0) + (stats?.suspended ?? 0)).toLocaleString()}
           variant="red"
+          size="sm"
         />
       </div>
 

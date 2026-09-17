@@ -108,45 +108,67 @@ export default function AnatomyPage() {
         </div>
       </div>
 
-      {/* KPI row */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          icon={<ScanLine className="h-5 w-5" />}
-          label="Body Parts Mapped"
-          value={stats?.body_parts_mapped ?? "..."}
-          variant="blue"
-          delta={`${stats?.hotspots ?? 0} hotspots`}
-          deltaType="neutral"
-          isLoading={overviewLoading}
-          isError={false}
-        />
-        <KpiCard
-          icon={<HeartPulse className="h-5 w-5" />}
-          label="Condition Links"
-          value={stats?.condition_links ?? "..."}
-          variant="teal"
-          delta="Mapped links"
-          deltaType="neutral"
-          isLoading={overviewLoading}
-        />
-        <KpiCard
-          icon={<Bone className="h-5 w-5" />}
-          label="Symptom Links"
-          value={stats?.symptom_links ?? "..."}
-          variant="purple"
-          delta={`${stats?.healthy_tip_links ?? 0} healthy tips`}
-          deltaType="neutral"
-          isLoading={overviewLoading}
-        />
-        <KpiCard
-          icon={<MapPin className="h-5 w-5" />}
-          label="Map Interactions 30d"
-          value={stats?.map_interactions_30d ?? "..."}
-          variant="green"
-          delta="Mobile taps"
-          deltaType="neutral"
-          isLoading={overviewLoading}
-        />
+      {/*
+        KPI row — every value here is a single head-count from
+        get_anatomy_overview_stats() (supabase/migrations/
+        20260820_anatomy_extension.sql): plain `count(*)` reads against
+        body_parts / condition_body_parts / symptom_body_parts, and for
+        Map Interactions 30d a `count(*) ... where created_at >= now() -
+        interval '30 days'` against anatomy_interactions. That table does
+        carry real timestamps, so a weekly trend isn't impossible in
+        principle — but the RPC only ever returns the current rolling
+        total, not a stored per-week series, so charting it here would
+        mean a brand-new grouped query. None of the four cards has an
+        existing dated series to derive from, so none gets `lg` sizing or
+        a sparkline (Rule 1). Body Parts Mapped (content coverage) and Map
+        Interactions 30d (the only real usage signal on this page) are
+        what an admin checks first, so those stay default size; the two
+        link-completeness counts are supporting detail and go compact.
+      */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <KpiCard
+            icon={<ScanLine className="h-5 w-5" />}
+            label="Body Parts Mapped"
+            value={stats?.body_parts_mapped ?? "..."}
+            variant="blue"
+            delta={`${stats?.hotspots ?? 0} hotspots`}
+            deltaType="neutral"
+            isLoading={overviewLoading}
+            isError={false}
+          />
+          <KpiCard
+            icon={<MapPin className="h-5 w-5" />}
+            label="Map Interactions 30d"
+            value={stats?.map_interactions_30d ?? "..."}
+            variant="green"
+            delta="Mobile taps"
+            deltaType="neutral"
+            isLoading={overviewLoading}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <KpiCard
+            size="sm"
+            icon={<HeartPulse className="h-5 w-5" />}
+            label="Condition Links"
+            value={stats?.condition_links ?? "..."}
+            variant="teal"
+            delta="Mapped links"
+            deltaType="neutral"
+            isLoading={overviewLoading}
+          />
+          <KpiCard
+            size="sm"
+            icon={<Bone className="h-5 w-5" />}
+            label="Symptom Links"
+            value={stats?.symptom_links ?? "..."}
+            variant="purple"
+            delta={`${stats?.healthy_tip_links ?? 0} healthy tips`}
+            deltaType="neutral"
+            isLoading={overviewLoading}
+          />
+        </div>
       </div>
 
       {/* Tabs */}

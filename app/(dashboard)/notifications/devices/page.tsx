@@ -127,6 +127,14 @@ export default function DeviceAnalyticsPage() {
         </Button>
       </PageHeader>
 
+      {/*
+        user_push_tokens is a live registry snapshot, not a dated event
+        log — there's no history to bucket into a trend here (unlike
+        Notifications' campaign log), so every card stays a plain number.
+        Total devices and Active in 30 days are the headline reach/health
+        read; Users with a device and Multi-device users are supporting
+        ratios, so they go "sm".
+      */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-5">
         <KpiCard
           icon={<Smartphone className="h-5 w-5" />}
@@ -137,12 +145,21 @@ export default function DeviceAnalyticsPage() {
           variant="blue"
         />
         <KpiCard
+          icon={<RefreshCw className="h-5 w-5" />}
+          label="Active in 30 days"
+          value={data?.active_30d ?? 0}
+          isLoading={isLoading}
+          isError={isError}
+          variant="green"
+        />
+        <KpiCard
           icon={<Users className="h-5 w-5" />}
           label="Users with a device"
           value={data?.total_users ?? 0}
           isLoading={isLoading}
           isError={isError}
           variant="teal"
+          size="sm"
         />
         <KpiCard
           icon={<Smartphone className="h-5 w-5" />}
@@ -153,14 +170,7 @@ export default function DeviceAnalyticsPage() {
           isLoading={isLoading}
           isError={isError}
           variant="purple"
-        />
-        <KpiCard
-          icon={<RefreshCw className="h-5 w-5" />}
-          label="Active in 30 days"
-          value={data?.active_30d ?? 0}
-          isLoading={isLoading}
-          isError={isError}
-          variant="green"
+          size="sm"
         />
       </div>
 

@@ -237,21 +237,33 @@ const SymptomsPage = () => {
         </button>
       </PageHeader>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+      {/*
+        KPI Grid — useSymptomStats (features/symptoms/data/useSymptoms.ts)
+        runs plain `count(*)` reads against the live `symptoms` table on
+        every call; nothing here is a stored dated series, so none of
+        these qualifies for a trend or `lg` sizing (Rule 1). Systemic
+        Count is a subset of Total Symptoms (same table, filtered by
+        `is_systemic`), so — like the Active/Total precedent on the
+        Subscriptions page — it merges into one "Systemic / Total" card
+        instead of two cards stating overlapping information; Categories
+        counts a different entity (categories, not symptoms) so it stays
+        separate, same as Diseases' Total Conditions/Categories.
+      */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <KpiCard
-          icon="📊"
-          label="Total Symptoms"
+          icon="🩺"
+          label="Systemic / Total Symptoms"
           value={
             isStatsLoading
               ? "..."
-              : (stats?.totalSymptoms || 0).toLocaleString()
+              : `${(stats?.systemicCount ?? 0).toLocaleString()} / ${(stats?.totalSymptoms ?? 0).toLocaleString()}`
           }
-          variant="blue"
-          delta="Independent symptoms database"
+          variant="teal"
+          delta="Systemic symptoms in the database"
           deltaType="neutral"
         />
         <KpiCard
+          size="sm"
           icon="📂"
           label="Categories"
           value={
@@ -263,13 +275,7 @@ const SymptomsPage = () => {
           delta="Well organized"
         />
         <KpiCard
-          icon="🩺"
-          label="Systemic Count"
-          value={isStatsLoading ? "..." : String(stats?.systemicCount ?? "0")}
-          variant="teal"
-          delta="Indexed"
-        />
-        <KpiCard
+          size="sm"
           icon="✅"
           label="Verification Rate"
           value={isStatsLoading ? "..." : `${stats?.verificationRate ?? 0}%`}

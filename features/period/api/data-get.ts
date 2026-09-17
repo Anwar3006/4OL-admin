@@ -654,7 +654,12 @@ export async function GET(request: NextRequest) {
   const userIds = [...new Set(cycleRows.map((cycle) => cycle.user_id))];
   const [{ data: consents }, { data: dailyLogs }] = await Promise.all([
     userIds.length ? admin.from("period_consent_events").select("user_id,consent_type,granted,policy_version,source,created_at").in("user_id", userIds).order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
-    userIds.length ? admin.from("period_daily_logs").select("user_id,logged_on,symptoms,created_at").in("user_id", userIds).limit(5000) : Promise.resolve({ data: [] }),
+    // Ordered by created_at desc so the 5,000-row cap keeps the most recent
+    // logs rather than an arbitrary slice — this is what makes it safe to
+    // bucket these rows into the Daily Logs trend below (summary.logsTrend);
+    // an unordered LIMIT would silently drop an unknown mix of rows once a
+    // user base's lifetime log count passes 5,000.
+    userIds.length ? admin.from("period_daily_logs").select("user_id,logged_on,symptoms,created_at").in("user_id", userIds).order("created_at", { ascending: false }).limit(5000) : Promise.resolve({ data: [] }),
   ]);
   const profiles = profileMaps(await loadProfiles(admin, userIds));
   const consentMap = latestConsents((consents ?? []) as ConsentRecord[]);
@@ -771,11 +776,32 @@ export async function GET(request: NextRequest) {
   const { data: forecastErrorRows } = await admin.from("period_forecasts").select("absolute_error_days").not("absolute_error_days", "is", null).limit(5000);
   const forecastErrorDays = (forecastErrorRows ?? []).map((row) => row.absolute_error_days as number);
 
+  // Real 8-week Daily Logs trend — bucketed from the same `dailyLogs` rows
+  // already fetched above for logs30d, now that the query orders by
+  // created_at desc (see the comment there). Grouping by the week a log
+  // row was created mirrors how logs30d itself is computed, so the last
+  // bucket lines up with the headline number.
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const weekBucket = (iso: string) => Math.floor(new Date(iso).getTime() / WEEK_MS);
+  const logsByWeek = new Map<number, number>();
+  for (const log of dailyLogs ?? []) {
+    const bucket = weekBucket(log.created_at);
+    logsByWeek.set(bucket, (logsByWeek.get(bucket) ?? 0) + 1);
+  }
+  const currentWeekBucket = weekBucket(new Date().toISOString());
+  const weekLabel = (bucket: number) =>
+    `Week of ${new Date(bucket * WEEK_MS).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  const logsTrend = Array.from({ length: 8 }, (_, i) => {
+    const bucket = currentWeekBucket - (7 - i);
+    return { label: weekLabel(bucket), value: logsByWeek.get(bucket) ?? 0 };
+  });
+
   return NextResponse.json({
     summary: {
       activeTrackers: currentActive.size,
       totalTrackers: userIds.length,
       logs30d: (dailyLogs ?? []).filter((log) => new Date(log.created_at).getTime() >= currentStart).length,
+      logsTrend,
       cycleLogs: cycleRows.length,
       averageCycleLength: average(cycleRows.map((cycle) => cycle.cycle_length)),
       retention: calculateRetention(currentActive, previousActive),
