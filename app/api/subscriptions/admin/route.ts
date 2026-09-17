@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
   if (periodResult.error) return NextResponse.json({ error: periodResult.error.message }, { status: 500 });
 
   const now = Date.now();
-  const rows = [
+  const allRows = [
     ...(subscriptionsResult.data ?? []).map((row) => ({ ...row, record_type: "subscription" as const })),
     ...(periodResult.data ?? []).map((row) => ({
       id: row.id,
@@ -113,9 +113,40 @@ export async function GET(req: NextRequest) {
       subscription_tiers: { key: "cycle_pro", name: "Cycle Pro" },
       record_type: "period_grant" as const,
     })),
-  ]
-    .filter((row) => !status || status === "all" || row.status === status)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // Computed from the rows already pulled above — no extra query. Used to
+  // drive the Subscriptions overview KPI bento (active-vs-total headline +
+  // the per-scope breakdown), independent of whatever `status` filter the
+  // caller passed for the table listing below.
+  const activeRows = allRows.filter((row) => row.status === "active");
+
+  // A genuine week-over-week series (new grants created per week, last 8
+  // weeks) — real timestamps already in `allRows`, no extra query. Powers
+  // the one sparkline on this page; every other number here is a snapshot
+  // with nothing to chart.
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const weekBucket = (iso: string) => Math.floor(new Date(iso).getTime() / WEEK_MS);
+  const grantsPerWeek = new Map<number, number>();
+  for (const row of allRows) {
+    const bucket = weekBucket(row.created_at);
+    grantsPerWeek.set(bucket, (grantsPerWeek.get(bucket) ?? 0) + 1);
+  }
+  const currentWeekBucket = weekBucket(new Date().toISOString());
+  const newGrantsTrend = Array.from({ length: 8 }, (_, i) => grantsPerWeek.get(currentWeekBucket - (7 - i)) ?? 0);
+
+  const stats = {
+    total: allRows.length,
+    active: activeRows.length,
+    new_grants_trend: newGrantsTrend,
+    by_scope: {
+      all_access: activeRows.filter((row) => row.scope === "all_access").length,
+      fitness_only: activeRows.filter((row) => row.scope === "fitness_only").length,
+      period_only: activeRows.filter((row) => row.scope === "period_only").length,
+    },
+  };
+
+  const rows = allRows.filter((row) => !status || status === "all" || row.status === status);
 
   const count = rows.length;
   const pageRows = rows.slice(offset, offset + limit);
@@ -135,6 +166,7 @@ export async function GET(req: NextRequest) {
       granted_by_name: r.granted_by ? nameOf.get(r.granted_by) ?? r.granted_by : null,
     })),
     total: count,
+    stats,
   });
 }
 

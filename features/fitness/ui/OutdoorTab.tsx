@@ -204,6 +204,26 @@ const OutdoorTab = () => {
   const totalCompletions = engagementData?.completions.length ?? 0;
   const totalRatings = engagementData?.ratings.length ?? 0;
 
+  // Real 8-week completions trend — genuine now that useFitnessOutdoorEngagements
+  // fetches completions from their own completed_at-ordered query instead of
+  // deriving them from the updated_at-capped feed.
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const weekBucket = (iso: string) => Math.floor(new Date(iso).getTime() / WEEK_MS);
+  const completionsByWeek = new Map<number, number>();
+  for (const row of engagementData?.completions ?? []) {
+    if (!row.completed_at) continue;
+    const bucket = weekBucket(row.completed_at);
+    completionsByWeek.set(bucket, (completionsByWeek.get(bucket) ?? 0) + 1);
+  }
+  const currentWeekBucket = weekBucket(new Date().toISOString());
+  const completionsTrend = Array.from({ length: 8 }, (_, i) => completionsByWeek.get(currentWeekBucket - (7 - i)) ?? 0);
+  const lastWeekCompletions = completionsTrend[completionsTrend.length - 1] ?? 0;
+  const prevWeekCompletions = completionsTrend[completionsTrend.length - 2] ?? 0;
+  const completionsWowPct =
+    prevWeekCompletions > 0 ? Math.round(((lastWeekCompletions - prevWeekCompletions) / prevWeekCompletions) * 100) : null;
+  const completionsDirection: "up" | "down" | "neutral" =
+    completionsWowPct == null || completionsWowPct === 0 ? "neutral" : completionsWowPct > 0 ? "up" : "down";
+
   // Render Star Utility
   const renderStars = useCallback((rating: number) => {
     return (
@@ -675,29 +695,15 @@ const OutdoorTab = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Sub-KPI Row for Outdoor Management */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard
-          icon="🌳"
-          label="Total Outdoor Routes"
-          value={totalRoutes.toString()}
-          variant="green"
-          delta="Trails, tracks, loops"
-        />
-        <KpiCard
-          icon="📅"
-          label="Upcoming/Active Events"
-          value={totalEvents.toString()}
-          variant="blue"
-          delta="Community runs & hikes"
-        />
-        <KpiCard
-          icon="⭐"
-          label="Outdoor Ratings"
-          value={(totalRatings || totalReviews).toString()}
-          variant="orange"
-          delta="Routes and events"
-        />
+      {/*
+        Outdoor Completions now gets a real sparkline: it's fetched from
+        its own completed_at-ordered query (useFitnessOutdoorEngagements,
+        features/fitness/data/useFitnessOutdoor.ts), so an 8-week trend is
+        genuine, not fabricated — that's what earns it the wide hero slot.
+        Everything else is a plain snapshot number with nothing to chart,
+        so it stays compact underneath.
+      */}
+      <div className="space-y-4">
         <KpiCard
           icon="✅"
           label="Outdoor Completions"
@@ -706,9 +712,39 @@ const OutdoorTab = () => {
           delta={
             engagementData?.isConfigured === false
               ? "Tracking setup required"
-              : `${engagementData?.plannedVisits ?? 0} visits planned`
+              : completionsWowPct != null
+                ? `${Math.abs(completionsWowPct)}% vs last week`
+                : "8-week trend"
           }
+          deltaType={completionsDirection}
+          trend={engagementData?.isConfigured === false ? undefined : completionsTrend}
+          size={engagementData?.isConfigured === false ? "default" : "lg"}
         />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiCard
+            icon="📅"
+            label="Upcoming/Active Events"
+            value={totalEvents.toString()}
+            variant="blue"
+            delta="Community runs & hikes"
+          />
+          <KpiCard
+            icon="🌳"
+            label="Total Outdoor Routes"
+            value={totalRoutes.toString()}
+            variant="green"
+            delta="Trails, tracks, loops"
+            size="sm"
+          />
+          <KpiCard
+            icon="⭐"
+            label="Outdoor Ratings"
+            value={(totalRatings || totalReviews).toString()}
+            variant="orange"
+            delta="Routes and events"
+            size="sm"
+          />
+        </div>
       </div>
 
       <Tabs

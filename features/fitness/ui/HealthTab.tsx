@@ -23,11 +23,48 @@ export default function HealthTab() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiCard icon={<UsersRound className="size-4" />} label="Connected Users" value={isLoading ? "..." : connectedUsers} variant="green" />
-        <KpiCard icon={<Activity className="size-4" />} label="Synced Today" value={isLoading ? "..." : syncedToday} variant="blue" />
-        <KpiCard icon={<Watch className="size-4" />} label="Active Wearables" value={isLoading ? "..." : enabledCount} variant="purple" />
-        <KpiCard icon={<AlertTriangle className="size-4" />} label="Failed Syncs" value={isLoading ? "..." : totalFailures} variant="red" />
+      {/*
+        No trend chart here: the backing RPC caps recent_failures at the
+        last 20 rows (not a time window — supabase/migrations/20260821_
+        fitness_extension.sql), so day-bucketing it could show a flat
+        history for a slow platform and a misleadingly spiky one for a
+        busy one. Reach (Connected Users) and risk (Failed Syncs) still
+        lead at "default" size; the rest are "sm" — a bare number doesn't
+        need the room a chart would.
+      */}
+      <div className="grid grid-cols-2 gap-4">
+        <KpiCard
+          icon={<UsersRound className="size-4" />}
+          label="Connected Users"
+          value={isLoading ? "..." : connectedUsers}
+          delta="Across all wearable platforms"
+          deltaType="neutral"
+          variant="green"
+        />
+        <KpiCard
+          icon={<AlertTriangle className="size-4" />}
+          label="Failed Syncs"
+          value={isLoading ? "..." : totalFailures}
+          delta={!isLoading && totalFailures > 0 ? "Needs review" : "All clear"}
+          deltaType={!isLoading && totalFailures > 0 ? "down" : "up"}
+          variant={!isLoading && totalFailures > 0 ? "red" : "green"}
+        />
+        <KpiCard
+          icon={<Activity className="size-4" />}
+          label="Synced Today"
+          value={isLoading ? "..." : syncedToday}
+          variant="blue"
+          size="sm"
+        />
+        <KpiCard
+          icon={<Watch className="size-4" />}
+          label="Active Wearables"
+          value={isLoading ? "..." : `${enabledCount}/${platforms.length}`}
+          delta="platforms enabled"
+          deltaType="neutral"
+          variant="purple"
+          size="sm"
+        />
       </div>
 
       <Card className="overflow-hidden">

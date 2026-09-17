@@ -499,35 +499,58 @@ export const useFitnessOutdoorEngagements = () => {
   return useQuery<FitnessOutdoorEngagementData, Error>({
     queryKey: OUTDOOR_QUERY_KEYS.engagements,
     queryFn: async () => {
-      const { data: rawRows, error } = await supabase
-        .from("fitness_outdoor_engagements")
-        .select("*, user:user_profiles(first_name,last_name)")
-        .order("updated_at", { ascending: false })
-        .limit(500);
-      if (error) {
-        const isMissingEngagementTable =
-          error.code === "PGRST205" ||
+      const [recencyResult, completionsResult] = await Promise.all([
+        // Backs ratings / planned visits / likes: none of those have their
+        // own timestamp column, so "last touched" (updated_at, NOT NULL)
+        // is the best available proxy for their recency.
+        supabase
+          .from("fitness_outdoor_engagements")
+          .select("*, user:user_profiles(first_name,last_name)")
+          .order("updated_at", { ascending: false })
+          .limit(500),
+        // Completions get their own query. completed_at is nullable, and
+        // Postgres sorts NULLs first on DESC — ordering the shared feed by
+        // completed_at would push every never-completed row (like-only,
+        // rating-only, plan-only) ahead of real completions and could
+        // squeeze them out of a fixed LIMIT entirely once a route gets
+        // busy. Filtering to completed_at IS NOT NULL also lets this hit
+        // fitness_outdoor_engagements_completed_idx (a partial index on
+        // completed_at desc where completed_at is not null) instead of an
+        // unindexed sort.
+        supabase
+          .from("fitness_outdoor_engagements")
+          .select("*, user:user_profiles(first_name,last_name)")
+          .not("completed_at", "is", null)
+          .order("completed_at", { ascending: false })
+          .limit(500),
+      ]);
+
+      const isMissingEngagementTable = (error: { code?: string; message: string } | null) =>
+        !!error &&
+        (error.code === "PGRST205" ||
           (error.message.includes("fitness_outdoor_engagements") &&
-            error.message.toLowerCase().includes("schema cache"));
+            error.message.toLowerCase().includes("schema cache")));
 
-        if (isMissingEngagementTable) {
-          return {
-            completions: [],
-            ratings: [],
-            plannedVisits: 0,
-            likes: 0,
-            isConfigured: false,
-            setupMessage:
-              "Outdoor tracking is ready in the app code, but its database migration has not been applied to this Supabase project yet.",
-          };
-        }
-
-        throw new Error(error.message);
+      if (isMissingEngagementTable(recencyResult.error) || isMissingEngagementTable(completionsResult.error)) {
+        return {
+          completions: [],
+          ratings: [],
+          plannedVisits: 0,
+          likes: 0,
+          isConfigured: false,
+          setupMessage:
+            "Outdoor tracking is ready in the app code, but its database migration has not been applied to this Supabase project yet.",
+        };
       }
+      if (recencyResult.error) throw new Error(recencyResult.error.message);
+      if (completionsResult.error) throw new Error(completionsResult.error.message);
 
-      const rows = (rawRows ?? []) as any[];
-      const routeIds = [...new Set(rows.filter((row) => row.target_type === "route").map((row) => row.target_id))];
-      const eventIds = [...new Set(rows.filter((row) => row.target_type === "event").map((row) => row.target_id))];
+      const recencyRows = (recencyResult.data ?? []) as any[];
+      const completionRows = (completionsResult.data ?? []) as any[];
+      const allRows = [...recencyRows, ...completionRows];
+
+      const routeIds = [...new Set(allRows.filter((row) => row.target_type === "route").map((row) => row.target_id))];
+      const eventIds = [...new Set(allRows.filter((row) => row.target_type === "event").map((row) => row.target_id))];
 
       const [routeResult, eventResult] = await Promise.all([
         routeIds.length
@@ -544,17 +567,19 @@ export const useFitnessOutdoorEngagements = () => {
       for (const route of routeResult.data ?? []) targetNames.set(`route:${route.id}`, route.name);
       for (const event of eventResult.data ?? []) targetNames.set(`event:${event.id}`, event.title);
 
-      const engagementRows: FitnessOutdoorEngagementRow[] = rows.map((row) => ({
+      const withNames = (row: any): FitnessOutdoorEngagementRow => ({
         ...row,
         user_name: [row.user?.first_name, row.user?.last_name].filter(Boolean).join(" ") || "Unknown user",
         target_name: targetNames.get(`${row.target_type}:${row.target_id}`) ?? "Removed Outdoor item",
-      }));
+      });
+
+      const recencyEngagementRows = recencyRows.map(withNames);
 
       return {
-        completions: engagementRows.filter((row) => row.completed_at),
-        ratings: engagementRows.filter((row) => row.rating != null),
-        plannedVisits: engagementRows.filter((row) => row.will_visit_at && !row.completed_at).length,
-        likes: engagementRows.filter((row) => row.is_liked).length,
+        completions: completionRows.map(withNames),
+        ratings: recencyEngagementRows.filter((row) => row.rating != null),
+        plannedVisits: recencyEngagementRows.filter((row) => row.will_visit_at && !row.completed_at).length,
+        likes: recencyEngagementRows.filter((row) => row.is_liked).length,
         isConfigured: true,
         setupMessage: null,
       };

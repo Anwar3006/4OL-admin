@@ -6,6 +6,7 @@ import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Sparkline from "@/components/redesign/Sparkline";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +40,49 @@ interface KpiCardProps {
   menuItems?: { label: string; onClick?: () => void }[];
   /** Optional deep link — makes the whole card clickable (dashboard hub). */
   href?: string;
+  /**
+   * Visual weight for bento-grid KPI hierarchies. Omit for the unchanged
+   * default (matches every existing call site). "lg" is a bento hero cell;
+   * "sm" is a compact secondary cell placed beside one.
+   */
+  size?: "default" | "lg" | "sm";
+  /** Grid placement on the parent bento (e.g. `col-span-2 row-span-2`). */
+  className?: string;
+  /**
+   * Real ordered series for an inline at-a-glance trend chart (oldest
+   * first). Only pass this when genuine historical data backs it — never
+   * to fill space. A card with a trend needs width to render it legibly;
+   * size it "lg" (or give it 2 grid columns) accordingly. Colour follows
+   * `deltaType`.
+   */
+  trend?: number[];
 }
+
+const SIZE_PADDING: Record<string, string> = {
+  default: "p-5 sm:p-6",
+  lg: "p-6 sm:p-8",
+  sm: "p-4",
+};
+
+const SIZE_ICON: Record<string, string> = {
+  default: "size-9",
+  lg: "size-12",
+  sm: "size-7",
+};
+
+const SIZE_ICON_FONT: Record<string, string> = {
+  default: "18px",
+  lg: "22px",
+  sm: "15px",
+};
+
+// Fixed per size — no responsive jump (Part S-D5): a value must not reflow
+// as the viewport crosses a breakpoint.
+const SIZE_VALUE_TEXT: Record<string, string> = {
+  default: "text-2xl",
+  lg: "text-4xl",
+  sm: "text-xl",
+};
 
 const ICON_BG: Record<string, string> = {
   blue: "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400",
@@ -81,15 +124,21 @@ export default function KpiCard({
   variant = "blue",
   menuItems = [],
   href,
+  size = "default",
+  className,
+  trend,
 }: KpiCardProps) {
+  const hasTrend = !!trend && trend.length >= 2;
   const displayValue = isError ? errorLabel : isEmpty ? emptyLabel : value;
 
   const card = (
     <Card
       className={cn(
-        "flex-col gap-4 p-5 sm:p-6 h-full w-full min-w-0 hover:shadow-md transition-shadow",
+        "flex-col gap-4 h-full w-full min-w-0 hover:shadow-md transition-shadow",
+        SIZE_PADDING[size],
         isError && "border-red-100 dark:border-red-500/30 bg-red-50/30 dark:bg-red-500/15/30",
         href && "cursor-pointer hover:border-emerald-200",
+        !href && className,
       )}
     >
       <CardContent className="p-0 flex flex-col gap-4 h-full">
@@ -106,10 +155,11 @@ export default function KpiCard({
           <div className="flex items-center gap-1.5 shrink-0">
             <div
               className={cn(
-                "flex items-center justify-center rounded-xl shrink-0 size-9",
+                "flex items-center justify-center rounded-xl shrink-0",
+                SIZE_ICON[size],
                 ICON_BG[variant] ?? ICON_BG.blue,
               )}
-              style={{ fontSize: "18px" }}
+              style={{ fontSize: SIZE_ICON_FONT[size] }}
             >
               {icon}
             </div>
@@ -144,10 +194,11 @@ export default function KpiCard({
           ) : (
             <div
               className={cn(
-                // Part S/S-D5: fixed 22px semibold (no responsive jump),
-                // tabular figures + break-words so values never escape the
-                // card boundary (S-D4).
-                "text-2xl font-semibold leading-tight tracking-tight tabular-nums break-words",
+                // Part S/S-D5: fixed size per `size` tier (no responsive
+                // jump), tabular figures + break-words so values never
+                // escape the card boundary (S-D4).
+                SIZE_VALUE_TEXT[size],
+                "font-semibold leading-tight tracking-tight tabular-nums break-words",
                 isError
                   ? "text-red-700 dark:text-red-400"
                   : isEmpty
@@ -159,23 +210,26 @@ export default function KpiCard({
             </div>
           )}
 
-          {/* ── Bottom: Delta Badge ── */}
-          {!isLoading && !isError && delta && (
-            <div className="flex items-center">
-              <Badge
-                variant={
-                  deltaType === "up"
-                    ? "emerald"
-                    : deltaType === "down"
-                      ? "destructive"
-                      : "secondary"
-                }
-                className="font-medium"
-              >
-                {deltaType === "up" && <span className="text-sm">↑</span>}
-                {deltaType === "down" && <span className="text-sm">↓</span>}
-                {delta}
-              </Badge>
+          {/* ── Bottom: Delta Badge + Trend Sparkline ── */}
+          {!isLoading && !isError && (delta || hasTrend) && (
+            <div className="flex items-center justify-between gap-3">
+              {delta && (
+                <Badge
+                  variant={
+                    deltaType === "up"
+                      ? "emerald"
+                      : deltaType === "down"
+                        ? "destructive"
+                        : "secondary"
+                  }
+                  className="shrink-0 font-medium"
+                >
+                  {deltaType === "up" && <span className="text-sm">↑</span>}
+                  {deltaType === "down" && <span className="text-sm">↓</span>}
+                  {delta}
+                </Badge>
+              )}
+              {hasTrend && <Sparkline data={trend!} trend={deltaType} height={size === "sm" ? 28 : 36} />}
             </div>
           )}
         </div>
@@ -185,7 +239,7 @@ export default function KpiCard({
 
   if (href) {
     return (
-      <Link href={href} className="block h-full">
+      <Link href={href} className={cn("block h-full", className)}>
         {card}
       </Link>
     );

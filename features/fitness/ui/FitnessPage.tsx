@@ -72,18 +72,30 @@ const FitnessPage = () => {
         <button className="btn btn-primary btn-sm">+ New Plan</button>
       </PageHeader>
 
-      {/* KPI row — 2 cols on mobile, up to 6 on very wide screens */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+      {/*
+        No card here gets a trend chart: get_fitness_dashboard_kpis reads a
+        single cached row (fitness_dashboard_cache, refreshed every 10 min)
+        with no history retained, so there's no real series to plot — a
+        sparkline here would have to be fabricated. Sizing instead just
+        signals reach/engagement (Fitness Users, Active Plans) as the two an
+        admin reads first, at "default" size; the rest are "sm" since a
+        bare number doesn't need the extra room.
+      */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <KpiCard
           icon="🏋️"
           label="Fitness Users"
           value={isLoading ? "..." : (metrics?.total_fitness_users ?? 0).toLocaleString()}
+          delta="Total reach"
+          deltaType="neutral"
           variant="blue"
         />
         <KpiCard
           icon="✅"
           label="Active Plans"
           value={isLoading ? "..." : (metrics?.active_plans ?? 0).toLocaleString()}
+          delta="Currently in progress"
+          deltaType="neutral"
           variant="green"
         />
         <KpiCard
@@ -91,24 +103,34 @@ const FitnessPage = () => {
           label="Live Challenges"
           value={isLoading ? "..." : (metrics?.live_challenges ?? 0).toLocaleString()}
           variant="orange"
+          size="sm"
         />
         <KpiCard
           icon="📚"
           label="Exercises Library"
           value={isLoading ? "..." : (metrics?.exercise_library_count ?? 0).toLocaleString()}
           variant="teal"
+          size="sm"
         />
         <KpiCard
           icon="🪙"
           label="FitCoins Issued"
           value={isLoading ? "..." : (metrics?.fitcoins_issued ?? 0).toLocaleString()}
           variant="gold"
+          size="sm"
         />
         <KpiCard
           icon="🤖"
           label="AI-Generated Plans"
           value={isLoading ? "..." : (metrics?.ai_generated_plans ?? 0).toLocaleString()}
+          delta={
+            isLoading || !metrics?.active_plans
+              ? undefined
+              : `${Math.round(((metrics.ai_generated_plans ?? 0) / metrics.active_plans) * 100)}% of active plans`
+          }
+          deltaType="neutral"
           variant="purple"
+          size="sm"
         />
       </div>
 

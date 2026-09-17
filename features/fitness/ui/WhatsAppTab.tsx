@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import KpiCard from "@/components/redesign/KpiCard";
-import KpiGrid from "@/components/redesign/KpiGrid";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -148,6 +147,24 @@ export default function WhatsAppTab() {
 
   const approvedTemplates = templates.filter((t) => t.status === "approved");
 
+  // Real per-broadcast sent volume, chronological — the only series here
+  // with genuine, evenly-meaningful history (broadcasts already fetched
+  // above, ordered by created_at). Everything else in `stats` is a single
+  // current snapshot number with no history to chart.
+  const sentTrend = [...broadcasts]
+    .filter((b) => b.sent_at)
+    .sort((a, b) => new Date(a.sent_at!).getTime() - new Date(b.sent_at!).getTime())
+    .slice(-12)
+    .map((b) => Number(b.delivery_stats?.sent ?? b.delivery_stats?.delivered ?? 0));
+  const hasSentTrend = sentTrend.length >= 2;
+  const sentDirection: "up" | "down" | "neutral" = !hasSentTrend
+    ? "neutral"
+    : sentTrend[sentTrend.length - 1] > sentTrend[sentTrend.length - 2]
+      ? "up"
+      : sentTrend[sentTrend.length - 1] < sentTrend[sentTrend.length - 2]
+        ? "down"
+        : "neutral";
+
   return (
     <div className="space-y-4">
       <Alert className="border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100">
@@ -157,36 +174,51 @@ export default function WhatsAppTab() {
         </AlertDescription>
       </Alert>
 
-      <KpiGrid>
-        <KpiCard
-          icon={<Users className="size-4" />}
-          label="Community Members"
-          value={loading ? "..." : stats?.community_members ?? 0}
-          variant="green"
-          isLoading={loading}
-        />
-        <KpiCard
-          icon={<MessageSquare className="size-4" />}
-          label="Active Groups"
-          value={loading ? "..." : stats?.active_groups ?? 0}
-          variant="blue"
-          isLoading={loading}
-        />
+      {/*
+        Only Messages Sent gets a chart — it's the one metric with a real,
+        evenly-ordered history (sent volume per broadcast). It gets the
+        wide slot only once that history exists (>= 2 sent broadcasts);
+        until then it's a plain compact number like its siblings.
+      */}
+      <div className="space-y-4">
         <KpiCard
           icon={<Send className="size-4" />}
           label="Messages Sent"
           value={loading ? "..." : stats?.messages_sent ?? 0}
+          delta={hasSentTrend ? "Sent per broadcast, most recent 12" : undefined}
+          deltaType={sentDirection}
+          trend={hasSentTrend ? sentTrend : undefined}
           variant="purple"
           isLoading={loading}
+          size={hasSentTrend ? "lg" : "default"}
         />
-        <KpiCard
-          icon={<BarChart3 className="size-4" />}
-          label="Avg Open Rate"
-          value={loading ? "..." : stats?.avg_open_rate != null ? `${stats.avg_open_rate}%` : "—"}
-          variant="amber"
-          isLoading={loading}
-        />
-      </KpiGrid>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiCard
+            icon={<Users className="size-4" />}
+            label="Community Members"
+            value={loading ? "..." : stats?.community_members ?? 0}
+            variant="green"
+            isLoading={loading}
+            size="sm"
+          />
+          <KpiCard
+            icon={<BarChart3 className="size-4" />}
+            label="Avg Open Rate"
+            value={loading ? "..." : stats?.avg_open_rate != null ? `${stats.avg_open_rate}%` : "—"}
+            variant="amber"
+            isLoading={loading}
+            size="sm"
+          />
+          <KpiCard
+            icon={<MessageSquare className="size-4" />}
+            label="Active Groups"
+            value={loading ? "..." : stats?.active_groups ?? 0}
+            variant="blue"
+            isLoading={loading}
+            size="sm"
+          />
+        </div>
+      </div>
 
       {canBroadcast && (
         <div className="flex flex-wrap gap-2">
