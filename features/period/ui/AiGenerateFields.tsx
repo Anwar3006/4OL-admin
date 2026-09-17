@@ -16,12 +16,8 @@
  */
 
 import React from "react";
-import {
-  AI_MODELS,
-  CURRENT_AI_MODELS,
-  DEFAULT_AI_MODEL,
-  LEGACY_AI_MODELS,
-} from "@/features/ai/schema/models";
+import { DEFAULT_AI_MODEL } from "@/features/ai/schema/models";
+import { AiModelSelect } from "@/features/ai/ui/AiModelSelect";
 import TopicCategorySelect from "./TopicCategorySelect";
 
 export const FIELD =
@@ -80,37 +76,13 @@ export function ModelSelect({
   name?: string;
   defaultValue?: string;
 }) {
-  const [selected, setSelected] = React.useState(defaultValue);
-  const blurb = AI_MODELS.find((model) => model.id === selected)?.blurb;
   return (
-    <label className="form-label">
-      Model
-      <select
-        name={name}
-        value={selected}
-        onChange={(event) => setSelected(event.target.value)}
-        className={FIELD}
-      >
-        {/* Grouped so the previous-generation models stay reachable for
-            reproducing an old job without competing for attention with the
-            ones anyone should actually pick today. */}
-        <optgroup label="Current">
-          {CURRENT_AI_MODELS.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.label}
-            </option>
-          ))}
-        </optgroup>
-        <optgroup label="Legacy">
-          {LEGACY_AI_MODELS.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.label}
-            </option>
-          ))}
-        </optgroup>
-      </select>
-      {blurb && <span className="mt-1 block text-2xs text-slate-500">{blurb}</span>}
-    </label>
+    <AiModelSelect
+      name={name}
+      defaultValue={defaultValue}
+      selectClassName={FIELD}
+      label="Model"
+    />
   );
 }
 

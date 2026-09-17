@@ -8,7 +8,6 @@ export { default as ScheduleTab } from "./ScheduleTab";
 export { default as OutdoorTab } from "./OutdoorTab";
 export { default as WhatsAppTab } from "./WhatsAppTab";
 export { default as AiStudioTab } from "./AiStudioTab";
-export { default as AiLogTab } from "./AiLogTab";
 export { default as HealthTab } from "./HealthTab";
 export { default as SubscriptionsTab } from "./SubscriptionsTab";
 export { default as FitCoinsTab } from "./FitCoinsTab";

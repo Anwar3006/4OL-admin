@@ -37,11 +37,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
 import { getBrowserClient } from "@/lib/db/browser";
+import { AI_MODEL_IDS, DEFAULT_AI_MODEL } from "@/features/ai/schema/models";
+import { AiModelSelect } from "@/features/ai/ui/AiModelSelect";
 
 // ─── Form Schema ──────────────────────────────────────────────────────────────
 
 const aiGeneratePlanSchema = z.object({
   title: z.string().optional(),
+  model: z.enum(AI_MODEL_IDS),
   fitness_goals: z.array(z.string()).min(1, "At least one goal is required"),
   fitness_level: z.string().min(1, "Fitness level is required"),
   workout_weeks: z.number().min(1).max(52),
@@ -177,6 +180,7 @@ const AiGeneratePlanDialog = () => {
     resolver: zodResolver(aiGeneratePlanSchema),
     defaultValues: {
       title: "",
+      model: DEFAULT_AI_MODEL,
       fitness_goals: [],
       fitness_level: "beginner",
       workout_weeks: 4,
@@ -206,6 +210,7 @@ const AiGeneratePlanDialog = () => {
         body: JSON.stringify({
           selections: data,
           title_override: data.title || undefined,
+          model: data.model,
         }),
       });
 
@@ -218,7 +223,7 @@ const AiGeneratePlanDialog = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fitness-plans"] });
-      toast.success("Plan generated successfully!");
+      toast.success("Plan draft generated successfully!");
       close();
       form.reset();
     },
@@ -268,6 +273,24 @@ const AiGeneratePlanDialog = () => {
                     <FormDescription>
                       Override the AI-generated title or leave blank to use the
                       AI suggestion
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem>
+                    <AiModelSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      label="AI model"
+                    />
+                    <FormDescription>
+                      This exact model is sent to OpenAI and recorded in the AI log.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

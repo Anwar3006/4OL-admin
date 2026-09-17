@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 import { generateFitnessPlan, buildSelectionHash } from "@/features/fitness/data/generate-plan";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { z } from "zod";
+import {
+  AI_MODEL_IDS,
+  DEFAULT_AI_MODEL,
+} from "@/features/ai/schema/models";
 
 /**
  * Admin AI Plan Generation Endpoint
@@ -79,7 +84,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const modelResult = z
+      .enum(AI_MODEL_IDS)
+      .safeParse(body.model ?? DEFAULT_AI_MODEL);
+    if (!modelResult.success) {
+      return NextResponse.json(
+        { error: "Select a supported AI model." },
+        { status: 400 },
+      );
+    }
+
     const { selections, title_override } = body;
+    const modelName = modelResult.data;
 
     // Validate required fields
     if (!selections.fitness_goals || selections.fitness_goals.length === 0) {
@@ -125,6 +141,9 @@ export async function POST(req: NextRequest) {
       authorId: adminUserId,
       authorType: "admin",
       userId: adminUserId,
+      modelName,
+      planStatus: "draft",
+      allowCache: false,
     });
 
     if (result.error) {
@@ -175,6 +194,7 @@ export async function POST(req: NextRequest) {
       plan,
       selection_hash: result.selection_hash,
       cached: result.cached,
+      model: modelName,
     });
   } catch (error: any) {
     console.error("[fitness-generate-admin] Unexpected error:", error);

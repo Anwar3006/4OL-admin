@@ -1,7 +1,7 @@
 # Fitness
 
 Exercises, plans, challenges, trainers, outdoor routes and events, FitCoins,
-health-app integrations, WhatsApp broadcasts, and the AI plan generator.
+health-app integrations, WhatsApp broadcasts, and the Fitness AI Studio.
 
 Fifth and largest feature migrated under E3.2 — ~15,000 lines across 50 files.
 `features/anatomy` is the exemplar; read that README for the reasoning.
@@ -18,9 +18,9 @@ names.
 
 ```
 features/fitness/
-  ui/       FitnessPage (tab shell) + 14 tabs + 18 dialogs + exerciseColumns.
+  ui/       FitnessPage (tab shell) + 12 tabs + 18 dialogs + exerciseColumns.
             tabs.ts is the barrel the page imports.
-  api/      7 route handlers, one module per endpoint.
+  api/      8 route handlers, one module per endpoint.
   data/     8 react-query hooks + generate-plan.ts (the OpenAI plan builder,
             server-side, used by both generate routes).
   schema/   moderation.ts — the vocabularies ui/ and api/ must agree on —
@@ -38,12 +38,32 @@ and no logic. `/api/fitness/content-schedule` is new — see the RLS note below.
 | `/api/fitness/fitcoins/redemptions/[id]/status` | PATCH | `api/fitcoins-redemption-status.ts` | `fitcoins.manage` |
 | `/api/fitness/generate` | POST | `api/generate.ts` | caller's own JWT |
 | `/api/fitness/generate-admin` | POST | `api/generate-admin.ts` | caller's own JWT |
+| `/api/fitness/ai-studio/generate` | POST | `api/ai-studio-generate.ts` | `fitness.edit` |
 | `/api/fitness/content-schedule` | GET | `api/content-schedule.ts` | `fitness.view` |
 | `/api/fitness/notifications` | POST | `api/notifications.ts` | `fitness_notifications.send` |
 | `/api/fitness/outdoor-incentives` | GET, PUT | `api/outdoor-incentives.ts` | `fitness.view` / `fitness.edit` |
 | `/api/fitness/outdoor-routes/[id]/verify` | POST | `api/outdoor-routes-verify.ts` | `fitness.edit` |
 
-Page: `/fitness` → `ui/FitnessPage`, with 14 tabs selected by `?tab=`.
+Page: `/fitness` → `ui/FitnessPage`, with 12 tabs selected by `?tab=`.
+
+## AI Studio
+
+The old top-level AI Log tab is merged into AI Studio. Old
+`/fitness?tab=ai_log` bookmarks resolve to `ai_studio`. AI Studio itself has
+two tabs:
+
+- **Create & Logs** — one adaptive form for all supported fitness modules,
+  inline paginated draft output and the `fitness_ai_calls` audit view.
+- **Capabilities** — the plain-language capability catalogue driven by
+  `schema/ai-studio.ts`.
+
+`schema/ai-studio.ts` is the shared UI/API contract. It owns the module list,
+context-field visibility, prompt guidance and Zod request/response validation.
+The selected model is validated against `features/ai/schema/models.ts` and is
+passed verbatim to OpenAI; it is also written to `fitness_ai_calls.model_name`.
+Generated Studio output is review-only and is never automatically published.
+The separate plan-generation workflow also uses the selected model and saves
+admin-generated plans with `status = 'draft'`.
 
 ## Mobile contract
 

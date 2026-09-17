@@ -19,7 +19,6 @@ import {
   OutdoorTab,
   WhatsAppTab,
   AiStudioTab,
-  AiLogTab,
   HealthTab,
   FitCoinsTab,
 } from "./tabs";
@@ -34,7 +33,6 @@ const fitnessTabs = [
   { id: "outdoor", label: "Outdoor", icon: "🌳" },
   { id: "schedule", label: "Activity & Schedule", icon: "📅" },
   { id: "ai_studio", label: "AI Studio", icon: "🤖" },
-  { id: "ai_log", label: "AI Log", icon: "📝" },
   { id: "health", label: "Health Integrations", icon: "📱" },
   { id: "fitcoins", label: "FitCoins", icon: "🪙" },
   { id: "whatsapp", label: "WhatsApp", icon: "💬" },
@@ -42,6 +40,8 @@ const fitnessTabs = [
 
 const normaliseFitnessTab = (value: string | null) => {
   if (!value || value === "dashboard") return "overview";
+  // Preserve old bookmarks after AI Log was merged into AI Studio.
+  if (value === "ai_log") return "ai_studio";
   return fitnessTabs.some((tab) => tab.id === value) ? value : "overview";
 };
 
@@ -189,13 +189,9 @@ const FitnessPage = () => {
           <TabsContent value="whatsapp" className="outline-none w-full min-w-0">
             <WhatsAppTab />
           </TabsContent>
-          {/* Part V: AI Studio / AI Log / Health Integrations are now live
-              (previously placeholder panels). */}
+          {/* AI call logs now live inside AI Studio's Create & Logs tab. */}
           <TabsContent value="ai_studio" className="outline-none w-full min-w-0">
             <AiStudioTab />
-          </TabsContent>
-          <TabsContent value="ai_log" className="outline-none w-full min-w-0">
-            <AiLogTab />
           </TabsContent>
           <TabsContent value="health" className="outline-none w-full min-w-0">
             <HealthTab />

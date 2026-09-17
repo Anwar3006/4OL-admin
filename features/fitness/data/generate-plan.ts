@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { getAdminClient } from "@/lib/db/admin";
+import { DEFAULT_AI_MODEL } from "@/features/ai/schema/models";
 
 // ─── OpenAI Structured Outputs Schema ──────────────────────────────────────────
 // Translated from the previous Gemini SchemaType DSL. OpenAI's strict mode
@@ -379,6 +380,10 @@ export interface GenerationOptions {
   // the model for a continuation/rotation instead of a repeat.
   avoidUserPlanHistory?: boolean;
   historyPlanLimit?: number;
+  /** Exact validated provider model selected by an admin. */
+  modelName?: string;
+  /** Mobile plans publish immediately; admin-authored plans must be drafts. */
+  planStatus?: "draft" | "published";
 }
 
 export interface GenerationResult {
@@ -466,6 +471,8 @@ export async function generateFitnessPlan(
     allowCache = true,
     avoidUserPlanHistory = false,
     historyPlanLimit = 4,
+    modelName: requestedModelName,
+    planStatus = "published",
   } = options;
   const admin = getAdminClient();
 
@@ -497,7 +504,11 @@ export async function generateFitnessPlan(
   }
 
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  const modelName = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o";
+  const modelName =
+    requestedModelName ||
+    process.env.OPENAI_MODEL ||
+    process.env.NEXT_PUBLIC_OPENAI_MODEL ||
+    DEFAULT_AI_MODEL;
 
   if (!openaiApiKey) {
     return {
@@ -774,7 +785,7 @@ ${JSON.stringify(availableExercisesWithHistory)}
       style_tag: styleTag,
       author_type: authorType,
       author_id: authorId || null,
-      status: "published",
+      status: planStatus,
       selection_hash,
     })
     .select("id")

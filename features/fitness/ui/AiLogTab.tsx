@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  useFitnessAiLogStats,
-  type FitnessAiCallRow,
-} from "@/features/fitness/data/useFitnessAnalytics";
-import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
-import AiGeneratePlanDialog from "./ai-generate-plan-dialog";
+import { useFitnessAiLogStats } from "@/features/fitness/data/useFitnessAnalytics";
 import { toast } from "sonner";
 import { downloadCsv } from "@/lib/csv";
 
@@ -15,9 +10,9 @@ import { downloadCsv } from "@/lib/csv";
  * fitness_ai_calls via get_fitness_ai_log_stats.
  * V-D1: monthly budget is a constant until a settings row is added — kept
  * here (not hard-coded in SQL) so super_admin can change it in one place.
- * V-D4: Retry is gated behind a confirmation because it re-runs generation
- * against the live provider (cost incurred); it opens the admin AI plan
- * dialog since fitness_ai_calls stores no replayable selections.
+ * Failed rows stay audit records because fitness_ai_calls intentionally does
+ * not store a replayable full request. Reopening an unrelated plan dialog was
+ * removed when the log moved inside AI Studio.
  */
 
 const MONTHLY_BUDGET_USD = 20;
@@ -32,17 +27,16 @@ const formatDate = (value: string) =>
     minute: "2-digit",
   });
 
-const AiLogTab = () => {
+const AiLogTab = ({ embedded = false }: { embedded?: boolean }) => {
   const [periodDays, setPeriodDays] = useState(30);
   const [statusFilter, setStatusFilter] = useState<(typeof STATUS_FILTERS)[number]>("all");
   const [modelFilter, setModelFilter] = useState("");
-  const aiGenerateDialog = useAiGeneratePlanDialog();
 
   const { data, isLoading, isError } = useFitnessAiLogStats(periodDays);
 
   const totals = data?.totals;
-  const models = data?.by_model ?? [];
-  const recent = data?.recent ?? [];
+  const models = useMemo(() => data?.by_model ?? [], [data?.by_model]);
+  const recent = useMemo(() => data?.recent ?? [], [data?.recent]);
 
   const modelOptions = useMemo(
     () => models.map((m) => m.model_name),
@@ -83,22 +77,8 @@ const AiLogTab = () => {
     toast.success(`Exported ${filtered.length} AI calls.`);
   };
 
-  const handleRetry = (row: FitnessAiCallRow) => {
-    if (
-      !globalThis.confirm(
-        "Retry runs a new generation against the live AI provider and will incur cost (~$0.04–0.08). Continue?",
-      )
-    ) {
-      return;
-    }
-    // The original selections are not stored on fitness_ai_calls, so retry
-    // opens the admin generation dialog pre-flow rather than replaying.
-    aiGenerateDialog.open();
-    toast.info(`Retrying via AI plan generation (${row.model_name}).`);
-  };
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className={`space-y-6 ${embedded ? "" : "animate-in fade-in duration-500"}`}>
       {/* Budget + KPI strip */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="card lg:col-span-1">
@@ -206,7 +186,7 @@ const AiLogTab = () => {
         <table className="w-full text-left min-w-[900px]">
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-              {["Date", "User", "Model", "Prompt", "Tokens", "Cost", "Latency", "Status", ""].map(
+              {["Date", "User", "Model", "Prompt", "Tokens", "Cost", "Latency", "Status"].map(
                 (h) => (
                   <th
                     key={h}
@@ -221,21 +201,21 @@ const AiLogTab = () => {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-sm text-slate-400">
+                <td colSpan={8} className="py-10 text-center text-sm text-slate-400">
                   Loading AI call log...
                 </td>
               </tr>
             )}
             {!isLoading && isError && (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-sm text-red-600 dark:text-red-400">
+                <td colSpan={8} className="py-10 text-center text-sm text-red-600 dark:text-red-400">
                   Failed to load the AI log. Try refreshing the page.
                 </td>
               </tr>
             )}
             {!isLoading && !isError && filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="py-10 text-center text-sm text-slate-400">
+                <td colSpan={8} className="py-10 text-center text-sm text-slate-400">
                   No AI calls match the current filters.
                 </td>
               </tr>
@@ -274,23 +254,11 @@ const AiLogTab = () => {
                     {row.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
-                  {row.status !== "success" && (
-                    <button
-                      className="text-2xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:underline"
-                      onClick={() => handleRetry(row)}
-                    >
-                      Retry
-                    </button>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      <AiGeneratePlanDialog />
     </div>
   );
 };

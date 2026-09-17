@@ -1,299 +1,61 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAiGeneratePlanDialog } from "@/features/fitness/data/dialog-hooks";
-import { useFitnessAiLogStats } from "@/features/fitness/data/useFitnessAnalytics";
-import { useFitnessDashboardKpis } from "@/features/fitness/data/useFitnessDashboard";
-import AiGeneratePlanDialog from "./ai-generate-plan-dialog";
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AiStudioWorkspace from "./AiStudioWorkspace";
+import AiStudioCapabilities from "./AiStudioCapabilities";
 
 /**
- * AI Studio tab (Gap Analysis Part V, tab 8). 3-step wizard:
- * ① Context Input → ② Platform Insights (live aggregates, auto-injected) →
- * ③ Generate (delegates to the existing admin generation dialog which hits
- * /api/fitness/generate-admin, rate-limited 20/hour). Publishing new plans
- * into production stays a super_admin action via the Plans tab.
+ * Fitness AI Studio has two deliberately simple destinations:
+ * 1. Create & Logs — one adaptive generation form, inline results and audit log.
+ * 2. Capabilities — a plain-language catalogue so every admin knows what the
+ *    studio can help with and where a reviewed draft belongs.
  */
-
-const STEPS = ["Context Input", "Platform Insights", "Generate"];
-
-interface StudioContext {
-  plan_type: string;
-  difficulty: string;
-  duration_weeks: string;
-  fitcoin_budget: string;
-  target_tier: string;
-  theme: string;
-  instructions: string;
-}
-
-const EMPTY_CONTEXT: StudioContext = {
-  plan_type: "strength",
-  difficulty: "beginner",
-  duration_weeks: "4",
-  fitcoin_budget: "100",
-  target_tier: "free",
-  theme: "",
-  instructions: "",
-};
-
-const AiStudioTab = () => {
-  const [step, setStep] = useState(0);
-  const [context, setContext] = useState<StudioContext>(EMPTY_CONTEXT);
-  const aiGenerateDialog = useAiGeneratePlanDialog();
-
-  const { data: aiStats } = useFitnessAiLogStats(30);
-  const { data: kpis } = useFitnessDashboardKpis();
-
-  const topExercise = kpis?.top_exercises?.[0];
-  const topModel = aiStats?.by_model?.[0];
-  const totals = aiStats?.totals;
-
-  const insights = [
-    {
-      label: "Top exercise",
-      value: topExercise
-        ? `${topExercise.name} (${topExercise.completion_count.toLocaleString()} sets)`
-        : "No usage data yet",
-      icon: "🏋️",
-    },
-    {
-      label: "Avg streak",
-      value: `${kpis?.metrics?.avg_streak ?? 0} days`,
-      icon: "🔥",
-    },
-    {
-      label: "Avg plan completion",
-      value: `${kpis?.metrics?.avg_completion ?? 0}%`,
-      icon: "🏁",
-    },
-    {
-      label: "Dominant AI model",
-      value: topModel ? `${topModel.model_name} (${topModel.calls.toLocaleString()} calls)` : "None",
-      icon: "🤖",
-    },
-    {
-      label: "Avg generation latency",
-      value: totals ? `${totals.avg_latency_ms.toLocaleString()}ms` : "—",
-      icon: "⚡",
-    },
-    {
-      label: "AI-generated plans (live)",
-      value: (kpis?.metrics?.ai_generated_plans ?? 0).toLocaleString(),
-      icon: "🧠",
-    },
-  ];
-
-  const set = (key: keyof StudioContext, value: string) =>
-    setContext((prev) => ({ ...prev, [key]: value }));
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500 max-w-4xl">
-      {/* Stepper */}
-      <div className="flex items-center gap-2">
-        {STEPS.map((label, i) => (
-          <React.Fragment key={label}>
-            <button
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-2xs font-black uppercase tracking-widest transition-all ${
-                i === step
-                  ? "bg-slate-900 text-white"
-                  : i < step
-                    ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/30"
-                    : "bg-white dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
-              }`}
-              onClick={() => i < step && setStep(i)}
-            >
-              <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-2xs ${
-                  i === step ? "bg-white/20 dark:bg-slate-800/20" : i < step ? "bg-emerald-100 dark:bg-emerald-500/20" : "bg-slate-100 dark:bg-slate-800"
-                }`}
-              >
-                {i < step ? "✓" : i + 1}
-              </span>
-              {label}
-            </button>
-            {i < STEPS.length - 1 && (
-              <div className="flex-1 h-px bg-slate-200 max-w-16" />
-            )}
-          </React.Fragment>
-        ))}
+const AiStudioTab = () => (
+  <div className="w-full min-w-0 space-y-5 animate-in fade-in duration-500">
+    <div className="rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-5 text-white shadow-lg sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="text-2xs font-black uppercase tracking-[0.22em] text-emerald-300">
+            Fitness administration copilot
+          </div>
+          <h2 className="mt-2 text-2xl font-black">🤖 Fitness AI Studio</h2>
+          <p className="mt-2 max-w-3xl text-xs font-medium leading-5 text-slate-300">
+            Create review-ready fitness drafts with a model you choose, inspect
+            the results on the same page and audit every AI call in one place.
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold text-slate-200">
+          <span className="font-black text-amber-300">Human review required:</span>{" "}
+          AI never publishes directly.
+        </div>
       </div>
-
-      {/* Step 1 — Context Input */}
-      {step === 0 && (
-        <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">① Context Input</h3>
-          <p className="text-xs text-slate-500 font-medium -mt-2">
-            Describe the generation target. These values pre-fill the generation
-            context and never touch user data.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                Plan type
-              </span>
-              <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                value={context.plan_type}
-                onChange={(e) => set("plan_type", e.target.value)}
-              >
-                {["strength", "cardio", "hiit", "yoga", "pilates", "calisthenics"].map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                Difficulty
-              </span>
-              <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                value={context.difficulty}
-                onChange={(e) => set("difficulty", e.target.value)}
-              >
-                {["beginner", "intermediate", "advanced"].map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                Duration (weeks)
-              </span>
-              <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                value={context.duration_weeks}
-                onChange={(e) => set("duration_weeks", e.target.value)}
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                FitCoin reward budget
-              </span>
-              <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                value={context.fitcoin_budget}
-                onChange={(e) => set("fitcoin_budget", e.target.value)}
-              />
-            </label>
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                Target tier
-              </span>
-              <select
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                value={context.target_tier}
-                onChange={(e) => set("target_tier", e.target.value)}
-              >
-                {["free", "pro", "premium"].map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-1">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-                Theme (optional)
-              </span>
-              <input
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none"
-                placeholder="e.g. Ramadan fitness push"
-                value={context.theme}
-                onChange={(e) => set("theme", e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="space-y-1 block">
-            <span className="text-2xs font-black uppercase tracking-widest text-slate-400">
-              Additional instructions
-            </span>
-            <textarea
-              className="w-full min-h-20 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 outline-none"
-              placeholder="Any constraints for the generator..."
-              value={context.instructions}
-              onChange={(e) => set("instructions", e.target.value)}
-            />
-          </label>
-          <div className="flex justify-end">
-            <button
-              className="h-10 px-5 rounded-xl bg-slate-900 text-white text-2xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
-              onClick={() => setStep(1)}
-            >
-              Continue → Insights
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2 — Platform Insights (auto-injected, live) */}
-      {step === 1 && (
-        <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">② Platform Insights</h3>
-          <p className="text-xs text-slate-500 font-medium -mt-2">
-            Auto-injected from live platform aggregates (fitness_ai_calls,
-            exercise_sessions, dashboard cache). Use them to align the new
-            generation with real user behaviour.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {insights.map((item) => (
-              <div key={item.label} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                <div className="text-2xs font-black uppercase tracking-widest text-slate-400 mb-1">
-                  {item.icon} {item.label}
-                </div>
-                <div className="text-xs font-black text-slate-800 dark:text-slate-200">{item.value}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between">
-            <button
-              className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
-              onClick={() => setStep(0)}
-            >
-              ← Back
-            </button>
-            <button
-              className="h-10 px-5 rounded-xl bg-slate-900 text-white text-2xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all"
-              onClick={() => setStep(2)}
-            >
-              Continue → Generate
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3 — Generate */}
-      {step === 2 && (
-        <div className="card space-y-4">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-200">③ Generate</h3>
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 p-4 space-y-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-            <div><span className="font-black text-slate-800 dark:text-slate-200">Type:</span> {context.plan_type} · {context.difficulty} · {context.duration_weeks} weeks</div>
-            <div><span className="font-black text-slate-800 dark:text-slate-200">Tier:</span> {context.target_tier} · <span className="font-black text-slate-800 dark:text-slate-200">FitCoin budget:</span> {context.fitcoin_budget}</div>
-            {context.theme && <div><span className="font-black text-slate-800 dark:text-slate-200">Theme:</span> {context.theme}</div>}
-            {context.instructions && <div><span className="font-black text-slate-800 dark:text-slate-200">Instructions:</span> {context.instructions}</div>}
-          </div>
-          <div className="rounded-xl border border-amber-100 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 p-3 text-xs font-semibold text-amber-800">
-            💡 Each generation costs approximately $0.04–$0.08. Generated plans
-            are created as drafts; publishing them to users requires a
-            super_admin action in the Plans tab.
-          </div>
-          <div className="flex justify-between">
-            <button
-              className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-700 text-2xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all"
-              onClick={() => setStep(1)}
-            >
-              ← Back
-            </button>
-            <button
-              className="h-10 px-5 rounded-xl bg-emerald-700 text-white text-2xs font-black uppercase tracking-widest hover:bg-emerald-800 transition-all"
-              onClick={() => aiGenerateDialog.open()}
-            >
-              🤖 Use & Generate Plan
-            </button>
-          </div>
-        </div>
-      )}
-
-      <AiGeneratePlanDialog />
     </div>
-  );
-};
+
+    <Tabs defaultValue="workspace" className="w-full min-w-0">
+      <TabsList className="grid h-auto w-full max-w-xl grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-900">
+        <TabsTrigger
+          value="workspace"
+          className="rounded-lg py-2.5 text-xs font-black data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
+        >
+          ✨ Create &amp; Logs
+        </TabsTrigger>
+        <TabsTrigger
+          value="capabilities"
+          className="rounded-lg py-2.5 text-xs font-black data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-800"
+        >
+          🧭 Capabilities
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="workspace" className="mt-5 outline-none">
+        <AiStudioWorkspace />
+      </TabsContent>
+      <TabsContent value="capabilities" className="mt-5 outline-none">
+        <AiStudioCapabilities />
+      </TabsContent>
+    </Tabs>
+  </div>
+);
 
 export default AiStudioTab;
