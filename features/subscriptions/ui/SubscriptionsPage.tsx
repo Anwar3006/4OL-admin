@@ -1,31 +1,45 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/redesign/PageHeader";
-import KpiCard from "@/components/redesign/KpiCard";
-import { CreditCard, Dumbbell, Layers3, Sparkles } from "lucide-react";
-import SubscriptionsTab from "@/features/fitness/ui/SubscriptionsTab";
-import { useSubscriptionsStats } from "@/features/subscriptions/data/useSubscriptionsStats";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import OverviewTab from "./OverviewTab";
+import PlansTab from "./PlansTab";
+import SubscribersTab from "./SubscribersTab";
+import RequestsTab from "./RequestsTab";
+
+/**
+ * Subscription-plan management, consolidated from four surfaces into this
+ * one page (Marketing's Subscriptions tab, Settings' Plans tab, Fitness's
+ * Subscriptions tab, and this page's own half-built KPI shell) — see
+ * features/subscriptions/README.md for the full map of what moved from
+ * where and why.
+ */
+const SubTabs = [
+  { id: "overview", label: "📊 Overview" },
+  { id: "plans", label: "🗂️ Plans" },
+  { id: "subscribers", label: "👥 Subscribers" },
+  { id: "requests", label: "🎫 Requests" },
+];
 
 export default function SubscriptionsPage() {
-  const { data: stats, isLoading, isError } = useSubscriptionsStats();
-  const scopePct = (n: number) => (stats && stats.active > 0 ? Math.round((n / stats.active) * 100) : 0);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "overview");
 
-  // Real week-over-week growth direction from new_grants_trend (always 8
-  // points, server-side, app/api/subscriptions/admin/route.ts) — this was
-  // previously hardcoded to deltaType="neutral", which is why the hero
-  // card never showed a real up/down/flat signal or colored its sparkline.
-  const grantsTrend = stats?.new_grants_trend.map((p) => p.value) ?? [];
-  const lastWeekGrants = grantsTrend[grantsTrend.length - 1] ?? 0;
-  const prevWeekGrants = grantsTrend[grantsTrend.length - 2] ?? 0;
-  const grantsWowPct = prevWeekGrants > 0 ? Math.round(((lastWeekGrants - prevWeekGrants) / prevWeekGrants) * 100) : null;
-  const grantsDirection: "up" | "down" | "flat" | "neutral" =
-    lastWeekGrants > prevWeekGrants ? "up" : lastWeekGrants < prevWeekGrants ? "down" : "flat";
-  const grantsDeltaText =
-    prevWeekGrants > 0
-      ? `${Math.abs(grantsWowPct!)}% vs last week`
-      : lastWeekGrants > 0
-        ? `+${lastWeekGrants} new vs 0 last week`
-        : "No new grants this week";
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, activeTab]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/subscriptions?tab=${value}`, { scroll: false });
+  };
 
   return (
     <div className="w-full min-w-0 space-y-6 animate-in fade-in duration-500">
@@ -34,65 +48,39 @@ export default function SubscriptionsPage() {
         subtitle="Manage access across Plasence, Fitness and future 4 Our Life services from one place."
       />
 
-      {/*
-        Only the hero gets a chart: `new_grants_trend` is a real 8-week
-        series (grants grouped by created_at, computed server-side from
-        rows already fetched for pagination — app/api/subscriptions/admin/
-        route.ts). The per-scope breakdown below is a snapshot count with
-        nothing to chart, so those stay compact.
-      */}
-      <div className="space-y-4">
-        <KpiCard
-          icon={<CreditCard className="size-5" />}
-          label="Active / Total Subscriptions"
-          value={isLoading ? "..." : `${stats?.active ?? 0} / ${stats?.total ?? 0}`}
-          delta={isLoading ? undefined : grantsDeltaText}
-          deltaType={grantsDirection}
-          trend={stats?.new_grants_trend}
-          isError={isError}
-          variant="blue"
-          size="lg"
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <KpiCard
-            icon={<Layers3 className="size-4" />}
-            label="Entire app"
-            value={isLoading ? "..." : stats?.by_scope.all_access ?? 0}
-            delta={`${scopePct(stats?.by_scope.all_access ?? 0)}% of active grants`}
-            deltaType="neutral"
-            isError={isError}
-            variant="purple"
-            size="sm"
-          />
-          <KpiCard
-            icon={<Dumbbell className="size-4" />}
-            label="Fitness only"
-            value={isLoading ? "..." : stats?.by_scope.fitness_only ?? 0}
-            delta={`${scopePct(stats?.by_scope.fitness_only ?? 0)}% of active grants`}
-            deltaType="neutral"
-            isError={isError}
-            variant="green"
-            size="sm"
-          />
-          <KpiCard
-            icon={<Sparkles className="size-4" />}
-            label="Plasence (Period Tracker)"
-            value={isLoading ? "..." : stats?.by_scope.period_only ?? 0}
-            delta={`${scopePct(stats?.by_scope.period_only ?? 0)}% of active grants`}
-            deltaType="neutral"
-            isError={isError}
-            variant="pink"
-            size="sm"
-          />
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <div className="border-b border-slate-200 dark:border-slate-700 mb-5 w-full overflow-hidden">
+          <TabsList
+            className="bg-transparent h-auto p-0 flex flex-nowrap gap-0 justify-start w-full overflow-x-auto overflow-y-hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+          >
+            {SubTabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  "shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 sm:py-3",
+                  "text-2xs sm:text-xs font-black uppercase tracking-widest",
+                  "text-slate-400 border-b-2 border-transparent",
+                  "transition-all rounded-none outline-none cursor-pointer",
+                  "hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/15/40",
+                  "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                  "data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:border-emerald-700 dark:data-[state=active]:border-emerald-400",
+                )}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
-      </div>
 
-      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-medium text-blue-900 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200">
-        <CreditCard className="mr-2 inline size-4" />
-        New paid features should add a service scope here instead of creating their own subscription page.
-      </div>
-
-      <SubscriptionsTab />
+        <div className="animate-in slide-in-from-bottom-2 duration-300">
+          <TabsContent className="w-full min-w-0 outline-none" value="overview"><OverviewTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="plans"><PlansTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="subscribers"><SubscribersTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="requests"><RequestsTab /></TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

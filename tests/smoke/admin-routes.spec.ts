@@ -238,7 +238,9 @@ const MUST_REDIRECT: Array<[string, string]> = [
   // Marketing sub-routes collapsed into the unified page (M-D6). These were
   // server-side redirect() stubs before E3.2 moved them into next.config.ts.
   ["/marketing/discounts", "/marketing?tab=discounts"],
-  ["/marketing/subscriptions", "/marketing?tab=subscriptions"],
+  // Subscription-plan management moved out of Marketing entirely into its
+  // own page — see features/subscriptions/README.md.
+  ["/marketing/subscriptions", "/subscriptions"],
 
   // Kebab-case page routes (E3.3). The old spellings stay reachable for
   // bookmarks; every in-app link points at the new ones.

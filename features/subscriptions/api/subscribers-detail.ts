@@ -1,7 +1,8 @@
 /**
- * PATCH /api/marketing/subscribers/[id] — subscriber lifecycle edits from the
- * marketing Subscriptions tab (Cancel / toggle auto-renew / mark at-risk).
- * Marketing unification build. Writes the unified user_subscriptions table.
+ * PATCH /api/subscriptions/subscribers/[id] — subscriber lifecycle edits
+ * (Cancel / toggle auto-renew / mark at-risk). Moved from
+ * features/marketing/api/subscribers-detail.ts. Writes the unified
+ * user_subscriptions table.
  */
 
 import { NextResponse } from "next/server";
@@ -19,7 +20,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminApiUser("marketing.edit");
+  const auth = await requireAdminApiUser("subscriptions.manage");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
@@ -60,7 +61,7 @@ export async function PATCH(
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
-    p_action_type: "marketing_subscriber_updated",
+    p_action_type: "subscription_subscriber_updated",
     p_target_table: "user_subscriptions",
     p_record_id: id,
     p_description: `Subscriber row updated (${Object.keys(parsed.data).join(", ")})`,

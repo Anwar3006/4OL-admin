@@ -3,6 +3,16 @@
  * M6 + M-D4). CTR/ROI are server-computed from the budget/impressions/
  * clicks/conversions columns where populated; funnel stages with no event
  * tracking source yet return null so the UI renders "—".
+ *
+ * This used to also call get_marketing_overview() and return its result as
+ * `overview`, so Marketing's own Subscriptions tab could read the
+ * subscriber KPIs (premium_users/mrr/retention_pct/at_risk) out of it. That
+ * tab moved to features/subscriptions (features/subscriptions/api/
+ * overview.ts calls the RPC now); AnalyticsTab.tsx, the only remaining
+ * consumer of this route, never read the `overview` field it produced — it
+ * only reads `performance`/`channels`/`top_campaigns_by_ctr`/`funnel`, all
+ * computed from `marketing_profile` below. The RPC call is removed rather
+ * than kept for a value nothing here consumes.
  */
 
 import { NextResponse } from "next/server";
@@ -14,17 +24,11 @@ export async function GET() {
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getAdminClient();
-  const [overviewResult, campaignsResult] = await Promise.all([
-    admin.rpc("get_marketing_overview"),
-    admin
-      .from("marketing_profile")
-      .select("id, headline, status, campaign_type, channels, budget, impressions, clicks, conversions")
-      .in("status", ["live", "paused", "ended"]),
-  ]);
+  const campaignsResult = await admin
+    .from("marketing_profile")
+    .select("id, headline, status, campaign_type, channels, budget, impressions, clicks, conversions")
+    .in("status", ["live", "paused", "ended"]);
 
-  if (overviewResult.error) {
-    return NextResponse.json({ error: overviewResult.error.message }, { status: 500 });
-  }
   if (campaignsResult.error) {
     return NextResponse.json({ error: campaignsResult.error.message }, { status: 500 });
   }
@@ -79,7 +83,6 @@ export async function GET() {
     .slice(0, 5);
 
   return NextResponse.json({
-    overview: overviewResult.data ?? {},
     performance: {
       impressions,
       clicks,

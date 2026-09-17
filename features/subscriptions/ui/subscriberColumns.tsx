@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * Subscriber table columns — mockup parity (User masked / Plan / Monthly
- * Value / Subscribed Since / Next Renewal / Payment Method / Status /
- * Actions). Marketing unification build: rows come from the unified
- * user_subscriptions ⋈ subscription_tiers via /api/marketing/subscribers.
+ * Subscriber table columns — moved from
+ * features/marketing/ui/subscriberColumns.tsx as part of the subscriptions
+ * consolidation. Rows come from the unified user_subscriptions ⋈
+ * subscription_tiers via /api/subscriptions/subscribers.
  */
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -16,7 +16,7 @@ import {
   TUserSubscriptionRow,
   useRemindSubscribers,
   useUpdateSubscriber,
-} from "@/features/marketing/data/useSubscriptions";
+} from "@/features/subscriptions/data/useSubscribers";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   mtn_momo: "MTN MoMo",

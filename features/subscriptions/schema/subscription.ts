@@ -1,5 +1,10 @@
 import z from "zod";
 
+/**
+ * Moved from features/marketing/schema/subscription.ts as part of the
+ * subscriptions-page consolidation (four surfaces -> one). Logic unchanged.
+ */
+
 export const SUBSCRIPTION_PERIODS = [
   "free",
   "3days",

@@ -102,7 +102,11 @@ const nextConfig: NextConfig = {
       // were server-side `redirect()` stubs, which is already ahead of the
       // client-side kind — but a config redirect skips rendering entirely.
       { source: "/marketing/discounts", destination: "/marketing?tab=discounts", permanent: false },
-      { source: "/marketing/subscriptions", destination: "/marketing?tab=subscriptions", permanent: false },
+      // Subscription-plan management consolidated out of Marketing entirely
+      // (four surfaces -> one, see features/subscriptions/README.md) —
+      // /marketing?tab=subscriptions no longer exists, so this now points at
+      // the real target instead of a dead tab.
+      { source: "/marketing/subscriptions", destination: "/subscriptions", permanent: false },
 
       // ── Kebab-case page routes (E3.3) ─────────────────────────────────
       //

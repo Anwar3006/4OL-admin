@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { usePermissionContext } from "@/stores/permission-context";
 import { useViewFitnessUserDialog } from "@/features/fitness/data/dialog-hooks";
 import ViewFitnessUserDialog from "./view-fitness-user-dialog";
+import FitnessAlertComposer from "./FitnessAlertComposer";
 import "@/components/mockup-theme/mockup-theme.css";
 
 // Beginner/intermediate/advanced -> traffic-light badge, same mapping
@@ -403,6 +404,7 @@ const UsersTab = () => {
           onRowClick={(row: FitnessUserRow) => viewUser.open(row)}
         />
       </div>
+      <FitnessAlertComposer />
       <ViewFitnessUserDialog />
     </div>
   );

@@ -31,7 +31,11 @@ import {
   useCreateMarketingDiscount,
   useUpdateMarketingDiscount,
 } from "@/features/marketing/data/useDiscounts";
-import { useMarketingSubscriptions } from "@/features/marketing/data/useSubscriptions";
+// Plans moved to features/subscriptions as part of the subscriptions-page
+// consolidation; this dialog's "Eligible Plans" picker reads the catalog
+// from there now — a legitimate cross-feature read, discounts still own
+// nothing about the plan catalog itself.
+import { usePlans } from "@/features/subscriptions/data/usePlans";
 import { useMarketingProfiles } from "@/features/marketing/data/useMarketing";
 
 const TYPE_OPTIONS = [
@@ -66,7 +70,7 @@ export default function DiscountDialog({
   const updateMutation = useUpdateMarketingDiscount();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const plans = useMarketingSubscriptions();
+  const plans = usePlans();
   const campaigns = useMarketingProfiles({ page: 1, limit: 100 });
 
   const form = useForm<TMarketingDiscountInput>({

@@ -50,17 +50,6 @@ type PlatformSettings = {
   default_language: "en" | "twi" | "ga";
 };
 
-type Plan = {
-  id: string;
-  key: string;
-  name: string;
-  description: string | null;
-  price_ghs: number | null;
-  duration_days: number | null;
-  benefits: string[] | null;
-  is_active: boolean | null;
-};
-
 type FeatureFlag = {
   id: string;
   name: string;
@@ -100,7 +89,6 @@ type Maintenance = {
 
 const tabList = [
   { id: "general", label: "General", icon: Settings },
-  { id: "plans", label: "Plans", icon: CreditCard },
   { id: "features", label: "Feature Flags", icon: ToggleLeft },
   { id: "security", label: "Security", icon: ShieldCheck },
   { id: "api-keys", label: "API Keys", icon: KeyRound },
@@ -112,14 +100,6 @@ const tabList = [
 ];
 
 const VALID_TABS = new Set(tabList.map((tab) => tab.id));
-
-function formatMoney(value: number | null, currency = "GHS") {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number(value ?? 0));
-}
 
 function formatDate(value: string | null) {
   if (!value) return "Never";
@@ -137,7 +117,6 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [apiKeys, setApiKeys] = useState<ApiKeyStatus[]>([]);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
@@ -163,10 +142,9 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      const [settingsRes, plansRes, flagsRes, keysRes, integrationsRes, maintenanceRes] =
+      const [settingsRes, flagsRes, keysRes, integrationsRes, maintenanceRes] =
         await Promise.all([
           fetch("/api/settings", { cache: "no-store" }),
-          fetch("/api/settings/plans", { cache: "no-store" }),
           fetch("/api/settings/feature-flags", { cache: "no-store" }),
           fetch("/api/settings/api-keys", { cache: "no-store" }),
           fetch("/api/settings/integrations", { cache: "no-store" }),
@@ -175,7 +153,6 @@ export default function SettingsPage() {
 
       if (
         !settingsRes.ok ||
-        !plansRes.ok ||
         !flagsRes.ok ||
         !keysRes.ok ||
         !integrationsRes.ok ||
@@ -184,10 +161,9 @@ export default function SettingsPage() {
         throw new Error("Unable to load one or more settings datasets.");
       }
 
-      const [settingsJson, plansJson, flagsJson, keysJson, integrationsJson, maintenanceJson] =
+      const [settingsJson, flagsJson, keysJson, integrationsJson, maintenanceJson] =
         await Promise.all([
           settingsRes.json(),
-          plansRes.json(),
           flagsRes.json(),
           keysRes.json(),
           integrationsRes.json(),
@@ -195,7 +171,6 @@ export default function SettingsPage() {
         ]);
 
       setSettings(settingsJson.settings);
-      setPlans(plansJson.plans ?? []);
       setFlags(flagsJson.flags ?? []);
       setApiKeys(keysJson.keys ?? []);
       setIntegrations(integrationsJson.integrations ?? []);
@@ -418,9 +393,6 @@ export default function SettingsPage() {
             onSave={saveGeneral}
           />
         </TabsContent>
-        <TabsContent value="plans" className="mt-5 outline-none">
-          <PlansCards loading={loading} plans={plans} setPlans={setPlans} />
-        </TabsContent>
         <TabsContent value="features" className="mt-5 outline-none">
           <FeatureFlags loading={loading} flags={flags} onToggle={toggleFlag} />
         </TabsContent>
@@ -562,198 +534,6 @@ function GeneralSettings({
         </Field>
       </CardContent>
     </Card>
-  );
-}
-
-type PlanDraft = { price_ghs: number; duration_days: number | null; is_active: boolean };
-
-function PlansCards({
-  loading,
-  plans,
-  setPlans,
-}: {
-  loading: boolean;
-  plans: Plan[];
-  setPlans: React.Dispatch<React.SetStateAction<Plan[]>>;
-}) {
-  const [drafts, setDrafts] = useState<Record<string, PlanDraft>>({});
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const valueFor = (plan: Plan): PlanDraft =>
-    drafts[plan.id] ?? {
-      price_ghs: plan.price_ghs ?? 0,
-      duration_days: plan.duration_days,
-      is_active: Boolean(plan.is_active),
-    };
-
-  const setDraft = (plan: Plan, patch: Partial<PlanDraft>) =>
-    setDrafts((current) => ({
-      ...current,
-      [plan.id]: { ...valueFor(plan), ...patch },
-    }));
-
-  const dirtyIds = Object.keys(drafts).filter((id) => {
-    const plan = plans.find((p) => p.id === id);
-    if (!plan) return false;
-    const draft = drafts[id];
-    return (
-      draft.price_ghs !== (plan.price_ghs ?? 0) ||
-      draft.duration_days !== plan.duration_days ||
-      draft.is_active !== Boolean(plan.is_active)
-    );
-  });
-
-  const saveAll = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const updated: Plan[] = [];
-      for (const id of dirtyIds) {
-        const draft = drafts[id];
-        const res = await fetch("/api/settings/plans", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, ...draft }),
-        });
-        const body = await res.json().catch(() => null);
-        if (!res.ok) {
-          throw new Error(body?.error || "Unable to save one or more plans.");
-        }
-        updated.push(body.plan);
-      }
-      setPlans((current) =>
-        current.map((plan) => updated.find((u) => u.id === plan.id) ?? plan),
-      );
-      setDrafts({});
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save plan pricing.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
-          <Card key={i} className="h-64 animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
-  if (plans.length === 0) {
-    return (
-      <Card>
-        <CardContent>
-          <EmptyPanel label="No subscription plans configured." />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Price and duration changes apply to new subscribers immediately.
-          Existing subscribers keep their current plan terms until renewal.
-        </p>
-        <Button type="button" size="sm" onClick={saveAll} disabled={saving || dirtyIds.length === 0}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Plan Pricing{dirtyIds.length > 0 ? ` (${dirtyIds.length})` : ""}
-        </Button>
-      </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {plans.map((plan) => {
-          const draft = valueFor(plan);
-          const isDirty = dirtyIds.includes(plan.id);
-          return (
-            <Card
-              key={plan.id}
-              className={
-                isDirty
-                  ? "border-emerald-400 shadow-sm dark:border-emerald-500"
-                  : undefined
-              }
-            >
-              <CardHeader className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
-                    {plan.name}
-                  </CardTitle>
-                  <Badge variant="blue">{plan.key}</Badge>
-                </div>
-                {plan.description && (
-                  <p className="text-xs text-slate-400">{plan.description}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Field label="Price (GHS / month)">
-                  <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    value={draft.price_ghs}
-                    onChange={(event) =>
-                      setDraft(plan, { price_ghs: Number(event.target.value) || 0 })
-                    }
-                  />
-                </Field>
-                <Field label="Duration (days, blank = lifetime)">
-                  <Input
-                    type="number"
-                    min={1}
-                    placeholder="Lifetime"
-                    value={draft.duration_days ?? ""}
-                    onChange={(event) =>
-                      setDraft(plan, {
-                        duration_days: event.target.value
-                          ? Number(event.target.value)
-                          : null,
-                      })
-                    }
-                  />
-                </Field>
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 p-3">
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                    Active
-                  </span>
-                  <Switch
-                    checked={draft.is_active}
-                    onCheckedChange={(checked) => setDraft(plan, { is_active: checked })}
-                    aria-label={`Toggle ${plan.name} active`}
-                  />
-                </div>
-                {Array.isArray(plan.benefits) && plan.benefits.length > 0 && (
-                  <ul className="space-y-1 text-xs text-slate-500 dark:text-slate-400">
-                    {plan.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-start gap-1.5">
-                        <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div className="text-xs font-bold text-slate-400">
-                  Currently {formatMoney(plan.price_ghs, "GHS")} ·{" "}
-                  {plan.duration_days ? `${plan.duration_days} days` : "Lifetime"}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 

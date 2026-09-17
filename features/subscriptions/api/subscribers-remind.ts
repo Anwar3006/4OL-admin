@@ -1,8 +1,8 @@
 /**
- * POST /api/marketing/subscribers/remind — renewal/at-risk reminder action.
- * Gap Analysis Part M (M9), completed by the marketing unification build:
- * stamps last_reminded_at AND writes a "marketing" notification into the
- * shared notifications table, which the mobile inbox/bell already reads
+ * POST /api/subscriptions/subscribers/remind — renewal/at-risk reminder
+ * action. Moved from features/marketing/api/subscribers-remind.ts. Stamps
+ * last_reminded_at AND writes a "marketing" notification into the shared
+ * notifications table, which the mobile inbox/bell already reads
  * (/api/user/notifications allowlist). Accepts explicit ids or
  * { at_risk: true } for "Send All Reminders".
  */
@@ -18,7 +18,7 @@ const REMIND_SCHEMA = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireAdminApiUser("marketing.edit");
+  const auth = await requireAdminApiUser("subscriptions.manage");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   let body: unknown;
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
-    p_action_type: "marketing_subscribers_reminded",
+    p_action_type: "subscription_subscribers_reminded",
     p_target_table: "user_subscriptions",
     p_record_id: null,
     p_description: `Renewal reminders sent to ${reminded?.length ?? 0} subscriber(s)`,

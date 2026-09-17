@@ -8,7 +8,6 @@ import MarketingStats from "./MarketingStats";
 import AllCampaignsTab from "./AllCampaignsTab";
 import AnalyticsTab from "./AnalyticsTab";
 import LinkagesTab from "./LinkagesTab";
-import SubscriptionsTab from "./SubscriptionsTab";
 import DiscountsTab from "./DiscountsTab";
 
 import { ViewMarketingDialog } from "./view-marketing-dialog";
@@ -18,7 +17,6 @@ import { useAddMarketingDialog } from "@/features/marketing/data/dialog-hooks";
 
 const MktTabs = [
   { id: "all", label: "📣 All Campaigns" },
-  { id: "subscriptions", label: "💎 Subscriptions" },
   { id: "discounts", label: "🏷️ Discounts" },
   { id: "analytics", label: "📊 Analytics" },
   { id: "linkages", label: "🔗 Page Linkages" },
@@ -102,7 +100,6 @@ const MarketingPage = () => {
 
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent className="w-full min-w-0 outline-none" value="all"><AllCampaignsTab /></TabsContent>
-          <TabsContent className="w-full min-w-0 outline-none" value="subscriptions"><SubscriptionsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="discounts"><DiscountsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="analytics"><AnalyticsTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="linkages"><LinkagesTab /></TabsContent>

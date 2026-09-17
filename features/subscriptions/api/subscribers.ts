@@ -1,9 +1,14 @@
 /**
- * GET /api/marketing/subscribers — unified user_subscriptions joined to the
- * subscription_tiers catalog and masked user profiles (K5 pattern via
- * lib/masking). Gap Analysis Part M (M8/M9), rebased by the marketing
- * unification build: tier_id -> subscription_tiers (the live entitlement
- * source), plus payment-method and renewal-window filters from the mockup.
+ * GET /api/subscriptions/subscribers — unified user_subscriptions joined to
+ * the subscription_tiers catalog and masked user profiles (K5 pattern via
+ * lib/masking). Moved from features/marketing/api/subscribers.ts as part of
+ * the subscriptions consolidation. tier_id -> subscription_tiers (the live
+ * entitlement source), plus payment-method and renewal-window filters.
+ *
+ * This is deliberately separate from app/api/subscriptions/admin, which is
+ * unchanged and stays the grant/revoke + full entitlements (including
+ * period_premium_grants) surface. See features/subscriptions/README.md for
+ * why SubscribersTab renders both instead of merging the two queries.
  */
 
 import { NextResponse } from "next/server";
@@ -14,7 +19,7 @@ import { getAdminClient } from "@/lib/db/admin";
 const STATUSES = ["active", "at_risk", "cancelled", "expired", "revoked"];
 
 export async function GET(request: Request) {
-  const auth = await requireAdminApiUser("marketing.view");
+  const auth = await requireAdminApiUser("subscriptions.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const url = new URL(request.url);

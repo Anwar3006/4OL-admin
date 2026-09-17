@@ -1,10 +1,12 @@
 /**
- * /api/marketing/plans/[id] — plan catalog edits (`m-edit-plan`).
- * Gap Analysis Part M (M8), rebased onto `subscription_tiers` by the
- * marketing unification build.
+ * /api/subscriptions/plans/[id] — plan catalog edits.
+ * Moved from features/marketing/api/plans-detail.ts. Logic unchanged except
+ * the permission gate — see plans.ts for the subscriptions.view/manage
+ * rationale.
  *
- * PATCH  → marketing.edit   — price/benefits/name/active flag
- * DELETE → marketing.delete — blocked while subscribers reference the tier
+ * GET    -> subscriptions.view
+ * PATCH  -> subscriptions.manage — price/benefits/name/active flag
+ * DELETE -> subscriptions.manage — blocked while subscribers reference the tier
  */
 
 import { NextResponse } from "next/server";
@@ -26,7 +28,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminApiUser("marketing.view");
+  const auth = await requireAdminApiUser("subscriptions.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
@@ -51,7 +53,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminApiUser("marketing.edit");
+  const auth = await requireAdminApiUser("subscriptions.manage");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
@@ -110,7 +112,7 @@ export async function PATCH(
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
-    p_action_type: "marketing_plan_updated",
+    p_action_type: "subscription_plan_updated",
     p_target_table: "subscription_tiers",
     p_record_id: id,
     p_description: `Subscription plan "${existing.name}" updated`,
@@ -126,7 +128,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminApiUser("marketing.delete");
+  const auth = await requireAdminApiUser("subscriptions.manage");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const { id } = await params;
@@ -181,7 +183,7 @@ export async function DELETE(
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
-    p_action_type: "marketing_plan_deleted",
+    p_action_type: "subscription_plan_deleted",
     p_target_table: "subscription_tiers",
     p_record_id: id,
     p_description: `Subscription plan "${existing.name}" deleted`,

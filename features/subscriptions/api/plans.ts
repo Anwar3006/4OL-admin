@@ -1,13 +1,22 @@
 /**
- * /api/marketing/plans — subscription plan catalog.
- * Gap Analysis Part M (M8), rebased by the marketing unification build:
- * plans are `subscription_tiers` — the SAME catalog the mobile paywall
- * (get_subscription_tiers) and entitlement (get_my_entitlement) consume, so
- * anything granted here unlocks premium on the consumer app instantly.
- * The legacy `marketing_subscriptions` table is no longer read.
+ * /api/subscriptions/plans — subscription plan catalog.
+ * Moved from features/marketing/api/plans.ts as part of the subscriptions
+ * consolidation (Marketing's Subscriptions tab + Settings' Plans tab + this
+ * page's own half-built shell -> one surface). Plans are `subscription_tiers`
+ * — the SAME catalog the mobile paywall (get_subscription_tiers) and
+ * entitlement (get_my_entitlement) consume, so anything created/edited here
+ * unlocks premium on the consumer app instantly.
  *
- * GET  → marketing.view  — tiers with subscriber counts
- * POST → marketing.edit  — create tier (m-edit-plan / Create Plan)
+ * GET  -> subscriptions.view    — tiers with subscriber counts
+ * POST -> subscriptions.manage  — create tier
+ *
+ * Permission note: this used to be marketing.view/marketing.edit (Marketing)
+ * and settings.billing (Settings, price/duration/active only). Both are gone.
+ * subscriptions.manage already existed in the permission catalog
+ * ("Grant or revoke premium/lifetime subscriptions") but nothing checked it —
+ * this is the wire-up. The `admin` role already holds both subscriptions.view
+ * and subscriptions.manage by default, same as it held marketing.edit, so no
+ * existing admin loses access.
  */
 
 import { NextResponse } from "next/server";
@@ -33,7 +42,7 @@ const slugify = (value: string) =>
     .slice(0, 40);
 
 export async function GET() {
-  const auth = await requireAdminApiUser("marketing.view");
+  const auth = await requireAdminApiUser("subscriptions.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const admin = getAdminClient();
@@ -68,7 +77,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireAdminApiUser("marketing.edit");
+  const auth = await requireAdminApiUser("subscriptions.manage");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   let body: unknown;
@@ -131,7 +140,7 @@ export async function POST(request: Request) {
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
-    p_action_type: "marketing_plan_created",
+    p_action_type: "subscription_plan_created",
     p_target_table: "subscription_tiers",
     p_record_id: created.id,
     p_description: `Subscription plan "${created.name}" created`,

@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Plan create/edit dialog — mirrors mockup `m-edit-plan` + Create Plan.
- * Writes subscription_tiers via /api/marketing/plans (the same catalog the
- * mobile paywall/entitlement consume), so pricing/benefits changes here go
- * live on the consumer app immediately. Marketing unification build.
+ * Plan create/edit dialog — moved from features/marketing/ui/plan-dialog.tsx
+ * as part of the subscriptions consolidation. Writes subscription_tiers via
+ * /api/subscriptions/plans (the same catalog the mobile paywall/entitlement
+ * consume), so pricing/benefits changes here go live on the consumer app
+ * immediately. Logic unchanged, only import paths moved.
  */
 
 import React, { useEffect } from "react";
@@ -30,11 +31,11 @@ import {
   SUBSCRIPTION_PERIODS,
   SUBSCRIPTION_PRODUCTS,
   SUBSCRIPTION_PRODUCT_LABELS,
-} from "@/features/marketing/schema/subscription";
+} from "@/features/subscriptions/schema/subscription";
 import {
-  useCreateMarketingSubscription,
-  useUpdateMarketingSubscription,
-} from "@/features/marketing/data/useSubscriptions";
+  useCreatePlan,
+  useUpdatePlan,
+} from "@/features/subscriptions/data/usePlans";
 
 const PERIOD_OPTIONS = SUBSCRIPTION_PERIODS.map((period) => ({
   value: period,
@@ -59,8 +60,8 @@ export default function PlanDialog({
   plan,
   defaultTierType = "full_access",
 }: PlanDialogProps) {
-  const createMutation = useCreateMarketingSubscription();
-  const updateMutation = useUpdateMarketingSubscription();
+  const createMutation = useCreatePlan();
+  const updateMutation = useUpdatePlan();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const form = useForm<TMarketingSubscriptionInput>({
