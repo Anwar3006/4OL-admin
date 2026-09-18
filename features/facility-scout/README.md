@@ -74,10 +74,13 @@ policy for `authenticated` on this table.
 
 ## Things that will surprise you
 
-- **`data_collectors` has two foreign keys to `user_profiles`** — `user_id`
+- **`registrars` has two foreign keys to `user_profiles`** — `user_id`
   and `supervisor_id`. An unqualified PostgREST embed does not pick one, it
   fails the whole query and 500s the page. Both embeds here name
-  `data_collectors_user_id_fkey` explicitly.
+  `registrars_user_id_fkey` explicitly. (`registrars` was `data_collectors`
+  until 2026-09-18, when it was consolidated with the Map feature's
+  `map_collectors` into the single table backing the `registrar` role — see
+  CLAUDE.md and `supabase/migrations/20260918_consolidate_registrar_collector_tables.sql`.)
 - **So does `facility_scout_submissions`** — `submitted_by` and `reviewed_by`.
   `api/overview.ts` wants `submitted_by`.
 - Both of those were live 500s until September 2026; the page rendered its

@@ -88,7 +88,7 @@ export default function PendingReviewTab({ data, loading }: FacilityScoutTabProp
       <Alert>
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription className="text-xs">
-          Assign submissions to field collectors for on-ground verification. SLA windows:
+          Assign submissions to registrars for on-ground verification. SLA windows:
           Normal 5 days · High 3 days · Urgent 24 hours.
         </AlertDescription>
       </Alert>

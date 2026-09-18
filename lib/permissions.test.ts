@@ -60,7 +60,12 @@ describe("role defaults", () => {
   });
 
   test("registrar gets data-entry but not user mutations or finance", () => {
-    expect(ROLE_DEFAULTS.registrar).toContain("facilities.create");
+    // registrar's facility create/edit power is enforced at the RPC layer
+    // (register_facility_with_profile, registrar_update_own_facility), not a
+    // blanket facilities.create grant — narrowed in
+    // 20260909_registrar_data_collector_scope.sql.
+    expect(ROLE_DEFAULTS.registrar).toContain("facilityscout.assignments");
+    expect(ROLE_DEFAULTS.registrar).not.toContain("facilities.create");
     expect(ROLE_DEFAULTS.registrar).not.toContain("users.edit");
     expect(ROLE_DEFAULTS.registrar).not.toContain("transactions.view");
     expect(ROLE_DEFAULTS.registrar).not.toContain("roles.edit");
@@ -88,7 +93,11 @@ describe("hasPermission resolution (mirrors has_4ol_permission SQL)", () => {
   });
 
   test("role defaults are honoured", () => {
-    expect(hasPermission({ role: "registrar" }, "facilities.create")).toBe(true);
+    // registrar's facility create/edit power is enforced at the RPC layer
+    // (register_facility_with_profile), not a blanket facilities.create
+    // grant — narrowed in 20260909_registrar_data_collector_scope.sql.
+    expect(hasPermission({ role: "registrar" }, "facilityscout.assignments")).toBe(true);
+    expect(hasPermission({ role: "registrar" }, "facilities.create")).toBe(false);
     expect(hasPermission({ role: "registrar" }, "users.export")).toBe(false);
     expect(hasPermission({ role: "finance_admin" }, "transactions.manage")).toBe(true);
     expect(hasPermission({ role: "finance_admin" }, "notifications.create")).toBe(false);

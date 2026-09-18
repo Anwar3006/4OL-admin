@@ -18,7 +18,7 @@ export async function GET() {
   const admin = getAdminClient();
 
   const { data: collector, error: collectorError } = await admin
-    .from("data_collectors")
+    .from("registrars")
     .select(
       "id, employee_id, region, assigned_areas, total_submissions, approved_submissions, rejected_submissions, pending_submissions, last_active_at, is_active",
     )
@@ -30,8 +30,8 @@ export async function GET() {
   }
 
   if (!collector) {
-    // Registered as registrar but not yet provisioned as a data_collector —
-    // nothing assignable to them yet. See features/facility-scout/README.md.
+    // role='registrar' but no registrars row yet — nothing assignable to
+    // them yet. See features/facility-scout/README.md.
     return NextResponse.json({ collector: null, submissions: [], facilities: [] });
   }
 

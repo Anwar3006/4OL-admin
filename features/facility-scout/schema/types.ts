@@ -39,7 +39,7 @@ export type ScoutSubmission = {
   review_notes: string | null;
   created_at: string;
   user_profiles: { user_id: string; masked_name: string } | null;
-  data_collectors: { employee_id: string } | null;
+  registrars: { employee_id: string } | null;
   matched_facility: { facility_name: string } | null;
 };
 

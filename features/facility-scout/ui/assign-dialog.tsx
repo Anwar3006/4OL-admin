@@ -80,18 +80,18 @@ export function AssignScoutDialog({
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
-            <Label>Assign to collector</Label>
+            <Label>Assign to registrar</Label>
             <select
               className="h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm"
               value={collectorId}
               onChange={(event) => setCollectorId(event.target.value)}
             >
-              <option value="">Select collector...</option>
+              <option value="">Select registrar...</option>
               {activeCollectors.map((collector) => {
                 const name =
                   [collector.user_profiles?.first_name, collector.user_profiles?.last_name]
                     .filter(Boolean)
-                    .join(" ") || collector.employee_id || "Collector";
+                    .join(" ") || collector.employee_id || "Registrar";
                 return (
                   <option key={collector.id} value={collector.id}>
                     {name} ({collector.employee_id ?? "—"}) — {collector.pending_submissions ?? 0} active
@@ -99,7 +99,7 @@ export function AssignScoutDialog({
                 );
               })}
               {activeCollectors.length === 0 && (
-                <option value="" disabled>No active collectors</option>
+                <option value="" disabled>No active registrars</option>
               )}
             </select>
           </div>

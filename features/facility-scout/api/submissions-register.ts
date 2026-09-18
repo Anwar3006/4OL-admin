@@ -71,7 +71,7 @@ export async function POST(
 
   if (!isFullReviewer) {
     const { data: ownCollector } = await admin
-      .from("data_collectors")
+      .from("registrars")
       .select("id")
       .eq("user_id", auth.user.id)
       .maybeSingle();

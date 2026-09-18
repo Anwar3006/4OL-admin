@@ -122,7 +122,7 @@ export default function FacilityScoutPage() {
 
       <Alert>
         <AlertDescription className="text-xs">
-          Users submit unregistered facilities with GPS + photo. Field collectors verify on the
+          Users submit unregistered facilities with GPS + photo. Registrars verify on the
           ground; approved facilities earn mobile-data rewards. Max{" "}
           {data?.config?.max_pending_per_user ?? 10} pending submissions per user.
         </AlertDescription>

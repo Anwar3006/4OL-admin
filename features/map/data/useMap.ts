@@ -112,8 +112,8 @@ export interface IbpPin {
 export const footprintDisplayId = (id: number | string) =>
   `FP-${String(id).padStart(6, "0")}`;
 
-export const collectorDisplayId = (id: number | string) =>
-  `COL-${String(id).padStart(3, "0")}`;
+export const registrarDisplayId = (id: number | string) =>
+  `REG-${String(id).padStart(3, "0")}`;
 
 // ---------------------------------------------------------------------------
 // Read hooks (server routes)
@@ -225,7 +225,7 @@ export const useAddCollector = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MAP_QUERY_KEYS.collectors });
       queryClient.invalidateQueries({ queryKey: MAP_QUERY_KEYS.stats });
-      toast.success("Collector added");
+      toast.success("Registrar added");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -254,7 +254,7 @@ export const useUpdateCollector = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MAP_QUERY_KEYS.collectors });
-      toast.success("Collector updated");
+      toast.success("Registrar updated");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -273,7 +273,7 @@ export const useDeleteCollector = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MAP_QUERY_KEYS.collectors });
       queryClient.invalidateQueries({ queryKey: MAP_QUERY_KEYS.stats });
-      toast.success("Collector removed");
+      toast.success("Registrar removed");
     },
     onError: (error) => toast.error(error.message),
   });

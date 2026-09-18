@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { useHasPermission } from "@/stores/permission-context";
 import ghanaLocations from "@/constants/ghana-locations.json";
 import {
-  collectorDisplayId,
+  registrarDisplayId,
   useAddCollector,
   useDeleteCollector,
   useMapCollectors,
@@ -57,11 +57,11 @@ const CollectorsTab = () => {
     () => [
       {
         accessorKey: "id",
-        header: "Collector",
+        header: "Registrar",
         cell: ({ row }: any) => (
           <div className="flex flex-col min-w-[160px]">
             <span className="font-black text-slate-800 dark:text-slate-200 text-xs">
-              {collectorDisplayId(row.original.id)}
+              {registrarDisplayId(row.original.id)}
             </span>
             <span className="text-2xs text-slate-500 font-semibold mt-0.5">
               {`${row.original.user?.first_name ?? ""} ${row.original.user?.last_name ?? ""}`.trim() ||
@@ -133,7 +133,7 @@ const CollectorsTab = () => {
               },
             },
             {
-              label: "🗑 Remove Collector",
+              label: "🗑 Remove Registrar",
               danger: true,
               onClick: (row: MapCollector) => {
                 deleteCollector.mutate({ id: String(row.id) });
@@ -155,13 +155,13 @@ const CollectorsTab = () => {
     <div className="space-y-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-500 font-medium">
-          Collectors are field staff whose GPS footprints feed the coverage
+          Registrars are field staff whose GPS footprints feed the coverage
           report. Location history is restricted to roles with user-view
           access.
         </p>
         {canManage && (
           <button className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
-            + Add Collector
+            + Add Registrar
           </button>
         )}
       </div>
@@ -182,7 +182,7 @@ const CollectorsTab = () => {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>👷 Add Collector</DialogTitle>
+            <DialogTitle>👷 Add Registrar</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
@@ -224,7 +224,7 @@ const CollectorsTab = () => {
               disabled={!newUserId || addCollector.isPending}
               onClick={handleAdd}
             >
-              {addCollector.isPending ? "Adding…" : "Add Collector"}
+              {addCollector.isPending ? "Adding…" : "Add Registrar"}
             </button>
           </div>
         </DialogContent>

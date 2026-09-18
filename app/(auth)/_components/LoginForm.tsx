@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { userLoginSchema } from "@/schemas/user-profile.schema";
 import { Form } from "@/components/ui/form";
 import { getBrowserClient } from "@/lib/db/browser";
+import { isAdminRole } from "@/lib/admin-roles";
 import {
   clearLoginFailures,
   getLoginLock,
@@ -107,7 +108,12 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
       }
       
       const role = userProfile.role;
-      const isAllowed = ["super_admin", "admin", "registrar"].includes(role);
+      // Was a hardcoded ["super_admin","admin","registrar"] allowlist, which
+      // locked every other valid admin role (content_manager, moderator,
+      // support_agent, finance_admin, compliance_officer, analyst,
+      // ai_manager) out of login entirely — this is the one gate that must
+      // match the canonical set, not a narrower per-feature role list.
+      const isAllowed = isAdminRole(role);
 
       if (!isAllowed) {
         await supabase.auth.signOut();

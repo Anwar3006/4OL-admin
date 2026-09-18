@@ -28,13 +28,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (parsed.data.assignedRegion !== undefined) updates.assigned_region = parsed.data.assignedRegion;
+  if (parsed.data.assignedRegion !== undefined) {
+    updates.region = parsed.data.assignedRegion ? [parsed.data.assignedRegion] : [];
+  }
   if (parsed.data.gpsStatus !== undefined) updates.gps_status = parsed.data.gpsStatus;
   if (parsed.data.notes !== undefined) updates.notes = parsed.data.notes;
 
   const admin = getAdminClient();
   const { error } = await admin
-    .from("map_collectors")
+    .from("registrars")
     .update(updates)
     .eq("id", id);
 
@@ -45,9 +47,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   await admin.rpc("log_admin_activity", {
     p_admin_id: user.id,
     p_action_type: "update_collector",
-    p_target_table: "map_collectors",
+    p_target_table: "registrars",
     p_record_id: id,
-    p_description: `Updated collector COL-${id.padStart(3, "0")}`,
+    p_description: `Updated collector REG-${id.padStart(3, "0")}`,
   });
 
   return NextResponse.json({ success: true });
@@ -60,18 +62,26 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   const { id } = await params;
   const admin = getAdminClient();
-  const { error } = await admin.from("map_collectors").delete().eq("id", id);
+  const { error } = await admin.from("registrars").delete().eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // 23503 = foreign_key_violation — this registrar has facility-scout
+    // submissions assigned to them (facility_scout_submissions has no ON
+    // DELETE rule on assigned_collector_id, deliberately: silently orphaning
+    // that reference would be worse than blocking the delete).
+    const message =
+      error.code === "23503"
+        ? "This registrar has facility-scout submissions assigned to them. Reassign or resolve those first."
+        : error.message;
+    return NextResponse.json({ error: message }, { status: error.code === "23503" ? 409 : 500 });
   }
 
   await admin.rpc("log_admin_activity", {
     p_admin_id: user.id,
     p_action_type: "remove_collector",
-    p_target_table: "map_collectors",
+    p_target_table: "registrars",
     p_record_id: id,
-    p_description: `Removed collector COL-${id.padStart(3, "0")}`,
+    p_description: `Removed collector REG-${id.padStart(3, "0")}`,
   });
 
   return NextResponse.json({ success: true });

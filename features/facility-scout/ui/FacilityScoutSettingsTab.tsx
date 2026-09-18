@@ -171,7 +171,7 @@ export default function FacilityScoutSettingsTab({ data, loading }: FacilityScou
             />
           </div>
           <div className="flex items-center justify-between gap-4">
-            <Label className="text-sm">Collector auto-assignment</Label>
+            <Label className="text-sm">Registrar auto-assignment</Label>
             <Switch
               checked={form.collector_auto_assign}
               onCheckedChange={(checked) => setForm({ ...form, collector_auto_assign: checked })}

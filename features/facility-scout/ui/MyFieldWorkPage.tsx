@@ -230,8 +230,8 @@ export default function MyFieldWorkPage() {
       <div className="animate-in fade-in duration-500 space-y-6">
         <PageHeader title="🧭 My Field Work" subtitle="Submissions assigned to you for verification" />
         <div className="alert bg-amber-50 dark:bg-amber-500/15 border border-amber-200 text-amber-800 p-4 rounded-lg text-sm font-medium">
-          You&apos;re not yet set up as a field collector — an admin needs to link your
-          account to a collector profile before submissions can be assigned to you.
+          You&apos;re not yet set up as a registrar — an admin needs to link your
+          account to a registrar profile before submissions can be assigned to you.
         </div>
       </div>
     );

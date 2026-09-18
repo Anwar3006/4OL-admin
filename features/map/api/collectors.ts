@@ -5,6 +5,13 @@ import { getAdminClient } from "@/lib/db/admin";
 
 // Collector management (Gap Analysis Part F, phase 4). Staff location data is
 // sensitive PII: reads require users.view, writes require users.edit (F-D6).
+//
+// Backed by `registrars` — consolidated 2026-09-18 from data_collectors +
+// map_collectors (see CLAUDE.md). That table's `region` is a text[] (a
+// registrar can cover more than one region via facility-scout), but this
+// tab's UI is still a single-region assignment, so the API keeps presenting
+// a singular `assigned_region` (the first region in the array) rather than
+// forcing a multi-region picker onto a flow nobody asked for.
 export async function GET() {
   const auth = await requireAdminApiUser("users.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
@@ -19,11 +26,11 @@ export async function GET() {
   // Note this select is a template literal: a // comment inside it becomes
   // part of the select string and PostgREST rejects the lot.
   const { data, error } = await admin
-    .from("map_collectors")
+    .from("registrars")
     .select(
       `
-      id, user_id, assigned_region, gps_status, notes, created_at,
-      user:user_profiles(first_name, last_name, phone_number, role)
+      id, user_id, region, gps_status, notes, created_at,
+      user:user_profiles!registrars_user_id_fkey(first_name, last_name, phone_number, role)
     `,
     )
     .order("created_at", { ascending: false });
@@ -52,6 +59,7 @@ export async function GET() {
 
   const collectors = (data ?? []).map((row: any) => ({
     ...row,
+    assigned_region: (row.region as string[] | null)?.[0] ?? null,
     footprint_points: totals.get(row.user_id)?.points ?? 0,
     last_active: totals.get(row.user_id)?.lastActive ?? null,
   }));
@@ -79,14 +87,36 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = getAdminClient();
+  const region = parsed.data.assignedRegion ? [parsed.data.assignedRegion] : [];
+
+  // registrars.employee_id is NOT NULL — a column map_collectors never had.
+  // A registrar already provisioned via Facility Scout has a real one, which
+  // an insert-only write would either violate (blind insert) or clobber with
+  // a placeholder (blind upsert). So: update in place if a row exists for
+  // this user, insert with a placeholder employee_id only if it doesn't.
+  const { data: existing } = await admin
+    .from("registrars")
+    .select("id, employee_id")
+    .eq("user_id", parsed.data.userId)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json(
+      { error: "This user is already registered as a collector." },
+      { status: 409 },
+    );
+  }
+
   const { data, error } = await admin
-    .from("map_collectors")
+    .from("registrars")
     .insert({
       user_id: parsed.data.userId,
-      assigned_region: parsed.data.assignedRegion,
+      employee_id: `MAP-${parsed.data.userId.slice(0, 8).toUpperCase()}`,
+      region,
+      gps_status: "active",
       notes: parsed.data.notes ?? null,
     })
-    .select("id, user_id, assigned_region")
+    .select("id, user_id, region")
     .single();
 
   if (error) {
@@ -99,10 +129,13 @@ export async function POST(req: NextRequest) {
   await admin.rpc("log_admin_activity", {
     p_admin_id: user.id,
     p_action_type: "add_collector",
-    p_target_table: "map_collectors",
+    p_target_table: "registrars",
     p_record_id: String(data.id),
     p_description: `Added collector for user ${parsed.data.userId}${parsed.data.assignedRegion ? ` in ${parsed.data.assignedRegion}` : ""}`,
   });
 
-  return NextResponse.json({ success: true, collector: data });
+  return NextResponse.json({
+    success: true,
+    collector: { ...data, assigned_region: data.region?.[0] ?? null },
+  });
 }

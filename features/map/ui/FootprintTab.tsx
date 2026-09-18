@@ -6,7 +6,7 @@ import { cn, getColorForId } from "@/lib/utils";
 import { downloadCsv } from "@/lib/csv";
 import { useHasPermission } from "@/stores/permission-context";
 import {
-  collectorDisplayId,
+  registrarDisplayId,
   footprintDisplayId,
   useFootprints,
   useMapCollectors,
@@ -69,7 +69,7 @@ const FootprintTab = () => {
     downloadCsv(
       footprints.map((fp) => ({
         id: footprintDisplayId(fp.id),
-        collector: `${fp.collector?.first_name ?? ""} ${fp.collector?.last_name ?? ""}`.trim(),
+        registrar: `${fp.collector?.first_name ?? ""} ${fp.collector?.last_name ?? ""}`.trim(),
         region: fp.region ?? "",
         area_district: fp.district ?? "",
         gps: `${fp.latitude.toFixed(6)}, ${fp.longitude.toFixed(6)}`,
@@ -88,11 +88,11 @@ const FootprintTab = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {collectorsLoading ? (
           <div className="card col-span-full text-center text-xs text-slate-400 py-6">
-            Loading collectors…
+            Loading registrars…
           </div>
         ) : collectors.length === 0 ? (
           <div className="card col-span-full text-center text-xs text-slate-400 py-6">
-            No collectors yet — add one from the Collectors tab.
+            No registrars yet — add one from the Collectors tab.
           </div>
         ) : (
           collectors.map((collector) => {
@@ -126,7 +126,7 @@ const FootprintTab = () => {
                 </div>
                 <div className="flex items-center justify-between text-2xs font-semibold text-slate-500">
                   <span>
-                    {collectorDisplayId(collector.id)} · {collector.assigned_region || "No region"}
+                    {registrarDisplayId(collector.id)} · {collector.assigned_region || "No region"}
                   </span>
                   <span>{todayPointsByCollector.get(collector.user_id) ?? 0} pts today</span>
                 </div>
@@ -222,7 +222,7 @@ const FootprintTab = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                {["Point", "Collector", "Region", "Area / District", "GPS Coordinates", "Facility Visited", "Activity", "Timestamp"].map(
+                {["Point", "Registrar", "Region", "Area / District", "GPS Coordinates", "Facility Visited", "Activity", "Timestamp"].map(
                   (h) => (
                     <th
                       key={h}

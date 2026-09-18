@@ -1858,7 +1858,7 @@ export type Database = {
             foreignKeyName: "collector_submissions_collector_id_fkey"
             columns: ["collector_id"]
             isOneToOne: false
-            referencedRelation: "data_collectors"
+            referencedRelation: "registrars"
             referencedColumns: ["id"]
           },
           {
@@ -2467,78 +2467,6 @@ export type Database = {
             foreignKeyName: "conversations_last_message_sender_fkey"
             columns: ["last_message_sender"]
             isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      data_collectors: {
-        Row: {
-          approved_submissions: number | null
-          assigned_areas: string[] | null
-          created_at: string
-          device_info: Json | null
-          employee_id: string
-          id: string
-          is_active: boolean | null
-          last_active_at: string | null
-          pending_submissions: number | null
-          region: string[] | null
-          rejected_submissions: number | null
-          supervisor_id: string | null
-          total_submissions: number | null
-          updated_at: string
-          user_id: string
-          vehicle_assigned: string | null
-        }
-        Insert: {
-          approved_submissions?: number | null
-          assigned_areas?: string[] | null
-          created_at?: string
-          device_info?: Json | null
-          employee_id: string
-          id?: string
-          is_active?: boolean | null
-          last_active_at?: string | null
-          pending_submissions?: number | null
-          region?: string[] | null
-          rejected_submissions?: number | null
-          supervisor_id?: string | null
-          total_submissions?: number | null
-          updated_at?: string
-          user_id: string
-          vehicle_assigned?: string | null
-        }
-        Update: {
-          approved_submissions?: number | null
-          assigned_areas?: string[] | null
-          created_at?: string
-          device_info?: Json | null
-          employee_id?: string
-          id?: string
-          is_active?: boolean | null
-          last_active_at?: string | null
-          pending_submissions?: number | null
-          region?: string[] | null
-          rejected_submissions?: number | null
-          supervisor_id?: string | null
-          total_submissions?: number | null
-          updated_at?: string
-          user_id?: string
-          vehicle_assigned?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "data_collectors_supervisor_id_fkey"
-            columns: ["supervisor_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "data_collectors_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -4148,7 +4076,7 @@ export type Database = {
             foreignKeyName: "facility_scout_submissions_assigned_collector_id_fkey"
             columns: ["assigned_collector_id"]
             isOneToOne: false
-            referencedRelation: "data_collectors"
+            referencedRelation: "registrars"
             referencedColumns: ["id"]
           },
           {
@@ -5509,56 +5437,6 @@ export type Database = {
           {
             foreignKeyName: "fitness_outdoor_incentives_updated_by_fkey"
             columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      fitness_outdoor_engagements: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          id: string
-          is_liked: boolean
-          rating: number | null
-          shared_count: number
-          target_id: string
-          target_type: string
-          updated_at: string
-          user_id: string
-          will_visit_at: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          is_liked?: boolean
-          rating?: number | null
-          shared_count?: number
-          target_id: string
-          target_type: string
-          updated_at?: string
-          user_id: string
-          will_visit_at?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          is_liked?: boolean
-          rating?: number | null
-          shared_count?: number
-          target_id?: string
-          target_type?: string
-          updated_at?: string
-          user_id?: string
-          will_visit_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fitness_outdoor_engagements_user_id_fkey"
-            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
@@ -7185,44 +7063,6 @@ export type Database = {
             foreignKeyName: "maintenance_history_toggled_by_fkey"
             columns: ["toggled_by"]
             isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      map_collectors: {
-        Row: {
-          assigned_region: string | null
-          created_at: string
-          gps_status: string
-          id: number
-          notes: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          assigned_region?: string | null
-          created_at?: string
-          gps_status?: string
-          id?: never
-          notes?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          assigned_region?: string | null
-          created_at?: string
-          gps_status?: string
-          id?: never
-          notes?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "map_collectors_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -9109,48 +8949,70 @@ export type Database = {
       }
       period_content_publications: {
         Row: {
+          ai_job_id: string | null
           channel: string
           content_id: string
           created_at: string
           display_order: number
           ends_at: string | null
           featured: boolean
+          featured_until: string | null
+          frequency_cap_days: number | null
           id: string
           minimum_app_version: string | null
           published_by: string | null
+          scheduled_by: string | null
           starts_at: string
           status: string
+          surfaces: string[]
           updated_at: string
         }
         Insert: {
+          ai_job_id?: string | null
           channel: string
           content_id: string
           created_at?: string
           display_order?: number
           ends_at?: string | null
           featured?: boolean
+          featured_until?: string | null
+          frequency_cap_days?: number | null
           id?: string
           minimum_app_version?: string | null
           published_by?: string | null
+          scheduled_by?: string | null
           starts_at?: string
           status?: string
+          surfaces?: string[]
           updated_at?: string
         }
         Update: {
+          ai_job_id?: string | null
           channel?: string
           content_id?: string
           created_at?: string
           display_order?: number
           ends_at?: string | null
           featured?: boolean
+          featured_until?: string | null
+          frequency_cap_days?: number | null
           id?: string
           minimum_app_version?: string | null
           published_by?: string | null
+          scheduled_by?: string | null
           starts_at?: string
           status?: string
+          surfaces?: string[]
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "period_content_publications_ai_job_id_fkey"
+            columns: ["ai_job_id"]
+            isOneToOne: false
+            referencedRelation: "period_ai_jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "period_content_publications_content_id_fkey"
             columns: ["content_id"]
@@ -11614,6 +11476,84 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      registrars: {
+        Row: {
+          approved_submissions: number | null
+          assigned_areas: string[] | null
+          created_at: string
+          device_info: Json | null
+          employee_id: string
+          gps_status: string
+          id: string
+          is_active: boolean | null
+          last_active_at: string | null
+          notes: string | null
+          pending_submissions: number | null
+          region: string[] | null
+          rejected_submissions: number | null
+          supervisor_id: string | null
+          total_submissions: number | null
+          updated_at: string
+          user_id: string
+          vehicle_assigned: string | null
+        }
+        Insert: {
+          approved_submissions?: number | null
+          assigned_areas?: string[] | null
+          created_at?: string
+          device_info?: Json | null
+          employee_id: string
+          gps_status?: string
+          id?: string
+          is_active?: boolean | null
+          last_active_at?: string | null
+          notes?: string | null
+          pending_submissions?: number | null
+          region?: string[] | null
+          rejected_submissions?: number | null
+          supervisor_id?: string | null
+          total_submissions?: number | null
+          updated_at?: string
+          user_id: string
+          vehicle_assigned?: string | null
+        }
+        Update: {
+          approved_submissions?: number | null
+          assigned_areas?: string[] | null
+          created_at?: string
+          device_info?: Json | null
+          employee_id?: string
+          gps_status?: string
+          id?: string
+          is_active?: boolean | null
+          last_active_at?: string | null
+          notes?: string | null
+          pending_submissions?: number | null
+          region?: string[] | null
+          rejected_submissions?: number | null
+          supervisor_id?: string | null
+          total_submissions?: number | null
+          updated_at?: string
+          user_id?: string
+          vehicle_assigned?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrars_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "registrars_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
