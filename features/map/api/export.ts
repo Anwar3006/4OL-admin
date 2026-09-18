@@ -15,7 +15,7 @@ export async function GET() {
     .select(
       "facility_name, facility_type, region, district, area, latitude, longitude, status, created_at",
     )
-    .not("status", "in", '("Rejected","rejected")')
+    .not("status", "in", '("rejected")')
     .order("region")
     .order("district")
     .limit(10000);

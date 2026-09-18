@@ -34,11 +34,17 @@ const MapPage = () => {
   const canViewFootprints = useHasPermission("users.view");
   const canExport = useHasPermission("map.export");
 
-  const { data: stats, isLoading } = useMapStats();
+  const { data: stats, isLoading, isError, error: statsError } = useMapStats();
 
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) setActiveTab(tabParam);
   }, [tabParam]);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(statsError?.message || "Failed to load map KPIs.");
+    }
+  }, [isError, statsError]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -130,42 +136,52 @@ const MapPage = () => {
         <KpiCard
           icon="🏥"
           label="Facilities Plotted"
-          value={isLoading ? "..." : (stats?.facilities_plotted ?? 0).toLocaleString()}
+          value={(stats?.facilities_plotted ?? 0).toLocaleString()}
           variant="green"
           delta={`${stats?.regions_covered ?? 0} regions`}
+          isLoading={isLoading}
+          isError={isError}
         />
         <KpiCard
           icon="🏪"
           label="IBPs on Map"
-          value={isLoading ? "..." : (stats?.ibps_on_map ?? 0).toLocaleString()}
+          value={(stats?.ibps_on_map ?? 0).toLocaleString()}
           variant="purple"
           delta="Geo-tagged businesses"
           size="sm"
+          isLoading={isLoading}
+          isError={isError}
         />
         <KpiCard
           icon="👷"
           label="Active Collectors"
-          value={isLoading ? "..." : (stats?.active_collectors ?? 0).toLocaleString()}
+          value={(stats?.active_collectors ?? 0).toLocaleString()}
           variant="blue"
           delta="GPS tracked"
           size="sm"
+          isLoading={isLoading}
+          isError={isError}
         />
         <KpiCard
           icon="📡"
           label="Coverage"
-          value={isLoading ? "..." : `${stats?.coverage_percent ?? 0}%`}
+          value={`${stats?.coverage_percent ?? 0}%`}
           variant={
             (stats?.coverage_percent ?? 0) >= 50 ? "green" : "orange"
           }
           delta={`${100 - (stats?.coverage_percent ?? 0)}% uncovered`}
+          isLoading={isLoading}
+          isError={isError}
         />
         <KpiCard
           icon="👣"
           label="Footprint Points"
-          value={isLoading ? "..." : (stats?.footprint_points ?? 0).toLocaleString()}
+          value={(stats?.footprint_points ?? 0).toLocaleString()}
           variant="teal"
           delta={`+${stats?.footprint_points_today ?? 0} today`}
           size="sm"
+          isLoading={isLoading}
+          isError={isError}
         />
       </div>
 

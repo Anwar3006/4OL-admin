@@ -20,19 +20,25 @@ export async function GET() {
       admin
         .from("facility_profile")
         .select("region, district, status")
-        .not("status", "in", '("Rejected","rejected")'),
+        .not("status", "in", '("rejected")'),
       admin
         .from("ibp")
         .select("id", { count: "exact", head: true })
         .not("latitude", "is", null)
         .not("longitude", "is", null),
-      admin.from("map_collectors").select("id, gps_status"),
+      admin.from("registrars").select("id, gps_status"),
       admin.from("collector_footprints").select("id", { count: "exact", head: true }),
       admin
         .from("collector_footprints")
         .select("id", { count: "exact", head: true })
         .gte("created_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
     ]);
+
+  const queryError =
+    facilities.error ?? ibps.error ?? collectors.error ?? footprints.error ?? footprintsToday.error;
+  if (queryError) {
+    return NextResponse.json({ error: queryError.message }, { status: 500 });
+  }
 
   const facilityRows = (facilities.data ?? []) as Array<{
     region: string | null;

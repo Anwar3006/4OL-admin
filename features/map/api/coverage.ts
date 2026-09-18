@@ -22,11 +22,17 @@ export async function GET() {
     admin
       .from("facility_profile")
       .select("region, district, status")
-      .not("status", "in", '("Rejected","rejected")'),
+      .not("status", "in", '("rejected")'),
     admin.from("collector_footprints").select("region, collector_id"),
-    admin.from("map_collectors").select("assigned_region, gps_status"),
+    admin.from("registrars").select("region, gps_status"),
     admin.from("map_priority_regions").select("region, prioritized_at"),
   ]);
+
+  const queryError =
+    facilities.error ?? footprints.error ?? collectors.error ?? priorities.error;
+  if (queryError) {
+    return NextResponse.json({ error: queryError.message }, { status: 500 });
+  }
 
   const priorityRegions = new Set(
     ((priorities.data ?? []) as Array<{ region: string }>).map((p) => p.region),
@@ -51,10 +57,13 @@ export async function GET() {
       collector_id: string;
     }>).filter((fp) => normalizeRegionKey(fp.region) === regionKey);
 
+    // A registrar's region is now a text[] (they can cover more than one
+    // region), so they count toward every region they're assigned to, not
+    // just a single one.
     const assignedCollectors = ((collectors.data ?? []) as Array<{
-      assigned_region: string | null;
+      region: string[] | null;
       gps_status: string;
-    }>).filter((c) => normalizeRegionKey(c.assigned_region) === regionKey);
+    }>).filter((c) => (c.region ?? []).some((r) => normalizeRegionKey(r) === regionKey));
 
     const totalDistricts = regionDistrictCount(regionKey);
     const coveragePercent = totalDistricts
