@@ -21,6 +21,7 @@ export const HEALTHY_LIVING_QUERY_KEYS = {
 interface PaginatedResponse {
   healthyLivings: THealthyLivingOutput[];
   meta: { totalPages: number; total: number; currentPage: number };
+  engagementPipelineLive: boolean;
 }
 
 /** Categories admins can tag a healthy living article with (type='healthy_living'). */
@@ -54,45 +55,13 @@ export const useHealthyLivings = ({
   return useQuery<PaginatedResponse, Error>({
     queryKey: HEALTHY_LIVING_QUERY_KEYS.list(page, limit, search, status),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      let query = (await getBrowserClient())
-        .from("healthy_living_info")
-        .select("*, healthy_living_categories (categories (id, name))", { count: "exact" });
-
-      if (search) query = query.ilike("name", `%${search}%`);
-      if (status) query = query.eq("status", status);
-
-      const { data, count, error } = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) throw new Error(error.message);
-
-      const totalCount = count ?? 0;
-      const formatted = (data || []).map((row: any) => {
-        const { healthy_living_categories, ...rest } = row;
-        return {
-          ...rest,
-          // Display-friendly names, used by the table's Categories column.
-          categories:
-            healthy_living_categories?.map((c: any) => c.categories?.name) || [],
-          // Raw {category_id, categories:{id,name}} refs, in the same shape
-          // useHealthyLiving (detail) returns — needed so rehydrateHierarchy
-          // can resolve real ids when the edit dialog is opened directly
-          // from a table row instead of from the view dialog.
-          categoryRefs: healthy_living_categories || [],
-        };
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
       });
-      return {
-        healthyLivings: formatted as unknown as THealthyLivingOutput[],
-        meta: {
-          totalPages: Math.max(1, Math.ceil(totalCount / limit)),
-          total: totalCount,
-          currentPage: page,
-        },
-      };
+      if (search) params.set("search", search);
+      if (status) params.set("status", status);
+      return apiFetch<PaginatedResponse>(`/api/healthy-living?${params.toString()}`);
     },
     staleTime: 1000 * 60 * 5,
   });

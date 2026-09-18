@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import { DRUG_AVAILABILITY, DRUG_CATEGORIES, DRUG_STATUSES } from "@/lib/shared-constants";
+import { getObviousNonDrugReason } from "@/features/medication-reminder/data/drug-catalog-validation";
 
 /**
  * Bulk drug import (Gap Analysis B.5/B.12). The client parses the CSV and
@@ -50,6 +51,29 @@ export async function POST(req: NextRequest) {
 
   const admin = getAdminClient();
   const { fileName, rows, skipped, totalInFile } = parsed.data;
+  const rejectedNonDrugs = rows
+    .map((row) => ({
+      name: row.name,
+      reason: getObviousNonDrugReason({
+        name: row.name,
+        genericName: row.generic_name,
+        classificationReason:
+          typeof row.metadata.classification_reason === "string"
+            ? row.metadata.classification_reason
+            : null,
+      }),
+    }))
+    .filter((row): row is { name: string; reason: string } => Boolean(row.reason));
+
+  if (rejectedNonDrugs.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Import contains non-drug products.",
+        rejected: rejectedNonDrugs.slice(0, 20),
+      },
+      { status: 422 },
+    );
+  }
 
   const { data: batch, error: batchError } = await admin
     .from("drug_import_batches")

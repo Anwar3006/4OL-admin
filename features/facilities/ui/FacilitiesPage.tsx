@@ -356,7 +356,7 @@ const FacilitiesPage = () => {
                 pageKey: "fac_page",
                 pageSizeKey: "fac_pageSize",
               }}
-              totalItems={data?.totalRegistered || 0}
+              totalItems={data?.meta?.total || 0}
             />
           </div>
         </TabsContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import PageHeader from "@/components/redesign/PageHeader";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
 const HealthyLivingPage = () => {
@@ -33,19 +33,15 @@ const HealthyLivingPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const tabParam = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabParam || "all");
-
-  // Deep-link support (Phase 4): /healthy_living?tab=engagement etc.
-  useEffect(() => {
-    if (tabParam && tabParam !== activeTab) setActiveTab(tabParam);
-  }, [tabParam]);                                                    // eslint-disable-line
+  const activeTab = tabParam || "all";
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
     const params = new URLSearchParams(window.location.search);
     params.set("tab", value);
-    window.history.pushState(null, "", `?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   // Read page from URL to trigger refetch when pagination changes
@@ -98,28 +94,8 @@ const HealthyLivingPage = () => {
         ),
       },
       {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }: any) => {
-          const statusColors: Record<string, string> = {
-            published: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-            draft: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
-            archived: "bg-rose-50 text-rose-700",
-          };
-          const colorClass =
-            statusColors[row.original.status] || statusColors.draft;
-          return (
-            <span
-              className={`text-xs font-semibold px-2 py-1 rounded capitalize ${colorClass}`}
-            >
-              {row.original.status?.replace("_", " ") || "draft"}
-            </span>
-          );
-        },
-      },
-      {
         accessorKey: "categories",
-        header: "Categories",
+        header: "Category",
         cell: ({ row }: any) => {
           const cats: string[] = row.original.categories || [];
           if (cats.length === 0) {
@@ -145,24 +121,64 @@ const HealthyLivingPage = () => {
         },
       },
       {
-        accessorKey: "view_count",
-        header: "Views",
+        accessorKey: "reads_30d",
+        header: "Reads (30d)",
         cell: ({ row }: any) => (
           <div className="flex items-center gap-1 justify-center">
-            <span className="text-sm text-slate-600 dark:text-slate-300">
-              {row.original.view_count || 0}
+            <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+              {(row.original.reads_30d ?? 0).toLocaleString()}
             </span>
           </div>
         ),
       },
       {
+        accessorKey: "save_count",
+        header: "Saves",
+        cell: ({ row }: any) => (
+          <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+            {(row.original.save_count ?? 0).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "like_count",
+        header: "Likes",
+        cell: ({ row }: any) => (
+          <span className="text-sm font-bold text-rose-600 dark:text-rose-400">
+            {(row.original.like_count ?? 0).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }: any) => {
+          const statusColors: Record<string, string> = {
+            published: "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+            draft: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
+            archived: "bg-rose-50 text-rose-700",
+          };
+          const colorClass =
+            statusColors[row.original.status] || statusColors.draft;
+          return (
+            <span
+              className={`text-xs font-semibold px-2 py-1 rounded capitalize ${colorClass}`}
+            >
+              {row.original.status?.replace("_", " ") || "draft"}
+            </span>
+          );
+        },
+      },
+      {
         accessorKey: "created_at",
-        header: "Created",
+        header: "Published",
         cell: ({ row }: any) => (
           <span className="text-xs text-slate-600 dark:text-slate-300">
-            {new Date(row.original.created_at).toLocaleDateString(undefined, {
-              dateStyle: "medium",
-            })}
+            {row.original.status === "published" && row.original.created_at
+              ? new Date(row.original.created_at).toLocaleDateString(undefined, {
+                  dateStyle: "medium",
+                })
+              : "—"}
           </span>
         ),
       },
@@ -205,7 +221,7 @@ const HealthyLivingPage = () => {
         },
       },
     ],
-    [],
+    [addHealthLiving, handleDeleteClick, viewHealthyLiving],
   );
 
   return (

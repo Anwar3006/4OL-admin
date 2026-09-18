@@ -7,6 +7,7 @@ import {
   DRUG_CATEGORIES,
   DRUG_STATUSES,
 } from "@/lib/shared-constants";
+import { getObviousNonDrugReason } from "@/features/medication-reminder/data/drug-catalog-validation";
 
 const DrugQuerySchema = z.object({
   search: z.string().trim().max(160).optional(),
@@ -109,6 +110,16 @@ export async function POST(req: NextRequest) {
 
   const admin = getAdminClient();
   const payload = parsed.data;
+  const nonDrugReason = getObviousNonDrugReason({
+    name: payload.name,
+    genericName: payload.generic_name,
+  });
+  if (nonDrugReason) {
+    return NextResponse.json(
+      { error: `This entry appears not to be a medicine (${nonDrugReason}).` },
+      { status: 422 },
+    );
+  }
   const { data, error } = await admin
     .from("drugs")
     .insert({

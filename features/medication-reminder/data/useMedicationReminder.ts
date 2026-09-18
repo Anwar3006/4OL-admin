@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getBrowserClient } from "@/lib/db/browser";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api-fetch";
 
 // Senior Approach: `interval` is a bare number whose unit varies per row
 // (minutes vs hours) — stored separately in `interval_unit`. This formatter
@@ -18,14 +19,10 @@ export const formatReminderInterval = (
   return `Every ${interval} ${unit}`;
 };
 
-// Senior Approach: A reminder's lifecycle has three real states, not two.
-// `is_enabled` only tells you whether notifications are toggled on — it
-// doesn't account for a course that has actually finished. A reminder is
-// "Complete" once the last reminder we sent (`last_sent_at`) lands on the
-// same calendar day as the course's `end_date`, regardless of the
-// `is_enabled` flag. Compared by UTC calendar date (not exact timestamp)
-// since `end_date` is typically stored as end-of-day (23:59:59.999) while
-// `last_sent_at` is whenever the notification actually fired.
+// `is_enabled` only tells us whether notifications are toggled on. A course
+// whose end date is before today is complete even if that flag was never
+// switched off. We also retain the same-day last-send check for courses that
+// finish today.
 export type ReminderStatus = "complete" | "active" | "paused";
 
 const toUtcDateKey = (value: string | null | undefined): string | null => {
@@ -42,8 +39,17 @@ export const getReminderStatus = (row: {
 }): ReminderStatus => {
   const lastSentKey = toUtcDateKey(row.last_sent_at);
   const endDateKey = toUtcDateKey(row.end_date);
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const endDateIncludesTime = /\d{2}:\d{2}/.test(row.end_date ?? "");
+  const endTime = row.end_date ? new Date(row.end_date).getTime() : NaN;
+  const durationHasPassed =
+    Boolean(endDateKey && endDateKey < todayKey) ||
+    (endDateIncludesTime && !Number.isNaN(endTime) && endTime <= Date.now());
 
-  if (lastSentKey && endDateKey && lastSentKey === endDateKey) {
+  if (
+    endDateKey &&
+    (durationHasPassed || (lastSentKey !== null && lastSentKey >= endDateKey))
+  ) {
     return "complete";
   }
 
@@ -125,10 +131,21 @@ export interface LoggedReminderRow {
   start_date?: string | null;
   end_date?: string | null;
   last_sent_at?: string | null;
-  created_at: string;
+  created_at: string | null;
+  manufacturer?: string | null;
+  strength?: string | null;
+  strength_unit?: string | null;
+  dosage_form?: string | null;
+  conditions_treated?: string[];
+  adherence_rate?: number | null;
+  adherence_total?: number;
+  missed_count?: number;
+  skipped_count?: number;
   user_profiles?: {
     user_id?: string;
+    public_id?: string | null;
     name: string;
+    region?: string | null;
   };
   [key: string]: any;
 }
@@ -145,59 +162,14 @@ export const useLoggedReminders = ({
   return useQuery({
     queryKey: ["logged-reminders-list", pageIndex, pageSize, search],
     queryFn: async () => {
-      const supabase = await getBrowserClient();
-      const from = (pageIndex - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      let query = supabase
-        .from("medication_reminders")
-        .select(
-          `
-          id,
-          drug_name,
-          dosage_amount,
-          interval,
-          interval_unit,
-          drug_type,
-          drug_color,
-          notification_schedule,
-          number_of_intakes,
-          is_enabled,
-          is_active,
-          start_date,
-          end_date,
-          last_sent_at,
-          created_at,
-          user_profiles (
-            user_id,
-            first_name,
-            last_name
-          )
-        `,
-          { count: "exact" },
-        );
-
-      if (search) {
-        query = query.ilike("drug_name", `%${search}%`);
-      }
-
-      const { data, error, count } = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) throw error;
-
-      const reminders: LoggedReminderRow[] = (data || []).map((item: any) => ({
-        ...item,
-        user_profiles: {
-          user_id: item.user_profiles?.user_id,
-          name:
-            `${item.user_profiles?.first_name || ""} ${item.user_profiles?.last_name || ""}`.trim() ||
-            "Unknown User",
-        },
-      }));
-
-      return { reminders, count: count || 0 };
+      const params = new URLSearchParams({
+        page: String(pageIndex),
+        limit: String(pageSize),
+      });
+      if (search) params.set("search", search);
+      return apiFetch<{ reminders: LoggedReminderRow[]; count: number }>(
+        `/api/medication/reminders?${params.toString()}`,
+      );
     },
     placeholderData: (previousData) => previousData,
   });

@@ -17,6 +17,7 @@ import {
   type DrugStatus,
   type NormalizedDrugRow,
 } from "../features/medication-reminder/data/drug-import-mapping";
+import { getObviousNonDrugReason } from "../features/medication-reminder/data/drug-catalog-validation";
 import { supabaseServiceKey, supabaseUrl } from "../lib/db/env";
 
 type PillsJsonRow = {
@@ -174,6 +175,12 @@ function hasMedicineSignal(raw: string): boolean {
 function classifyRejectedRow(originalName: string, genericName: string | null, rawCategory: string): string | null {
   const genericKey = (genericName ?? "").trim().toLowerCase();
   const combined = `${originalName} ${genericName ?? ""} ${rawCategory}`;
+
+  const obviousNonDrugReason = getObviousNonDrugReason({
+    name: originalName,
+    genericName,
+  });
+  if (obviousNonDrugReason) return obviousNonDrugReason;
 
   if (NON_DRUG_GENERIC_EXACT.has(genericKey)) {
     return `non-drug generic: ${genericKey}`;

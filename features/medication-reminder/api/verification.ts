@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { getObviousNonDrugReason } from "@/features/medication-reminder/data/drug-catalog-validation";
 
 /**
  * Unknown-drug verification queue (Gap Analysis B.6 step 4). Mobile users
@@ -124,6 +125,16 @@ export async function POST(req: NextRequest) {
   const reviewedAt = new Date().toISOString();
 
   if (body.action === "approve_new") {
+    const nonDrugReason = getObviousNonDrugReason({
+      name: body.name,
+      genericName: body.generic_name,
+    });
+    if (nonDrugReason) {
+      return NextResponse.json(
+        { error: `This entry appears not to be a medicine (${nonDrugReason}).` },
+        { status: 422 },
+      );
+    }
     const slug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
     const { data: drug, error: drugError } = await admin
       .from("drugs")

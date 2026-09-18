@@ -33,13 +33,6 @@ import { ViewConditionDialog } from "./view-condition-dialog";
 import { useSearchParams } from "next/navigation";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 
-const SEVERITY_BADGE: Record<string, string> = {
-  low: "badge-green",
-  moderate: "badge-amber",
-  high: "badge-orange",
-  critical: "badge-red",
-};
-
 const DiseasesPage = () => {
   const addCondition = useAddConditionDialog();
   const { open: openViewDialog } = useViewConditionDialog();
@@ -126,23 +119,6 @@ const DiseasesPage = () => {
       ),
     },
     {
-      accessorKey: "severity",
-      header: "Severity",
-      cell: ({ row }: any) =>
-        row.original.severity ? (
-          <span
-            className={cn(
-              "badge",
-              SEVERITY_BADGE[row.original.severity] ?? "badge-amber",
-            )}
-          >
-            {row.original.severity}
-          </span>
-        ) : (
-          <span className="text-2xs text-slate-300 italic">—</span>
-        ),
-    },
-    {
       accessorKey: "categories",
       header: "Category",
       cell: ({ row }: any) => (
@@ -178,17 +154,17 @@ const DiseasesPage = () => {
       ),
     },
     {
-      accessorKey: "view_count",
-      header: "👁️ Views",
+      accessorKey: "specialist",
+      header: "Specialists",
       cell: ({ row }: any) => (
-        <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
-          {row.original.view_count?.toLocaleString() || "0"}
+        <span className="block min-w-[140px] max-w-[220px] text-xs font-medium text-slate-600 dark:text-slate-300">
+          {row.original.specialist || "General Practitioner"}
         </span>
       ),
     },
     {
       accessorKey: "like_count",
-      header: "❤️ Likes",
+      header: "Likes",
       cell: ({ row }: any) => (
         <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
           {row.original.like_count?.toLocaleString() || "0"}
@@ -197,7 +173,7 @@ const DiseasesPage = () => {
     },
     {
       accessorKey: "save_count",
-      header: "🔖 Saves",
+      header: "Saves",
       cell: ({ row }: any) => (
         <span className="font-black text-slate-700 dark:text-slate-300 text-xs">
           {row.original.save_count?.toLocaleString() || "0"}
@@ -211,11 +187,11 @@ const DiseasesPage = () => {
         <div className="text-center">
           {row.original.is_featured ? (
             <span className="badge badge-green shadow-sm shadow-green-100 border border-green-200">
-              ⭐ #{row.original.featured_order ?? "–"}
+              ⭐ Featured
             </span>
           ) : (
-            <span className="text-2xs text-slate-300 font-bold tracking-widest uppercase">
-              Off
+            <span className="badge border border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/15 dark:text-red-400">
+              Not Featured
             </span>
           )}
         </div>

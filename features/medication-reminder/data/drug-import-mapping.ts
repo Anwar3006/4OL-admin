@@ -13,6 +13,8 @@
  *  - D4: autocomplete serves `active` only; `under_review` is admin-only.
  */
 
+import { getObviousNonDrugReason } from "./drug-catalog-validation";
+
 export type DrugAvailability = "otc" | "rx_only" | "controlled" | "unknown";
 export type DrugStatus = "active" | "discontinued" | "under_review" | "unverified";
 
@@ -244,14 +246,9 @@ function normalizeAvailability(raw: string): DrugAvailability {
   return "unknown";
 }
 
-/** D2 exclusion: classifier marked the row a non-medication indicator. */
-export function isNonMedIndicator(reason: string): boolean {
-  return /non-med indicator/i.test(reason);
-}
-
 /**
- * Core B.12 pipeline steps 2–4: filter TRUE rows, drop the 220 suspect
- * non-medication rows, normalize + derive fields, assign tiers.
+ * Core B.12 pipeline steps 2–4: filter TRUE rows, drop entries classified or
+ * recognized as non-medications, normalize + derive fields, assign tiers.
  */
 export function normalizePillsRows(
   records: PillsCsvRow[],
@@ -272,7 +269,12 @@ export function normalizePillsRows(
     }
 
     const reason = String(record.reason ?? "");
-    if (isNonMedIndicator(reason)) {
+    const nonDrugReason = getObviousNonDrugReason({
+      name,
+      genericName: record.generic_name,
+      classificationReason: reason,
+    });
+    if (nonDrugReason) {
       skippedNonMed += 1;
       continue;
     }

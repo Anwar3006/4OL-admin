@@ -3,6 +3,7 @@ import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import { DRUG_AVAILABILITY, DRUG_CATEGORIES, DRUG_STATUSES } from "@/lib/shared-constants";
+import { getObviousNonDrugReason } from "@/features/medication-reminder/data/drug-catalog-validation";
 
 const PatchDrugSchema = z.object({
   name: z.string().trim().min(2).max(240).optional(),
@@ -42,6 +43,32 @@ export async function PATCH(
   }
 
   const admin = getAdminClient();
+  const { data: current, error: currentError } = await admin
+    .from("drugs")
+    .select("name, generic_name")
+    .eq("id", id)
+    .maybeSingle();
+  if (currentError) {
+    return NextResponse.json({ error: "Failed to validate drug." }, { status: 500 });
+  }
+  if (!current) {
+    return NextResponse.json({ error: "Drug not found." }, { status: 404 });
+  }
+
+  const nonDrugReason = getObviousNonDrugReason({
+    name: parsed.data.name ?? current.name,
+    genericName:
+      parsed.data.generic_name === undefined
+        ? current.generic_name
+        : parsed.data.generic_name,
+  });
+  if (nonDrugReason) {
+    return NextResponse.json(
+      { error: `This entry appears not to be a medicine (${nonDrugReason}).` },
+      { status: 422 },
+    );
+  }
+
   const { data, error } = await admin
     .from("drugs")
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
