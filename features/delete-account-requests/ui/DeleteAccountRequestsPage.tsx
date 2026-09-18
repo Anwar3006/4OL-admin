@@ -65,7 +65,10 @@ const DeleteAccountRequestPage = () => {
 
   const copyPublicLink = async () => {
     try {
-      await navigator.clipboard.writeText("https://4ourlife.com.gh/delete-account");
+      // office.4ourlife.com is where this app is actually deployed
+      // (loadtest/README.md, docs/archive/TASKS.md). 4ourlife.com.gh does
+      // not host it — that mismatch is why the link 404'd for real users.
+      await navigator.clipboard.writeText("https://office.4ourlife.com/delete-account");
       toast.success("Public deletion form link copied.");
     } catch {
       toast.error("Could not copy the link.");
@@ -116,7 +119,7 @@ const DeleteAccountRequestPage = () => {
         <span className="text-base leading-none mt-0.5 text-blue-700 dark:text-blue-400">⚠️</span>
         <div className="flex-1 text-blue-700 dark:text-blue-400 leading-relaxed">
           <strong className="font-black">Google Play & App Store Policy Compliance.</strong> Account deletion requests are processed within 30 days per Ghana Data Protection Act (GH-DPA) guidelines.
-          The public form URL is: <b className="font-mono ml-1">https://4ourlife.com.gh/delete-account</b>
+          The public form URL is: <b className="font-mono ml-1">https://office.4ourlife.com/delete-account</b>
         </div>
       </div>
 

@@ -85,7 +85,10 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await admin
     .from("delete_account_requests")
-    .select("id, status, reason, created_at, updated_at")
+    // delete_account_requests has no updated_at column — selecting it 500'd
+    // this route unconditionally (found 2026-09-18 via a live end-to-end
+    // test of the web /delete-account page, which calls this same route).
+    .select("id, status, reason, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)

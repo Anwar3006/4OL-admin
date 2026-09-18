@@ -4,14 +4,19 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getIsolatedAuthClient } from "@/lib/db/isolated-auth";
 
-// Module scope on purpose: signInWithPassword, the insert and signOut below
-// must all run on the SAME client, or the insert will not see the session the
-// sign-in just created. Deliberately session-isolated from the admin panel —
-// see lib/db/isolated-auth.ts.
+// Module scope on purpose: signInWithPassword and the API calls below must
+// all run on the SAME client so the deletion-request call carries the
+// session the sign-in just created. Deliberately session-isolated from the
+// admin panel — see lib/db/isolated-auth.ts.
 const supabase = getIsolatedAuthClient();
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Step = "verify" | "confirm" | "done" | "already_pending";
+
+// Mirrors delete_account_requests.status (supabase/migrations/
+// 20260812_epic21_delete_account_status_vocabulary.sql). Any of these means
+// "already has a request in flight" — matches /api/user/delete-account-request.
+const IN_FLIGHT_STATUSES = ["pending_review", "in_verification", "grace_period"];
 
 interface FieldProps {
   label: string;
@@ -87,8 +92,11 @@ export default function DeleteAccountPage() {
   const [reasonError, setReasonError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
 
-  // Cached user after step-1 auth
+  // Cached user + session after step-1 auth
   const [verifiedUserId, setVerifiedUserId] = useState("");
+  const [accessToken, setAccessToken] = useState("");
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   // ── Step 1: authenticate ──
   const handleVerify = async (e: React.FormEvent) => {
@@ -126,30 +134,71 @@ export default function DeleteAccountPage() {
       }
 
       const userId = signInData?.user?.id;
-      if (!userId) {
+      const token = signInData?.session?.access_token;
+      if (!userId || !token) {
         setAuthError("Failed to retrieve account information.");
         return;
       }
 
-      const { data: existing } = await supabase
-        .from("delete_account_requests")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("status", "pending")
-        .maybeSingle();
+      // Same route the mobile app calls (app/api/user/delete-account-request)
+      // — the page used to check delete_account_requests.status === "pending"
+      // directly, a status value the schema stopped accepting once
+      // 20260812_epic21_delete_account_status_vocabulary.sql shipped, so it
+      // could never actually recognize an in-flight request.
+      const statusRes = await fetch("/api/user/delete-account-request", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const statusBody = statusRes.ok ? await statusRes.json() : null;
+      const existingStatus: string | undefined = statusBody?.request?.status;
 
-      if (existing) {
+      if (existingStatus && IN_FLIGHT_STATUSES.includes(existingStatus)) {
+        setVerifiedUserId(userId);
+        setAccessToken(token);
         setStep("already_pending");
         return;
       }
 
       setVerifiedUserId(userId);
+      setAccessToken(token);
       setStep("confirm");
     } catch (err) {
       setAuthError("An unexpected error occurred.");
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ── Download a copy of your data before deleting ──
+  const handleDownloadData = async () => {
+    setDownloading(true);
+    setDownloadError("");
+    try {
+      const res = await fetch("/api/user/export-data", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setDownloadError(body?.error || "Failed to generate your data export.");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `4-our-life-data-export-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setDownloadError("An unexpected error occurred.");
+      console.error(err);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -166,15 +215,18 @@ export default function DeleteAccountPage() {
     setReasonError("");
 
     try {
-      const { error } = await supabase.from("delete_account_requests").insert({
-        user_id: verifiedUserId,
-        email: email.trim().toLowerCase(),
-        reason: reason.trim(),
-        status: "pending",
+      const res = await fetch("/api/user/delete-account-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ reason: reason.trim() }),
       });
 
-      if (error) {
-        setReasonError(`Failed to submit request: ${error.message}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setReasonError(`Failed to submit request: ${body?.error || res.statusText}`);
         return;
       }
 
@@ -281,10 +333,36 @@ export default function DeleteAccountPage() {
             <h1 className="text-2xl font-bold text-slate-100 leading-tight mb-2">
               Confirm deletion
             </h1>
-            <p className="text-sm text-slate-500 leading-relaxed mb-7">
-              Your identity has been verified. Tell us why you're leaving to
+            <p className="text-sm text-slate-500 leading-relaxed mb-5">
+              Your identity has been verified. Tell us why you&apos;re leaving to
               finish the request.
             </p>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 bg-emerald-500/5 border border-emerald-500/15 rounded-xl mb-6">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-slate-200 m-0">
+                  Want a copy of your data first?
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5 m-0">
+                  Download everything tied to your account before it&apos;s gone —
+                  medication history, period logs, reviews, messages and more,
+                  as a .zip of JSON files.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={downloading}
+                onClick={handleDownloadData}
+                className="shrink-0 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 disabled:opacity-40 disabled:cursor-not-allowed text-emerald-400 text-xs font-bold rounded-xl transition-all duration-150 whitespace-nowrap"
+              >
+                {downloading ? "Preparing…" : "⬇ Download my data"}
+              </button>
+            </div>
+            {downloadError && (
+              <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl mb-4">
+                <p className="text-xs text-red-400 m-0">{downloadError}</p>
+              </div>
+            )}
 
             <div className="h-px bg-[#1e2433] mb-6" />
 
@@ -352,8 +430,10 @@ export default function DeleteAccountPage() {
               Request received
             </h1>
             <p className="text-sm text-slate-500 mb-7">
-              Your request is pending. Our team will process it within 30 days.
-              You have been signed out.
+              Your account enters a review period, then a recoverable grace
+              period, before data is permanently erased — within 30 days
+              total, per the Ghana Data Protection Act. You have been signed
+              out.
             </p>
             <div className="p-3.5 bg-slate-400/5 border border-[#1e2433] rounded-xl mb-2">
               <p className="text-xs text-slate-500 leading-relaxed m-0">
@@ -387,10 +467,25 @@ export default function DeleteAccountPage() {
             <h1 className="text-2xl font-bold text-slate-100 mb-2">
               Request already pending
             </h1>
-            <p className="text-sm text-slate-500 mb-2">
-              A deletion request for this account is already pending review.
+            <p className="text-sm text-slate-500 mb-5">
+              A deletion request for this account is already in progress.
             </p>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
+
+            <button
+              type="button"
+              disabled={downloading}
+              onClick={handleDownloadData}
+              className="w-full p-3.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 disabled:opacity-40 disabled:cursor-not-allowed text-emerald-400 text-sm font-semibold rounded-xl transition-all duration-150 mb-2"
+            >
+              {downloading ? "Preparing…" : "⬇ Download my data"}
+            </button>
+            {downloadError && (
+              <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl mb-4 text-left">
+                <p className="text-xs text-red-400 m-0">{downloadError}</p>
+              </div>
+            )}
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-3">
               Questions?{" "}
               <a href="mailto:support@4ourlife.com" className="text-[#4ade80]">
                 Contact support
