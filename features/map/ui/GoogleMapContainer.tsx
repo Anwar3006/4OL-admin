@@ -10,7 +10,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGetFacilitiesMapData } from "@/features/facilities/data/useFacilities";
 import { useRegistrarTrails } from "@/features/users/data/useUser";
-import { useIbpPins, useOutdoorRoutePins } from "@/features/map/data/useMap";
+import { useIbpPins, useMapCollectors, useOutdoorRoutePins } from "@/features/map/data/useMap";
 import { getColorForId } from "@/lib/utils";
 
 const containerStyle = {
@@ -174,6 +174,20 @@ const GoogleMapContainer = ({
 
   const [data, setData] = useState<google.maps.Data | null>(null);
   const { data: trails } = useRegistrarTrails(1);
+  const { data: collectorsData } = useMapCollectors();
+  const [hoveredTrail, setHoveredTrail] = useState<{
+    name: string;
+    position: google.maps.LatLng;
+  } | null>(null);
+
+  const registrarNameById = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of collectorsData?.collectors ?? []) {
+      const name = `${c.user?.first_name ?? ""} ${c.user?.last_name ?? ""}`.trim();
+      map.set(c.user_id, name || c.user_id.slice(0, 8));
+    }
+    return map;
+  }, [collectorsData]);
 
   useEffect(() => {
     if (!data) return;
@@ -198,13 +212,14 @@ const GoogleMapContainer = ({
             geometry: item.trail,
             properties: {
               registrar_id: item.registrar_id,
+              registrar_name: registrarNameById.get(item.registrar_id) ?? "Registrar",
               type: "trail",
             },
           };
           data.addGeoJson(feature);
         });
     }
-  }, [data, trails, layers.footprints, selectedCollectorId]);
+  }, [data, trails, layers.footprints, selectedCollectorId, registrarNameById]);
 
   const mapOptions = {
     zoomControl: true,
@@ -357,6 +372,11 @@ const GoogleMapContainer = ({
               if (type === "LineString") {
                 const registrarId = feature.getProperty("registrar_id");
                 return {
+                  // Per-registrar hash color (not a fixed one) — with
+                  // several registrars' trails on screen at once, distinct
+                  // colors are what makes them tellable apart; the legend
+                  // swatch is just "here's roughly what a trail looks like,"
+                  // not a claim every trail is that exact color.
                   strokeColor: getColorForId(String(registrarId ?? "")),
                   strokeWeight: 4,
                   strokeOpacity: 0.8,
@@ -397,7 +417,24 @@ const GoogleMapContainer = ({
               };
             });
           }}
+          onMouseOver={(event: google.maps.Data.MouseEvent) => {
+            if (event.feature.getGeometry()?.getType() !== "LineString") return;
+            const name = event.feature.getProperty("registrar_name");
+            if (!name || !event.latLng) return;
+            setHoveredTrail({ name: String(name), position: event.latLng });
+          }}
+          onMouseOut={() => setHoveredTrail(null)}
         />
+        {hoveredTrail && (
+          <InfoWindow
+            position={hoveredTrail.position}
+            options={{ disableAutoPan: true }}
+          >
+            <div className="text-xs font-bold text-slate-800 whitespace-nowrap">
+              👣 {hoveredTrail.name}
+            </div>
+          </InfoWindow>
+        )}
         {isLoading && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
             <div className="flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 px-4 py-2 rounded-full shadow-lg border border-emerald-100 dark:border-emerald-500/30">

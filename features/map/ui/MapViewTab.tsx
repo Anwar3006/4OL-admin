@@ -114,7 +114,7 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
               value={collectorFilter}
               onChange={(e) => setCollectorFilter(e.target.value)}
             >
-              <option value="all">👣 All Collectors</option>
+              <option value="all">👣 All Registrars</option>
               {(collectorsData?.collectors ?? []).map((c) => (
                 <option key={c.id} value={c.user_id}>
                   {`${c.user?.first_name ?? ""} ${c.user?.last_name ?? ""}`.trim() ||
@@ -155,7 +155,12 @@ const MapViewTab = ({ fullScreen = false }: MapViewTabProps) => {
             <span className="h-2.5 w-2.5 rounded-full bg-green-500" /> Outdoor Route
           </div>
           <div className="flex items-center gap-2 text-2xs font-semibold text-slate-600 dark:text-slate-300">
-            <span className="h-1 w-4 rounded bg-orange-400" /> Collector Trail
+            <span className="flex gap-0.5">
+              <span className="h-1 w-1.5 rounded bg-orange-400" />
+              <span className="h-1 w-1.5 rounded bg-violet-500" />
+              <span className="h-1 w-1.5 rounded bg-emerald-500" />
+            </span>
+            Registrar Trail (colored per registrar — hover for name)
           </div>
         </div>
       </div>
