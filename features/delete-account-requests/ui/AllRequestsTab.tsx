@@ -19,6 +19,7 @@ import {
   useReleaseLegalHold,
   useGenerateExport,
   useExportDownloadLink,
+  useDownloadPdfReport,
   type DeleteRequestAction,
   type DeleteRequestStatus,
 } from "@/features/delete-account-requests/data/useDeleteAccountRequests";
@@ -69,6 +70,7 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
   const releaseHoldMutation = useReleaseLegalHold();
   const generateExportMutation = useGenerateExport();
   const downloadLinkMutation = useExportDownloadLink();
+  const pdfReportMutation = useDownloadPdfReport();
 
   const requests = data?.requests || [];
   const totalItems = data?.meta?.total || 0;
@@ -216,6 +218,17 @@ export default function AllRequestsTab({ statusFilter }: { statusFilter?: Delete
                               onClick={() => copyDownloadLink(r.id)}
                             >
                               🔗 Copy Link
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={pdfReportMutation.isPending}
+                              className="h-7 px-2 text-3xs font-black uppercase tracking-widest rounded-lg border text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              onClick={() =>
+                                pdfReportMutation.mutate({ requestId: r.id, email: r.email })
+                              }
+                            >
+                              📄 PDF Report
                             </Button>
                           </>
                         )}

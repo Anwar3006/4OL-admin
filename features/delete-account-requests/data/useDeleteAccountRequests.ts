@@ -430,6 +430,33 @@ export const useGenerateExport = () => {
   });
 };
 
+// Personal Data Access Report — the formatted PDF a data subject would
+// receive, as opposed to the raw JSON/zip useGenerateExport produces.
+export const useDownloadPdfReport = () => {
+  return useMutation({
+    mutationFn: async ({ requestId, email }: { requestId: string; email: string }) => {
+      const res = await fetch(
+        `/api/admin/delete-account-requests/export-pdf?request_id=${requestId}`,
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? `Failed to generate PDF report (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `personal-data-report-${email}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    },
+    onSuccess: () => toast.success("Personal Data Access Report downloaded."),
+    onError: (err: Error) => toast.error(err.message),
+  });
+};
+
 export const useExportDownloadLink = () => {
   return useMutation({
     mutationFn: async ({ requestId }: { requestId: string }) => {
