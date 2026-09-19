@@ -41,7 +41,14 @@ function timeAgo(iso: string) {
 // line with a count, keeping the most recent timestamp — still exactly
 // what happened, just not repeated four times to say it.
 function groupActivity(rows: NonNullable<PlatformOverviewMetrics["activity"]>) {
-  const groups: { key: string; actor: string; action: string; table: string; count: number; latest: string }[] = [];
+  const groups: {
+    key: string;
+    actor: string;
+    action: string;
+    table: string;
+    count: number;
+    latest: string;
+  }[] = [];
   for (const row of rows) {
     const actor = row.actor_name || "System";
     const key = `${actor}|${row.action_type}|${row.target_table}`;
@@ -49,26 +56,44 @@ function groupActivity(rows: NonNullable<PlatformOverviewMetrics["activity"]>) {
     if (last && last.key === key) {
       last.count += 1;
     } else {
-      groups.push({ key, actor, action: row.action_type, table: row.target_table, count: 1, latest: row.created_at });
+      groups.push({
+        key,
+        actor,
+        action: row.action_type,
+        table: row.target_table,
+        count: 1,
+        latest: row.created_at,
+      });
     }
   }
   return groups;
 }
 
-function RecentActivityColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | null; loading: boolean }) {
+function RecentActivityColumn({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
   const groups = groupActivity(metrics?.activity ?? []).slice(0, 4);
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
       <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
         <span aria-hidden="true">🕒</span> Recent Activity
       </h3>
-      {loading && <div className="text-xs text-slate-400">Loading activity...</div>}
+      {loading && (
+        <div className="text-xs text-slate-400">Loading activity...</div>
+      )}
       {!loading && groups.length === 0 && (
         <div className="text-xs text-slate-400">No recent activity logged.</div>
       )}
       {!loading &&
         groups.map((group) => (
-          <div key={group.key + group.latest} className="flex items-center gap-2 text-xs">
+          <div
+            key={group.key + group.latest}
+            className="flex items-center gap-2 text-xs"
+          >
             <span className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-[9px] font-bold shrink-0">
               {group.actor.slice(0, 2).toUpperCase()}
             </span>
@@ -76,7 +101,9 @@ function RecentActivityColumn({ metrics, loading }: { metrics: PlatformOverviewM
               {group.actor} {group.action.replaceAll("_", " ")} {group.table}
               {group.count > 1 && ` ×${group.count}`}
             </span>
-            <span className="text-slate-400 dark:text-slate-500 text-[10px] shrink-0">{timeAgo(group.latest)}</span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] shrink-0">
+              {timeAgo(group.latest)}
+            </span>
           </div>
         ))}
     </div>
@@ -84,7 +111,13 @@ function RecentActivityColumn({ metrics, loading }: { metrics: PlatformOverviewM
 }
 
 // ── Column 2: AI Hub ────────────────────────────────────────────────────
-function AiHubColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | null; loading: boolean }) {
+function AiHubColumn({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
   const flags = metrics?.queues.pending_moderation_flags ?? 0;
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
@@ -106,10 +139,15 @@ function AiHubColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | 
       <div className="flex items-center justify-between text-xs">
         <span className="text-slate-500 dark:text-slate-400">Est. cost</span>
         <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-          {loading ? "..." : formatCurrency(metrics?.ai.estimated_cost ?? 0, { decimals: 2 })}
+          {loading
+            ? "..."
+            : formatCurrency(metrics?.ai.estimated_cost ?? 0, { decimals: 2 })}
         </span>
       </div>
-      <a href="/ai" className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline mt-1">
+      <a
+        href="/ai"
+        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline mt-1"
+      >
         Open AI Hub →
       </a>
     </div>
@@ -117,9 +155,18 @@ function AiHubColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | 
 }
 
 // ── Column 3: Regional Coverage ─────────────────────────────────────────
-function RegionalCoverageColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | null; loading: boolean }) {
+function RegionalCoverageColumn({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
   const rows = Object.entries(metrics?.facilities.by_region ?? {})
-    .map(([region, facilities]) => ({ region: region.replaceAll("_", " "), facilities }))
+    .map(([region, facilities]) => ({
+      region: region.replaceAll("_", " "),
+      facilities,
+    }))
     .sort((a, b) => b.facilities - a.facilities)
     .slice(0, 4);
 
@@ -129,11 +176,20 @@ function RegionalCoverageColumn({ metrics, loading }: { metrics: PlatformOvervie
         <span aria-hidden="true">🗺️</span> Regional Coverage
       </h3>
       {loading && <div className="text-xs text-slate-400">Loading...</div>}
-      {!loading && rows.length === 0 && <div className="text-xs text-slate-400">No facility regions found yet.</div>}
+      {!loading && rows.length === 0 && (
+        <div className="text-xs text-slate-400">
+          No facility regions found yet.
+        </div>
+      )}
       {!loading &&
         rows.map((row) => (
-          <div key={row.region} className="flex items-center justify-between text-xs gap-2">
-            <span className="text-slate-500 dark:text-slate-400 truncate capitalize">{row.region}</span>
+          <div
+            key={row.region}
+            className="flex items-center justify-between text-xs gap-2"
+          >
+            <span className="text-slate-500 dark:text-slate-400 truncate capitalize">
+              {row.region}
+            </span>
             <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums shrink-0">
               {row.facilities.toLocaleString()} facilities
             </span>
@@ -152,14 +208,38 @@ interface ComplianceSettings {
   last_filed_at: string | null;
 }
 
-const QUEUE_LABELS: { key: keyof NonNullable<PlatformOverviewMetrics["queues"]>; label: string; href: string }[] = [
-  { key: "pending_facilities", label: "facilities pending approval", href: "/facilities?status=pending" },
-  { key: "pending_hcp_verifications", label: "HCP verifications pending", href: "/hcp?tab=pending" },
-  { key: "pending_facility_scout_submissions", label: "FacilityScout submissions pending", href: "/facility-scout?tab=pending" },
-  { key: "pending_delete_requests", label: "delete-account requests pending", href: "/delete-account-request" },
+const QUEUE_LABELS: {
+  key: keyof NonNullable<PlatformOverviewMetrics["queues"]>;
+  label: string;
+  href: string;
+}[] = [
+  {
+    key: "pending_facilities",
+    label: "facilities pending approval",
+    href: "/facilities?status=pending",
+  },
+  {
+    key: "pending_hcp_verifications",
+    label: "HCP verifications pending",
+    href: "/hcp?tab=pending",
+  },
+  {
+    key: "pending_facility_scout_submissions",
+    label: "FacilityScout submissions pending",
+    href: "/facility-scout?tab=pending",
+  },
+  {
+    key: "pending_delete_requests",
+    label: "delete-account requests pending",
+    href: "/delete-account-request",
+  },
   { key: "admins_missing_mfa", label: "admins without MFA", href: "/admins" },
   { key: "pending_job_posts", label: "job posts pending", href: "/jobs" },
-  { key: "pending_ai_flags", label: "AI-detected flags to review", href: "/users?tab=flagged" },
+  {
+    key: "pending_ai_flags",
+    label: "AI-detected flags to review",
+    href: "/users?tab=flagged",
+  },
   { key: "flagged_reviews", label: "flagged reviews", href: "/reviews" },
 ];
 
@@ -171,14 +251,21 @@ function complianceBadge(settings: ComplianceSettings | null): {
     return { text: "SET UP", variant: "secondary" };
   }
   const daysUntil = Math.ceil(
-    (new Date(settings.next_filing_due_date).getTime() - Date.now()) / (24 * 60 * 60 * 1000),
+    (new Date(settings.next_filing_due_date).getTime() - Date.now()) /
+      (24 * 60 * 60 * 1000),
   );
   if (daysUntil < 0) return { text: "DUE", variant: "destructive" };
   if (daysUntil <= 14) return { text: "SOON", variant: "amber" };
   return { text: "OK", variant: "emerald" };
 }
 
-function TasksComplianceColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | null; loading: boolean }) {
+function TasksComplianceColumn({
+  metrics,
+  loading,
+}: {
+  metrics: PlatformOverviewMetrics | null;
+  loading: boolean;
+}) {
   const canConfigure = useHasPermission("settings.billing");
   const [settings, setSettings] = useState<ComplianceSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -187,7 +274,9 @@ function TasksComplianceColumn({ metrics, loading }: { metrics: PlatformOverview
   const loadSettings = async () => {
     setSettingsLoading(true);
     try {
-      const res = await fetch("/api/compliance/settings", { cache: "no-store" });
+      const res = await fetch("/api/compliance/settings", {
+        cache: "no-store",
+      });
       if (res.ok) {
         const json = await res.json();
         setSettings(json.settings);
@@ -201,11 +290,17 @@ function TasksComplianceColumn({ metrics, loading }: { metrics: PlatformOverview
     loadSettings();
   }, []);
 
-  const topQueues = QUEUE_LABELS.map((q) => ({ ...q, count: metrics?.queues[q.key] ?? 0 }))
+  const topQueues = QUEUE_LABELS.map((q) => ({
+    ...q,
+    count: metrics?.queues[q.key] ?? 0,
+  }))
     .filter((q) => q.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
-  const totalOpen = QUEUE_LABELS.reduce((sum, q) => sum + (metrics?.queues[q.key] ?? 0), 0);
+  const totalOpen = QUEUE_LABELS.reduce(
+    (sum, q) => sum + (metrics?.queues[q.key] ?? 0),
+    0,
+  );
   const badge = complianceBadge(settings);
 
   return (
@@ -237,14 +332,24 @@ function TasksComplianceColumn({ metrics, loading }: { metrics: PlatformOverview
 
       {!loading &&
         topQueues.map((q) => (
-          <a key={q.key} href={q.href} className="flex items-center gap-2 text-xs hover:underline">
-            <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums shrink-0">{q.count}</span>
-            <span className="flex-1 min-w-0 truncate text-slate-500 dark:text-slate-400">{q.label}</span>
+          <a
+            key={q.key}
+            href={q.href}
+            className="flex items-center gap-2 text-xs hover:underline"
+          >
+            <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums shrink-0">
+              {q.count}
+            </span>
+            <span className="flex-1 min-w-0 truncate text-slate-500 dark:text-slate-400">
+              {q.label}
+            </span>
           </a>
         ))}
 
       <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
-        <span className="text-slate-500 dark:text-slate-400">Open pending tasks</span>
+        <span className="text-slate-500 dark:text-slate-400">
+          Open pending tasks
+        </span>
         <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
           {loading ? "..." : totalOpen}
         </span>
@@ -307,7 +412,11 @@ function ComplianceConfigDialog({
       onClose();
       onSaved();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save compliance settings.");
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to save compliance settings.",
+      );
     } finally {
       setSaving(false);
     }
@@ -316,22 +425,44 @@ function ComplianceConfigDialog({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader><DialogTitle>Compliance &amp; GRA Settings</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Compliance &amp; GRA Settings</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="GRA Tax ID" value={graTaxId} onChange={(e) => setGraTaxId(e.target.value)} />
-          <Input placeholder="VAT Rate (%)" type="number" step="0.01" value={vatRate} onChange={(e) => setVatRate(e.target.value)} />
+          <Input
+            placeholder="GRA Tax ID"
+            value={graTaxId}
+            onChange={(e) => setGraTaxId(e.target.value)}
+          />
+          <Input
+            placeholder="VAT Rate (%)"
+            type="number"
+            step="0.01"
+            value={vatRate}
+            onChange={(e) => setVatRate(e.target.value)}
+          />
           <Select value={frequency} onValueChange={setFrequency}>
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="monthly">Monthly</SelectItem>
               <SelectItem value="quarterly">Quarterly</SelectItem>
               <SelectItem value="annually">Annually</SelectItem>
             </SelectContent>
           </Select>
-          <Input type="date" value={nextDue} onChange={(e) => setNextDue(e.target.value)} />
+          <Input
+            type="date"
+            value={nextDue}
+            onChange={(e) => setNextDue(e.target.value)}
+          />
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={submit} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={submit} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -351,20 +482,22 @@ export default function OperationsPanel({
     <Card>
       <CardHeader className="pb-2">
         <div className="text-sm font-semibold">Operations</div>
-        <div className="text-xs text-muted-foreground">What&apos;s moving across the platform right now</div>
+        <div className="text-xs text-muted-foreground">
+          What&apos;s moving across the platform right now
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
           <div className="lg:pr-6">
             <RecentActivityColumn metrics={metrics} loading={loading} />
           </div>
-          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6 lg:pr-6">
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-600 lg:pl-6 lg:pr-6">
             <AiHubColumn metrics={metrics} loading={loading} />
           </div>
-          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6 lg:pr-6">
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-600 lg:pl-6 lg:pr-6">
             <RegionalCoverageColumn metrics={metrics} loading={loading} />
           </div>
-          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6">
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-600 lg:pl-6">
             <TasksComplianceColumn metrics={metrics} loading={loading} />
           </div>
         </div>

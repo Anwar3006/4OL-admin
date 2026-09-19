@@ -46,6 +46,6 @@ main, and if we agreed who owns a feature before two versions of it get built.
 
 The fitness plans table should include the number of users currently on the plan, for the tier it is supposed to represent the subscription level, so free means all free users can hop on the plan and other levels so wire them up. This means apart from the Plasence and Fitness we need to have free, starter, pro and elite tiers. We need to plan this first to clearly define which features the tiers will get.
 
-e need to reconcile the finances to pull from and calculate real data so the charts and graphs start showing real data so check on this page by page, not only the finances we need to flag all areas that are not connected across the platform. We need serious v
+We need to reconcile the finances to pull from and calculate real data so the charts and graphs start showing real data so check on this page by page, not only the finances we need to flag all areas that are not connected across the platform. We need serious v
 isibility. The admin should be able to see where users are interacting with the most vs others in the mobile app which means we need to track almost every interaction across the mobile so we can display it for making informed business decisions. so check page by page, feature by feature. Also we need t
 o have one area for managing things like subscriptions, rewards, these should be managed in one page so that any admin knows that when i navigate to page A i can make any decisions concerning a feature once and it will reflect across the app and mobile.
