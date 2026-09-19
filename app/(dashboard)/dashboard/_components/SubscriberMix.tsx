@@ -15,9 +15,15 @@ export default function SubscriberMix({
   loading: boolean;
 }) {
   const byScope = metrics?.subscriptions.by_scope;
-  const total = byScope ? byScope.all_access + byScope.fitness_only + byScope.period_only : 0;
+  const totalUsers = metrics?.kpis.total_users ?? 0;
+  const subscribed = byScope ? byScope.all_access + byScope.fitness_only + byScope.period_only : 0;
+  // Every registered profile that isn't in any of the three scopes above —
+  // same `total_users` the KPI band up top already shows, so this reads as
+  // "of the users you already know about" rather than a second, competing
+  // definition of "total users" on the same page.
+  const notSubscribed = Math.max(totalUsers - subscribed, 0);
 
-  if (loading || total === 0) {
+  if (loading || totalUsers === 0) {
     return (
       <Card className="h-full">
         <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
@@ -26,9 +32,7 @@ export default function SubscriberMix({
         </CardHeader>
         <CardContent>
           <div className="h-48 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-6 text-center text-xs text-slate-500">
-            {loading
-              ? "Loading subscription metrics..."
-              : "Subscriber mix is awaiting active `user_subscriptions` rows."}
+            {loading ? "Loading subscription metrics..." : "Subscriber mix is awaiting registered users."}
           </div>
         </CardContent>
       </Card>
@@ -37,17 +41,18 @@ export default function SubscriberMix({
 
   // Same scope → label mapping already established in
   // features/subscriptions/ui/SubscribersTab.tsx — kept identical so the
-  // same scope reads the same way everywhere in the app.
+  // same scope reads the same way everywhere in the app. "Not subscribed"
+  // is red on purpose (explicit ask) — it's the one slice that isn't a
+  // product to grow, it's the gap.
   const slices = [
-    { key: "fitness_only", label: "Fitness", value: byScope!.fitness_only },
-    { key: "period_only", label: "Plasence", value: byScope!.period_only },
-    { key: "all_access", label: "Entire app", value: byScope!.all_access },
-  ]
-    .filter((slice) => slice.value > 0)
-    .map((slice, i) => ({ ...slice, fill: chartSeriesColor(i) }));
+    { key: "fitness_only", label: "Fitness", value: byScope?.fitness_only ?? 0, fill: chartSeriesColor(0) },
+    { key: "period_only", label: "Plasence", value: byScope?.period_only ?? 0, fill: chartSeriesColor(1) },
+    { key: "all_access", label: "Entire app", value: byScope?.all_access ?? 0, fill: chartSeriesColor(2) },
+    { key: "not_subscribed", label: "Not subscribed", value: notSubscribed, fill: "#ef4444" },
+  ].filter((slice) => slice.value > 0);
 
-  const config = slices.reduce<ChartConfig>((acc, s, i) => {
-    acc[s.key] = { label: s.label, color: chartSeriesColor(i) };
+  const config = slices.reduce<ChartConfig>((acc, s) => {
+    acc[s.key] = { label: s.label, color: s.fill };
     return acc;
   }, {});
 
@@ -56,7 +61,7 @@ export default function SubscriberMix({
       <CardHeader>
         <CardTitle>Subscriber Mix</CardTitle>
         <CardDescription>
-          {total.toLocaleString()} active subscriber{total === 1 ? "" : "s"}
+          {subscribed.toLocaleString()} of {totalUsers.toLocaleString()} users subscribed
         </CardDescription>
       </CardHeader>
       <CardContent className="flex items-center gap-6">
@@ -70,10 +75,10 @@ export default function SubscriberMix({
                     return (
                       <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
                         <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-xl font-bold">
-                          {total.toLocaleString()}
+                          {totalUsers.toLocaleString()}
                         </tspan>
                         <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 18} className="fill-muted-foreground text-[10px]">
-                          subscribers
+                          users
                         </tspan>
                       </text>
                     );
@@ -90,7 +95,7 @@ export default function SubscriberMix({
               <span className="size-2.25 rounded-sm shrink-0" style={{ backgroundColor: slice.fill }} />
               <span className="flex-1 min-w-0 truncate text-slate-500 dark:text-slate-400">{slice.label}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums">
-                {Math.round((slice.value / total) * 100)}%
+                {Math.round((slice.value / totalUsers) * 100)}%
               </span>
             </div>
           ))}

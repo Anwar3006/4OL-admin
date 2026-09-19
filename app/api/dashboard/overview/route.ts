@@ -125,22 +125,49 @@ export async function GET(req: NextRequest) {
   }
   metrics.activity_trend = { signups: signupsTrend };
 
-  // Active-subscription mix by scope (Subscriber Mix donut). Bounded to
-  // active rows only, same shape already proven in
-  // app/api/subscriptions/admin/route.ts's `stats.by_scope`.
+  // Active-subscription mix by scope (Subscriber Mix donut), deduped by
+  // user. `user_subscriptions` isn't the only place entitlement lives —
+  // Period Tracker premium can also come from `period_premium_grants`
+  // (scope `period_only`), a separate table, same precedent
+  // app/api/subscriptions/admin/route.ts's `allRows` already merges. A
+  // by_scope count that only reads user_subscriptions silently drops every
+  // Plasence-only grantee. One user can also hold rows in both tables at
+  // once (verified live: a user with an active `all_access` subscription
+  // also had a `period_premium_grants` row) — counting per row instead of
+  // per user would double-count them, so this collapses to one bucket per
+  // user, all_access taking priority since it already covers everything
+  // fitness_only/period_only would otherwise claim.
   let byScope = { all_access: 0, fitness_only: 0, period_only: 0 };
   try {
-    const { data: scopeRows, error: scopeError } = await admin
-      .from("user_subscriptions")
-      .select("scope")
-      .eq("status", "active");
-    if (scopeError) throw scopeError;
-    for (const row of scopeRows ?? []) {
+    const [subsResult, grantsResult] = await Promise.all([
+      admin.from("user_subscriptions").select("user_id, scope").eq("status", "active"),
+      admin
+        .from("period_premium_grants")
+        .select("user_id")
+        .is("revoked_at", null)
+        .gt("expires_at", new Date().toISOString()),
+    ]);
+    if (subsResult.error) throw subsResult.error;
+    if (grantsResult.error) throw grantsResult.error;
+
+    const scopeRank = { all_access: 2, fitness_only: 1, period_only: 0 } as const;
+    const byUser = new Map<string, keyof typeof scopeRank>();
+    const upgrade = (userId: string, scope: keyof typeof scopeRank) => {
+      const current = byUser.get(userId);
+      if (!current || scopeRank[scope] > scopeRank[current]) byUser.set(userId, scope);
+    };
+
+    for (const row of subsResult.data ?? []) {
       const scope: string = row.scope;
       if (scope === "all_access" || scope === "fitness_only" || scope === "period_only") {
-        byScope[scope] += 1;
+        upgrade(row.user_id, scope);
       }
     }
+    for (const row of grantsResult.data ?? []) {
+      upgrade(row.user_id, "period_only");
+    }
+
+    for (const scope of byUser.values()) byScope[scope] += 1;
   } catch (err) {
     console.error("[dashboard/overview] subscriptions by_scope error:", err);
   }

@@ -34,29 +34,49 @@ function timeAgo(iso: string) {
 }
 
 // ── Column 1: Recent Activity ──────────────────────────────────────────
+// activity_logs frequently has back-to-back identical rows (the same
+// automated job touching the same table repeatedly) — showing all of them
+// separately reads as broken/repetitive, not as more information. Collapse
+// consecutive rows that share the same actor + action + table into one
+// line with a count, keeping the most recent timestamp — still exactly
+// what happened, just not repeated four times to say it.
+function groupActivity(rows: NonNullable<PlatformOverviewMetrics["activity"]>) {
+  const groups: { key: string; actor: string; action: string; table: string; count: number; latest: string }[] = [];
+  for (const row of rows) {
+    const actor = row.actor_name || "System";
+    const key = `${actor}|${row.action_type}|${row.target_table}`;
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) {
+      last.count += 1;
+    } else {
+      groups.push({ key, actor, action: row.action_type, table: row.target_table, count: 1, latest: row.created_at });
+    }
+  }
+  return groups;
+}
+
 function RecentActivityColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | null; loading: boolean }) {
-  const activities = (metrics?.activity ?? []).slice(0, 4);
+  const groups = groupActivity(metrics?.activity ?? []).slice(0, 4);
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
       <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
         <span aria-hidden="true">🕒</span> Recent Activity
       </h3>
       {loading && <div className="text-xs text-slate-400">Loading activity...</div>}
-      {!loading && activities.length === 0 && (
+      {!loading && groups.length === 0 && (
         <div className="text-xs text-slate-400">No recent activity logged.</div>
       )}
       {!loading &&
-        activities.map((activity) => (
-          <div key={activity.id} className="flex items-center gap-2 text-xs">
+        groups.map((group) => (
+          <div key={group.key + group.latest} className="flex items-center gap-2 text-xs">
             <span className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-[9px] font-bold shrink-0">
-              {(activity.actor_name || "SY").slice(0, 2).toUpperCase()}
+              {group.actor.slice(0, 2).toUpperCase()}
             </span>
             <span className="flex-1 min-w-0 truncate text-slate-500 dark:text-slate-400">
-              {activity.actor_name || "System"} {activity.action_type.replaceAll("_", " ")} {activity.target_table}
+              {group.actor} {group.action.replaceAll("_", " ")} {group.table}
+              {group.count > 1 && ` ×${group.count}`}
             </span>
-            <span className="text-slate-400 dark:text-slate-500 text-[10px] shrink-0">
-              {timeAgo(activity.created_at)}
-            </span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] shrink-0">{timeAgo(group.latest)}</span>
           </div>
         ))}
     </div>
@@ -334,11 +354,19 @@ export default function OperationsPanel({
         <div className="text-xs text-muted-foreground">What&apos;s moving across the platform right now</div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <RecentActivityColumn metrics={metrics} loading={loading} />
-          <AiHubColumn metrics={metrics} loading={loading} />
-          <RegionalCoverageColumn metrics={metrics} loading={loading} />
-          <TasksComplianceColumn metrics={metrics} loading={loading} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0">
+          <div className="lg:pr-6">
+            <RecentActivityColumn metrics={metrics} loading={loading} />
+          </div>
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6 lg:pr-6">
+            <AiHubColumn metrics={metrics} loading={loading} />
+          </div>
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6 lg:pr-6">
+            <RegionalCoverageColumn metrics={metrics} loading={loading} />
+          </div>
+          <div className="lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-6">
+            <TasksComplianceColumn metrics={metrics} loading={loading} />
+          </div>
         </div>
       </CardContent>
     </Card>
