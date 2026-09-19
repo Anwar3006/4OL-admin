@@ -140,8 +140,8 @@ const DashboardPage = () => {
       <AlertStrip metrics={metrics} loading={loading} />
 
       {/*
-        No trend on this row, for any card: every one of these 8 numbers was
-        traced to get_platform_overview_metrics() (supabase/migrations/
+        No trend on either row, for any card: every one of these 8 numbers
+        was traced to get_platform_overview_metrics() (supabase/migrations/
         20260903_retire_fitness_users_table.sql) plus the queue counts
         route.ts merges in. The RPC returns a single current value per KPI,
         plus — for users/facilities/transactions/ai_calls/subscriptions
@@ -154,14 +154,15 @@ const DashboardPage = () => {
         trustworthy weekly trend for any card here. `revenue_mtd`, `hcps`
         and `security_score` don't even have a real delta today (their
         badges are status/count labels, correctly `deltaType="neutral"`
-        below, not a fabricated up/down). So: size="lg" and trend stay off
-        for the whole row (Rule 1), and hierarchy instead comes from which
-        3 numbers an admin needs first to gauge platform health — Total
-        Users (growth), Revenue (MTD) (money) and Facilities (provider
-        network coverage) — left at the default size; the other 5 are
-        `size="sm"`.
+        below, not a fabricated up/down). So: `trend` stays unset on every
+        card (Rule 1) — but the two-row split below is layout only, no
+        `trend` prop anywhere. Hierarchy comes from which 3 numbers an
+        admin needs first to gauge platform health — Total Users (growth),
+        Revenue (MTD) (money) and Facilities (provider network coverage) —
+        sized `lg` as the hero row; the other 5 are `size="sm"` in the
+        strip below.
       */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <KpiCard
           icon="👥"
           label="Total Users"
@@ -178,6 +179,7 @@ const DashboardPage = () => {
             ...(canExportUsers ? [{ label: "Export CSV", onClick: () => window.open("/api/admin/users/export", "_blank") }] : []),
             ...(canViewAi ? [{ label: "View Flags", onClick: () => router.push("/users?tab=flagged") }] : []),
           ]}
+          size="lg"
         />
         <KpiCard
           icon="🏥"
@@ -197,6 +199,7 @@ const DashboardPage = () => {
                 ]
               : []),
           ]}
+          size="lg"
         />
         <KpiCard
           icon="💰"
@@ -209,7 +212,11 @@ const DashboardPage = () => {
           isError={!!error}
           isEmpty={!loading && !error && kpis?.revenue_mtd === null}
           href={canViewTransactions ? "/transactions" : undefined}
+          size="lg"
         />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
         <KpiCard
           icon="💳"
           label="Transactions"

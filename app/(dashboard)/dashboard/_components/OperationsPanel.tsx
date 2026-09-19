@@ -39,7 +39,7 @@ function RecentActivityColumn({ metrics, loading }: { metrics: PlatformOverviewM
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
       <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-        Recent Activity
+        <span aria-hidden="true">🕒</span> Recent Activity
       </h3>
       {loading && <div className="text-xs text-slate-400">Loading activity...</div>}
       {!loading && activities.length === 0 && (
@@ -68,7 +68,9 @@ function AiHubColumn({ metrics, loading }: { metrics: PlatformOverviewMetrics | 
   const flags = metrics?.queues.pending_moderation_flags ?? 0;
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
-      <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400">AI Hub</h3>
+      <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+        <span aria-hidden="true">🤖</span> AI Hub
+      </h3>
       <div className="flex items-baseline gap-1.5">
         <span className="text-xl font-bold text-slate-800 dark:text-slate-200 tabular-nums">
           {loading ? "..." : flags}
@@ -103,7 +105,9 @@ function RegionalCoverageColumn({ metrics, loading }: { metrics: PlatformOvervie
 
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
-      <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400">Regional Coverage</h3>
+      <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+        <span aria-hidden="true">🗺️</span> Regional Coverage
+      </h3>
       {loading && <div className="text-xs text-slate-400">Loading...</div>}
       {!loading && rows.length === 0 && <div className="text-xs text-slate-400">No facility regions found yet.</div>}
       {!loading &&
@@ -187,7 +191,9 @@ function TasksComplianceColumn({ metrics, loading }: { metrics: PlatformOverview
   return (
     <div className="flex flex-col gap-2.5 min-w-0">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tasks &amp; Compliance</h3>
+        <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <span aria-hidden="true">📋</span> Tasks &amp; Compliance
+        </h3>
         {canConfigure && (
           <button
             onClick={() => setDialogOpen(true)}
