@@ -14,20 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import CriticalAlerts from "./_components/CriticalAlerts";
-import RevenueTrendChart from "./_components/RevenueTrendChart";
-import SystemHealth from "./_components/SystemHealth";
-import QuickActions from "./_components/QuickActions";
-import RevenueStreams from "./_components/RevenueStreams";
-import UsersByPlan from "./_components/UsersByPlan";
-import FeatureUsage from "./_components/FeatureUsage";
-import ActivityFeed from "./_components/ActivityFeed";
-import AIHubOverview from "./_components/AIHubOverview";
-import RegionalCoverage from "./_components/RegionalCoverage";
-import HealthFeaturesStatus from "./_components/HealthFeaturesStatus";
+import AlertStrip from "./_components/AlertStrip";
+import PlatformActivityChart from "./_components/PlatformActivityChart";
+import SystemHealthRail from "./_components/SystemHealthRail";
+import QuickActionsRail from "./_components/QuickActionsRail";
+import RevenueByService from "./_components/RevenueByService";
+import SubscriberMix from "./_components/SubscriberMix";
+import OperationsPanel from "./_components/OperationsPanel";
 import FeatureCatalogueCard from "@/components/redesign/FeatureCatalogueCard";
-import PendingTasks from "./_components/PendingTasks";
-import ComplianceGRA from "./_components/ComplianceGRA";
 import {
   deltaType,
   formatCount,
@@ -143,7 +137,7 @@ const DashboardPage = () => {
         </Alert>
       )}
 
-      <CriticalAlerts metrics={metrics} loading={loading} />
+      <AlertStrip metrics={metrics} loading={loading} />
 
       {/*
         No trend on this row, for any card: every one of these 8 numbers was
@@ -317,38 +311,25 @@ const DashboardPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
-          <RevenueTrendChart metrics={metrics} loading={loading} />
+          <PlatformActivityChart metrics={metrics} loading={loading} rangeLabel={filterLabels[timeFilter]} />
         </div>
         <div className="flex flex-col gap-5">
-          <SystemHealth metrics={metrics} loading={loading} />
-          <QuickActions />
+          <SystemHealthRail metrics={metrics} loading={loading} error={!!error} />
+          <QuickActionsRail />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <RevenueStreams metrics={metrics} loading={loading} />
-        <UsersByPlan metrics={metrics} loading={loading} />
-        <FeatureUsage loading={loading} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <ActivityFeed metrics={metrics} loading={loading} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <AIHubOverview metrics={metrics} loading={loading} />
-          <RegionalCoverage metrics={metrics} loading={loading} />
-        </div>
+        <RevenueByService metrics={metrics} loading={loading} />
+        <SubscriberMix metrics={metrics} loading={loading} />
       </div>
+
+      <OperationsPanel metrics={metrics} loading={loading} />
 
       <FeatureCatalogueCard
         title="Mobile features catalogue"
         description="The complete plain-English register of user-facing mobile services. Open a service to see what users should be able to do, the simplest way to confirm it is working, and clearly separated future ideas."
       />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <HealthFeaturesStatus metrics={metrics} loading={loading} />
-        <PendingTasks metrics={metrics} loading={loading} />
-        <ComplianceGRA loading={loading} />
-      </div>
     </div>
   );
 };

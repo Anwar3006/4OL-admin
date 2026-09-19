@@ -96,6 +96,56 @@ export async function GET(req: NextRequest) {
   const metrics = { ...(data as Record<string, any>) };
   metrics.queues = { ...(metrics.queues ?? {}), ...queues };
 
+  // Daily signups series for the Platform Activity chart (dashboard
+  // redesign). Bounded by the RPC's own window (`metrics.window.start_at`)
+  // and capped defensively — this table has 37 rows today, but the cap
+  // keeps a future "Year" filter from pulling an unbounded payload over
+  // the Ghana round trip. Degrades to an empty series, never a 500.
+  let signupsTrend: { date: string; count: number }[] = [];
+  try {
+    const startAt = metrics.window?.start_at as string | undefined;
+    if (startAt) {
+      const { data: signupRows, error: signupsError } = await admin
+        .from("user_profiles")
+        .select("created_at")
+        .gte("created_at", startAt)
+        .limit(10000);
+      if (signupsError) throw signupsError;
+      const byDay = new Map<string, number>();
+      for (const row of signupRows ?? []) {
+        const day = String(row.created_at).slice(0, 10);
+        byDay.set(day, (byDay.get(day) ?? 0) + 1);
+      }
+      signupsTrend = Array.from(byDay.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, count]) => ({ date, count }));
+    }
+  } catch (err) {
+    console.error("[dashboard/overview] signups trend error:", err);
+  }
+  metrics.activity_trend = { signups: signupsTrend };
+
+  // Active-subscription mix by scope (Subscriber Mix donut). Bounded to
+  // active rows only, same shape already proven in
+  // app/api/subscriptions/admin/route.ts's `stats.by_scope`.
+  let byScope = { all_access: 0, fitness_only: 0, period_only: 0 };
+  try {
+    const { data: scopeRows, error: scopeError } = await admin
+      .from("user_subscriptions")
+      .select("scope")
+      .eq("status", "active");
+    if (scopeError) throw scopeError;
+    for (const row of scopeRows ?? []) {
+      const scope: string = row.scope;
+      if (scope === "all_access" || scope === "fitness_only" || scope === "period_only") {
+        byScope[scope] += 1;
+      }
+    }
+  } catch (err) {
+    console.error("[dashboard/overview] subscriptions by_scope error:", err);
+  }
+  if (metrics.subscriptions) metrics.subscriptions.by_scope = byScope;
+
   // Security Score (decision D-D2): checklist-based until the Security
   // Center instrumentation exists. 100 minus weighted open risks.
   const openThreats = metrics.queues?.open_security_threats ?? 0;

@@ -103,6 +103,11 @@ export type PlatformOverviewMetrics = {
     active_subscriptions: number;
     current_period: number;
     previous_period: number;
+    by_scope?: {
+      all_access: number;
+      fitness_only: number;
+      period_only: number;
+    };
   };
   ai: {
     calls: number;
@@ -112,6 +117,9 @@ export type PlatformOverviewMetrics = {
     previous_period: number;
   };
   activity: ActivityRow[];
+  activity_trend?: {
+    signups: { date: string; count: number }[];
+  };
   unsupported: Record<string, null>;
 };
 

@@ -12,7 +12,8 @@
  * should have a way to remove a plan it created by mistake, not just hide it.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import PlanDialog from "./plan-dialog";
 import { usePlans, useDeletePlan } from "@/features/subscriptions/data/usePlans";
@@ -118,12 +119,25 @@ function PlanCard({
 }
 
 export default function PlansTab() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [productScope, setProductScope] =
     useState<TMarketingSubscriptionInput["tierType"]>("full_access");
   const [planDialog, setPlanDialog] = useState<{
     open: boolean;
     plan: TMarketingSubscriptionOutput | null;
   }>({ open: false, plan: null });
+
+  // Deep-link support for the Dashboard's "New Plan" quick action
+  // (?tab=plans&create=1) — opens the same Create Plan dialog below, once,
+  // then drops the param so navigating back here doesn't reopen it.
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      setPlanDialog({ open: true, plan: null });
+      router.replace("/subscriptions?tab=plans", { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const plans = usePlans();
   const deletePlan = useDeletePlan();
