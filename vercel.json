@@ -4,6 +4,10 @@
     {
       "path": "/api/reports/cron",
       "schedule": "15 * * * *"
+    },
+    {
+      "path": "/api/settings/feature-flags/sync",
+      "schedule": "*/30 * * * *"
     }
   ]
 }

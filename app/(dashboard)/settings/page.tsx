@@ -118,6 +118,7 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [syncing, setSyncing] = useState(false);
   const [apiKeys, setApiKeys] = useState<ApiKeyStatus[]>([]);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
@@ -247,11 +248,50 @@ export default function SettingsPage() {
       setFlags((current) =>
         current.map((item) => (item.id === body.flag.id ? body.flag : item)),
       );
-      setSuccess(`${flag.name} ${flag.enabled ? "disabled" : "enabled"}.`);
+      const action = flag.enabled ? "disabled" : "enabled";
+      setSuccess(
+        body.posthogSynced
+          ? `${flag.name} ${action} and synced to PostHog.`
+          : `${flag.name} ${action} here. PostHog sync did not go through${body.posthogError ? ` (${body.posthogError})` : ""} — it'll catch up on the next sync.`,
+      );
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Unable to update feature flag.",
       );
+    }
+  };
+
+  const syncFlagsFromPostHog = async () => {
+    setSyncing(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch("/api/settings/feature-flags/sync");
+      const body = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(body?.error || "Unable to sync feature flags from PostHog.");
+      }
+
+      const flagsRes = await fetch("/api/settings/feature-flags", { cache: "no-store" });
+      if (flagsRes.ok) {
+        const flagsJson = await flagsRes.json();
+        setFlags(flagsJson.flags ?? []);
+      }
+
+      setSuccess(
+        `Synced from PostHog: ${body.updated} updated, ${body.unchanged} already matched` +
+          (body.notFoundInPostHog ? `, ${body.notFoundInPostHog} not found in PostHog` : "") +
+          (body.lookupErrors ? `, ${body.lookupErrors} lookup errors` : "") +
+          ".",
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to sync feature flags from PostHog.",
+      );
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -394,7 +434,13 @@ export default function SettingsPage() {
           />
         </TabsContent>
         <TabsContent value="features" className="mt-5 outline-none">
-          <FeatureFlags loading={loading} flags={flags} onToggle={toggleFlag} />
+          <FeatureFlags
+            loading={loading}
+            flags={flags}
+            onToggle={toggleFlag}
+            onSync={syncFlagsFromPostHog}
+            syncing={syncing}
+          />
         </TabsContent>
         <TabsContent value="security" className="mt-5 outline-none">
           <SecurityTab />
@@ -541,17 +587,35 @@ function FeatureFlags({
   loading,
   flags,
   onToggle,
+  onSync,
+  syncing,
 }: {
   loading: boolean;
   flags: FeatureFlag[];
   onToggle: (flag: FeatureFlag) => void;
+  onSync: () => void;
+  syncing: boolean;
 }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
-          Feature Flags
-        </CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-700 dark:text-slate-300">
+            Feature Flags
+          </CardTitle>
+          <p className="mt-1 text-xs text-slate-500">
+            Toggling here also updates PostHog, which is what actually evaluates these flags.
+            PostHog is still the source of truth — this table can drift behind it until the next sync.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onSync} disabled={syncing}>
+          {syncing ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-2" />
+          )}
+          Sync from PostHog
+        </Button>
       </CardHeader>
       <CardContent className="space-y-3">
         {loading && <EmptyPanel label="Loading feature flags..." />}
@@ -569,8 +633,13 @@ function FeatureFlags({
                 <div className="mt-1 text-xs text-slate-500">
                   {flag.description || "No description"}
                 </div>
-                <div className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Rollout {flag.rollout_percentage}%
+                <div className="mt-2 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  <span>Rollout {flag.rollout_percentage}%</span>
+                  {flag.updated_at && (
+                    <span className="font-normal normal-case tracking-normal text-slate-400">
+                      Updated {new Date(flag.updated_at).toLocaleString()}
+                    </span>
+                  )}
                 </div>
               </div>
               <Switch
