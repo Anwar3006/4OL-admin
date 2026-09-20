@@ -158,8 +158,9 @@ export const useCreateUserProfile = () => {
           last_name: data.lastName,
           sex: data.sex,
           dob: data.dob,
-          user_type: data.userType,
-          role: data.role,
+          // role and account type are not written from the browser
+          // (PLAN.md P0-05): the DB guard only lets admins change them, and
+          // user_type becomes read-only. Use the admin users API instead.
           phone_number: data.phoneNumber,
         })
         .select()
@@ -192,8 +193,7 @@ export const useUpdateProfile = () => {
           last_name: data.last_name,
           sex: data.sex,
           dob: data.dob,
-          user_type: data.user_type,
-          role: data.role,
+          // role and account type: see useCreateUserProfile above.
           phone_number: data.phone_number,
         })
         .eq("user_id", id)

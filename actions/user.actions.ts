@@ -299,6 +299,35 @@ export async function getAllProfiles(pageIndex: number, pageSize: number) {
   }
 }
 
+// ── account type filter (PLAN.md P0-05) ──────────────────────────────────────
+// Filters on user_profiles.account_types. Accepts the new values (member,
+// provider, partner) and the legacy user_type values the UI still sends
+// ("business", "customer", "business_provider", "both").
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyAccountTypeFilter<Q extends { contains: any; eq: any }>(
+  query: Q,
+  userType: string | undefined,
+): Q {
+  switch (userType) {
+    case undefined:
+    case "":
+      return query;
+    case "business":
+    case "provider":
+    case "business_provider":
+      return query.contains("account_types", ["provider"]);
+    case "both":
+      return query.contains("account_types", ["member", "provider"]);
+    case "customer":
+      return query.eq("account_types", "{member}");
+    case "member":
+    case "partner":
+      return query.contains("account_types", [userType]);
+    default:
+      return query;
+  }
+}
+
 // ── getUsers ──────────────────────────────────────────────────────────────────
 export async function getUsers(params: {
   page: number;
@@ -328,11 +357,7 @@ export async function getUsers(params: {
     query = query.eq("role", "user");
   }
 
-  if (params.userType === "business") {
-    query = query.in("user_type", ["business_provider", "both"]);
-  } else if (params.userType) {
-    query = query.eq("user_type", params.userType);
-  }
+  query = applyAccountTypeFilter(query, params.userType);
 
   if (params.status) {
     query = query.eq("status", params.status);
@@ -357,11 +382,7 @@ export async function getUsers(params: {
     statsQuery = statsQuery.in("role", ["admin", "super_admin", "registrar"]);
   } else {
     statsQuery = statsQuery.eq("role", "user");
-    if (params.userType === "business") {
-      statsQuery = statsQuery.in("user_type", ["business_provider", "both"]);
-    } else if (params.userType) {
-      statsQuery = statsQuery.eq("user_type", params.userType);
-    }
+    statsQuery = applyAccountTypeFilter(statsQuery, params.userType);
   }
 
   const { data: statsData } = await statsQuery;

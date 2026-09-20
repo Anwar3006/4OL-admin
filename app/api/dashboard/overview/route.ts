@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { ADMIN_ROLES } from "@/lib/admin-roles";
 
 const QuerySchema = z.object({
   timeFilter: z.enum(["7", "30", "90", "year"]).default("30"),
@@ -45,7 +46,9 @@ export async function GET(req: NextRequest) {
         const { count } = await admin
           .from("user_profiles")
           .select("user_id", { count: "exact", head: true })
-          .eq("is_admin", true)
+          // user_profiles.is_admin is legacy and being dropped (PLAN.md P0-05);
+          // staff are identified by role.
+          .in("role", [...ADMIN_ROLES])
           .neq("mfa_enabled", true);
         return count ?? 0;
       },

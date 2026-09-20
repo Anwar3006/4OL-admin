@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
+import { ADMIN_ROLES } from "@/lib/admin-roles";
 import { computeReportWindow, REPORT_CADENCES, REPORT_SECTIONS, runIdempotencyKey } from "@/features/reports/engine/types";
 import type { ReportRecipientRow, ReportRunRow, ReportSection } from "@/features/reports/engine/types";
 import { narrativeProviderConfigured, narrativeModel } from "@/features/reports/engine/narrative";
@@ -102,14 +103,21 @@ export async function GET(req: NextRequest) {
 
     case "admins": {
       if (!canManage) return NextResponse.json({ error: "Missing permission: reports.manage" }, { status: 403 });
+      // Staff are identified by user_profiles.role (PLAN.md P0-05). Auth
+      // metadata is client-writable at sign-up and was never the source of truth.
+      const { data: staff, error: staffError } = await admin
+        .from("user_profiles")
+        .select("user_id, role")
+        .in("role", [...ADMIN_ROLES]);
+      if (staffError) return NextResponse.json({ error: staffError.message }, { status: 500 });
       const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      const admins = (data?.users ?? [])
-        .filter((u) => {
-          const role = String(u.user_metadata?.role ?? u.app_metadata?.role ?? "");
-          return role.includes("admin");
-        })
-        .map((u) => ({ id: u.id, email: u.email ?? null, role: u.user_metadata?.role ?? u.app_metadata?.role ?? "admin" }));
+      const emailById = new Map((data?.users ?? []).map((u) => [u.id, u.email ?? null]));
+      const admins = (staff ?? []).map((s) => ({
+        id: s.user_id,
+        email: emailById.get(s.user_id) ?? null,
+        role: s.role,
+      }));
       return NextResponse.json({ admins });
     }
 

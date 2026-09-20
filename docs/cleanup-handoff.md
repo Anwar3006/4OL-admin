@@ -519,6 +519,32 @@ path uses SES.
 
 ---
 
+## Provider portal Phase 0 security fixes (20 Sept 2026)
+
+Tracked in `PLAN.md` (P0-01 to P0-03). Each migration has a `_ROLLBACK.sql` next to it.
+
+| Step | Where | What |
+| --- | --- | --- |
+| P0-01 | `lib/user-profile-patch.ts`, `app/api/user/profile/route.ts` (code; **deploy pending**) | `PATCH /api/user/profile` wrote the whole body with the service role, so `{"role":"super_admin"}` worked for any user. It now uses an allow-list; protected and unknown fields get a 400. |
+| P0-01b | `20260920090000_protect_user_profile_columns.sql` (applied) | Users could update any column of their own `user_profiles` row directly through PostgREST. A trigger now blocks admin, system, security, FitCoins and staff columns for `authenticated`/`anon` callers that aren't admins. |
+| P0-02 | `20260920100000_facility_profile_rls_stopgap.sql` (applied) | `facility_profile` was readable by anon with `USING (true)`, and owners could insert rows and update any column. Anon now sees active rows only; owner INSERT and UPDATE are gone (admins only). |
+| P0-03 | `20260920110000_drop_dev_tunnel_facility_trigger.sql` (applied) | Dropped the `on_facility_created` / `handle_new_facility()` trigger. |
+
+### Data exposure record — `on_facility_created` (P0-03)
+
+- **What:** an AFTER INSERT trigger on `facility_profile` used `pg_net` to POST every new facility's WhatsApp number, facility phone, owner phone, facility name, email and `gps_address` (sent as `temp_key`).
+- **Where to:** `https://bx9dscmp-3000.uks1.devtunnels.ms/api/notify`, a developer's VS Code dev tunnel to `localhost:3000`, not a 4 Our Life service. No `/api/notify` route exists in either repo.
+- **Secret:** the request carried the hard-coded header `x-webhook-secret: 4OurLife-WhatsApp`. **Treat that value as leaked.** Never reuse it, and retire anything that accepts it.
+- **Affected records:** the facilities created while the trigger existed. Prod had **3** `facility_profile` rows on 20 Sept 2026: a dental clinic, a home and a pharmacy. `net._http_response` doesn't store URLs, so delivery to the tunnel can be neither confirmed nor ruled out.
+- **Credentials:** no passwords were sent. The trigger never had them.
+- **Closed:** 20 Sept 2026. The migration was applied to prod and verified: a test facility insert queued 0 HTTP requests, no function contains `devtunnels` or the secret, and no remaining `facility_profile` trigger calls `net.http_post`.
+- **Still to do by a human:**
+  1. Shut down the dev tunnel `bx9dscmp` in the VS Code / Azure dev tunnels account that owns it.
+  2. Check whether anything on that machine logged or stored the posted payloads, and delete them.
+  3. Decide whether the 3 facility owners need to be told. Under Ghana's Data Protection Act 2012 (Act 843) this is a judgement call for the data controller. Record the decision here.
+
+---
+
 ## Traps proven on this branch
 
 Each of these cost real time. They are the reason `CLAUDE.md` rule 3 says two

@@ -41,6 +41,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { getPublicImageUrl } from "@/lib/utils";
 import { TopRatedToggle } from "@/components/redesign/TopRatedToggle";
+import { useHasPermission } from "@/stores/permission-context";
 
 /* ───────────────────────────────────────────────────────────
    Types
@@ -90,11 +91,10 @@ export default function FacilityViewDialog() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
 
-  const canManage = useMemo(() => {
-    return (
-      session?.user?.role === "super_admin" || session?.user?.role === "admin"
-    );
-  }, [session?.user]);
+  // session.user.role is the Supabase JWT role ("authenticated"), never the
+  // platform role, so the old super_admin/admin comparison was always false.
+  // Approving is gated by the RBAC permission the API also enforces.
+  const canManage = useHasPermission("facilities.approve");
 
   // Close the dialog only on confirmed success (not on error or while pending)
   useEffect(() => {

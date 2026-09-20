@@ -52,19 +52,18 @@ export async function createFacilityOwnerAccount(payload: {
       first_name: payload.firstName,
       last_name: payload.lastName,
       phone_number: payload.phoneNumber,
-      role: "user",
-      user_type: "business_provider",
     },
+    // app_metadata is service-role-only; handle_new_user() reads the account
+    // type from here (PLAN.md P0-05). user_metadata is client-writable and is
+    // ignored for it.
+    app_metadata: { account_types: ["provider"] },
   });
 
   if (!createError && newUser?.user?.id) {
     // New user created — force password change on first login
     await admin
       .from("user_profiles")
-      .update({
-        requires_password_change: true,
-        user_type: "facility_owner",
-      })
+      .update({ requires_password_change: true })
       .eq("user_id", newUser.user.id);
 
     return { userId: newUser.user.id, isNewUser: true, error: null };
@@ -84,6 +83,19 @@ export async function createFacilityOwnerAccount(payload: {
     );
 
     if (existing?.id) {
+      // An existing member who now owns a business holds both account types.
+      const { data: profile } = await admin
+        .from("user_profiles")
+        .select("account_types")
+        .eq("user_id", existing.id)
+        .maybeSingle();
+      const current: string[] = profile?.account_types ?? ["member"];
+      if (!current.includes("provider")) {
+        await admin
+          .from("user_profiles")
+          .update({ account_types: [...current, "provider"] })
+          .eq("user_id", existing.id);
+      }
       return { userId: existing.id, isNewUser: false, error: null };
     }
 

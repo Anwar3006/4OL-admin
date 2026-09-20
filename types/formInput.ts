@@ -24,6 +24,15 @@ export const ROLE_ENUM = ["user", ...ADMIN_ROLES] as const;
 // choices, or a public signup could request a platform role directly.
 export const PUBLIC_ROLE_OPTIONS = [{ value: "user", label: "User" }];
 
+// Which apps an account may use (user_profiles.account_types, PLAN.md D5).
+export const ACCOUNT_TYPE_OPTIONS = [
+  { value: "member", label: "Member (4 Our Life app)" },
+  { value: "provider", label: "Provider (4 Our Life Business)" },
+  { value: "partner", label: "Partner" },
+] as const;
+export const ACCOUNT_TYPE_ENUM = ["member", "provider", "partner"] as const;
+
+/** @deprecated legacy user_type vocabulary — read-only mirror of account_types. */
 export const USER_TYPE_OPTIONS = [
   { value: "customer", label: "Customer" },
   { value: "business_provider", label: "Business Provider" },

@@ -74,7 +74,9 @@ export type TUserProfile = {
   email: string;
   sex: "male" | "female" | "other";
   dob: string;
+  /** Read-only mirror of account_types kept for old app builds (PLAN.md P0-05). */
   user_type: "customer" | "business_provider" | "both";
+  account_types: ("member" | "provider" | "partner")[];
   role: "user" | (typeof ADMIN_ROLES)[number];
   status: "active" | "pending" | "inactive" | "suspended";
   phone_number: string;

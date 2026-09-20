@@ -90,7 +90,8 @@ export const usePermissions = () => {
   }, []);
 
   const isSuperAdmin = useCallback(() => {
-    return role === "Super Admin";
+    // `role` holds the raw user_profiles.role value, never the display label.
+    return role === "super_admin";
   }, [role]);
 
   const hasPermission = useCallback(

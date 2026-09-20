@@ -73,8 +73,8 @@ const RegisterForm = ({
             phone_number: data.phoneNumber,
             sex: data.sex,
             dob: data.dob,
-            role: data.role,
-            user_type: data.userType || "customer",
+            // account type is never taken from sign-up metadata
+            // (handle_new_user defaults to member; PLAN.md P0-05)
           },
         },
       });
@@ -98,8 +98,8 @@ const RegisterForm = ({
           phone_number: data.phoneNumber,
           sex: data.sex,
           dob: data.dob,
+          // role: accepted only with a valid invite (prevent_role_escalation)
           role: data.role,
-          user_type: data.userType || "customer",
         })
         .eq("user_id", userId);
 

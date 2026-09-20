@@ -9,6 +9,8 @@ the database does any work — payload size matters more than query time.
 
 This codebase serves as the blueprint for several companion products. **Read `docs/ARCHITECTURE_BLUEPRINT.md` and `docs/cleanup-handoff.md` before making structural changes.**
 
+**Provider portal (Facilities / IBP) work:** read `PLAN.md` at the repo root first — it is the source of truth for tasks, decisions (D1–D13) and acceptance checks; tick boxes as you finish them. The design rationale, data-model diagram and tab plans live in the companion brief at https://claude.ai/artifact/ThojkmCeBPRLkpoLLGp27T — read it with the Artifact tool (`action: "read"`), not WebFetch. If the two disagree, `PLAN.md` wins; update the brief afterwards.
+
 ---
 
 ## Four rules that are not style preferences

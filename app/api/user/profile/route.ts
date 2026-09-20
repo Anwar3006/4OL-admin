@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/db/admin";
 import { getRequestUser, lastAuthTiming } from "@/lib/mobile-auth";
+import { samePhoneNumber, sanitizeProfilePatch } from "@/lib/user-profile-patch";
 
 /**
  * The local `getRequestUser` that used to live here called
@@ -87,7 +88,13 @@ export async function GET(req: NextRequest) {
 
 /**
  * PATCH /api/user/profile
- * Updates the authenticated user's profile fields.
+ * Updates the authenticated user's own profile.
+ *
+ * Only the fields in `lib/user-profile-patch.ts` can be written. This route
+ * uses the service-role client, which the database's role-escalation guard
+ * trusts, so the allow-list IS the security boundary: role, user_type,
+ * account_types, status and every other admin/system column are rejected
+ * with a 400 naming the field (PLAN.md P0-01).
  */
 export async function PATCH(req: NextRequest) {
   const t0 = Date.now();
@@ -96,21 +103,63 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
-
-  const { user_id: _ignored, avatar_url: _avatar, ...fields } = body;
-
-  if (Object.keys(fields).length === 0) {
-    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  const patch = sanitizeProfilePatch(body);
+  if (!patch.ok) {
+    return NextResponse.json(
+      { error: patch.error, ...(patch.field ? { field: patch.field } : {}) },
+      { status: 400 },
+    );
   }
 
   const admin = getAdminClient();
   const dbStart = Date.now();
+
+  // The edit form always sends the current phone_number back. An unchanged
+  // value is fine; a new number has to be verified by OTP (/api/update-phone).
+  if (patch.phoneNumber !== undefined) {
+    const { data: current, error: readError } = await admin
+      .from("user_profiles")
+      .select("phone_number")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (readError) {
+      console.error("[user-profile PATCH] Supabase error:", readError.message);
+      return NextResponse.json({ error: readError.message }, { status: 500 });
+    }
+    if (!samePhoneNumber(current?.phone_number, patch.phoneNumber)) {
+      return NextResponse.json(
+        {
+          error: "Change your phone number through phone verification",
+          field: "phone_number",
+        },
+        { status: 400 },
+      );
+    }
+  }
+
+  if (Object.keys(patch.fields).length === 0) {
+    // Nothing writable left (e.g. the body only echoed ignored fields).
+    // Return the current row so callers that merge `data` into state still work.
+    const { data, error } = await admin
+      .from("user_profiles")
+      .select()
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const dbMs = Date.now() - dbStart;
+    if (error) {
+      console.error("[user-profile PATCH] Supabase error:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json(
+      { data },
+      { headers: { "Server-Timing": timing(Date.now() - t0, dbMs) } },
+    );
+  }
+
   const { data, error } = await admin
     .from("user_profiles")
-    .update(fields)
+    .update(patch.fields)
     .eq("user_id", user.id)
     .select()
     .maybeSingle();
