@@ -63,7 +63,7 @@ interface PostHogFlagGroup {
   rollout_percentage: number | null;
 }
 
-interface PostHogFlag {
+export interface PostHogFlag {
   id: number;
   key: string;
   name: string;
@@ -118,7 +118,18 @@ export interface UpsertPostHogFlagInput {
   rolloutPercentage: number;
 }
 
-/** Creates the flag in PostHog if it doesn't exist yet, otherwise updates it. Always throws PostHogSyncError on failure — callers decide whether that's fatal. */
+/**
+ * Creates the flag in PostHog if it doesn't exist yet, otherwise updates it.
+ * Always throws PostHogSyncError on failure — callers decide whether that's
+ * fatal.
+ *
+ * `active` and the release-condition group's `rollout_percentage` are
+ * pushed independently, matching how this project actually uses PostHog:
+ * `active` means "staged/registered," `rollout_percentage` is the separate,
+ * deliberate dial for when it's actually turned on for users — a flag can
+ * be `active: true, rollout_percentage: 0` on purpose (confirmed with the
+ * team; most of this project's existing flags are exactly that shape).
+ */
 export async function upsertPostHogFlag(input: UpsertPostHogFlagInput): Promise<PostHogFlag> {
   requireConfigured();
 
@@ -144,16 +155,21 @@ export async function upsertPostHogFlag(input: UpsertPostHogFlagInput): Promise<
   return (await res.json()) as PostHogFlag;
 }
 
+/**
+ * A flag's state as this project's `feature_flags` table mirrors it:
+ * `active` maps 1:1 to PostHog's own `active` bit (staged/registered, not
+ * "currently visible to users" — that's what `rolloutPercentage` is for,
+ * and it's read and shown separately, never collapsed into `active`).
+ */
+export function effectiveFlagState(flag: PostHogFlag): { active: boolean; rolloutPercentage: number } {
+  const group = flag.filters?.groups?.[0];
+  return { active: flag.active, rolloutPercentage: group?.rollout_percentage ?? 100 };
+}
+
 /** Current state of a flag in PostHog, for the pull-sync job. Null if PostHog has no such flag. */
 export async function getPostHogFlagState(
   key: string,
 ): Promise<{ active: boolean; rolloutPercentage: number } | null> {
   const flag = await findPostHogFlagByKey(key);
-  if (!flag) return null;
-
-  const group = flag.filters?.groups?.[0];
-  return {
-    active: flag.active,
-    rolloutPercentage: group?.rollout_percentage ?? 100,
-  };
+  return flag ? effectiveFlagState(flag) : null;
 }

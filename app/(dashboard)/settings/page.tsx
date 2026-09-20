@@ -281,9 +281,8 @@ export default function SettingsPage() {
       }
 
       setSuccess(
-        `Synced from PostHog: ${body.updated} updated, ${body.unchanged} already matched` +
+        `Synced from PostHog: ${body.created} new, ${body.updated} updated, ${body.unchanged} already matched` +
           (body.notFoundInPostHog ? `, ${body.notFoundInPostHog} not found in PostHog` : "") +
-          (body.lookupErrors ? `, ${body.lookupErrors} lookup errors` : "") +
           ".",
       );
     } catch (err) {

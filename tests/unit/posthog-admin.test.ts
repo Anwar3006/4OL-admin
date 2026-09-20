@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PostHogSyncError,
+  effectiveFlagState,
   findPostHogFlagByKey,
   getPostHogFlagState,
   isPostHogConfigured,
@@ -144,6 +145,23 @@ describe("with configuration", () => {
     expect(init?.method).toBe("PATCH");
   });
 
+  it("upsertPostHogFlag pushes active and rollout_percentage independently — active:true, rollout:0 is a valid, intentional combination", async () => {
+    // Confirmed with the team: active means "staged," rollout_percentage is
+    // the separate, deliberate dial for turning it on for users. Most of
+    // this project's real flags sit at exactly active:true, rollout:0 on
+    // purpose, so this must NOT be "corrected" to 100.
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({ results: [], next: null }))
+      .mockResolvedValueOnce(jsonResponse({ id: 1, key: "provider_portal", name: "provider_portal", active: true, filters: { groups: [{ properties: [], rollout_percentage: 0 }] } }));
+
+    await upsertPostHogFlag({ key: "provider_portal", name: "provider_portal", active: true, rolloutPercentage: 0 });
+
+    const [, init] = vi.mocked(fetch).mock.calls[1];
+    expect(JSON.parse(init?.body as string).filters).toEqual({
+      groups: [{ properties: [], rollout_percentage: 0 }],
+    });
+  });
+
   it("upsertPostHogFlag throws PostHogSyncError on a non-ok response", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse({ results: [], next: null }))
@@ -192,6 +210,51 @@ describe("with configuration", () => {
     );
 
     await expect(getPostHogFlagState("provider_portal")).resolves.toEqual({
+      active: true,
+      rolloutPercentage: 100,
+    });
+  });
+
+  it("getPostHogFlagState keeps active:true + rollout:0 as active:true — that's an intentional staged state, not disabled", async () => {
+    // The real shape most of this project's category-* flags are stored
+    // in: registered/active, dialed to 0% until deliberately turned on.
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse({
+        results: [
+          { id: 1, key: "category-jobs", name: "Whether to allow users to see this in the category list or not", active: true, filters: { groups: [{ properties: [], rollout_percentage: 0 }] } },
+        ],
+        next: null,
+      }),
+    );
+
+    await expect(getPostHogFlagState("category-jobs")).resolves.toEqual({
+      active: true,
+      rolloutPercentage: 0,
+    });
+  });
+});
+
+describe("effectiveFlagState (pure)", () => {
+  it("mirrors active as-is when false, regardless of rollout", () => {
+    expect(
+      effectiveFlagState({ id: 1, key: "k", name: "k", active: false, filters: { groups: [{ properties: [], rollout_percentage: 100 }] } }),
+    ).toEqual({ active: false, rolloutPercentage: 100 });
+  });
+
+  it("mirrors active:true even when rollout is 0 — active and rollout are independent", () => {
+    expect(
+      effectiveFlagState({ id: 1, key: "k", name: "k", active: true, filters: { groups: [{ properties: [], rollout_percentage: 0 }] } }),
+    ).toEqual({ active: true, rolloutPercentage: 0 });
+  });
+
+  it("mirrors active:true with rollout:100", () => {
+    expect(
+      effectiveFlagState({ id: 1, key: "k", name: "k", active: true, filters: { groups: [{ properties: [], rollout_percentage: 100 }] } }),
+    ).toEqual({ active: true, rolloutPercentage: 100 });
+  });
+
+  it("defaults rollout to 100 (full rollout) when there is no group at all", () => {
+    expect(effectiveFlagState({ id: 1, key: "k", name: "k", active: true, filters: { groups: [] } })).toEqual({
       active: true,
       rolloutPercentage: 100,
     });
