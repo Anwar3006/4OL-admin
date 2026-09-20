@@ -4,11 +4,15 @@ import React, { useState } from "react";
 import {
   Copy,
   Check,
-  Eye,
-  EyeOff,
-  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
   ShieldCheck,
-  Share2,
+  Loader2,
+  Mail,
+  MessageCircle,
+  Smartphone,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,22 +26,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useResendProviderInvite } from "@/features/providers/data/useRegisterProviderAccount";
+import type { CredentialDeliveryResult } from "@/features/providers/schema/types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   data: {
     email: string;
-    password: string;
     facilityName: string;
     phoneNumber: string;
     ownerNumber: string;
+    providerId: string;
+    deliveries: CredentialDeliveryResult[];
   };
 }
 
+const CHANNEL_LABEL: Record<CredentialDeliveryResult["channel"], string> = {
+  email: "Email",
+  whatsapp: "WhatsApp",
+  sms: "SMS",
+};
+const CHANNEL_ICON: Record<CredentialDeliveryResult["channel"], React.FC<{ className?: string }>> = {
+  email: Mail,
+  whatsapp: MessageCircle,
+  sms: Smartphone,
+};
+
+function StatusIcon({ status }: { status: CredentialDeliveryResult["status"] }) {
+  if (status === "sent" || status === "delivered") {
+    return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+  }
+  if (status === "skipped") {
+    return <MinusCircle className="h-4 w-4 text-slate-300 dark:text-slate-600" />;
+  }
+  return <XCircle className="h-4 w-4 text-red-500" />;
+}
+
 const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
-  const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [deliveries, setDeliveries] = useState(data.deliveries);
+  const resendInvite = useResendProviderInvite();
 
   const copyToClipboard = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
@@ -46,8 +75,14 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleShare = () => {
-    const phoneNumber = data.phoneNumber;
+  const handleResend = () => {
+    resendInvite.mutate(data.providerId, {
+      onSuccess: (res) => {
+        setDeliveries(res.deliveries);
+        toast.success("Invite resent");
+      },
+      onError: (err) => toast.error(err.message),
+    });
   };
 
   return (
@@ -61,21 +96,20 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
             </span>
           </div>
           <DialogTitle className="text-xl font-bold">
-            Facility Credentials
+            Provider Invite
           </DialogTitle>
           <DialogDescription>
             Account created for{" "}
             <span className="font-semibold text-foreground">
               {data.facilityName}
             </span>
-            . Please share these credentials with the facility administrator.
+            . They&apos;ll sign in with a one-time link — there&apos;s no password to share.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email">Administrator Email</Label>
+            <Label htmlFor="email">Owner email</Label>
             <div className="relative">
               <Input
                 id="email"
@@ -98,65 +132,53 @@ const FacilityCredentialsModal = ({ isOpen, onClose, data }: Props) => {
             </div>
           </div>
 
-          {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="password">Temporary Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={data.password}
-                readOnly
-                className="pr-20 bg-slate-50 dark:bg-slate-900 font-mono"
-              />
-              <div className="absolute right-0 top-0 h-full flex items-center pr-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-slate-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-slate-400" />
-                  )}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 hover:bg-transparent"
-                  onClick={() => copyToClipboard(data.password, "Password")}
-                >
-                  {copiedField === "Password" ? (
-                    <Check className="h-4 w-4 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-4 w-4 text-slate-400" />
-                  )}
-                </Button>
-              </div>
+            <Label>Delivery status</Label>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800">
+              {deliveries.length === 0 && (
+                <p className="px-3 py-3 text-xs text-muted-foreground">
+                  No delivery attempts recorded yet.
+                </p>
+              )}
+              {deliveries.map((d, i) => {
+                const Icon = CHANNEL_ICON[d.channel];
+                return (
+                  <div key={`${d.channel}-${i}`} className="flex items-center justify-between px-3 py-2.5">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon className="h-4 w-4 text-slate-400" />
+                      <span className="font-medium">{CHANNEL_LABEL[d.channel]}</span>
+                      <span className="text-xs text-muted-foreground">{d.destinationMasked}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <StatusIcon status={d.status} />
+                      <span className="text-xs capitalize text-muted-foreground">{d.status}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Warning Message */}
           <div className="flex gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-500/15 border border-amber-100 dark:border-amber-500/30 text-amber-800">
-            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed">
-              <span className="font-bold">Security Warning:</span> This is a
-              temporary password. The administrator will be required to change
-              it upon their first login. Ensure this is shared over a secure
-              channel.
+              The invite link expires after 24 hours and can only be used once.
+              If every channel above failed, use Resend invite.
             </p>
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-start">
+        <DialogFooter className="sm:justify-between gap-2">
           <Button
             type="button"
             variant="outline"
-            className="w-full sm:w-auto"
-            onClick={onClose}
+            onClick={handleResend}
+            disabled={resendInvite.isPending}
           >
+            {resendInvite.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            Resend invite
+          </Button>
+          <Button type="button" onClick={onClose}>
             Done & Close
           </Button>
         </DialogFooter>

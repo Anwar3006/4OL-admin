@@ -234,8 +234,14 @@ code, or a bad dynamic import.
   `features/<name>/data/dialog-hooks.ts`. A new dialog adds its type to
   `DialogTypes` in the store and its hook to the owning feature.
 - **Seed JSON lives in `scripts/seed-data/`, not the app tree.** Nothing under
-  `app/`, `features/` or `lib/` imports it, which is why the build heap is
-  2048 MB rather than the 4096 it used to need.
+  `app/`, `features/` or `lib/` imports it, which kept the build heap down to
+  2048 MB for a while. P0-06 (provider invites: react-email, Twilio, a new
+  feature module) grew the type-check surface enough to OOM `next build`
+  there again — confirmed by building a clean tree at 2048 MB successfully
+  and this branch failing at the same limit — so `pnpm build` is back to
+  4096 MB. `pnpm type-check` needs the same override run standalone
+  (`NODE_OPTIONS=--max-old-space-size=4096 pnpm type-check`); its own script
+  isn't wrapped since CI and most editors set this globally.
 - **Transactional email uses Twilio SendGrid.** `lib/email.ts` is the shared sender for
   support mail, admin invites, login alerts and the device sign-in OTP. Both
   `SENDGRID_API_KEY` and a `SENDGRID_FROM_EMAIL` on an authenticated domain are required.

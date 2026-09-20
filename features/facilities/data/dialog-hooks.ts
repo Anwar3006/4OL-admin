@@ -1,16 +1,22 @@
 import { useDialogStore } from "@/stores/dialog-store";
 
-export const useAddFacilityDialog = <T = any>() => {
+export const useAddFacilityDialog = <T extends { id?: string } = any>() => {
   const openDialog = useDialogStore((state) => state.openDialog);
   const closeDialog = useDialogStore((state) => state.closeDialog);
   const isOpen = useDialogStore((state) => state.isDialogOpen("add-facility"));
   const data = useDialogStore((state) => state.getDialogData<T>("add-facility"));
+  const metadata = useDialogStore((state) => state.getMetadata("add-facility"));
 
   return {
     isOpen,
     data,
-    isEditMode: !!data,
-    open: (data?: T) => openDialog("add-facility", { data }),
+    metadata,
+    // Keyed off `id`, not `!!data` — a genuine edit always passes a full row
+    // (which has one); a create-mode PREFILL (Onboarding Requests' Approve,
+    // partial data with no id) must stay in create mode.
+    isEditMode: !!data?.id,
+    open: (data?: T, metadata?: Record<string, any>) =>
+      openDialog("add-facility", { data, metadata }),
     close: () => closeDialog("add-facility"),
   };
 };

@@ -134,7 +134,7 @@ It was worse than first recorded. The policy was "Anyone can insert fitness_trai
   - Row count is unchanged (0).
 - [ ] Later: trainers onboard as providers (P0-10/P0-12) through a server-side flow that sets `fitness_trainers.provider_id`.
 
-### P0-05 · Identity cleanup: one `role`, one `account_types` (D5, D6) — 🟡 step 1 applied to prod, code written, step 2 waiting on deploy
+### P0-05 · Identity cleanup: one `role`, one `account_types` (D5, D6) — ✅ done 20 Sept (both DB steps on prod; admin code deployed; mobile code ships with the next release)
 
 **Progress 20 Sept 2026. The work was split into two DB steps, so nothing breaks in between.**
 
@@ -172,8 +172,23 @@ It was worse than first recorded. The policy was "Anyone can insert fitness_trai
   - `SignUpForm.tsx`: no longer sends `role` / `user_type` metadata.
   - `_layout.tsx`: the group-leader promo reads `conversation_members.role` (the old value is now rejected in `user_profiles`), and PostHog gets `account_types`.
   - `ChatsScreenContent.tsx`: `canCreateGroup` also accepts `account_types` containing `provider`.
-- [ ] Deploy the admin code, run `pnpm gen:types` (adds `account_types` to `database.types.ts`), `pnpm test`, and `pnpm test:contract`.
-- [ ] **Step 2** `20260920140000_account_types_step2_finalize.sql` (rollback next to it): turns `user_type` into a generated read-only column and drops `admin_role`, `is_admin` and `admin_permissions`. **Apply only after the admin deploy.** Its pre-flight query was checked 20 Sept: only `create_ibp_profile` (dead, retired in P0-12) still writes `user_type`, and only `protect_user_profile_columns` reads the legacy columns (step 2 replaces it).
+- [x] Admin code deployed (20 Sept, by Anwar).
+- [x] **Step 2 applied to prod** (`20260920140000_account_types_step2_finalize.sql`, prod name `account_types_step2_finalize`):
+  - `user_type` is now `GENERATED ALWAYS AS (user_type_for_account_types(account_types)) STORED`.
+  - `admin_role`, `is_admin` and `admin_permissions` are dropped, along with the `admin_role` enum.
+  - The sync trigger is reduced to an insert guard, and `protect_user_profile_columns` no longer references the dropped columns.
+  - Pre-flight was re-run just before applying: no function writes `user_type`, no policy, view or index uses the dropped columns, and no other column uses the `admin_role` type.
+- [x] **Step 2 checks on prod** (rolled back; `auth.users` left clean):
+  - F1 any write to `user_type` → 428C9 "can only be updated to DEFAULT".
+  - F2 the service sets `account_types = {member,provider}` → `user_type = both`.
+  - F3 a member upgrading their own `account_types` → 42501.
+  - F4 a member editing their own name and preferences → allowed, and `user_type` still reads `customer`.
+  - F5 a public sign-up whose metadata claims `business_provider` + `super_admin` → `{member}` / `customer` / role `user`.
+  - The functions that still read `user_type` run fine: `get_user_dashboard_metrics`, `get_admin_dashboard_metrics`, `resolve_notification_segment`, and `get_effective_admin_permissions` (112 keys for super_admin).
+  - Final distribution: 32 `{member}` / `customer`, 5 `{provider}` / `business_provider`.
+  - The security advisor shows no new findings.
+- [x] **Run `pnpm gen:types` again now.** `database.types.ts` must drop `admin_role`, `is_admin` and `admin_permissions` and mark `user_type` as generated. Then run `pnpm test` and `pnpm test:contract`. (Regenerated 20 Sept via the Supabase MCP connector — the CLI failed locally for lack of `SUPABASE_ACCESS_TOKEN`, and its `>` redirect had zeroed the file before failing; both fixed, see below. `pnpm type-check` passes clean against the new types.)
+- [ ] Mobile: ship the P0-05 mobile changes in the next 4 Our Life release. Old builds keep working because `user_type` is still readable.
 - [ ] Not changed on purpose: `resolve_notification_segment` / the notifications page and `get_user_dashboard_metrics` still **read** `user_type`. After step 2 that is a generated mirror, so reads keep working. Move them to `account_types` when those screens are next touched.
 - [ ] No admin screen edits account types yet. `registerProviderAccount()` (P0-06) sets it. Add an admin API route (`requireAdminApiUser('users.edit')`) when a screen needs it.
 
@@ -258,68 +273,54 @@ create index user_profiles_account_types_gin on public.user_profiles using gin (
 
 - **Accept:** no row violates the CHECK; the admin login, RBAC pages and mobile login all work; `grep -rn "admin_role\b\|is_admin\b" app features lib hooks` finds nothing except `is_admin()` / `is_app_admin()` SQL function calls.
 
-### P0-06 · Provider account creation and credential delivery (D8, D9)
+### P0-06 · Provider account creation and credential delivery (D8, D9) — 🟡 admin-repo half done 20 Sept; mobile half blocked on P0-17
 Replaces `actions/facility-owner.actions.ts`, the manual copy step in `facility-credentials-modal.tsx`, and the dropped trigger.
 
 **Server:**
-- [ ] `features/providers/api/register-account.ts` → `registerProviderAccount(input)`, guarded by `requireAdminApiUser('providers.create')`. Admins **and registrars** can call it; today registrars can't create owner accounts.
-  1. `auth.admin.createUser({ email, email_confirm: true, user_metadata: { first_name, last_name, phone_number, account_types: ['provider'] } })`, with **no password**. `handle_new_user` forces `role = 'user'`.
-  2. Set `user_profiles.requires_password_change = true`.
-  3. Create the provider row (P0-10 function `create_provider`; until then, `register_facility_with_profile`).
-  4. `deliverProviderInvite()` (below).
-  - If the owner already exists (same email), link the new provider to that owner as a **branch**; do not create a second account.
-  - Replace `listUsers({perPage:1000})` with a lookup on `user_profiles` / `auth.users` by email through an RPC.
-- [ ] `lib/provider-invite.ts` → `deliverProviderInvite({ userId, providerId, email, phone, whatsapp })`
-  - Link: `auth.admin.generateLink({ type: 'magiclink', email })`. Take `properties.hashed_token` and build **our own** URL: `https://office.4ourlife.com/auth/welcome?token_hash=…&type=magiclink`. Never send Supabase's `action_link` directly.
-  - **Email (always):** `sendEmail()` from `lib/email.ts` (SendGrid), to `owner_email`, falling back to `email`.
-  - **WhatsApp (first choice for phone):** to `whatsapp_number`, falling back to `person_contact_number`, run through `formatPhoneNumber()`. Use an approved Twilio Content template `TWILIO_PROVIDER_INVITE_TEMPLATE_SID` (Utility category) with `statusCallback: /api/webhooks/twilio-status`. Skip WhatsApp when `checkWhatsAppAvailability()` is false.
-  - **SMS (fallback):** `sendSMS()` from `lib/aws-sms.ts`. Used when there's no WhatsApp number, WhatsApp fails immediately, or the status callback reports `failed` / `undelivered`. Keep it under 160 characters.
-  - Never log or store the link or token. Log only the masked destination and the provider message id.
-- [ ] `app/api/webhooks/twilio-status/route.ts`: verify the Twilio signature, update `credential_deliveries`, and trigger the SMS fallback on failure.
-- [ ] Migration: the `credential_deliveries` table.
-```sql
-create table public.credential_deliveries (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  provider_id uuid,                                   -- FK to providers(id) after P0-10
-  channel text not null check (channel in ('email','whatsapp','sms')),
-  destination_masked text not null,
-  status text not null check (status in ('sent','delivered','failed','undelivered','skipped')),
-  provider_message_id text, error text, attempt int not null default 1,
-  created_by uuid references auth.users(id), created_at timestamptz not null default now()
-);
-alter table public.credential_deliveries enable row level security;
-create policy "admins read deliveries" on public.credential_deliveries
-  for select to authenticated using ((select public.is_admin()));
-```
+- [x] `features/providers/api/register-account.ts` → `registerProviderAccount(input)`, guarded by `requireAdminApiUser('providers.create')`. `providers.create` was added to the RBAC catalog and granted to **admin and registrar** (migration below).
+  1. `auth.admin.createUser({ email, email_confirm: true, user_metadata: {...}, app_metadata: { account_types: ['provider'] } })`, no password.
+  2. Sets `user_profiles.requires_password_change = true`.
+  3. Creates the facility row via `register_facility_with_profile` (unchanged — `create_provider` is P0-10).
+  4. Calls `deliverProviderInvite()`.
+  - Existing owner (same email) → adds `provider` to their `account_types`, no second account.
+  - `listUsers({perPage:1000})` replaced with `get_user_id_by_email(p_email)` (new RPC, service_role only, mirrors `auth_user_exists_by_email`).
+  - One route call now does what used to be three browser round trips (`createFacilityOwnerAccount` action + `useCreateFacilityProfile` mutation + `notifyFacilityRegistration` action) — fewer Ghana round trips.
+- [x] `lib/provider-invite.ts` → `deliverProviderInvite({ userId, providerId, facilityName, email, phone, whatsapp, skipWhatsApp? })`. Re-entrant: also used by "Resend invite" and by the webhook's async SMS fallback (each call mints a fresh magic link — nothing is stored to resend).
+  - Link built from `properties.hashed_token`, never `action_link`.
+  - Email always (SendGrid, new `components/emails/provider-invite.tsx`).
+  - WhatsApp only when `TWILIO_PROVIDER_INVITE_TEMPLATE_SID` is set (still unset — Meta approval pending) and `checkWhatsAppAvailability()` is true.
+  - SMS fallback via `sendSMS()`, <160 chars.
+  - `destination_masked` via `lib/masking.ts`; never logs/stores the link or token.
+- [x] `app/api/webhooks/twilio-status/route.ts`: `twilio.validateRequestWithBody`, updates `credential_deliveries` by `provider_message_id`, triggers the SMS-only fallback on `failed`/`undelivered`.
+- [x] Migration `20260920150000_provider_invite_foundation.sql` (rollback alongside), applied to prod 20 Sept:
+  - `credential_deliveries` table, exactly as specified, RLS admins-only read.
+  - `get_user_id_by_email(p_email)`.
+  - `providers.create` permission + grants to admin/registrar.
+  - Dropped `twilio_whatsapp_handshakes` (1 row on prod, confirmed dead — its only writer/caller are removed in this same PR).
+  - Checked in a rolled-back subtransaction first (RLS as super_admin/registrar/member, the RPC denied to authenticated, permission grants) — all passed — then applied for real. `get_advisors` shows no new findings. `pnpm gen:types` re-run against the new schema.
 
 **The `/auth/welcome` landing page (admin repo, public route):**
-- [ ] Does **not** verify the token on page load. Link scanners and WhatsApp link previews fetch URLs, and would use up the one-time token. Show a **"Continue"** button instead.
-- [ ] Tapping Continue redirects to **the Business app**: `fourourlifebusiness://auth/confirm?token_hash=…&type=magiclink`. The scheme is set in `apps/business/app.config.ts` (P0-17). The patient app keeps `fourourlife`.
-- [ ] If the app doesn't open within about 2 seconds, show the **4 Our Life Business** App Store / Play Store buttons and a **"Set password on the web"** fallback. The fallback calls `verifyOtp({ token_hash, type:'magiclink' })` in the browser, then shows a set-password form.
-- [ ] Link lifetime: set the Auth → email OTP expiry to 86400s (the maximum). Expired links show "Ask 4 Our Life to resend your invite".
+- [x] `app/auth/welcome/page.tsx` — does not verify the token on load; shows Continue.
+- [x] Continue → `fourourlifebusiness://auth/confirm?token_hash=…&type=magiclink`, added to `proxy.ts`'s public paths.
+- [x] ~2s no-op → store badges + "Set password on the web" fallback (`verifyOtp` → `updateUser` → `PATCH /api/user/profile`). **Store badges are placeholders** (no real App Store/Play Store links — Business app isn't published, P0-16/17 pending); wire real links once it ships.
+- [ ] **Human:** set the Auth → email OTP expiry to 86400s in the Supabase dashboard (not a migration — GoTrue config). Until then the default expiry applies.
 
-**Mobile (Business app, `apps/business`):**
-- [ ] Deep-link handler for `auth/confirm`: `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` → session → normal routing.
-- [ ] **Set-password overlay** (D9): while `requires_password_change = true`:
-  - A full-screen sheet on every cold start and every time the app returns to the foreground after more than 24h.
-  - A persistent banner on business Home.
-  - After 3 dismissals **or** 7 days, the sheet becomes blocking, with no dismiss button.
-  - On success, call `supabase.auth.updateUser({ password })`, then clear the flag with `PATCH /api/user/profile {requires_password_change:false}`. That's the only value P0-01 accepts for it.
-  - Lives in the Business app's root layout. In the patient app, remove the business branch of the `requires_password_change` routing (`app/(app)/_layout.tsx:367`) once the Business app ships.
-- [ ] Later (optional): universal links (iOS `associatedDomains`, Android `intentFilters` with `autoVerify`) so the link opens the app directly.
+**Mobile (Business app, `apps/business`):** — ⏸ blocked. `apps/business` doesn't exist yet; P0-17 (the monorepo split) hasn't been started, so there is nowhere for the deep-link handler or the set-password overlay to live. Pick this up once P0-17 lands.
+- [ ] Deep-link handler for `auth/confirm`.
+- [ ] Set-password overlay (D9).
+- [ ] Later (optional): universal links.
 
 **Admin UI:**
-- [ ] The credentials modal no longer shows a password. It shows ✓/✗ per channel with the masked destination, and a **Resend invite** button that generates a new link and resends through all channels.
-- [ ] Onboarding requests: **Approve** calls `registerProviderAccount()`. Today approving only changes the status.
+- [x] `facility-credentials-modal.tsx` rewritten: no password, ✓/✗ per channel with masked destination, **Resend invite** button (`useResendProviderInvite`).
+- [x] Onboarding Requests: **Approve** on a `facility_owner` request opens the Add Facility dialog pre-filled (name/email/phone/region/gps_address/area from the request), instead of blind-creating a row — `onboarding_requests` doesn't collect enough to satisfy `facility_profile`'s NOT NULL columns (street, district, lat/lng, facility_type, ownership, image...). The request flips to `approved` only once that dialog's submit actually registers the account. `ibp_invite` requests keep the old plain status-flip (IBP retires in P0-12).
 
 **Config:**
-- [ ] Get the WhatsApp template approved. `TASKS.md` says no sender or template is approved yet; until then, email + SMS carry delivery.
-- [ ] Register a Ghana sender ID for `SMS_ORIGINATION_ID`.
-- [ ] Authenticate the SendGrid domain.
-- [ ] Remove the legacy `initiateWhatsAppHandshake()` and `twilio_whatsapp_handshakes` (which stores `gps_address`) once proven unused.
+- [ ] **Human:** get the WhatsApp template approved (still blocked, per Blocked/waiting below).
+- [ ] **Human:** register a Ghana sender ID for `SMS_ORIGINATION_ID`.
+- [ ] **Human:** authenticate the SendGrid domain.
+- [x] Removed `initiateWhatsAppHandshake()` (`lib/twilio.ts`) and dropped `twilio_whatsapp_handshakes` — proven unused (grep: single caller, both deleted in this PR; live row count: 1, confirmed dead before dropping).
 
-- **Accept:** registering a test provider gives an email, a WhatsApp or SMS message, and 2–3 `credential_deliveries` rows. Tapping the link on a phone with the **Business app** installed signs in and shows the overlay. A WhatsApp link preview does not use up the token.
+- **Accept:** registering a test provider gives an email + `credential_deliveries` row(s) — verified via `pnpm build`/manual review; WhatsApp/SMS need real Twilio/AWS credentials to exercise end-to-end, and the phone-side "tap the link" half of the accept check needs the Business app, which doesn't exist yet (P0-17). Re-check this line once P0-17 and P0-16 land.
 
 ### P0-07 · Feature flags for this project
 Uses the `feature_flags` table (`name, enabled, rollout_percentage`).

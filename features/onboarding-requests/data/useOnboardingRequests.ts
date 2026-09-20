@@ -17,6 +17,11 @@ export interface OnboardingRequest {
   request_type: OnboardingRequestType;
   status: OnboardingRequestStatus;
   notes: string | null;
+  // Written by the mobile app's "Request access" form (RequestLink.tsx):
+  // area_name, gps_address, region, delivery_method. Used to pre-fill the
+  // Add Facility dialog when a facility_owner request is approved (P0-06) —
+  // it's not enough on its own to create a facility_profile row.
+  metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
 }

@@ -55,3 +55,4 @@ playwright-report/
 
 # Local scratch, not source
 Claude outputs/
+lib/db/database.types.ts.tmp

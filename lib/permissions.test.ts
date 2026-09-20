@@ -71,6 +71,19 @@ describe("role defaults", () => {
     expect(ROLE_DEFAULTS.registrar).not.toContain("roles.edit");
   });
 
+  test("providers.create is granted to admin and registrar only (P0-06)", () => {
+    // Mirrors supabase/migrations/20260920150000_provider_invite_foundation.sql
+    // — registrars register facility owners in the field and need this to
+    // call registerProviderAccount(), same as admins.
+    expect(PERMISSION_KEYS).toContain("providers.create");
+    expect(ROLE_DEFAULTS.admin).toContain("providers.create");
+    expect(ROLE_DEFAULTS.registrar).toContain("providers.create");
+    for (const [role, keys] of Object.entries(ROLE_DEFAULTS)) {
+      if (role === "admin" || role === "registrar") continue;
+      expect(keys, `${role} should not default to providers.create`).not.toContain("providers.create");
+    }
+  });
+
   test("no non-super role gets roles.edit or admins.manage by default", () => {
     for (const [role, keys] of Object.entries(ROLE_DEFAULTS)) {
       expect(keys, `${role} must not default to roles.edit`).not.toContain("roles.edit");

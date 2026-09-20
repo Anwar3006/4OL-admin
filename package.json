@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=2048 next build",
-    "gen:types": "supabase gen types typescript --project-id rhbbxttxnvcziyqzptqs --schema public > lib/db/database.types.ts",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "gen:types": "supabase gen types typescript --project-id rhbbxttxnvcziyqzptqs --schema public > lib/db/database.types.ts.tmp && mv lib/db/database.types.ts.tmp lib/db/database.types.ts",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",

@@ -46,6 +46,7 @@ export const PERMISSION_CATALOG: PermissionDef[] = [
   p("facilities", "delete", "Delete facility profiles"),
   p("facilities", "approve", "Approve or reject pending facilities"),
   p("facilities", "feature", "Set top-rated rankings and featured placements"),
+  p("providers", "create", "Register provider (facility owner) accounts and deliver credentials"),
   p("reviews", "view", "View facility reviews and ratings"),
   p("reviews", "moderate", "Publish, reject or moderate reviews"),
   p("diseases", "view", "View diseases and conditions content"),
@@ -156,6 +157,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
     "dashboard.view", "dashboard.export",
     "admins.view", "users.view", "users.edit", "users.export", "tasks.view", "tasks.edit",
     "facilities.view", "facilities.create", "facilities.edit", "facilities.delete", "facilities.approve",
+    "providers.create",
     "reviews.view", "reviews.moderate",
     "diseases.view", "diseases.create", "diseases.edit", "diseases.delete", "diseases.feature", "diseases.export",
     "symptoms.view", "symptoms.create", "symptoms.edit", "symptoms.delete", "symptoms.feature",
@@ -197,6 +199,7 @@ export const ROLE_DEFAULTS: Record<Exclude<AdminRole, "super_admin">, string[]> 
   registrar: D([
     "dashboard.view",
     "facilityscout.assignments",
+    "providers.create",
   ]),
   content_manager: D([
     "dashboard.view",

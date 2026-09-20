@@ -37,11 +37,14 @@ import { useAddFacilityDialog } from "@/features/facilities/data/dialog-hooks";
 import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import FacilityCredentialsModal from "./facility-credentials-modal";
 import {
-  useCreateFacilityProfile,
+  FACILITY_PROFILE_QUERY_KEYS,
   useUpdateFacilityProfile,
 } from "@/features/facilities/data/useFacilities";
-import { notifyFacilityRegistration } from "@/actions/share-facility-login";
-import { createFacilityOwnerAccount } from "@/actions/facility-owner.actions";
+import { adminInsertFacilityOfferings } from "@/actions/facility-admin.actions";
+import { useRegisterProviderAccount } from "@/features/providers/data/useRegisterProviderAccount";
+import { useUpdateOnboardingRequestStatus } from "@/features/onboarding-requests/data/useOnboardingRequests";
+import type { CredentialDeliveryResult } from "@/features/providers/schema/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -69,19 +72,23 @@ const STEP_1_FIELDS: Array<Path<FacilityFormValues>> = [
 ];
 
 const AddFacilityDialog = () => {
-  const { isOpen, data: rawData, isEditMode, close } = useAddFacilityDialog();
+  const { isOpen, data: rawData, metadata: openMetadata, isEditMode, close } = useAddFacilityDialog();
   const data = rawData as TFacilityProfileOutput;
   const { data: session } = useSupabaseSession();
+  const registerProviderAccount = useRegisterProviderAccount();
+  const updateOnboardingRequestStatus = useUpdateOnboardingRequestStatus();
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [facilityModal, setFacilityModal] = useState<boolean>(false);
   const [credentials, setCredentials] = useState<{
     email: string;
-    password: string;
     facilityName: string;
     phoneNumber: string;
     ownerNumber: string;
+    providerId: string;
+    deliveries: CredentialDeliveryResult[];
   } | null>(null);
 
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -184,7 +191,9 @@ const AddFacilityDialog = () => {
     }
   }, [isOpen, isEditMode, data, form.reset]);
 
-  // Create mode: reset to defaults
+  // Create mode: reset to defaults, merging in a prefill (Onboarding
+  // Requests' Approve opens this dialog with the request's known fields —
+  // see openMetadata.onboardingRequestId below) when one was passed.
   useEffect(() => {
     if (isOpen && !isEditMode) {
       form.reset({
@@ -214,12 +223,13 @@ const AddFacilityDialog = () => {
         keywords: "",
         latitude: 0,
         longitude: 0,
+        ...(data as any),
       });
       setExistingImages([]);
       setImagesToDelete([]);
       setNewlyUploadedFiles([]);
     }
-  }, [isOpen, isEditMode, form.reset]);
+  }, [isOpen, isEditMode, data, form.reset]);
 
   // Auto-populate address from GPS coordinates
   useEffect(() => {
@@ -373,7 +383,6 @@ const AddFacilityDialog = () => {
     if (isFeatured) setFeaturedImage(null);
   };
 
-  const facilityMutation = useCreateFacilityProfile();
   const facilityUpdateMutation = useUpdateFacilityProfile();
 
   // Render location detection section
@@ -503,59 +512,47 @@ const AddFacilityDialog = () => {
       }
 
       // ── CREATE MODE ───────────────────────────────────────────────────────
-      // The temporary password is the GPS address (as per original logic).
-      // The owner is forced to change it on first login.
-      const temporaryPassword = payload.gps_address;
+      // registerProviderAccount() creates the owner's account (no password —
+      // a one-time sign-in link is delivered instead), the facility row, and
+      // the invite, all server-side (P0-06).
+      const { adminId: _adminId, ...registrationPayload } = payload;
+      const result = await registerProviderAccount.mutateAsync(registrationPayload);
 
-      const { userId: ownerId, error: accountError } =
-        await createFacilityOwnerAccount({
-          email: payload.owner_email,
-          temporaryPassword,
-          firstName: payload.first_name,
-          lastName: payload.last_name,
-          phoneNumber: payload.person_contact_number,
-        });
-
-      if (accountError) throw new Error(accountError);
-      if (!ownerId)
-        throw new Error("Could not assign an owner to this facility.");
-
-      const result = await facilityMutation.mutateAsync({
-        ...payload,
-        ownerId,
-        featured_image_url: payload.featured_image_url,
-      });
-
-      if (result) {
-        toast.success("Facility Registered!");
-        setStep(1);
-        close();
-
-        setCredentials({
-          email: payload.owner_email,
-          password: temporaryPassword,
-          facilityName: payload.facility_name,
-          phoneNumber: payload.contact_number,
-          ownerNumber: payload.whatsapp_number || payload.person_contact_number,
-        });
-
+      if (payload.offerings?.length) {
         try {
-          await notifyFacilityRegistration({
-            facilityWhatsapp: payload.whatsapp_number || payload.contact_number,
-            facilityPhone: payload.contact_number,
-            ownerPhone: payload.person_contact_number,
-            facilityName: payload.facility_name,
-            email: payload.owner_email,
-            gpsAddress: payload.gps_address,
-          });
-        } catch (notifyError) {
-          console.error("Notification Error:", notifyError);
-          toast.warning(
-            "Facility registered, but notification delivery failed.",
+          await adminInsertFacilityOfferings(
+            payload.offerings.map((o: any) => ({
+              ...o,
+              facility_id: result.providerId,
+            })),
           );
+        } catch (offeringError) {
+          console.error("Offerings error:", offeringError);
         }
+      }
+      queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
 
-        setFacilityModal(true);
+      toast.success("Facility Registered!");
+      setStep(1);
+      close();
+
+      setCredentials({
+        email: payload.owner_email,
+        facilityName: payload.facility_name,
+        phoneNumber: payload.contact_number,
+        ownerNumber: payload.whatsapp_number || payload.person_contact_number,
+        providerId: result.providerId,
+        deliveries: result.deliveries,
+      });
+      setFacilityModal(true);
+
+      // Onboarding Requests' Approve opened this dialog pre-filled — flip
+      // that request to approved only now that the facility actually exists.
+      if (openMetadata?.onboardingRequestId) {
+        updateOnboardingRequestStatus.mutate({
+          id: openMetadata.onboardingRequestId,
+          status: "approved",
+        });
       }
     } catch (error: any) {
       console.error("Error: ", error.message);

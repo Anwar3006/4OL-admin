@@ -25,6 +25,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/support",
   "/under-construction",
   "/delete-account",
+  "/auth/welcome",
 ];
 
 function isPublicPath(pathname: string) {

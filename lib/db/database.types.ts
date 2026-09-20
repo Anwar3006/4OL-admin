@@ -2472,6 +2472,48 @@ export type Database = {
           },
         ]
       }
+      credential_deliveries: {
+        Row: {
+          attempt: number
+          channel: string
+          created_at: string
+          created_by: string | null
+          destination_masked: string
+          error: string | null
+          id: string
+          provider_id: string | null
+          provider_message_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          attempt?: number
+          channel: string
+          created_at?: string
+          created_by?: string | null
+          destination_masked: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_message_id?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          attempt?: number
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          destination_masked?: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_message_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       delete_account_requests: {
         Row: {
           created_at: string
@@ -12937,36 +12979,6 @@ export type Database = {
         }
         Relationships: []
       }
-      twilio_whatsapp_handshakes: {
-        Row: {
-          created_at: string | null
-          expires_at: string | null
-          facility_email: string
-          gps_address: string
-          id: string
-          phone_number: string
-          status: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at?: string | null
-          facility_email: string
-          gps_address: string
-          id?: string
-          phone_number: string
-          status?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string | null
-          facility_email?: string
-          gps_address?: string
-          id?: string
-          phone_number?: string
-          status?: string | null
-        }
-        Relationships: []
-      }
       user: {
         Row: {
           banned: boolean | null
@@ -13133,8 +13145,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
-          admin_permissions: Json | null
-          admin_role: Database["public"]["Enums"]["admin_role"] | null
+          account_types: string[]
           avatar_url: string | null
           created_at: string
           deleted_at: string | null
@@ -13144,7 +13155,6 @@ export type Database = {
           first_name: string
           fitcoins_balance: number | null
           has_completed_fitness_onboarding: boolean
-          is_admin: boolean | null
           last_active: string | null
           last_login_at: string | null
           last_name: string
@@ -13175,14 +13185,13 @@ export type Database = {
           timezone: string
           updated_at: string
           user_id: string
-          user_type: string
+          user_type: string | null
           whatsapp_opt_in: boolean
           whatsapp_opt_in_at: string | null
           whitelisted_ips: string[] | null
         }
         Insert: {
-          admin_permissions?: Json | null
-          admin_role?: Database["public"]["Enums"]["admin_role"] | null
+          account_types?: string[]
           avatar_url?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -13192,7 +13201,6 @@ export type Database = {
           first_name: string
           fitcoins_balance?: number | null
           has_completed_fitness_onboarding?: boolean
-          is_admin?: boolean | null
           last_active?: string | null
           last_login_at?: string | null
           last_name: string
@@ -13223,14 +13231,13 @@ export type Database = {
           timezone?: string
           updated_at?: string
           user_id: string
-          user_type?: string
+          user_type?: string | null
           whatsapp_opt_in?: boolean
           whatsapp_opt_in_at?: string | null
           whitelisted_ips?: string[] | null
         }
         Update: {
-          admin_permissions?: Json | null
-          admin_role?: Database["public"]["Enums"]["admin_role"] | null
+          account_types?: string[]
           avatar_url?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -13240,7 +13247,6 @@ export type Database = {
           first_name?: string
           fitcoins_balance?: number | null
           has_completed_fitness_onboarding?: boolean
-          is_admin?: boolean | null
           last_active?: string | null
           last_login_at?: string | null
           last_name?: string
@@ -13271,7 +13277,7 @@ export type Database = {
           timezone?: string
           updated_at?: string
           user_id?: string
-          user_type?: string
+          user_type?: string | null
           whatsapp_opt_in?: boolean
           whatsapp_opt_in_at?: string | null
           whitelisted_ips?: string[] | null
@@ -13925,6 +13931,7 @@ export type Database = {
     }
     Functions: {
       accept_enquiry_offer: { Args: { p_response_id: string }; Returns: Json }
+      account_types_for_user_type: { Args: { p: string }; Returns: string[] }
       activate_fitness_plan: {
         Args: { p_plan_id: string }
         Returns: {
@@ -14137,9 +14144,9 @@ export type Database = {
         }
         Returns: {
           allowed: boolean
+          rate_window_start: string
           request_count: number
           retry_after_seconds: number
-          window_start: string
         }[]
       }
       cleanup_expired_otps: { Args: never; Returns: undefined }
@@ -14629,6 +14636,7 @@ export type Database = {
         Args: { time_filter?: string }
         Returns: Json
       }
+      get_user_id_by_email: { Args: { p_email: string }; Returns: string }
       get_user_kpi_stats: { Args: never; Returns: Json }
       get_whatsapp_stats: { Args: never; Returns: Json }
       global_search: { Args: { search_term: string }; Returns: Json }
@@ -15130,6 +15138,7 @@ export type Database = {
         Returns: boolean
       }
       user_has_push_token: { Args: { p_user_id: string }; Returns: boolean }
+      user_type_for_account_types: { Args: { p: string[] }; Returns: string }
       verify_cron_shared_secret: {
         Args: { p_secret: string }
         Returns: boolean
@@ -15159,7 +15168,6 @@ export type Database = {
         | "logout"
         | "broadcast"
         | "settings_change"
-      admin_role: "super_admin" | "admin" | "moderator" | "support" | "viewer"
       broadcast_status:
         | "draft"
         | "scheduled"
@@ -15441,7 +15449,6 @@ export const Constants = {
         "broadcast",
         "settings_change",
       ],
-      admin_role: ["super_admin", "admin", "moderator", "support", "viewer"],
       broadcast_status: [
         "draft",
         "scheduled",

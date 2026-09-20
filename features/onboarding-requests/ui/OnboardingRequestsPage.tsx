@@ -13,6 +13,8 @@ import { createOnboardingColumns } from "./onboardingColumns";
 import { DataTable } from "@/components/Data-Table/data-table";
 import SectionHeader from "@/components/SectionHeader";
 import { Input } from "@/components/ui/input";
+import { useAddFacilityDialog } from "@/features/facilities/data/dialog-hooks";
+import AddFacilityDialog from "@/features/facilities/ui/add-facility-dialog";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +62,7 @@ function OnboardingSection() {
 
   const updateStatus = useUpdateOnboardingRequestStatus();
   const deleteRequest = useDeleteOnboardingRequest();
+  const addFacilityDialog = useAddFacilityDialog();
 
   const pagination = useMemo(
     () =>
@@ -97,13 +100,49 @@ function OnboardingSection() {
     [deleteRequest],
   );
 
+  // facility_owner: onboarding_requests only captures name/business/email/
+  // phone/+metadata(area_name, gps_address, region) — nowhere near enough
+  // for a facility_profile row (no street, district, coordinates, type,
+  // ownership, image…). Approve opens the real registration form pre-filled
+  // instead of guessing the rest; the request flips to approved only once
+  // that form's submit actually creates the account (add-facility-dialog.tsx).
+  // ibp_invite keeps today's plain status flip — IBP retires in P0-12.
+  const handleApprove = useCallback(
+    (request: OnboardingRequest) => {
+      if (request.request_type !== "facility_owner") {
+        updateStatus.mutate({ id: request.id, status: "approved" });
+        return;
+      }
+      const metadata = (request.metadata ?? {}) as Record<string, unknown>;
+      addFacilityDialog.open(
+        {
+          first_name: request.first_name,
+          last_name: request.last_name,
+          facility_name: request.business_name,
+          owner_email: request.email,
+          person_contact_number: request.phone_number ?? "",
+          ...(typeof metadata.region === "string"
+            ? { region: metadata.region.toLowerCase() }
+            : {}),
+          ...(typeof metadata.gps_address === "string"
+            ? { gps_address: metadata.gps_address }
+            : {}),
+          ...(typeof metadata.area_name === "string" ? { area: metadata.area_name } : {}),
+        },
+        { onboardingRequestId: request.id },
+      );
+    },
+    [updateStatus, addFacilityDialog],
+  );
+
   const columns = useMemo(
     () =>
       createOnboardingColumns({
         onUpdateStatus: handleUpdateStatus,
+        onApprove: handleApprove,
         onDelete: handleDelete,
       }),
-    [handleUpdateStatus, handleDelete],
+    [handleUpdateStatus, handleApprove, handleDelete],
   );
 
   const pendingCount = data?.requests.filter((r) => r.status === "pending").length ?? 0;
@@ -234,6 +273,8 @@ function OnboardingSection() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AddFacilityDialog />
     </section>
   );
 }

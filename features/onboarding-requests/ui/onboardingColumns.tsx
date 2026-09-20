@@ -80,11 +80,13 @@ function TypeBadge({ type }: { type: string }) {
 
 interface OnboardingColumnsProps {
   onUpdateStatus: (id: string, status: OnboardingRequestStatus) => void;
+  onApprove: (request: OnboardingRequest) => void;
   onDelete: (id: string) => void;
 }
 
 export const createOnboardingColumns = ({
   onUpdateStatus,
+  onApprove,
   onDelete,
 }: OnboardingColumnsProps): ColumnDef<OnboardingRequest>[] => [
   {
@@ -156,7 +158,7 @@ export const createOnboardingColumns = ({
                   className="text-green-600 dark:text-green-400 focus:text-green-600 focus:bg-green-50 gap-2"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onUpdateStatus(req.id, "approved");
+                    onApprove(req);
                   }}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
