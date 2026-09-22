@@ -790,6 +790,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ambulance_dispatches_destination_facility_id_fkey"
+            columns: ["destination_facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ambulance_dispatches_dispatcher_id_fkey"
             columns: ["dispatcher_id"]
             isOneToOne: false
@@ -817,6 +824,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ambulance_dispatches_rerouted_from_facility_id_fkey"
+            columns: ["rerouted_from_facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ambulances: {
@@ -828,6 +842,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_ping_at: string | null
+          operator_id: string | null
           region: string | null
           service_provider: string
           status: string
@@ -841,6 +856,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_ping_at?: string | null
+          operator_id?: string | null
           region?: string | null
           service_provider?: string
           status?: string
@@ -854,6 +870,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_ping_at?: string | null
+          operator_id?: string | null
           region?: string | null
           service_provider?: string
           status?: string
@@ -866,6 +883,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "ambulances_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ambulances_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1374,6 +1405,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bed_tracker_facilities_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "bed_tracker_facilities_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
@@ -1568,6 +1606,30 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      capabilities: {
+        Row: {
+          applies_to: Database["public"]["Enums"]["provider_kind"][]
+          description: string | null
+          key: string
+          label: string
+          requires_item_review: boolean
+        }
+        Insert: {
+          applies_to: Database["public"]["Enums"]["provider_kind"][]
+          description?: string | null
+          key: string
+          label: string
+          requires_item_review?: boolean
+        }
+        Update: {
+          applies_to?: Database["public"]["Enums"]["provider_kind"][]
+          description?: string | null
+          key?: string
+          label?: string
+          requires_item_review?: boolean
+        }
+        Relationships: []
       }
       categories: {
         Row: {
@@ -1808,6 +1870,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "collector_footprints_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       collector_submissions: {
@@ -1866,6 +1935,13 @@ export type Database = {
             columns: ["facility_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collector_submissions_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -2511,6 +2587,33 @@ export type Database = {
           provider_message_id?: string | null
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      credential_types: {
+        Row: {
+          applies_to: Database["public"]["Enums"]["provider_kind"][]
+          grants: string[]
+          has_expiry: boolean
+          key: string
+          label: string
+          regulator: string
+        }
+        Insert: {
+          applies_to: Database["public"]["Enums"]["provider_kind"][]
+          grants?: string[]
+          has_expiry?: boolean
+          key: string
+          label: string
+          regulator: string
+        }
+        Update: {
+          applies_to?: Database["public"]["Enums"]["provider_kind"][]
+          grants?: string[]
+          has_expiry?: boolean
+          key?: string
+          label?: string
+          regulator?: string
         }
         Relationships: []
       }
@@ -3219,6 +3322,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "enquiry_responses_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "enquiry_responses_ibp_id_fkey"
             columns: ["ibp_id"]
             isOneToOne: false
@@ -3537,6 +3647,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "facility_conversations_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       facility_favorites: {
@@ -3564,6 +3681,13 @@ export type Database = {
             columns: ["facility_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_favorites_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -3620,217 +3744,12 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      facility_profile: {
-        Row: {
-          accepts_nhis: boolean | null
-          admin_notes: string | null
-          amenities: Json | null
-          approved_at: string | null
-          approved_by: string | null
-          area: string
-          avg_rating: number | null
-          business_hours: Json | null
-          contact_number: string
-          country: string
-          created_at: string
-          district: string
-          email: string | null
-          facility_name: string
-          facility_type: string
-          feature_end: string | null
-          feature_start: string | null
-          feature_type: string | null
-          featured_image_url: string
-          featured_order: number | null
-          first_name: string
-          gps_address: string
-          hefra_registration_number: string | null
-          id: string
-          is_featured: boolean | null
-          is_featured_paused: boolean
-          is_top_rated: boolean | null
-          keywords: Json | null
-          last_name: string
-          latitude: number
-          location: unknown
-          longitude: number
-          media_urls: Json | null
-          owner_email: string
-          owner_id: string
-          ownership: string
-          person_contact_number: string
-          position: string
-          post_code: string
-          rating_average: number | null
-          rating_count: number | null
-          region: Database["public"]["Enums"]["region_enum"]
-          rejection_reason: string | null
-          services: Json | null
-          status: Database["public"]["Enums"]["facility_status_enum"]
-          status_changed_at: string | null
-          status_reason: string | null
-          street: string
-          submitted_by: string | null
-          subscription_expires_at: string | null
-          subscription_tier: string | null
-          top_rated_rank: number | null
-          top_rated_set_at: string | null
-          top_rated_set_by: string | null
-          updated_at: string | null
-          verification_documents: Json | null
-          view_count: number | null
-          whatsapp_number: string
-        }
-        Insert: {
-          accepts_nhis?: boolean | null
-          admin_notes?: string | null
-          amenities?: Json | null
-          approved_at?: string | null
-          approved_by?: string | null
-          area: string
-          avg_rating?: number | null
-          business_hours?: Json | null
-          contact_number: string
-          country?: string
-          created_at?: string
-          district: string
-          email?: string | null
-          facility_name: string
-          facility_type: string
-          feature_end?: string | null
-          feature_start?: string | null
-          feature_type?: string | null
-          featured_image_url: string
-          featured_order?: number | null
-          first_name: string
-          gps_address: string
-          hefra_registration_number?: string | null
-          id?: string
-          is_featured?: boolean | null
-          is_featured_paused?: boolean
-          is_top_rated?: boolean | null
-          keywords?: Json | null
-          last_name: string
-          latitude: number
-          location?: unknown
-          longitude: number
-          media_urls?: Json | null
-          owner_email: string
-          owner_id: string
-          ownership: string
-          person_contact_number: string
-          position: string
-          post_code: string
-          rating_average?: number | null
-          rating_count?: number | null
-          region?: Database["public"]["Enums"]["region_enum"]
-          rejection_reason?: string | null
-          services?: Json | null
-          status?: Database["public"]["Enums"]["facility_status_enum"]
-          status_changed_at?: string | null
-          status_reason?: string | null
-          street: string
-          submitted_by?: string | null
-          subscription_expires_at?: string | null
-          subscription_tier?: string | null
-          top_rated_rank?: number | null
-          top_rated_set_at?: string | null
-          top_rated_set_by?: string | null
-          updated_at?: string | null
-          verification_documents?: Json | null
-          view_count?: number | null
-          whatsapp_number: string
-        }
-        Update: {
-          accepts_nhis?: boolean | null
-          admin_notes?: string | null
-          amenities?: Json | null
-          approved_at?: string | null
-          approved_by?: string | null
-          area?: string
-          avg_rating?: number | null
-          business_hours?: Json | null
-          contact_number?: string
-          country?: string
-          created_at?: string
-          district?: string
-          email?: string | null
-          facility_name?: string
-          facility_type?: string
-          feature_end?: string | null
-          feature_start?: string | null
-          feature_type?: string | null
-          featured_image_url?: string
-          featured_order?: number | null
-          first_name?: string
-          gps_address?: string
-          hefra_registration_number?: string | null
-          id?: string
-          is_featured?: boolean | null
-          is_featured_paused?: boolean
-          is_top_rated?: boolean | null
-          keywords?: Json | null
-          last_name?: string
-          latitude?: number
-          location?: unknown
-          longitude?: number
-          media_urls?: Json | null
-          owner_email?: string
-          owner_id?: string
-          ownership?: string
-          person_contact_number?: string
-          position?: string
-          post_code?: string
-          rating_average?: number | null
-          rating_count?: number | null
-          region?: Database["public"]["Enums"]["region_enum"]
-          rejection_reason?: string | null
-          services?: Json | null
-          status?: Database["public"]["Enums"]["facility_status_enum"]
-          status_changed_at?: string | null
-          status_reason?: string | null
-          street?: string
-          submitted_by?: string | null
-          subscription_expires_at?: string | null
-          subscription_tier?: string | null
-          top_rated_rank?: number | null
-          top_rated_set_at?: string | null
-          top_rated_set_by?: string | null
-          updated_at?: string | null
-          verification_documents?: Json | null
-          view_count?: number | null
-          whatsapp_number?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "facility_profile_approved_by_fkey"
-            columns: ["approved_by"]
+            foreignKeyName: "facility_offerings_facility_id_facility_profile_id_fk"
+            columns: ["facility_id"]
             isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "facility_profile_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "facility_profile_submitted_by_fkey"
-            columns: ["submitted_by"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "facility_profile_top_rated_set_by_fkey"
-            columns: ["top_rated_set_by"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3883,6 +3802,13 @@ export type Database = {
             columns: ["facility_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_reviews_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -4024,6 +3950,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "facility_scout_referrals_referred_facility_id_fkey"
+            columns: ["referred_facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "facility_scout_referrals_referred_user_id_fkey"
             columns: ["referred_user_id"]
             isOneToOne: false
@@ -4129,6 +4062,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "facility_scout_submissions_matched_facility_id_fkey"
+            columns: ["matched_facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "facility_scout_submissions_reviewed_by_fkey"
             columns: ["reviewed_by"]
             isOneToOne: false
@@ -4190,6 +4130,13 @@ export type Database = {
             columns: ["facility_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_subscriptions_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -5853,6 +5800,7 @@ export type Database = {
           id: string
           is_verified: boolean | null
           profile_video_url: string | null
+          provider_id: string | null
           rating_average: number | null
           rating_count: number | null
           social_links: Json | null
@@ -5874,6 +5822,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           profile_video_url?: string | null
+          provider_id?: string | null
           rating_average?: number | null
           rating_count?: number | null
           social_links?: Json | null
@@ -5895,6 +5844,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           profile_video_url?: string | null
+          provider_id?: string | null
           rating_average?: number | null
           rating_count?: number | null
           social_links?: Json | null
@@ -5909,6 +5859,20 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fitness_trainers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitness_trainers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fitness_trainers_user_id_fkey"
             columns: ["user_id"]
@@ -6251,6 +6215,13 @@ export type Database = {
             columns: ["affiliated_facility_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hcp_verifications_affiliated_facility_id_fkey"
+            columns: ["affiliated_facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -7007,6 +6978,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "job_postings_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       job_saved: {
@@ -7654,6 +7632,13 @@ export type Database = {
             columns: ["pharmacy_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_enquiries_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
           {
@@ -9711,6 +9696,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "period_preconception_appointments_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       period_pregnancy_tests: {
@@ -10917,6 +10909,13 @@ export type Database = {
             referencedRelation: "facility_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pharmacy_campaigns_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pharmacy_marketing_campaigns: {
@@ -10981,6 +10980,13 @@ export type Database = {
             columns: ["pharmacy_id"]
             isOneToOne: false
             referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pharmacy_marketing_campaigns_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
         ]
@@ -11421,6 +11427,699 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      provider_activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_kind: string
+          after: Json | null
+          before: Json | null
+          created_at: string
+          device_id: string | null
+          id: number
+          provider_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_kind: string
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          device_id?: string | null
+          id?: never
+          provider_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_kind?: string
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          device_id?: string | null
+          id?: never
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_activity_log_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_activity_log_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_capabilities: {
+        Row: {
+          capability: string
+          credential_id: string | null
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          override_reason: string | null
+          provider_id: string
+          source: string
+        }
+        Insert: {
+          capability: string
+          credential_id?: string | null
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          override_reason?: string | null
+          provider_id: string
+          source: string
+        }
+        Update: {
+          capability?: string
+          credential_id?: string | null
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          override_reason?: string | null
+          provider_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_capabilities_capability_fkey"
+            columns: ["capability"]
+            isOneToOne: false
+            referencedRelation: "capabilities"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "provider_capabilities_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "provider_credentials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_capabilities_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_capabilities_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_catalogue_items: {
+        Row: {
+          capability_required: string | null
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          drug_id: string | null
+          duration_minutes: number | null
+          id: string
+          images: Json
+          item_type: string
+          name: string
+          price: number | null
+          provider_id: string
+          regulatory_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          stock_status: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          capability_required?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          drug_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          images?: Json
+          item_type: string
+          name: string
+          price?: number | null
+          provider_id: string
+          regulatory_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          stock_status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capability_required?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          drug_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          images?: Json
+          item_type?: string
+          name?: string
+          price?: number | null
+          provider_id?: string
+          regulatory_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          stock_status?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_catalogue_items_capability_required_fkey"
+            columns: ["capability_required"]
+            isOneToOne: false
+            referencedRelation: "capabilities"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "provider_catalogue_items_drug_id_fkey"
+            columns: ["drug_id"]
+            isOneToOne: false
+            referencedRelation: "drugs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_catalogue_items_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_catalogue_items_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_credentials: {
+        Row: {
+          created_at: string
+          credential_type: string
+          document_path: string | null
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          number: string
+          provider_id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credential_type: string
+          document_path?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          number: string
+          provider_id: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credential_type?: string
+          document_path?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          number?: string
+          provider_id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_credentials_credential_type_fkey"
+            columns: ["credential_type"]
+            isOneToOne: false
+            referencedRelation: "credential_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "provider_credentials_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_credentials_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_practitioner_details: {
+        Row: {
+          consult_modes: string[]
+          hcp_verification_id: string | null
+          home_visit_radius_km: number | null
+          languages: string[]
+          provider_id: string
+        }
+        Insert: {
+          consult_modes?: string[]
+          hcp_verification_id?: string | null
+          home_visit_radius_km?: number | null
+          languages?: string[]
+          provider_id: string
+        }
+        Update: {
+          consult_modes?: string[]
+          hcp_verification_id?: string | null
+          home_visit_radius_km?: number | null
+          languages?: string[]
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_practitioner_details_hcp_verification_id_fkey"
+            columns: ["hcp_verification_id"]
+            isOneToOne: true
+            referencedRelation: "hcp_verifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_practitioner_details_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_practitioner_details_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_private: {
+        Row: {
+          admin_notes: string | null
+          business_registration_number: string | null
+          owner_email: string | null
+          owner_first_name: string | null
+          owner_last_name: string | null
+          owner_phone: string | null
+          owner_position: string | null
+          provider_id: string
+          rejection_reason: string | null
+          status_reason: string | null
+          tin_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_registration_number?: string | null
+          owner_email?: string | null
+          owner_first_name?: string | null
+          owner_last_name?: string | null
+          owner_phone?: string | null
+          owner_position?: string | null
+          provider_id: string
+          rejection_reason?: string | null
+          status_reason?: string | null
+          tin_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_registration_number?: string | null
+          owner_email?: string | null
+          owner_first_name?: string | null
+          owner_last_name?: string | null
+          owner_phone?: string | null
+          owner_position?: string | null
+          provider_id?: string
+          rejection_reason?: string | null
+          status_reason?: string | null
+          tin_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_private_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_private_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_type_requirements: {
+        Row: {
+          credential_type: string
+          provider_type: string
+          required_for_activation: boolean
+        }
+        Insert: {
+          credential_type: string
+          provider_type: string
+          required_for_activation?: boolean
+        }
+        Update: {
+          credential_type?: string
+          provider_type?: string
+          required_for_activation?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_type_requirements_credential_type_fkey"
+            columns: ["credential_type"]
+            isOneToOne: false
+            referencedRelation: "credential_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "provider_type_requirements_provider_type_fkey"
+            columns: ["provider_type"]
+            isOneToOne: false
+            referencedRelation: "provider_types"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      provider_types: {
+        Row: {
+          directory_category: string | null
+          icon: string | null
+          is_active: boolean
+          is_listed: boolean
+          key: string
+          kind: Database["public"]["Enums"]["provider_kind"]
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          directory_category?: string | null
+          icon?: string | null
+          is_active?: boolean
+          is_listed?: boolean
+          key: string
+          kind: Database["public"]["Enums"]["provider_kind"]
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          directory_category?: string | null
+          icon?: string | null
+          is_active?: boolean
+          is_listed?: boolean
+          key?: string
+          kind?: Database["public"]["Enums"]["provider_kind"]
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      provider_vendor_details: {
+        Row: {
+          delivery_radius_km: number | null
+          fulfilment_modes: string[]
+          min_order_amount: number | null
+          provider_id: string
+        }
+        Insert: {
+          delivery_radius_km?: number | null
+          fulfilment_modes?: string[]
+          min_order_amount?: number | null
+          provider_id: string
+        }
+        Update: {
+          delivery_radius_km?: number | null
+          fulfilment_modes?: string[]
+          min_order_amount?: number | null
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_vendor_details_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_vendor_details_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          accepts_nhis: boolean | null
+          amenities: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          area: string
+          avg_rating: number | null
+          business_hours: Json | null
+          contact_number: string
+          country: string
+          created_at: string
+          description: string | null
+          district: string
+          email: string | null
+          feature_end: string | null
+          feature_start: string | null
+          feature_type: string | null
+          featured_image_url: string
+          featured_order: number | null
+          gps_address: string
+          id: string
+          is_featured: boolean | null
+          is_featured_paused: boolean
+          is_online_only: boolean
+          is_top_rated: boolean | null
+          keywords: Json | null
+          kind: Database["public"]["Enums"]["provider_kind"]
+          latitude: number
+          location: unknown
+          longitude: number
+          media_urls: Json | null
+          name: string
+          owner_id: string
+          ownership: string
+          post_code: string
+          provider_type: string
+          rating_average: number | null
+          rating_count: number | null
+          region: Database["public"]["Enums"]["region_enum"]
+          services: Json | null
+          status: Database["public"]["Enums"]["facility_status_enum"]
+          status_changed_at: string | null
+          street: string
+          submitted_by: string | null
+          subscription_expires_at: string | null
+          subscription_tier: string | null
+          top_rated_rank: number | null
+          top_rated_set_at: string | null
+          top_rated_set_by: string | null
+          updated_at: string | null
+          verification_status: string
+          view_count: number | null
+          whatsapp_number: string
+        }
+        Insert: {
+          accepts_nhis?: boolean | null
+          amenities?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          area: string
+          avg_rating?: number | null
+          business_hours?: Json | null
+          contact_number: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          district: string
+          email?: string | null
+          feature_end?: string | null
+          feature_start?: string | null
+          feature_type?: string | null
+          featured_image_url: string
+          featured_order?: number | null
+          gps_address: string
+          id?: string
+          is_featured?: boolean | null
+          is_featured_paused?: boolean
+          is_online_only?: boolean
+          is_top_rated?: boolean | null
+          keywords?: Json | null
+          kind: Database["public"]["Enums"]["provider_kind"]
+          latitude: number
+          location?: unknown
+          longitude: number
+          media_urls?: Json | null
+          name: string
+          owner_id: string
+          ownership: string
+          post_code: string
+          provider_type: string
+          rating_average?: number | null
+          rating_count?: number | null
+          region?: Database["public"]["Enums"]["region_enum"]
+          services?: Json | null
+          status?: Database["public"]["Enums"]["facility_status_enum"]
+          status_changed_at?: string | null
+          street: string
+          submitted_by?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
+          top_rated_rank?: number | null
+          top_rated_set_at?: string | null
+          top_rated_set_by?: string | null
+          updated_at?: string | null
+          verification_status?: string
+          view_count?: number | null
+          whatsapp_number: string
+        }
+        Update: {
+          accepts_nhis?: boolean | null
+          amenities?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          area?: string
+          avg_rating?: number | null
+          business_hours?: Json | null
+          contact_number?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          district?: string
+          email?: string | null
+          feature_end?: string | null
+          feature_start?: string | null
+          feature_type?: string | null
+          featured_image_url?: string
+          featured_order?: number | null
+          gps_address?: string
+          id?: string
+          is_featured?: boolean | null
+          is_featured_paused?: boolean
+          is_online_only?: boolean
+          is_top_rated?: boolean | null
+          keywords?: Json | null
+          kind?: Database["public"]["Enums"]["provider_kind"]
+          latitude?: number
+          location?: unknown
+          longitude?: number
+          media_urls?: Json | null
+          name?: string
+          owner_id?: string
+          ownership?: string
+          post_code?: string
+          provider_type?: string
+          rating_average?: number | null
+          rating_count?: number | null
+          region?: Database["public"]["Enums"]["region_enum"]
+          services?: Json | null
+          status?: Database["public"]["Enums"]["facility_status_enum"]
+          status_changed_at?: string | null
+          street?: string
+          submitted_by?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
+          top_rated_rank?: number | null
+          top_rated_set_at?: string | null
+          top_rated_set_by?: string | null
+          updated_at?: string | null
+          verification_status?: string
+          view_count?: number | null
+          whatsapp_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_profile_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_top_rated_set_by_fkey"
+            columns: ["top_rated_set_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "providers_provider_type_fkey"
+            columns: ["provider_type"]
+            isOneToOne: false
+            referencedRelation: "provider_types"
+            referencedColumns: ["key"]
           },
         ]
       }
@@ -12878,6 +13577,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transaction_records_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transaction_records_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -13731,6 +14437,217 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_profile: {
+        Row: {
+          accepts_nhis: boolean | null
+          amenities: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          area: string | null
+          avg_rating: number | null
+          business_hours: Json | null
+          contact_number: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          email: string | null
+          facility_name: string | null
+          facility_type: string | null
+          feature_end: string | null
+          feature_start: string | null
+          feature_type: string | null
+          featured_image_url: string | null
+          featured_order: number | null
+          gps_address: string | null
+          id: string | null
+          is_featured: boolean | null
+          is_featured_paused: boolean | null
+          is_online_only: boolean | null
+          is_top_rated: boolean | null
+          keywords: Json | null
+          kind: Database["public"]["Enums"]["provider_kind"] | null
+          latitude: number | null
+          location: unknown
+          longitude: number | null
+          media_urls: Json | null
+          owner_id: string | null
+          ownership: string | null
+          post_code: string | null
+          provider_type: string | null
+          rating_average: number | null
+          rating_count: number | null
+          region: Database["public"]["Enums"]["region_enum"] | null
+          services: Json | null
+          status: Database["public"]["Enums"]["facility_status_enum"] | null
+          status_changed_at: string | null
+          street: string | null
+          submitted_by: string | null
+          subscription_expires_at: string | null
+          subscription_tier: string | null
+          top_rated_rank: number | null
+          top_rated_set_at: string | null
+          top_rated_set_by: string | null
+          updated_at: string | null
+          verification_status: string | null
+          view_count: number | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          accepts_nhis?: boolean | null
+          amenities?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          area?: string | null
+          avg_rating?: number | null
+          business_hours?: Json | null
+          contact_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          facility_name?: string | null
+          facility_type?: string | null
+          feature_end?: string | null
+          feature_start?: string | null
+          feature_type?: string | null
+          featured_image_url?: string | null
+          featured_order?: number | null
+          gps_address?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          is_featured_paused?: boolean | null
+          is_online_only?: boolean | null
+          is_top_rated?: boolean | null
+          keywords?: Json | null
+          kind?: Database["public"]["Enums"]["provider_kind"] | null
+          latitude?: number | null
+          location?: unknown
+          longitude?: number | null
+          media_urls?: Json | null
+          owner_id?: string | null
+          ownership?: string | null
+          post_code?: string | null
+          provider_type?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          region?: Database["public"]["Enums"]["region_enum"] | null
+          services?: Json | null
+          status?: Database["public"]["Enums"]["facility_status_enum"] | null
+          status_changed_at?: string | null
+          street?: string | null
+          submitted_by?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
+          top_rated_rank?: number | null
+          top_rated_set_at?: string | null
+          top_rated_set_by?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+          view_count?: number | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          accepts_nhis?: boolean | null
+          amenities?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          area?: string | null
+          avg_rating?: number | null
+          business_hours?: Json | null
+          contact_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          facility_name?: string | null
+          facility_type?: string | null
+          feature_end?: string | null
+          feature_start?: string | null
+          feature_type?: string | null
+          featured_image_url?: string | null
+          featured_order?: number | null
+          gps_address?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          is_featured_paused?: boolean | null
+          is_online_only?: boolean | null
+          is_top_rated?: boolean | null
+          keywords?: Json | null
+          kind?: Database["public"]["Enums"]["provider_kind"] | null
+          latitude?: number | null
+          location?: unknown
+          longitude?: number | null
+          media_urls?: Json | null
+          owner_id?: string | null
+          ownership?: string | null
+          post_code?: string | null
+          provider_type?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          region?: Database["public"]["Enums"]["region_enum"] | null
+          services?: Json | null
+          status?: Database["public"]["Enums"]["facility_status_enum"] | null
+          status_changed_at?: string | null
+          street?: string | null
+          submitted_by?: string | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
+          top_rated_rank?: number | null
+          top_rated_set_at?: string | null
+          top_rated_set_by?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+          view_count?: number | null
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_profile_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "facility_profile_top_rated_set_by_fkey"
+            columns: ["top_rated_set_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "providers_provider_type_fkey"
+            columns: ["facility_type"]
+            isOneToOne: false
+            referencedRelation: "provider_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "providers_provider_type_fkey"
+            columns: ["provider_type"]
+            isOneToOne: false
+            referencedRelation: "provider_types"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       fitness_challenge_leaderboard: {
         Row: {
           avatar_url: string | null
@@ -13930,6 +14847,11 @@ export type Database = {
       }
     }
     Functions: {
+      _map_legacy_facility_type_filter: { Args: { p_value: string }; Returns: string }
+      _resolve_legacy_provider_type: {
+        Args: { p_facility_type: string }
+        Returns: Record<string, unknown>
+      }
       accept_enquiry_offer: { Args: { p_response_id: string }; Returns: Json }
       account_types_for_user_type: { Args: { p: string }; Returns: string[] }
       activate_fitness_plan: {
@@ -14187,6 +15109,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_provider: {
+        Args: {
+          p_admin_id: string
+          p_first_name: string
+          p_kind: Database["public"]["Enums"]["provider_kind"]
+          p_last_name: string
+          p_owner_id: string
+          p_phone_number: string
+          p_provider_data: Json
+          p_provider_type: string
+        }
+        Returns: Json
+      }
       delete_healthy_living_info: { Args: { p_id: string }; Returns: undefined }
       delete_my_cv: { Args: never; Returns: Json }
       delete_old_notifications: { Args: never; Returns: undefined }
@@ -14297,6 +15232,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
       }
+      fn_provider_credential_expiry_sweep: { Args: never; Returns: undefined }
       fn_record_period_cycle: {
         Args: {
           p_confidence?: number
@@ -14567,6 +15503,20 @@ export type Database = {
       get_my_cv: { Args: never; Returns: Json }
       get_my_entitlement: { Args: never; Returns: Json }
       get_my_medication_enquiries: { Args: never; Returns: Json }
+      get_my_provider_context: {
+        Args: never
+        Returns: {
+          capabilities: string[]
+          has_beds: boolean
+          kind: Database["public"]["Enums"]["provider_kind"]
+          name: string
+          provider_id: string
+          provider_type: string
+          status: Database["public"]["Enums"]["facility_status_enum"]
+          tier: string
+          verification_status: string
+        }[]
+      }
       get_notification_analytics: {
         Args: { time_filter?: string }
         Returns: Json
@@ -14643,6 +15593,10 @@ export type Database = {
       global_search_v2: {
         Args: { p_result_limit?: number; p_search_term: string }
         Returns: Json
+      }
+      grant_provider_capability_override: {
+        Args: { p_capability: string; p_provider_id: string; p_reason: string }
+        Returns: undefined
       }
       has_4ol_permission: {
         Args: { p_key: string; p_user_id: string }
@@ -14835,6 +15789,10 @@ export type Database = {
         Args: { p_enquiry_id: string; p_reason: string }
         Returns: Json
       }
+      recompute_provider_verification_status: {
+        Args: { p_provider_id: string }
+        Returns: undefined
+      }
       reconcile_notification_receipts: { Args: never; Returns: Json }
       record_app_review_prompt: {
         Args: { p_action: string }
@@ -14962,6 +15920,10 @@ export type Database = {
         Returns: undefined
       }
       revoke_my_device: { Args: { p_device_id: string }; Returns: boolean }
+      revoke_provider_capability: {
+        Args: { p_capability: string; p_provider_id: string }
+        Returns: undefined
+      }
       safe_to_timestamptz: { Args: { p_value: string }; Returns: string }
       save_my_cv: {
         Args: {
@@ -14985,6 +15947,32 @@ export type Database = {
           similarity: number
           strength: string
           strength_unit: string
+        }[]
+      }
+      search_providers: {
+        Args: {
+          p_capability?: string
+          p_kind?: Database["public"]["Enums"]["provider_kind"]
+          p_lat?: number
+          p_limit?: number
+          p_lng?: number
+          p_offset?: number
+          p_query?: string
+          p_radius_km?: number
+          p_type?: string
+        }
+        Returns: {
+          area: string
+          distance_km: number
+          featured_image_url: string
+          id: string
+          is_online_only: boolean
+          kind: Database["public"]["Enums"]["provider_kind"]
+          name: string
+          provider_type: string
+          rating_average: number
+          rating_count: number
+          region: string
         }[]
       }
       search_top_rated_items: {
@@ -15033,6 +16021,17 @@ export type Database = {
           p_rating: number
         }
         Returns: Json
+      }
+      submit_credential: {
+        Args: {
+          p_document_path: string
+          p_expires?: string
+          p_issued?: string
+          p_number: string
+          p_provider_id: string
+          p_type: string
+        }
+        Returns: string
       }
       submit_medication_enquiry: { Args: { p: Json }; Returns: Json }
       submit_period_trivia: {
@@ -15120,6 +16119,10 @@ export type Database = {
         }
       }
       update_marketing_statuses: { Args: never; Returns: undefined }
+      update_my_provider: {
+        Args: { p_id: string; p_patch: Json }
+        Returns: undefined
+      }
       update_symptom_complex: {
         Args: {
           body_part_ids: string[]
@@ -15129,6 +16132,10 @@ export type Database = {
           s_payload: Json
           s_types: Json[]
         }
+        Returns: string
+      }
+      upsert_catalogue_item: {
+        Args: { p_id: string; p_patch: Json; p_provider_id: string }
         Returns: string
       }
       upsert_job_alert: { Args: { p_prefs: Json }; Returns: Json }
@@ -15211,21 +16218,13 @@ export type Database = {
         | "refunded"
         | "disputed"
         | "resolved"
-      facility_status_enum: "pending" | "active" | "rejected" | "inactive"
-      facility_type_enum:
-        | "hospitals_&_clinics"
-        | "herbal_centers"
-        | "diagnostic_labs"
-        | "pharmacies"
-        | "dental_clinics"
-        | "homes"
-        | "eye_clinics"
-        | "osteopathy_centers"
-        | "physiotherapy_centers"
-        | "prosthetics_centers"
-        | "psychiatric_centers"
-        | "ibps"
-        | "health_schools"
+      facility_status_enum:
+        | "pending"
+        | "active"
+        | "rejected"
+        | "inactive"
+        | "suspended"
+        | "draft"
       ibp_status: "pending" | "approved" | "suspended" | "rejected"
       ledger_category: "fitness" | "medication" | "facility" | "general"
       marketing_status_enum:
@@ -15266,6 +16265,12 @@ export type Database = {
         | "live"
         | "ended"
         | "cancelled"
+      provider_kind:
+        | "care_facility"
+        | "vendor"
+        | "practitioner"
+        | "trainer"
+        | "ambulance_operator"
       region_enum:
         | "ahafo"
         | "ashanti"
@@ -15498,21 +16503,13 @@ export const Constants = {
         "disputed",
         "resolved",
       ],
-      facility_status_enum: ["pending", "active", "rejected", "inactive"],
-      facility_type_enum: [
-        "hospitals_&_clinics",
-        "herbal_centers",
-        "diagnostic_labs",
-        "pharmacies",
-        "dental_clinics",
-        "homes",
-        "eye_clinics",
-        "osteopathy_centers",
-        "physiotherapy_centers",
-        "prosthetics_centers",
-        "psychiatric_centers",
-        "ibps",
-        "health_schools",
+      facility_status_enum: [
+        "pending",
+        "active",
+        "rejected",
+        "inactive",
+        "suspended",
+        "draft",
       ],
       ibp_status: ["pending", "approved", "suspended", "rejected"],
       ledger_category: ["fitness", "medication", "facility", "general"],
@@ -15558,6 +16555,13 @@ export const Constants = {
         "live",
         "ended",
         "cancelled",
+      ],
+      provider_kind: [
+        "care_facility",
+        "vendor",
+        "practitioner",
+        "trainer",
+        "ambulance_operator",
       ],
       region_enum: [
         "ahafo",

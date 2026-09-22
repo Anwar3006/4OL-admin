@@ -1,0 +1,12 @@
+-- P0-10 follow-up: the get_advisors security scan flagged
+-- public.facility_profile as ERROR-level security_definer_view immediately
+-- after 20260921100000 created it — a plain view (no security_invoker) runs
+-- as its owner (postgres, which owns providers and so bypasses its RLS)
+-- rather than as the querying role. Verified in a rolled-back dry run that
+-- switching to security_invoker double-enforces providers' own RLS through
+-- the view (as anon: same 3 active rows) instead of relying solely on the
+-- view's own WHERE clause, with no behaviour change for anon/authenticated —
+-- the two are equivalent for this view's condition. service_role writes
+-- (adminToggleFacilityFeatured/TopRated) are unaffected: service_role has
+-- bypassrls, independent of view invoker semantics.
+alter view public.facility_profile set (security_invoker = true, security_barrier = true);

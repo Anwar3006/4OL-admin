@@ -1,11 +1,3 @@
-/**
- * GET /api/facilities/export — CSV export of the facilities registry
- * (Gap Analysis Part H, header Export CSV). Returns text/csv; the client
- * triggers a download from the response. Gated on facilities.view — the
- * catalog intentionally has no facilities.export key (Part H kept the view
- * gate; revisit if a scoped export role appears).
- */
-
 import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
@@ -21,16 +13,17 @@ export async function GET() {
 
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from("facility_profile")
+    .from("providers")
     .select(
       `
-      facility_name, facility_type, region, district, area, contact_number,
-      email, status, hefra_registration_number, accepts_nhis,
+      name, provider_type, region, district, area, contact_number,
+      email, status, accepts_nhis,
       is_top_rated, top_rated_rank, is_featured, feature_type,
-      rating_average, rating_count, view_count, subscription_tier, created_at
+      rating_average, rating_count, view_count, subscription_tier, created_at,
+      provider_credentials (number, credential_type, status)
       `,
     )
-    .order("facility_name", { ascending: true });
+    .order("name", { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -58,17 +51,23 @@ export async function GET() {
     "Created At",
   ];
 
-  const lines = (data ?? []).map((row: any) =>
-    [
-      row.facility_name,
-      row.facility_type,
+  const lines = (data ?? []).map((row: any) => {
+    const hefraCredentials = (row.provider_credentials || []).filter(
+      (c: any) => c.credential_type === "hefra_facility_licence"
+    );
+    const hefraCredential =
+      hefraCredentials.find((c: any) => c.status === "verified") ?? hefraCredentials[0];
+
+    return [
+      row.name,
+      row.provider_type,
       row.region,
       row.district,
       row.area,
       row.contact_number,
       row.email,
       row.status,
-      row.hefra_registration_number,
+      hefraCredential?.number || "",
       row.accepts_nhis ? "Yes" : "No",
       row.is_top_rated ? "Yes" : "No",
       row.top_rated_rank ?? "",
@@ -81,8 +80,8 @@ export async function GET() {
       row.created_at,
     ]
       .map(csvCell)
-      .join(","),
-  );
+      .join(",");
+  });
 
   const csv = [header.map(csvCell).join(","), ...lines].join("\n");
   return new NextResponse(csv, {

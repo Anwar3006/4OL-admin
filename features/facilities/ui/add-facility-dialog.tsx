@@ -40,7 +40,6 @@ import {
   FACILITY_PROFILE_QUERY_KEYS,
   useUpdateFacilityProfile,
 } from "@/features/facilities/data/useFacilities";
-import { adminInsertFacilityOfferings } from "@/actions/facility-admin.actions";
 import { useRegisterProviderAccount } from "@/features/providers/data/useRegisterProviderAccount";
 import { useUpdateOnboardingRequestStatus } from "@/features/onboarding-requests/data/useOnboardingRequests";
 import type { CredentialDeliveryResult } from "@/features/providers/schema/types";
@@ -49,7 +48,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { OfferingsSection } from "./offerings-section";
 
 type FacilityFormValues = TFacilityProfileInput & { sameForWeekdays: boolean };
 
@@ -167,7 +165,6 @@ const AddFacilityDialog = () => {
       ownership: "",
       accepts_nhis: false,
       wellness_subtype: "",
-      offerings: [],
       latitude: 0,
       longitude: 0,
     },
@@ -219,7 +216,6 @@ const AddFacilityDialog = () => {
         amenities: [],
         business_hours: DEFAULT_BUSINESS_HOURS,
         sameForWeekdays: false,
-        offerings: [],
         keywords: "",
         latitude: 0,
         longitude: 0,
@@ -518,18 +514,6 @@ const AddFacilityDialog = () => {
       const { adminId: _adminId, ...registrationPayload } = payload;
       const result = await registerProviderAccount.mutateAsync(registrationPayload);
 
-      if (payload.offerings?.length) {
-        try {
-          await adminInsertFacilityOfferings(
-            payload.offerings.map((o: any) => ({
-              ...o,
-              facility_id: result.providerId,
-            })),
-          );
-        } catch (offeringError) {
-          console.error("Offerings error:", offeringError);
-        }
-      }
       queryClient.invalidateQueries({ queryKey: FACILITY_PROFILE_QUERY_KEYS.all });
 
       toast.success("Facility Registered!");
@@ -825,7 +809,7 @@ const AddFacilityDialog = () => {
                   />
                 </div>
 
-                <OfferingsSection />
+
 
                 <div className="rounded-lg border p-2 md:p-4 bg-muted/30">
                   <h3 className="card-title mb-2">Operational Hours</h3>

@@ -83,7 +83,6 @@ export const dashboardNavSections: DashboardNavSection[] = [
     items: [
       { title: "Admins", href: "/admins", icon: "👥", permission: "admins.view" },
       { title: "Users", href: "/users", icon: "👤", permission: "users.view" },
-      { title: "IBP Businesses", href: "/ibp", icon: "🏢", permission: "ibp.view" },
       { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },
       {
         // Flat, no children: /reports already renders these as page tabs

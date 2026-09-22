@@ -530,6 +530,63 @@ Tracked in `PLAN.md` (P0-01 to P0-03). Each migration has a `_ROLLBACK.sql` next
 | P0-02 | `20260920100000_facility_profile_rls_stopgap.sql` (applied) | `facility_profile` was readable by anon with `USING (true)`, and owners could insert rows and update any column. Anon now sees active rows only; owner INSERT and UPDATE are gone (admins only). |
 | P0-03 | `20260920110000_drop_dev_tunnel_facility_trigger.sql` (applied) | Dropped the `on_facility_created` / `handle_new_facility()` trigger. |
 
+## Provider portal Phase 0b — data model (21 Sept 2026)
+
+P0-10/P0-11/P0-12 (all DB, no application code) tracked in `PLAN.md`. Ten
+migrations, each with a `_ROLLBACK.sql` next to it, applied and dry-run
+verified in order:
+
+| Migration | What |
+| --- | --- |
+| `provider_lookup_tables` | `provider_kind` enum + `provider_types`/`capabilities`/`credential_types`/`provider_type_requirements`, seeded. |
+| `facility_status_enum_add_values` | Added `suspended`/`draft` to `facility_status_enum`, alone, per the ADD VALUE rule. |
+| `rename_providers_and_compat_layer` | `facility_profile` → `providers`; `provider_private` split off; the `facility_profile` compatibility view; RLS renamed onto `providers`; every function that **writes** to the old table repointed (see below). |
+| `facility_profile_view_security_invoker` | `get_advisors` flagged the new view as ERROR `security_definer_view` the instant it existed. Fixed with `security_invoker = true`; verified as literal `anon`/`authenticated` roles that the row count doesn't change. |
+| `provider_rpcs_create_and_update` | `create_provider`, `update_my_provider`. |
+| `provider_credentials_and_capabilities` | `provider_credentials`, `provider_capabilities`, the verify/expire trigger pair, `recompute_provider_verification_status`, `submit_credential`, `grant_provider_capability_override`, `revoke_provider_capability`, `get_my_provider_context`. |
+| `provider_credentials_storage_bucket` | Private bucket `provider-credentials` (no RLS policy, matches `hcp-verification`). |
+| `provider_credential_expiry_cron` | Daily `provider-credential-expiry-sweep` cron: push reminders + expiry flip work now; the email leg calls an Edge Function URL that doesn't exist yet. |
+| `provider_catalogue_and_kind_extensions` | `provider_catalogue_items` + publish guard + `upsert_catalogue_item`; `provider_vendor_details`; `provider_practitioner_details`; `fitness_trainers.provider_id`; `ambulances.operator_id`; `provider_activity_log` + its trigger. |
+
+**The rename migration silently repointed more functions than PLAN.md's own
+audit had listed.** Grepping `pg_proc.prosrc` for `facility_profile` and
+checking each hit for an `UPDATE`/`INSERT`/`DELETE` (not trusting the
+"read-only" label PLAN.md had already put on some of them) found
+`admin_perform_facility_review_action` writing to `facility_profile` despite
+being filed as read-only, plus two trigger functions
+(`refresh_top_rated_snapshot`, `sync_top_rated_facility_flag`,
+`build_top_rated_module_data`) that reference the table without ever typing
+its name in a string — found only by dry-running the actual backfill UPDATE
+and reading the resulting stack trace. All were fixed in the same migration;
+see `PLAN.md`'s P0-10/P0-13 sections for the full list and the "P0-10/11/12 →
+application code handoff" block for what's left for application code,
+including which admin-console Facilities screens are broken right now
+(`features/facilities/api/list.ts`, `export.ts`, `status-detail.ts` all name
+columns that moved to `provider_private`/`provider_credentials`).
+
+## Provider portal Phase 0 — P0-13 (21–22 Sept 2026)
+
+Repointed the 21 read-only functions PLAN.md's P0-13 lists from the
+`facility_profile` view to `providers` directly, plus a new `search_providers`
+RPC. Migrations, all with rollbacks: `p013_repoint_read_only_functions`,
+`p013_fix_bedtracker_region_cast`, `p013_search_providers_grants_and_helper_
+search_path`, `p013_search_top_rated_items_admin_only`, `search_providers_rpc`.
+Full detail, including two verification passes (one per session) and the list
+of pre-existing bugs found but left alone, is in `PLAN.md`'s P0-13 section —
+not duplicated here since it changes less than this file usually tracks.
+
+**The trap worth repeating for `docs/cleanup-handoff.md`'s own "Traps proven
+on this branch" list:** repointing a `SECURITY DEFINER` function from a
+compatibility view to the real table is not a mechanical find-and-replace.
+The view's `WHERE status='active' and kind in (...) OR owner OR admin` clause
+was the only thing gating six of these functions' visibility — `providers`'
+own RLS does not apply inside a `SECURITY DEFINER` function pointed at the
+table directly, because the function owner (`postgres`) owns `providers` and
+is exempt from its RLS. Get this wrong and a public search function starts
+returning pending/rejected/suspended rows again — the exact hole P0-02 closed,
+reopened by a rename. Every function that needed its own explicit filter
+added is called out individually in `PLAN.md`, not assumed from a pattern.
+
 ### Data exposure record — `on_facility_created` (P0-03)
 
 - **What:** an AFTER INSERT trigger on `facility_profile` used `pg_net` to POST every new facility's WhatsApp number, facility phone, owner phone, facility name, email and `gps_address` (sent as `temp_key`).

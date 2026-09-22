@@ -1,16 +1,3 @@
-/**
- * PATCH /api/facilities/[id]/status — facility lifecycle workflow
- * (Gap Analysis Part H, H3/H7). Moves a facility between
- * pending / active / inactive / suspended / rejected, records
- * status_reason + status_changed_at and stamps approved_by on approval.
- * Bulk variant: send { ids: [...], status } — path id is ignored
- * (powers "Approve All Verified" and bulk Suspend).
- *
- * Note: the full approve flow with temp→approved storage moves still runs
- * through the adminChangeFacilityStatus RPC in useFacilities; this route
- * covers lifecycle moves where no media migration is required.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
@@ -48,34 +35,56 @@ export async function PATCH(
   const ids = parsed.data.ids ?? [id];
   const supabase = getAdminClient();
 
-  const update: Record<string, unknown> = {
+  const providerUpdate: Record<string, unknown> = {
     status: parsed.data.status,
-    status_reason: parsed.data.reason ?? null,
     status_changed_at: new Date().toISOString(),
   };
+  
   if (parsed.data.status === "active") {
-    update.approved_by = auth.user.id;
-    update.approved_at = new Date().toISOString();
-    update.rejection_reason = null;
-  }
-  if (parsed.data.status === "rejected" && parsed.data.reason) {
-    update.rejection_reason = parsed.data.reason;
+    providerUpdate.approved_by = auth.user.id;
+    providerUpdate.approved_at = new Date().toISOString();
   }
 
-  const { data: updated, error } = await supabase
-    .from("facility_profile")
-    .update(update)
+  // 1. Update providers table
+  const { data: updated, error: providerError } = await supabase
+    .from("providers")
+    .update(providerUpdate)
     .in("id", ids)
-    .select("id, facility_name");
+    .select("id, name");
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (providerError) {
+    return NextResponse.json({ error: providerError.message }, { status: 500 });
+  }
+
+  // 2. Upsert provider_private table for reasons
+  const privateUpserts = ids.map((providerId) => {
+    const record: Record<string, unknown> = {
+      provider_id: providerId,
+      status_reason: parsed.data.reason ?? null,
+      updated_at: new Date().toISOString()
+    };
+    if (parsed.data.status === "active") {
+      record.rejection_reason = null;
+    }
+    if (parsed.data.status === "rejected" && parsed.data.reason) {
+      record.rejection_reason = parsed.data.reason;
+    }
+    return record;
+  });
+
+  const { error: privateError } = await supabase
+    .from("provider_private")
+    .upsert(privateUpserts, { onConflict: "provider_id" });
+
+  if (privateError) {
+    console.error("Failed to update provider_private:", privateError);
+    // Continue anyway since the main status update succeeded
   }
 
   await supabase.rpc("log_admin_activity", {
     p_admin_id: auth.user.id,
     p_action_type: "facility_status_changed",
-    p_target_table: "facility_profile",
+    p_target_table: "providers",
     p_record_id: ids[0] ?? null,
     p_description: `${updated?.length ?? 0} facility(ies) moved to ${parsed.data.status}`,
     p_severity: parsed.data.status === "active" ? "info" : "warning",

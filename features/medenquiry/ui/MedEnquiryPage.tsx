@@ -26,7 +26,6 @@ const CONNECTED_MENUS = [
   { label: "👤 Users", href: "/users" },
   { label: "🔒 Escrow Transactions", href: "/transactions?tab=recent" },
   { label: "🔔 Enquiry Notifications", href: "/notifications" },
-  { label: "🏢 IBP Wholesalers", href: "/ibp" },
 ];
 
 const BUSINESS_LOGIC = [
