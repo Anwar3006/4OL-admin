@@ -15,11 +15,13 @@ import {
   Save,
   Settings,
   ShieldCheck,
+  Stethoscope,
   ToggleLeft,
 } from "lucide-react";
 import BillingTab from "./_components/BillingTab";
 import ComplianceTab from "./_components/ComplianceTab";
 import NotificationsTab from "./_components/NotificationsTab";
+import ProvidersTab from "./_components/ProvidersTab";
 import SecurityTab from "./_components/SecurityTab";
 import PageHeader from "@/components/redesign/PageHeader";
 import KpiCard from "@/components/redesign/KpiCard";
@@ -93,6 +95,7 @@ const tabList = [
   { id: "security", label: "Security", icon: ShieldCheck },
   { id: "api-keys", label: "API Keys", icon: KeyRound },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "providers", label: "Providers", icon: Stethoscope },
   { id: "integrations", label: "Integrations", icon: Plug },
   { id: "billing", label: "Billing & GRA", icon: CreditCard },
   { id: "compliance", label: "Compliance", icon: FileCheck2 },
@@ -449,6 +452,9 @@ export default function SettingsPage() {
         </TabsContent>
         <TabsContent value="notifications" className="mt-5 outline-none">
           <NotificationsTab />
+        </TabsContent>
+        <TabsContent value="providers" className="mt-5 outline-none">
+          <ProvidersTab />
         </TabsContent>
         <TabsContent value="integrations" className="mt-5 outline-none">
           <IntegrationsList loading={loading} integrations={integrations} />

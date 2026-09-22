@@ -11714,6 +11714,57 @@ export type Database = {
           },
         ]
       }
+      provider_inbox: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          item_type: string
+          provider_id: string
+          read_at: string | null
+          ref_id: string | null
+          status: string
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          item_type: string
+          provider_id: string
+          read_at?: string | null
+          ref_id?: string | null
+          status?: string
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          item_type?: string
+          provider_id?: string
+          read_at?: string | null
+          ref_id?: string | null
+          status?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_inbox_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_inbox_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_practitioner_details: {
         Row: {
           consult_modes: string[]
@@ -13992,6 +14043,7 @@ export type Database = {
       }
       user_push_tokens: {
         Row: {
+          app: string
           app_version: string | null
           created_at: string
           device_name: string | null
@@ -14003,6 +14055,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          app?: string
           app_version?: string | null
           created_at?: string
           device_name?: string | null
@@ -14014,6 +14067,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          app?: string
           app_version?: string | null
           created_at?: string
           device_name?: string | null
@@ -14847,7 +14901,10 @@ export type Database = {
       }
     }
     Functions: {
-      _map_legacy_facility_type_filter: { Args: { p_value: string }; Returns: string }
+      _map_legacy_facility_type_filter: {
+        Args: { p_value: string }
+        Returns: string
+      }
       _resolve_legacy_provider_type: {
         Args: { p_facility_type: string }
         Returns: Record<string, unknown>
@@ -15127,12 +15184,23 @@ export type Database = {
       delete_old_notifications: { Args: never; Returns: undefined }
       detect_admin_multi_ip_sessions: { Args: never; Returns: Json }
       dispatch_notification: {
-        Args: { p_campaign_id?: string; p_recipients: Json }
+        Args: { p_app?: string; p_campaign_id?: string; p_recipients: Json }
         Returns: Json
       }
       dispatch_notification_async: {
         Args: { p_campaign_id?: string; p_recipients: Json }
         Returns: Json
+      }
+      dispatch_provider_alert: {
+        Args: {
+          p_body: string
+          p_item_type: string
+          p_metadata?: Json
+          p_provider_id: string
+          p_ref_id: string
+          p_title: string
+        }
+        Returns: string
       }
       end_admin_session: {
         Args: { p_reason?: string; p_session_token: string }
@@ -15820,6 +15888,7 @@ export type Database = {
       }
       register_push_token: {
         Args: {
+          p_app?: string
           p_app_version?: string
           p_device_name?: string
           p_os_version?: string
