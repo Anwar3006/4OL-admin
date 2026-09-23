@@ -241,3 +241,99 @@ export const CONTRACT_TABLES = [
   "facility_scout_config",
   "facility_scout_submissions",
 ] as const;
+
+/**
+ * ── BUSINESS APP (4 Our Life Business, apps/business) ──────────────────
+ *
+ * The second store app (D14). Everything above this point is the PATIENT app
+ * (apps/consumer); the two are frozen independently, and the additive-only
+ * rule applies to both.
+ *
+ * Extracted mechanically from apps/business on 23 Sept 2026 by grepping
+ * app/, components/, features/ and lib/ for `.rpc(`, `.from(` and `/api/`
+ * literals. Regenerate rather than trusting it:
+ *
+ *     bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App/apps/business
+ *
+ * Why this matters more than it looks: the Business app reads tables the
+ * patient app never touches, through owner-scoped RLS policies and SECURITY
+ * DEFINER functions added in P0-10/11/12 and P1-01/03. Tightening one of
+ * those policies is invisible to the patient app's tests and silently empties
+ * a Business screen — PostgREST returns no rows, not an error.
+ */
+export const BUSINESS_APP_RPCS = [
+  // Provider identity and gating (P0-10, P0-16).
+  "get_my_provider_context",
+  "get_provider_home",
+
+  // Verification (P0-11).
+  "submit_credential",
+
+  // Catalogue (P0-12). Carries the publish guard, so its behaviour is part
+  // of the contract, not just its signature.
+  "upsert_catalogue_item",
+
+  // Vendor enquiry loop (P1-01). Returns NO patient identity by design;
+  // adding identifying columns would be a privacy regression, not an
+  // additive change.
+  "get_vendor_enquiry_inbox",
+] as const;
+
+/**
+ * Built and granted, but not yet called by any shipped screen — the Orders UI
+ * (Sheet 05) is unbuilt. Listed so that whoever completes that UI does not
+ * have to rediscover them, and so a cleanup pass does not drop them as
+ * unused. Move these into BUSINESS_APP_RPCS once the screens ship.
+ */
+export const BUSINESS_APP_RPCS_RESERVED = [
+  "get_vendor_orders",
+  "vendor_mark_order_ready",
+  "vendor_verify_pickup_code",
+  "vendor_mark_delivered",
+] as const;
+
+export const BUSINESS_APP_TABLES = [
+  // Written anonymously by the public "Request access" flow (Sheet 01).
+  // The admin console reads metadata.area_name / gps_address / region from
+  // these rows when pre-filling Add Facility — those keys are contracted.
+  "onboarding_requests",
+
+  // Lookups, read by anon before an account exists.
+  "provider_types",
+  "provider_type_requirements",
+  "capabilities",
+
+  // Owner-scoped reads.
+  "provider_credentials",
+  "provider_capabilities",
+  "provider_catalogue_items",
+
+  // Quotes. Written directly under enquiry_responses_provider_insert, which
+  // enforces status='offered' + pending_match + ownership. The app relies on
+  // that policy rather than an RPC, so the POLICY is contracted.
+  "enquiry_responses",
+
+  // The app clears requires_password_change here after setting a password
+  // (D9). trg_protect_user_profile_columns permits clearing it and rejects
+  // setting it — both halves are contracted.
+  "user_profiles",
+] as const;
+
+export const BUSINESS_APP_ROUTES = [
+  // Mints a signed upload URL for a licence document, bearer-token auth via
+  // getRequestUser, ownership re-checked against providers.owner_id.
+  "/api/providers/credentials/upload",
+] as const;
+
+/** Storage bucket the signed upload URL targets. */
+export const BUSINESS_APP_BUCKETS = ["provider-credentials"] as const;
+
+/**
+ * Deep link the admin console's /auth/welcome page opens to hand the app a
+ * one-time sign-in token (P0-06, D9). The scheme, the path and both query
+ * parameters are contracted: change any of them and every invite link already
+ * sent stops working.
+ */
+export const BUSINESS_APP_DEEP_LINKS = [
+  "fourourlifebusiness://auth/confirm?token_hash=<hashed_token>&type=magiclink",
+] as const;
