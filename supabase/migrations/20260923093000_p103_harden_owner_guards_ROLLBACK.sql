@@ -1,0 +1,11 @@
+-- Rollback for 20260923093000_p103_harden_owner_guards.sql.
+--
+-- That migration only replaced function BODIES (adding an explicit
+-- `auth.uid() is null` check); it created and dropped nothing. Rolling it back
+-- means re-running the previous definitions:
+--   20260923090000_p101_vendor_enquiry_inbox.sql
+--   20260923092000_p103_vendor_fulfilment.sql
+--
+-- Deliberately not automated: the previous bodies let a caller with a NULL
+-- auth.uid() past the ownership check, so restoring them is a security
+-- regression and should be a conscious act.

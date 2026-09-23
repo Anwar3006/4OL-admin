@@ -1,0 +1,33 @@
+-- P1-03 · Vendor fulfilment: the read and the state transitions a vendor needs
+-- after a patient accepts their quote.
+--
+-- An order is a medication_enquiry past matching; there is NO separate orders
+-- table. `medication_enquiries` UPDATE is admin-only and its SELECT is
+-- patient-or-admin, so each vendor action is a SECURITY DEFINER function that
+-- checks ownership of `pharmacy_id` itself.
+--
+--   get_vendor_orders(provider)                    read the board
+--   vendor_mark_order_ready(enquiry, provider)     matched -> pickup_ready
+--                                                  or delivery_in_progress
+--   vendor_verify_pickup_code(enquiry, provider, code)
+--                                                  pickup_ready -> completed
+--   vendor_mark_delivered(enquiry, provider, by, proof)
+--                                          delivery_in_progress -> completed
+--
+-- The pickup code is generated when the order is marked ready and belongs to
+-- the PATIENT. It is never returned to the vendor, whose job is to ask for it
+-- and have it verified.
+--
+-- Applied to prod as migrations `p103_vendor_fulfilment` and
+-- `p103_harden_owner_guards`. The hardened bodies in 20260923093000 are the
+-- authoritative ones -- apply that migration immediately after this file.
+--
+-- RECONCILE: the exact applied SQL is recorded on prod. To pull the verbatim
+-- bodies into this file and 20260923093000:
+--
+--   select array_to_string(statements, E'\n')
+--   from supabase_migrations.schema_migrations
+--   where version in ('20260923010147', '20260923010238');
+--
+--   20260923010147  p103_vendor_fulfilment     (8181 chars)
+--   20260923010238  p103_harden_owner_guards   (6304 chars, authoritative)

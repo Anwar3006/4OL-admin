@@ -1,0 +1,26 @@
+-- Hardens the ownership guard in every provider function added on 23 Sept.
+--
+-- The original condition was:
+--     if v_owner is null or v_owner <> (select auth.uid()) then raise ...
+--
+-- When auth.uid() is NULL (unauthenticated, or a service_role call),
+-- `v_owner <> NULL` is NULL, so the condition evaluates to NULL rather than
+-- true and the RAISE is skipped -- the guard then only catches "provider does
+-- not exist", not "you do not own it". EXECUTE is revoked from anon and
+-- `authenticated` always carries a uid, so this was not reachable from the
+-- app; but a guard that depends on a GRANT to be correct is the wrong shape.
+--
+-- Each function now starts with an explicit `auth.uid() is null` check.
+-- Verified on prod: calling vendor_mark_order_ready with a real enquiry and a
+-- real provider, as a caller with no uid, now raises 42501 where it
+-- previously fell through to the row lookup.
+--
+-- Bodies replaced: _vendor_order_guard, get_vendor_orders,
+-- get_vendor_enquiry_inbox. (get_provider_home is unaffected: its own guard
+-- is reached only after a provider row is found, and it is read-only.)
+--
+-- Applied to prod as `p103_harden_owner_guards`, version 20260923010238.
+-- Verbatim SQL:
+--   select array_to_string(statements, E'\n')
+--   from supabase_migrations.schema_migrations
+--   where version = '20260923010238';
