@@ -491,8 +491,10 @@ These still work through the view, but writes and new logic must go through `pro
 
 ### P0-16 · Business app shell (`apps/business`)
 - UI mockups for every provider screen: generate from `../4-Our-Life-App/provider-portal-ui-mockup-prompt.md` (Sheets 00–20) and build to match them.
-- [ ] Tab layout (`apps/business/app/(tabs)/_layout.tsx`) uses **NativeTabs** (`expo-router/unstable-native-tabs`, SDK 56: Liquid Glass on iOS 26, Material 3 on Android).
-  - NativeTabs must be static, so use **one tab-layout group per kind**: `(vendor)`, `(facility)`, `(practitioner)`, `(trainer)`, `(ambulance)`.
+- [x] ~~Tab layout uses **NativeTabs** (`expo-router/unstable-native-tabs`)~~ — **superseded 23 Sept.** We draw the bar ourselves (`components/ui/floating-tab-bar.tsx`) over expo-router's JS `Tabs`. Reason: NativeTabs renders a UITabBar on iOS 26 and a Material 3 bar on Android. Those look nothing like each other and **neither matches Sheet 00's floating pill**, which is the signature of the whole design set; the native bar also animates its own tint on navigation, which showed up as a colour flicker. The custom bar gives one consistent, on-brand bar on both platforms: pill shape, ~21pt gap on three sides, Mint Wash capsule behind the selected icon, Brand Green label, red count badges. The trade-off accepted: we give up the platform's Liquid Glass tab bar. `expo-blur` was tried and dropped — it is a native module, and blurring on iOS while Android fell back to a flat fill would have defeated the point.
+  - Tab **order** per kind is unchanged and is still the contract.
+  - Still **one route group per kind**: `(vendor)`, `(facility)`, `(practitioner)`, `(trainer)`, `(ambulance)`. `(vendor)` is built; the other four are not.
+  - The root `app/index.tsx` is a boot router that picks the group from `get_my_provider_context()` (and sends unverified/pending providers to `/pending` instead).
   - After sign-in, the root layout picks the group from `get_my_provider_context()`.
   - The branch switcher goes in the header.
 - [ ] **Vendor:** Home · Requests · Orders · Catalogue · Business
@@ -565,8 +567,17 @@ Why a monorepo and not a variant flag: Expo Router's custom `root` option is off
 - [ ] Quoting writes `enquiry_responses` (`facility_id` = provider id), with a catalogue item picker.
 - [ ] Attach the one-to-one chat entry point (P2-03).
 
-### P1-03 · Orders tab (fulfilment, not money)
-- [ ] Vendor RPCs `mark_order_ready`, `mark_order_dispatched`, `mark_order_delivered(proof_url)`; pickup-code check.
+### P1-03 · Orders tab (fulfilment, not money) — 🟡 DB done 23 Sept; the Sheet 05 UI is unbuilt
+
+> **Correction, 23 Sept.** There is **no separate orders table and none is needed.** An order *is* a `medication_enquiries` row past matching — its `status` already carries the whole lifecycle: `pending_match → matched → in_escrow → pickup_ready → delivery_in_progress → completed | cancelled`. The table also already has `fulfilment_mode`, `pickup_confirmation_code`, the delivery columns and `payment_amount`. `enquiry_responses` (`offered → accepted | declined | expired`) is the quote, and its vendor RLS — insert/update/delete your own offer while `offered` — has been complete all along. The only thing that was ever missing was the vendor's **read** path and the fulfilment **transitions**.
+
+- [x] Vendor fulfilment RPCs, applied to prod 23 Sept (`p103_vendor_fulfilment`, hardened by `p103_harden_owner_guards`; local `20260923092000_*` / `20260923093000_*` with rollbacks):
+  - `get_vendor_orders(p_provider_id)` — the board. Customer name and phone are included **only** because `pharmacy_id` being set means the patient already accepted.
+  - `vendor_mark_order_ready(p_enquiry_id, p_provider_id)` — `matched`/`in_escrow` → `pickup_ready` or `delivery_in_progress`, chosen by `fulfilment_mode`. Generates the pickup code if absent.
+  - `vendor_verify_pickup_code(p_enquiry_id, p_provider_id, p_code)` — `pickup_ready` → `completed`.
+  - `vendor_mark_delivered(p_enquiry_id, p_provider_id, p_received_by, p_proof_url)` — `delivery_in_progress` → `completed`.
+  - The pickup code belongs to the **patient** and is never returned to the vendor; the vendor asks for it and has it verified. `_vendor_order_guard` is internal, with EXECUTE revoked from `anon` and `authenticated`.
+- [ ] **The Sheet 05 UI is not built** — board, order detail, pickup keypad, proof of delivery, delivery settings. The RPCs are listed in `BUSINESS_APP_RPCS_RESERVED` in the mobile contract until those screens ship.
 - [ ] Money movement is **blocked by D12**. Until approved, orders run "pay at pickup / on delivery", and `payment_status` is recorded manually by the vendor.
 
 ### P1-04 · Catalogue tab
