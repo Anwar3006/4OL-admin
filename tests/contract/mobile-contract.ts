@@ -234,6 +234,13 @@ export const CONTRACT_TABLES = [
   "analytics_events",
   "fitness_outdoor_events",
   "fitness_outdoor_routes",
+
+  // Added 23 Sept 2026. Written directly by the patient app's Outdoor
+  // engagement actions (Will visit / Completed / Like / Rating / Share),
+  // upserting on the unique key (user_id, target_type, target_id) — that
+  // CONSTRAINT is part of the contract, not just the column list: without it
+  // every tap raises instead of updating the existing row.
+  "fitness_outdoor_engagements",
   "onboarding_requests",
 
   // Added 9 Sept 2026 — Facility Scout mobile submission flow. Both written
