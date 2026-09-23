@@ -1,0 +1,11 @@
+-- ROLLBACK for 20260923215000_p108c_bed_source_app.sql
+--
+-- Folded into 20260923210000_p108c_department_beds_ROLLBACK.sql, which
+-- restores both source constraints to their original three values AND clears
+-- the rows that would violate them. Undoing this migration on its own while
+-- `update_ward_beds` still exists would leave that function writing
+-- `update_source = 'app'` into a constraint that no longer permits it, so
+-- every bed update would start failing.
+--
+-- Run the department-beds rollback instead. This file exists so the pairing
+-- is explicit rather than looking like an oversight.

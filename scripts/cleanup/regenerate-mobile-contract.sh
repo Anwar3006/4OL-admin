@@ -42,9 +42,32 @@ else
 fi
 
 cd "$MOBILE"
+
+# Source roots to look under. Before P0-17 the Expo app was the whole repo, so
+# these sat at its top level; the monorepo split moved every one of them into
+# apps/consumer/ and apps/business/. Both layouts are checked, because this
+# script is also run against older checkouts.
+#
+# Getting this wrong is silent and total: with no directory matched the scan
+# has nothing to search, and `set -u` then aborts on the empty array below —
+# which is exactly how this broke after the monorepo move, leaving the one
+# tool that guards the mobile contract unable to run.
 SRC=(hooks services lib context app components store utils features)
+ROOTS=(.)
+for a in apps/*/; do [ -d "$a" ] && ROOTS+=("${a%/}"); done
+
 EXISTING=()
-for d in "${SRC[@]}"; do [ -d "$d" ] && EXISTING+=("$d"); done
+for root in "${ROOTS[@]}"; do
+  for d in "${SRC[@]}"; do
+    [ -d "$root/$d" ] && EXISTING+=("$root/$d")
+  done
+done
+
+if [ ${#EXISTING[@]} -eq 0 ]; then
+  echo "No source directories found under: $MOBILE" >&2
+  echo "Looked for ${SRC[*]} at the top level and under apps/*/." >&2
+  exit 1
+fi
 
 echo "▸ scanning: ${EXISTING[*]}"
 echo

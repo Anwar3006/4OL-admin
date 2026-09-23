@@ -270,6 +270,13 @@ export const CONTRACT_TABLES = [
  */
 export const BUSINESS_APP_RPCS = [
   // Provider identity and gating (P0-10, P0-16).
+  //
+  // P1-08b changed what this returns: it is now the MEMBERSHIP list, not the
+  // ownership list, and it gained `role`, `department_id`, `department_name`
+  // and `permissions`. Those four are additive and the app may ignore them,
+  // but the row set is not: it now includes providers the caller is an active
+  // `provider_members` row for, not only ones they own. Narrowing it back to
+  // owners would sign every staff member out of their own business.
   "get_my_provider_context",
   "get_provider_home",
 
@@ -284,19 +291,42 @@ export const BUSINESS_APP_RPCS = [
   // adding identifying columns would be a privacy regression, not an
   // additive change.
   "get_vendor_enquiry_inbox",
-] as const;
 
-/**
- * Built and granted, but not yet called by any shipped screen — the Orders UI
- * (Sheet 05) is unbuilt. Listed so that whoever completes that UI does not
- * have to rediscover them, and so a cleanup pass does not drop them as
- * unused. Move these into BUSINESS_APP_RPCS once the screens ship.
- */
-export const BUSINESS_APP_RPCS_RESERVED = [
+  // Vendor fulfilment (P1-03), called by the Sheet 05 Orders screens.
+  //
+  // `get_vendor_orders` DOES carry customer name and phone — the opposite of
+  // the inbox above, and deliberately: a row only appears here once the
+  // patient has accepted this vendor's quote. It must never return the
+  // pickup code, which belongs to the patient; `has_pickup_code` is a
+  // boolean for exactly that reason and turning it into the digits would be
+  // a privacy regression.
   "get_vendor_orders",
+
+  // The fulfilment transitions. Each picks its own next status from the
+  // order's `fulfilment_mode` — the app does not send one, so adding a
+  // status parameter would not be additive.
   "vendor_mark_order_ready",
   "vendor_verify_pickup_code",
   "vendor_mark_delivered",
+
+  // Delivery settings (Sheet 05 screen 5) and the public self-onboarding
+  // gate (P0-07). `is_feature_enabled` is called by `anon`, before sign-in.
+  "update_my_provider",
+  "is_feature_enabled",
+
+  // Business → Security (P0-16). Both are shared with the patient app and
+  // both are APP-SCOPED — that scoping is the contract, not an optimisation.
+  // A `{member,provider}` owner has their personal phone registered under
+  // `app='consumer'`; if either of these stopped filtering on `p_app`, the
+  // Business app's device list would show that phone and its "sign out other
+  // devices" would kill the owner's own medication reminders.
+  //
+  // `list_my_devices` keeps a no-argument form (both parameters default) so
+  // the patient app's existing call is unchanged. Removing those defaults
+  // would break it.
+  "list_my_devices",
+  "revoke_my_device",
+  "revoke_my_other_devices",
 ] as const;
 
 export const BUSINESS_APP_TABLES = [
@@ -315,6 +345,11 @@ export const BUSINESS_APP_TABLES = [
   "provider_capabilities",
   "provider_catalogue_items",
 
+  // Read for `delivery_settings` (Sheet 05 screen 5) under P0-02's
+  // owner-or-admin SELECT policy. Writes go through update_my_provider —
+  // P0-02 made this table admin-only for UPDATE.
+  "providers",
+
   // Quotes. Written directly under enquiry_responses_provider_insert, which
   // enforces status='offered' + pending_match + ownership. The app relies on
   // that policy rather than an RPC, so the POLICY is contracted.
@@ -332,8 +367,16 @@ export const BUSINESS_APP_ROUTES = [
   "/api/providers/credentials/upload",
 ] as const;
 
-/** Storage bucket the signed upload URL targets. */
-export const BUSINESS_APP_BUCKETS = ["provider-credentials"] as const;
+export const BUSINESS_APP_BUCKETS = [
+  // Target of the signed upload URL minted by the route above.
+  "provider-credentials",
+
+  // Proof-of-delivery photos (Sheet 05 screen 4). Written DIRECTLY by the
+  // app, not through a signed URL: the insert policy is owner-scoped on the
+  // first path segment, so the `<provider_id>/…` prefix is contracted.
+  // Private, with no UPDATE or DELETE policy — a proof is evidence.
+  "delivery-proofs",
+] as const;
 
 /**
  * Deep link the admin console's /auth/welcome page opens to hand the app a

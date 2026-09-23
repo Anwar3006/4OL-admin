@@ -909,6 +909,7 @@ export type Database = {
           id: string
           metadata: Json
           module: string
+          provider_id: string | null
           source: string
           user_id: string | null
         }
@@ -920,6 +921,7 @@ export type Database = {
           id?: string
           metadata?: Json
           module?: string
+          provider_id?: string | null
           source?: string
           user_id?: string | null
         }
@@ -931,10 +933,25 @@ export type Database = {
           id?: string
           metadata?: Json
           module?: string
+          provider_id?: string | null
           source?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "analytics_events_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "analytics_events_user_id_fkey"
             columns: ["user_id"]
@@ -1476,6 +1493,7 @@ export type Database = {
           available_beds: number
           bed_tracker_facility_id: string
           created_at: string
+          department_id: string | null
           id: string
           last_updated_at: string
           occupied_beds: number
@@ -1488,6 +1506,7 @@ export type Database = {
           available_beds?: number
           bed_tracker_facility_id: string
           created_at?: string
+          department_id?: string | null
           id?: string
           last_updated_at?: string
           occupied_beds?: number
@@ -1500,6 +1519,7 @@ export type Database = {
           available_beds?: number
           bed_tracker_facility_id?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           last_updated_at?: string
           occupied_beds?: number
@@ -1514,6 +1534,13 @@ export type Database = {
             columns: ["bed_tracker_facility_id"]
             isOneToOne: false
             referencedRelation: "bed_tracker_facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_tracker_wards_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "provider_departments"
             referencedColumns: ["id"]
           },
           {
@@ -3761,6 +3788,7 @@ export type Database = {
           helpful_count: number | null
           id: string
           is_anonymous: boolean
+          is_provider_reply: boolean
           is_verified_visit: boolean | null
           parent_id: string | null
           rating: number | null
@@ -3775,6 +3803,7 @@ export type Database = {
           helpful_count?: number | null
           id?: string
           is_anonymous?: boolean
+          is_provider_reply?: boolean
           is_verified_visit?: boolean | null
           parent_id?: string | null
           rating?: number | null
@@ -3789,6 +3818,7 @@ export type Database = {
           helpful_count?: number | null
           id?: string
           is_anonymous?: boolean
+          is_provider_reply?: boolean
           is_verified_visit?: boolean | null
           parent_id?: string | null
           rating?: number | null
@@ -5229,6 +5259,56 @@ export type Database = {
             foreignKeyName: "fitness_onboarding_selections_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      fitness_outdoor_engagements: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_liked: boolean
+          rating: number | null
+          shared_count: number
+          target_id: string
+          target_type: string
+          updated_at: string
+          user_id: string
+          will_visit_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_liked?: boolean
+          rating?: number | null
+          shared_count?: number
+          target_id: string
+          target_type: string
+          updated_at?: string
+          user_id: string
+          will_visit_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_liked?: boolean
+          rating?: number | null
+          shared_count?: number
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+          user_id?: string
+          will_visit_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitness_outdoor_engagements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "user_profiles"
             referencedColumns: ["user_id"]
           },
@@ -11714,6 +11794,57 @@ export type Database = {
           },
         ]
       }
+      provider_departments: {
+        Row: {
+          code: string | null
+          contact_number: string | null
+          created_at: string
+          department_type: string | null
+          id: string
+          name: string
+          provider_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          contact_number?: string | null
+          created_at?: string
+          department_type?: string | null
+          id?: string
+          name: string
+          provider_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          contact_number?: string | null
+          created_at?: string
+          department_type?: string | null
+          id?: string
+          name?: string
+          provider_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_departments_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_departments_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_inbox: {
         Row: {
           body: string | null
@@ -11764,6 +11895,155 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      provider_member_invites: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          department_id: string | null
+          email: string
+          id: string
+          invited_by: string | null
+          job_title: string | null
+          provider_id: string
+          role: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          email: string
+          id?: string
+          invited_by?: string | null
+          job_title?: string | null
+          provider_id: string
+          role: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          email?: string
+          id?: string
+          invited_by?: string | null
+          job_title?: string | null
+          provider_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_member_invites_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "provider_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_member_invites_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_member_invites_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          department_id: string | null
+          id: string
+          invited_at: string
+          invited_by: string | null
+          job_title: string | null
+          provider_id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          job_title?: string | null
+          provider_id: string
+          role: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          job_title?: string | null
+          provider_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_members_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "provider_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_members_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "facility_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_members_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_permissions: {
+        Row: {
+          action: string
+          created_at: string
+          description: string | null
+          key: string
+          resource: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string | null
+          key: string
+          resource: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          resource?: string
+        }
+        Relationships: []
       }
       provider_practitioner_details: {
         Row: {
@@ -11868,6 +12148,32 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "providers"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_role_permissions: {
+        Row: {
+          created_at: string
+          permission_key: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          permission_key: string
+          role: string
+        }
+        Update: {
+          created_at?: string
+          permission_key?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_role_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "provider_permissions"
+            referencedColumns: ["key"]
           },
         ]
       }
@@ -11985,6 +12291,7 @@ export type Database = {
           contact_number: string
           country: string
           created_at: string
+          delivery_settings: Json | null
           description: string | null
           district: string
           email: string | null
@@ -12039,6 +12346,7 @@ export type Database = {
           contact_number: string
           country?: string
           created_at?: string
+          delivery_settings?: Json | null
           description?: string | null
           district: string
           email?: string | null
@@ -12093,6 +12401,7 @@ export type Database = {
           contact_number?: string
           country?: string
           created_at?: string
+          delivery_settings?: Json | null
           description?: string | null
           district?: string
           email?: string | null
@@ -14905,9 +15214,67 @@ export type Database = {
         Args: { p_value: string }
         Returns: string
       }
+      _parse_gps: {
+        Args: { p_gps: string }
+        Returns: {
+          lat: number
+          lng: number
+        }[]
+      }
       _resolve_legacy_provider_type: {
         Args: { p_facility_type: string }
         Returns: Record<string, unknown>
+      }
+      _vendor_order_guard: {
+        Args: { p_enquiry_id: string; p_provider_id: string }
+        Returns: {
+          actual_delivery: string | null
+          courier_name: string | null
+          created_at: string
+          custom_area: string | null
+          delivery_address: string | null
+          delivery_distance_km: number | null
+          delivery_gps: string | null
+          delivery_proof_url: string | null
+          delivery_status: Database["public"]["Enums"]["delivery_status"] | null
+          dosage: string | null
+          drug_id: string | null
+          enquiry_type: string | null
+          escrow_id: string | null
+          estimated_delivery: string | null
+          fulfilment_mode: string | null
+          hcp_prescriber_id: string | null
+          id: string
+          insurance_policy_number: string | null
+          insurance_provider: string | null
+          is_insured: boolean | null
+          is_priority: boolean
+          medication_description: string | null
+          medication_name: string
+          notify_on_availability: boolean
+          payment_amount: number | null
+          payment_status: string | null
+          pharmacist_notes: string | null
+          pharmacy_id: string | null
+          pickup_confirmation_code: string | null
+          prescription_id: string | null
+          prescription_url: string | null
+          quantity: number
+          search_area_mode: string | null
+          search_radius_km: number | null
+          status: string | null
+          tracking_number: string | null
+          unit: string | null
+          updated_at: string
+          urgency: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "medication_enquiries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       accept_enquiry_offer: { Args: { p_response_id: string }; Returns: Json }
       account_types_for_user_type: { Args: { p: string }; Returns: string[] }
@@ -15222,6 +15589,10 @@ export type Database = {
         }[]
       }
       enqueue_due_report_runs: { Args: { p_now?: string }; Returns: number }
+      enquiry_open_for_quotes: {
+        Args: { p_enquiry_id: string }
+        Returns: boolean
+      }
       expire_delete_account_grace_periods: { Args: never; Returns: Json }
       expire_device_sign_in_requests: { Args: never; Returns: undefined }
       expire_stale_admin_sessions: {
@@ -15316,6 +15687,10 @@ export type Database = {
           p_period_start_date: string
         }
         Returns: Json
+      }
+      fn_rollup_bed_tracker_facility: {
+        Args: { p_facility_row_id: string }
+        Returns: undefined
       }
       get_admin_dashboard_metrics: {
         Args: { time_filter?: string }
@@ -15575,11 +15950,15 @@ export type Database = {
         Args: never
         Returns: {
           capabilities: string[]
+          department_id: string
+          department_name: string
           has_beds: boolean
           kind: Database["public"]["Enums"]["provider_kind"]
           name: string
+          permissions: string[]
           provider_id: string
           provider_type: string
+          role: string
           status: Database["public"]["Enums"]["facility_status_enum"]
           tier: string
           verification_status: string
@@ -15614,6 +15993,56 @@ export type Database = {
       get_platform_overview_metrics: {
         Args: { time_filter?: string }
         Returns: Json
+      }
+      get_provider_beds: {
+        Args: { p_provider_id: string }
+        Returns: {
+          available_beds: number
+          can_update: boolean
+          department_id: string
+          department_name: string
+          last_updated_at: string
+          occupied_beds: number
+          total_beds: number
+          ward_id: string
+          ward_type: string
+        }[]
+      }
+      get_provider_home: {
+        Args: { p_provider_id: string; p_timeframe?: string }
+        Returns: {
+          call_taps: number
+          catalogue_out_of_stock: number
+          catalogue_published: number
+          credentials_outstanding: number
+          currency: string
+          directions_taps: number
+          orders_to_prepare: number
+          profile_views: number
+          provider_status: string
+          quotes_won: number
+          requests_open: number
+          sales_amount: number
+          verification_status: string
+          whatsapp_taps: number
+        }[]
+      }
+      get_provider_members: {
+        Args: { p_provider_id: string }
+        Returns: {
+          accepted_at: string
+          department_id: string
+          department_name: string
+          email: string
+          full_name: string
+          invited_at: string
+          is_you: boolean
+          job_title: string
+          member_id: string
+          role: string
+          status: string
+          user_id: string
+        }[]
       }
       get_public_app_config: { Args: never; Returns: Json }
       get_public_faqs: {
@@ -15656,6 +16085,47 @@ export type Database = {
       }
       get_user_id_by_email: { Args: { p_email: string }; Returns: string }
       get_user_kpi_stats: { Args: never; Returns: Json }
+      get_vendor_enquiry_inbox: {
+        Args: { p_provider_id: string }
+        Returns: {
+          already_quoted: boolean
+          created_at: string
+          distance_km: number
+          dosage: string
+          enquiry_id: string
+          enquiry_type: string
+          expires_at: string
+          fulfilment_mode: string
+          medication_name: string
+          my_response_id: string
+          my_response_status: string
+          quantity: number
+          unit: string
+          urgency: string
+        }[]
+      }
+      get_vendor_orders: {
+        Args: { p_provider_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_name: string
+          customer_phone: string
+          delivery_address: string
+          delivery_status: Database["public"]["Enums"]["delivery_status"]
+          distance_km: number
+          dosage: string
+          enquiry_id: string
+          fulfilment_mode: string
+          has_pickup_code: boolean
+          medication_name: string
+          quantity: number
+          status: string
+          unit: string
+          updated_at: string
+        }[]
+      }
       get_whatsapp_stats: { Args: never; Returns: Json }
       global_search: { Args: { search_term: string }; Returns: Json }
       global_search_v2: {
@@ -15739,13 +16209,32 @@ export type Database = {
         Args: { p_node: Json; p_parent_id?: string }
         Returns: string
       }
+      invite_provider_member: {
+        Args: {
+          p_department_id?: string
+          p_email: string
+          p_job_title?: string
+          p_provider_id: string
+          p_role: string
+        }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       is_app_admin: { Args: never; Returns: boolean }
       is_conversation_member: {
         Args: { p_conversation_id: string }
         Returns: boolean
       }
+      is_feature_enabled: { Args: { p_name: string }; Returns: boolean }
       is_platform_admin: { Args: { p_user_id: string }; Returns: boolean }
+      is_provider_member: {
+        Args: {
+          p_department_id?: string
+          p_permission?: string
+          p_provider_id: string
+        }
+        Returns: boolean
+      }
       issue_canary: { Args: { p_context: string }; Returns: string }
       issue_device_sign_in_otp: {
         Args: { p_request_id: string; p_user_id: string }
@@ -15764,8 +16253,9 @@ export type Database = {
         Returns: Json
       }
       list_my_devices: {
-        Args: never
+        Args: { p_app?: string; p_current_token?: string }
         Returns: {
+          app: string
           app_version: string
           created_at: string
           device_name: string
@@ -15850,6 +16340,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      owns_delivery_proof_folder: { Args: { p_name: string }; Returns: boolean }
       period_user_has_premium: { Args: { p_user_id: string }; Returns: boolean }
       purge_expired_report_runs: { Args: never; Returns: number }
       purge_or_anonymize_user: { Args: { p_user_id: string }; Returns: Json }
@@ -15914,6 +16405,10 @@ export type Database = {
       replace_role_permissions: {
         Args: { p_permission_keys: string[]; p_role: string }
         Returns: undefined
+      }
+      reply_to_review: {
+        Args: { p_review_id: string; p_text: string }
+        Returns: string
       }
       report_bot_signal: {
         Args: { p_detail?: Json; p_kind: string }
@@ -15989,6 +16484,10 @@ export type Database = {
         Returns: undefined
       }
       revoke_my_device: { Args: { p_device_id: string }; Returns: boolean }
+      revoke_my_other_devices: {
+        Args: { p_app?: string; p_keep_token?: string }
+        Returns: number
+      }
       revoke_provider_capability: {
         Args: { p_capability: string; p_provider_id: string }
         Returns: undefined
@@ -16192,6 +16691,16 @@ export type Database = {
         Args: { p_id: string; p_patch: Json }
         Returns: undefined
       }
+      update_provider_member: {
+        Args: {
+          p_clear_department?: boolean
+          p_department_id?: string
+          p_member_id: string
+          p_role?: string
+          p_status?: string
+        }
+        Returns: Json
+      }
       update_symptom_complex: {
         Args: {
           body_part_ids: string[]
@@ -16203,18 +16712,50 @@ export type Database = {
         }
         Returns: string
       }
+      update_ward_beds: {
+        Args: { p_occupied: number; p_total: number; p_ward_id: string }
+        Returns: Json
+      }
       upsert_catalogue_item: {
         Args: { p_id: string; p_patch: Json; p_provider_id: string }
         Returns: string
       }
       upsert_job_alert: { Args: { p_prefs: Json }; Returns: Json }
       upsert_open_to_offers: { Args: { p_open: boolean }; Returns: Json }
+      upsert_provider_department: {
+        Args: {
+          p_code?: string
+          p_department_type?: string
+          p_id?: string
+          p_name: string
+          p_provider_id: string
+          p_status?: string
+        }
+        Returns: string
+      }
       user_can_manage_conversation: {
         Args: { target_conversation_id: string }
         Returns: boolean
       }
       user_has_push_token: { Args: { p_user_id: string }; Returns: boolean }
       user_type_for_account_types: { Args: { p: string[] }; Returns: string }
+      vendor_mark_delivered: {
+        Args: {
+          p_enquiry_id: string
+          p_proof_url?: string
+          p_provider_id: string
+          p_received_by?: string
+        }
+        Returns: Json
+      }
+      vendor_mark_order_ready: {
+        Args: { p_enquiry_id: string; p_provider_id: string }
+        Returns: Json
+      }
+      vendor_verify_pickup_code: {
+        Args: { p_code: string; p_enquiry_id: string; p_provider_id: string }
+        Returns: Json
+      }
       verify_cron_shared_secret: {
         Args: { p_secret: string }
         Returns: boolean
