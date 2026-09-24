@@ -13,10 +13,8 @@ export interface AdminUserRow {
   email: string | null;
   phone_number: string | null;
   region: string | null;
-  nhis_number: string | null;
-  nhis_linked: boolean;
   status: string | null;
-  user_type: string | null;
+  user_type: string[];
   sex: string | null;
   plan: string;
   engagement_score: number;

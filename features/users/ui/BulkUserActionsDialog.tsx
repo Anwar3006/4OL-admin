@@ -31,7 +31,7 @@ function downloadSelectedUsers(rows: AdminUserRow[]) {
       Email: row.email ?? "",
       Phone: row.phone_number ?? "",
       Plan: row.plan,
-      NHIS: row.nhis_number ?? "",
+      "User type": row.user_type.join(" · "),
       Region: row.region ?? "",
       Status: row.status ?? "",
       Joined: row.created_at,

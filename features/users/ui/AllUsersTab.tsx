@@ -133,14 +133,13 @@ export default function AllUsersTab() {
         ),
       },
       {
-        id: "nhis",
-        header: "NHIS",
-        cell: ({ row }: { row: { original: AdminUserRow } }) =>
-          row.original.nhis_linked ? (
-            <span className="badge badge-green">✓ {row.original.nhis_number}</span>
-          ) : (
-            <span className="text-xs text-slate-400">Not linked</span>
-          ),
+        id: "type",
+        header: "User type",
+        cell: ({ row }: { row: { original: AdminUserRow } }) => (
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            {row.original.user_type.length ? row.original.user_type.join(" · ") : "Member"}
+          </span>
+        ),
       },
       {
         id: "region",
@@ -239,7 +238,7 @@ export default function AllUsersTab() {
       <div className="flex flex-wrap gap-2 items-center">
         <input
           className="flex-1 min-w-[240px] h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-          placeholder="🔍 Search name, email, phone, NHIS…"
+        placeholder="🔍 Search name, email or phone…"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
         />
@@ -256,15 +255,6 @@ export default function AllUsersTab() {
           <option value="inactive">Inactive</option>
           <option value="suspended">Suspended</option>
           <option value="banned">Banned</option>
-        </select>
-        <select
-          className={selectClass}
-          value={nhis}
-          onChange={(e) => setNhis(e.target.value as "" | "linked" | "unlinked")}
-        >
-          <option value="">NHIS: All</option>
-          <option value="linked">NHIS Linked</option>
-          <option value="unlinked">Not Linked</option>
         </select>
         <select
           className={selectClass}

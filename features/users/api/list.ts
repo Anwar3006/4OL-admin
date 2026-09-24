@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   let query = admin
     .from("user_profiles")
     .select(
-      "user_id, public_id, first_name, last_name, phone_number, region, nhis_number, status, user_type, sex, created_at, last_active",
+      "user_id, public_id, first_name, last_name, phone_number, region, status, account_types, sex, created_at, last_active",
       { count: "exact" },
     )
     .eq("role", "user");
@@ -125,7 +125,9 @@ export async function GET(req: NextRequest) {
 
   // Best-effort enrichment: emails (better-auth users table) + plans.
   let emailById = new Map<string, string>();
-  let planByUser = new Map<string, string>();
+  let memberPlanByUser = new Map<string, string>();
+  const membershipsByUser = new Map<string, { providerId: string; role: string }[]>();
+  const providerPlansByUser = new Map<string, string[]>();
   try {
     if (userIds.length) {
       const { data: authUsers } = await admin
@@ -135,10 +137,35 @@ export async function GET(req: NextRequest) {
       emailById = new Map((authUsers ?? []).map((u) => [u.id, u.email]));
       const { data: subs } = await admin
         .from("user_subscriptions")
-        .select("user_id, plan, status")
+        .select("user_id, expires_at, subscription_tiers(name)")
         .in("user_id", userIds)
         .eq("status", "active");
-      planByUser = new Map((subs ?? []).map((s) => [s.user_id, s.plan]));
+      for (const sub of subs ?? []) {
+        if (sub.expires_at && new Date(sub.expires_at) <= new Date()) continue;
+        const tier = Array.isArray(sub.subscription_tiers) ? sub.subscription_tiers[0] : sub.subscription_tiers;
+        if (tier?.name) memberPlanByUser.set(sub.user_id, `Member: ${tier.name}`);
+      }
+      const { data: memberships } = await admin.from("provider_members").select("user_id, provider_id, role").in("user_id", userIds);
+      for (const member of memberships ?? []) {
+        const list = membershipsByUser.get(member.user_id) ?? [];
+        list.push({ providerId: member.provider_id, role: member.role });
+        membershipsByUser.set(member.user_id, list);
+      }
+      const providerIds = [...new Set((memberships ?? []).map((member) => member.provider_id))];
+      if (providerIds.length) {
+        const { data: providerSubs } = await admin.from("facility_subscriptions")
+          .select("facility_id,current_period_end,marketing_subscriptions(name)").in("facility_id", providerIds).eq("status", "active");
+        const tierByProvider = new Map<string, string>();
+        for (const sub of providerSubs ?? []) {
+          if (sub.current_period_end && new Date(sub.current_period_end) <= new Date()) continue;
+          const tier = Array.isArray(sub.marketing_subscriptions) ? sub.marketing_subscriptions[0] : sub.marketing_subscriptions;
+          if (tier?.name) tierByProvider.set(sub.facility_id, String(tier.name));
+        }
+        for (const [userId, memberships] of membershipsByUser) {
+          const plans = memberships.map((member) => tierByProvider.get(member.providerId)).filter((plan): plan is string => Boolean(plan));
+          if (plans.length) providerPlansByUser.set(userId, [...new Set(plans)].map((plan) => `Business: ${plan}`));
+        }
+      }
     }
   } catch {
     // Enrichment is optional — masking + base columns still return.
@@ -150,9 +177,12 @@ export async function GET(req: NextRequest) {
         {
           ...row,
           email: emailById.get(row.user_id) ?? null,
-          plan: planByUser.get(row.user_id) ?? "free",
+          user_type: [
+            ...(Array.isArray(row.account_types) && row.account_types.includes("member") ? ["Member"] : []),
+            ...[...new Set((membershipsByUser.get(row.user_id) ?? []).map((member) => ["owner", "admin"].includes(member.role) ? "Provider admin" : "Provider staff"))],
+          ],
+          plan: [memberPlanByUser.get(row.user_id), ...(providerPlansByUser.get(row.user_id) ?? [])].filter(Boolean).join(" · ") || "Free",
           engagement_score: deriveEngagement(row.last_active),
-          nhis_linked: Boolean(row.nhis_number),
         },
         isSuperAdmin,
       ),
