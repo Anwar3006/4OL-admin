@@ -633,8 +633,8 @@ Verified end to end on prod in a rolled-back transaction, per category: an enqui
 **Blocked on you:** `pnpm gen:types` cannot run here — the Supabase CLI needs `supabase login` or `SUPABASE_ACCESS_TOKEN`. The admin repo's `lib/db/database.types.ts` is therefore still pre-migration. Neither mobile app is affected (both use an untyped Supabase client) and the admin console does not read these columns yet, but run it before any admin work touches them.
 
 ### P1-02 · Requests tab (quote)
-- [ ] Segments New · Quoted · Won · Lost, with a response countdown.
-- [ ] Quoting writes `enquiry_responses` (`facility_id` = provider id), with a catalogue item picker.
+- [x] Segments New · Quoted · Won · Lost, with a response countdown. Completed 24 Sept; quote history is provider-scoped and excludes patient PII.
+- [x] Quoting writes `enquiry_responses` (`facility_id` = provider id), with a catalogue item picker. Completed 24 Sept (`20260924230010_p102_quote_history_and_catalogue_link`); trigger rejects a catalogue item belonging to another provider.
 - [ ] Attach the one-to-one chat entry point (P2-03).
 
 ### P1-03 · Orders tab (fulfilment, not money) — 🟡 DB done 23 Sept; the Sheet 05 UI is unbuilt
