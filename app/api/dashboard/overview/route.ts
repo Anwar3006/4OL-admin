@@ -24,15 +24,48 @@ export async function GET(req: NextRequest) {
   }
 
   const admin = getAdminClient();
-  const { data, error } = await admin.rpc("get_platform_overview_metrics", {
-    time_filter: parsed.data.timeFilter,
-  });
+
+  // Retry once on a statement timeout (57014).
+  //
+  // This endpoint 500'd on the FIRST load after a fresh login and worked on
+  // refresh. get_platform_overview_metrics() does ~35 full-table scans; it
+  // warm-runs in ~0.6s (1.1s of that was removed by
+  // idx_activity_logs_created_at, migration 20260923260000) but on a cold
+  // buffer cache it can still take seconds, and PostgREST connects as
+  // `authenticator`, whose statement_timeout is 8s — SET ROLE service_role
+  // does NOT lift it. Crossing that produced 57014, which arrived here as a
+  // plain error and rendered the whole dashboard as a failure.
+  //
+  // One retry is the right amount: the first attempt is what warms the cache,
+  // so the second is the fast one. A timeout that survives both is a real
+  // problem and is reported as 503 (try again), not 500 (broken), because
+  // nothing is wrong with the request.
+  let data: unknown = null;
+  let error: { code?: string; message: string } | null = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await admin.rpc("get_platform_overview_metrics", {
+      time_filter: parsed.data.timeFilter,
+    });
+    data = result.data;
+    error = result.error;
+    if (!error) break;
+    if (error.code !== "57014") break;
+    console.warn(
+      `[dashboard/overview] RPC timed out (attempt ${attempt + 1}/2): ${error.message}`,
+    );
+  }
 
   if (error) {
     console.error("[dashboard/overview] Supabase RPC error:", error.message);
+    const timedOut = error.code === "57014";
     return NextResponse.json(
-      { error: "Failed to load platform overview metrics." },
-      { status: 500 },
+      {
+        error: timedOut
+          ? "The dashboard is taking longer than usual to load. Please try again."
+          : "Failed to load platform overview metrics.",
+      },
+      { status: timedOut ? 503 : 500 },
     );
   }
 
