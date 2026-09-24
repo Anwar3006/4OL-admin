@@ -1,0 +1,24 @@
+-- Rollback for 20260924005500_p203c_paid_chat_privilege.sql
+--
+-- **There is no rollback.** Postgres cannot remove a value from an enum type.
+-- Undoing it properly means recreating the type without 'paid_chat' and
+-- rewriting every column that uses it:
+--
+--   1. find the dependants:
+--        select conrelid::regclass, attname from pg_attribute a
+--        join pg_class c on c.oid = a.attrelid
+--        where atttypid = 'public.subscription_privilege'::regtype;
+--      (today: marketing_subscriptions.privileges, as subscription_privilege[])
+--   2. create a new type without the value, ALTER each column USING a cast,
+--      drop the old type, rename the new one.
+--
+-- That is a rewrite of a live table for no functional gain: an unused enum value
+-- costs nothing and breaks nothing. **Leave it.** Instead, remove 'paid_chat'
+-- from any `marketing_subscriptions.privileges` array that holds it, which is
+-- what actually grants the capability:
+--
+--     update public.marketing_subscriptions
+--     set privileges = array_remove(privileges, 'paid_chat'::public.subscription_privilege)
+--     where 'paid_chat' = any (privileges::text[]);
+
+select 'No rollback: an enum value cannot be dropped. See the comments above.' as note;
