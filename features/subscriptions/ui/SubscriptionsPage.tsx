@@ -9,6 +9,7 @@ import OverviewTab from "./OverviewTab";
 import PlansTab from "./PlansTab";
 import SubscribersTab from "./SubscribersTab";
 import RequestsTab from "./RequestsTab";
+import ProviderPlansTab from "./ProviderPlansTab";
 
 /**
  * Subscription-plan management, consolidated from four surfaces into this
@@ -20,6 +21,7 @@ import RequestsTab from "./RequestsTab";
 const SubTabs = [
   { id: "overview", label: "📊 Overview" },
   { id: "plans", label: "🗂️ Plans" },
+  { id: "provider-plans", label: "🏢 Provider plans" },
   { id: "subscribers", label: "👥 Subscribers" },
   { id: "requests", label: "🎫 Requests" },
 ];
@@ -77,6 +79,7 @@ export default function SubscriptionsPage() {
         <div className="animate-in slide-in-from-bottom-2 duration-300">
           <TabsContent className="w-full min-w-0 outline-none" value="overview"><OverviewTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="plans"><PlansTab /></TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="provider-plans"><ProviderPlansTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="subscribers"><SubscribersTab /></TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="requests"><RequestsTab /></TabsContent>
         </div>
