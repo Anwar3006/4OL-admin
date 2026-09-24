@@ -671,11 +671,11 @@ Verified end to end on prod in a rolled-back transaction, per category: an enqui
 - [x] **Sheet 16 growth UI — done 24 Sept.** Analytics uses the existing live funnel; Payouts & sales is read-only while D12 blocks money movement; Promote is an honest coming-soon surface; Reviews uses the scoped `get_provider_reviews` feed and `reply_to_review` form sheet. The three-month analytics tab is explicitly unavailable until the RPC has a real three-month window, never silently misreported as today.
 
 ### P1-07 · Provider subscriptions (D10, D11)
-- [ ] Seed `marketing_subscriptions` (the provider tier catalogue) with **Provider Premium** and **Provider Premium Plus**. Delete the test row "Tester Something".
-- [ ] Add values to the `subscription_privilege` enum: `paid_chat`, `priority_enquiry_alerts`, `demand_insight`, `consumer_full_access_bundle`.
-- [ ] Premium = paid_chat, priority alerts, advanced analytics, demand insight. Plus = Premium + `consumer_full_access_bundle`.
-- [ ] **Entitlement:** extend the logic behind `/api/user/entitlement` so a user holding an active `facility_subscriptions` row on a Plus tier gets `full_access` premium on the personal side. **Compute it; don't copy rows** into `user_subscriptions`, so the two never drift apart.
-- [ ] Only accounts that include `member` can use the personal side (D5), so offer Plus only to `{member,provider}` accounts.
+- [x] Seed `marketing_subscriptions` (the provider tier catalogue) with **Provider Premium** and **Provider Premium Plus**. Delete the test row "Tester Something". Applied 24 Sept (`20260924161000_p107_provider_premium_catalogue_and_entitlement`).
+- [x] Add values to the `subscription_privilege` enum: `paid_chat`, `priority_enquiry_alerts`, `demand_insight`, `consumer_full_access_bundle`. Applied 24 Sept (`20260924160000_p107_provider_subscription_privileges`).
+- [x] Premium = paid_chat, priority alerts, advanced analytics, demand insight. Plus = Premium + `consumer_full_access_bundle`.
+- [x] **Entitlement:** extend the logic behind `/api/user/entitlement` so a user holding an active `facility_subscriptions` row on a Plus tier gets `full_access` premium on the personal side. **Compute it; don't copy rows** into `user_subscriptions`, so the two never drift apart.
+- [x] Only accounts that include `member` can use the personal side (D5), so offer Plus only to `{member,provider}` accounts.
 - [ ] Subscription checkout (Paystack) is **not** blocked by D12. Build `/api/subscriptions/checkout` + webhook → `facility_subscriptions` / `user_subscriptions`. Premium activation stays on admin grants until Paystack keys exist.
 
 ---
@@ -802,7 +802,7 @@ Two live bugs found while working on other things. Both were invisible for the s
 
 - [x] `invite_provider_member(p_provider_id, p_email, p_role, p_department_id)` — reuses P0-06's one-time-link and `credential_deliveries` machinery rather than a second invite system. Staff need `provider` in `account_types`; a nurse who is also a patient is `{member,provider}` (D5).
 - [x] **The audit trail finally means something.** `provider_activity_log` already has `actor_id`, `actor_kind` and `device_id` and has never had a row. Write the acting member into it, and snapshot `actor_role` so the log survives someone changing role or leaving.
-- [ ] Business app: a Staff screen under Business (list, invite, change role, suspend), gated on `staff.manage`; a department picker where a member spans several; and every tab filtered by permission so a staffer never sees a tab they cannot use.
+- [x] Business app: a Staff screen under Business (list, invite, change role, suspend), gated on `staff.manage`; a multi-department picker; and permission-filtered Requests, Orders and Catalogue tabs. Applied 24 Sept (`20260924224759_p108e_multi_department_staff`); old single-department rows were backfilled into the additive join table, and both migration and rollback were dry-run on prod before apply.
 - [ ] **Revisit the shared-phone controls once this lands.** Per-staff accounts weaken D14's "one shared login" premise but do not remove it — a counter phone still gets left signed in by whoever is on shift. The PIN and step-up work from P0-16 stays; what changes is that the PIN can become per-member, and `requireStepUp('payout')` can check `payouts.manage` as well.
 - [ ] **Reconcile with `hcp_verifications.affiliated_facility_id`**, which already links a practitioner to a facility, and with `fitness_trainers.provider_id`. A practitioner member must not end up represented twice with two different answers.
 
