@@ -664,8 +664,8 @@ Verified end to end on prod in a rolled-back transaction, per category: an enqui
 - [ ] CRUD through `upsert_catalogue_item`; categories limited to the vendor's capabilities; stock toggle; bulk pricing for `wholesale`.
 
 ### P1-05 · Profile, services and reviews
-- [ ] Editing through `update_my_provider`; changes to name or type need admin review.
-- [ ] Reviews: attach the orphaned triggers `fn_enforce_review_depth` and `fn_validate_review_requirements`. Owner replies go through `reply_to_review(p_review_id, p_text)`, which checks ownership and marks the reply as coming from the provider.
+- [x] **Profile editing — done 24 Sept.** Sheet 15's Business hub now reaches profile, opening-hours, gallery and location/delivery screens. Edits use `update_my_provider`; type remains admin-only, and a changed name is written to `provider_profile_change_requests` for admin review rather than changing the public profile immediately. The owner/staff-safe `provider-media` bucket holds six public gallery slots. Migration `20260924140000_p105_profile_change_review_and_media` was applied to prod after a rolled-back dry run; its rollback is also dry-run verified.
+- [x] **Reviews — done 23 Sept.** The orphaned triggers are attached and their `search_path` is pinned; `reply_to_review(p_review_id, p_text)` checks ownership and marks the reply as coming from the provider.
 
 ### P1-06 · Provider analytics
 - [ ] Add `provider_id` (nullable) to `analytics_events` and record `profile_view`, `call_tap`, `directions_tap` and `whatsapp_tap` from the mobile provider detail screen.

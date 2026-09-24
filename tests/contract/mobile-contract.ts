@@ -357,6 +357,11 @@ export const BUSINESS_APP_TABLES = [
   // P0-02 made this table admin-only for UPDATE.
   "providers",
 
+  // P1-05's read-only name-change queue. A provider member can see only the
+  // requests for their current provider; approving or rejecting remains an
+  // admin RPC and must never be exposed to the Business app.
+  "provider_profile_change_requests",
+
   // Quotes. Written directly under enquiry_responses_provider_insert, which
   // enforces status='offered' + pending_match + ownership. The app relies on
   // that policy rather than an RPC, so the POLICY is contracted.
@@ -398,6 +403,12 @@ export const BUSINESS_APP_BUCKETS = [
   // overwrites the same object, which is why an UPDATE policy exists here and
   // deliberately does not on `delivery-proofs`.
   "catalogue-images",
+
+  // P1-05's public business-gallery bucket. Paths are exactly
+  // `<provider_id>/<slot>.<extension>` with slots 1–6 and are checked by
+  // `owns_provider_media_folder` against the member's `profile.edit` grant.
+  // INSERT, SELECT and UPDATE are deliberately all present for upsert.
+  "provider-media",
 ] as const;
 
 /**
