@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { getAdminClient } from "@/lib/db/admin";
 
 import { getRequestUser } from "@/lib/mobile-auth";
+import { isLiveMember } from "@/features/chat/lib/membership";
 const BUCKET = "chat-attachments";
 
 /** ~10 years — long enough to be a practical drop-in for the permanent
@@ -53,8 +54,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // NOTE: We should ideally verify the user is a member of the conversation.
-  // This route only creates an upload URL, but we still scope paths by user.
+  // Only members may get an upload URL into a conversation's folder — this
+  // route uses the service-role client, so nothing else would stop a caller
+  // writing into any conversation's attachment path.
 
   const filename = sanitizeFilename(filenameRaw);
   const ext = filename.includes(".") ? filename.split(".").pop() : undefined;
@@ -64,6 +66,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const admin = getAdminClient();
+
+    if (!(await isLiveMember(admin, conversationId, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { data, error } = await admin.storage
       .from(BUCKET)
       .createSignedUploadUrl(path, { upsert: false });

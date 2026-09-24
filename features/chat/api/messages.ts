@@ -3,6 +3,7 @@ import { getAdminClient } from "@/lib/db/admin";
 
 
 import { getRequestUser } from "@/lib/mobile-auth";
+import { isLiveMember } from "@/features/chat/lib/membership";
 
 /**
  * GET /api/chat/messages?conversation_id=XYZ
@@ -34,8 +35,14 @@ export async function GET(req: NextRequest) {
     if (id) {
       const { data, error } = await baseQuery.eq("id", id).single();
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (!(await isLiveMember(admin, data.conversation_id, user.id))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
       return NextResponse.json(data);
     } else {
+      if (!(await isLiveMember(admin, conversation_id as string, user.id))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
       const { data, error } = await baseQuery
         .eq("conversation_id", conversation_id)
         .order("created_at", { ascending: false })
@@ -108,6 +115,10 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = getAdminClient();
+
+    if (!(await isLiveMember(admin, conversation_id, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const { data, error } = await admin
       .from("messages")
