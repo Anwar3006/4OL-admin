@@ -668,7 +668,7 @@ Verified end to end on prod in a rolled-back transaction, per category: an enqui
 - [x] **Reviews — done 23 Sept.** The orphaned triggers are attached and their `search_path` is pinned; `reply_to_review(p_review_id, p_text)` checks ownership and marks the reply as coming from the provider.
 
 ### P1-06 · Provider analytics
-- [x] **Provider analytics — done 23 Sept.** `analytics_events.provider_id` is indexed; the consumer provider detail records `profile_view`, `call_tap`, `directions_tap` and `whatsapp_tap`; `get_provider_home` returns the funnel alongside enquiries won and manual revenue.
+- [ ] **Sheet 16 analytics UI.** The data foundation is done: `analytics_events.provider_id` is indexed; the consumer provider detail records `profile_view`, `call_tap`, `directions_tap` and `whatsapp_tap`; `get_provider_home` returns the funnel alongside enquiries won and manual revenue. Build the Business Analytics screen from this data next.
 
 ### P1-07 · Provider subscriptions (D10, D11)
 - [ ] Seed `marketing_subscriptions` (the provider tier catalogue) with **Provider Premium** and **Provider Premium Plus**. Delete the test row "Tester Something".
