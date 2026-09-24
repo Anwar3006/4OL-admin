@@ -312,6 +312,10 @@ export const BUSINESS_APP_RPCS = [
   // Delivery settings (Sheet 05 screen 5) and the public self-onboarding
   // gate (P0-07). `is_feature_enabled` is called by `anon`, before sign-in.
   "update_my_provider",
+  // Sheet 16 review feed — provider-scoped and deliberately excludes customer
+  // identity; replies are created only through reply_to_review.
+  "get_provider_reviews",
+  "reply_to_review",
   "is_feature_enabled",
 
   // Business → Security (P0-16). Both are shared with the patient app and
