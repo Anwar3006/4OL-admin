@@ -343,6 +343,13 @@ export const BUSINESS_APP_TABLES = [
   // Owner-scoped reads.
   "provider_credentials",
   "provider_capabilities",
+
+  // Owner-scoped reads, and owner-scoped writes through
+  // `upsert_catalogue_item`. P1-04 added `bulk_pricing jsonb` (wholesale
+  // tiers, `[]` when there are none) and `images` holds PUBLIC
+  // `catalogue-images` urls only. The RPC applies a FIXED key whitelist to the
+  // patch it is handed: an unknown key is ignored, not an error, so a new
+  // column is invisible to the app until the function carries it.
   "provider_catalogue_items",
 
   // Read for `delivery_settings` (Sheet 05 screen 5) under P0-02's
@@ -376,6 +383,21 @@ export const BUSINESS_APP_BUCKETS = [
   // first path segment, so the `<provider_id>/…` prefix is contracted.
   // Private, with no UPDATE or DELETE policy — a proof is evidence.
   "delivery-proofs",
+
+  // Product photos (P1-04, Sheet 06 screen 2). Written DIRECTLY by the app.
+  //
+  // PUBLIC, unlike the two above, and that is the contract: the url this
+  // bucket returns is what the patient app renders, and it is the only thing
+  // `provider_catalogue_items.images` may hold. Turning it private would blank
+  // every product photo in both apps at once.
+  //
+  // The path is `<provider_id>/<item id or draft uuid>/<slot>.<extension>`
+  // with `slot` in 1–3, and the first segment is what the owner-scoped insert AND update policies
+  // check (`owns_catalogue_image_folder` → `is_provider_member(…,
+  // 'catalogue.manage')`). There is no DELETE policy: replacing a photo
+  // overwrites the same object, which is why an UPDATE policy exists here and
+  // deliberately does not on `delivery-proofs`.
+  "catalogue-images",
 ] as const;
 
 /**
