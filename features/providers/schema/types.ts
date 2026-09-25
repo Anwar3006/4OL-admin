@@ -1,3 +1,4 @@
+import z from "zod";
 import { facilityProfileSchema } from "@/features/facilities/schema/types";
 
 /**
@@ -12,7 +13,12 @@ import { facilityProfileSchema } from "@/features/facilities/schema/types";
  * shape until P0-10 renames facility_profile to providers and this schema
  * moves wholesale.
  */
-export const registerProviderAccountSchema = facilityProfileSchema;
+// The facility form tracks the featured image as view state, but registration
+// must preserve that choice while it moves temporary provider-media objects
+// into the new provider folder.
+export const registerProviderAccountSchema = facilityProfileSchema.extend({
+  featured_image_url: z.string().optional(),
+});
 
 export type RegisterProviderAccountInput = typeof registerProviderAccountSchema["_input"];
 

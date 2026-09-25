@@ -3,11 +3,18 @@
 import { getServerClient } from "@/lib/db/server";
 import { getAdminClient } from "@/lib/db/admin";
 
+type ManagedMediaBucket = "bucket4ol" | "provider-media";
+
+const getMediaBucket = (requested?: string): ManagedMediaBucket =>
+  requested === "provider-media"
+    ? "provider-media"
+    : "bucket4ol";
+
 /**
  * Get presigned upload URL from Supabase Storage
  * Requires authentication
  */
-export async function getPresignedUploadUrl(filePath: string) {
+export async function getPresignedUploadUrl(filePath: string, bucket?: ManagedMediaBucket) {
   try {
     // Verify user is authenticated
     const supabase = await getServerClient();
@@ -22,8 +29,7 @@ export async function getPresignedUploadUrl(filePath: string) {
       };
     }
 
-    const bucketName =
-      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+    const bucketName = getMediaBucket(bucket);
 
     const supabaseAdmin = getAdminClient();
 
@@ -99,7 +105,7 @@ export async function uploadToSignedUrl(
  * Delete a file from Supabase Storage
  * Requires authentication
  */
-export async function deleteFile(filePath: string) {
+export async function deleteFile(filePath: string, bucket?: ManagedMediaBucket) {
   try {
     // Verify user is authenticated
     const supabase = await getServerClient();
@@ -114,8 +120,7 @@ export async function deleteFile(filePath: string) {
       };
     }
 
-    const bucketName =
-      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+    const bucketName = getMediaBucket(bucket);
 
     const supabaseAdmin = getAdminClient();
 
@@ -149,7 +154,7 @@ export async function deleteFile(filePath: string) {
  * Delete multiple files from Supabase Storage
  * Requires authentication
  */
-export async function deleteFiles(filePaths: string[]) {
+export async function deleteFiles(filePaths: string[], bucket?: ManagedMediaBucket) {
   try {
     // Verify user is authenticated
     const supabase = await getServerClient();
@@ -168,8 +173,7 @@ export async function deleteFiles(filePaths: string[]) {
       return { success: true, message: "No files to delete." };
     }
 
-    const bucketName =
-      process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "bucket4ol";
+    const bucketName = getMediaBucket(bucket);
 
     const supabaseAdmin = getAdminClient();
 

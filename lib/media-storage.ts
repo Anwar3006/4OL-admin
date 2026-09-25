@@ -13,8 +13,12 @@ import { toast } from "sonner";
  */
 export const useGetPresignedUploadUrl = () => {
   return useMutation({
-    mutationFn: async (filePath: string) => {
-      const result = await getPresignedUploadUrl(filePath);
+    mutationFn: async (
+      input: string | { filePath: string; bucketName?: "bucket4ol" | "provider-media" },
+    ) => {
+      const filePath = typeof input === "string" ? input : input.filePath;
+      const bucketName = typeof input === "string" ? undefined : input.bucketName;
+      const result = await getPresignedUploadUrl(filePath, bucketName);
 
       if (!result.success) {
         throw new Error(result.error);
@@ -83,8 +87,12 @@ export const useDeleteFile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (filePath: string) => {
-      const result = await deleteFile(filePath);
+    mutationFn: async (
+      input: string | { filePath: string; bucketName?: "bucket4ol" | "provider-media" },
+    ) => {
+      const filePath = typeof input === "string" ? input : input.filePath;
+      const bucketName = typeof input === "string" ? undefined : input.bucketName;
+      const result = await deleteFile(filePath, bucketName);
 
       if (!result.success) {
         throw new Error(result.error);

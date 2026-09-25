@@ -11,7 +11,11 @@ import { getAdminClient } from "@/lib/db/admin";
 import { PROVIDER_KINDS } from "../schema/types";
 
 export async function GET() {
-  const auth = await requireAdminApiUser("provider_types.manage");
+  // Registrars need this read-only lookup while registering providers. They
+  // cannot create or edit capability definitions; those mutations retain the
+  // provider_types.manage guard below.
+  const manager = await requireAdminApiUser("provider_types.manage");
+  const auth = manager.ok ? manager : await requireAdminApiUser("providers.create");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
   const supabase = getAdminClient();

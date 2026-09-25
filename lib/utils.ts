@@ -111,16 +111,13 @@ export const toUppercaseFirstLetter = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export const getPublicImageUrl = (url: string) => {
-  // If URL is already absolute (starts with http:// or https://), return as-is
-  // if (url.startsWith("http://") || url.startsWith("https://")) {
-  //   return url;
-  // }
+export const getPublicImageUrl = (url: string, bucketName = "bucket4ol") => {
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
   if (url.includes("blob.core.windows.net")) {
     return "";
   }
   // Otherwise, prepend the Supabase storage URL
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/bucket4ol/${url}`;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketName}/${url}`;
 };
 
 /**

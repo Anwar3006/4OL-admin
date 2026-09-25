@@ -56,6 +56,8 @@ type MediaType = "image" | "video" | "any";
 type ImageDropZoneProps = {
   text: string;
   filePath: string;
+  /** Defaults to the shared bucket; provider location images use provider-media. */
+  bucketName?: "bucket4ol" | "provider-media";
   onFilesChange?: (keys: string[]) => void;
   initialFiles?: string[];
   /**
@@ -151,6 +153,7 @@ const ImageDropZone = ({
   text,
   onFilesChange,
   filePath,
+  bucketName = "bucket4ol",
   initialFiles,
   mediaType = "any",
   maxFiles = 6,
@@ -190,7 +193,9 @@ const ImageDropZone = ({
           progress: 100,
           isDeleting: false,
           error: false,
-          objectUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME}/${key}`,
+          objectUrl: /^https?:\/\//.test(key)
+            ? key
+            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketName}/${key}`,
           key,
           fileCategory: isMediaVideo(key) ? "video" : "image",
         }));
@@ -302,7 +307,7 @@ const ImageDropZone = ({
 
         // Get presigned URL
         const { signedUrl, token, path } =
-          await getPresignedUrlMutation.mutateAsync(fileKey);
+          await getPresignedUrlMutation.mutateAsync({ filePath: fileKey, bucketName });
 
         // Upload with XHR for progress tracking
         await new Promise<void>((resolve, reject) => {
@@ -364,7 +369,7 @@ const ImageDropZone = ({
         );
       }
     },
-    [filePath, getPresignedUrlMutation, notifyParent, validateFile, maxImageMB],
+    [filePath, bucketName, getPresignedUrlMutation, notifyParent, validateFile, maxImageMB],
   );
 
   // ── Remove a file ───────────────────────────────────────────────────────────
@@ -378,7 +383,7 @@ const ImageDropZone = ({
           prev.map((f) => (f.id === fileId ? { ...f, isDeleting: true } : f)),
         );
         try {
-          await deleteFileMutation.mutateAsync(fileToRemove.key);
+          await deleteFileMutation.mutateAsync({ filePath: fileToRemove.key, bucketName });
         } catch (error) {
           console.error("Delete error:", error);
           setFiles((prev) =>
@@ -397,7 +402,7 @@ const ImageDropZone = ({
         return updated;
       });
     },
-    [files, deleteFileMutation, notifyParent],
+    [files, bucketName, deleteFileMutation, notifyParent],
   );
 
   // ── Dropzone setup ──────────────────────────────────────────────────────────

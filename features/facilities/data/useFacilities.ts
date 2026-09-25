@@ -17,6 +17,27 @@ import {
   adminUpdateFacilityProfile,
 } from "@/actions/facility-admin.actions";
 
+const PROVIDER_MEDIA_BUCKET = "provider-media";
+const PROVIDER_FOLDER_PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
+
+const providerMediaObjectPath = (value: string): string | null => {
+  if (!value) return null;
+  if (!value.startsWith("http://") && !value.startsWith("https://")) {
+    return PROVIDER_FOLDER_PATH.test(value) || value.startsWith("pending/")
+      ? value
+      : null;
+  }
+  const marker = "/storage/v1/object/public/provider-media/";
+  const index = value.indexOf(marker);
+  return index >= 0 ? decodeURIComponent(value.slice(index + marker.length)) : null;
+};
+
+const toProviderMediaUrl = (value: string): string => {
+  const objectPath = providerMediaObjectPath(value);
+  if (!objectPath || value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${PROVIDER_MEDIA_BUCKET}/${objectPath}`;
+};
+
 interface PaginatedResponse {
   data: TFacilityProfileInput[];
   meta: {
@@ -403,16 +424,26 @@ export const useUpdateFacilityProfile = () => {
       newlyUploadedFiles,
       ...updatePayload
     }: any) => {
-      // Storage Logic: Delete and Move files (Same as your original)
-      if (imagesToDelete?.length) await deleteFiles(imagesToDelete);
-
-      const newFilePaths = await Promise.all(
-        (newlyUploadedFiles || []).map(async (tempPath: string) => {
-          const newPath = `facilities/approved/${id}/${tempPath.split("/").pop()}`;
-          await moveFile(tempPath, newPath);
-          return newPath;
-        }),
+      // New registrar captures are uploaded directly under
+      // provider-media/<provider-id>/registrar. Do not move them through the
+      // old bucket; the business app uses the same provider root for its own
+      // photos.
+      const deletedProviderPaths = (imagesToDelete || [])
+        .map(providerMediaObjectPath)
+        .filter((path: string | null): path is string => path !== null);
+      const deletedLegacyPaths = (imagesToDelete || []).filter(
+        (path: string) => providerMediaObjectPath(path) === null,
       );
+      await Promise.all([
+        deletedProviderPaths.length > 0
+          ? deleteFiles(deletedProviderPaths, PROVIDER_MEDIA_BUCKET)
+          : Promise.resolve(),
+        deletedLegacyPaths.length > 0
+          ? deleteFiles(deletedLegacyPaths)
+          : Promise.resolve(),
+      ]);
+
+      const newFilePaths = (newlyUploadedFiles || []).map(toProviderMediaUrl);
 
       const finalMediaUrls = [
         ...(updatePayload.media_urls || []).filter(
@@ -422,10 +453,13 @@ export const useUpdateFacilityProfile = () => {
       ];
 
       // RPC Call: Finalize DB + Audit Log
+      const featuredImageUrl = updatePayload.featured_image_url
+        ? toProviderMediaUrl(updatePayload.featured_image_url)
+        : finalMediaUrls[0] ?? null;
       await adminUpdateFacilityProfile({
         p_admin_id: updatePayload.adminId,
         p_facility_id: id,
-        p_payload: updatePayload,
+        p_payload: { ...updatePayload, featured_image_url: featuredImageUrl },
         p_final_media_urls: finalMediaUrls,
       });
 

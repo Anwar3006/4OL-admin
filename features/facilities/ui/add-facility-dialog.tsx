@@ -44,12 +44,22 @@ import { useRegisterProviderAccount } from "@/features/providers/data/useRegiste
 import { useUpdateOnboardingRequestStatus } from "@/features/onboarding-requests/data/useOnboardingRequests";
 import type { CredentialDeliveryResult } from "@/features/providers/schema/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCapabilitiesSettings } from "@/features/providers/data/useProviderSettings";
 
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 
 type FacilityFormValues = TFacilityProfileInput & { sameForWeekdays: boolean };
+
+const PROVIDER_MEDIA_PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
+const getFacilityPhotoUrl = (path: string) =>
+  getPublicImageUrl(
+    path,
+    path.includes("/storage/v1/object/public/provider-media/") || PROVIDER_MEDIA_PATH.test(path)
+      ? "provider-media"
+      : "bucket4ol",
+  );
 
 const STEP_1_FIELDS: Array<Path<FacilityFormValues>> = [
   "facility_type",
@@ -94,8 +104,13 @@ const AddFacilityDialog = () => {
   const [newlyUploadedFiles, setNewlyUploadedFiles] = useState<string[]>([]);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
 
-  const [uploadSessionId] = useState(() => `pending_${nanoid(12)}`);
-  const filePath = `facilities/temporary/${uploadSessionId}`;
+  const [uploadSessionId] = useState(() => `pending/${nanoid(12)}`);
+  // Registrar and provider captures belong in provider-media. A new provider
+  // has no ID yet, so the registration endpoint moves this pending folder into
+  // that provider's root once the facility row has been created.
+  const filePath = isEditMode && data?.id
+    ? `${data.id}/registrar`
+    : uploadSessionId;
   const [selectedRegion, setSelectedRegion] = useState<string>(
     data?.region || "greater accra",
   );
@@ -158,6 +173,7 @@ const AddFacilityDialog = () => {
       position: "",
       media_urls: [],
       services: [],
+      registration_capabilities: [],
       amenities: [],
       business_hours: DEFAULT_BUSINESS_HOURS,
       sameForWeekdays: false,
@@ -213,6 +229,7 @@ const AddFacilityDialog = () => {
         position: "",
         media_urls: [],
         services: [],
+        registration_capabilities: [],
         amenities: [],
         business_hours: DEFAULT_BUSINESS_HOURS,
         sameForWeekdays: false,
@@ -297,6 +314,11 @@ const AddFacilityDialog = () => {
     () => FACILITY_REQUIREMENTS[selectedType]?.services || [],
     [selectedType],
   );
+  const { data: capabilitySettings } = useCapabilitiesSettings();
+  const registrationCapabilityKeys = useMemo(
+    () => (capabilitySettings?.data ?? []).map((capability) => capability.key),
+    [capabilitySettings],
+  );
 
   const handleContinue = async () => {
     const isValid = await form.trigger(STEP_1_FIELDS);
@@ -324,7 +346,7 @@ const AddFacilityDialog = () => {
   const gallery = useMemo(() => {
     const createModeImages = (mediaUrls || []).map((path) => ({
       path,
-      url: getPublicImageUrl(path),
+      url: getFacilityPhotoUrl(path),
       isExisting: false,
     }));
 
@@ -332,12 +354,12 @@ const AddFacilityDialog = () => {
       return [
         ...newlyUploadedFiles.map((path) => ({
           path,
-          url: getPublicImageUrl(path),
+          url: getFacilityPhotoUrl(path),
           isExisting: false,
         })),
         ...existingImages.map((path) => ({
           path,
-          url: getPublicImageUrl(path),
+          url: getFacilityPhotoUrl(path),
           isExisting: true,
         })),
       ];
@@ -742,6 +764,24 @@ const AddFacilityDialog = () => {
                       onChange={(value) => form.setValue("amenities", value)}
                     />
                   </div>
+                  <div className="col-span-2">
+                    <MultiSelect
+                      name="registration_capabilities"
+                      label="Bookable capabilities observed by registrar"
+                      placeholder="Select the services this provider is equipped to offer..."
+                      options={registrationCapabilityKeys}
+                      selected={form.watch("registration_capabilities")}
+                      onChange={(value) =>
+                        form.setValue("registration_capabilities", value, {
+                          shouldDirty: true,
+                        })
+                      }
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      These become the provider&apos;s editable declared scope. They do not
+                      replace the licence checks required to advertise regulated services.
+                    </p>
+                  </div>
                   <div className="col-span-2 md:col-span-1">
                     <MultiSelect
                       name="services"
@@ -946,6 +986,9 @@ const AddFacilityDialog = () => {
                   <ImageDropZone
                     text="Upload clear photos of your facility (front view, interior, signage, opposite)"
                     filePath={filePath}
+                    bucketName="provider-media"
+                    mediaType="image"
+                    allowedImageExtensions={[".jpg", ".jpeg", ".png", ".webp"]}
                     initialFiles={isEditMode ? newlyUploadedFiles : mediaUrls}
                     onFilesChange={handleFilesChange}
                   />

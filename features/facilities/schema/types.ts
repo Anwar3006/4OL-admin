@@ -46,6 +46,10 @@ export const facilityProfileSchema = z.object({
   accepts_nhis: z.boolean().default(false),
 
   services: z.array(z.string()).min(1, "Please select at least one service"),
+  // What the registrar observed the provider offers. This is intentionally
+  // distinct from a verified regulatory capability; it seeds the provider's
+  // editable operating scope and never bypasses credential verification.
+  registration_capabilities: z.array(z.string()).default([]),
   amenities: z.array(z.string()).min(1, "Please select at least one amenity"),
 
   first_name: z.string().min(1, "First name is required"),

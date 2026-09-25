@@ -41,6 +41,10 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  isFeatureFlagVisible,
+  toggleFeatureFlagVisibility,
+} from "@/lib/feature-flags";
 
 type PlatformSettings = {
   id: string;
@@ -127,7 +131,7 @@ export default function SettingsPage() {
   const [maintenance, setMaintenance] = useState<Maintenance | null>(null);
 
   const activeFlags = useMemo(
-    () => flags.filter((flag) => flag.enabled).length,
+    () => flags.filter(isFeatureFlagVisible).length,
     [flags],
   );
   const configuredKeys = useMemo(
@@ -234,12 +238,13 @@ export default function SettingsPage() {
   const toggleFlag = async (flag: FeatureFlag) => {
     setError(null);
     setSuccess(null);
+    const nextState = toggleFeatureFlagVisibility(flag);
 
     try {
       const res = await fetch("/api/settings/feature-flags", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...flag, enabled: !flag.enabled }),
+        body: JSON.stringify({ ...flag, ...nextState }),
       });
 
       if (!res.ok) {
@@ -251,7 +256,7 @@ export default function SettingsPage() {
       setFlags((current) =>
         current.map((item) => (item.id === body.flag.id ? body.flag : item)),
       );
-      const action = flag.enabled ? "disabled" : "enabled";
+      const action = nextState.enabled ? "enabled" : "disabled";
       setSuccess(
         body.posthogSynced
           ? `${flag.name} ${action} and synced to PostHog.`
@@ -639,7 +644,9 @@ function FeatureFlags({
                   {flag.description || "No description"}
                 </div>
                 <div className="mt-2 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
-                  <span>Rollout {flag.rollout_percentage}%</span>
+                  <span>
+                    {isFeatureFlagVisible(flag) ? "Visible" : "Hidden"} · rollout {flag.rollout_percentage}%
+                  </span>
                   {flag.updated_at && (
                     <span className="font-normal normal-case tracking-normal text-slate-400">
                       Updated {new Date(flag.updated_at).toLocaleString()}
@@ -648,7 +655,7 @@ function FeatureFlags({
                 </div>
               </div>
               <Switch
-                checked={flag.enabled}
+                checked={isFeatureFlagVisible(flag)}
                 onCheckedChange={() => onToggle(flag)}
                 aria-label={`Toggle ${flag.name}`}
               />

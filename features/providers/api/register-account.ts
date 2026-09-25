@@ -4,6 +4,61 @@ import { getAdminClient } from "@/lib/db/admin";
 import { deliverProviderInvite } from "@/lib/provider-invite";
 import { registerProviderAccountSchema } from "@/features/providers/schema/types";
 
+const PROVIDER_MEDIA_BUCKET = "provider-media";
+
+const isAbsoluteUrl = (value: string) => /^https?:\/\//.test(value);
+
+/**
+ * A registrar creates a provider before its provider ID is known, so their
+ * browser uploads into provider-media/pending/<session>. Once the row exists,
+ * move each object under the same provider root used by the business app
+ * (<provider-id>/...). The database only receives public provider-media URLs.
+ */
+async function finalizeRegistrationMedia(input: {
+  admin: ReturnType<typeof getAdminClient>;
+  providerId: string;
+  mediaUrls: string[];
+  featuredImageUrl?: string;
+}) {
+  const movedUrls = new Map<string, string>();
+
+  for (const sourcePath of input.mediaUrls) {
+    if (isAbsoluteUrl(sourcePath)) {
+      movedUrls.set(sourcePath, sourcePath);
+      continue;
+    }
+
+    if (!sourcePath.startsWith("pending/")) {
+      throw new Error(`Unexpected provider-media path: ${sourcePath}`);
+    }
+
+    const filename = sourcePath.split("/").at(-1);
+    if (!filename) throw new Error("A provider photo is missing its filename.");
+
+    const targetPath = `${input.providerId}/registrar/${filename}`;
+    const { error: moveError } = await input.admin.storage
+      .from(PROVIDER_MEDIA_BUCKET)
+      .move(sourcePath, targetPath);
+    if (moveError) throw new Error(moveError.message);
+
+    const { data } = input.admin.storage
+      .from(PROVIDER_MEDIA_BUCKET)
+      .getPublicUrl(targetPath);
+    movedUrls.set(sourcePath, data.publicUrl);
+  }
+
+  const mediaUrls = input.mediaUrls.map((url) => movedUrls.get(url) ?? url);
+  const featuredImageUrl = input.featuredImageUrl
+    ? movedUrls.get(input.featuredImageUrl) ?? input.featuredImageUrl
+    : mediaUrls[0] ?? null;
+
+  const { error: updateError } = await input.admin
+    .from("providers")
+    .update({ media_urls: mediaUrls, featured_image_url: featuredImageUrl })
+    .eq("id", input.providerId);
+  if (updateError) throw new Error(updateError.message);
+}
+
 /**
  * P0-06: create (or branch onto) a provider owner account, create their
  * facility row, and deliver a one-time sign-in link — replacing the old
@@ -92,6 +147,48 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Do this before the provider receives their invite so every consumer and
+  // business view sees one canonical provider-media gallery from first login.
+  // A storage outage must not make the account impossible to access; it is
+  // returned as an actionable warning while the row retains the pending URLs.
+  let mediaWarning: string | undefined;
+  if (input.media_urls.length > 0) {
+    try {
+      await finalizeRegistrationMedia({
+        admin,
+        providerId: facility.id,
+        mediaUrls: input.media_urls,
+        featuredImageUrl: input.featured_image_url,
+      });
+    } catch (error) {
+      console.error("Unable to finalize provider registration media", error);
+      mediaWarning = "The provider was registered, but their photos could not be finalized. Please open the facility and save its photos again.";
+    }
+  }
+
+  const registrationCapabilities = input.registration_capabilities ?? [];
+  if (registrationCapabilities.length > 0) {
+    const { error: capabilitiesError } = await admin.rpc(
+      "capture_provider_registration_capabilities",
+      {
+        p_provider_id: facility.id,
+        p_capabilities: registrationCapabilities,
+        p_captured_by: auth.user.id,
+        p_source: "registrar",
+      },
+    );
+    if (capabilitiesError) {
+      return NextResponse.json(
+        {
+          error: `Provider was registered, but captured capabilities could not be saved: ${capabilitiesError.message}`,
+          userId,
+          providerId: facility.id,
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   const deliveries = await deliverProviderInvite({
     userId,
     providerId: facility.id,
@@ -110,7 +207,7 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(
-    { userId, isNewUser, providerId: facility.id, deliveries },
+    { userId, isNewUser, providerId: facility.id, deliveries, mediaWarning },
     { status: 201 },
   );
 }
