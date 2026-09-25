@@ -5586,6 +5586,7 @@ export type Database = {
           region: string | null
           registered_by: string | null
           route_class: string | null
+          start_anchor: unknown
           start_lat: number | null
           start_lng: number | null
           surface_type: string | null
@@ -5616,6 +5617,7 @@ export type Database = {
           region?: string | null
           registered_by?: string | null
           route_class?: string | null
+          start_anchor?: unknown
           start_lat?: number | null
           start_lng?: number | null
           surface_type?: string | null
@@ -5646,6 +5648,7 @@ export type Database = {
           region?: string | null
           registered_by?: string | null
           route_class?: string | null
+          start_anchor?: unknown
           start_lat?: number | null
           start_lng?: number | null
           surface_type?: string | null
