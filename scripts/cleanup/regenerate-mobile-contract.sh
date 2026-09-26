@@ -2,7 +2,11 @@
 #
 # Regenerate the mobile contract from the Expo repo.
 #
-#   bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App
+#   bash scripts/cleanup/regenerate-mobile-contract.sh              # auto-detect
+#   bash scripts/cleanup/regenerate-mobile-contract.sh ../4OurLife-MobileApp
+#
+# With no argument it probes the known sibling folder names (4OurLife-MobileApp,
+# 4-Our-Life-App, the 4OL Mobile clones) so it runs in any checkout layout.
 #
 # Prints what the mobile app currently depends on, so you can diff it against
 # tests/contract/mobile-contract.ts. Run it before any release that moves an
@@ -14,11 +18,29 @@
 #
 set -euo pipefail
 
-MOBILE="${1:-../4-Our-Life-App}"
-if [ ! -d "$MOBILE" ]; then
-  echo "Mobile repo not found at: $MOBILE" >&2
-  echo "Usage: $0 <path-to-4-Our-Life-App>" >&2
-  exit 1
+# Resolve the mobile repo. An explicit argument always wins; with no argument,
+# probe the known sibling folder names so this works both in the upstream layout
+# (4-Our-Life-App) and in this workspace (4OurLife-MobileApp) instead of
+# hard-failing on a default that only matches one checkout.
+CANDIDATES=(../4OurLife-MobileApp ../4-Our-Life-App "../4OL Mobile Clone" "../4OL Mobile Plasence")
+if [ -n "${1:-}" ]; then
+  MOBILE="$1"
+  if [ ! -d "$MOBILE" ]; then
+    echo "Mobile repo not found at: $MOBILE" >&2
+    echo "Usage: $0 [path-to-mobile-repo]" >&2
+    exit 1
+  fi
+else
+  MOBILE=""
+  for candidate in "${CANDIDATES[@]}"; do
+    if [ -d "$candidate" ]; then MOBILE="$candidate"; break; fi
+  done
+  if [ -z "$MOBILE" ]; then
+    echo "Mobile repo not found. Looked for: ${CANDIDATES[*]}" >&2
+    echo "Usage: $0 [path-to-mobile-repo]" >&2
+    exit 1
+  fi
+  echo "▸ auto-detected mobile repo: $MOBILE" >&2
 fi
 
 # Use ripgrep when a REAL binary is present, else fall back to grep.

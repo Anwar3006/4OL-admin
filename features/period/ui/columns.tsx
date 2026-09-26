@@ -117,7 +117,7 @@ export const columns: Record<
       key: "logged_on",
       label: "Date",
       render: (value) => (
-        <span className="text-[8px] 3xl:text-xs">{date(value)}</span>
+        <span className="text-3xs 3xl:text-xs">{date(value)}</span>
       ),
     },
     {

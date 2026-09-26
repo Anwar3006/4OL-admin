@@ -35,7 +35,7 @@ export const StatsCard = ({
           active && "shadow-md border-green-600"
         )}
       >
-        <div className={cn("text-2xl xl:text-4xl font-bold", colorClasses[variant])}>
+        <div className={cn("text-2xl xl:text-3xl font-bold", colorClasses[variant])}>
           {value}
         </div>
         <div className="text-sm xl:text-lg text-muted-foreground">{label}</div>

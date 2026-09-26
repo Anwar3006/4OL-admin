@@ -3,6 +3,7 @@
 import { getServerClient } from "@/lib/db/server";
 import { getAdminClient } from "@/lib/db/admin";
 import { headers } from "next/headers";
+import { applyUserMasking } from "@/lib/masking";
 
 // ── shared helper ─────────────────────────────────────────────────────────────
 /**
@@ -82,11 +83,27 @@ export async function getProfileById(targetId: string) {
       }
     }
 
+    // PHI masking (lib/masking.ts): only super_admin sees full name/email/
+    // phone/NHIS. The caller's role was already resolved above for the auth
+    // gate, so mask here — server-side — exactly like features/users/api/list.ts
+    // does for the list view. Previously this detail path returned the raw row
+    // (and, via the useUser→getUserProfile bug, the WRONG row entirely), so a
+    // non-super-admin could read unmasked identifiers straight from the payload.
+    const isSuperAdmin = callerProfile?.role === "super_admin";
+    const masked = applyUserMasking({ ...(data as any), email }, isSuperAdmin);
+    const name =
+      [masked.first_name, masked.last_name].filter(Boolean).join(" ") ||
+      (masked as any).full_name ||
+      "—";
+
     return {
       data: {
-        ...data,
-        email,
-        name: [data?.first_name, data?.last_name].filter(Boolean).join(" ") || "—",
+        ...masked,
+        email: masked.email ?? email,
+        name,
+        // Lets the modal show a "sensitive fields masked" banner without
+        // exposing anyone's data — this is the caller's own privilege level.
+        _masked: !isSuperAdmin,
       },
       error: null,
     };

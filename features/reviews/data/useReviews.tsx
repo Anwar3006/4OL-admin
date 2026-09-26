@@ -144,6 +144,84 @@ export const useFacilityRatingsList = ({
   });
 };
 
+/**
+ * Full facility_reviews row (all columns) plus the reviewer + facility joins,
+ * as fetched by useFacilityReview for the comprehensive detail modal. The list
+ * hook only selects a display subset, so the modal refetches by primary key.
+ */
+export interface FacilityReviewDetail {
+  id: string;
+  comment_text: string;
+  rating: number | null;
+  status: string;
+  is_anonymous: boolean;
+  is_provider_reply: boolean;
+  is_verified_visit: boolean | null;
+  helpful_count: number | null;
+  parent_id: string | null;
+  facility_id: string;
+  user_id: string;
+  created_at: string | null;
+  updated_at: string | null;
+  user?: {
+    user_id?: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+    role?: string | null;
+  } | null;
+  facility?: { id?: string; facility_name?: string | null } | null;
+}
+
+// Detail fetch for the comprehensive review modal (all facility_reviews columns
+// + reviewer/facility joins) by primary key. Disabled until an id is supplied.
+export const useFacilityReview = (id: string | null | undefined) => {
+  return useQuery<FacilityReviewDetail, Error>({
+    queryKey: ["facility-review-detail", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const supabase = await getBrowserClient();
+      const { data, error } = await supabase
+        .from("facility_reviews")
+        .select(
+          `
+          *,
+          user:user_profiles ( user_id, first_name, last_name, email, role ),
+          facility:facility_profile ( id, facility_name )
+        `,
+        )
+        .eq("id", id as string)
+        .single();
+      if (error) throw error;
+      return data as FacilityReviewDetail;
+    },
+  });
+};
+
+// Hard-deletes a facility review by id (Reviews table row action + bulk select).
+// Invalidates the list + KPI caches so counts stay in sync.
+export const useDeleteFacilityReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (id: string) => {
+      const supabase = await getBrowserClient();
+      const { error } = await supabase
+        .from("facility_reviews")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["facility-ratings-list"] });
+      queryClient.invalidateQueries({ queryKey: ["review-kpi-stats"] });
+      toast.success("Review deleted.");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete review: ${error.message}`);
+    },
+  });
+};
+
 // Senior Approach: Powers the KPI cards on the Reviews admin page via the
 // `get_review_kpi_stats` Postgres RPC (see KPIs.sql) — current vs prior
 // 30-day totals/pending/flagged counts with % deltas computed server-side.

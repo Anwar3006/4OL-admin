@@ -1,10 +1,20 @@
 "use client";
 
-import type { ReactNode } from "react";
-import Modal from "@/components/redesign/Modal";
+import { Activity, CalendarDays, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  BoolRow,
+  DetailField,
+  DetailIdLine,
+  DetailModal,
+  DetailSection,
+  MaskedNotice,
+  fmtDate,
+  humanize,
+  num,
+} from "@/components/detail";
 import { useViewPeriodUserDialog } from "@/features/period/data/dialog-hooks";
 import type { Row } from "@/features/period/schema/types";
-import { consentState, date, goalBadge, reminderBadge, shortId } from "./formatters";
 
 /**
  * Period Tracker ▸ Users & Cycles row detail (Gap: "clicking a user
@@ -14,87 +24,67 @@ import { consentState, date, goalBadge, reminderBadge, shortId } from "./formatt
  * instead of sending them to features/users, which has no notion of any of
  * this. Opens with the already-fetched row (see dialog-hooks.ts); no
  * separate fetch by id.
+ *
+ * Rendered on the shared detail-modal shell (components/detail) so it matches
+ * the Admins / Reviews / Users / Fitness modals. The masking banner makes the
+ * privacy-minimization explicit: the display name is masked upstream and no
+ * direct identifiers are ever surfaced here.
  */
 export default function ViewPeriodUserDialog() {
   const { isOpen, data: row, close } = useViewPeriodUserDialog<Row>();
   if (!isOpen || !row) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={close} title="Tracker detail">
-      <div className="space-y-5 3xl:space-y-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-sm 3xl:text-base 4xl:text-lg font-bold text-slate-800 dark:text-slate-200">
-              {row.user || "Unnamed tracker"}
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-2xs 3xl:text-xs 4xl:text-sm text-slate-500">
-              <code className="text-2xs 3xl:text-xs 4xl:text-sm">{shortId(row.userId)}</code>
-              <span>·</span>
-              <span>{row.region || "Not supplied"}</span>
-            </div>
-          </div>
-          <span className="badge badge-blue capitalize 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm">
-            {String(row.source ?? "user").replaceAll("_", " ")}
-          </span>
-        </div>
+    <DetailModal
+      open={isOpen}
+      onClose={close}
+      maxWidth="sm:max-w-2xl"
+      title={row.user || "Unnamed tracker"}
+      badges={
+        <Badge variant="outline">
+          {humanize(row.source) ?? "User"}
+        </Badge>
+      }
+      idLine={<DetailIdLine id={row.userId} />}
+      banner={
+        <MaskedNotice message="Privacy-minimized by design: the display name is masked and no direct identifiers (email, phone, NHIS) are exposed. Cycle and forecast data are shown for population-health oversight only." />
+      }
+    >
+      <DetailSection title="Cycle" icon={Heart}>
+        <DetailField label="Tracking goal" value={humanize(row.goal)} />
+        <DetailField label="Current phase" value={humanize(row.currentPhase)} />
+        <DetailField label="Last period" value={fmtDate(row.lastPeriod)} />
+        <DetailField
+          label="Cycle length"
+          value={row.cycleLength ? `${row.cycleLength} days` : null}
+        />
+        <DetailField
+          label="Period length"
+          value={row.periodLength ? `${row.periodLength} days` : null}
+        />
+      </DetailSection>
 
-        <Section title="Cycle">
-          <Field label="Tracking goal" value={goalBadge(row.goal)} />
-          <Field label="Last period" value={date(row.lastPeriod)} />
-          <Field label="Current phase" value={row.currentPhase || "Not calculated"} />
-          <Field
-            label="Cycle length"
-            value={row.cycleLength ? `${row.cycleLength} days` : "—"}
-          />
-          <Field
-            label="Period length"
-            value={row.periodLength ? `${row.periodLength} days` : "—"}
-          />
-        </Section>
+      <DetailSection title="Forecast" icon={CalendarDays}>
+        <DetailField
+          label="Next period forecast"
+          value={fmtDate(row.nextForecast)}
+        />
+        <DetailField
+          label="Ovulation estimate"
+          value={fmtDate(row.ovulationDate)}
+        />
+        <DetailField label="Fertile window" value={row.fertileWindow} />
+      </DetailSection>
 
-        <Section title="Forecast">
-          <Field label="Next period forecast" value={date(row.nextForecast)} />
-          <Field label="Ovulation estimate" value={date(row.ovulationDate)} />
-          <Field label="Fertile window" value={row.fertileWindow || "—"} />
-        </Section>
-
-        <Section title="Engagement">
-          <Field label="Daily logs" value={String(row.dailyLogs ?? 0)} />
-          <Field label="Reminders" value={reminderBadge(Boolean(row.reminders))} />
-          <Field
-            label="Marketing opt-in"
-            value={consentState(row.marketing ?? "not_asked")}
-          />
-        </Section>
-      </div>
-    </Modal>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section>
-      <h4 className="mb-2 3xl:mb-3 text-2xs 3xl:text-xs 4xl:text-sm font-bold uppercase tracking-wider text-slate-400">
-        {title}
-      </h4>
-      <div className="grid grid-cols-2 gap-3 3xl:gap-4">{children}</div>
-    </section>
-  );
-}
-
-function Field({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div>
-      <div className="text-2xs 3xl:text-xs 4xl:text-sm text-slate-400">{label}</div>
-      <div className="text-xs 3xl:text-sm 4xl:text-base font-semibold text-slate-700 dark:text-slate-300">
-        {value}
-      </div>
-    </div>
+      <DetailSection title="Engagement" icon={Activity}>
+        <DetailField label="Region" value={row.region} />
+        <DetailField label="Daily logs" value={num(row.dailyLogs)} />
+        <DetailField
+          label="Marketing opt-in"
+          value={humanize(row.marketing) ?? "Not Asked"}
+        />
+        <BoolRow label="Reminders enabled" value={Boolean(row.reminders)} />
+      </DetailSection>
+    </DetailModal>
   );
 }

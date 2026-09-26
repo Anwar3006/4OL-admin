@@ -14,7 +14,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useFacilityRatingsList } from "@/features/reviews/data/useReviews";
+import {
+  useFacilityRatingsList,
+  useDeleteFacilityReview,
+} from "@/features/reviews/data/useReviews";
+import ReviewDetailDialog from "./view-review-dialog";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 import { Star } from "lucide-react";
@@ -27,6 +31,8 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
     usePagination({ key: `reviews_${status || "all"}_page` });
   const [search, setSearch] = useState("");
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const deleteReview = useDeleteFacilityReview();
 
   const { data, isLoading, isError, error } = useFacilityRatingsList({
     pageIndex: page,
@@ -39,20 +45,13 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
   const totalCount = data?.count || 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  const handleViewReview = (review: any) => {
-    console.log("View review:", review.id);
-    // Add view dialog logic here if needed
-  };
+  const handleViewReview = (review: any) => setSelectedReviewId(review.id);
 
-  const handleEditReview = (review: any) => {
-    console.log("Edit review:", review.id);
-    // Add edit dialog logic here if needed
-  };
+  // No dedicated edit form exists yet; opening the comprehensive detail modal
+  // keeps the action meaningful instead of a dead console.log stub.
+  const handleEditReview = (review: any) => setSelectedReviewId(review.id);
 
-  const handleDeleteReview = (review: any) => {
-    console.log("Delete review:", review.id);
-    // Add delete mutation here if needed
-  };
+  const handleDeleteReview = (review: any) => deleteReview.mutate(review.id);
 
   const cardConfig: MobileCardConfig<any> = {
     header: {
@@ -160,8 +159,8 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
           isLoading={isLoading}
           isError={isError}
           error={error}
-          onRowClick={(row) => console.log("Row Click", row.id)}
-          onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
+          onRowClick={(row) => setSelectedReviewId(row.id)}
+          onDeleteSelected={(rows) => rows.forEach((r) => deleteReview.mutate(r.id))}
           cardConfig={cardConfig}
           pagination={{
             currentPage: page,
@@ -176,6 +175,12 @@ export default function ReviewsDataTab({ status }: ReviewsDataTabProps) {
           }}
         />
       </div>
+
+      <ReviewDetailDialog
+        reviewId={selectedReviewId}
+        open={!!selectedReviewId}
+        onClose={() => setSelectedReviewId(null)}
+      />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default function SubscriberMix({
                         <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-xl font-bold">
                           {totalUsers.toLocaleString()}
                         </tspan>
-                        <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 18} className="fill-muted-foreground text-[10px]">
+                        <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 18} className="fill-muted-foreground text-2xs">
                           users
                         </tspan>
                       </text>

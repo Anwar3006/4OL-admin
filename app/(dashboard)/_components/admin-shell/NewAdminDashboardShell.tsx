@@ -275,7 +275,7 @@ export default function NewAdminDashboardShell({
           <SidebarContent className="pt-2 px-2">
             {navSections.map((section) => (
               <SidebarGroup key={section.title} className="py-2">
-                <SidebarGroupLabel className="text-xs font-bold text-white/35 uppercase tracking-widest">
+                <SidebarGroupLabel className="text-xs font-bold text-white/60 uppercase tracking-widest">
                   {section.title}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -295,7 +295,7 @@ export default function NewAdminDashboardShell({
                             <SidebarMenuButton
                               onClick={handleLogout}
                               tooltip="Logout"
-                              className="text-white/55 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white transition-colors font-medium text-xs"
+                              className="text-white/55 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white transition-colors font-semibold text-sm"
                             >
                               <span className="flex items-center justify-center">
                                 {item.icon}
@@ -314,7 +314,7 @@ export default function NewAdminDashboardShell({
                               isActive={active}
                               tooltip={item.title}
                               className={cn(
-                                "transition-colors font-medium text-xs",
+                                "transition-colors font-semibold text-sm",
                                 active
                                   ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
                                   : "text-white hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
@@ -344,7 +344,7 @@ export default function NewAdminDashboardShell({
                                         "font-medium text-xs",
                                         isLinkActive(child.href)
                                           ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
-                                          : "text-white/50 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
+                                          : "text-white/70 hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",
                                       )}
                                     >
                                       <Link href={child.href}>
@@ -366,7 +366,7 @@ export default function NewAdminDashboardShell({
                             isActive={active}
                             tooltip={item.title}
                             className={cn(
-                              "transition-colors font-medium text-xs",
+                              "transition-colors font-semibold text-sm",
                               active
                                 ? "bg-white! text-black! shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
                                 : "text-white hover:bg-white/10 dark:hover:bg-slate-800/10 hover:text-white",

@@ -1,20 +1,22 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Image from "next/image";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Activity, CreditCard, Dumbbell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import {
+  BoolRow,
+  DetailField,
+  DetailIdLine,
+  DetailModal,
+  DetailSection,
+  StatusBadge,
+  fmtDate,
+  humanize,
+  list,
+  num,
+} from "@/components/detail";
 import { useViewFitnessUserDialog } from "@/features/fitness/data/dialog-hooks";
 import type { FitnessUserRow } from "@/features/fitness/data/useFitnessAnalytics";
-
-const formatDate = (value: string | null) =>
-  value ? new Date(value).toLocaleDateString() : "—";
 
 /**
  * Fitness ▸ Users row detail (Gap: "clicking a user redirects to the main
@@ -23,136 +25,91 @@ const formatDate = (value: string | null) =>
  * needs when they click a member here — instead of sending them to
  * features/users, which has no notion of any of this. Opens with the
  * already-fetched FitnessUserRow (see dialog-hooks.ts); no separate fetch.
+ *
+ * Renders on the shared detail-modal shell (components/detail) so it matches
+ * the Admins / Reviews / Users modals, and surfaces every field the RPC
+ * returns — including user_id, tier_key and is_premium, which the previous
+ * bespoke layout dropped.
  */
 export default function ViewFitnessUserDialog() {
-  const { isOpen, data: row, close } = useViewFitnessUserDialog<FitnessUserRow>();
-  if (!row) return null;
+  const { isOpen, data: row, close } =
+    useViewFitnessUserDialog<FitnessUserRow>();
+
+  if (!isOpen || !row) return null;
+
+  const completion = Math.min(100, Math.max(0, row.plan_completion_pct ?? 0));
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && close()}>
-      <DialogContent className="sm:max-w-lg 3xl:max-w-2xl 4xl:max-w-3xl p-0 overflow-hidden">
-        <DialogHeader className="p-6 3xl:p-7 border-b bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex items-center gap-4 3xl:gap-5">
-            <div className="h-12 w-12 3xl:h-14 3xl:w-14 4xl:h-16 4xl:w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg 3xl:text-xl 4xl:text-2xl font-bold text-slate-400 overflow-hidden shrink-0">
-              {row.avatar_url ? (
-                <Image
-                  src={row.avatar_url}
-                  alt=""
-                  width={48}
-                  height={48}
-                  unoptimized
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                (row.name || "U").charAt(0).toUpperCase()
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg 3xl:text-xl 4xl:text-2xl font-bold truncate">
-                {row.name || "Unnamed user"}
-              </DialogTitle>
-              <div className="text-2xs 3xl:text-xs 4xl:text-sm text-muted-foreground mt-0.5">
-                Joined {formatDate(row.joined_at)}
-              </div>
-            </div>
-            <Badge
-              className={
-                (row.is_premium
-                  ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 border-slate-200") +
-                " 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm"
-              }
-            >
-              {row.tier_name || "Free"}
-            </Badge>
-          </div>
-        </DialogHeader>
+    <DetailModal
+      open={isOpen}
+      onClose={close}
+      maxWidth="sm:max-w-2xl"
+      title={row.name || "Unnamed user"}
+      avatar={
+        row.avatar_url ? (
+          <Image
+            src={row.avatar_url}
+            alt=""
+            width={56}
+            height={56}
+            unoptimized
+            className="h-full w-full object-cover"
+          />
+        ) : undefined
+      }
+      badges={
+        <>
+          <StatusBadge status={row.status || "active"} />
+          <Badge
+            variant="outline"
+            className={
+              row.is_premium
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+                : "border-slate-200 bg-slate-100 text-slate-600 dark:bg-slate-800"
+            }
+          >
+            {row.tier_name || "Free"}
+          </Badge>
+        </>
+      }
+      idLine={<DetailIdLine id={row.user_id} />}
+    >
+      <DetailSection title="Subscription" icon={CreditCard}>
+        <DetailField label="Tier" value={row.tier_name || "Free"} />
+        <DetailField label="Tier key" value={row.tier_key} mono />
+        <DetailField
+          label="Source"
+          value={humanize(row.subscription_source)}
+        />
+        <DetailField
+          label="Expires"
+          value={
+            row.is_premium
+              ? row.subscription_expires_at
+                ? fmtDate(row.subscription_expires_at)
+                : "Lifetime"
+              : null
+          }
+        />
+        <BoolRow label="Premium member" value={row.is_premium} />
+      </DetailSection>
 
-        <div className="p-6 3xl:p-7 space-y-5 3xl:space-y-6">
-          <section>
-            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
-              Subscription
-            </h4>
-            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
-              <Field
-                label="Expires"
-                value={
-                  row.is_premium
-                    ? row.subscription_expires_at
-                      ? formatDate(row.subscription_expires_at)
-                      : "Lifetime"
-                    : "—"
-                }
-              />
-              <Field label="Source" value={row.subscription_source || "—"} />
-            </div>
-          </section>
+      <DetailSection title="Training" icon={Dumbbell}>
+        <DetailField label="Experience level" value={humanize(row.level)} />
+        <DetailField label="Body type" value={humanize(row.body_type)} />
+        <DetailField label="Goals" value={list(row.fitness_goals)} />
+        <DetailField label="Current plan" value={humanize(row.plan)} />
+        <DetailField label="Plan completion" value={`${completion}%`} />
+      </DetailSection>
 
-          <Separator />
-
-          <section>
-            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
-              Training
-            </h4>
-            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
-              <Field label="Experience" value={row.level || "—"} />
-              <Field label="Body type" value={row.body_type || "—"} />
-              <Field
-                label="Goals"
-                value={row.fitness_goals?.length ? row.fitness_goals.join(", ") : "—"}
-              />
-              <Field label="Current plan" value={row.plan || "—"} />
-              <Field
-                label="Plan completion"
-                value={`${Math.min(100, Math.max(0, row.plan_completion_pct ?? 0))}%`}
-              />
-              <Field label="Last active" value={formatDate(row.last_active)} />
-            </div>
-          </section>
-
-          <Separator />
-
-          <section>
-            <h4 className="text-2xs 3xl:text-xs 4xl:text-sm font-black uppercase tracking-widest text-slate-400 mb-3 3xl:mb-4">
-              Activity
-            </h4>
-            <div className="grid grid-cols-2 gap-4 3xl:gap-5">
-              <Field
-                label="Workouts logged"
-                value={`${row.workouts.toLocaleString()} (${Number(row.kcal || 0).toLocaleString()} kcal)`}
-              />
-              <Field label="FitCoins" value={`🪙 ${row.fitcoins.toLocaleString()}`} />
-              <Field label="AI calls" value={row.ai_calls.toLocaleString()} />
-              <Field
-                label="Status"
-                value={
-                  <Badge
-                    className={
-                      (row.status === "banned"
-                        ? "bg-red-50 dark:bg-red-500/15 text-red-700 border-red-200"
-                        : "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 border-emerald-200") +
-                      " 3xl:text-xs 3xl:px-3 3xl:py-1 4xl:text-sm"
-                    }
-                  >
-                    {row.status || "active"}
-                  </Badge>
-                }
-              />
-            </div>
-          </section>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function Field({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div>
-      <div className="text-2xs 3xl:text-xs 4xl:text-sm text-slate-400">{label}</div>
-      <div className="text-xs 3xl:text-sm 4xl:text-base font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
-        {value}
-      </div>
-    </div>
+      <DetailSection title="Activity" icon={Activity}>
+        <DetailField label="Workouts logged" value={num(row.workouts)} />
+        <DetailField label="Calories burned" value={num(row.kcal)} />
+        <DetailField label="FitCoins" value={num(row.fitcoins)} />
+        <DetailField label="AI calls" value={num(row.ai_calls)} />
+        <DetailField label="Joined" value={fmtDate(row.joined_at)} />
+        <DetailField label="Last active" value={fmtDate(row.last_active)} />
+      </DetailSection>
+    </DetailModal>
   );
 }

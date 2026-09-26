@@ -41,8 +41,10 @@ import Modal from "@/components/redesign/Modal";
 import { cn } from "@/lib/utils";
 import { PERIOD_TAB_IDS, type PeriodTabId } from "@/features/period/schema/period-tracker";
 import { downloadCsv } from "@/lib/csv";
+import { useDebounce } from "@/hooks/use-debounce";
+import { usePeriodData } from "@/features/period/data/usePeriodData";
 
-import type { Row, Tab } from "@/features/period/schema/types";
+import type { PeriodPayload, Row, Tab } from "@/features/period/schema/types";
 import { tabs } from "@/features/period/schema/types";
 import { columns } from "./columns";
 import { pct } from "./formatters";
@@ -69,6 +71,10 @@ import TriviaCreateDialog, {
 import TtcOperations from "./TtcOperations";
 import SummaryNote from "./SummaryNote";
 
+/** Stable empty envelope so `payload` keeps one identity while a query is in
+ * flight (avoids re-render churn across the ~40 `payload.X` consumers below). */
+const EMPTY_PAYLOAD: PeriodPayload = {};
+
 export default function PeriodPage() {
   return (
     <Suspense
@@ -90,12 +96,22 @@ function PeriodWorkspace() {
     ? (requested as PeriodTabId)
     : "overview";
   const [activeTab, setActiveTab] = useState<PeriodTabId>(initialTab);
-  const [payload, setPayload] = useState<any>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  // Search is debounced before it reaches the query key, exactly like the old
+  // 250ms setTimeout; tab/page changes hit the key immediately.
+  const debouncedQuery = useDebounce(query, 250);
+  const {
+    data,
+    isFetching,
+    error: queryError,
+    refetch,
+  } = usePeriodData({ tab: activeTab, page, query: debouncedQuery });
+  const payload: PeriodPayload = data ?? EMPTY_PAYLOAD;
+  const loading = isFetching;
+  const error = queryError?.message ?? actionError;
   const [showCreate, setShowCreate] = useState(false);
   // Which tab the content dialog opens on. "Generate suggestions" in the AI
   // Suggestions header is the same dialog, opened straight onto its AI mode
@@ -120,43 +136,6 @@ function PeriodWorkspace() {
     (payload.data ?? []).find((row: Row) => row.id === contentReviewId) ??
     null;
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        tab: activeTab,
-        page: String(page),
-        pageSize: "50",
-      });
-      if (query.trim()) params.set("q", query.trim());
-      const response = await fetch(`/api/period/data?${params}`, {
-        cache: "no-store",
-      });
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(
-          typeof result.error === "string"
-            ? result.error
-            : "Unable to load Period Tracker data",
-        );
-      setPayload(result);
-    } catch (cause) {
-      setPayload({});
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Unable to load Period Tracker data",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, page, query]);
-
-  useEffect(() => {
-    const timeout = setTimeout(loadData, query ? 250 : 0);
-    return () => clearTimeout(timeout);
-  }, [loadData, query]);
   useEffect(() => {
     if (PERIOD_TAB_IDS.includes(requested as PeriodTabId))
       setActiveTab(requested as PeriodTabId);
@@ -183,7 +162,7 @@ function PeriodWorkspace() {
   const mutate = useCallback(
     async (body: Record<string, unknown>, success: string) => {
       setSaving(true);
-      setError(null);
+      setActionError(null);
       setMessage(null);
       try {
         const response = await fetch("/api/period/data", {
@@ -208,10 +187,10 @@ function PeriodWorkspace() {
         }
         setMessage(success);
         setShowCreate(false);
-        await loadData();
+        await refetch();
         return true;
       } catch (cause) {
-        setError(
+        setActionError(
           cause instanceof Error ? cause.message : "Unable to save this change",
         );
         return false;
@@ -219,7 +198,7 @@ function PeriodWorkspace() {
         setSaving(false);
       }
     },
-    [loadData],
+    [refetch],
   );
 
   const createRecord = (event: React.FormEvent<HTMLFormElement>) => {
@@ -548,7 +527,7 @@ function PeriodWorkspace() {
     const rows = payload.data ?? [];
     if (!rows.length) return;
     setSaving(true);
-    setError(null);
+    setActionError(null);
     const auditResponse = await fetch("/api/period/data", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -561,7 +540,7 @@ function PeriodWorkspace() {
     });
     if (!auditResponse.ok) {
       const result = await auditResponse.json().catch(() => ({}));
-      setError(
+      setActionError(
         typeof result.error === "string"
           ? result.error
           : "Unable to authorize export",
@@ -599,7 +578,7 @@ function PeriodWorkspace() {
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={loadData}
+          onClick={() => refetch()}
           disabled={loading}
         >
           <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />{" "}
@@ -708,9 +687,7 @@ function PeriodWorkspace() {
               }
             }}
           >
-            <span aria-hidden="true" className="text-sm leading-none">
-              {tab.icon}
-            </span>{" "}
+            <tab.icon aria-hidden="true" className="h-4 w-4" />
             {tab.label}
           </button>
         ))}
@@ -959,7 +936,7 @@ function PeriodWorkspace() {
                     : activeTab === "users"
                       ? (row) => viewPeriodUser.open(row)
                       : activeTab === "content"
-                        ? (row) => setContentReviewId(row.id)
+                        ? (row) => setContentReviewId(row.id ?? null)
                         : undefined
                 }
                 rowActions={rowActions}

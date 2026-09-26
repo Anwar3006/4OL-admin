@@ -108,7 +108,7 @@ export const UnauthorizedPage = () => {
           </div>
 
           {/* Error Code */}
-          <h1 className="text-6xl font-bold text-slate-900 dark:text-white mb-4">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
             403
           </h1>
 

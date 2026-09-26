@@ -1,4 +1,19 @@
 import type { CSSProperties } from "react";
+import {
+  AlertTriangle,
+  Baby,
+  Bell,
+  BellOff,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Flower2,
+  Heart,
+  Info,
+  Pill,
+  XCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { Row } from "@/features/period/schema/types";
@@ -69,29 +84,37 @@ const mutedDash = () => <span style={{ color: "var(--mu)" }}>—</span>;
 
 const GOAL_META: Record<
   string,
-  { icon: string; label: string; className?: string; style?: CSSProperties }
+  { icon: LucideIcon; label: string; className?: string; style?: CSSProperties }
 > = {
-  track_period: { icon: "🌸", label: "Track", className: "b bt" },
+  track_period: { icon: Flower2, label: "Track", className: "b bt" },
   trying_to_conceive: {
-    icon: "🤰",
+    icon: Heart,
     label: "TTC",
     className: "b",
     style: { background: "var(--pinkm)", color: "#9D174D" },
   },
-  pcos_support: { icon: "💊", label: "PCOS", className: "b bbl" },
-  pregnancy: { icon: "👶", label: "Pregnancy", className: "b bpu" },
+  pcos_support: { icon: Pill, label: "PCOS", className: "b bbl" },
+  pregnancy: { icon: Baby, label: "Pregnancy", className: "b bpu" },
 };
 /** Onboarding tracking goal (period_user_settings.tracking_goal), styled
- * per admin-panel.html:6141-6143's Goal column. */
+ * per admin-panel.html:6141-6143's Goal column. The glyph is a lucide icon
+ * (not the mockup's emoji) so it matches the rest of the admin's iconography;
+ * the chip colours still track the blueprint exactly. */
 export const goalBadge = (value?: string | null) => {
-  const meta = (value && GOAL_META[value]) || {
-    icon: "🌸",
+  const meta: {
+    icon: LucideIcon;
+    label: string;
+    className?: string;
+    style?: CSSProperties;
+  } = (value && GOAL_META[value]) || {
+    icon: Flower2,
     label: value?.replaceAll("_", " ") || "—",
     className: "b bdk",
   };
+  const Icon = meta.icon;
   return (
     <span className={meta.className} style={meta.style}>
-      {meta.icon} {meta.label}
+      <Icon className="h-3 w-3" /> {meta.label}
     </span>
   );
 };
@@ -100,7 +123,8 @@ export const goalBadge = (value?: string | null) => {
  * admin-panel.html:6141-6143's Reminders column. */
 export const reminderBadge = (value: boolean) => (
   <span className={cn("b", value ? "bg" : "by")}>
-    {value ? "🔔 On" : "🔕 Off"}
+    {value ? <Bell className="h-3 w-3" /> : <BellOff className="h-3 w-3" />}
+    {value ? "On" : "Off"}
   </span>
 );
 
@@ -118,7 +142,10 @@ export const cycleLength = (value?: number | null) => {
       }}
       className="text-xs 3xl:text-sm"
     >
-      {value} days{abnormal ? " ⚠️" : ""}
+      {value} days
+      {abnormal ? (
+        <AlertTriangle className="ml-1 inline h-3 w-3 align-[-2px]" />
+      ) : null}
     </span>
   );
 };
@@ -132,7 +159,8 @@ export const periodLength = (value?: number | null) => {
       style={{ fontWeight: 700, color: "var(--red)" }}
       className="text-xs 3xl:text-sm"
     >
-      {value} days ⚠️
+      {value} days
+      <AlertTriangle className="ml-1 inline h-3 w-3 align-[-2px]" />
     </span>
   );
 };
@@ -234,7 +262,13 @@ export const exerciseMinutes = (value?: number | null) =>
 
 /** Medication: name as a green pill when logged, muted dash otherwise. */
 export const medication = (logged?: boolean, name?: string | null) =>
-  logged && name ? <span className="b bg">💊 {name}</span> : mutedDash();
+  logged && name ? (
+    <span className="b bg">
+      <Pill className="h-3 w-3" /> {name}
+    </span>
+  ) : (
+    mutedDash()
+  );
 
 // period_daily_logs.source is one of: user, admin, migration, device,
 // offline_sync. offline_sync reads as the mockup's "Offline" (.by); every
@@ -246,20 +280,24 @@ export const sourceBadge = (value?: string | null) => (
   </span>
 );
 
-const SYNC_META: Record<string, { icon: string; className: string }> = {
-  synced: { icon: "✅", className: "bg" },
-  queued: { icon: "⏳", className: "by" },
-  local: { icon: "⏳", className: "by" },
-  conflict: { icon: "⚠️", className: "br" },
-  failed: { icon: "❌", className: "br" },
+const SYNC_META: Record<string, { icon: LucideIcon; className: string }> = {
+  synced: { icon: CheckCircle2, className: "bg" },
+  queued: { icon: Clock, className: "by" },
+  local: { icon: Clock, className: "by" },
+  conflict: { icon: AlertTriangle, className: "br" },
+  failed: { icon: XCircle, className: "br" },
 };
-/** period_daily_logs.sync_status, styled + emoji-prefixed per
+/** period_daily_logs.sync_status, styled + icon-prefixed per
  * admin-panel.html:6155-6157's Sync column. */
 export const syncStatus = (value: string) => {
-  const meta = SYNC_META[value] ?? { icon: "•", className: "bbl" };
+  const meta: { icon: LucideIcon; className: string } = SYNC_META[value] ?? {
+    icon: Circle,
+    className: "bbl",
+  };
+  const Icon = meta.icon;
   return (
     <span className={cn("b", meta.className)}>
-      {meta.icon} {value}
+      <Icon className="h-3 w-3" /> {value}
     </span>
   );
 };
@@ -312,6 +350,6 @@ export const notTracked = (reason: string) => (
     className="inline-flex items-center gap-1 text-2xs italic text-slate-400 dark:text-slate-500"
     title={reason}
   >
-    ℹ️ Not tracked
+    <Info className="h-3 w-3" /> Not tracked
   </span>
 );

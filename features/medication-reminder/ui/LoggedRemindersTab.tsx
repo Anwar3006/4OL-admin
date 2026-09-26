@@ -342,7 +342,7 @@ export default function LoggedRemindersTab() {
           <div className="flex gap-2 md:gap-4">
             <button
               className="hover:bg-emerald-200 rounded p-0.5 cursor-pointer"
-              onClick={() => openView(row.original.id)}
+              onClick={() => openView(row.original.id, row.original)}
               aria-label="View Reminder"
             >
               👁️

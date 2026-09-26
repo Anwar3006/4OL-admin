@@ -1,6 +1,6 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { Baby, CheckCircle2, Stethoscope, TestTube } from "lucide-react";
 import KpiCard from "@/components/redesign/KpiCard";
 import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
@@ -37,25 +37,25 @@ export default function TtcOperations({
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          icon="🤰"
+          icon={<Baby className="size-5" />}
           label="TTC Profiles"
           value={`${stats.ttcProfiles ?? 0} (${stats.adoptionPercent ?? "0%"} of trackers)`}
           variant="purple"
         />
         <KpiCard
-          icon="✅"
+          icon={<CheckCircle2 className="size-5" />}
           label="Checklist ≥ 50%"
           value={stats.checklistHalfPercent ?? "0%"}
           variant="green"
         />
         <KpiCard
-          icon="🧪"
+          icon={<TestTube className="size-5" />}
           label="Ovulation Tests (30d)"
           value={String(stats.ovulationTests30d ?? 0)}
           variant="blue"
         />
         <KpiCard
-          icon="🩺"
+          icon={<Stethoscope className="size-5" />}
           label="Preconception Visits"
           value={`${stats.visitsPlanned ?? 0} planned · ${stats.visitsCompleted ?? 0} completed`}
           variant="teal"

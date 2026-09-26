@@ -276,7 +276,7 @@ function DetailView({
                   </Badge>
                 </div>
 
-                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
+                <DialogTitle className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
                   {data.title}
                 </DialogTitle>
 

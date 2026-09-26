@@ -1,4 +1,4 @@
-import { getUsers, getUserProfile } from "@/actions/user.actions";
+import { getUsers, getProfileById } from "@/actions/user.actions";
 import { getBrowserClient } from "@/lib/db/browser";
 import { getAdminClient } from "@/lib/db/admin";
 import type {
@@ -6,8 +6,28 @@ import type {
   TUserProfile,
   TUserProfileRegistrationInput,
 } from "@/schemas/user-profile.schema";
+import type { Database } from "@/lib/db/database.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
+/**
+ * Full user_profiles row as returned by getProfileById, plus the resolved
+ * email/name and the server's masking marker. The generated Row type is the
+ * source of truth for the 43 columns; the flag_* columns are written at runtime
+ * by flagUserProfile but are missing from the generated types (type drift), so
+ * they are declared here to keep the detail modal fully typed.
+ */
+export type TUserDetail = Database["public"]["Tables"]["user_profiles"]["Row"] & {
+  email?: string | null;
+  name?: string;
+  full_name?: string | null;
+  is_flagged?: boolean | null;
+  flag_reason?: string | null;
+  flagged_at?: string | null;
+  flagged_by?: string | null;
+  /** true when the server masked PHI because the caller is not super_admin. */
+  _masked?: boolean;
+};
 
 interface Pagination {
   limit?: number;
@@ -67,17 +87,22 @@ export const useUsers = (params: Pagination) => {
 };
 
 export const useUser = ({ id, enabled }: { id: string; enabled: boolean }) => {
-  return useQuery<TUserProfile, Error>({
+  return useQuery<TUserDetail, Error>({
     queryKey: USER_QUERY_KEYS.detail(id),
     // Only run the query if an ID actually exists
-    enabled: enabled,
+    enabled: enabled && !!id,
     queryFn: async () => {
-      const { data, error } = await getUserProfile();
+      // FIX: fetch the TARGET user's profile by id, not the logged-in admin's
+      // own profile. getUserProfile() ignored `id` and returned the caller's
+      // row, so every user's modal showed the admin's own role (super_admin)
+      // and unmasked PHI. getProfileById(id) is role-gated to super_admin/admin
+      // and masks identifiers server-side based on the caller's role.
+      const { data, error } = await getProfileById(id);
 
       if (error) throw new Error(error);
       if (!data) throw new Error("User not found");
 
-      return data as TUserProfile;
+      return data as TUserDetail;
     },
   });
 };

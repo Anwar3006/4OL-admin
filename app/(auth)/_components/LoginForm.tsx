@@ -142,7 +142,7 @@ const LoginForm = ({ className, ...props }: React.ComponentProps<"form">) => {
             <div className="w-12 h-12 2xl:w-20 2xl:h-20 rounded-xl bg-[#57CE83]/10 flex items-center justify-center mb-2">
               <Shield className="w-6 h-6 2xl:w-10 2xl:h-10 text-[#57CE83]" />
             </div>
-            <h1 className="text-2xl 2xl:text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Admin Portal</h1>
+            <h1 className="text-2xl 2xl:text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Admin Portal</h1>
             <p className="text-muted-foreground text-sm 2xl:text-lg text-balance">
               Enter your credentials to access the dashboard
             </p>

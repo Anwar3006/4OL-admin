@@ -85,10 +85,11 @@ const SIZE_ICON_FONT: Record<string, string> = {
 };
 
 // Fixed per size — no responsive jump (Part S-D5): a value must not reflow
-// as the viewport crosses a breakpoint.
+// as the viewport crosses a breakpoint. All three sit on the 9-step type
+// scale (xl 19 / 2xl 22 / 3xl 28) so hero figures stay uniform app-wide.
 const SIZE_VALUE_TEXT: Record<string, string> = {
   default: "text-2xl",
-  lg: "text-4xl",
+  lg: "text-3xl",
   sm: "text-xl",
 };
 

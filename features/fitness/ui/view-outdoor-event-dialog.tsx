@@ -171,7 +171,7 @@ function DetailView({
                 {data.status || "Upcoming"}
               </Badge>
             </div>
-            <h2 className="text-2xl md:text-4xl font-black tracking-tight text-black leading-tight">
+            <h2 className="text-2xl font-black tracking-tight text-black leading-tight">
               {data.title}
             </h2>
           </div>

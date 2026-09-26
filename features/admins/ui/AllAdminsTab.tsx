@@ -4,6 +4,7 @@ import React from "react";
 import { DataTable } from "@/components/Data-Table/data-table";
 import { adminColumns } from "@/components/Data-Table/columns/adminColumns";
 import { useUsers } from "@/features/users/data/useUser";
+import { useViewAdminDialog } from "@/features/admins/data/dialog-hooks";
 import { usePagination } from "@/hooks/use-pagination";
 import { MobileCardConfig } from "@/components/Data-Table/mobile-card-types";
 
@@ -11,6 +12,7 @@ export default function AllAdminsTab() {
   const { page, onPageChange, onNextPage, onPreviousPage, pageSize } =
     usePagination({ key: "admins_page" });
   const { data, isLoading, isError, error } = useUsers({ admin: true, page, limit: pageSize });
+  const { open: openViewAdmin } = useViewAdminDialog();
 
   const admins = data?.users || [];
   const totalItems = data?.meta.total || 0;
@@ -43,7 +45,7 @@ export default function AllAdminsTab() {
     actions: [
       {
         label: "View Details",
-        onClick: (data) => console.log("View", data.user_id),
+        onClick: (data) => openViewAdmin(data.user_id),
       },
     ],
   };
@@ -70,7 +72,7 @@ export default function AllAdminsTab() {
           isLoading={isLoading}
           isError={isError}
           error={error}
-          onRowClick={(row) => console.log("Row Click", row.user_id)}
+          onRowClick={(row) => openViewAdmin(row.user_id)}
           onDeleteSelected={(rows) => console.log("Delete Rows", rows)}
           cardConfig={cardConfig}
           pagination={{
