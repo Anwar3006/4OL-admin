@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prod": "node scripts/build.js",
-    "type-check": "tsc",
+    "type-check": "cross-env NODE_OPTIONS=--max-old-space-size=4096 tsc",
     "seed": "tsx scripts/seeder.ts",
     "seed:disease": "tsx scripts/disease_seeder.ts",
     "seed:drugs": "tsx scripts/seed-drugs-from-json.ts",
