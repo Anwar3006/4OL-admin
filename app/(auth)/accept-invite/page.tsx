@@ -127,7 +127,7 @@ export default function AcceptInvitePage() {
         {/* Center Content */}
         <div className="relative z-10 flex flex-col gap-8 2xl:gap-14 max-w-md 2xl:max-w-2xl">
           <div className="space-y-4 2xl:space-y-6">
-            <h1 className="text-4xl 2xl:text-6xl font-bold text-white leading-tight">
+            <h1 className="text-3xl font-bold text-white leading-tight">
               Healthcare Management<br />
               Simplified
             </h1>

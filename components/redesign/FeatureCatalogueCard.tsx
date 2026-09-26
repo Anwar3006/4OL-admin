@@ -59,7 +59,7 @@ function FeatureRow({ feature }: { feature: MobileFeature }) {
             </h4>
             <span
               className={cn(
-                "rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                "rounded-full border px-2 py-0.5 text-2xs font-bold uppercase tracking-wide",
                 stateStyles[feature.state],
               )}
             >
@@ -93,7 +93,7 @@ function AreaContents({ area }: { area: MobileFeatureArea }) {
   return (
     <div className="border-t border-slate-100 px-4 pb-4 dark:border-slate-800 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">
+        <h4 className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
           Available to users now
         </h4>
         {area.adminHref && (
@@ -161,16 +161,16 @@ function AreaHeader({ area }: { area: MobileFeatureArea }) {
           <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
             {area.name}
           </h3>
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-2xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
             {liveCount} available
           </span>
           {limitedCount > 0 && (
-            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-2xs font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
               {limitedCount} limited
             </span>
           )}
           {area.future.length > 0 && (
-            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-2xs font-bold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
               {area.future.length} possible next
             </span>
           )}
@@ -212,10 +212,10 @@ export default function FeatureCatalogueCard({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="card-title text-base">{title}</h2>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-2xs font-black uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {availableCount} current
             </span>
-            <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+            <span className="rounded-full bg-violet-50 px-2.5 py-1 text-2xs font-black uppercase tracking-wide text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
               {futureCount} future ideas
             </span>
           </div>
@@ -224,7 +224,7 @@ export default function FeatureCatalogueCard({
           </p>
         </div>
         {!focused && (
-          <p className="shrink-0 rounded-xl bg-blue-50 px-3 py-2 text-[11px] font-semibold leading-4 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+          <p className="shrink-0 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold leading-4 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
             Open a service to see its promises
           </p>
         )}

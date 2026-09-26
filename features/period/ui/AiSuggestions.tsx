@@ -25,7 +25,24 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  Bot,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  Infinity,
+  Link2,
+  Pause,
+  Pencil,
+  Play,
+  Sparkles,
+  Stethoscope,
+  XCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Row } from "@/features/period/schema/types";
 import { dateTime } from "./formatters";
@@ -34,11 +51,13 @@ import { darkPill, neutralPill } from "./pills";
 const FIELD =
   "mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-xs";
 
-// `.bbl`, `.bpu`, `.bt` and `.by` are referenced across this module but have
-// no rule in app/globals.css -- only `.b`, `.bg` and `.br` exist. So chips
-// here spell their colours out rather than naming a class that renders
-// nothing. See ./pills.tsx.
-const CHIP = "b whitespace-nowrap text-[10px]! leading-none";
+// `.bbl`, `.bpu`, `.bt` and `.by` are referenced across the Period tables but
+// have no rule in app/globals.css — of the shorthand badges only the base `.b`
+// is global now (the colour modifiers live solely in mockup-theme.css and
+// don't reach this queue, which renders outside `.mockup-theme`). So chips
+// here spell their colours out with Tailwind rather than naming a class that
+// renders nothing. See ./pills.tsx.
+const CHIP = "b whitespace-nowrap text-2xs! leading-none";
 
 const CHIP_TONES = {
   green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
@@ -59,9 +78,15 @@ const SURFACE_LABELS: Record<string, string> = {
   today_for_you: "Today · For You",
 };
 
-function chip(tone: keyof typeof CHIP_TONES, label: string, title?: string) {
+function chip(
+  tone: keyof typeof CHIP_TONES,
+  label: string,
+  title?: string,
+  Icon?: LucideIcon,
+) {
   return (
     <span className={cn(CHIP, CHIP_TONES[tone])} title={title}>
+      {Icon ? <Icon className="h-3 w-3" /> : null}
       {label}
     </span>
   );
@@ -70,19 +95,23 @@ function chip(tone: keyof typeof CHIP_TONES, label: string, title?: string) {
 /** Where an article is in its life, as one badge. */
 function statusChip(row: Row) {
   if (row.jobStatus === "failed")
-    return chip("red", "✖ Generation failed", row.errorCode ?? undefined);
-  if (row.jobStatus === "running") return chip("blue", "⏳ Running");
-  if (!row.clinicalReviewedAt) return chip("amber", "🕵️ Needs clinical review");
-  if (!row.scheduledAt) return chip("amber", "📋 Reviewed · not scheduled");
+    return chip("red", "Generation failed", row.errorCode ?? undefined, XCircle);
+  if (row.jobStatus === "running")
+    return chip("blue", "Running", undefined, Clock);
+  if (!row.clinicalReviewedAt)
+    return chip("amber", "Needs clinical review", undefined, Stethoscope);
+  if (!row.scheduledAt)
+    return chip("amber", "Reviewed · not scheduled", undefined, ClipboardList);
 
   const startsAt = new Date(row.scheduledAt).getTime();
   const now = Date.now();
-  if (row.libraryStatus === "paused") return chip("slate", "⏸ Paused");
-  if (startsAt > now) return chip("blue", "📅 Scheduled");
+  if (row.libraryStatus === "paused")
+    return chip("slate", "Paused", undefined, Pause);
+  if (startsAt > now) return chip("blue", "Scheduled", undefined, Calendar);
   if (row.featuredUntil && new Date(row.featuredUntil).getTime() <= now)
     // The whole point of the un-feature model: this is not "expired".
-    return chip("slate", "📚 Live · not promoted");
-  return chip("green", "✅ Live · promoted");
+    return chip("slate", "Live · not promoted", undefined, BookOpen);
+  return chip("green", "Live · promoted", undefined, CheckCircle2);
 }
 
 export default function AiSuggestions({
@@ -116,7 +145,8 @@ export default function AiSuggestions({
       <div className="card-header flex-wrap gap-3">
         <div>
           <h3 id="ai-suggestions-heading" className="card-title">
-            🤖 AI content suggestions
+            <Bot className="mr-1.5 inline h-4 w-4 align-[-2px]" />
+            AI content suggestions
           </h3>
           <p className="mt-1 text-2xs text-slate-500">
             AI proposes articles for the mobile Library, grounded{" "}
@@ -127,9 +157,10 @@ export default function AiSuggestions({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {counts.running > 0 && chip("blue", `⏳ ${counts.running} running`)}
-          {chip("amber", `🕵️ ${counts.awaiting} awaiting schedule`)}
-          {chip("slate", `🔗 ${sourceLinkCount} source links`)}
+          {counts.running > 0 &&
+            chip("blue", `${counts.running} running`, undefined, Clock)}
+          {chip("amber", `${counts.awaiting} awaiting schedule`, undefined, Stethoscope)}
+          {chip("slate", `${sourceLinkCount} source links`, undefined, Link2)}
           <button type="button" className="btn btn-primary btn-sm" onClick={onGenerate}>
             <Sparkles className="h-4 w-4" /> Generate suggestions
           </button>
@@ -182,8 +213,8 @@ export default function AiSuggestions({
                     </td>
                     <td className="p-3">
                       {grounded
-                        ? chip("green", `✅ Grounded · ${row.sourceCount}`)
-                        : chip("amber", "⚠️ Not verified")}
+                        ? chip("green", `Grounded · ${row.sourceCount}`, undefined, CheckCircle2)
+                        : chip("amber", "Not verified", undefined, AlertTriangle)}
                     </td>
                     <td className="p-3 td-s">{dateTime(row.suggestedAt)}</td>
                     <td className="p-3">
@@ -200,7 +231,7 @@ export default function AiSuggestions({
                         row.featuredUntil ? (
                           <span className="td-s">{dateTime(row.featuredUntil)}</span>
                         ) : (
-                          chip("green", "♾ Permanent")
+                          chip("green", "Permanent", undefined, Infinity)
                         )
                       ) : (
                         <span className="text-slate-500">—</span>
@@ -236,11 +267,17 @@ export default function AiSuggestions({
                               setSchedulingId(schedulingId === row.id ? null : row.id);
                             }}
                           >
-                            {schedulingId === row.id
-                              ? "Close"
-                              : row.scheduledAt
-                                ? "✏️ Edit"
-                                : "📅 Schedule"}
+                            {schedulingId === row.id ? (
+                              "Close"
+                            ) : row.scheduledAt ? (
+                              <>
+                                <Pencil className="h-3.5 w-3.5" /> Edit
+                              </>
+                            ) : (
+                              <>
+                                <Calendar className="h-3.5 w-3.5" /> Schedule
+                              </>
+                            )}
                           </button>
                           {/* Pause and resume are one toggle, so a paused
                               article always shows the way back. Resume keeps
@@ -262,7 +299,7 @@ export default function AiSuggestions({
                                 )
                               }
                             >
-                              ▶ Resume
+                              <Play className="h-3.5 w-3.5" /> Resume
                             </button>
                           )}
                           {row.scheduledAt && row.libraryStatus !== "paused" && (
@@ -278,7 +315,7 @@ export default function AiSuggestions({
                                 )
                               }
                             >
-                              ⏸ Pause
+                              <Pause className="h-3.5 w-3.5" /> Pause
                             </button>
                           )}
                         </>

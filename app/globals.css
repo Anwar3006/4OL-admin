@@ -212,6 +212,11 @@
     background-color: var(--color-background);
     color: var(--clr-slate-600);
     font-weight: 400;
+    /* Part B: mockup admin-panel.html body rhythm (14px / 1.55). The px type
+       scale is fixed, so this only sets the base reading size/leading for
+       unstyled text; utilities still win where applied. */
+    font-size: 14px;
+    line-height: 1.55;
     overflow-x: hidden;
   }
 
@@ -825,7 +830,18 @@
     color: var(--clr-pink);
   }
 
-  /* Inline shorthand badges */
+  /* Inline shorthand badge — BASE layout only.
+     `.b` is global because it is consumed OUTSIDE the `.mockup-theme` scope
+     by the Period Tracker's AiSuggestions queue and pills.tsx, which pair it
+     with Tailwind colour utilities. The colour modifiers (.bg/.br/.by/.bbl/
+     .bpu/.bt/.bdk/.bmu …) live EXCLUSIVELY in components/mockup-theme/
+     mockup-theme.css and apply within `.mockup-theme`. They used to be
+     duplicated here, where `.br` was slate-grey while the scoped `.br` is
+     red — a footgun for any badge rendered outside the theme, and dead CSS
+     everywhere else (every real consumer renders inside `.mockup-theme`,
+     where the higher-specificity scoped rule already won). The dead global
+     `.bg`/`.br` duplicates were removed; mockup-theme.css is now the single
+     source of truth for badge colours. */
   .b {
     display: inline-flex;
     align-items: center;
@@ -834,14 +850,6 @@
     padding: 2px 7px;
     border-radius: var(--r-pill);
     font-size: 10px;
-  }
-  .bg {
-    background: var(--clr-green-muted);
-    color: var(--clr-green-deep);
-  }
-  .br {
-    background: var(--clr-slate-100);
-    color: var(--clr-slate-500);
   }
   .dot-on {
     display: inline-block;
@@ -859,6 +867,11 @@
     color: var(--clr-slate-600);
   }
   .td-s {
+    /* Intentionally duplicated (scoped) in mockup-theme.css — both are
+       load-bearing in their own scope: this global rule styles the Period
+       Tracker's AiSuggestions cells (rendered outside `.mockup-theme`), while
+       the scoped `.mockup-theme .td-s` wins inside the themed tables. Not a
+       de-dupe candidate; kept deliberately. */
     font-size: clamp(0.575rem, 0.3vw + 0.45rem, 0.6875rem);
     color: var(--clr-slate-500);
   }

@@ -91,7 +91,7 @@ export default function ScheduleTab() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-1.5">
                       <div className="text-xs font-medium text-slate-500">This week&apos;s sessions</div>
-                      <div className="text-4xl font-semibold leading-tight tracking-tight tabular-nums text-slate-900 dark:text-white">
+                      <div className="text-3xl font-semibold leading-tight tracking-tight tabular-nums text-slate-900 dark:text-white">
                         {total.toLocaleString()}
                       </div>
                     </div>

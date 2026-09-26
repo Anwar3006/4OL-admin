@@ -173,7 +173,7 @@ function DetailView({
                 </Badge>
               )}
             </div>
-            <h2 className="text-2xl md:text-4xl font-black tracking-tight text-black leading-tight">
+            <h2 className="text-2xl font-black tracking-tight text-black leading-tight">
               {data.title}
             </h2>
             <p className="text-sm font-bold text-slate-500 flex items-center gap-1.5">

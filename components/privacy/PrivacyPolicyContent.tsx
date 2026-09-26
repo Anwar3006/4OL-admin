@@ -44,7 +44,7 @@ const PrivacyPolicyContent = () => {
         <Badge className="bg-emerald-400 text-emerald-950 hover:bg-emerald-300">Legal & privacy</Badge>
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl space-y-3">
-            <h1 className="text-3xl font-black tracking-tight sm:text-5xl">Privacy policy</h1>
+            <h1 className="text-3xl font-black tracking-tight">Privacy policy</h1>
             <p className="max-w-2xl text-base leading-7 text-slate-300">
               A clear guide to the information 4 Our Life collects, why we use it, and the choices available to you.
             </p>

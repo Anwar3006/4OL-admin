@@ -94,14 +94,14 @@ function RecentActivityColumn({
             key={group.key + group.latest}
             className="flex items-center gap-2 text-xs"
           >
-            <span className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-[9px] font-bold shrink-0">
+            <span className="size-5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-3xs font-bold shrink-0">
               {group.actor.slice(0, 2).toUpperCase()}
             </span>
             <span className="flex-1 min-w-0 truncate text-slate-500 dark:text-slate-400">
               {group.actor} {group.action.replaceAll("_", " ")} {group.table}
               {group.count > 1 && ` ×${group.count}`}
             </span>
-            <span className="text-slate-400 dark:text-slate-500 text-[10px] shrink-0">
+            <span className="text-slate-400 dark:text-slate-500 text-2xs shrink-0">
               {timeAgo(group.latest)}
             </span>
           </div>
@@ -128,7 +128,7 @@ function AiHubColumn({
         <span className="text-xl font-bold text-slate-800 dark:text-slate-200 tabular-nums">
           {loading ? "..." : flags}
         </span>
-        <span className="text-[11px] text-slate-400">pending flags</span>
+        <span className="text-xs text-slate-400">pending flags</span>
       </div>
       <div className="flex items-center justify-between text-xs">
         <span className="text-slate-500 dark:text-slate-400">Calls (24h)</span>
@@ -146,7 +146,7 @@ function AiHubColumn({
       </div>
       <a
         href="/ai"
-        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline mt-1"
+        className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline mt-1"
       >
         Open AI Hub →
       </a>
@@ -312,7 +312,7 @@ function TasksComplianceColumn({
         {canConfigure && (
           <button
             onClick={() => setDialogOpen(true)}
-            className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
+            className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
           >
             Configure
           </button>
