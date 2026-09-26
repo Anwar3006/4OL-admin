@@ -17,6 +17,10 @@ import {
   Globe,
   CheckCircle2,
   XCircle,
+  User,
+  Info,
+  Briefcase,
+  History,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +67,16 @@ interface FacilityData {
   business_hours?: any[];
   [key: string]: any;
 }
+
+/** Medium-style local date, or an em-dash when absent. */
+const fmtDay = (value?: string | null): string =>
+  value
+    ? new Date(value).toLocaleDateString(undefined, { dateStyle: "medium" })
+    : "—";
+
+/** snake_case enum → spaced, capitalized label; em-dash when absent. */
+const enumLabel = (value?: string | null): string =>
+  value ? value.replace(/_/g, " ") : "—";
 
 /* ───────────────────────────────────────────────────────────
    Main Component
@@ -300,7 +314,7 @@ function DetailView({
             <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
               {facility.facility_name}
             </h2>
             <p className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] hidden sm:block">
@@ -393,7 +407,7 @@ function DetailView({
                   )}
                 </div>
 
-                <DialogTitle className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
+                <DialogTitle className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]">
                   {facility.facility_name}
                 </DialogTitle>
 
@@ -531,6 +545,215 @@ function DetailView({
             </section>
           )}
 
+          {/* About */}
+          {facility.description && (
+            <section className="space-y-5">
+              <SectionHeader icon={Info} title="About" />
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                  {facility.description}
+                </p>
+              </div>
+            </section>
+          )}
+
+          {/* Location & Access */}
+          <section className="space-y-5">
+            <SectionHeader icon={MapPin} title="Location & Access" />
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FieldItem label="Street" value={facility.street || "—"} />
+                <FieldItem label="Area" value={facility.area || "—"} />
+                <FieldItem label="District" value={facility.district || "—"} />
+                <FieldItem label="Region" value={facility.region || "—"} />
+                <FieldItem label="Post code" value={facility.post_code || "—"} />
+                <FieldItem label="Country" value={facility.country || "—"} />
+                <FieldItem label="GPS address" value={facility.gps_address || "—"} />
+                <FieldItem label="WhatsApp" value={facility.whatsapp_number || "—"} />
+                <FieldItem
+                  label="Latitude"
+                  value={facility.latitude != null ? String(facility.latitude) : "—"}
+                />
+                <FieldItem
+                  label="Longitude"
+                  value={facility.longitude != null ? String(facility.longitude) : "—"}
+                />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <FieldItem
+                  label="Ownership"
+                  value={
+                    <span className="capitalize">{facility.ownership || "—"}</span>
+                  }
+                />
+                <FieldItem
+                  label="Wellness sub-type"
+                  value={
+                    facility.wellness_subtype ? (
+                      <span className="capitalize">{facility.wellness_subtype}</span>
+                    ) : (
+                      "—"
+                    )
+                  }
+                />
+                <FieldItem
+                  label="Accepts NHIS"
+                  value={
+                    <Badge
+                      className={`rounded-none text-2xs font-black uppercase tracking-widest px-2.5 py-1 ${
+                        facility.accepts_nhis
+                          ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      {facility.accepts_nhis ? "Yes" : "No"}
+                    </Badge>
+                  }
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Services & Amenities */}
+          <section className="space-y-5">
+            <SectionHeader icon={HeartPulse} title="Services & Amenities" />
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6 space-y-6">
+              <div className="space-y-2">
+                <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
+                  Services
+                </p>
+                <ChipList items={facility.services} tone="emerald" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
+                  Amenities
+                </p>
+                <ChipList items={facility.amenities} tone="blue" />
+              </div>
+              {Array.isArray(facility.registration_capabilities) &&
+                facility.registration_capabilities.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
+                      Registration capabilities
+                    </p>
+                    <ChipList items={facility.registration_capabilities} tone="slate" />
+                  </div>
+                )}
+              {(() => {
+                const kw = Array.isArray(facility.keywords)
+                  ? facility.keywords
+                  : typeof facility.keywords === "string" && facility.keywords.trim()
+                    ? facility.keywords.split(",").map((k: string) => k.trim()).filter(Boolean)
+                    : [];
+                return kw.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
+                      Keywords
+                    </p>
+                    <ChipList items={kw} tone="slate" />
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          </section>
+
+          {/* Registrant */}
+          {(facility.first_name ||
+            facility.owner_email ||
+            facility.person_contact_number) && (
+            <section className="space-y-5">
+              <SectionHeader icon={User} title="Registrant" />
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <FieldItem
+                    label="Name"
+                    value={
+                      [facility.first_name, facility.last_name]
+                        .filter(Boolean)
+                        .join(" ") || "—"
+                    }
+                  />
+                  <FieldItem label="Position" value={facility.position || "—"} />
+                  <FieldItem label="Email" value={facility.owner_email || "—"} />
+                  <FieldItem
+                    label="Contact"
+                    value={facility.person_contact_number || "—"}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Business & Listing */}
+          <section className="space-y-5">
+            <SectionHeader icon={Briefcase} title="Business & Listing" />
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FieldItem
+                  label="Provider kind"
+                  value={<span className="capitalize">{enumLabel(facility.kind)}</span>}
+                />
+                <FieldItem
+                  label="Provider type"
+                  value={<span className="capitalize">{enumLabel(facility.provider_type)}</span>}
+                />
+                <FieldItem
+                  label="Verification status"
+                  value={<span className="capitalize">{enumLabel(facility.verification_status)}</span>}
+                />
+                <FieldItem label="Online only" value={facility.is_online_only ? "Yes" : "No"} />
+                <FieldItem label="Featured" value={facility.is_featured ? "Yes" : "No"} />
+                <FieldItem label="Top rated" value={facility.is_top_rated ? "Yes" : "No"} />
+                <FieldItem
+                  label="Top rated rank"
+                  value={facility.top_rated_rank != null ? String(facility.top_rated_rank) : "—"}
+                />
+                <FieldItem
+                  label="View count"
+                  value={
+                    facility.view_count != null
+                      ? Number(facility.view_count).toLocaleString()
+                      : "—"
+                  }
+                />
+                <FieldItem
+                  label="Subscription tier"
+                  value={<span className="capitalize">{enumLabel(facility.subscription_tier)}</span>}
+                />
+                <FieldItem
+                  label="Subscription expires"
+                  value={fmtDay(facility.subscription_expires_at)}
+                />
+                <FieldItem
+                  label="Feature type"
+                  value={<span className="capitalize">{enumLabel(facility.feature_type)}</span>}
+                />
+                <FieldItem
+                  label="Feature window"
+                  value={
+                    facility.feature_start || facility.feature_end
+                      ? `${fmtDay(facility.feature_start)} — ${fmtDay(facility.feature_end)}`
+                      : "—"
+                  }
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Provenance */}
+          <section className="space-y-5">
+            <SectionHeader icon={History} title="Provenance" />
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FieldItem label="Owner ID" value={facility.owner_id || "—"} />
+                <FieldItem label="Submitted by" value={facility.submitted_by || "—"} />
+                <FieldItem label="Approved by" value={facility.approved_by || "—"} />
+                <FieldItem label="Status changed" value={fmtDay(facility.status_changed_at)} />
+                <FieldItem label="Last updated" value={fmtDay(facility.updated_at)} />
+              </div>
+            </div>
+          </section>
+
           {/* Rating Section */}
           <FacilityRatingSection
             facility={facility}
@@ -548,8 +771,16 @@ function DetailView({
                 Ghana Health Tech Facility Directory
               </span>
             </div>
-            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest">
+            <p className="text-2xs font-medium text-slate-400 uppercase tracking-widest text-right">
               ID: {facility.id.slice(0, 8)}…
+              {facility.created_at && (
+                <span className="block normal-case tracking-normal mt-1 text-slate-400">
+                  Registered {new Date(facility.created_at).toLocaleDateString()}
+                  {facility.approved_at
+                    ? ` · Approved ${new Date(facility.approved_at).toLocaleDateString()}`
+                    : ""}
+                </span>
+              )}
             </p>
           </div>
         </footer>
@@ -639,6 +870,58 @@ function MetaPill({
         </span>
       </div>
       <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{value}</p>
+    </div>
+  );
+}
+
+/** Label/value pair for the expanded facility sections. */
+function FieldItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1 min-w-0">
+      <p className="text-2xs font-black uppercase tracking-widest text-slate-400">
+        {label}
+      </p>
+      <div className="text-sm font-bold text-slate-800 dark:text-slate-200 break-words">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+/** A wrapped row of chips for array columns (services, amenities, ...). */
+function ChipList({
+  items,
+  tone = "slate",
+}: {
+  items?: string[] | null;
+  tone?: "emerald" | "blue" | "slate";
+}) {
+  if (!items || items.length === 0) {
+    return <span className="text-sm text-slate-400">None recorded</span>;
+  }
+  const tones = {
+    emerald:
+      "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200",
+    blue: "bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-200",
+    slate:
+      "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+  } as const;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item, i) => (
+        <span
+          key={`${item}-${i}`}
+          className={`inline-flex items-center rounded-none border px-2.5 py-1 text-2xs font-bold capitalize ${tones[tone]}`}
+        >
+          {String(item).replace(/_/g, " ")}
+        </span>
+      ))}
     </div>
   );
 }

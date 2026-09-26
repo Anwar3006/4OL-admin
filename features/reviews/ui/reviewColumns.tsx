@@ -66,25 +66,31 @@ export const reviewColumns: ColumnDef<any>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <div className="flex flex-col gap-1">
-        {row.original.is_verified_visit && (
-          <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-            <ShieldCheck className="h-3 w-3" /> Verified
-          </span>
-        )}
-        <span
-          className={cn(
-            "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border w-fit",
-            row.original.is_published
-              ? "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30"
-              : "bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800",
+    cell: ({ row }) => {
+      // `is_published` is not a facility_reviews column (type drift); fall back
+      // to the real review_status enum so approved reviews read as Published.
+      const published =
+        row.original.is_published ?? row.original.status === "approved";
+      return (
+        <div className="flex flex-col gap-1">
+          {row.original.is_verified_visit && (
+            <span className="inline-flex items-center gap-1 text-3xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="h-3 w-3" /> Verified
+            </span>
           )}
-        >
-          {row.original.is_published ? "Published" : "Hidden"}
-        </span>
-      </div>
-    ),
+          <span
+            className={cn(
+              "inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-widest border w-fit",
+              published
+                ? "bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/30"
+                : "bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800",
+            )}
+          >
+            {published ? "Published" : "Hidden"}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "created_at",

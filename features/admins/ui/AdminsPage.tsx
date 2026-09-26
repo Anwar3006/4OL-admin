@@ -15,6 +15,7 @@ import ReportsTab from "./ReportsTab";
 import { cn } from "@/lib/utils";
 import { useAddAdminDialog } from "@/features/admins/data/dialog-hooks";
 import AddAdminDialog from "./add-admin-dialog";
+import ViewAdminDialog from "./view-admin-dialog";
 import { usePermissionContext } from "@/stores/permission-context";
 
 const AdminTabs = [
@@ -116,6 +117,7 @@ const AdminsPage = () => {
         </div>
       </Tabs>
       <AddAdminDialog />
+      <ViewAdminDialog />
     </div>
   );
 };
