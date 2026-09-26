@@ -87,8 +87,12 @@ export default function SupportTab() {
       return false;
     if (search) {
       const q = search.toLowerCase();
-      const requester =
-        `${ticket.user_profiles?.first_name ?? ""} ${ticket.user_profiles?.last_name ?? ""}`.toLowerCase();
+      const requester = [
+        ticket.user_name,
+        ticket.user_profiles?.first_name,
+        ticket.user_profiles?.last_name,
+        ticket.contact_email,
+      ].filter(Boolean).join(" ").toLowerCase();
       if (
         !ticket.subject?.toLowerCase().includes(q) &&
         !ticket.message?.toLowerCase().includes(q) &&
@@ -145,9 +149,11 @@ export default function SupportTab() {
         Ticket: ticketDisplayId(t.id),
         Subject: t.subject || "",
         Requester:
-          [t.user_profiles?.first_name, t.user_profiles?.last_name]
+          [t.user_name, t.user_profiles?.first_name, t.user_profiles?.last_name]
             .filter(Boolean)
             .join(" ") || "",
+        Contact: t.contact_email || t.user_profiles?.phone_number || "",
+        Source: t.source || "app",
         Type: t.category || "Other",
         Priority: t.priority,
         Status: t.status,
@@ -180,15 +186,17 @@ export default function SupportTab() {
       },
       {
         accessorKey: "user_profiles",
-        header: "User",
+        header: "Requester",
         cell: ({ row }) => {
           const val = row.original.user_profiles;
+          const name = row.original.user_name || (val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown");
+          const contact = row.original.contact_email || val?.phone_number || "—";
           return (
             <div className="text-xs">
               <div className="font-bold text-slate-700 dark:text-slate-300">
-                {val ? `${val.first_name ?? ""} ${val.last_name ?? ""}`.trim() : "Unknown"}
+                {name}
               </div>
-              <div className="text-slate-400">{val?.phone_number || "—"}</div>
+              <div className="text-slate-400">{contact}</div>
             </div>
           );
         },

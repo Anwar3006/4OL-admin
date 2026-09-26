@@ -63,17 +63,27 @@ const ChatsPage = () => {
         title="💬 Chats"
         subtitle="Group chats management · User support tickets · Platform communication"
       >
-        {canModerate && (
-          <button
-            className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs"
-            onClick={() => {
-              setActiveTab("groups");
-              addGroupDialog.open();
-            }}
+        <div className="flex items-center gap-2">
+          <a
+            href="/support"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-secondary btn-sm font-black uppercase tracking-widest text-3xs"
           >
-            + New Group
-          </button>
-        )}
+            Open support form ↗
+          </a>
+          {canModerate && (
+            <button
+              className="btn btn-primary btn-sm text-white font-black uppercase tracking-widest text-3xs"
+              onClick={() => {
+                setActiveTab("groups");
+                addGroupDialog.open();
+              }}
+            >
+              + New Group
+            </button>
+          )}
+        </div>
       </PageHeader>
 
       {/* KPI stats */}

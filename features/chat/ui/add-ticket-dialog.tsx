@@ -117,11 +117,13 @@ const AddTicketDialog = () => {
                   Requested By
                 </span>
                 <span className="font-bold text-sm text-slate-800 dark:text-slate-200">
-                  {addTicket.data.user_profiles?.first_name}{" "}
-                  {addTicket.data.user_profiles?.last_name}
+                  {addTicket.data.user_name || [
+                    addTicket.data.user_profiles?.first_name,
+                    addTicket.data.user_profiles?.last_name,
+                  ].filter(Boolean).join(" ") || "Unknown"}
                 </span>
                 <span className="text-xs text-slate-400">
-                  {addTicket.data.user_profiles?.phone_number ||
+                  {addTicket.data.contact_email || addTicket.data.user_profiles?.phone_number ||
                     "no phone on file"}
                 </span>
               </div>

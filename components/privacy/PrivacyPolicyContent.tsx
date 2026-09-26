@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowUpRight, FileText, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 
@@ -10,14 +14,14 @@ const Section = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="space-y-3">
-    <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
+  <section id={`policy-${title.split(".")[0]}`} className="scroll-mt-8 space-y-3 border-t border-slate-100 pt-8 first:border-t-0 first:pt-0 dark:border-slate-800">
+    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
       {title}
-    </h3>
+    </h2>
     <div className="text-sm leading-relaxed text-slate-600 dark:text-slate-200 space-y-3">
       {children}
     </div>
-  </div>
+  </section>
 );
 
 const BulletList = ({ items }: { items: string[] }) => (
@@ -36,13 +40,49 @@ const BulletList = ({ items }: { items: string[] }) => (
 const PrivacyPolicyContent = () => {
   return (
     <div className="space-y-6">
-      <Card className="bg-white dark:bg-slate-800">
-      <CardContent className="space-y-8 p-6 sm:p-8 lg:p-10">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-center sm:text-left text-slate-900 dark:text-white">
-            4 Our Life - Privacy Policy
-          </h1>
+      <header className="rounded-3xl bg-slate-950 px-6 py-8 text-white shadow-xl shadow-slate-950/10 sm:px-10 sm:py-12">
+        <Badge className="bg-emerald-400 text-emerald-950 hover:bg-emerald-300">Legal & privacy</Badge>
+        <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-3xl space-y-3">
+            <h1 className="text-3xl font-black tracking-tight sm:text-5xl">Privacy policy</h1>
+            <p className="max-w-2xl text-base leading-7 text-slate-300">
+              A clear guide to the information 4 Our Life collects, why we use it, and the choices available to you.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-slate-300">
+            <ShieldCheck className="size-5 text-emerald-400" />
+            <span>Last updated: 26 September 2026</span>
+          </div>
         </div>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-6">
+          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+            <FileText className="size-4 text-emerald-600 dark:text-emerald-400" />
+            In this policy
+          </div>
+          <nav aria-label="Privacy policy sections" className="grid gap-1 text-sm">
+            {[
+              ["1", "Introduction"],
+              ["3", "Information we collect"],
+              ["5", "How we use information"],
+              ["6", "Sharing and disclosure"],
+              ["9", "Your rights"],
+              ["16", "Contact us"],
+            ].map(([number, label]) => (
+              <a key={number} href={`#policy-${number}`} className="rounded-lg px-2 py-1.5 text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300">
+                {label}
+              </a>
+            ))}
+          </nav>
+          <Button asChild variant="outline" size="sm" className="mt-5 w-full">
+            <Link href="/support">Contact support <ArrowUpRight /></Link>
+          </Button>
+        </aside>
+
+        <Card className="bg-white dark:bg-slate-900">
+        <CardContent className="space-y-8 p-6 sm:p-8 lg:p-10">
 
         <Section title="1. Introduction">
           <p>
@@ -374,6 +414,7 @@ const PrivacyPolicyContent = () => {
         </Section>
       </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

@@ -38,42 +38,13 @@ export const useChats = ({ page, limit }: UseChatsParams) => {
   return useQuery<PaginatedChatsResponse, Error>({
     queryKey: CHAT_QUERY_KEYS.list(page, limit),
     queryFn: async () => {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      const supabase = await getBrowserClient();
-      const {
-        data: chats,
-        count,
-        error,
-      } = await supabase
-        .from("chat_support")
-        .select(
-          `
-          *,
-          user_profiles:requested_by (
-            first_name,
-            last_name,
-            phone_number
-          )
-        `,
-          { count: "exact" },
-        )
-        .eq("is_deleted", false)
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) throw new Error(error.message);
-
-      const totalCount = count ?? 0;
+      const response = await fetch(`/api/admin/support-tickets?page=${page}&limit=${limit}`);
+      const body = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(body?.error || "Failed to load support tickets.");
 
       return {
-        chats: (chats || []) as TChatOutput[],
-        meta: {
-          totalPages: Math.ceil(totalCount / limit),
-          total: totalCount,
-          currentPage: page,
-        },
+        chats: (body?.tickets || []) as TChatOutput[],
+        meta: body?.meta as PaginatedChatsResponse["meta"],
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -113,21 +84,17 @@ export const useChatStats = () => {
 export const useUpdateChat = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<TChatOutput, Error, { id: number; data: TChatInput }>({
+  return useMutation<void, Error, { id: number; data: TChatInput }>({
     mutationFn: async ({ id, data: chatData }) => {
-      const supabase = await getBrowserClient();
-      const { data, error } = await supabase
-        .from("chat_support")
-        .update({
-          ...chatData,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return data as TChatOutput;
+      const response = await fetch(`/api/chat/support/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(chatData),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || "Failed to update ticket.");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.all });

@@ -2,8 +2,10 @@ import { z } from "zod";
 
 export const chatSchema = z.object({
   id: z.number(),
-  requested_by: z.string().uuid(),
+  requested_by: z.string().uuid().nullable(),
   user_name: z.string().nullable(),
+  contact_email: z.string().email().nullable().optional(),
+  source: z.enum(["app", "web", "office"]).default("app"),
   subject: z.string().nullable(),
   message: z.string().nullable(),
   priority: z.enum(["Low", "Medium", "High"]).default("Low"),
