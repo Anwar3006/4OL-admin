@@ -3,6 +3,11 @@ import { getAdminClient } from "@/lib/db/admin";
 
 
 import { getRequestUser } from "@/lib/mobile-auth";
+import { normalizeGroupCategory } from "@/features/chat/schema/constants";
+import {
+  decideJoin,
+  type CallerFacts,
+} from "@/features/chat/lib/join-eligibility";
 
 /**
  * GET /api/chat/conversations
@@ -16,19 +21,19 @@ import { getRequestUser } from "@/lib/mobile-auth";
  * RPC needs. (Identity now comes from @/lib/mobile-auth, verified in-process.)
  *
  * Query params:
- *   include_public=true  — also include groups the user is not yet a member
- *                          of that they're eligible to discover/join, per
- *                          category:
- *                            general/specialty/support/announcements — open
- *                              to everyone
- *                            facility  — only shown to the owner of the
- *                              linked facility (no facility-staff/membership
- *                              table exists yet, so ownership is the only
- *                              signal available)
- *                            is_verified_only groups — only shown to users
- *                              with an approved hcp_verifications row
- *                          Groups already at max_members are excluded either
- *                          way.
+ *   include_public=true  — append the public group DIRECTORY (AF-05 Part 3):
+ *                          every active group with visibility='public' that the
+ *                          user has NOT joined, each carrying a server-computed
+ *                          `access_state` ('joinable' | 'locked') + `lock_reason`
+ *                          ('invitation' | 'qualification' | 'full'). A locked
+ *                          group is still listed (name, avatar, member_count) so
+ *                          the user can see it exists, but its description/rules
+ *                          are withheld and mobile shows "Accessible only by
+ *                          invitation/qualification" instead of opening it.
+ *                          Private groups (visibility='private', Super-Admin
+ *                          switch) are never listed — members only. The user's
+ *                          own groups come first (from get_conversations); the
+ *                          directory is ordered by member_count desc.
  */
 export async function GET(req: NextRequest) {
   const user = await getRequestUser(req);
@@ -125,15 +130,15 @@ async function fetchDiscoverGroupsOnce(
   userId: string,
   conversations: any[],
 ): Promise<any[]> {
-  // IDs of groups the user is already part of
+  // IDs of groups the user is already part of. Those come from get_conversations
+  // above (pinned to the top there), so Discover only returns groups the user
+  // has NOT joined.
   const joinedGroupIds = new Set(
     conversations.filter((c) => c.type === "group").map((c) => c.id),
   );
 
-  // Categories that are open to everyone (no extra eligibility check).
-  const OPEN_CATEGORIES = ["general", "specialty", "support", "announcements"];
-
-  // Is this user a verified HCP? Needed to gate is_verified_only groups.
+  // Is this user a verified HCP? Needed to classify verified-only groups as
+  // joinable vs locked (qualification).
   const { data: verification, error: verificationError } = await admin
     .from("hcp_verifications")
     .select("id")
@@ -144,7 +149,7 @@ async function fetchDiscoverGroupsOnce(
   if (verificationError) throw verificationError;
   const isVerifiedHcp = !!verification;
 
-  // Which facilities (if any) does this user own? Needed to gate
+  // Which facility-linked conversations does this user own? Needed to classify
   // "facility" category groups.
   const { data: ownedFacilities, error: ownedFacilitiesError } = await admin
     .from("facility_profile")
@@ -165,13 +170,17 @@ async function fetchDiscoverGroupsOnce(
     );
   }
 
-  // Fetch every discoverable group category in one query; eligibility
-  // filtering (verified-only, facility ownership) happens below since it
-  // needs cross-table lookups above.
+  // AF-05 Part 3 + G2: list EVERY active group the Super Admin has left
+  // `visibility='public'`, regardless of category or group_type. Eligibility no
+  // longer filters a group OUT of the directory — it decides whether the row is
+  // `joinable` or `locked` (with a machine-readable lock_reason), so a user can
+  // see that a group exists and how many members it has even when they cannot
+  // open it ("Accessible only by invitation/qualification"). PRIVATE groups
+  // (visibility='private') are excluded entirely — members only.
   //
-  // Gap Analysis CH-D3: only active groups are discoverable, and the
-  // group_type column gates visibility (premium/admin groups are never
-  // discoverable; verified/hcp_verified are filtered client-side below).
+  // G2: there is no category allow-list here anymore. The E-D4 vocabulary is
+  // normalised on the way out via normalizeGroupCategory, and decideJoin already
+  // accepts both the legacy and E-D4 category values.
   let publicQuery = admin
     .from("conversations")
     .select(
@@ -183,8 +192,10 @@ async function fetchDiscoverGroupsOnce(
       avatar_url,
       group_category,
       group_type,
+      group_rules,
       is_verified_only,
       max_members,
+      visibility,
       created_by,
       created_at,
       updated_at,
@@ -194,10 +205,9 @@ async function fetchDiscoverGroupsOnce(
     .eq("type", "group")
     .eq("is_deleted", false)
     .eq("status", "active")
-    .not("group_type", "in", '("premium","admin")')
-    .in("group_category", [...OPEN_CATEGORIES, "facility"])
+    .eq("visibility", "public")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(100);
 
   if (joinedGroupIds.size > 0) {
     publicQuery = publicQuery.not(
@@ -215,42 +225,49 @@ async function fetchDiscoverGroupsOnce(
       const memberCount = g.conversation_members?.[0]?.count ?? 0;
       const maxMembers = g.max_members ?? 500;
 
-      // Skip full groups
-      if (memberCount >= maxMembers) return null;
+      // Facts are precomputed above (one verification lookup + one facility
+      // lookup for the whole list), so this stays O(1) per group — no N+1.
+      const facts: CallerFacts = {
+        isVerifiedHcp,
+        ownsLinkedFacility: ownedFacilityConversationIds.has(g.id),
+      };
+      const decision = decideJoin(g as any, facts);
 
-      // Verified-HCPs-only groups: hide from anyone who isn't verified.
-      // CH-D3: honor both the legacy is_verified_only flag and the newer
-      // group_type vocabulary.
-      if (
-        (g.is_verified_only ||
-          g.group_type === "hcp_verified" ||
-          g.group_type === "verified") &&
-        !isVerifiedHcp
-      ) {
-        return null;
+      let accessState: "joinable" | "locked";
+      let lockReason: string | null = null;
+      if (memberCount >= maxMembers) {
+        accessState = "locked";
+        lockReason = "full";
+      } else if (decision.ok) {
+        accessState = "joinable";
+      } else {
+        accessState = "locked";
+        lockReason = decision.code;
       }
-
-      // Facility groups: only discoverable by that facility's owner.
-      if (
-        g.group_category === "facility" &&
-        !ownedFacilityConversationIds.has(g.id)
-      ) {
-        return null;
-      }
+      const isLocked = accessState === "locked";
 
       return {
         id: g.id,
         type: "group",
         name: g.name || "Unnamed Group",
-        description: g.description,
+        // Withhold description/rules for locked rows: the directory reveals that
+        // the group exists and its size, not its contents.
+        description: isLocked ? null : g.description,
+        group_rules: isLocked ? null : (g.group_rules ?? null),
         avatar_url: g.avatar_url,
-        group_category: g.group_category,
+        group_category: normalizeGroupCategory(g.group_category),
+        group_category_raw: g.group_category,
         group_type: g.group_type,
         is_verified_only: g.is_verified_only,
+        visibility: g.visibility ?? "public",
         max_members: maxMembers,
         member_count: memberCount,
         is_public_group: true,
         is_joined: false,
+        // AF-05 Part 3 access model — mobile renders a lock badge + toast for
+        // locked rows and a Join button for joinable ones.
+        access_state: accessState,
+        lock_reason: lockReason,
         members: [],
         last_message_at: null,
         last_message_preview: null,
@@ -261,5 +278,8 @@ async function fetchDiscoverGroupsOnce(
         updated_at: g.updated_at,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    // Own groups already come first from get_conversations; order the public
+    // directory by popularity so the largest communities surface first.
+    .sort((a: any, b: any) => (b.member_count ?? 0) - (a.member_count ?? 0));
 }

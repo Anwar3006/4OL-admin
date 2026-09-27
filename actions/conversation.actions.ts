@@ -20,7 +20,9 @@ export async function assignAdminWithRulesAction(
   conversation_id: string,
   user_id: string,
   facility_id: string,
-  role: string = "admin",
+  // AF-05 D1: canonical manager role is `moderator` (matches the
+  // fn_assign_admin_with_rules default after the role-normalisation migration).
+  role: string = "moderator",
 ): Promise<{ error: string | null }> {
   // ── Auth guard ────────────────────────────────────────────────────────────
   const supabase = await getServerClient();

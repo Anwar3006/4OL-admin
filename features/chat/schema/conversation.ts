@@ -31,7 +31,10 @@ export const assignAdminSchema = z.object({
   conversation_id: z.string(),
   user_id: z.string(),
   facility_id: z.string(),
-  role: z.enum(["super_admin", "admin", "group_leader"]),
+  // AF-05 D1: canonical conversation-manager vocabulary is `owner` +
+  // `moderator`. `admin`/`group_leader` are LEGACY aliases kept only for the
+  // expand/contract transition; new writes should use `moderator`.
+  role: z.enum(["owner", "moderator", "admin", "group_leader"]),
 });
 
 export type TAssignAdminInput = z.infer<typeof assignAdminSchema>;

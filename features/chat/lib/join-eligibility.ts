@@ -61,7 +61,20 @@ export interface CallerFacts {
   ownsLinkedFacility: boolean;
 }
 
-export type JoinDecision = { ok: true } | { ok: false; reason: string };
+export type JoinDecision = { ok: true } | { ok: false; reason: string; code: LockReason };
+
+/**
+ * AF-05 Part 3: machine-readable reason a group is not joinable, so the
+ * Discover list can show a *locked* row with the right affordance instead of
+ * hiding the group entirely.
+ *   - `unavailable`   — not a group / deleted / inactive (never listed)
+ *   - `invitation`    — premium/admin type: invitation-only
+ *   - `qualification` — needs HCP verification, facility ownership, or a
+ *                       category the caller isn't eligible for
+ *   - `full`          — at max_members (computed by the caller, which knows the
+ *                       member count; decideJoin itself is capacity-agnostic)
+ */
+export type LockReason = "unavailable" | "invitation" | "qualification" | "full";
 
 /** Honours both the legacy `is_verified_only` flag and the newer group_type
  *  vocabulary, exactly as Discover does. */
@@ -78,16 +91,17 @@ export function decideJoin(
   caller: CallerFacts,
 ): JoinDecision {
   if (c.type !== "group" || c.is_deleted || (c.status ?? "active") !== "active") {
-    return { ok: false, reason: "This conversation cannot be joined." };
+    return { ok: false, reason: "This conversation cannot be joined.", code: "unavailable" };
   }
 
   if (c.group_type != null && NEVER_SELF_JOINABLE_TYPES.includes(c.group_type)) {
-    return { ok: false, reason: "This group is by invitation only." };
+    return { ok: false, reason: "This group is by invitation only.", code: "invitation" };
   }
 
   const notEligible: JoinDecision = {
     ok: false,
     reason: "You are not eligible to join this group.",
+    code: "qualification",
   };
 
   if (c.group_category === "facility") {

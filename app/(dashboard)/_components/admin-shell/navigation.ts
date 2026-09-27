@@ -83,6 +83,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
     items: [
       { title: "Admins", href: "/admins", icon: "👥", permission: "admins.view" },
       { title: "Users", href: "/users", icon: "👤", permission: "users.view" },
+      { title: "Family Circle", href: "/family", icon: "👪", permission: "family.view" },
       { title: "Task Manager", href: "/tasks", icon: "📋", permission: "tasks.view" },
       {
         // Flat, no children: /reports already renders these as page tabs
@@ -161,6 +162,12 @@ export const dashboardNavSections: DashboardNavSection[] = [
         href: "/reviews",
         icon: "⭐",
         permission: "reviews.view",
+      },
+      {
+        title: "Feedback Board",
+        href: "/feedback",
+        icon: "💡",
+        permission: "feedback.view",
       },
       { title: "Map", href: "/map", icon: "🗺️", permission: "facilities.view" },
     ],

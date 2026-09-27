@@ -19,6 +19,8 @@ import {
 } from "@/features/chat/data/useConversation";
 import { useUsers } from "@/features/users/data/useUser";
 import { GHANA_REGIONS } from "@/lib/shared-constants";
+import { getPublicImageUrl } from "@/lib/utils";
+import ImageDropZone from "@/components/ImageDropZone";
 import {
   GROUP_CATEGORIES,
   GROUP_TYPES,
@@ -52,6 +54,12 @@ export default function CreateGroupDialog() {
   );
   const [groupRules, setGroupRules] = useState("");
   const [assignAdminId, setAssignAdminId] = useState("");
+  // AF-05 Part 3 — listing visibility (public | private). Private is a
+  // Super-Admin privilege; the server (POST /api/chat/groups) also enforces it.
+  const [visibility, setVisibility] = useState("public");
+  // AF-05 — group avatar. Stored as a storage key here; normalised to a public
+  // URL on submit via getPublicImageUrl.
+  const [avatarKey, setAvatarKey] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   // Populate form when editing an existing group
@@ -71,6 +79,8 @@ export default function CreateGroupDialog() {
       });
       setGroupRules(group.group_rules || "");
       setAssignAdminId("");
+      setVisibility(group.visibility || "public");
+      setAvatarKey(group.avatar_url || "");
     } else {
       resetForm();
     }
@@ -87,6 +97,8 @@ export default function CreateGroupDialog() {
     setPermissions({ ...GROUP_PERMISSION_DEFAULTS });
     setGroupRules("");
     setAssignAdminId("");
+    setVisibility("public");
+    setAvatarKey("");
     setError(null);
   };
 
@@ -116,6 +128,8 @@ export default function CreateGroupDialog() {
       region_restriction: regionRestriction || null,
       group_permissions: permissions,
       group_rules: groupRules.trim() || null,
+      visibility,
+      avatar_url: avatarKey ? getPublicImageUrl(avatarKey) : null,
     };
 
     try {
@@ -308,6 +322,40 @@ export default function CreateGroupDialog() {
               rows={3}
               className="text-sm resize-none focus-visible:ring-emerald-500/20"
             />
+          </div>
+
+          {/* AF-05 Part 3 — Visibility + group avatar */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
+                Visibility
+              </Label>
+              <select
+                className={selectClass}
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value)}
+              >
+                <option value="public">Public — listed in Discover</option>
+                <option value="private">Private — members only</option>
+              </select>
+              <p className="text-2xs text-slate-400">
+                Private groups are hidden from Discover and visible to members only.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-2xs font-black uppercase tracking-wider text-slate-400">
+                Group Avatar
+              </Label>
+              <ImageDropZone
+                text="Drop or pick a group image"
+                filePath={`chat/group-avatars`}
+                bucketName="bucket4ol"
+                mediaType="image"
+                maxFiles={1}
+                initialFiles={avatarKey ? [avatarKey] : []}
+                onFilesChange={(keys) => setAvatarKey(keys[0] ?? "")}
+              />
+            </div>
           </div>
 
           {error && (

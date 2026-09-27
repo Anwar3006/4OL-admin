@@ -147,6 +147,8 @@ export const useCreateConversation = () => {
       group_permissions?: Record<string, boolean>;
       group_rules?: string | null;
       assign_admin_id?: string | null;
+      avatar_url?: string | null;
+      visibility?: string;
     }) => {
       const supabase = await getBrowserClient();
 
@@ -173,6 +175,9 @@ export const useCreateConversation = () => {
           region_restriction: params.region_restriction ?? null,
           group_permissions: params.group_permissions ?? {},
           group_rules: params.group_rules ?? null,
+          avatar_url: params.avatar_url ?? null,
+          // AF-05 Part 3 — listing visibility; defaults to public.
+          visibility: params.visibility ?? "public",
           created_by: user.id,
         })
         .select()
@@ -193,13 +198,14 @@ export const useCreateConversation = () => {
       if (memberError) throw new Error(memberError.message);
 
       // Optional second group admin (m-create-group "Assign Group Admin").
+      // AF-05 D1: the canonical manager role is `moderator` (was `admin`).
       if (params.assign_admin_id && params.assign_admin_id !== user.id) {
         const { error: adminError } = await supabase
           .from("conversation_members")
           .insert({
             conversation_id: conversation.id,
             user_id: params.assign_admin_id,
-            role: "admin",
+            role: "moderator",
           });
         if (adminError) throw new Error(adminError.message);
       }
@@ -232,6 +238,8 @@ export const useUpdateConversation = () => {
       group_permissions,
       group_rules,
       status,
+      visibility,
+      avatar_url,
     }: {
       id: string;
       name?: string;
@@ -244,6 +252,8 @@ export const useUpdateConversation = () => {
       group_permissions?: Record<string, boolean>;
       group_rules?: string | null;
       status?: string;
+      visibility?: string;
+      avatar_url?: string | null;
     }) => {
       const supabase = await getBrowserClient();
       const payload: Record<string, any> = {};
@@ -266,6 +276,9 @@ export const useUpdateConversation = () => {
         payload.group_permissions = group_permissions;
       if (group_rules !== undefined) payload.group_rules = group_rules;
       if (status !== undefined) payload.status = status;
+      // AF-05 Part 3 — listing visibility (public | private).
+      if (visibility !== undefined) payload.visibility = visibility;
+      if (avatar_url !== undefined) payload.avatar_url = avatar_url;
       payload.updated_at = new Date().toISOString();
 
       const { error } = await supabase

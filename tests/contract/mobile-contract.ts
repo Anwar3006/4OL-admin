@@ -184,6 +184,26 @@ export const CONTRACT_RPCS = [
   // by any authenticated user; scoped internally to auth.uid(), not a
   // parameter.
   "fn_record_period_cycle",
+
+  // Added 27 Sept 2026 with AF-05 group governance (Phases C/D). The Expo app
+  // calls these SECURITY DEFINER RPCs DIRECTLY with the signed-in user's JWT
+  // (hooks/chat/useGroupGovernance.ts) — the same pattern as
+  // report_chat_content — rather than through the RLS-bypassing service-role
+  // BFF, because authorisation is enforced in-database via request_user_id()
+  // + user_can_manage_conversation() (drift point G7). Their parameter names
+  // and order are therefore frozen exactly as the mobile hooks pass them:
+  //   fn_invite_to_conversation(p_conversation_id, p_invited_user_id, p_role, p_message)
+  //   fn_review_join_request(p_request_id, p_approve, p_reason)
+  //   fn_set_group_avatar(p_conversation_id, p_avatar_url)
+  //   fn_request_add_member(p_conversation_id, p_user_id, p_message)
+  //   fn_request_join(p_conversation_id, p_message)
+  //   fn_respond_invitation(p_invitation_id, p_accept)
+  "fn_invite_to_conversation",
+  "fn_review_join_request",
+  "fn_set_group_avatar",
+  "fn_request_add_member",
+  "fn_request_join",
+  "fn_respond_invitation",
 ] as const;
 
 /**
@@ -247,6 +267,19 @@ export const CONTRACT_TABLES = [
   // to directly via the RLS-enforced client, not through an API route.
   "facility_scout_config",
   "facility_scout_submissions",
+
+  // Added 27 Sept 2026 with AF-05 group governance (Phases C/D). Read DIRECTLY
+  // by the Expo app under RLS (hooks/chat/useGroupGovernance.ts) to render the
+  // Group Info sheet + moderator console: a non-member must get a null role and
+  // no rows, so the SELECT policies on these ARE the API. `conversations` and
+  // `conversation_members` gained the AF-05 columns the mobile reads
+  // (visibility, group_rules, avatar_url on conversations; the D1 role
+  // vocabulary on conversation_members) — additive, but the mobile select list
+  // depends on those column names existing.
+  "conversations",
+  "conversation_members",
+  "conversation_invitations",
+  "conversation_join_requests",
 ] as const;
 
 /**
