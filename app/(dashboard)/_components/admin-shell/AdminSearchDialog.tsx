@@ -67,7 +67,7 @@ const ENTITY_ROUTE: Record<
   condition: { path: "/diseases", dialog: "view-condition" },
   // Symptoms page reuses the "view-condition" store key for its own dialog.
   symptom: { path: "/symptoms", dialog: "view-condition" },
-  facility: { path: "/facilities", dialog: "view-facility" },
+  facility: { path: "/providers?entity=business" },
   user: { path: "/users", dialog: "view-user" },
   exercise: { path: "/fitness?tab=exercises", dialog: "view-exercise" },
   healthy_living: { path: "/healthy-living", dialog: "view-healthy-living" },

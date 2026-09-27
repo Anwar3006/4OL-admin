@@ -24,7 +24,7 @@ export async function GET() {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("provider_types")
-    .select("key, kind, label, directory_category, is_listed, is_active, sort_order")
+    .select("key, kind, label, directory_category, listing_entity, is_listed, is_active, sort_order")
     .order("kind", { ascending: true })
     .order("sort_order", { ascending: true });
 

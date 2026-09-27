@@ -16,8 +16,12 @@ import { providerColumns } from "./providerColumns";
 import ProviderQueues from "./ProviderQueues";
 import { useProviderOptions, useProviderStats, useProvidersList, useUpdateProviderStatus } from "../data/useProviders";
 import type { ProviderKind } from "../schema/types";
+import AddFacilityDialog from "@/features/facilities/ui/add-facility-dialog";
+import { useAddFacilityDialog } from "@/features/facilities/data/dialog-hooks";
+import TopRatedTab from "@/features/facilities/ui/top-rated-tab";
+import FeaturedTab from "@/features/facilities/ui/featured-tab";
 
-const FILTER_KEYS = ["kind", "type", "status", "verification", "tier", "region"] as const;
+const FILTER_KEYS = ["entity", "category", "kind", "type", "status", "verification", "tier", "region"] as const;
 
 const ProvidersPage = () => {
   const searchParams = useSearchParams();
@@ -25,10 +29,14 @@ const ProvidersPage = () => {
   const router = useRouter();
 
   const search = searchParams.get("search") || "";
+  const activeTab = searchParams.get("tab") || "registry";
   const page = parseInt(searchParams.get("page") || "1", 10);
   const filters = Object.fromEntries(
     FILTER_KEYS.map((key) => [key, searchParams.get(key) || "all"]),
   ) as Record<(typeof FILTER_KEYS)[number], string>;
+  // The registry deliberately opens on businesses: the former Facilities
+  // landing page should continue to feel like the default admin workflow.
+  const entity = (searchParams.get("entity") || "business") as "business" | "person";
 
   const updateParams = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -40,25 +48,45 @@ const ProvidersPage = () => {
   };
 
   const { data: options } = useProviderOptions();
-  const { data: stats } = useProviderStats();
+  const { data: stats } = useProviderStats({ entity, category: filters.category });
   const { data, isLoading, isFetching, isError, error } = useProvidersList({
     page,
     limit: 10,
     search,
     kind: filters.kind as ProviderKind | "all",
     type: filters.type,
+    entity,
+    category: filters.category,
     status: filters.status as any,
     verification: filters.verification as any,
     tier: filters.tier,
     region: filters.region,
   });
   const updateStatus = useUpdateProviderStatus();
+  const registerProvider = useAddFacilityDialog();
 
   const typeOptions = useMemo(() => {
     if (!options) return [];
-    if (filters.kind === "all") return options.types;
-    return options.types.filter((t) => t.kind === filters.kind);
-  }, [options, filters.kind]);
+    return options.types.filter((type) =>
+      type.listing_entity === entity &&
+      (filters.kind === "all" || type.kind === filters.kind) &&
+      (filters.category === "all" || type.directory_category === filters.category),
+    );
+  }, [options, entity, filters.kind, filters.category]);
+
+  const categoryOptions = useMemo(() => {
+    if (!options) return [];
+    const categories = new Set(
+      options.types
+        .filter((type) => type.listing_entity === entity)
+        .map((type) => type.directory_category || "unlisted"),
+    );
+    return Array.from(categories).sort();
+  }, [options, entity]);
+
+  const categoryLabel = (category: string) => category === "unlisted"
+    ? "Unlisted / B2B"
+    : category.split("_").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
@@ -66,6 +94,12 @@ const ProvidersPage = () => {
         title="🩺 Providers"
         subtitle="Every provider kind — care facilities, vendors, practitioners, trainers, ambulance operators — one registry"
       >
+        <a className="btn btn-secondary btn-sm" href="/api/providers/export">
+          📥 Export CSV
+        </a>
+        <button className="btn btn-primary btn-sm" onClick={() => registerProvider.open()}>
+          + Register provider
+        </button>
         <button
           className="btn btn-secondary btn-sm"
           onClick={() => updateParams({ status: "pending", page: "1" })}
@@ -73,6 +107,12 @@ const ProvidersPage = () => {
           ⏳ Review Pending{stats ? ` (${stats.byStatus.pending})` : ""}
         </button>
       </PageHeader>
+
+      <div className="flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
+        {([{key: "business", label: "Facilities & Businesses"}, {key: "person", label: "People"}] as const).map((tab) => (
+          <button key={tab.key} onClick={() => updateParams({ entity: tab.key, category: undefined, kind: undefined, type: undefined, page: "1" })} className={`flex-1 rounded-lg px-4 py-2 text-sm font-bold ${entity === tab.key ? "bg-emerald-600 text-white" : "text-slate-600 dark:text-slate-300"}`}>{tab.label}</button>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard icon="📊" label="Total" value={stats?.total?.toLocaleString() ?? "0"} variant="blue" />
@@ -85,6 +125,16 @@ const ProvidersPage = () => {
 
       <ProviderQueues />
 
+      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
+        {[
+          ["registry", "Registry"],
+          ["top-rated", "⭐ Top Rated"],
+          ["featured", "🌟 Featured"],
+        ].map(([key, label]) => (
+          <button key={key} onClick={() => updateParams({ tab: key === "registry" ? undefined : key })} className={`border-b-2 px-3 py-2 text-xs font-bold ${activeTab === key ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500"}`}>{label}</button>
+        ))}
+      </div>
+
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
         <input
           className="w-full h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
@@ -93,7 +143,16 @@ const ProvidersPage = () => {
           onChange={(e) => updateParams({ search: e.target.value, page: "1" })}
         />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+          <Select value={filters.category} onValueChange={(v) => updateParams({ category: v, type: undefined, page: "1" })}>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Directory group" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All groups</SelectItem>
+              {categoryOptions.map((category) => (
+                <SelectItem key={category} value={category}>{categoryLabel(category)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select
             value={filters.kind}
             onValueChange={(v) => updateParams({ kind: v, type: undefined, page: "1" })}
@@ -184,6 +243,9 @@ const ProvidersPage = () => {
           ]}
         />
       </div>
+      {activeTab === "top-rated" && <TopRatedTab />}
+      {activeTab === "featured" && <FeaturedTab />}
+      <AddFacilityDialog />
     </div>
   );
 };

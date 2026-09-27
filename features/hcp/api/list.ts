@@ -70,6 +70,45 @@ export async function GET(request: NextRequest) {
       })
     : pageRows ?? [];
 
+  // Memberships are the canonical affiliation source. The legacy fields on
+  // hcp_verifications remain visible only as a fallback for historical rows.
+  const userIds = verifications.map((row: any) => row.user_id).filter(Boolean);
+  const [membershipsResult, listingsResult] = userIds.length === 0
+    ? [{ data: [] as any[] }, { data: [] as any[] }]
+    : await Promise.all([
+        supabase
+          .from("provider_members")
+          .select("user_id, provider_id, job_title, status, providers!inner(name, status)")
+          .in("user_id", userIds)
+          .eq("status", "active"),
+        supabase
+          .from("providers")
+          .select("id, owner_id, provider_types!inner(listing_entity)")
+          .in("owner_id", userIds)
+          .eq("status", "active")
+          .eq("provider_types.listing_entity", "person"),
+      ]);
+  if (membershipsResult.error || listingsResult.error) {
+    return NextResponse.json({ error: membershipsResult.error?.message ?? listingsResult.error?.message }, { status: 500 });
+  }
+  const membershipsByUser = new Map<string, any[]>();
+  for (const membership of membershipsResult.data ?? []) {
+    const provider = Array.isArray((membership as any).providers)
+      ? (membership as any).providers[0]
+      : (membership as any).providers;
+    if (provider?.status !== "active") continue;
+    const existing = membershipsByUser.get((membership as any).user_id) ?? [];
+    existing.push({ provider_id: (membership as any).provider_id, name: provider?.name ?? "Provider", job_title: (membership as any).job_title ?? null });
+    membershipsByUser.set((membership as any).user_id, existing);
+  }
+  const listingByOwner = new Map<string, string>();
+  for (const listing of listingsResult.data ?? []) listingByOwner.set((listing as any).owner_id, (listing as any).id);
+  const enrichedVerifications = verifications.map((row: any) => ({
+    ...row,
+    memberships: membershipsByUser.get(row.user_id) ?? [],
+    own_listing_id: listingByOwner.get(row.user_id) ?? null,
+  }));
+
   const [chatsResult, membersResult] = await Promise.all([
     supabase
       .from("conversations")
@@ -105,7 +144,7 @@ export async function GET(request: NextRequest) {
   }));
 
   return NextResponse.json({
-    verifications,
+    verifications: enrichedVerifications,
     groupChats,
     meta: {
       total: count ?? verifications.length,

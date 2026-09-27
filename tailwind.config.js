@@ -172,10 +172,8 @@ module.exports = {
       },
 
       fontFamily: {
-        // Part B: Source Sans 3 is the mockup admin-panel.html's primary family
-        // and is now loaded via next/font (root layout) as `--font-sans`. The
-        // CSS variable comes first; the named families stay as local fallbacks.
-        sans: ["var(--font-sans)", "Source Sans 3", "Inter", "Segoe UI", "sans-serif"],
+        // Inter is loaded in the root layout through next/font.
+        inter: ["var(--font-inter)", "Inter", "Segoe UI", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       boxShadow: {

@@ -26,6 +26,8 @@ export function useProvidersList(params: ProvidersListParams) {
   if (params.search) qs.set("search", params.search);
   if (params.kind && params.kind !== "all") qs.set("kind", params.kind);
   if (params.type && params.type !== "all") qs.set("type", params.type);
+  if (params.entity && params.entity !== "all") qs.set("entity", params.entity);
+  if (params.category && params.category !== "all") qs.set("category", params.category);
   if (params.status && params.status !== "all") qs.set("status", params.status);
   if (params.verification && params.verification !== "all") qs.set("verification", params.verification);
   if (params.tier && params.tier !== "all") qs.set("tier", params.tier);
@@ -37,10 +39,13 @@ export function useProvidersList(params: ProvidersListParams) {
   });
 }
 
-export function useProviderStats(enabled = true) {
+export function useProviderStats(params: Pick<ProvidersListParams, "entity" | "category"> = {}, enabled = true) {
+  const qs = new URLSearchParams();
+  if (params.entity && params.entity !== "all") qs.set("entity", params.entity);
+  if (params.category && params.category !== "all") qs.set("category", params.category);
   return useQuery<ProviderStatsResponse, Error>({
-    queryKey: PROVIDERS_QUERY_KEYS.stats(),
-    queryFn: () => apiFetch<ProviderStatsResponse>("/api/providers/stats"),
+    queryKey: [...PROVIDERS_QUERY_KEYS.stats(), params],
+    queryFn: () => apiFetch<ProviderStatsResponse>(`/api/providers/stats?${qs.toString()}`),
     enabled,
     staleTime: 60_000,
   });

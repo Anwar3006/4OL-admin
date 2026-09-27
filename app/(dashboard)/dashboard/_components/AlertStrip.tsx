@@ -62,7 +62,7 @@ export default function AlertStrip({
           .join(" · ")}
       </span>
       <a
-        href={isCritical ? "/security" : "/facilities?status=pending"}
+        href={isCritical ? "/security" : "/providers?entity=business&status=pending"}
         className={cn(
           "font-bold whitespace-nowrap hover:underline",
           isCritical ? "text-red-700 dark:text-red-400" : "text-amber-700 dark:text-amber-400",

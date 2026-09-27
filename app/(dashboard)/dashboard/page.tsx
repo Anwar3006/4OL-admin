@@ -190,12 +190,12 @@ const DashboardPage = () => {
           deltaType={deltaType(metrics?.deltas.facilities)}
           isLoading={loading}
           isError={!!error}
-          href={canViewFacilities ? "/facilities" : undefined}
+          href={canViewFacilities ? "/providers?entity=business" : undefined}
           menuItems={[
             ...(canViewFacilities
               ? [
-                  { label: "View Facilities", onClick: () => router.push("/facilities") },
-                  { label: "Pending Approvals", onClick: () => router.push("/facilities?status=pending") },
+                  { label: "View Providers", onClick: () => router.push("/providers?entity=business") },
+                  { label: "Pending Approvals", onClick: () => router.push("/providers?entity=business&status=pending") },
                 ]
               : []),
           ]}

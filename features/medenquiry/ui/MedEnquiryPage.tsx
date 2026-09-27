@@ -21,7 +21,7 @@ import DisputesTab from "./DisputesTab";
 import { formatCurrency } from "@/lib/format";
 
 const CONNECTED_MENUS = [
-  { label: "🏥 Pharmacies (Facilities)", href: "/facilities" },
+  { label: "🏥 Pharmacies & Providers", href: "/providers?entity=business&category=pharmacies_shops" },
   { label: "🧑‍⚕️ HCP Prescribers", href: "/hcp" },
   { label: "👤 Users", href: "/users" },
   { label: "🔒 Escrow Transactions", href: "/transactions?tab=recent" },

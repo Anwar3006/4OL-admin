@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Source_Sans_3, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
 import "flatpickr/dist/themes/light.css";
 import "./globals.css";
@@ -11,18 +11,16 @@ import { Toaster } from "@/components/ui/sonner";
  * Root layout (Gap Analysis Part Q).
  *
  * Converted from a client component to a server component so that:
- *   - next/font actually loads Source Sans 3 (the mockup admin-panel.html's
- *     primary family — the old `font-inter` class referenced a font that was
- *     never fetched, a dead declaration),
+ *   - next/font actually loads Inter,
  *   - next-themes can hydrate with an inline no-flash script,
  *   - metadata can be exported.
  * DashCode template body classes are preserved: bespoke template CSS still
  * keys off `custom-tippy` and `dashcode-app`.
  */
-const sourceSans = Source_Sans_3({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-inter",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -40,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sourceSans.variable} ${jetbrainsMono.variable} font-sans custom-tippy dashcode-app`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-inter custom-tippy dashcode-app`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <QueryProvider>{children}</QueryProvider>

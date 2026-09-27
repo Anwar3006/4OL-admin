@@ -3,7 +3,7 @@
  * counts by status, by kind and by verification status.
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 import {
@@ -13,12 +13,23 @@ import {
   type ProviderStatsResponse,
 } from "../schema/types";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAdminApiUser("providers.view");
   if (!auth.ok) return adminAuthErrorResponse(auth);
 
+  const params = request.nextUrl.searchParams;
+  const entity = params.get("entity");
+  const category = params.get("category");
   const supabase = getAdminClient();
-  const { data, error } = await supabase.from("providers").select("status, kind, verification_status");
+  const query = supabase
+    .from("providers")
+    .select("status, kind, verification_status, provider_types!inner(listing_entity, directory_category)");
+  if (entity === "business" || entity === "person") query.eq("provider_types.listing_entity", entity);
+  if (category && category !== "all") {
+    if (category === "unlisted") query.is("provider_types.directory_category", null);
+    else query.eq("provider_types.directory_category", category);
+  }
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

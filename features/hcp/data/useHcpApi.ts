@@ -94,6 +94,8 @@ export interface HcpRow {
     last_active?: string | null;
   } | null;
   facility_profile?: { facility_name?: string | null } | null;
+  memberships?: { provider_id: string; name: string; job_title?: string | null }[];
+  own_listing_id?: string | null;
 }
 
 export interface HcpGroupChat {

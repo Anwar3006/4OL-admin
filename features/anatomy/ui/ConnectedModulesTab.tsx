@@ -93,7 +93,7 @@ const MODULE_CARDS: ModuleCard[] = [
     // Was `facilities`, which does not exist. The table is facility_profile
     // (21 other call sites agree); authenticated sees all 3 rows.
     table: "facility_profile",
-    href: "/facilities",
+    href: "/providers?entity=business",
     detail: "GPS-based facility discovery by specialism",
   },
 ];

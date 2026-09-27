@@ -1,5 +1,5 @@
 /**
- * Route entry only — see features/facilities/README.md.
- * Handler lives in features/facilities/api/metrics.ts.
+ * Route contract retained for consumers of facility metrics.
+ * Handler lives under the consolidated Providers feature.
  */
-export { GET } from "@/features/facilities/api/metrics";
+export { GET } from "@/features/providers/api/metrics";

@@ -111,7 +111,7 @@ const MapPage = () => {
         >
           {isFullScreen ? "🔳 Exit Full Screen" : "🔍 Full Screen"}
         </button>
-        <Link href="/facilities" className="btn btn-primary">
+        <Link href="/providers?entity=business" className="btn btn-primary">
           🏥 View Facilities
         </Link>
       </PageHeader>

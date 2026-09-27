@@ -3,6 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, ClipboardList, ShieldCheck, UserRoundSearch } from "lucide-react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-fetch";
 
 const CURRENT_RULES = [
   "Every current workout plan is publicly attributed to Coach Ama.",
@@ -17,7 +20,27 @@ const FUTURE_SCOPE = [
   "Bookings, availability and member feedback",
 ];
 
+type RegistryTrainer = { id: string; name: string; type: string; status: string; specialties: string[]; programmes_count: number; total_sessions: number; total_clients: number; rating_average: number | null; rating_count: number };
+
+function TrainerRegistry() {
+  const { data, isLoading, isError } = useQuery<{ trainers: RegistryTrainer[] }>({
+    queryKey: ["fitness", "trainer-providers"],
+    queryFn: () => apiFetch("/api/fitness/trainers?limit=100"),
+  });
+  return <div className="space-y-5 animate-in fade-in duration-500">
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">Read-only provider registry for personal trainers, gyms, and event organisers. Open a provider to manage its record.</div>
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"><table className="w-full min-w-[760px] text-left"><thead><tr className="border-b border-slate-100 text-3xs font-black uppercase tracking-widest text-slate-400 dark:border-slate-700"><th className="p-4">Provider</th><th className="p-4">Type</th><th className="p-4">Specialties</th><th className="p-4">Programmes</th><th className="p-4">Sessions / clients</th><th className="p-4">Rating</th><th className="p-4">Status</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+      {isLoading && <tr><td colSpan={7} className="p-8 text-center text-sm text-slate-400">Loading trainer providers…</td></tr>}
+      {isError && <tr><td colSpan={7} className="p-8 text-center text-sm text-red-500">Could not load trainer providers.</td></tr>}
+      {!isLoading && !isError && (data?.trainers ?? []).length === 0 && <tr><td colSpan={7} className="p-8 text-center text-sm text-slate-400">No trainer providers yet.</td></tr>}
+      {(data?.trainers ?? []).map((trainer) => <tr key={trainer.id} className="hover:bg-slate-50 dark:hover:bg-slate-900"><td className="p-4"><Link href={`/providers/${trainer.id}`} className="font-bold text-emerald-700 hover:underline">{trainer.name}</Link></td><td className="p-4 text-sm">{trainer.type}</td><td className="p-4 text-sm text-slate-500">{trainer.specialties.join(", ") || "—"}</td><td className="p-4 text-sm">{trainer.programmes_count}</td><td className="p-4 text-sm">{trainer.total_sessions} / {trainer.total_clients}</td><td className="p-4 text-sm">{trainer.rating_average ?? "—"}{trainer.rating_count ? ` (${trainer.rating_count})` : ""}</td><td className="p-4 text-sm capitalize">{trainer.status}</td></tr>)}
+    </tbody></table></div>
+  </div>;
+}
+
 export default function TrainersTab() {
+  return <TrainerRegistry />;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <Card className="overflow-hidden border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:border-emerald-500/30 dark:from-emerald-500/10 dark:via-slate-900 dark:to-blue-500/10">

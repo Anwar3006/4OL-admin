@@ -215,7 +215,7 @@ const HCPPage = () => {
               <th className="px-3 py-3">Profession / Specialty</th>
               <th className="px-3 py-3">Regulatory Body</th>
               <th className="px-3 py-3">License No.</th>
-              <th className="px-3 py-3">Facility</th>
+              <th className="px-3 py-3">Memberships / listing</th>
               <th className="px-3 py-3">Region</th>
               <th className="px-3 py-3">Status</th>
               <th className="px-3 py-3">Joined</th>
@@ -270,9 +270,16 @@ const HCPPage = () => {
                     {row.license_number}
                   </td>
                   <td className="px-3 py-3 text-xs font-bold text-slate-600 dark:text-slate-300">
-                    {row.facility_profile?.facility_name ??
-                      row.affiliated_facility_name ??
-                      "—"}
+                    {row.own_listing_id ? (
+                      <Link className="text-emerald-700 hover:underline" href={`/providers/${row.own_listing_id}`}>
+                        View person listing
+                      </Link>
+                    ) : row.memberships?.length ? (
+                      <span title={row.memberships.map((membership) => membership.name).join(", ")}>
+                        {row.profession_type === "pharmacist" || row.profession_type === "pharmacy_technician" ? "Reachable via: " : "Works at: "}
+                        {row.memberships.map((membership) => membership.name).join(", ")}
+                      </span>
+                    ) : row.facility_profile?.facility_name ?? row.affiliated_facility_name ?? "—"}
                   </td>
                   <td className="px-3 py-3 text-2xs font-bold uppercase text-slate-500">
                     {row.region ?? "—"}

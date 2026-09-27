@@ -98,14 +98,9 @@ export const dashboardNavSections: DashboardNavSection[] = [
   {
     title: "Health Services",
     items: [
-      { title: "Facilities", href: "/facilities", icon: "🏥", permission: "facilities.view" },
       {
-        // P0-14, in progress: the module that replaces Facilities (and the
-        // retired IBP screens) across all five provider kinds. Lives
-        // alongside Facilities, not instead of it, until it reaches parity —
-        // see features/providers/README.md.
         title: "Providers",
-        href: "/providers",
+        href: "/providers?entity=business",
         icon: "🩺",
         permission: "providers.view",
       },

@@ -86,6 +86,7 @@ export interface ProviderTypeOption {
   key: string;
   kind: ProviderKind;
   label: string;
+  listing_entity: "person" | "business";
   directory_category: string | null;
   is_listed: boolean;
   is_active: boolean;
@@ -98,6 +99,8 @@ export interface ProviderRow {
   kind: ProviderKind;
   provider_type: string;
   provider_type_label: string | null;
+  listing_entity: "person" | "business";
+  directory_category: string | null;
   description: string | null;
   region: string;
   district: string;
@@ -127,6 +130,8 @@ export interface ProvidersListParams {
   search?: string;
   kind?: ProviderKind | "all";
   type?: string | "all";
+  entity?: "person" | "business" | "all";
+  category?: string | "all";
   status?: ProviderStatus | "all";
   verification?: VerificationStatus | "all";
   tier?: string | "all";

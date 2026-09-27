@@ -1,0 +1,1 @@
+drop trigger if exists bed_tracker_facilities_reject_spa on public.bed_tracker_facilities;

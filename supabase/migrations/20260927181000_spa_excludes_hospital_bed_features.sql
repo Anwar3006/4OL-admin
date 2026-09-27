@@ -1,0 +1,1 @@
+-- Spas use bookable services, not hospital inventory. They must not opt into

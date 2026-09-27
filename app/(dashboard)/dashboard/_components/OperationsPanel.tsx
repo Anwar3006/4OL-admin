@@ -216,7 +216,7 @@ const QUEUE_LABELS: {
   {
     key: "pending_facilities",
     label: "facilities pending approval",
-    href: "/facilities?status=pending",
+    href: "/providers?entity=business&status=pending",
   },
   {
     key: "pending_hcp_verifications",

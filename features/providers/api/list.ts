@@ -2,12 +2,8 @@
  * GET /api/providers — the Providers module list (P0-14), filtered by kind,
  * type, status, verification, tier and region.
  *
- * Deliberately separate from features/facilities/api/list.ts rather than a
- * shared helper: that route is still what /facilities (live, in daily admin
- * use) renders from, and this module doesn't have parity with it yet
- * (no detail tabs beyond Profile, no settings editors). Once this module
- * covers everything Facilities does, /facilities becomes a re-export of
- * this route and the duplication goes away — see features/providers/README.md.
+ * This is the canonical registry. Legacy /facilities URLs redirect here so
+ * business listings retain a single operational data source.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -40,7 +36,7 @@ const PROVIDERS_SELECT = [
   "created_at",
   "updated_at",
   "provider_private (status_reason, rejection_reason)",
-  "provider_types (label)",
+  "provider_types!inner (label, listing_entity, directory_category)",
 ].join(", ");
 
 export async function GET(request: NextRequest) {
@@ -57,6 +53,8 @@ export async function GET(request: NextRequest) {
   const verification = searchParams.get("verification");
   const tier = searchParams.get("tier");
   const region = searchParams.get("region");
+  const entity = searchParams.get("entity");
+  const category = searchParams.get("category");
 
   const supabase = getAdminClient();
   const query = supabase.from("providers").select(PROVIDERS_SELECT, { count: "exact" });
@@ -69,6 +67,11 @@ export async function GET(request: NextRequest) {
   if (status && status !== "all") query.eq("status", status);
   if (verification && verification !== "all") query.eq("verification_status", verification);
   if (region && region !== "all") query.eq("region", region);
+  if (entity === "business" || entity === "person") query.eq("provider_types.listing_entity", entity);
+  if (category && category !== "all") {
+    if (category === "unlisted") query.is("provider_types.directory_category", null);
+    else query.eq("provider_types.directory_category", category);
+  }
   if (tier && tier !== "all") {
     if (tier === "none") query.is("subscription_tier", null);
     else query.eq("subscription_tier", tier);
@@ -94,6 +97,8 @@ export async function GET(request: NextRequest) {
     return {
       ...row,
       provider_type_label: typeData?.label ?? null,
+      listing_entity: typeData?.listing_entity ?? "business",
+      directory_category: typeData?.directory_category ?? null,
       status_reason: privateData?.status_reason ?? null,
       rejection_reason: privateData?.rejection_reason ?? null,
     };
