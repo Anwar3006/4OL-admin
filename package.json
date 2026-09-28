@@ -87,7 +87,7 @@
     "pdfkit": "^0.20.2",
     "pg": "^8.18.0",
     "react": "19.2.3",
-    "react-day-picker": "^9.13.2",
+    "react-day-picker": "^10.0.1",
     "react-dom": "19.2.3",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.69.0",
