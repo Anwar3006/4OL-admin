@@ -184,6 +184,8 @@ async function fetchDiscoverGroupsOnce(
       group_category,
       group_type,
       is_verified_only,
+      visibility,
+      group_rules,
       max_members,
       created_by,
       created_at,
@@ -194,6 +196,7 @@ async function fetchDiscoverGroupsOnce(
     .eq("type", "group")
     .eq("is_deleted", false)
     .eq("status", "active")
+    .in("visibility", ["public", "restricted"])
     .not("group_type", "in", '("premium","admin")')
     .in("group_category", [...OPEN_CATEGORIES, "facility"])
     .order("created_at", { ascending: false })
@@ -247,6 +250,8 @@ async function fetchDiscoverGroupsOnce(
         group_category: g.group_category,
         group_type: g.group_type,
         is_verified_only: g.is_verified_only,
+        visibility: g.visibility ?? "public",
+        group_rules: g.group_rules ?? null,
         max_members: maxMembers,
         member_count: memberCount,
         is_public_group: true,

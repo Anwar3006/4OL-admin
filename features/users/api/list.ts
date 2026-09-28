@@ -20,6 +20,11 @@ const UsersQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, max-age=0",
+  Vary: "Cookie",
+};
+
 /** Engagement % derived from last_active recency (decision C-D1: derive first). */
 function deriveEngagement(lastActive: string | null): number {
   if (!lastActive) return 5;
@@ -87,7 +92,10 @@ export async function GET(req: NextRequest) {
       .in("plan", plans);
     const ids = (subs ?? []).map((s) => s.user_id);
     if (ids.length === 0) {
-      return NextResponse.json({ users: [], total: 0, limit: parsed.data.limit, offset: parsed.data.offset });
+      return NextResponse.json(
+        { users: [], total: 0, limit: parsed.data.limit, offset: parsed.data.offset },
+        { headers: NO_STORE_HEADERS },
+      );
     }
     query = query.in("user_id", ids);
   }
@@ -171,28 +179,31 @@ export async function GET(req: NextRequest) {
     // Enrichment is optional — masking + base columns still return.
   }
 
-  return NextResponse.json({
-    users: rows.map((row) =>
-      applyUserMasking(
-        {
-          ...row,
-          email: emailById.get(row.user_id) ?? null,
-          user_type: [
-            ...(Array.isArray(row.account_types) && row.account_types.includes("member") ? ["Member"] : []),
-            ...[...new Set((membershipsByUser.get(row.user_id) ?? []).map((member) => ["owner", "admin"].includes(member.role) ? "Provider admin" : "Provider staff"))],
-          ],
-          plan: [memberPlanByUser.get(row.user_id), ...(providerPlansByUser.get(row.user_id) ?? [])].filter(Boolean).join(" · ") || "Free",
-          engagement_score: deriveEngagement(row.last_active),
-        },
-        isSuperAdmin,
+  return NextResponse.json(
+    {
+      users: rows.map((row) =>
+        applyUserMasking(
+          {
+            ...row,
+            email: emailById.get(row.user_id) ?? null,
+            user_type: [
+              ...(Array.isArray(row.account_types) && row.account_types.includes("member") ? ["Member"] : []),
+              ...[...new Set((membershipsByUser.get(row.user_id) ?? []).map((member) => ["owner", "admin"].includes(member.role) ? "Provider admin" : "Provider staff"))],
+            ],
+            plan: [memberPlanByUser.get(row.user_id), ...(providerPlansByUser.get(row.user_id) ?? [])].filter(Boolean).join(" · ") || "Free",
+            engagement_score: deriveEngagement(row.last_active),
+          },
+          isSuperAdmin,
+        ),
       ),
-    ),
-    total: count ?? 0,
-    limit: parsed.data.limit,
-    offset: parsed.data.offset,
-    // AK-D7 canary — invisible to the UI, present in any exfiltrated copy.
-    ...(canary ? { _c: canary } : {}),
-  });
+      total: count ?? 0,
+      limit: parsed.data.limit,
+      offset: parsed.data.offset,
+      // AK-D7 canary — invisible to the UI, present in any exfiltrated copy.
+      ...(canary ? { _c: canary } : {}),
+    },
+    { headers: NO_STORE_HEADERS },
+  );
 }
 
 const UpdateStatusSchema = z.object({

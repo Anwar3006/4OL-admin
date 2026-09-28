@@ -41,12 +41,13 @@ export const useUserKpiStats = () => {
   return useQuery({
     queryKey: ADMIN_USERS_KEYS.kpis,
     queryFn: async () => {
-      const res = await fetch("/api/admin/users/kpis");
+      const res = await fetch("/api/admin/users/kpis", { cache: "no-store" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to load user KPIs.");
       return json as { stats: UserKpiStats; source: string };
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 5_000,
+    refetchInterval: 30_000,
   });
 };
 
@@ -71,12 +72,20 @@ export const useAdminUsers = (params: {
       Object.entries(rest).forEach(([key, value]) => {
         if (value) qs.set(key, String(value));
       });
-      const res = await fetch(`/api/admin/users?${qs.toString()}`);
+      const res = await fetch(`/api/admin/users?${qs.toString()}`, {
+        cache: "no-store",
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to load users.");
       return json as { users: AdminUserRow[]; total: number };
     },
     placeholderData: (previousData) => previousData,
+    staleTime: 5_000,
+    // Profiles are inserted synchronously during sign-up, so a small
+    // no-cache interval makes an already-open Users tab reflect a new account
+    // within 15 seconds. We intentionally do not subscribe to raw profile
+    // rows in the browser: this API is the PHI-masking security boundary.
+    refetchInterval: 15_000,
   });
 };
 

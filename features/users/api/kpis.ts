@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { adminAuthErrorResponse, requireAdminApiUser } from "@/lib/admin-api-auth";
 import { getAdminClient } from "@/lib/db/admin";
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, max-age=0",
+  Vary: "Cookie",
+};
+
 // Users menu KPI row (adds NHIS-Linked per gap doc C.4). RPC-first with
 // head-count fallback while the users_ibp_extension migration is unapplied.
 
@@ -12,7 +17,7 @@ export async function GET() {
   const admin = getAdminClient();
   const { data, error } = await admin.rpc("get_user_kpi_stats");
   if (!error && data) {
-    return NextResponse.json({ stats: data, source: "rpc" });
+    return NextResponse.json({ stats: data, source: "rpc" }, { headers: NO_STORE_HEADERS });
   }
 
   const head = async (table: string, filters?: (q: any) => any) => {
@@ -32,15 +37,18 @@ export async function GET() {
     head("delete_account_requests", (q) => q.eq("status", "pending")),
   ]);
 
-  return NextResponse.json({
-    stats: {
-      total_users: total,
-      active_30d: active,
-      premium: 0, // user_subscriptions is pre-Epic-16 — honest zero.
-      nhis_linked: 0, // nhis_number column appears with the migration.
-      flagged,
-      delete_requests_pending: deleteRequests,
+  return NextResponse.json(
+    {
+      stats: {
+        total_users: total,
+        active_30d: active,
+        premium: 0, // user_subscriptions is pre-Epic-16 — honest zero.
+        nhis_linked: 0, // nhis_number column appears with the migration.
+        flagged,
+        delete_requests_pending: deleteRequests,
+      },
+      source: "fallback",
     },
-    source: "fallback",
-  });
+    { headers: NO_STORE_HEADERS },
+  );
 }

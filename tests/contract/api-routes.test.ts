@@ -143,7 +143,8 @@ describe("mobile API contract", () => {
     //   bash scripts/cleanup/regenerate-mobile-contract.sh ../4-Our-Life-App
     //
     // 32 as of 9 Sept 2026: added /api/facilityscout/submissions/upload-url
-    // for the new Facility Scout mobile submission flow.
-    expect(CONTRACT_ROUTES).toHaveLength(32);
+    // for the new Facility Scout mobile submission flow. 33 as of 28 Sept:
+    // the private, minimal-profile member picker for group governance.
+    expect(CONTRACT_ROUTES).toHaveLength(33);
   });
 });

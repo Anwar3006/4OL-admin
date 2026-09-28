@@ -61,6 +61,7 @@ export const CONTRACT_ROUTES: ContractRoute[] = [
   { path: "/api/chat/messages/read",           file: "app/api/chat/messages/read/route.ts",         methods: ["POST"],                          consumer: "hooks/chat/useDirectMessages.ts" },
   { path: "/api/chat/groups",                  file: "app/api/chat/groups/route.ts",                methods: ["POST"],                          consumer: "hooks/chat/useCreateGroup.ts" },
   { path: "/api/chat/members",                 file: "app/api/chat/members/route.ts",               methods: ["GET", "POST", "PATCH"],          consumer: "hooks/chat/useGroupMembers.ts" },
+  { path: "/api/chat/member-search",           file: "app/api/chat/member-search/route.ts",         methods: ["GET"],                            consumer: "hooks/chat/useGroupGovernance.ts" },
   { path: "/api/chat/attachment",              file: "app/api/chat/attachment/route.ts",            methods: ["GET"],                           consumer: "app/(app)/(auth)/Chat/[id].tsx" },
   { path: "/api/period/me",                    file: "app/api/period/me/route.ts",                  methods: ["GET", "POST"],                   consumer: "features/plasence/api.ts" },
   { path: "/api/period/library",               file: "app/api/period/library/route.ts",             methods: ["GET", "POST"],                   consumer: "features/plasence/api.ts" },
@@ -175,6 +176,25 @@ export const CONTRACT_RPCS = [
   "dispatch_notification",
   "fn_create_group_conversation",
   "fn_mark_conversation_read",
+
+  // AF-05 group governance is called directly by the consumer app. These
+  // signatures must remain stable for existing mobile builds: PostgREST
+  // resolves RPC parameters by name and a silent change would strand group
+  // invitations or approval requests.
+  "fn_invite_to_conversation",
+  "fn_request_add_member",
+  "fn_request_join",
+  "fn_respond_invitation",
+  "fn_review_join_request",
+  "fn_revoke_conversation_invitation",
+  "fn_set_group_avatar",
+  "flag_feedback_post",
+  "get_feedback_board",
+  "get_feedback_post",
+  "reply_feedback_post",
+  "submit_feedback_post",
+  "vote_feedback_post",
+  "watch_feedback_post",
 
   // Added 9 Sept 2026 with the Plasence Phase 0 trust-repair pass.
   // /api/period/me is a contracted route and its POST confirm_period_start

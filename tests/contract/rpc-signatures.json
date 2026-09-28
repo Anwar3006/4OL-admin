@@ -23,6 +23,54 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "fn_invite_to_conversation": {
+    "args": "p_conversation_id uuid, p_invited_user_id uuid, p_role text, p_message text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_request_add_member": {
+    "args": "p_conversation_id uuid, p_user_id uuid, p_message text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_request_join": {
+    "args": "p_conversation_id uuid, p_message text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_respond_invitation": {
+    "args": "p_invitation_id uuid, p_accept boolean",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_review_join_request": {
+    "args": "p_request_id uuid, p_approve boolean, p_reason text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_revoke_conversation_invitation": {
+    "args": "p_invitation_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "fn_set_group_avatar": {
+    "args": "p_conversation_id uuid, p_avatar_url text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "flag_feedback_post": {
+    "args": "p_post_id uuid, p_reason text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "fn_record_period_cycle": {
     "args": "p_period_start_date date, p_period_end_date date, p_cycle_length smallint, p_period_length smallint, p_next_period_forecast date, p_ovulation_forecast date, p_fertile_window daterange, p_model_key text, p_model_version text, p_confidence numeric, p_explanation_code text",
     "returns": "jsonb",
@@ -103,6 +151,18 @@
   },
   "get_fitness_week": {
     "args": "p_user_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_feedback_board": {
+    "args": "p_category text, p_status text, p_module text, p_sort text, p_mine boolean, p_limit integer, p_offset integer",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "stable"
+  },
+  "get_feedback_post": {
+    "args": "p_post_id uuid",
     "returns": "jsonb",
     "security_definer": true,
     "volatility": "stable"
@@ -245,6 +305,12 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "reply_feedback_post": {
+    "args": "p_post_id uuid, p_body text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "request_device_sign_in": {
     "args": "p_expo_push_token text, p_device_name text, p_platform text, p_os_version text, p_location_label text, p_ip_address text",
     "returns": "jsonb",
@@ -275,6 +341,12 @@
     "security_definer": true,
     "volatility": "volatile"
   },
+  "submit_feedback_post": {
+    "args": "p_category text, p_title text, p_body text, p_rating smallint, p_module text, p_is_anonymous boolean, p_app_version text, p_platform text, p_source text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
   "submit_period_trivia": {
     "args": "p_event_id uuid, p_user_id uuid, p_device_hash text, p_mobile_hash text, p_score smallint, p_answers jsonb, p_duration_seconds integer, p_full_name_ciphertext text, p_mobile_ciphertext text, p_social_platform text, p_social_handle_ciphertext text, p_consent_version text, p_campaign_code text, p_utm_source text, p_utm_medium text, p_utm_campaign text",
     "returns": "uuid",
@@ -289,6 +361,18 @@
   },
   "verify_device_sign_in_otp": {
     "args": "p_request_id uuid, p_otp text",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "vote_feedback_post": {
+    "args": "p_post_id uuid",
+    "returns": "jsonb",
+    "security_definer": true,
+    "volatility": "volatile"
+  },
+  "watch_feedback_post": {
+    "args": "p_post_id uuid",
     "returns": "jsonb",
     "security_definer": true,
     "volatility": "volatile"
