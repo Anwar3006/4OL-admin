@@ -218,12 +218,7 @@ export const CONTRACT_RPCS = [
   //   fn_request_add_member(p_conversation_id, p_user_id, p_message)
   //   fn_request_join(p_conversation_id, p_message)
   //   fn_respond_invitation(p_invitation_id, p_accept)
-  "fn_invite_to_conversation",
-  "fn_review_join_request",
-  "fn_set_group_avatar",
-  "fn_request_add_member",
-  "fn_request_join",
-  "fn_respond_invitation",
+  // The endpoints above are listed with the other AF-05 governance RPCs.
 ] as const;
 
 /**

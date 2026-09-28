@@ -59,44 +59,8 @@
     "security_definer": true,
     "volatility": "volatile"
   },
-  "fn_invite_to_conversation": {
-    "args": "p_conversation_id uuid, p_invited_user_id uuid, p_role text, p_message text",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
-  "fn_request_add_member": {
-    "args": "p_conversation_id uuid, p_user_id uuid, p_message text",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
-  "fn_request_join": {
-    "args": "p_conversation_id uuid, p_message text",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
-  "fn_respond_invitation": {
-    "args": "p_invitation_id uuid, p_accept boolean",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
-  "fn_review_join_request": {
-    "args": "p_request_id uuid, p_approve boolean, p_reason text",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
   "fn_revoke_conversation_invitation": {
     "args": "p_invitation_id uuid",
-    "returns": "jsonb",
-    "security_definer": true,
-    "volatility": "volatile"
-  },
-  "fn_set_group_avatar": {
-    "args": "p_conversation_id uuid, p_avatar_url text",
     "returns": "jsonb",
     "security_definer": true,
     "volatility": "volatile"
