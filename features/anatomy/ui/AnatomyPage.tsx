@@ -16,6 +16,7 @@ import ExercisesLinkedTab from "./ExercisesLinkedTab";
 import ConnectedModulesTab from "./ConnectedModulesTab";
 import BusinessStrategyTab from "./BusinessStrategyTab";
 import PinPlacement3DTab from "./PinPlacement3DTab";
+import AtlasCrosswalkTab from "./AtlasCrosswalkTab";
 import AiPinMapperTab from "./AiPinMapperTab";
 import PremiumLayersTab from "./PremiumLayersTab";
 import AddBodyPartDialog from "./AddBodyPartDialog";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 const AnatomyTabs = [
   { id: "body-map",   label: "🪴 Body Map" },
   { id: "pins-3d",    label: "📍 3D Pin Placement" },
+  { id: "atlas",      label: "🧬 Atlas Crosswalk" },
   { id: "ai-mapper",  label: "🤖 AI Pin Mapper" },
   { id: "premium",    label: "💎 Premium Layers" },
   { id: "drugs",      label: "💊 Linked Drugs" },
@@ -204,6 +206,9 @@ export default function AnatomyPage() {
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="pins-3d">
             <PinPlacement3DTab gender={gender} />
+          </TabsContent>
+          <TabsContent className="w-full min-w-0 outline-none" value="atlas">
+            <AtlasCrosswalkTab gender={gender} />
           </TabsContent>
           <TabsContent className="w-full min-w-0 outline-none" value="ai-mapper">
             <AiPinMapperTab />

@@ -27,6 +27,13 @@ interface GroupAdminRow {
   user_profiles: { first_name: string | null; last_name: string | null } | null;
 }
 
+// AF-05 D1: canonical manager roles are `owner` + `moderator`; `admin` and
+// `group_leader` are legacy aliases still on existing rows during the
+// expand/contract transition. All are treated (and labelled) as managers.
+const MANAGER_ROLES = ["owner", "moderator", "admin", "group_leader"];
+const roleLabel = (role: string) =>
+  role === "admin" || role === "group_leader" ? "moderator" : role;
+
 // m-view-group port (Gap Analysis Part E): mini KPIs, group-admin manager,
 // Suspend/Archive, Export Members, Send Announcement.
 export default function ViewGroupDialog() {
@@ -39,6 +46,7 @@ export default function ViewGroupDialog() {
   const canModerate = useHasPermission("chats.moderate");
   const { data: adminsData } = useUsers({ admin: true, page: 1, limit: 100 });
   const [addAdminId, setAddAdminId] = useState("");
+  const [inviteUserId, setInviteUserId] = useState("");
 
   const groupId: string | null = group?.id ?? null;
 
@@ -56,11 +64,94 @@ export default function ViewGroupDialog() {
     },
   });
 
+  // AF-05 Part 2 — pending join requests awaiting moderator approval.
+  const { data: joinRequests } = useQuery({
+    queryKey: ["group-join-requests", groupId],
+    enabled: isOpen && !!groupId,
+    queryFn: async () => {
+      const supabase = await getBrowserClient();
+      const { data: rows, error } = await supabase
+        .from("conversation_join_requests")
+        .select("id, user_id, reason, created_at, user_profiles:user_id(first_name, last_name)")
+        .eq("conversation_id", groupId!)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(error.message);
+      return (rows ?? []) as any[];
+    },
+  });
+
+  // AF-05 Part 2 — outstanding invitations for this group.
+  const { data: invitations } = useQuery({
+    queryKey: ["group-invitations", groupId],
+    enabled: isOpen && !!groupId,
+    queryFn: async () => {
+      const supabase = await getBrowserClient();
+      const { data: rows, error } = await supabase
+        .from("conversation_invitations")
+        .select("id, invited_user_id, role, status, created_at, user_profiles:invited_user_id(first_name, last_name)")
+        .eq("conversation_id", groupId!)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return (rows ?? []) as any[];
+    },
+  });
+
+  const refreshGovernance = () => {
+    queryClient.invalidateQueries({ queryKey: ["group-join-requests", groupId] });
+    queryClient.invalidateQueries({ queryKey: ["group-invitations", groupId] });
+    queryClient.invalidateQueries({ queryKey: ["group-admins", groupId] });
+  };
+
+  const inviteUser = async () => {
+    if (!inviteUserId || !group) return;
+    const supabase = await getBrowserClient();
+    const { error } = await supabase.rpc("fn_invite_to_conversation", {
+      p_conversation_id: group.id,
+      p_invited_user_id: inviteUserId,
+      p_role: "member",
+    });
+    if (error) {
+      toast.error(`Invite failed: ${error.message}`);
+      return;
+    }
+    setInviteUserId("");
+    refreshGovernance();
+    toast.success("Invitation sent");
+  };
+
+  const revokeInvitation = async (invitationId: string) => {
+    const supabase = await getBrowserClient();
+    const { error } = await supabase
+      .from("conversation_invitations")
+      .update({ status: "revoked", responded_at: new Date().toISOString() })
+      .eq("id", invitationId);
+    if (error) {
+      toast.error(`Failed: ${error.message}`);
+      return;
+    }
+    refreshGovernance();
+    toast.success("Invitation revoked");
+  };
+
+  const reviewJoinRequest = async (requestId: string, approve: boolean) => {
+    const supabase = await getBrowserClient();
+    const { error } = await supabase.rpc("fn_review_join_request", {
+      p_request_id: requestId,
+      p_approve: approve,
+    });
+    if (error) {
+      toast.error(`Failed: ${error.message}`);
+      return;
+    }
+    refreshGovernance();
+    toast.success(approve ? "Member approved" : "Request rejected");
+  };
+
   if (!group) return null;
 
-  const admins = (members ?? []).filter((m) =>
-    ["admin", "owner", "group_leader"].includes(m.role),
-  );
+  const admins = (members ?? []).filter((m) => MANAGER_ROLES.includes(m.role));
 
   const creatorName = group.user_profiles
     ? `${group.user_profiles.first_name || ""} ${group.user_profiles.last_name || ""}`.trim()
@@ -84,7 +175,7 @@ export default function ViewGroupDialog() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: ["group-admins", group.id] });
-    toast.success(role === "member" ? "Admin removed" : "Admin added");
+    toast.success(role === "member" ? "Moderator removed" : "Moderator added");
   };
 
   const exportMembers = async () => {
@@ -172,6 +263,23 @@ export default function ViewGroupDialog() {
               <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Region</span>
               <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 capitalize">{group.region_restriction || "Nationwide"}</p>
             </div>
+            <div>
+              <span className="text-2xs font-black uppercase tracking-wider text-slate-400">Visibility</span>
+              {canModerate ? (
+                <select
+                  className="mt-0.5 h-8 w-full px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200"
+                  value={group.visibility ?? "public"}
+                  onChange={(e) =>
+                    updateMutation.mutate({ id: group.id, visibility: e.target.value })
+                  }
+                >
+                  <option value="public">Public — listed in Discover</option>
+                  <option value="private">Private — members only</option>
+                </select>
+              ) : (
+                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 capitalize">{group.visibility ?? "public"}</p>
+              )}
+            </div>
           </div>
 
           {group.group_rules && (
@@ -194,7 +302,7 @@ export default function ViewGroupDialog() {
                     {[admin.user_profiles?.first_name, admin.user_profiles?.last_name]
                       .filter(Boolean)
                       .join(" ") || admin.user_id.slice(0, 8)}
-                    <span className="ml-2 badge badge-blue text-3xs capitalize">{admin.role}</span>
+                    <span className="ml-2 badge badge-blue text-3xs capitalize">{roleLabel(admin.role)}</span>
                   </div>
                   {canModerate && admin.role !== "owner" && (
                     <button
@@ -216,7 +324,7 @@ export default function ViewGroupDialog() {
                     value={addAdminId}
                     onChange={(e) => setAddAdminId(e.target.value)}
                   >
-                    <option value="">Add admin…</option>
+                    <option value="">Add moderator…</option>
                     {(adminsData?.users ?? []).map((a: any) => (
                       <option key={a.user_id} value={a.user_id}>{a.name || a.email}</option>
                     ))}
@@ -225,7 +333,7 @@ export default function ViewGroupDialog() {
                     className="btn btn-secondary btn-sm h-8"
                     disabled={!addAdminId}
                     onClick={() => {
-                      setMemberRole(addAdminId, "admin");
+                      setMemberRole(addAdminId, "moderator");
                       setAddAdminId("");
                     }}
                   >
@@ -235,6 +343,98 @@ export default function ViewGroupDialog() {
               )}
             </div>
           </div>
+
+          {/* AF-05 Part 2 — Join requests awaiting approval */}
+          {canModerate && (joinRequests?.length ?? 0) > 0 && (
+            <>
+              <Separator />
+              <div>
+                <span className="text-2xs font-black uppercase tracking-wider text-slate-400">
+                  Join Requests ({joinRequests!.length})
+                </span>
+                <div className="mt-1.5 space-y-1.5">
+                  {joinRequests!.map((r) => (
+                    <div key={r.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 rounded-lg px-2.5 py-1.5 border border-slate-100 dark:border-slate-800">
+                      <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {[r.user_profiles?.first_name, r.user_profiles?.last_name]
+                          .filter(Boolean)
+                          .join(" ") || r.user_id.slice(0, 8)}
+                        {r.reason && (
+                          <span className="block text-2xs font-medium text-slate-400 mt-0.5">{r.reason}</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="text-3xs font-black text-emerald-600 hover:underline cursor-pointer bg-transparent border-0"
+                          onClick={() => reviewJoinRequest(r.id, true)}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="text-3xs font-black text-red-500 hover:underline cursor-pointer bg-transparent border-0"
+                          onClick={() => reviewJoinRequest(r.id, false)}
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* AF-05 Part 2 — Invitations */}
+          {canModerate && (
+            <>
+              <Separator />
+              <div>
+                <span className="text-2xs font-black uppercase tracking-wider text-slate-400">
+                  Invitations ({invitations?.length ?? 0})
+                </span>
+                <div className="mt-1.5 space-y-1.5">
+                  {(invitations ?? []).map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 rounded-lg px-2.5 py-1.5 border border-slate-100 dark:border-slate-800">
+                      <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {[inv.user_profiles?.first_name, inv.user_profiles?.last_name]
+                          .filter(Boolean)
+                          .join(" ") || inv.invited_user_id.slice(0, 8)}
+                        <span className="ml-2 badge badge-slate text-3xs capitalize">{inv.status}</span>
+                      </div>
+                      <button
+                        className="text-3xs font-black text-red-500 hover:underline cursor-pointer bg-transparent border-0"
+                        onClick={() => revokeInvitation(inv.id)}
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  ))}
+                  {(invitations?.length ?? 0) === 0 && (
+                    <p className="text-slate-400 text-xs italic">No pending invitations</p>
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <select
+                      className="flex-1 h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium bg-white dark:bg-slate-800"
+                      value={inviteUserId}
+                      onChange={(e) => setInviteUserId(e.target.value)}
+                    >
+                      <option value="">Invite a user…</option>
+                      {(adminsData?.users ?? []).map((a: any) => (
+                        <option key={a.user_id} value={a.user_id}>{a.name || a.email}</option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn btn-secondary btn-sm h-8"
+                      disabled={!inviteUserId}
+                      onClick={inviteUser}
+                    >
+                      Invite
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Last Message */}
           <Separator />

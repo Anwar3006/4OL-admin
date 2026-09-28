@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
       group_type,
       group_permissions,
       group_rules,
+      // AF-05 Part 3 — listing visibility (public lists in Discover;
+      // private is members-only). Only platform admins may set `private`.
+      visibility,
     } = await req.json();
 
     const admin = getAdminClient();
@@ -123,6 +126,11 @@ export async function POST(req: NextRequest) {
         enrichment.group_permissions = group_permissions;
       }
       if (group_rules) enrichment.group_rules = group_rules;
+      // AF-05 Part 3 — `private` is a Super Admin privilege; everyone else
+      // creates public groups (the column default). Ignore unknown values.
+      if (visibility === "private" && isPlatformAdmin) {
+        enrichment.visibility = "private";
+      }
 
       if (Object.keys(enrichment).length > 0) {
         const { error: enrichError } = await admin

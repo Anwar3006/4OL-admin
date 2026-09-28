@@ -8,30 +8,36 @@ import {
   useUpsertHotspot3D,
   useDeleteHotspot3D,
 } from "@/features/anatomy/data/useAnatomy";
+import { resolveAnatomyEngine } from "@/features/anatomy/lib/atlas-engine";
+import {
+  decodeInbound,
+  encodeIntent,
+  type EditorIntent,
+} from "@/features/anatomy/lib/atlas-bridge";
 
 /**
- * 3D Pin Placement editor (Gap Analysis Part AL, AL-D3). Embeds the same
- * scene engine the mobile app renders (public/anatomy/scene.html) inside an
- * iframe. In placement mode a tap on the model unprojects to model-space
- * coordinates, which are saved as anatomy_hotspots_3d anchors.
+ * 3D Pin Placement editor (Gap Analysis Part AL, AL-D3). Embeds a render
+ * engine inside an iframe and drives it over a postMessage bridge. In
+ * placement mode a tap on the model unprojects to model-space coordinates,
+ * which are saved as anatomy_hotspots_3d anchors.
+ *
+ * AF-04: the engine is resolved by resolveAnatomyEngine() — the legacy
+ * 200-unit scene.html by default, or the real-world Human Atlas bundle when
+ * the (owner-gated) flag + URL are configured. All wire encoding goes through
+ * atlas-bridge so this component never branches on the engine inline.
  */
 
-interface PlacementMsg {
-  type: string;
-  x?: number;
-  y?: number;
-  z?: number;
-  region?: string | null;
-  part?: string | null;
-}
-
 export default function PinPlacement3DTab({ gender }: { gender: "female" | "male" }) {
+  const engine = useMemo(() => resolveAnatomyEngine(), []);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [sceneReady, setSceneReady] = useState(false);
   const [placement, setPlacement] = useState(false);
   const [regionKey, setRegionKey] = useState<string>("");
   const [bodyPartId, setBodyPartId] = useState<string>("");
   const [captured, setCaptured] = useState<{ x: number; y: number; z: number; region: string | null } | null>(null);
+  // AF-04: skin render mode driven into the Atlas over the bridge. Only the
+  // Atlas engine implements it; the legacy scene ignores the intent.
+  const [skinMode, setSkinMode] = useState<"opaque" | "glass" | "hidden">("opaque");
 
   const { data: regionsData } = useAnatomyRegions3D();
   const regions = regionsData?.regions ?? [];
@@ -45,20 +51,20 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
   const upsert = useUpsertHotspot3D();
   const remove = useDeleteHotspot3D();
 
-  const send = useCallback((msg: Record<string, unknown>) => {
-    iframeRef.current?.contentWindow?.postMessage(JSON.stringify(msg), "*");
-  }, []);
+  const send = useCallback(
+    (intent: EditorIntent) => {
+      iframeRef.current?.contentWindow?.postMessage(
+        encodeIntent(intent, engine.engine),
+        "*",
+      );
+    },
+    [engine.engine],
+  );
 
-  // Scene → editor messages.
+  // Scene → editor messages (normalised across both engines by the bridge).
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
-      if (typeof event.data !== "string") return;
-      let msg: PlacementMsg;
-      try {
-        msg = JSON.parse(event.data);
-      } catch {
-        return;
-      }
+      const msg = decodeInbound(event.data);
       if (msg.type === "ready") {
         setSceneReady(true);
       } else if (msg.type === "placement") {
@@ -77,7 +83,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
   // Init scene once ready; keep gender + pin preview in sync.
   useEffect(() => {
     if (!sceneReady) return;
-    send({ type: "init", gender, placement });
+    send({ type: "init", sex: gender, placement });
   }, [sceneReady, gender, placement, send]);
 
   useEffect(() => {
@@ -100,7 +106,7 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
       const preset = regions.find((r) => r.key === regionKey);
       if (preset) {
         send({
-          type: "zoom_region",
+          type: "focus_region",
           key: preset.key,
           x: preset.target_x,
           y: preset.target_y,
@@ -151,6 +157,31 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
                 </option>
               ))}
             </select>
+            <div
+              className="flex items-center gap-1 rounded-lg border border-slate-200 p-0.5 dark:border-slate-700"
+              role="group"
+              aria-label="Skin render mode"
+            >
+              {(["opaque", "glass", "hidden"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`btn btn-sm ${skinMode === m ? "btn-primary" : "btn-secondary"}`}
+                  disabled={engine.engine !== "atlas"}
+                  title={
+                    engine.engine !== "atlas"
+                      ? "Skin / Glass modes require the Human Atlas engine"
+                      : `Skin render: ${m}`
+                  }
+                  onClick={() => {
+                    setSkinMode(m);
+                    send({ type: "set_skin_mode", mode: m });
+                  }}
+                >
+                  {m === "opaque" ? "Opaque" : m === "glass" ? "Glass" : "Hidden"}
+                </button>
+              ))}
+            </div>
             <button
               className={`btn btn-sm ${placement ? "btn-primary" : "btn-secondary"}`}
               onClick={() => {
@@ -166,18 +197,30 @@ export default function PinPlacement3DTab({ gender }: { gender: "female" | "male
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-inner">
           <iframe
             ref={iframeRef}
-            src="/anatomy/scene.html"
+            src={engine.iframeSrc}
             title="Anatomy 3D pin placement editor"
             className="aspect-[16/10] max-h-[70vh] w-full"
           />
         </div>
-        <p className="mt-2 text-xs text-slate-400">
-          Drag to rotate. With placement enabled, tap the model to capture
-          model-space coordinates for the selected body part. This is the same
-          rendering engine (skin, real organ geometry, lighting) that ships
-          inside the mobile app — mobile drives it with native buttons instead
-          of drag gestures.
+        <p className="mt-2 flex items-center gap-2 text-xs text-slate-400">
+          <span className="badge badge-blue shrink-0">{engine.label}</span>
+          {engine.engine === "atlas"
+            ? "Pins are resolved from Atlas geometry (real-world metres) — see the Atlas Crosswalk tab."
+            : "Drag to rotate. With placement enabled, tap the model to capture model-space coordinates for the selected body part."}
         </p>
+        {engine.misconfigured && (
+          <div className="alert al-wa mt-2">
+            <div className="al-ic">⚠️</div>
+            <div className="flex-1 text-xs">
+              <strong>Atlas enabled but not configured.</strong> Set{" "}
+              <code className="rounded bg-slate-100 dark:bg-slate-800 px-1 font-mono">
+                NEXT_PUBLIC_ANATOMY_ATLAS_URL
+              </code>{" "}
+              to the built Atlas bundle URL. Falling back to the legacy scene
+              until then.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Controls + pin list */}

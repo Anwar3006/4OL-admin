@@ -16,6 +16,11 @@ const DEFAULT_PAGE_SIZE = 20;
 const VALID_TYPES = [
   "dm", "group_chat", "reminder", "marketing", "ad", "system",
   "workout_reminder", "challenge", "streak_alert", "billing", "recovery", "nutrition",
+  // AF-05 group governance + support ticket notifications. These are written
+  // directly into the notifications table by dispatch_notification (the
+  // support status-change transition and the invite/join-request RPCs), so the
+  // bell must be able to filter on them too.
+  "group_invite", "group_join_request", "support_ticket",
 ] as const;
 type NotificationType = (typeof VALID_TYPES)[number];
 

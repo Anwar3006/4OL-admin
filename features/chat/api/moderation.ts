@@ -94,6 +94,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // AF-05 G5 — coalesce duplicate reports exactly like the
+    // report_chat_content() RPC: extend an existing pending_review flag
+    // instead of stacking a new row per report. Without this the admin BFF
+    // path and the direct-RPC mobile path disagreed on dedup.
+    const { data: existingFlag, error: existingErr } = await admin
+      .from("content_moderation_flags")
+      .select("id, report_detail")
+      .eq("content_type", content_type)
+      .eq("content_id", content_id)
+      .eq("status", "pending_review")
+      .maybeSingle();
+
+    if (existingErr) {
+      return NextResponse.json({ error: existingErr.message }, { status: 500 });
+    }
+
+    if (existingFlag?.id) {
+      const appended =
+        (existingFlag.report_detail
+          ? `${existingFlag.report_detail} | `
+          : "") +
+        `Additional report by ${user.id}: ${report_detail ?? report_reason}`;
+      const { data: updated, error: updateErr } = await admin
+        .from("content_moderation_flags")
+        .update({ report_detail: appended, updated_at: new Date().toISOString() })
+        .eq("id", existingFlag.id)
+        .select()
+        .single();
+      if (updateErr) {
+        return NextResponse.json({ error: updateErr.message }, { status: 500 });
+      }
+      return NextResponse.json(
+        { ...updated, deduplicated: true },
+        { status: 200 },
+      );
+    }
+
     const { data, error } = await admin
       .from("content_moderation_flags")
       .insert([
@@ -113,7 +150,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json({ ...data, deduplicated: false }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

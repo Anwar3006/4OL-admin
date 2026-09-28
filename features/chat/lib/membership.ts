@@ -12,14 +12,23 @@ type Admin = ReturnType<typeof getAdminClient>;
  */
 
 /**
- * Roles that may manage a conversation (add / remove other members).
+ * Roles that may manage a conversation (add / remove other members, invite,
+ * approve joins, delete any message, set the group image).
+ *
+ * AF-05 D1: the canonical manager vocabulary is `owner` + `moderator`.
+ * `admin` and `group_leader` are LEGACY aliases kept only for the expand/
+ * contract transition window (old rows / in-flight old builds); the
+ * 20260927000200_af05_role_normalisation migration rewrites existing data to
+ * `moderator`, and the CONTRACT follow-up drops the legacy values once no build
+ * writes them. Keep this list in step with `user_can_manage_conversation()`.
  *
  * Module-private on purpose: callers should ask `isManagerRole()` rather than
- * re-implement the comparison, so there is one definition of "can manage" to
- * keep in step with `user_can_manage_conversation()` in the database.
+ * re-implement the comparison, so there is one definition of "can manage".
  */
 const CONVERSATION_MANAGER_ROLES: readonly string[] = [
   "owner",
+  "moderator",
+  // Legacy aliases (transition only — see above):
   "admin",
   "group_leader",
 ];

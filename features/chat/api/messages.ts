@@ -3,7 +3,7 @@ import { getAdminClient } from "@/lib/db/admin";
 
 
 import { getRequestUser } from "@/lib/mobile-auth";
-import { isLiveMember } from "@/features/chat/lib/membership";
+import { getLiveMemberRole, isLiveMember, isManagerRole } from "@/features/chat/lib/membership";
 
 /**
  * GET /api/chat/messages?conversation_id=XYZ
@@ -140,15 +140,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Notify other conversation members (push + in-app notification center
-    // + bell badge, all via the shared dispatch_notification primitive).
-    // Never let a notification failure affect the message-send response —
-    // the message already sent successfully, that's the route's contract.
-    try {
-      await notifyConversationMembers({ admin, conversationId: conversation_id, message: data });
-    } catch (notifyError) {
-      console.error("[chat/messages POST] Failed to notify members:", notifyError);
-    }
+    // G1 (AF-05): notification is the DB trigger's job, not this route's.
+    // fn_on_new_message() (mobile repo migration 20260828170100) fires on EVERY
+    // messages insert — BFF, paid-chat RPC and admin system messages alike — and
+    // is the SINGLE writer of both the push/in-app dispatch and
+    // conversation_members.unread_count. The duplicate notifyConversationMembers
+    // call that used to sit here produced a second notification + bell entry for
+    // every message sent through this route (verified against the live trigger,
+    // which does not exclude any message_type); it has been removed so there is
+    // exactly one dispatch per message.
 
     return NextResponse.json(data);
   } catch (err: any) {
@@ -157,108 +157,10 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Notifies every other member of a conversation about a new message, via
- * the shared `dispatch_notification` Postgres RPC (see mobile repo's
- * supabase/migrations/20260812000000_notification_dispatch_primitive.sql)
- * — the same primitive used by the medication/workout reminder cron jobs,
- * so there is exactly one Expo-push-batching implementation in the whole
- * system.
- *
- * `is_muted` suppresses notification; `is_archived` does not — archiving is
- * inbox organization, not muting, so an archived-but-not-muted member
- * should still be notified.
+ * (AF-05 G1) notifyConversationMembers was removed. Message notifications are
+ * dispatched exclusively by the fn_on_new_message() DB trigger so there is one
+ * writer and no duplicate bell entries / pushes. Do not re-add a dispatch here.
  */
-async function notifyConversationMembers({
-  admin,
-  conversationId,
-  message,
-}: {
-  admin: ReturnType<typeof getAdminClient>;
-  conversationId: string;
-  message: { id: string; sender_id: string; content: string | null; sender?: { first_name?: string; last_name?: string } | null };
-}) {
-  const { data: conversation, error: conversationError } = await admin
-    .from("conversations")
-    .select("type, name, group_name")
-    .eq("id", conversationId)
-    .single();
-
-  if (conversationError || !conversation) {
-    console.error("[chat/messages POST] Failed to load conversation for notification:", conversationError?.message);
-    return;
-  }
-
-  const { data: members, error: membersError } = await admin
-    .from("conversation_members")
-    .select("user_id, is_muted, left_at")
-    .eq("conversation_id", conversationId);
-
-  if (membersError || !members) {
-    console.error("[chat/messages POST] Failed to load conversation members:", membersError?.message);
-    return;
-  }
-
-  const recipientUserIds = members
-    .filter((m) => m.user_id !== message.sender_id && !m.left_at && !m.is_muted)
-    .map((m) => m.user_id);
-
-  if (recipientUserIds.length === 0) return;
-
-  // NOTE: not touching conversation_members.unread_count here. A comment
-  // in the mobile app's useDirectMessages.ts implies something already
-  // increments it server-side on message insert, but no trigger definition
-  // for it exists in any committed migration in this repo. Before assuming
-  // either way, run against the live DB:
-  //   SELECT tgname, pg_get_triggerdef(oid) FROM pg_trigger
-  //   WHERE tgrelid = 'public.messages'::regclass;
-  // If nothing shows up, add an explicit UPDATE here
-  // (conversation_id = ? AND user_id != sender AND left_at IS NULL) —
-  // don't add it speculatively alongside a trigger that might already
-  // exist, or unread counts will double-increment.
-
-  // Notification preferences: exclude anyone who's opted out of chat
-  // notifications (master switch or the chats-specific toggle), same
-  // suppression semantics as is_muted above — opted-out means neither a
-  // push nor an in-app notifications row, not just a silenced push.
-  const { data: prefs } = await admin
-    .from("user_profiles")
-    .select("user_id, push_notifications_enabled, push_chats_enabled")
-    .in("user_id", recipientUserIds);
-
-  const optedIn = new Set(
-    (prefs ?? [])
-      .filter((p) => p.push_notifications_enabled && p.push_chats_enabled)
-      .map((p) => p.user_id),
-  );
-  const finalRecipientIds = recipientUserIds.filter((id) => optedIn.has(id));
-
-  if (finalRecipientIds.length === 0) return;
-
-  const type = conversation.type === "group" ? "group_chat" : "dm";
-  const senderName = [message.sender?.first_name, message.sender?.last_name].filter(Boolean).join(" ") || "Someone";
-  const groupTitle = conversation.name || conversation.group_name || "Group";
-  const title = type === "group_chat" ? `${senderName} • ${groupTitle}` : senderName;
-  const body = message.content?.trim() ? message.content : "Sent an attachment";
-
-  const recipients = finalRecipientIds.map((userId) => ({
-    user_id: userId,
-    title,
-    body,
-    type,
-    metadata: {
-      conversation_id: conversationId,
-      message_id: message.id,
-      sender_id: message.sender_id,
-      sender_name: senderName,
-    },
-    channel_id: "chat-messages",
-  }));
-
-  const { error: dispatchError } = await admin.rpc("dispatch_notification", { p_recipients: recipients });
-  if (dispatchError) {
-    console.error("[chat/messages POST] dispatch_notification error:", dispatchError.message);
-  }
-}
 
 /**
  * PATCH /api/chat/messages
@@ -335,7 +237,7 @@ export async function DELETE(req: NextRequest) {
 
     const { data: message, error: fetchError } = await admin
       .from("messages")
-      .select("sender_id")
+      .select("sender_id, conversation_id")
       .eq("id", id)
       .single();
 
@@ -343,8 +245,25 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Message not found" }, { status: 404 });
     }
 
+    // Delete authz (AF-05): the sender may always delete their own message. A
+    // conversation manager (owner/moderator) or a platform admin may delete ANY
+    // message in the conversation — this used to be sender-only, so moderators
+    // could not remove others' messages/media.
     if (message.sender_id !== user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      const actorRole = await getLiveMemberRole(admin, message.conversation_id, user.id);
+      const isManager = isManagerRole(actorRole);
+      let isPlatformAdmin = false;
+      if (!isManager) {
+        const { data: profile } = await admin
+          .from("user_profiles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        isPlatformAdmin = profile?.role === "admin" || profile?.role === "super_admin";
+      }
+      if (!isManager && !isPlatformAdmin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     const { error } = await admin

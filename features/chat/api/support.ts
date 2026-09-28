@@ -30,7 +30,38 @@ export async function GET(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    return NextResponse.json(data || []);
+    const tickets = data || [];
+
+    // S6: chat_support.assigned_to is a bare user_profiles UUID. Resolve the
+    // handling agent's display name so the mobile "My Tickets" card can show
+    // *who* handled a ticket without a second client round-trip. Additive —
+    // `assigned_agent_name` is a new response field.
+    const agentIds = Array.from(
+      new Set(
+        tickets
+          .map((t: any) => t.assigned_to)
+          .filter((v: any): v is string => typeof v === "string" && v.length > 0),
+      ),
+    );
+    let agentNames: Record<string, string> = {};
+    if (agentIds.length > 0) {
+      const { data: agents } = await admin
+        .from("user_profiles")
+        .select("user_id, first_name, last_name")
+        .in("user_id", agentIds);
+      agentNames = (agents || []).reduce<Record<string, string>>((acc, a: any) => {
+        const name = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim();
+        if (a.user_id) acc[a.user_id] = name || "Support agent";
+        return acc;
+      }, {});
+    }
+
+    const enriched = tickets.map((t: any) => ({
+      ...t,
+      assigned_agent_name: t.assigned_to ? agentNames[t.assigned_to] ?? null : null,
+    }));
+
+    return NextResponse.json(enriched);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -50,6 +81,8 @@ export async function GET(req: NextRequest) {
  *   priority?: "Low" | "Medium" | "High",   // defaults to "Low"
  *   category?: string,
  *   tags?: string[],
+ *   attachment_url?: string,   // S5: optional screenshot/file public URL
+ *   attachment_name?: string,
  * }
  */
 export async function POST(req: NextRequest) {
@@ -58,7 +91,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { subject, message, priority, category, tags } = await req.json();
+    const { subject, message, priority, category, tags, attachment_url, attachment_name } =
+      await req.json();
 
     if (!subject || typeof subject !== "string") {
       return NextResponse.json(
@@ -110,6 +144,15 @@ export async function POST(req: NextRequest) {
           status: "Open",
           category: category ?? null,
           tags: Array.isArray(tags) ? tags.filter((tag) => typeof tag === "string") : [],
+          // S5: only sent when the caller actually attached a file, so a
+          // pre-migration insert (no attachment) is unaffected.
+          ...(typeof attachment_url === "string" && attachment_url
+            ? {
+                attachment_url,
+                attachment_name:
+                  typeof attachment_name === "string" ? attachment_name : null,
+              }
+            : {}),
         },
       ])
       .select()

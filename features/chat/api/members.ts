@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     const { data: convo, error: convoError } = await admin
       .from("conversations")
       .select(
-        "max_members, type, is_deleted, status, group_type, group_category, is_verified_only, conversation_members(count)",
+        "max_members, type, is_deleted, status, group_type, group_category, is_verified_only, group_permissions, conversation_members(count)",
       )
       .eq("id", conversation_id)
       .single();
@@ -104,11 +104,57 @@ export async function POST(req: NextRequest) {
     // themselves to a direct chat, a verified-only, facility or premium group
     // by id and then read it. Someone who is already a live member skips the
     // check, so nobody is locked out of a group they were legitimately added to.
-    if (!(await isLiveMember(admin, conversation_id, user.id))) {
+    const alreadyMember = await isLiveMember(admin, conversation_id, user.id);
+    if (!alreadyMember) {
       const facts = await loadCallerFacts(admin, user.id, conversation_id, convo as any);
       const decision = decideJoin(convo as any, facts);
       if (!decision.ok) {
         return NextResponse.json({ error: decision.reason }, { status: 403 });
+      }
+    }
+
+    // AF-05 Part 2 — restricted/approval groups: a non-manager who passes the
+    // eligibility gate does NOT join directly; they file a join request that a
+    // moderator must approve. Managers and existing members bypass approval.
+    // Mirrors fn_request_join / fn_review_join_request in the DB.
+    const approvalRequired =
+      (convo as any)?.group_permissions?.approval_required === true;
+    if (approvalRequired && !alreadyMember) {
+      const actorRole = await getLiveMemberRole(admin, conversation_id, user.id);
+      const callerIsManager = isManagerRole(actorRole);
+      if (!callerIsManager) {
+        // Dedup on an existing pending request for this user/group.
+        const { data: existingPending } = await admin
+          .from("conversation_join_requests")
+          .select("id")
+          .eq("conversation_id", conversation_id)
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
+        if (existingPending?.id) {
+          return NextResponse.json({
+            status: "pending_approval",
+            request_id: existingPending.id,
+            duplicate: true,
+          });
+        }
+        const { data: created, error: reqError } = await admin
+          .from("conversation_join_requests")
+          .insert({
+            conversation_id,
+            user_id: user.id,
+            requested_by: user.id,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+        if (reqError) {
+          return NextResponse.json({ error: reqError.message }, { status: 500 });
+        }
+        return NextResponse.json({
+          status: "pending_approval",
+          request_id: created.id,
+        });
       }
     }
 
